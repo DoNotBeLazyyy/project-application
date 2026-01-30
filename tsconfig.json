@@ -1,0 +1,40 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "jsx": "react-jsx",
+        "declaration": true,
+        "declarationDir": "./dist",
+        "outDir": "./dist",
+        "noEmit": true,
+        "isolatedModules": true,
+        "strict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "useDefineForClassFields": true,
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "paths": {
+            "@assets/*": ["src/assets/*"],
+            "@components/*": ["src/components/*"],
+            "@constants/*": ["src/constants/*"],
+            "@hooks/*": ["src/hooks/*"],
+            "@locales/*": ["src/locales/*"],
+            "@pages/*": ["src/pages/*"],
+            "@router/*": ["src/router/*"],
+            "@services/*": ["src/services/*"],
+            "@stores/*": ["src/stores/*"],
+            "@themes/*": ["src/themes/*"],
+            "@type/*": ["src/types/*"],
+            "@utils/*": ["src/utils/*"],
+            "App": ["src/App"],
+            "Main": ["src/Main"]
+        }
+    },
+    "include": ["vite.config.ts", "src/**/*"]
+}
