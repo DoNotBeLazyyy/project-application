@@ -1,3 +1,204 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@layer utilities {
+    .tw-h1 {
+        line-height: var(--mui-tokens-lineHeight-h1);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h1);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-h2 {
+        line-height: var(--mui-tokens-lineHeight-h2);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h2);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-h3 {
+        line-height: var(--mui-tokens-lineHeight-h3);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h3);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-h4 {
+        line-height: var(--mui-tokens-lineHeight-h4);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h4);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-h5 {
+        line-height: var(--mui-tokens-lineHeight-h5);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h5);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-h6 {
+        line-height: var(--mui-tokens-lineHeight-h6);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-h6);
+        font-family: var(--mui-tokens-fontFamily-headings);
+    }
+
+    .tw-body-large {
+        line-height: var(--mui-tokens-lineHeight-lg);
+        font-weight: var(--mui-tokens-fontWeight-normal);
+        font-size: var(--mui-tokens-fontSize-lg);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-large-bold {
+        line-height: var(--mui-tokens-lineHeight-lg);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-lg);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-medium {
+        line-height: var(--mui-tokens-lineHeight-md);
+        font-weight: var(--mui-tokens-fontWeight-normal);
+        font-size: var(--mui-tokens-fontSize-md);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-medium-bold {
+        line-height: var(--mui-tokens-lineHeight-md);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-md);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-normal {
+        line-height: var(--mui-tokens-lineHeight-nm);
+        font-weight: var(--mui-tokens-fontWeight-normal);
+        font-size: var(--mui-tokens-fontSize-nm);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-normal-bold {
+        line-height: var(--mui-tokens-lineHeight-nm);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-nm);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-small {
+        line-height: var(--mui-tokens-lineHeight-sm);
+        font-weight: var(--mui-tokens-fontWeight-normal);
+        font-size: var(--mui-tokens-fontSize-sm);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-small-bold {
+        line-height: var(--mui-tokens-lineHeight-sm);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-sm);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-extra-small {
+        line-height: var(--mui-tokens-lineHeight-xs);
+        font-weight: var(--mui-tokens-fontWeight-normal);
+        font-size: var(--mui-tokens-fontSize-xs);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+
+    .tw-body-extra-small-bold {
+        line-height: var(--mui-tokens-lineHeight-xs);
+        font-weight: var(--mui-tokens-fontWeight-bold);
+        font-size: var(--mui-tokens-fontSize-xs);
+        font-family: var(--mui-tokens-fontFamily-body);
+    }
+}
+
+/* AG GRID TABLE */
+.ag-theme-quartz {
+    --ag-header-height: 1.75rem;
+    --ag-row-border-width: 0;
+    --ag-row-height: 4.8125rem;
+}
+
+.ag-root-wrapper.ag-ltr.ag-layout-normal {
+    background-color: transparent;
+    border-radius: 0;
+    border: none;
+}
+
+.ag-header {
+    border-radius: var(--mui-tokens-spacing-2);
+    border: none;
+}
+
+.ag-header-cell {
+    color: var(--mui-palette-grey-400);
+    font-size: var(--mui-tokens-font-size-sm);
+    font-weight: var(--mui-tokens-fontWeight-bold);
+    padding-left: var(--mui-tokens-spacing-4);
+    padding-right: var(--mui-tokens-spacing-4);
+    text-transform: var(--table-header-transform, normal);
+}
+
+.ag-header-row {
+    background-color: var(--mui-palette-grey-50);
+}
+
+.ag-ltr .ag-sort-indicator-icon {
+    padding-left: var(--mui-tokens-spacing-5);
+}
+
+.ag-cell {
+    align-items: center;
+    display: flex;
+    height: 4rem;
+    justify-content: flex-start;
+    padding-left: var(--mui-tokens-spacing-4);
+    padding-right: var(--mui-tokens-spacing-4);
+}
+
+.ag-row {
+    background-color: transparent;
+    border: none;
+    pointer-events: none;
+}
+
+.ag-row .ag-cell {
+    pointer-events: auto;
+}
+
+.ag-row-selected::before,
+.ag-row::before {
+    background-color: transparent;
+    border-radius: var(--mui-tokens-spacing-2);
+    content: '';
+    height: 4rem;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+}
+
+.ag-row:hover::before {
+    background-color: var(--mui-palette-grey-100);
+}
+
+.ag-row:active::before,
+.ag-row.ag-row-selected::before {
+    background-color: var(--mui-tokens-color-brand-50);
+}
+
+.ag-row::after {
+    border-radius: var(--mui-tokens-radius-full);
+    border-top: 1px solid var(--mui-palette-grey-300);
+    bottom: 7px;
+    content: '';
+    height: 0;
+    left: var(--mui-tokens-spacing-4);
+    pointer-events: none;
+    position: absolute;
+    right: var(--mui-tokens-spacing-4);
+}

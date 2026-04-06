@@ -1,20 +1,26 @@
-import { Dispatch, SetStateAction } from 'react';
+import { GridApi } from 'ag-grid-community';
+import { Dispatch, MouseEvent, SetStateAction } from 'react';
 
-// Html div element
-export type HtmlAttributeDiv = React.HTMLAttributes<HTMLDivElement>;
+// String props
+export type StringNum = string | number;
+
+// Div props
+export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 
-// Span element attributes
-export type HtmlAttributeSpan = React.HTMLAttributes<HTMLSpanElement>;
-export type HtmlAttributeSVG = React.SVGProps<SVGSVGElement>;
-export type ChangeEventInput = React.ChangeEvent<HTMLInputElement>;
+// Node props
+export type NodeNull = Node | null;
+export type TimeoutNull = NodeJS.Timeout | null;
 
-// Array of strings or numbers
-export type StringNumber = number | string;
-export type StringNumberNull = StringNumber | null;
-export type NumberNull = number | null;
-export type StringUndefined = string | undefined;
-export type StringType = string | string[];
-
-// Set state props
+// State props
 export type StateProps<T> = Dispatch<SetStateAction<T>>;
+
+// Record props
+export type PartialRecordString<R extends PropertyKey> = Partial<Record<R, string>>;
+export type RecordNumberString = Record<number, string>;
+
+// Function props
+export type BooleanFunction = () => boolean;
+
+// Grid props
+export type GridApiNull = GridApi | null;

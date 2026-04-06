@@ -1,8 +1,8 @@
 import javascriptESLint from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
-import reactESLintRecommeded from 'eslint-plugin-react/configs/recommended.js';
 import reactHookESLintPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshESLintPlugin from 'eslint-plugin-react-refresh';
+import reactESLintRecommeded from 'eslint-plugin-react/configs/recommended.js';
 import globals from 'globals';
 import typescriptESLint from 'typescript-eslint';
 
