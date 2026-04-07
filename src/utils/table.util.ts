@@ -1,5 +1,4 @@
-import { MouseEventDivElement, StateProps } from '@type/common.type';
-import { PaginationData } from '@type/table.type';
+import { MouseEventDivElement } from '@type/common.type';
 import { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -23,21 +22,4 @@ export function preventDefaultContextMenu(event: MouseEventDivElement) {
     if ((event.target as HTMLElement).closest('.ag-row')) {
         event.preventDefault();
     }
-}
-
-/**
- * Updates the pagination state in the table
- *
- * @param values value to change
- * @param setPagination state setter function for the pagination data
- */
-export function changePagination(
-    values: Partial<PaginationData>,
-    setPagination: StateProps<PaginationData>
-) {
-    setPagination((prev) => ({
-        ...prev,
-        ...values
-
-    }));
 }

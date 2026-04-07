@@ -9,7 +9,7 @@ export type StringNum = string | number;
 // Div props
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
-export type KeyboardEventDiv = KeyboardEvent<HTMLDivElement>;
+export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 // Node props
 export type NodeNull = Node | null;

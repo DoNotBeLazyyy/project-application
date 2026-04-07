@@ -6,9 +6,9 @@ export interface PaginationData {
     // number of rows per page
     rowsPerPage: number;
 
-    // total number of pages
-    totalPages: number;
-
     // total number of elements in the current page
     totalElements: number;
+
+    // total number of pages
+    totalPages: number;
 }
