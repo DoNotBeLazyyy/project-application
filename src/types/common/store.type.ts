@@ -1,2 +1,2 @@
 // Locales
-export type CommonLocales = 'ko' | 'en' | 'zh';
+export type CommonLocales = 'en' | 'ko';

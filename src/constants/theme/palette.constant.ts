@@ -1,54 +1,55 @@
+import { TOKENS } from '@constants/theme/tokens.constant'; // Tokens dependency
 import { PaletteOptions } from '@mui/material'; // Mui dependency
 
 export const PALETTE: PaletteOptions = {
     primary: {
-        main: 'var(--mui-tokens-color-brand-900)',
-        light: 'var(--mui-tokens-color-brand-500)',
-        dark: 'var(--mui-tokens-color-brand-950)',
-        contrastText: 'var(--mui-tokens-color-common-white)'
+        main: TOKENS.color?.brand?.[900] as string,
+        light: TOKENS.color?.brand?.[500],
+        dark: TOKENS.color?.brand?.[950],
+        contrastText: TOKENS.color?.common?.white
     },
     secondary: {
-        main: 'var(--mui-tokens-color-secondary-main)',
-        light: 'var(--mui-tokens-color-secondary-light)',
-        dark: 'var(--mui-tokens-color-brand-600)',
-        contrastText: 'var(--mui-tokens-color-common-white)'
+        main: TOKENS.color?.secondary?.main as string,
+        light: TOKENS.color?.secondary?.light,
+        dark: TOKENS.color?.brand?.[600],
+        contrastText: TOKENS.color?.common?.white
     },
     error: {
-        main: 'var(--mui-tokens-color-state-error)',
-        light: 'var(--mui-tokens-color-state-errorLight)',
-        dark: 'var(--mui-tokens-color-state-error)',
-        contrastText: 'var(--mui-tokens-color-common-white)'
+        main: TOKENS.color?.state?.error as string,
+        light: TOKENS.color?.state?.errorLight,
+        dark: TOKENS.color?.state?.error,
+        contrastText: TOKENS.color?.common?.white
     },
     success: {
-        main: 'var(--mui-tokens-color-state-success)',
-        light: 'var(--mui-tokens-color-state-successLight)',
-        dark: 'var(--mui-tokens-color-state-success)',
-        contrastText: 'var(--mui-tokens-color-common-white)'
+        main: TOKENS.color?.state?.success as string,
+        light: TOKENS.color?.state?.successLight,
+        dark: TOKENS.color?.state?.success,
+        contrastText: TOKENS.color?.common?.white
     },
     warning: {
-        main: 'var(--mui-tokens-color-state-warning)',
-        light: 'var(--mui-tokens-color-state-warningLight)',
-        dark: 'var(--mui-tokens-color-state-warning)',
-        contrastText: 'var(--mui-tokens-color-common-black)'
+        main: TOKENS.color?.state?.warning as string,
+        light: TOKENS.color?.state?.warningLight,
+        dark: TOKENS.color?.state?.warning,
+        contrastText: TOKENS.color?.common?.black
     },
     grey: {
-        50: 'var(--mui-tokens-color-neutral-50)',
-        100: 'var(--mui-tokens-color-neutral-100)',
-        200: 'var(--mui-tokens-color-neutral-200)',
-        300: 'var(--mui-tokens-color-neutral-300)',
-        400: 'var(--mui-tokens-color-neutral-400)',
-        500: 'var(--mui-tokens-color-neutral-500)',
-        600: 'var(--mui-tokens-color-neutral-600)',
-        700: 'var(--mui-tokens-color-neutral-700)',
-        800: 'var(--mui-tokens-color-neutral-800)',
-        900: 'var(--mui-tokens-color-neutral-900)'
+        50: TOKENS.color?.neutral?.[50],
+        100: TOKENS.color?.neutral?.[100],
+        200: TOKENS.color?.neutral?.[200],
+        300: TOKENS.color?.neutral?.[300],
+        400: TOKENS.color?.neutral?.[400],
+        500: TOKENS.color?.neutral?.[500],
+        600: TOKENS.color?.neutral?.[600],
+        700: TOKENS.color?.neutral?.[700],
+        800: TOKENS.color?.neutral?.[800],
+        900: TOKENS.color?.neutral?.[900]
     },
     text: {
-        primary: 'var(--mui-tokens-color-neutral-900)',
-        secondary: 'var(--mui-tokens-color-neutral-500)'
+        primary: TOKENS.color?.neutral?.[900],
+        secondary: TOKENS.color?.neutral?.[500]
     },
     background: {
-        paper: 'var(--mui-tokens-color-common-white)',
-        default: 'var(--mui-tokens-color-brand-100)'
+        paper: TOKENS.color?.common?.white,
+        default: TOKENS.color?.brand?.[100]
     }
 }; // Palette configuration

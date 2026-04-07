@@ -1,8 +1,8 @@
 import SystemRoot from '@pages/system';
-import { accessControlRoutes } from '@router/system/access-control/access-control.route';
-import { countryConfigurationRoutes } from '@router/system/country-configuration/country-configuration.route';
-import { dataManagementRoutes } from '@router/system/data-management/data-management.route';
-import { organizationManagementRoutes } from '@router/system/organization-management/organization-management.route';
+import { accessControlRoutes } from '@routes/system/access-control/access-control.route';
+import { countryConfigurationRoutes } from '@routes/system/country-configuration/country-configuration.route';
+import { dataManagementRoutes } from '@routes/system/data-management/data-management.route';
+import { organizationManagementRoutes } from '@routes/system/organization-management/organization-management.route';
 import { RouteObject } from 'react-router-dom';
 
 /**
