@@ -8,6 +8,10 @@ export default function ComponentSample() {
         {
             label: 'Table',
             path: 'table'
+        },
+        {
+            label: 'Pagination',
+            path: 'pagination'
         }
     ] as const;
 

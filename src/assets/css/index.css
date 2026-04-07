@@ -1,112 +1,112 @@
 @import "tailwindcss";
 
 @layer utilities {
-    .tw-h1 {
+    .tw_h1 {
         line-height: var(--mui-tokens-lineHeight-h1);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h1);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-h2 {
+    .tw_h2 {
         line-height: var(--mui-tokens-lineHeight-h2);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h2);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-h3 {
+    .tw_h3 {
         line-height: var(--mui-tokens-lineHeight-h3);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h3);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-h4 {
+    .tw_h4 {
         line-height: var(--mui-tokens-lineHeight-h4);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h4);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-h5 {
+    .tw_h5 {
         line-height: var(--mui-tokens-lineHeight-h5);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h5);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-h6 {
+    .tw_h6 {
         line-height: var(--mui-tokens-lineHeight-h6);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-h6);
         font-family: var(--mui-tokens-fontFamily-headings);
     }
 
-    .tw-body-large {
+    .tw_body_large {
         line-height: var(--mui-tokens-lineHeight-lg);
         font-weight: var(--mui-tokens-fontWeight-normal);
         font-size: var(--mui-tokens-fontSize-lg);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-large-bold {
+    .tw_body_large_bold {
         line-height: var(--mui-tokens-lineHeight-lg);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-lg);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-medium {
+    .tw_body_medium {
         line-height: var(--mui-tokens-lineHeight-md);
         font-weight: var(--mui-tokens-fontWeight-normal);
         font-size: var(--mui-tokens-fontSize-md);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-medium-bold {
+    .tw_body_medium_bold {
         line-height: var(--mui-tokens-lineHeight-md);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-md);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-normal {
+    .tw_body_normal {
         line-height: var(--mui-tokens-lineHeight-nm);
         font-weight: var(--mui-tokens-fontWeight-normal);
         font-size: var(--mui-tokens-fontSize-nm);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-normal-bold {
+    .tw_body_normal_bold {
         line-height: var(--mui-tokens-lineHeight-nm);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-nm);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-small {
+    .tw_body_small {
         line-height: var(--mui-tokens-lineHeight-sm);
         font-weight: var(--mui-tokens-fontWeight-normal);
         font-size: var(--mui-tokens-fontSize-sm);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-small-bold {
+    .tw_body_small_bold {
         line-height: var(--mui-tokens-lineHeight-sm);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-sm);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-extra-small {
+    .tw_body_extra-small {
         line-height: var(--mui-tokens-lineHeight-xs);
         font-weight: var(--mui-tokens-fontWeight-normal);
         font-size: var(--mui-tokens-fontSize-xs);
         font-family: var(--mui-tokens-fontFamily-body);
     }
 
-    .tw-body-extra-small-bold {
+    .tw_body_extra-small_bold {
         line-height: var(--mui-tokens-lineHeight-xs);
         font-weight: var(--mui-tokens-fontWeight-bold);
         font-size: var(--mui-tokens-fontSize-xs);
