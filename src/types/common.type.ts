@@ -1,10 +1,14 @@
-import { GridApi } from 'ag-grid-community';
-import { Dispatch, MouseEvent, SetStateAction } from 'react';
+import { SxProps } from '@mui/material/styles';
+import { GridApi, Theme } from 'ag-grid-community';
+import {
+    Dispatch, HTMLAttributes, MouseEvent, SetStateAction, SVGProps, ReactElement
+} from 'react';
 
 // String props
 export type StringNum = string | number;
 
 // Div props
+export type DivProps = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 
@@ -24,3 +28,12 @@ export type BooleanFunction = () => boolean;
 
 // Grid props
 export type GridApiNull = GridApi | null;
+
+// MUI props
+export type ThemeSx = SxProps<Theme>;
+
+// Icon props
+export type IconSvgProps = SVGProps<SVGSVGElement>;
+
+// React element or boolean type
+export type ReactElementOrBoolean = ReactElement | boolean;

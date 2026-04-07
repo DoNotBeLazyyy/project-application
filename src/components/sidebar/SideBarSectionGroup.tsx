@@ -1,0 +1,72 @@
+import type {
+    SideBarGroup,
+    SideBarItem,
+    SideBarSection,
+    VariantStyle
+} from '@components/sidebar/CommonSideBarList';
+import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
+import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
+import { classMerge } from '@utils/css.util';
+
+interface SideBarSectionGroupProps {
+    // The section data to render.
+    section: SideBarSection;
+
+    // The section label class from the variant.
+    sectionLabelStyle: string;
+
+    // Styles based on the current variant.
+    styles: VariantStyle;
+}
+
+/**
+ * Type guard to determine if an item is a SideBarGroup (has sub-items) or a simple SideBarItem.
+ *
+ * @param item - The item to check.
+ * @returns
+ */
+function isSideBarGroup(item: SideBarItem | SideBarGroup): item is SideBarGroup {
+    return 'items' in item;
+}
+
+/**
+ * Renders a single sidebar section with an optional label and a list of items or accordion groups.
+ */
+export default function SideBarSectionGroup({
+    section,
+    sectionLabelStyle,
+    styles
+}: SideBarSectionGroupProps) {
+    return (
+        <div className="flex flex-col gap-[var(--mui-tokens-spacing-1)]">
+            {section.sectionLabel && (
+                <p
+                    className={
+                        classMerge(
+                            'px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-2)] text-[length:0.6875rem] font-semibold uppercase tracking-wider',
+                            sectionLabelStyle
+                        )}
+                >
+                    {section.sectionLabel}
+                </p>
+            )}
+            {section.items.map((item, index) =>
+                isSideBarGroup(item)
+                    ? (
+                        <SideBarAccordionGroup
+                            group={item}
+                            key={index}
+                            styles={styles}
+                        />
+                    )
+                    : (
+                        <SideBarSimpleItem
+                            item={item}
+                            key={index}
+                            styles={styles}
+                        />
+                    ))
+            }
+        </div>
+    );
+}
