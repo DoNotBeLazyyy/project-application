@@ -4,7 +4,7 @@ import {
 import { NavLink, Outlet } from 'react-router-dom';
 
 export default function ComponentSample() {
-    const sample_menus = [
+    const sampleMenus = [
         {
             label: 'Table',
             path: 'table'
@@ -57,7 +57,7 @@ export default function ComponentSample() {
                             alignItems: 'center'
                         }}
                     >
-                        {sample_menus.map((menu) => (
+                        {sampleMenus.map((menu) => (
                             <Button
                                 component={NavLink}
                                 key={menu.path}

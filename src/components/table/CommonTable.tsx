@@ -5,7 +5,7 @@ import { DotsThreeVerticalIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import {
     BooleanFunction, GridApiNull, HtmlDivElementNull, NodeNull, StateProps
 } from '@type/common.type';
-import { SortData } from '@type/table.type';
+import { SortStringDto } from '@type/http.type';
 import { classMerge } from '@utils/css.util';
 import { preventDefaultContextMenu } from '@utils/table.util';
 import {
@@ -67,7 +67,7 @@ interface CommonTableProps extends Omit<AgGridReactProps, 'columnDefs'> {
     onConfirmSort?: BooleanFunction;
 
     // Callback executed when sorting columns
-    onSetSort?: StateProps<SortData[]>;
+    onSetSort?: StateProps<SortStringDto[]>;
 }
 
 /**

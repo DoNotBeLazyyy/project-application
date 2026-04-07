@@ -1,6 +1,6 @@
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import appRouter from '@router/AppRouter';
+import appRouter from '@routes/AppRouter';
 import { theme } from '@utils/theme-util';
 import { RouterProvider } from 'react-router-dom';
 

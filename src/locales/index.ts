@@ -21,6 +21,6 @@ export default i18n.use(initReactI18next)
         interpolation: {
             escapeValue: false
         },
-        lng: locale || 'ko',
+        lng: locale || 'en',
         resources
     });

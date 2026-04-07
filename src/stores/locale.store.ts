@@ -13,7 +13,7 @@ interface LocaleStoreProps {
 export const useLocalesStore = create(
     persist<LocaleStoreProps>(
         (set) => ({
-            locale: 'ko',
+            locale: 'en',
             setLocale: (locale) => set({ locale })
         }), {
             name: 'localesStorage',

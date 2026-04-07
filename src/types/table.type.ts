@@ -1,12 +1,3 @@
-// Sort information
-export interface SortData {
-    // sort order.
-    isAsc: boolean;
-
-    // sort field key.
-    sortKey: string;
-}
-
 // Pagination information
 export interface PaginationData {
     // current page
