@@ -4,7 +4,8 @@ import CalendarTitle from '@components/calendar/CalendarTitle';
 import CalendarWeekDays from '@components/calendar/CalendarWeekDays';
 import MagnifyingGlassIcon from '@components/icons/MagnifyingGlassIcon';
 import { ChangeEventInputElement } from '@type/common.type';
-import { CalendarDay, getCalendarDays } from '@utils/calendar.util';
+import { CalendarDay } from '@type/common/calendar.type';
+import { getCalendarDays } from '@utils/calendar.util';
 import { classMerge } from '@utils/css.util';
 import { useState } from 'react';
 
@@ -55,8 +56,9 @@ export default function Calendar({
      * Handles date search from the input.
      */
     function handleSearch() {
-        if (!searchValue)
+        if (!searchValue) {
             return;
+        }
 
         const parsedDate = new Date(searchValue);
 
@@ -64,7 +66,7 @@ export default function Calendar({
             setDate(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
         }
         else {
-            alert('Invalid date format. Try "2026-04" or "April 2026"');
+            alert('Invalid date format. Try "2026-04" or "April 2026"'); {/* TODO */}
         }
     }
 

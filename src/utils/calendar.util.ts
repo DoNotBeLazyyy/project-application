@@ -1,27 +1,20 @@
-export interface CalendarDay {
-    // Numeric day of the month (1–31)
-    day: number;
-
-    // Full date string in YYYY-MM-DD format
-    date: string;
-
-    // Indicates whether the day belongs to the currently displayed month
-    isCurrentMonth: boolean;
-
-    // Indicates whether this day is today
-    isToday: boolean;
-}
+import { CalendarDay } from '@type/common/calendar.type';
+import { formatDate } from '@utils/date.util';
 
 /**
- * Converts a Date object to a string in YYYY-MM-DD format (Canada locale).
+ * getCalendarDays
  *
- * @param date - The Date object to format.
- * @returns A string representing the date in 'YYYY-MM-DD' format.
+ * Generates all days for a given month, including the necessary
+ * previous and next month days to fill the calendar grid (5 or 6 weeks).
+ * Marks which day is today and which days belong to the current month.
+ *
+ * @param year - The year for the calendar.
+ * @param month - The month (0–11) for the calendar.
+ * @returns An array of CalendarDay objects covering the calendar grid.
+ *
+ * @example
+ * const days = getCalendarDays(2026, 3); // April 2026
  */
-function formatDate(date: Date): string {
-    return date.toLocaleDateString('en-CA');
-}
-
 export function getCalendarDays(
     year: number,
     month: number

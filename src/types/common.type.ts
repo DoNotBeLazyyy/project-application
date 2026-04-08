@@ -34,3 +34,4 @@ export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 // Calendar props
 export type AlignType = 'LEFT' | 'CENTER' | 'RIGHT';
 export type SizeType = 'BIG' | 'SMALL';
+export type CalendarTitlePosition = 'RIGHT' | 'MIDDLE' | 'LEFT';

@@ -22,7 +22,6 @@ export default function CalendarTitle({
     title = 'Holidays',
     subtitle = 'Employee Leave & Requests History'
 }: CalendarHeaderProps) {
-
     return (
         <div>
             <div className="font-[700] text-[20px] text-[#18181B]">

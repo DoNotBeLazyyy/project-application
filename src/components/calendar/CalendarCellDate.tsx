@@ -21,7 +21,6 @@ export default function CalendarCellDate({
     day,
     isToday = false
 }: DayNumberProps) {
-
     return (
         <div
             className={

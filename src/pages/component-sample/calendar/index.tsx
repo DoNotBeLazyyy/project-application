@@ -20,19 +20,19 @@ export default function CalendarSample() {
             </div>
             <div className="flex justify-center gap-10">
                 <CalendarPicker
-                    calendarPickerAlign="LEFT"
-                    calendarPickerSize="SMALL"
-                    date={date}
-                    onChangeMonth={changeMonth}
-                />
-                <CalendarPicker
-                    calendarPickerAlign="LEFT"
+                    calendarPickerAlign="RIGHT"
                     calendarPickerSize="BIG"
                     date={date}
                     onChangeMonth={changeMonth}
                 />
                 <CalendarPicker
-                    calendarPickerAlign="RIGHT"
+                    calendarPickerAlign="CENTER"
+                    calendarPickerSize="BIG"
+                    date={date}
+                    onChangeMonth={changeMonth}
+                />
+                <CalendarPicker
+                    calendarPickerAlign="LEFT"
                     calendarPickerSize="SMALL"
                     date={date}
                     onChangeMonth={changeMonth}

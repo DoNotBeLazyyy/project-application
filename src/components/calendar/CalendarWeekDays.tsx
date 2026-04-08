@@ -1,4 +1,5 @@
 import { classMerge } from '@utils/css.util';
+import { useTranslation } from 'react-i18next';
 
 /**
  * CalendarWeekDays
@@ -10,7 +11,16 @@ import { classMerge } from '@utils/css.util';
  * <CalendarWeekDays />
  */
 export default function CalendarWeekDays() {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // Array of weekday abbreviations
+    const { t } = useTranslation();
+    const days = [
+        t('Sun'),
+        t('Mon'),
+        t('Tue'),
+        t('Wed'),
+        t('Thu'),
+        t('Fri'),
+        t('Sat')
+    ]; // Array of weekday abbreviations
 
     return (
         <div

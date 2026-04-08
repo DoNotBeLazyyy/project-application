@@ -1,5 +1,5 @@
 import CalendarCellDate from '@components/calendar/CalendarCellDate';
-import { CalendarDay } from '@utils/calendar.util';
+import { CalendarDay } from '@type/common/calendar.type';
 import { classMerge } from '@utils/css.util';
 
 interface CalendarCellProps {
@@ -22,14 +22,12 @@ interface CalendarCellProps {
 export default function CalendarCell({
     day
 }: CalendarCellProps) {
-    const isMuted = !day.isCurrentMonth; // Determines if the day is outside the current month
-
     return (
         <div
             className={
                 classMerge(
                     'bg-[#F4F4F5] duration-200 flex flex-col min-h-[120px] min-w-[160px] p-[8px] rounded-[16px] transition-colors',
-                    isMuted
+                    !day.isCurrentMonth
                         ? 'opacity-40'
                         : 'cursor-pointer hover:bg-[#c6dcfc] hover:outline hover:outline-[#5192f5]'
                 )
