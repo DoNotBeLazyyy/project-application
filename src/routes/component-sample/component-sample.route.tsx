@@ -1,4 +1,5 @@
 import ComponentSample from '@pages/component-sample';
+import CalendarSample from '@pages/component-sample/calendar';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -17,6 +18,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTableSample />,
             path: 'table'
+        },
+        {
+            element: <CalendarSample />,
+            path: 'calendar'
         }
     ]
 }] as const;
