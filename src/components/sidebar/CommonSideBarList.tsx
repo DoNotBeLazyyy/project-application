@@ -38,6 +38,12 @@ export interface VariantStyle {
     // Sub-item border visibility
     subItemBorder: string;
 
+    // Sub-item border color for active segment
+    subItemBorderActive: string;
+
+    // Sub-item border color for inactive segments
+    subItemBorderInactive: string;
+
     // Sub-item hover class
     subItemHover: string;
 
@@ -74,7 +80,7 @@ export interface SideBarGroup {
 }
 
 // Type for items in a sidebar section.
-export type SideBarSectionItems = (SideBarItem | SideBarGroup)[];
+type SideBarSectionItems = (SideBarItem | SideBarGroup)[];
 
 export interface SideBarSection {
     // Items in this section (can be simple items or accordion groups)

@@ -1,5 +1,6 @@
 import TabMenuItem from '@components/tab/TabMenuItem';
 import { createTabTheme } from '@constants/theme/components-theme.constant';
+import { ThemeProvider } from '@mui/material/styles';
 import Tabs, { TabsProps } from '@mui/material/Tabs';
 import { StringNum, ThemeSx } from '@type/common.type';
 import { normalizeSx } from '@utils/theme-util';
@@ -82,10 +83,10 @@ export default function CommonTabMenu({
     const color = customColor ?? '#022179'; // default active color if customColor is not provided.
     const isFilled = variant === 'filled'; // isFilled is used to determine if the filled variant is active.
     const isVertical = orientation === 'vertical'; // isvertical is used to vertical orientation.
-    const tabStyles = useMemo(
+    const tabTheme = useMemo(
         () => createTabTheme(color, variant, isVertical),
         [color, variant, isVertical]
-    ); // create memoized sx styles based on color, variant.
+    ); // create memoized theme based on color, variant.
 
     /**
      * Handle tab change event and call onChange with the new value.
@@ -98,24 +99,26 @@ export default function CommonTabMenu({
     }
 
     return (
-        <Tabs
-            orientation={orientation}
-            sx={[tabStyles.tabs, ...normalizeSx(sx)]}
-            value={value}
-            onChange={handleChange}
-        >
-            {normalizedTabs.map((tab) => (
-                <TabMenuItem
-                    {...tab}
-                    allDisabled={disabled}
-                    iconColor={isFilled
-                        ? '#F2F7FE'
-                        : '#022179'}
-                    isActive={value === tab.value}
-                    key={tab.value}
-                    sx={[tabStyles.tab, ...normalizeSx(tabSx)]}
-                />
-            ))}
-        </Tabs>
+        <ThemeProvider theme={tabTheme}>
+            <Tabs
+                orientation={orientation}
+                sx={normalizeSx(sx)}
+                value={value}
+                onChange={handleChange}
+            >
+                {normalizedTabs.map((tab) => (
+                    <TabMenuItem
+                        {...tab}
+                        allDisabled={disabled}
+                        iconColor={isFilled
+                            ? '#F2F7FE'
+                            : '#022179'}
+                        isActive={value === tab.value}
+                        key={tab.value}
+                        sx={normalizeSx(tabSx)}
+                    />
+                ))}
+            </Tabs>
+        </ThemeProvider>
     );
 }

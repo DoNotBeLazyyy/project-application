@@ -43,7 +43,7 @@ export default function SideBarSectionGroup({
                 <p
                     className={
                         classMerge(
-                            'px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-2)] text-[length:0.6875rem] font-semibold uppercase tracking-wider',
+                            'px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-2)] text-[length:var(--mui-tokens-fontSize-sm)] font-semibold uppercase tracking-wider',
                             sectionLabelStyle
                         )}
                 >

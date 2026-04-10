@@ -20,7 +20,7 @@ export default function SideBarSimpleItem({
         <ButtonBase
             className={
                 classMerge(
-                    'flex w-full items-center gap-[var(--mui-tokens-spacing-4)] rounded-[var(--mui-tokens-radius-md)] px-[var(--mui-tokens-spacing-4)] py-[var(--mui-tokens-spacing-3)] text-left text-[length:var(--mui-tokens-fontSize-sm)] transition-colors',
+                    'flex w-fit items-center rounded-[var(--mui-tokens-radius-md)] text-left transition-colors',
                     isActive
                         ? styles.itemActive
                         : classMerge(
@@ -29,13 +29,23 @@ export default function SideBarSimpleItem({
                         )
                 )}
             disableRipple
+            sx={{
+                gap: '10px',
+                px: '12px',
+                py: '8px',
+                fontSize: '14px',
+                '& .sidebar-icon svg': {
+                    height: '20px',
+                    width: '20px'
+                }
+            }}
             onClick={item.onClick}
         >
             {item.icon && (
                 <span
                     className={
                         classMerge(
-                            'flex shrink-0 [&>svg]:h-[var(--mui-tokens-spacing-6)] [&>svg]:w-[var(--mui-tokens-spacing-6)]',
+                            'sidebar-icon flex shrink-0',
                             isActive
                                 ? ''
                                 : styles.itemIcon

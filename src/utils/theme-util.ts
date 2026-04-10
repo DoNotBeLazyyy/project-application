@@ -56,38 +56,47 @@ export function normalizeSx(sx?: ThemeSx) {
 // because Tailwind's JIT scanner reads source code as text and cannot evaluate JS expressions.
 export const VARIANT_STYLES = {
     dark: {
-        sectionLabel: 'text-white/40',
-        itemText: 'text-white',
+        sectionLabel: 'text-white',
+        itemText: '!text-white',
         itemHover: 'hover:bg-[#022179]',
         itemIcon: 'text-white',
-        itemActive: 'bg-[#3B5BDB] text-white',
-        groupText: 'text-white font-bold',
+        itemActive: 'bg-[#022179] !text-white',
+        groupText: 'text-white',
         groupIcon: 'text-white',
         expandIcon: 'text-[#387BE0]',
-        subItemText: 'text-white',
+        subItemText: '!text-white',
         subItemHover: 'hover:bg-[#022179]',
-        subItemActive: 'bg-[#3B5BDB] text-white',
-        subItemBorder: ''
+        subItemActive: 'bg-[#022179] !text-white',
+        subItemBorder: '',
+        subItemBorderActive: '',
+        subItemBorderInactive: ''
     },
     light: {
-        sectionLabel: 'text-gray-400',
-        itemText: 'text-gray-700',
+        sectionLabel: 'text-[#52525B]',
+        itemText: '!text-[#52525B]',
         itemHover: 'hover:bg-gray-100',
         itemIcon: 'text-gray-500',
-        itemActive: 'bg-[#EEF2FF] text-[#3B5BDB]',
-        groupText: 'text-gray-900 font-bold',
+        itemActive: 'bg-[#EEF2FF] !text-[#3B5BDB]',
+        groupText: 'text-gray-900',
         groupIcon: 'text-gray-700',
         expandIcon: 'text-[#011554]',
-        subItemText: 'text-gray-600',
+        subItemText: '!text-gray-600',
         subItemHover: 'hover:bg-gray-50',
-        subItemActive: 'text-gray-600',
-        subItemBorder: 'show'
+        subItemActive: '!text-gray-600',
+        subItemBorder: 'show',
+        subItemBorderActive: '#022179',
+        subItemBorderInactive: '#D1D5DB'
     }
 };
 
 const SIDEBAR_HOVER_BG = {
     dark: TOKENS.color?.brand?.[900],
     light: 'rgba(0,0,0,0.04)'
+} as const;
+
+const SIDEBAR_TEXT_COLOR = {
+    dark: TOKENS.color?.common?.white,
+    light: 'inherit'
 } as const;
 /**
  * Creates a MUI theme with custom styles for the sidebar list based on the specified variant (dark or light).
@@ -107,6 +116,7 @@ export function createSideBarListTheme(variant: 'dark' | 'light' = 'dark') {
                         backgroundColor: 'transparent',
                         backgroundImage: 'none',
                         boxShadow: 'none',
+                        color: SIDEBAR_TEXT_COLOR[variant],
                         margin: 0,
                         '&:before': { display: 'none' },
                         '&.Mui-expanded': { margin: 0 }

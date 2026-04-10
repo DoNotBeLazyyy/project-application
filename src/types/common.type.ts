@@ -1,7 +1,8 @@
-import { SxProps } from '@mui/material/styles';
+import { SxProps } from '@mui/system';
 import { GridApi, Theme } from 'ag-grid-community';
 import {
-    Dispatch, HTMLAttributes, MouseEvent, SetStateAction, SVGProps, ReactElement
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, SetStateAction,
+    SVGProps
 } from 'react';
 
 // String props
@@ -11,6 +12,7 @@ export type StringNum = string | number;
 export type DivProps = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
+export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 // Node props
 export type NodeNull = Node | null;
@@ -37,3 +39,6 @@ export type IconSvgProps = SVGProps<SVGSVGElement>;
 
 // React element or boolean type
 export type ReactElementOrBoolean = ReactElement | boolean;
+// Input props
+export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
+export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;

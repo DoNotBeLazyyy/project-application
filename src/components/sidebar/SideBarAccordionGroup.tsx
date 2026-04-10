@@ -58,8 +58,14 @@ export default function SideBarAccordionGroup({
                 </span>
             </AccordionSummary>
             <AccordionDetails>
-                <div className="relative flex flex-col gap-0.5 pl-8">
-                    {styles.subItemBorder && <SubItemBorderLine items={items} />}
+                <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
+                    {styles.subItemBorder && (
+                        <SubItemBorderLine
+                            activeColor={styles.subItemBorderActive}
+                            inactiveColor={styles.subItemBorderInactive}
+                            items={items}
+                        />
+                    )}
                     {items.map((subItem, index) => (
                         <ButtonBase
                             className={
@@ -75,7 +81,7 @@ export default function SideBarAccordionGroup({
                             sx={{
                                 width: '100%',
                                 justifyContent: 'flex-start',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 px: 4,
                                 py: 1.5,
                                 fontSize: 'var(--mui-tokens-fontSize-sm)',

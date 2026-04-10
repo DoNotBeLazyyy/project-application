@@ -1,20 +1,21 @@
 import { TabMenuVariant } from '@components/tab/CommonTabMenu';
 import { TOKENS } from '@constants/theme/tokens.constant';
-import { SxProps, Theme } from '@mui/material/styles';
+import { createTheme, Theme } from '@mui/material/styles';
+import { theme } from '@utils/theme-util';
 
 /**
- * Creates sx style objects for Tabs and Tab based on variant, color, and orientation.
+ * Creates a MUI theme with custom styles for Tabs and Tab based on variant, color, and orientation.
  *
  * @param color - The color used for the active tab.
  * @param variant - The visual variant of the tab menu (filled, outlined, pill, or soft).
  * @param isVertical - Whether the tab orientation is vertical.
- * @returns An object with `tabs` and `tab` sx styles.
+ * @returns A MUI Theme with MuiTabs and MuiTab component overrides.
  */
 export function createTabTheme(
     color: string,
     variant: TabMenuVariant,
     isVertical: boolean
-): { tabs: SxProps<Theme>; tab: SxProps<Theme> } {
+): Theme {
     const isOutlined = variant === 'outlined'; // Used to determine if the outlined styles should be applied
     const isPill = variant === 'pill'; // Used to determine if the pill styles should be applied
     const textColor = TOKENS.color?.neutral?.[400]; // Default text color for non-selected tabs
@@ -59,62 +60,71 @@ export function createTabTheme(
 
     const tabStyle = tabVariantStyles[variant];
 
-    const tabs: SxProps<Theme> = {
-        minHeight: 'unset',
-        ...(!isOutlined && { width: 'fit-content' }),
-        ...(isOutlined
-            ? {
-                ...(isVertical && { borderRight: '2px solid #E5E7EB' })
-            }
-            : {
-                backgroundColor: '#F3F4F6',
-                borderRadius: containerRadius,
-                padding: '4px',
-                ...(isVertical && { gap: '4px' })
-            }
-        ),
-        '& .MuiTabs-indicator': isOutlined
-            ? {
-                backgroundColor: color,
-                ...(isVertical
-                    ? { width: '2px' }
-                    : { height: '2px' })
-            }
-            : { display: 'none' }
-    };
-
-    const tab: SxProps<Theme> = {
-        textTransform: 'none',
-        minHeight: 'unset',
-        minWidth: 'unset',
-        padding: '7px 10px',
-        fontSize: '13px',
-        fontWeight: 700,
-        transition: 'all 0.2s ease',
-        borderRadius: tabStyle.borderRadius,
-        color: textColor,
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        gap: '0.375rem',
-        '& .MuiTab-iconWrapper': {
-            color: textColor,
-            marginRight: 0
-        },
-        '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)'
-        },
-        '&.Mui-selected': {
-            color: tabStyle.selectedColor,
-            backgroundColor: tabStyle.selectedBg,
-            boxShadow: tabStyle.boxShadow,
-            '& .MuiTab-iconWrapper': {
-                color: tabStyle.iconColor
+    return createTheme(theme, {
+        components: {
+            MuiTabs: {
+                styleOverrides: {
+                    root: {
+                        minHeight: 'unset',
+                        ...(!isOutlined && { width: 'fit-content' }),
+                        ...(isOutlined
+                            ? {
+                                ...(isVertical && { borderRight: '2px solid #E5E7EB' })
+                            }
+                            : {
+                                backgroundColor: '#F3F4F6',
+                                borderRadius: containerRadius,
+                                padding: '4px',
+                                ...(isVertical && { gap: '4px' })
+                            }
+                        )
+                    },
+                    indicator: isOutlined
+                        ? {
+                            backgroundColor: color,
+                            ...(isVertical
+                                ? { width: '2px' }
+                                : { height: '2px' })
+                        }
+                        : { display: 'none' }
+                }
             },
-            '&:hover': {
-                backgroundColor: tabStyle.hoverBg
+            MuiTab: {
+                styleOverrides: {
+                    root: {
+                        textTransform: 'none',
+                        minHeight: 'unset',
+                        minWidth: 'unset',
+                        padding: '7px 10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        transition: 'all 0.2s ease',
+                        borderRadius: tabStyle.borderRadius,
+                        color: textColor,
+                        backgroundColor: 'transparent',
+                        boxShadow: 'none',
+                        gap: '0.375rem',
+                        '& .MuiTab-iconWrapper': {
+                            color: textColor,
+                            marginRight: 0
+                        },
+                        '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                        },
+                        '&.Mui-selected': {
+                            color: tabStyle.selectedColor,
+                            backgroundColor: tabStyle.selectedBg,
+                            boxShadow: tabStyle.boxShadow,
+                            '& .MuiTab-iconWrapper': {
+                                color: tabStyle.iconColor
+                            },
+                            '&:hover': {
+                                backgroundColor: tabStyle.hoverBg
+                            }
+                        }
+                    }
+                }
             }
         }
-    };
-
-    return { tabs, tab };
+    });
 }

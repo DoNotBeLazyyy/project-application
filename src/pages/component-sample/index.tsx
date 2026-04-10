@@ -1,5 +1,5 @@
 import {
-    AppBar, Box, Button, Stack, Toolbar, Typography
+  AppBar, Box, Button, Stack, Toolbar, Typography
 } from '@mui/material';
 import { NavLink, Outlet } from 'react-router-dom';
 
@@ -8,6 +8,10 @@ export default function ComponentSample() {
         {
             label: 'Table',
             path: 'table'
+        },
+        {
+            label: 'Input',
+            path: 'input'
         }
     ] as const;
 
@@ -69,11 +73,7 @@ export default function ComponentSample() {
                 sx={{
                     height: '100%',
                     mx: 'auto',
-                    px: {
-                        xs: '16px',
-                        md: '24px'
-                    },
-                    py: '24px',
+                    p: '20px',
                     width: '100%',
                     maxWidth: '1440px'
                 }}

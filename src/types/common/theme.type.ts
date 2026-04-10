@@ -207,6 +207,17 @@ export interface SharedTokenProps {
     stroke?: StrokeWeightRecord;
 }
 
+interface SharedSizeProps {
+    // Extra small size
+    xsmall: true;
+
+    // Large size
+    large: true;
+
+    // Extra large size
+    xlarge: true;
+}
+
 declare module '@mui/material/styles' {
     interface Shape {
         // 2x extra large corner radius
@@ -295,4 +306,20 @@ declare module '@mui/material/Typography' {
         // Small bold variant
         bodySmallBold: true;
     }
+}
+
+declare module '@mui/material/TextField' {
+    interface TextFieldPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/InputBase' {
+    interface InputBasePropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/OutlinedInput' {
+    interface OutlinedInputPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/FilledInput' {
+    interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
 }

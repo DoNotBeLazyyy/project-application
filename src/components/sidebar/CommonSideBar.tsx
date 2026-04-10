@@ -13,7 +13,7 @@ interface SideBarFooterProps {
     label?: string;
 
     // Click handler for the footer button
-    onClick?: () => VoidFunction;
+    onClick?: () => void;
 }
 
 type SideBarHeaderProps = Pick<CommonHeaderSideBarProps, 'buttonProps' | 'hasArrow' | 'isExpanded' | 'logo' | 'subtitle' | 'title'>;
@@ -55,10 +55,16 @@ interface CommonSideBarProps extends DivProps {
  *   {navigation content here}
  * </CommonSideBar>
  */
+
+const SIDEBAR_BG = {
+    dark: TOKENS.color?.brand?.[950],
+    light: TOKENS.color?.common?.white
+} as const;
+
 export default function CommonSideBar({
     children,
     className,
-    color = TOKENS.color?.brand?.[950],
+    color,
     footerProps,
     headerProps,
     isOpen = true,
@@ -91,7 +97,7 @@ export default function CommonSideBar({
                 )
             }
             style={{
-                backgroundColor: color,
+                backgroundColor: color ?? SIDEBAR_BG[variant],
                 ...style
             }}
             {...props}
