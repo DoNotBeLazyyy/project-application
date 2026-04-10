@@ -5,7 +5,7 @@ import { forwardRef } from 'react'; // React dependency
 export type CommonInputProps = TextFieldProps & {
     // Whether to make the input pill-shaped
     isRoundedFull?: boolean;
-};
+}
 
 /**
  * CommonInput

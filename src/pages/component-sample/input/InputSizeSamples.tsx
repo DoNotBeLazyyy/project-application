@@ -101,7 +101,6 @@ export default function InputSizeSamples() {
                         variant="outlined"
                     />
                 </InputPreviewCard>
-
                 <InputPreviewCard label="Small / Outlined / with start icon">
                     <CommonInput
                         placeholder="Search"
