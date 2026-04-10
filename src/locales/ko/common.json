@@ -1,3 +1,5 @@
 {
-    "Login": "로그인"
+    "showing_rows_info": "{{totalElements}}개 중 {{startRow}}-{{endRow}}행 표시",
+    "page_of_total": "{{totalPages}} 중 <input /> 페이지",
+    "items_per_page": "{{count}} / 페이지"
 }

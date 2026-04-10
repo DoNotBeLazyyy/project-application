@@ -2,7 +2,7 @@ import ComponentSample from '@pages/component-sample';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
-// Employee routes
+// Sample routes
 export const componentSampleRoutes: readonly RouteObject[] = [{
     element: <ComponentSample />,
     path: 'sample',

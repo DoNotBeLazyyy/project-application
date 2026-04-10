@@ -69,11 +69,7 @@ export default function ComponentSample() {
                 sx={{
                     height: '100%',
                     mx: 'auto',
-                    px: {
-                        xs: '16px',
-                        md: '24px'
-                    },
-                    py: '24px',
+                    p: '20px',
                     width: '100%',
                     maxWidth: '1440px'
                 }}
