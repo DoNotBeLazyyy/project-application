@@ -5,7 +5,6 @@ import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import { Box, Stack, Typography } from '@mui/material';
 import { BUTTON_SIZES, BUTTON_VARIANTS } from '@pages/component-sample/button/constant';
 import DemoRow from '@pages/component-sample/button/DemoRow';
 import SectionCard from '@pages/component-sample/button/SectionCard';
@@ -15,50 +14,43 @@ import { CircleNotchIcon, PlusIcon } from '@phosphor-icons/react';
 export type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
 export type ButtonVariant = 'primary' | 'secondary' | 'outlined' | 'ghost';
 
+/**
+ * CommonButtonSample
+ *
+ * A showcase page that demonstrates the various states, sizes, and variants of the CommonButton component.
+ * It provides an organized layout for visual regression testing and design system reference.
+ *
+ * @example
+ * <CommonButtonSample />
+ */
 export default function CommonButtonSample() {
+    const pageContainerClasses = 'bg-[#F8FAFC] min-h-screen p-5 md:p-8'; // Outer page container classes
+    const pageContentClasses = 'flex flex-col gap-8'; // Main content stack classes
+    const headerWrapperClasses = 'flex flex-col gap-2'; // Header section wrapper classes
+    const titleClasses = 'text-[#18181B] text-[28px] md:text-[36px] font-bold leading-[36px] md:leading-[44px]'; // Page title classes
+    const descriptionClasses = 'text-[#52525B] text-[15px] font-normal leading-[24px] max-w-[900px]'; // Page description classes
+
+    const plusIcon = <PlusIcon />; // Plus icon element
+    const saveIcon = <SaveOutlinedIcon />; // Save icon element
+    const downloadIcon = <DownloadOutlinedIcon />; // Download icon element
+    const searchIcon = <SearchOutlinedIcon />; // Search icon element
+    const editIcon = <EditOutlinedIcon />; // Edit icon element
+    const calendarIcon = <CalendarMonthOutlinedIcon />; // Calendar icon element
+    const deleteIcon = <DeleteOutlineIcon />; // Delete icon element
+    const loadingIcon = <CircleNotchIcon className="animate-spin" />; // Loading spinner icon element
+
     return (
-        <Box
-            sx={{
-                backgroundColor: '#F8FAFC',
-                minHeight: '100vh',
-                p: {
-                    xs: '20px',
-                    md: '32px'
-                }
-            }}
-        >
-            <Stack spacing={4}>
-                <Box>
-                    <Typography
-                        sx={{
-                            color: '#18181B',
-                            fontSize: {
-                                xs: '28px',
-                                md: '36px'
-                            },
-                            fontWeight: 700,
-                            lineHeight: {
-                                xs: '36px',
-                                md: '44px'
-                            },
-                            mb: '8px'
-                        }}
-                    >
+        <div className={pageContainerClasses}>
+            <div className={pageContentClasses}>
+                <div className={headerWrapperClasses}>
+                    <span className={titleClasses}>
                         CommonButton Display Page
-                    </Typography>
-                    <Typography
-                        sx={{
-                            color: '#52525B',
-                            fontSize: '15px',
-                            fontWeight: 400,
-                            lineHeight: '24px',
-                            maxWidth: '900px'
-                        }}
-                    >
+                    </span>
+                    <span className={descriptionClasses}>
                         This page displays the available CommonButton combinations in an organized layout,
                         grouped by usage, variant, size, icon position, loading state, and disabled state.
-                    </Typography>
-                </Box>
+                    </span>
+                </div>
                 <SectionCard
                     label="Quick Preview"
                     subtitle="A quick preview of the most common button actions."
@@ -66,20 +58,20 @@ export default function CommonButtonSample() {
                     <DemoRow label="Primary actions">
                         <CommonButton
                             size="medium"
-                            startIcon={<PlusIcon />}
+                            startIcon={plusIcon}
                             variant="primary"
                         >
                             Create
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<SaveOutlinedIcon />}
+                            startIcon={saveIcon}
                             variant="primary"
                         >
                             Save
                         </CommonButton>
                         <CommonButton
-                            endIcon={<DownloadOutlinedIcon />}
+                            endIcon={downloadIcon}
                             size="medium"
                             variant="primary"
                         >
@@ -89,21 +81,21 @@ export default function CommonButtonSample() {
                     <DemoRow label="Secondary actions">
                         <CommonButton
                             size="medium"
-                            startIcon={<SearchOutlinedIcon />}
+                            startIcon={searchIcon}
                             variant="secondary"
                         >
                             Search
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<EditOutlinedIcon />}
+                            startIcon={editIcon}
                             variant="secondary"
                         >
                             Edit
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<CalendarMonthOutlinedIcon />}
+                            startIcon={calendarIcon}
                             variant="secondary"
                         >
                             Schedule
@@ -112,7 +104,7 @@ export default function CommonButtonSample() {
                     <DemoRow label="Outline / ghost actions">
                         <CommonButton
                             size="medium"
-                            startIcon={<DeleteOutlineIcon />}
+                            startIcon={deleteIcon}
                             variant="outlined"
                         >
                             Delete
@@ -125,7 +117,7 @@ export default function CommonButtonSample() {
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<CircleNotchIcon className="animate-spin" />}
+                            startIcon={loadingIcon}
                             variant="outlined"
                         >
                             Processing
@@ -141,7 +133,7 @@ export default function CommonButtonSample() {
                             <CommonButton
                                 key={`size-scale-${size}`}
                                 size={size}
-                                startIcon={<PlusIcon />}
+                                startIcon={plusIcon}
                                 variant="primary"
                             >
                                 {size}
@@ -156,21 +148,21 @@ export default function CommonButtonSample() {
                     <DemoRow label="Enabled">
                         <CommonButton
                             size="medium"
-                            startIcon={<SaveOutlinedIcon />}
+                            startIcon={saveIcon}
                             variant="primary"
                         >
                             Save Changes
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<SearchOutlinedIcon />}
+                            startIcon={searchIcon}
                             variant="secondary"
                         >
                             Search Records
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<DeleteOutlineIcon />}
+                            startIcon={deleteIcon}
                             variant="outlined"
                         >
                             Remove
@@ -186,7 +178,7 @@ export default function CommonButtonSample() {
                         <CommonButton
                             disabled
                             size="medium"
-                            startIcon={<SaveOutlinedIcon />}
+                            startIcon={saveIcon}
                             variant="primary"
                         >
                             Save Changes
@@ -194,7 +186,7 @@ export default function CommonButtonSample() {
                         <CommonButton
                             disabled
                             size="medium"
-                            startIcon={<SearchOutlinedIcon />}
+                            startIcon={searchIcon}
                             variant="secondary"
                         >
                             Search Records
@@ -202,7 +194,7 @@ export default function CommonButtonSample() {
                         <CommonButton
                             disabled
                             size="medium"
-                            startIcon={<DeleteOutlineIcon />}
+                            startIcon={deleteIcon}
                             variant="outlined"
                         >
                             Remove
@@ -218,28 +210,28 @@ export default function CommonButtonSample() {
                     <DemoRow label="Loading">
                         <CommonButton
                             size="medium"
-                            startIcon={<SaveOutlinedIcon />}
+                            startIcon={saveIcon}
                             variant="primary"
                         >
                             Saving
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<SearchOutlinedIcon />}
+                            startIcon={searchIcon}
                             variant="secondary"
                         >
                             Searching
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<DeleteOutlineIcon />}
+                            startIcon={deleteIcon}
                             variant="outlined"
                         >
                             Removing
                         </CommonButton>
                         <CommonButton
                             size="medium"
-                            startIcon={<CalendarMonthOutlinedIcon />}
+                            startIcon={calendarIcon}
                             variant="ghost"
                         >
                             Loading
@@ -252,7 +244,7 @@ export default function CommonButtonSample() {
                         variant={variant}
                     />
                 ))}
-            </Stack>
-        </Box>
+            </div>
+        </div>
     );
 }

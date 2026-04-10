@@ -1,54 +1,49 @@
-import { Box, Stack, Typography } from '@mui/material';
 import { DemoRowProps } from '@pages/component-sample/button/DemoRow';
 
-interface SectionCardProps extends DemoRowProps {
+export interface SectionCardProps extends DemoRowProps {
     // Section subtitle
     subtitle?: string;
 }
 
+/**
+ * SectionCard
+ *
+ * A layout container used for grouping component demonstrations within a card-style UI.
+ * Includes support for a title label and an optional descriptive subtitle.
+ *
+ * @example
+ * <SectionCard
+ * label="Standard Buttons"
+ * subtitle="Examples of default button variants."
+ * >
+ *  <DemoRow label="Primary">
+ *      <Button>Submit</Button>
+ *  </DemoRow>
+ * </SectionCard>
+ */
 export default function SectionCard({
     children,
     subtitle,
     label
 }: SectionCardProps) {
+    const cardClasses = 'bg-white border border-[var(--mui-tokens-color-neutral-200)] rounded-[24px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] p-6'; // Card container classes
+    const headerClasses = 'flex flex-col gap-1 mb-5'; // Header section classes
+    const labelClasses = 'text-[20px] font-bold leading-7 text-[var(--mui-tokens-color-neutral-900)]'; // Title typography classes
+    const subtitleClasses = 'text-[14px] leading-5 text-[var(--mui-tokens-color-neutral-500)]'; // Subtitle typography classes
+
     return (
-        <Box
-            sx={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E4E4E7',
-                borderRadius: '24px',
-                boxShadow: '0 8px 24px 0 #0000000D',
-                p: '24px'
-            }}
-        >
-            <Stack
-                spacing={1}
-                sx={{ mb: '20px' }}
-            >
-                <Typography
-                    sx={{
-                        color: '#18181B',
-                        fontSize: '20px',
-                        fontWeight: 700,
-                        lineHeight: '28px'
-                    }}
-                >
+        <div className={cardClasses}>
+            <div className={headerClasses}>
+                <span className={labelClasses}>
                     {label}
-                </Typography>
+                </span>
                 {subtitle && (
-                    <Typography
-                        sx={{
-                            color: '#71717A',
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            lineHeight: '20px'
-                        }}
-                    >
+                    <span className={subtitleClasses}>
                         {subtitle}
-                    </Typography>
+                    </span>
                 )}
-            </Stack>
+            </div>
             {children}
-        </Box>
+        </div>
     );
 }

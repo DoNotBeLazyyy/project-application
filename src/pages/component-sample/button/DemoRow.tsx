@@ -1,59 +1,40 @@
-import { Stack, Typography } from '@mui/material';
+import { ReactNode } from 'react';
 
 export interface DemoRowProps {
     // Demo children
-    children: React.ReactNode;
+    children: ReactNode;
 
     // Demo label
     label: string;
 }
 
+/**
+ * DemoRow
+ *
+ * A standardized layout row used for component demonstrations, featuring a responsive
+ * label and a flexible container for child elements.
+ *
+ * @example
+ * <DemoRow label="Primary Action">
+ *  <Button>Submit</Button>
+ * </DemoRow>
+ */
 export default function DemoRow({
     children,
     label
 }: DemoRowProps) {
+    const containerClasses = 'flex flex-col lg:flex-row gap-4 border-b border-[var(--mui-tokens-color-neutral-100)] py-4 items-start lg:items-center'; // Main row container classes
+    const labelClasses = 'text-[14px] font-bold text-[var(--mui-tokens-color-neutral-700)] shrink-0 w-full lg:w-[180px] lg:min-w-[180px]'; // Label typography classes
+    const childrenContainerClasses = 'flex flex-row flex-wrap gap-4 items-center'; // Wrapper for children components
+
     return (
-        <Stack
-            direction={{
-                xs: 'column',
-                lg: 'row'
-            }}
-            spacing={2}
-            sx={{
-                alignItems: {
-                    xs: 'flex-start',
-                    lg: 'center'
-                },
-                borderBottom: '1px solid #F4F4F5',
-                py: '16px'
-            }}
-        >
-            <Typography
-                sx={{
-                    color: '#3F3F46',
-                    flexShrink: 0,
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    minWidth: {
-                        xs: 'unset',
-                        lg: '180px'
-                    },
-                    width: {
-                        xs: '100%',
-                        lg: '180px'
-                    }
-                }}
-            >
+        <div className={containerClasses}>
+            <span className={labelClasses}>
                 {label}
-            </Typography>
-            <Stack
-                direction="row"
-                flexWrap="wrap"
-                gap={2}
-                sx={{ alignItems: 'center' }}
-            >
+            </span>
+            <div className={childrenContainerClasses}>
                 {children}
-            </Stack>
-        </Stack>
+            </div>
+        </div>
     );
 }
