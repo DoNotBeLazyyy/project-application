@@ -1,38 +1,37 @@
-import { Card, CardHeader, CardHeaderProps, CardProps } from '@mui/material';
+import CommonCardHeader, { CommonCardHeaderProps } from '@components/card/CardHeader';
+import { Card, CardProps } from '@mui/material';
 import { forwardRef } from 'react';
 
 export interface CommonCardProps extends CardProps {
     // Card header properties
-    cardHeaderProps?: CardHeaderProps;
+    cardHeaderProps?: CommonCardHeaderProps;
 }
 
 /**
  * CommonCard
  *
- * A reusable MUI Card component. It maps sizing configurations to the native
- * `variant` prop to leverage centralized theme styling without DOM leaks.
+ * A reusable layout shell. It delegates header logic to CommonCardHeader
+ * and renders children as the primary content body.
  *
  * @example
  * <CommonCard
- *  cardHeaderProps={{ title: 'Settings' }}
- *  variant="small"
+ *  cardHeaderProps={{ title: 'Profile' }}
+ *  variant="outlined"
  * >
- *  <p>Content</p>
+ *  <p>Content Body</p>
  * </CommonCard>
  */
 const CommonCard = forwardRef<HTMLDivElement, CommonCardProps>(({
     cardHeaderProps,
     children,
-    variant = 'medium',
     ...props
 }, ref) => {
     return (
         <Card
             ref={ref}
-            variant={variant}
             {...props}
         >
-            {cardHeaderProps && <CardHeader {...cardHeaderProps} />}
+            {cardHeaderProps && <CommonCardHeader {...cardHeaderProps} />}
             {children}
         </Card>
     );

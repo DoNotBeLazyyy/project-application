@@ -1,6 +1,6 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common.type';
 
-export const dialogOverrides: Components<Omit<Theme, 'components'>> = {
+export const dialogOverrides: ComponentTheme = {
     MuiDialog: {
         styleOverrides: {
             root: { zIndex: 9999 },
@@ -9,28 +9,6 @@ export const dialogOverrides: Components<Omit<Theme, 'components'>> = {
                 overflowY: 'auto',
                 width: '100%'
             }
-        },
-        variants: [
-            {
-                props: { size: 'xsmall' },
-                style: { '& .MuiDialog-paper': { maxWidth: '25rem' } }
-            },
-            {
-                props: { size: 'small' },
-                style: { '& .MuiDialog-paper': { maxWidth: '37.5rem' } }
-            },
-            {
-                props: { size: 'medium' },
-                style: { '& .MuiDialog-paper': { maxWidth: '50rem' } }
-            },
-            {
-                props: { size: 'large' },
-                style: { '& .MuiDialog-paper': { maxWidth: '62.5rem' } }
-            },
-            {
-                props: { size: 'xlarge' },
-                style: { '& .MuiDialog-paper': { maxWidth: '75rem' } }
-            }
-        ]
+        }
     }
 }; // Dialog component overrides

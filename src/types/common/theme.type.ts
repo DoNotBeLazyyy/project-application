@@ -1,4 +1,3 @@
-import '@mui/material/Dialog';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { CSSProperties } from 'react';
 
@@ -200,6 +199,18 @@ export interface SharedTokenProps {
     stroke?: StrokeWeightRecord;
 }
 
+// Augments the core theme engine to include custom shape and typography configurations.
+interface SharedSizeProps {
+    // Extra small size
+    xsmall: true;
+
+    // Large size
+    large: true;
+
+    // Extra large size
+    xlarge: true;
+}
+
 declare module '@mui/material/Paper' {
     interface PaperPropsVariantOverrides {
         // Large size
@@ -216,7 +227,6 @@ declare module '@mui/material/Paper' {
     }
 }
 
-// Augments the core theme engine to include custom shape and typography configurations.
 declare module '@mui/material/styles' {
     interface Shape {
         // 2x extra large corner radius
@@ -307,8 +317,39 @@ declare module '@mui/material/Typography' {
     }
 }
 
-declare module '@mui/material/Dialog' {
-    interface DialogProps {
-        size?: ComponentSize;
+declare module '@mui/material/TextField' {
+    interface TextFieldPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/InputBase' {
+    interface InputBasePropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/OutlinedInput' {
+    interface OutlinedInputPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/FilledInput' {
+    interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/Button' {
+    interface ButtonPropsSizeOverrides {
+        // Extra small size
+        xsmall: true;
+
+        // Extra large size
+        xlarge: true;
+    }
+
+    interface ButtonPropsVariantOverrides {
+        // Primary variant
+        primary: true;
+
+        // Secondary variant
+        secondary: true;
+
+        // Ghost variant
+        ghost: true;
     }
 }

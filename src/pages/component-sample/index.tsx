@@ -1,5 +1,5 @@
 import {
-  AppBar, Box, Button, Stack, Toolbar, Typography
+    AppBar, Box, Button, Stack, Toolbar, Typography
 } from '@mui/material';
 import { NavLink, Outlet } from 'react-router-dom';
 
@@ -12,6 +12,14 @@ export default function ComponentSample() {
         {
             label: 'Modal',
             path: 'modal'
+        },
+        {
+            label: 'Input',
+            path: 'input'
+        },
+        {
+            label: 'Button',
+            path: 'button'
         }
     ] as const;
 

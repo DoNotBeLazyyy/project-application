@@ -1,17 +1,20 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common.type';
 
-export const cardOverrides: Components<Omit<Theme, 'components'>> = {
+export const cardOverrides: ComponentTheme = {
     MuiCard: {
-        defaultProps: { elevation: 0 },
+        defaultProps: {
+            elevation: 0,
+            variant: 'medium'
+        },
         styleOverrides: {
             root: {
                 backgroundColor: 'var(--mui-palette-common-white)',
-                borderRadius: 'calc(var(--mui-tokens-radius-lg) + var(--mui-tokens-radius-sm))',
+                borderRadius: 'var(--mui-tokens-radius-lg)',
                 boxShadow: '0px 0px 20px 0px #00000026',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'calc(var(--mui-tokens-spacing-5) + var(--mui-tokens-radius-sm))',
-                padding: 'calc(var(--mui-tokens-spacing-5) + var(--mui-tokens-radius-sm))'
+                gap: 'var(--mui-tokens-spacing-6)',
+                padding: 'var(--mui-tokens-spacing-6)'
             }
         },
         variants: [
@@ -24,41 +27,29 @@ export const cardOverrides: Components<Omit<Theme, 'components'>> = {
             },
             {
                 props: { variant: 'small' },
-                style: {
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    gap: 'calc(var(--mui-tokens-spacing-4) + var(--mui-tokens-radius-sm))'
-                }
+                style: { gap: 'var(--mui-tokens-spacing-5)' }
             },
             {
                 props: { variant: 'medium' },
-                style: {
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    gap: 'var(--mui-tokens-spacing-4)'
-                }
+                style: { gap: 'var(--mui-tokens-spacing-4)' }
             },
             {
                 props: { variant: 'large' },
-                style: {
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    gap: '6.25rem'
-                }
+                style: { gap: '6.25rem' }
             }
         ]
     },
     MuiCardHeader: {
         styleOverrides: {
             root: { padding: 0 },
-            title: {
+            title: ({ theme }) => ({
                 color: 'var(--mui-tokens-color-neutral-900)',
-                fontSize: 'var(--mui-tokens-fontSize-h6)',
-                fontWeight: 'var(--mui-tokens-fontWeight-bold)',
-                lineHeight: 'var(--mui-tokens-lineHeight-h6)'
-            },
-            subheader: {
+                ...theme.typography.h6
+            }),
+            subheader: ({ theme }) => ({
                 color: 'var(--mui-tokens-color-neutral-500)',
-                fontSize: 'var(--mui-tokens-fontSize-xs)',
-                lineHeight: 'var(--mui-tokens-lineHeight-xs)'
-            }
+                ...theme.typography.bodyExtraSmall
+            })
         }
     }
-}; // Card component overrides
+};

@@ -1,6 +1,6 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common.type';
 
-export const paperOverrides: Components<Omit<Theme, 'components'>> = {
+export const paperOverrides: ComponentTheme = {
     MuiPaper: {
         styleOverrides: {
             root: { borderRadius: 'var(--mui-tokens-radius-md)' }
