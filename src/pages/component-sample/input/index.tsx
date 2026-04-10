@@ -35,7 +35,6 @@ export default function CommonInputSample() {
                     >
                         CommonInput Display Page
                     </Typography>
-
                     <Typography
                         sx={{
                             color: '#52525B',

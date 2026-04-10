@@ -32,7 +32,6 @@ export default function InputSectionCard({
                 >
                     {title}
                 </Typography>
-
                 {subtitle && (
                     <Typography
                         sx={{
@@ -46,7 +45,6 @@ export default function InputSectionCard({
                     </Typography>
                 )}
             </Stack>
-
             {children}
         </Box>
     );

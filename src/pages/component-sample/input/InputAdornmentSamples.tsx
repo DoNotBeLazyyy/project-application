@@ -11,11 +11,11 @@ import InputSectionCard from '@pages/component-sample/input/InputSectionCard';
 export default function InputAdornmentSamples() {
     return (
         <InputSectionCard
+            label="Adornment Variations"
             subtitle="Adornment combinations using start and end icons with variant options."
-            title="Adornment Variations"
         >
             <InputDemoRow label="Start icon / Outlined">
-                <InputPreviewCard title="Outlined / Search">
+                <InputPreviewCard label="Outlined / Search">
                     <CommonInput
                         placeholder="Search"
                         slotProps={{
@@ -30,7 +30,7 @@ export default function InputAdornmentSamples() {
                         variant="outlined"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Outlined / Email">
+                <InputPreviewCard label="Outlined / Email">
                     <CommonInput
                         placeholder="Email address"
                         slotProps={{
@@ -47,7 +47,7 @@ export default function InputAdornmentSamples() {
                 </InputPreviewCard>
             </InputDemoRow>
             <InputDemoRow label="Start icon / Filled">
-                <InputPreviewCard title="Filled / Search">
+                <InputPreviewCard label="Filled / Search">
                     <CommonInput
                         placeholder="Search"
                         slotProps={{
@@ -62,7 +62,7 @@ export default function InputAdornmentSamples() {
                         variant="filled"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Filled / Email">
+                <InputPreviewCard label="Filled / Email">
                     <CommonInput
                         placeholder="Email address"
                         slotProps={{
@@ -79,7 +79,7 @@ export default function InputAdornmentSamples() {
                 </InputPreviewCard>
             </InputDemoRow>
             <InputDemoRow label="End icon / Outlined">
-                <InputPreviewCard title="Outlined / Calendar">
+                <InputPreviewCard label="Outlined / Calendar">
                     <CommonInput
                         placeholder="Select date"
                         slotProps={{
@@ -94,7 +94,7 @@ export default function InputAdornmentSamples() {
                         variant="outlined"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Outlined / Password">
+                <InputPreviewCard label="Outlined / Password">
                     <CommonInput
                         placeholder="Password"
                         slotProps={{
@@ -111,7 +111,7 @@ export default function InputAdornmentSamples() {
                 </InputPreviewCard>
             </InputDemoRow>
             <InputDemoRow label="End icon / Filled">
-                <InputPreviewCard title="Filled / Calendar">
+                <InputPreviewCard label="Filled / Calendar">
                     <CommonInput
                         placeholder="Select date"
                         slotProps={{
@@ -126,7 +126,7 @@ export default function InputAdornmentSamples() {
                         variant="filled"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Filled / Password">
+                <InputPreviewCard label="Filled / Password">
                     <CommonInput
                         placeholder="Password"
                         slotProps={{
@@ -143,7 +143,7 @@ export default function InputAdornmentSamples() {
                 </InputPreviewCard>
             </InputDemoRow>
             <InputDemoRow label="Start and end icon / Outlined">
-                <InputPreviewCard title="Outlined / Search + action">
+                <InputPreviewCard label="Outlined / Search + action">
                     <CommonInput
                         placeholder="Search keyword"
                         slotProps={{
@@ -163,7 +163,7 @@ export default function InputAdornmentSamples() {
                         variant="outlined"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Outlined / Email + visibility">
+                <InputPreviewCard label="Outlined / Email + visibility">
                     <CommonInput
                         placeholder="Enter credential"
                         slotProps={{
@@ -185,7 +185,7 @@ export default function InputAdornmentSamples() {
                 </InputPreviewCard>
             </InputDemoRow>
             <InputDemoRow label="Start and end icon / Filled">
-                <InputPreviewCard title="Filled / Search + action">
+                <InputPreviewCard label="Filled / Search + action">
                     <CommonInput
                         placeholder="Search keyword"
                         slotProps={{
@@ -205,7 +205,7 @@ export default function InputAdornmentSamples() {
                         variant="filled"
                     />
                 </InputPreviewCard>
-                <InputPreviewCard title="Filled / Email + visibility">
+                <InputPreviewCard label="Filled / Email + visibility">
                     <CommonInput
                         placeholder="Enter credential"
                         slotProps={{
