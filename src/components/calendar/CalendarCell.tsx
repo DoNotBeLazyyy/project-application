@@ -19,21 +19,21 @@ interface CalendarCellProps {
  *  day={{ day: 15, date: '2026-04-15', isCurrentMonth: true, isToday: false }}
  * />
  */
-export default function CalendarCell({
-    day
-}: CalendarCellProps) {
+export default function CalendarCell({ day }: CalendarCellProps) {
+    const cellStateClass = !day.isCurrentMonth
+        ? 'opacity-40'
+        : 'cursor-pointer hover:bg-[var(--mui-tokens-color-secondary-light)] hover:outline hover:outline-[var(--mui-tokens-color-secondary-main)]'; // Dim non-current month days, add hover/click styles for current month days
+
     return (
         <div
             className={
                 classMerge(
-                    'bg-[#F4F4F5] duration-200 flex flex-col min-h-[120px] min-w-[160px] p-[8px] rounded-[16px] transition-colors',
-                    !day.isCurrentMonth
-                        ? 'opacity-40'
-                        : 'cursor-pointer hover:bg-[#c6dcfc] hover:outline hover:outline-[#5192f5]'
+                    'bg-[var(--mui-tokens-color-neutral-100)] duration-200 flex flex-col min-h-[7.5rem] min-w-[10rem] p-[var(--mui-tokens-spacing-3)] rounded-[var(--mui-tokens-radius-md)] transition-colors',
+                    cellStateClass
                 )
             }
         >
-            <div className="flex gap-[10px] truncate">
+            <div className="flex gap-[var(--mui-tokens-spacing-4)] truncate">
                 <CalendarCellDate
                     day={day.day}
                     isToday={day.isToday}

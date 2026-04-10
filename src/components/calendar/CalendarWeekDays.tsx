@@ -13,20 +13,20 @@ import { useTranslation } from 'react-i18next';
 export default function CalendarWeekDays() {
     const { t } = useTranslation();
     const days = [
-        t('Sun'),
-        t('Mon'),
-        t('Tue'),
-        t('Wed'),
-        t('Thu'),
-        t('Fri'),
-        t('Sat')
+        t('sun'),
+        t('mon'),
+        t('tue'),
+        t('wed'),
+        t('thu'),
+        t('fri'),
+        t('sat')
     ]; // Array of weekday abbreviations
 
     return (
         <div
             className={
                 classMerge(
-                    'font-[700] grid grid-cols-7 leading-[20px] mb-[12px] text-[16px] text-center text-[#71717A]'
+                    'font-[var(--mui-tokens-fontWeight-bold)] grid grid-cols-7 leading-[var(--mui-tokens-spacing-6)] mb-[var(--mui-tokens-spacing-4)] text-[length:var(--mui-tokens-fontSize-nm)] text-center text-[var(--mui-tokens-color-neutral-500)]'
                 )
             }
         >

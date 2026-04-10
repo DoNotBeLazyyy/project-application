@@ -38,7 +38,7 @@ export default function CalendarSample() {
                     onChangeMonth={changeMonth}
                 />
             </div>
-            <div className="flex flex-col justify-center gap-[999px]">
+            <div className="flex flex-col justify-center">
                 <Calendar
                     calendarPickerAlign={'CENTER'}
                     calendarPickerSize={'BIG'}

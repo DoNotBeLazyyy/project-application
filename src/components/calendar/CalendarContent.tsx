@@ -1,6 +1,5 @@
 import CalendarNavButton from '@components/calendar/CalendarNavButton';
-import GreaterthanIcon from '@components/icons/GreaterthanIcon';
-import LessthanIcon from '@components/icons/LessthanIcon';
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { CalendarTitlePosition } from '@type/common.type';
 import { ReactNode } from 'react';
 
@@ -12,10 +11,10 @@ interface CalendarContentProps {
     titlePosition?: CalendarTitlePosition;
 
     // Callback triggered when the next month button is clicked
-    onNext: () => void;
+    onNext: VoidFunction;
 
     // Callback triggered when the previous month button is clicked
-    onPrev: () => void;
+    onPrev: VoidFunction;
 }
 
 /**
@@ -39,32 +38,35 @@ export default function CalendarContent({
     onPrev,
     onNext
 }: CalendarContentProps) {
+    const isRight = titlePosition === 'RIGHT'; // True when the title should appear on the right side of the navigation buttons
+    const isLeft = titlePosition === 'LEFT'; // True when the title should appear on the left side of the navigation buttons
+    const iconClass = 'text-[var(--mui-tokens-color-neutral-500)] h-[1.25rem] w-[1.25rem]'; // Shared icon size and neutral color for calendar navigation icons
 
-    if (titlePosition === 'RIGHT' || titlePosition === 'LEFT') {
+    if (isRight || isLeft) {
         return (
-            <div className="flex items-center gap-[8px]">
-                {titlePosition === 'RIGHT' && title && <div>{title}</div>}
-                <div className="flex gap-[16px] items-center">
+            <div className="flex items-center gap-[var(--mui-tokens-spacing-3)]">
+                {isRight && title && <div>{title}</div>}
+                <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
                     <CalendarNavButton onClick={onPrev}>
-                        <LessthanIcon className="text-[#71717A]" />
+                        <CaretLeftIcon className={iconClass} />
                     </CalendarNavButton>
                     <CalendarNavButton onClick={onNext}>
-                        <GreaterthanIcon className="text-[#71717A]" />
+                        <CaretRightIcon className={iconClass} />
                     </CalendarNavButton>
                 </div>
-                {titlePosition === 'LEFT' && title && <div>{title}</div>}
+                {isLeft && title && <div>{title}</div>}
             </div>
         );
     }
 
     return (
-        <div className="flex gap-[16px] items-center">
+        <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
             <CalendarNavButton onClick={onPrev}>
-                <LessthanIcon className="text-[#71717A]" />
+                <CaretLeftIcon className={iconClass} />
             </CalendarNavButton>
             {title && <div>{title}</div>}
             <CalendarNavButton onClick={onNext}>
-                <GreaterthanIcon className="text-[#71717A]" />
+                <CaretRightIcon className={iconClass} />
             </CalendarNavButton>
         </div>
     );

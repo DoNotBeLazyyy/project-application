@@ -1,12 +1,12 @@
-import Button from '@mui/material/Button';
+import Button, { ButtonProps } from '@mui/material/Button';
 import { ReactNode } from 'react';
 
-interface CalendarNavButtonProps {
+interface CalendarNavButtonProps extends ButtonProps {
     // The content to be displayed inside the button, typically an icon or text.
     children: ReactNode;
 
     // Callback function that is called when the button is clicked, used for navigating between months in the calendar.
-    onClick: () => void;
+    onClick: VoidFunction;
 }
 
 /**
@@ -30,10 +30,10 @@ export default function CalendarNavButton({
     return (
         <Button
             sx={{
-                minWidth: '20px',
-                padding: '0px',
+                minWidth: '1.25rem',
+                padding: 0,
                 '&:hover': {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'transparent',
                     boxShadow: 'none'
                 }
             }}
