@@ -1,9 +1,10 @@
 import ComponentSample from '@pages/component-sample';
 import CalendarSample from '@pages/component-sample/calendar';
+import CommonInputSample from '@pages/component-sample/input';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
-// Employee routes
+// Sample routes
 export const componentSampleRoutes: readonly RouteObject[] = [{
     element: <ComponentSample />,
     path: 'sample',
@@ -22,6 +23,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CalendarSample />,
             path: 'calendar'
+        },
+        {
+            element: <CommonInputSample />,
+            path: 'input'
         }
     ]
 }] as const;

@@ -1,5 +1,7 @@
 import { GridApi } from 'ag-grid-community';
-import { Dispatch, MouseEvent, SetStateAction, SVGProps } from 'react';
+import {
+    ChangeEvent, Dispatch, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
+} from 'react';
 
 // String props
 export type StringNum = string | number;
@@ -7,6 +9,7 @@ export type StringNum = string | number;
 // Div props
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
+export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 // Node props
 export type NodeNull = Node | null;
@@ -35,3 +38,6 @@ export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 export type AlignType = 'LEFT' | 'CENTER' | 'RIGHT';
 export type SizeType = 'BIG' | 'SMALL';
 export type CalendarTitlePosition = 'RIGHT' | 'MIDDLE' | 'LEFT';
+// Input props
+export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
+export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;

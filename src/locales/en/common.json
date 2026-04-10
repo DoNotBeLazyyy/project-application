@@ -7,5 +7,8 @@
     "thu": "Thu",
     "fri": "Fri",
     "sat": "Sat",
-    "calendar_year_month": "YYYY-MM or April 2026"
+    "calendar_year_month": "YYYY-MM or April 2026",
+    "showing_rows_info": "Showing rows {{startRow}}-{{endRow}} of {{totalElements}}",
+    "page_of_total": "<input /> of {{totalPages}}",
+    "items_per_page": "{{count}} / page"
 }

@@ -7,5 +7,8 @@
     "thu": "목요일",
     "fri": "금요일",
     "sat": "토요일",
-    "calendar_year_month": "YYYY-MM 또는 2026년 4월"
+    "calendar_year_month": "YYYY-MM 또는 2026년 4월",
+    "showing_rows_info": "{{totalElements}}개 중 {{startRow}}-{{endRow}}행 표시",
+    "page_of_total": "{{totalPages}} 중 <input /> 페이지",
+    "items_per_page": "{{count}} / 페이지"
 }
