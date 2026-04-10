@@ -15,10 +15,18 @@ export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
         styleOverrides: {
             root: {
                 color: 'var(--mui-palette-grey-400)',
-                '&.Mui-disabled svg': { color: 'var(--mui-palette-grey-200)' },
-                '&.Mui-checked': { color: 'var(--mui-palette-primary-main)' },
-                '&.Mui-checked.Mui-disabled svg': { color: 'var(--mui-palette-grey-300)' },
-                '&.MuiCheckbox-indeterminate.Mui-disabled svg': { color: 'var(--mui-palette-grey-300)' }
+                '&.Mui-disabled svg': {
+                    color: 'var(--mui-palette-grey-200)'
+                },
+                '&.Mui-checked': {
+                    color: 'var(--mui-palette-primary-main)'
+                },
+                '&.Mui-checked.Mui-disabled svg': {
+                    color: 'var(--mui-palette-grey-300)'
+                },
+                '&.MuiCheckbox-indeterminate.Mui-disabled svg': {
+                    color: 'var(--mui-palette-grey-300)'
+                }
             }
         }
     },
@@ -30,9 +38,15 @@ export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
         styleOverrides: {
             root: {
                 color: 'var(--mui-palette-grey-400)',
-                '&.Mui-disabled svg': { color: 'var(--mui-palette-grey-200)' },
-                '&.Mui-checked svg': { color: 'var(--mui-palette-primary-main)' },
-                '&.Mui-checked.Mui-disabled svg': { color: 'var(--mui-palette-grey-300)' }
+                '&.Mui-disabled svg': {
+                    color: 'var(--mui-palette-grey-200)'
+                },
+                '&.Mui-checked svg': {
+                    color: 'var(--mui-palette-primary-main)'
+                },
+                '&.Mui-checked.Mui-disabled svg': {
+                    color: 'var(--mui-palette-grey-300)'
+                }
             }
         }
     },
@@ -40,8 +54,16 @@ export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
         styleOverrides: {
             root: {
                 color: 'var(--mui-palette-grey-600)',
-                '&.Mui-disabled': { '& .MuiFormControlLabel-label': { color: 'var(--mui-palette-grey-200)' } },
-                '&:has(.Mui-checked).Mui-disabled': { '& .MuiFormControlLabel-label': { color: 'var(--mui-palette-grey-300)' } }
+                '&.Mui-disabled': {
+                    '& .MuiFormControlLabel-label': {
+                        color: 'var(--mui-palette-grey-200)'
+                    }
+                },
+                '&:has(.Mui-checked).Mui-disabled': {
+                    '& .MuiFormControlLabel-label': {
+                        color: 'var(--mui-palette-grey-300)'
+                    }
+                }
             },
             label: { marginLeft: '7px' }
         }

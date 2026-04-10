@@ -16,6 +16,10 @@ export default function ComponentSample() {
         {
             label: 'Checkbox',
             path: 'checkbox'
+        },
+        {
+            label: 'Input',
+            path: 'input'
         }
     ] as const;
 
