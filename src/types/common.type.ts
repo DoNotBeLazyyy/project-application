@@ -1,5 +1,5 @@
 import { GridApi } from 'ag-grid-community';
-import { Dispatch, MouseEvent, SetStateAction } from 'react';
+import { Dispatch, MouseEvent, SetStateAction, SVGProps } from 'react';
 
 // String props
 export type StringNum = string | number;
@@ -24,3 +24,6 @@ export type BooleanFunction = () => boolean;
 
 // Grid props
 export type GridApiNull = GridApi | null;
+
+// SVG props
+export type IconSvgProps = SVGProps<SVGSVGElement>;

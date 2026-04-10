@@ -8,6 +8,14 @@ export default function ComponentSample() {
         {
             label: 'Table',
             path: 'table'
+        },
+        {
+            label: 'Radio',
+            path: 'radio'
+        },
+        {
+            label: 'Checkbox',
+            path: 'checkbox'
         }
     ] as const;
 
