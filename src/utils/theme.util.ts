@@ -5,6 +5,7 @@ import { getSpacings } from '@constants/theme/spacing.constant';
 import { TOKENS } from '@constants/theme/tokens.constant';
 import { TYPOGRAPHY } from '@constants/theme/typography.constant';
 import { createTheme } from '@mui/material/styles';
+import { ThemeSx } from '@type/common.type';
 import { FontFamilyKey } from '@type/common/theme.type';
 
 export const theme = createTheme({
@@ -36,4 +37,16 @@ export function createTypographyVariant(
         fontWeight,
         lineHeight: `var(--mui-tokens-lineHeight-${key})`
     };
+}
+
+/**
+ * Normalizes the MUI sx prop into an array for safe spreading in sx arrays.
+ *
+ * @param sx - The sx prop value to normalize.
+ * @returns
+ */
+export function normalizeSx(sx?: ThemeSx) {
+    return Array.isArray(sx)
+        ? sx
+        : [sx];
 }

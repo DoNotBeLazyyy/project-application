@@ -1,6 +1,7 @@
+import { DialogProps, SxProps, Theme } from '@mui/material';
 import { GridApi } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, KeyboardEvent, MouseEvent, SetStateAction
+  ChangeEvent, Dispatch, KeyboardEvent, MouseEvent, SetStateAction
 } from 'react';
 
 // String props
@@ -10,6 +11,11 @@ export type StringNum = string | number;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
+
+// MUI props
+type DialogOnClose = NonNullable<DialogProps['onClose']>;
+export type DialogCloseProps = Parameters<DialogOnClose>;
+export type ThemeSx = SxProps<Theme>;
 
 // Node props
 export type NodeNull = Node | null;

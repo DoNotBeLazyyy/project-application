@@ -1,4 +1,5 @@
 import ComponentSample from '@pages/component-sample';
+import ModalSamplePage from '@pages/component-sample/modal';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -17,6 +18,11 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTableSample />,
             path: 'table'
+        },
+        {
+
+            element: <ModalSamplePage />,
+            path: 'modal'
         }
     ]
 }] as const;

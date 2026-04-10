@@ -1,5 +1,9 @@
+import '@mui/material/Dialog';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { CSSProperties } from 'react';
+
+// Component standard sizes
+export type ComponentSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
@@ -196,6 +200,23 @@ export interface SharedTokenProps {
     stroke?: StrokeWeightRecord;
 }
 
+declare module '@mui/material/Paper' {
+    interface PaperPropsVariantOverrides {
+        // Large size
+        large: true;
+
+        // Medium size
+        medium: true;
+
+        // Small size
+        small: true;
+
+        // Extra small size
+        xsmall: true;
+    }
+}
+
+// Augments the core theme engine to include custom shape and typography configurations.
 declare module '@mui/material/styles' {
     interface Shape {
         // 2x extra large corner radius
@@ -283,5 +304,11 @@ declare module '@mui/material/Typography' {
 
         // Small bold variant
         bodySmallBold: true;
+    }
+}
+
+declare module '@mui/material/Dialog' {
+    interface DialogProps {
+        size?: ComponentSize;
     }
 }
