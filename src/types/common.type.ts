@@ -1,3 +1,4 @@
+import { Components, Theme } from '@mui/material'; // Mui dependency
 import { GridApi } from 'ag-grid-community';
 import {
     ChangeEvent, Dispatch, KeyboardEvent, MouseEvent, SetStateAction
@@ -31,3 +32,6 @@ export type GridApiNull = GridApi | null;
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+
+// Mui props
+export type ComponentTheme = Components<Omit<Theme, 'components'>>;

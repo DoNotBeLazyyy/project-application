@@ -1,6 +1,8 @@
+import { buttonOverrides } from '@constants/theme/component-override/button.override';
 import { inputOverrides } from '@constants/theme/component-override/input.override';
-import { Components, Theme } from '@mui/material'; // Mui dependency
+import { ComponentTheme } from '@type/common.type';
 
-export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
+export const COMPONENTS: ComponentTheme = {
+    ...buttonOverrides,
     ...inputOverrides
 }; // Components configuration
