@@ -1,4 +1,5 @@
 import { SideBarItem } from '@type/sidebar.types';
+import { useMemo } from 'react';
 
 interface SubItemBorderLineProps {
     // Color for the active segment of the border line.
@@ -19,7 +20,9 @@ export default function SubItemBorderLine({
     inactiveColor,
     items
 }: SubItemBorderLineProps) {
-    const activeIndex = items.findIndex((item) => item.isActive); // Find the index of the active sub-item.
+    const activeIndex = useMemo(() =>
+        items.findIndex((item) => item.isActive),
+    [items]); // Find the index of the active sub-item.
     const total = items.length; // Total number of sub-items to calculate the gradient segments.
     const start = activeIndex >= 0
         ? (activeIndex / total) * 100

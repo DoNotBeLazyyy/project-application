@@ -89,69 +89,15 @@ export const VARIANT_STYLES = {
     }
 };
 
-const SIDEBAR_HOVER_BG = {
-    dark: TOKENS.color?.brand?.[900],
-    light: 'rgba(0,0,0,0.04)'
-} as const;
-
-const SIDEBAR_TEXT_COLOR = {
-    dark: TOKENS.color?.common?.white,
-    light: 'inherit'
-} as const;
 /**
- * Creates a MUI theme with custom styles for the sidebar list based on the specified variant (dark or light).
+ * Custom prop forwarding function to prevent 'sidebarVariant' from being passed to DOM elements in styled components.
  *
- * @param variant - The visual variant for the sidebar list, either 'dark' or 'light'. Defaults to 'dark'.
+ * @param prop - The prop name to check for forwarding in styled components.
  * @returns
  */
-export function createSideBarListTheme(variant: 'dark' | 'light' = 'dark') {
-    return createTheme(theme, {
-        components: {
-            MuiAccordion: {
-                defaultProps: {
-                    disableGutters: true
-                },
-                styleOverrides: {
-                    root: {
-                        backgroundColor: 'transparent',
-                        backgroundImage: 'none',
-                        boxShadow: 'none',
-                        color: SIDEBAR_TEXT_COLOR[variant],
-                        margin: 0,
-                        '&:before': { display: 'none' },
-                        '&.Mui-expanded': { margin: 0 }
-                    }
-                }
-            },
-            MuiAccordionSummary: {
-                styleOverrides: {
-                    root: {
-                        minHeight: 'unset',
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        '&:hover': {
-                            backgroundColor: SIDEBAR_HOVER_BG[variant]
-                        },
-                        '&.Mui-expanded': { minHeight: 'unset' },
-                        '& .MuiAccordionSummary-content': {
-                            margin: 0,
-                            alignItems: 'center',
-                            gap: '10px',
-                            '&.Mui-expanded': { margin: 0 }
-                        },
-                        '& .MuiAccordionSummary-expandIconWrapper': {
-                            transition: 'transform 200ms'
-                        }
-                    }
-                }
-            },
-            MuiAccordionDetails: {
-                styleOverrides: {
-                    root: {
-                        padding: '4px 0 0 0'
-                    }
-                }
-            }
-        }
-    });
+export function shouldForwardSidebarVariant(prop: PropertyKey) {
+    return prop !== 'sidebarVariant';
 }
+
+// Shared styled configuration to filter sidebar variant props
+export const STYLED_OPTIONS = { shouldForwardProp: shouldForwardSidebarVariant };

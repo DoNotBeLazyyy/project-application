@@ -1,6 +1,6 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import { SideBarItem } from '@type/sidebar.types';
-import { VariantStyle } from '@type/tab.types';
+import { VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 
 interface SideBarSimpleItemProps {
@@ -58,9 +58,7 @@ export default function SideBarSimpleItem({
                     className={
                         classMerge(
                             'sidebar-icon flex shrink-0',
-                            isActive
-                                ? ''
-                                : itemIcon
+                            isActive && itemIcon
                         )}
                 >
                     {icon}

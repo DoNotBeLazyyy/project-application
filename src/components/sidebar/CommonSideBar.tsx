@@ -112,7 +112,8 @@ export default function CommonSideBar({
                         darkVariant
                             ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                             : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
-                    )}>
+                    )}
+            >
                 {children}
             </div>
             {footerProps && (
@@ -143,8 +144,7 @@ export default function CommonSideBar({
                             }
                         }}
                     >
-                        {/* TODO: use locales for default label */}
-                        {footerProps.label ?? 'Settings'}
+                        {footerProps.label}
                     </Button>
                 </div>
             )}

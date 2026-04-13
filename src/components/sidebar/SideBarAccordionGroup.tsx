@@ -1,12 +1,14 @@
 import SubItemBorderLine from '@components/sidebar/SubItemBorderLine';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import Accordion from '@mui/material/Accordion';
+import { AccordionSummary, Accordion, styled } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import ButtonBase from '@mui/material/ButtonBase';
-import { SideBarGroup } from '@type/sidebar.types';
-import { VariantStyle } from '@type/tab.types';
+import { SideBarGroup, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
+import { STYLED_OPTIONS } from '@utils/theme-util';
+
+const StyledAccordion = styled(Accordion, STYLED_OPTIONS)({}); // Styled Accordion using shared styled options
+const StyledAccordionSummary = styled(AccordionSummary, STYLED_OPTIONS)({}); // Styled AccordionSummary using shared styled options
 
 interface SideBarAccordionGroupProps {
     // The accordion group data to render
@@ -14,11 +16,15 @@ interface SideBarAccordionGroupProps {
 
     // Styles based on the current variant
     styles: VariantStyle;
+
+    // Visual variant for accordion theme matching.
+    variant: SideBarVariant;
 }
 
 export default function SideBarAccordionGroup({
     group,
-    styles
+    styles,
+    variant
 }: SideBarAccordionGroupProps) {
     const {
         defaultExpanded,
@@ -39,14 +45,18 @@ export default function SideBarAccordionGroup({
     } = styles; // Destructure styles for easier access.
 
     return (
-        <Accordion defaultExpanded={defaultExpanded}>
-            <AccordionSummary
+        <StyledAccordion
+            defaultExpanded={defaultExpanded}
+            sidebarVariant={variant}
+        >
+            <StyledAccordionSummary
                 expandIcon={
                     <KeyboardArrowDownRoundedIcon
                         className={expandIcon}
                         fontSize="small"
                     />
                 }
+                sidebarVariant={variant}
             >
                 {icon && (
                     <span
@@ -68,7 +78,7 @@ export default function SideBarAccordionGroup({
                 >
                     {label}
                 </span>
-            </AccordionSummary>
+            </StyledAccordionSummary>
             <AccordionDetails>
                 <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
                     {subItemBorder && (
@@ -106,6 +116,6 @@ export default function SideBarAccordionGroup({
                     ))}
                 </div>
             </AccordionDetails>
-        </Accordion>
+        </StyledAccordion>
     );
 }

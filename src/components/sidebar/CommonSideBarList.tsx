@@ -1,11 +1,9 @@
 
 import SideBarSectionGroup from '@components/sidebar/SideBarSectionGroup';
-import { ThemeProvider } from '@mui/material/styles';
 import { DivProps } from '@type/common.type';
 import { SideBarGroup, SideBarItem, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { createSideBarListTheme, VARIANT_STYLES } from '@utils/theme-util';
-import { useMemo } from 'react';
+import { VARIANT_STYLES } from '@utils/theme-util';
 
 // Type for items in a sidebar section.
 type SideBarSectionItems = (SideBarItem | SideBarGroup)[];
@@ -70,30 +68,26 @@ export default function CommonSideBarList({
         sectionLabel: sectionLabelStyle,
         ...styles
     } = VARIANT_STYLES[variant]; // Destructure variant styles.
-    const theme = useMemo(() =>
-        createSideBarListTheme(variant),
-    [variant]); // Create MUI theme based on variant.
 
     return (
-        <ThemeProvider theme={theme}>
-            <div
-                className={
-                    classMerge(
-                        'flex flex-col gap-[var(--mui-tokens-spacing-5)]',
-                        className
-                    )
-                }
-                {...props}
-            >
-                {sections.map((section) => (
-                    <SideBarSectionGroup
-                        key={section.sectionLabel}
-                        section={section}
-                        sectionLabelStyle={sectionLabelStyle}
-                        styles={styles}
-                    />
-                ))}
-            </div>
-        </ThemeProvider>
+        <div
+            className={
+                classMerge(
+                    'flex flex-col gap-[var(--mui-tokens-spacing-5)]',
+                    className
+                )
+            }
+            {...props}
+        >
+            {sections.map((section) => (
+                <SideBarSectionGroup
+                    key={section.sectionLabel}
+                    section={section}
+                    sectionLabelStyle={sectionLabelStyle}
+                    styles={styles}
+                    variant={variant}
+                />
+            ))}
+        </div>
     );
 }

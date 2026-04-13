@@ -127,7 +127,7 @@ export default function CommonSideBarSample() {
         <div className="flex justify-between">
             <CommonSideBar
                 // eslint-disable-next-line no-console
-                footerProps={{ onClick: () => console.log('Settings') }}
+                footerProps={{ label: 'Settings', onClick: () => console.log('Settings') }}
                 headerProps={{
                     logo: <img alt="logo" className="h-11 w-11 rounded-[20%] border-2 border-white/20" src={EgemcoIcon} />,
                     title: 'EGEMCO HRIS',
@@ -143,7 +143,7 @@ export default function CommonSideBarSample() {
 
             <CommonSideBar
                 // eslint-disable-next-line no-console
-                footerProps={{ onClick: () => console.log('Settings') }}
+                footerProps={{ label: 'Settings', onClick: () => console.log('Settings') }}
                 headerProps={{
                     logo: <img alt="logo" className="h-11 w-11 rounded-[20%] border-2 border-white/20" src={EgemcoIcon} />,
                     title: 'EGEMCO HRIS',

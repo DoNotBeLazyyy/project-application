@@ -22,12 +22,12 @@ export default function ComponentSample() {
             path: 'input'
         },
         {
-            label: 'Sidebar',
-            path: 'sidebar'
+            label: 'Navar',
+            path: 'navar'
         },
         {
-            label: 'Tab Menu',
-            path: 'tab-menu'
+            label: 'Sidebar',
+            path: 'sidebar'
         }
     ] as const;
 
