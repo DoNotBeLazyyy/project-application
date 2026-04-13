@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
  * <CalendarWeekDays />
  */
 export default function CalendarWeekDays() {
-    const { t } = useTranslation();
+    const { t } = useTranslation(); // Translation hook
     const days = [
         t('sun'),
         t('mon'),

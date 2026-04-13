@@ -33,7 +33,7 @@ export default function CalendarSearchInput({
     onChange,
     onSearch
 }: CalendarSearchInputProps) {
-    const { t } = useTranslation();
+    const { t } = useTranslation(); // Translation hook
 
     return (
         <Input
