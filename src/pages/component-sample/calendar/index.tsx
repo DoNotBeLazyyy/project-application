@@ -1,15 +1,14 @@
 import Calendar from '@components/calendar/Calendar';
 import CalendarCellDate from '@components/calendar/CalendarCellDate';
 import CalendarPicker from '@components/calendar/CalendarPicker';
+import { changeMonthUtil } from '@utils/calendar.util';
 import { useState } from 'react';
 
 export default function CalendarSample() {
     const [date, setDate] = useState<Date>(new Date());
-    const year = date.getFullYear();
-    const month = date.getMonth();
 
-    function changeMonth(direction: number) {
-        setDate(new Date(year, month + direction, 1));
+    function handleChangeMonth(direction: number) {
+        setDate((prev) => changeMonthUtil(prev, direction));
     }
 
     return (
@@ -23,19 +22,19 @@ export default function CalendarSample() {
                     calendarPickerAlign="RIGHT"
                     calendarPickerSize="BIG"
                     date={date}
-                    onChangeMonth={changeMonth}
+                    onChangeMonth={handleChangeMonth}
                 />
                 <CalendarPicker
                     calendarPickerAlign="CENTER"
                     calendarPickerSize="BIG"
                     date={date}
-                    onChangeMonth={changeMonth}
+                    onChangeMonth={handleChangeMonth}
                 />
                 <CalendarPicker
                     calendarPickerAlign="LEFT"
                     calendarPickerSize="SMALL"
                     date={date}
-                    onChangeMonth={changeMonth}
+                    onChangeMonth={handleChangeMonth}
                 />
             </div>
             <div className="flex flex-col justify-center">

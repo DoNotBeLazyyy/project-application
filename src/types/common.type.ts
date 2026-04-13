@@ -31,11 +31,6 @@ export type GridApiNull = GridApi | null;
 // Input change props
 export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 
-// Calendar props
-export type AlignType = 'LEFT' | 'CENTER' | 'RIGHT';
-export type SizeType = 'BIG' | 'SMALL';
-export type CalendarTitlePosition = 'RIGHT' | 'MIDDLE' | 'LEFT';
-
 // SVG props
 export type IconSvgProps = SVGProps<SVGSVGElement>;
 

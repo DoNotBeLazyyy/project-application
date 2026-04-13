@@ -1,5 +1,5 @@
 import CalendarContent from '@components/calendar/CalendarContent';
-import { AlignType, SizeType } from '@type/common.type';
+import { AlignType, SizeType } from '@type/common/calendar.type';
 import { classMerge } from '@utils/css.util';
 
 export interface CalendarPickerProps {

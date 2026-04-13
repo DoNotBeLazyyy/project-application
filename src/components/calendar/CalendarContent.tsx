@@ -1,6 +1,6 @@
 import CalendarNavButton from '@components/calendar/CalendarNavButton';
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
-import { CalendarTitlePosition } from '@type/common.type';
+import { CalendarTitlePosition } from '@type/common/calendar.type';
 import { ReactNode } from 'react';
 
 interface CalendarContentProps {

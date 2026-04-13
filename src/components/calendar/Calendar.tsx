@@ -5,7 +5,7 @@ import CalendarTitle from '@components/calendar/CalendarTitle';
 import CalendarWeekDays from '@components/calendar/CalendarWeekDays';
 import { ChangeEventInputElement } from '@type/common.type';
 import { CalendarDay } from '@type/common/calendar.type';
-import { getCalendarDays } from '@utils/calendar.util';
+import { changeMonthUtil, getCalendarDays } from '@utils/calendar.util';
 import { classMerge } from '@utils/css.util';
 import { useState } from 'react';
 
@@ -51,8 +51,8 @@ export default function Calendar({
      *
      * @param direction - Number of months to move: 1 for next month, -1 for previous month.
      */
-    function changeMonth(direction: number) {
-        setDate(new Date(year, month + direction, 1));
+    function handleChangeMonth(direction: number) {
+        setDate((prev) => changeMonthUtil(prev, direction));
     }
 
     /**
@@ -96,7 +96,7 @@ export default function Calendar({
                         calendarPickerAlign={calendarPickerAlign}
                         calendarPickerSize={calendarPickerSize}
                         date={date}
-                        onChangeMonth={changeMonth}
+                        onChangeMonth={handleChangeMonth}
                     />
                 </div>
                 {/* TODO: when the search component is ready and make it props */}

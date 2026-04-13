@@ -11,3 +11,8 @@ export interface CalendarDay {
     // Indicates whether this day is today
     isToday: boolean;
 }
+
+// Calendar props
+export type AlignType = 'LEFT' | 'CENTER' | 'RIGHT';
+export type SizeType = 'BIG' | 'SMALL';
+export type CalendarTitlePosition = 'RIGHT' | 'MIDDLE' | 'LEFT';
