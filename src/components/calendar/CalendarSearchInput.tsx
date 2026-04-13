@@ -11,7 +11,7 @@ interface CalendarSearchInputProps {
     onChange: (event: ChangeEventInputElement) => void;
 
     // Function triggered when the user clicks the search icon or submits the input
-    onSearch: () => void;
+    onSearch: VoidFunction;
 }
 
 /**

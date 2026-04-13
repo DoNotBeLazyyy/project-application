@@ -1,13 +1,11 @@
 import CalendarContent from '@components/calendar/CalendarContent';
-import { AlignType, SizeType } from '@type/common/calendar.type';
+import CalendarPickerTitle, { CalendarPickerTitleProps } from '@components/calendar/CalendarPickerTitle';
+import { AlignType } from '@type/common/calendar.type';
 import { classMerge } from '@utils/css.util';
 
-export interface CalendarPickerProps {
+export interface CalendarPickerProps extends CalendarPickerTitleProps{
     // Alignment of the calendar picker: LEFT, CENTER, or RIGHT
     calendarPickerAlign?: AlignType;
-
-    // Size of the calendar picker: SMALL or BIG
-    calendarPickerSize?: SizeType;
 
     // Current selected date
     date: Date;
@@ -31,31 +29,19 @@ export interface CalendarPickerProps {
  * />
  */
 export default function CalendarPicker({
-    calendarPickerAlign = 'CENTER',
-    calendarPickerSize = 'SMALL',
     date,
+    calendarPickerAlign = 'CENTER',
+    size,
     onChangeMonth
 }: CalendarPickerProps) {
-    const isBIG = calendarPickerSize === 'BIG'; // Flag for large size variant
-    const textSize = isBIG
-        ? 'font-heading font-[700] text-[32px] leading-[36px] tracking-normal align-middle text-[#18181B]'
-        : 'font-heading font-[700] text-[20px] leading-[24px] tracking-normal align-middle text-[#18181B]'; // Adjust title font size based on picker size
     const containerClasses = classMerge(
-        'flex items-center gap-[20px]',
+        'flex items-center gap-[var(--mui-tokens-spacing-6)]',
         {
             'justify-center': calendarPickerAlign === 'CENTER',
             'justify-start': calendarPickerAlign === 'LEFT',
             'justify-end': calendarPickerAlign === 'RIGHT'
         }
-    ); // Classes for container alignment based on prop
-    const title = (
-        <div className={textSize}>
-            {date.toLocaleString('default', {
-                month: 'long',
-                year: 'numeric'
-            })}
-        </div>
-    ); // Displays the current month and year
+    );
 
     /**
      * Handles the click event for the next month button.
@@ -73,35 +59,22 @@ export default function CalendarPicker({
 
     return (
         <div className={containerClasses}>
-            {calendarPickerAlign === 'LEFT' && (
-                <>
-                    <CalendarContent
-                        title={title}
-                        titlePosition="RIGHT"
-                        onNext={handleNextMonth}
-                        onPrev={handlePrevMonth}
-                    />
-                </>
-            )}
-            {calendarPickerAlign === 'CENTER' && (
-                <>
-                    <CalendarContent
-                        title={title}
-                        onNext={handleNextMonth}
-                        onPrev={handlePrevMonth}
-                    />
-                </>
-            )}
-            {calendarPickerAlign === 'RIGHT' && (
-                <>
-                    <CalendarContent
-                        title={title}
-                        titlePosition="LEFT"
-                        onNext={handleNextMonth}
-                        onPrev={handlePrevMonth}
-                    />
-                </>
-            )}
+            <CalendarContent
+                title={
+                    <CalendarPickerTitle
+                        date={date}
+                        size={size}
+                    />}
+                titlePosition={
+                    calendarPickerAlign === 'CENTER'
+                        ? undefined
+                        : calendarPickerAlign === 'LEFT'
+                            ? 'RIGHT'
+                            : 'LEFT'
+                }
+                onNext={handleNextMonth}
+                onPrev={handlePrevMonth}
+            />
         </div>
     );
 }

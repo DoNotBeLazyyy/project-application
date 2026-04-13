@@ -19,8 +19,8 @@ interface CalendarHeaderProps {
  * />
  */
 export default function CalendarTitle({
-    title = 'Holidays',
-    subtitle = 'Employee Leave & Requests History'
+    title,
+    subtitle
 }: CalendarHeaderProps) {
     return (
         <div>

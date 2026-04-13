@@ -12,35 +12,35 @@ export default function CalendarSample() {
     }
 
     return (
-        <div className="flex flex-col gap-10 items-center justify-center min-h-screen">
-            <div className="flex justify-center gap-1">
+        <div className="flex flex-col gap-[var(--mui-tokens-spacing-9)] items-center justify-center min-h-screen">
+            <div className="flex justify-center gap-[var(--mui-tokens-spacing-2)]">
                 <CalendarCellDate day={1} isToday />
                 <CalendarCellDate day={2} />
             </div>
-            <div className="flex justify-center gap-10">
+            <div className="flex justify-center gap-[var(--mui-tokens-spacing-9)]">
                 <CalendarPicker
                     calendarPickerAlign="RIGHT"
-                    calendarPickerSize="BIG"
                     date={date}
+                    size="SMALL"
                     onChangeMonth={handleChangeMonth}
                 />
                 <CalendarPicker
                     calendarPickerAlign="CENTER"
-                    calendarPickerSize="BIG"
                     date={date}
+                    size="BIG"
                     onChangeMonth={handleChangeMonth}
                 />
                 <CalendarPicker
                     calendarPickerAlign="LEFT"
-                    calendarPickerSize="SMALL"
                     date={date}
+                    size="SMALL"
                     onChangeMonth={handleChangeMonth}
                 />
             </div>
             <div className="flex flex-col justify-center">
                 <Calendar
                     calendarPickerAlign={'CENTER'}
-                    calendarPickerSize={'BIG'}
+                    size={'BIG'}
                     subtitle="Employee Leave & Request Histort"
                     title="Holidays"
                 />

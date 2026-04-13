@@ -7,7 +7,7 @@ import { ChangeEventInputElement } from '@type/common.type';
 import { CalendarDay } from '@type/common/calendar.type';
 import { changeMonthUtil, getCalendarDays } from '@utils/calendar.util';
 import { classMerge } from '@utils/css.util';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface CalendarProps extends Omit<CalendarPickerProps, 'date' | 'onChangeMonth'> {
     // Subtitle displayed below the title
@@ -32,7 +32,7 @@ interface CalendarProps extends Omit<CalendarPickerProps, 'date' | 'onChangeMont
  */
 export default function Calendar({
     calendarPickerAlign,
-    calendarPickerSize,
+    size,
     subtitle,
     title
 }: CalendarProps) {
@@ -40,7 +40,9 @@ export default function Calendar({
     const [searchValue, setSearchValue] = useState(''); // Input value for a date search or text search
     const year = date.getFullYear(); // Extract the year from the selected date
     const month = date.getMonth(); // Extract the month (0-11) from the selected date
-    const days: CalendarDay[] = getCalendarDays(year, month); // Generate all days for the current month as CalendarDay objects
+    const days: CalendarDay[] = useMemo(() => {
+        return getCalendarDays(year, month);
+    }, [year, month]); // Generate calendar days only when year or month changes
     const needsSixRows = days.length === 42; // Determine if the calendar layout requires 6 rows (42 cells)
     const gridRowClass = needsSixRows
         ? 'grid-rows-6'
@@ -59,17 +61,15 @@ export default function Calendar({
      * Handles date search from the input.
      */
     function handleSearch() {
-        if (!searchValue) {
-            return;
-        }
+        if (!searchValue) return;
 
-        const { getTime, getFullYear, getMonth } = new Date(searchValue);
+        const parsedDate = new Date(searchValue);
 
-        if (!isNaN(getTime())) {
-            setDate(new Date(getFullYear(), getMonth(), 1));
+        if (!isNaN(parsedDate.getTime())) {
+            setDate(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
         }
         else {
-            alert('Invalid date format. Try "2026-04" or "April 2026"'); {/* TODO */}
+            alert('Invalid date format. Try "2026-04" or "April 2026"');
         }
     }
 
@@ -87,15 +87,15 @@ export default function Calendar({
             <div className="grid grid-cols-6 items-center mx-[var(--mui-tokens-spacing-6)] my-[var(--mui-tokens-spacing-5)]">
                 <div className="col-span-2">
                     <CalendarTitle
-                        subtitle = {subtitle}
-                        title = {title}
+                        subtitle={subtitle}
+                        title={title}
                     />
                 </div>
                 <div className="col-span-2 flex items-center justify-center">
                     <CalendarPicker
                         calendarPickerAlign={calendarPickerAlign}
-                        calendarPickerSize={calendarPickerSize}
                         date={date}
+                        size={size}
                         onChangeMonth={handleChangeMonth}
                     />
                 </div>

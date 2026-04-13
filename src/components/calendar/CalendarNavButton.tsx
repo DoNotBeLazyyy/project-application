@@ -10,18 +10,15 @@ interface CalendarNavButtonProps extends ButtonProps {
 }
 
 /**
- * CalendarContent
+ * CalendarNavButton
  *
- * A reusable component for calendar navigation. Displays previous/next month buttons
- * and an optional title (e.g., current month/year) that can be positioned relative to the buttons.
+ * A reusable button component for calendar navigation (e.g., previous/next month).
+ * Typically used with icons or text as children.
  *
  * @example
- * <CalendarContent
- *   title={<div>April 2026</div>}
- *   titlePosition="MIDDLE"
- *   onPrev={handlePrevMonth}
- *   onNext={handleNextMonth}
- * />
+ * <CalendarNavButton onClick={handlePrevMonth}>
+ *   {"<"}
+ * </CalendarNavButton>
  */
 export default function CalendarNavButton({
     children,

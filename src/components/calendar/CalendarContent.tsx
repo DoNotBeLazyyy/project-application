@@ -42,32 +42,19 @@ export default function CalendarContent({
     const isLeft = titlePosition === 'LEFT'; // True when the title should appear on the left side of the navigation buttons
     const iconClass = 'text-[var(--mui-tokens-color-neutral-500)] h-[1.25rem] w-[1.25rem]'; // Shared icon size and neutral color for calendar navigation icons
 
-    if (isRight || isLeft) {
-        return (
-            <div className="flex items-center gap-[var(--mui-tokens-spacing-3)]">
-                {isRight && title && <div>{title}</div>}
-                <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
-                    <CalendarNavButton onClick={onPrev}>
-                        <CaretLeftIcon className={iconClass} />
-                    </CalendarNavButton>
-                    <CalendarNavButton onClick={onNext}>
-                        <CaretRightIcon className={iconClass} />
-                    </CalendarNavButton>
-                </div>
-                {isLeft && title && <div>{title}</div>}
-            </div>
-        );
-    }
-
     return (
-        <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
-            <CalendarNavButton onClick={onPrev}>
-                <CaretLeftIcon className={iconClass} />
-            </CalendarNavButton>
-            {title && <div>{title}</div>}
-            <CalendarNavButton onClick={onNext}>
-                <CaretRightIcon className={iconClass} />
-            </CalendarNavButton>
+        <div className="flex items-center gap-[var(--mui-tokens-spacing-3)]">
+            {isRight && title && <div>{title}</div>}
+            <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
+                <CalendarNavButton onClick={onPrev}>
+                    <CaretLeftIcon className={iconClass} />
+                </CalendarNavButton>
+                {!isRight && !isLeft && title && <div>{title}</div>}
+                <CalendarNavButton onClick={onNext}>
+                    <CaretRightIcon className={iconClass} />
+                </CalendarNavButton>
+            </div>
+            {isLeft && title && <div>{title}</div>}
         </div>
     );
 }

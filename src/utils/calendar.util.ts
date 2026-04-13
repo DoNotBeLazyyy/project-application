@@ -8,7 +8,7 @@ import { formatDate } from '@utils/date.util';
  * previous and next month days to fill the calendar grid (5 or 6 weeks).
  * Marks which day is today and which days belong to the current month.
  *
- * @returns An array of CalendarDay objects covering the calendar grid.
+ * @returns
  *
  * @example
  * const days = getCalendarDays(2026, 3);
