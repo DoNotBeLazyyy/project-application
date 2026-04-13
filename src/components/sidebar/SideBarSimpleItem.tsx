@@ -39,7 +39,8 @@ export default function SideBarSimpleItem({
                             itemText,
                             itemHover
                         )
-                )}
+                )
+            }
             disableRipple
             sx={{
                 gap: '10px',
@@ -59,7 +60,8 @@ export default function SideBarSimpleItem({
                         classMerge(
                             'sidebar-icon flex shrink-0',
                             isActive && itemIcon
-                        )}
+                        )
+                    }
                 >
                     {icon}
                 </span>

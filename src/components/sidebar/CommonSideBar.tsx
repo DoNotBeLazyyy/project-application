@@ -1,17 +1,37 @@
-import CommonHeaderSideBar, { CommonHeaderSideBarProps } from '@components/sidebar/CommonHeaderSideBar';
+import CommonHeaderSideBar from '@components/sidebar/CommonHeaderSideBar';
 import { TOKENS } from '@constants/theme/tokens.constant';
 import Button, { ButtonProps } from '@mui/material/Button';
+import { IconButtonProps } from '@mui/material/IconButton';
 import { GearSixIcon } from '@phosphor-icons/react';
 import { DivProps } from '@type/common.type';
 import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
+import { ReactNode } from 'react';
 
 interface SideBarFooterProps extends ButtonProps {
     // Footer button label
     label?: string;
 }
 
-type SideBarHeaderProps = Pick<CommonHeaderSideBarProps, 'buttonProps' | 'hasArrow' | 'isExpanded' | 'logo' | 'subtitle' | 'title'>;
+interface SideBarHeaderProps {
+    // Props spread onto the arrow IconButton
+    buttonProps?: IconButtonProps;
+
+    // Whether to show the dropdown arrow icon
+    hasArrow?: boolean;
+
+    // Whether the arrow is in expanded (down) state
+    isExpanded?: boolean;
+
+    // Logo element displayed in the header
+    logo?: ReactNode;
+
+    // Subtitle text displayed below the title
+    subtitle?: string;
+
+    // Title text displayed in the header
+    title?: string;
+}
 
 interface CommonSideBarProps extends DivProps {
     // Footer button configuration
@@ -79,15 +99,16 @@ export default function CommonSideBar({
         }
     }; // Define styles for the footer button based on the sidebar variant.
     const footerStyle = footerVariantStyles[variant]; // Get the appropriate styles for the footer button based on the sidebar variant.
-    const darkVariant = variant === 'dark';
-    const sidebarStyle = { backgroundColor: color ?? SIDEBAR_BG[variant] };
+    const isDark = variant === 'dark'; // Check if the current variant is dark
+    const sidebarStyle = { backgroundColor: color ?? SIDEBAR_BG[variant] }; // Determine sidebar background color
+    const isSidebarOpen = isOpen; // Store the sidebar open/close state in a descriptive variable
 
     return (
         <div
             className={
                 classMerge(
                     'flex h-screen flex-col overflow-hidden transition-[width,min-width] duration-300',
-                    isOpen
+                    isSidebarOpen
                         ? 'w-[15.625rem] min-w-[15.625rem]'
                         : 'w-0 min-w-0',
                     className
@@ -109,10 +130,11 @@ export default function CommonSideBar({
                 className={
                     classMerge(
                         'flex-1 overflow-y-auto px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)] [&::-webkit-scrollbar-thumb]:rounded-[var(--mui-tokens-radius-sm)] [&::-webkit-scrollbar]:w-[var(--mui-tokens-spacing-2)]',
-                        darkVariant
+                        isDark
                             ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                             : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
-                    )}
+                    )
+                }
             >
                 {children}
             </div>

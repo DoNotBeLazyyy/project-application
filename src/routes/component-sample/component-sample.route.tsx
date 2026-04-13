@@ -4,6 +4,7 @@ import CommonInputSample from '@pages/component-sample/input';
 import CommonRadioSample from '@pages/component-sample/radio';
 import CommonNavarSample from '@pages/component-sample/navar';
 import CommonSideBarSample from '@pages/component-sample/sidebar';
+import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -42,6 +43,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonSideBarSample />,
             path: 'sidebar'
+        },
+        {
+            element: <CommonTabMenuSample />,
+            path: 'tab-menu'
         }
     ]
 }] as const;

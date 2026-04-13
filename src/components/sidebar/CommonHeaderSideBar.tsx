@@ -72,7 +72,8 @@ export default function CommonHeaderSideBar({
                 classMerge(
                     'flex items-center gap-[var(--mui-tokens-spacing-4)] whitespace-nowrap px-[var(--mui-tokens-spacing-6)] py-[var(--mui-tokens-spacing-7)]',
                     className
-                )}
+                )
+            }
             {...props}
         >
             {logo}

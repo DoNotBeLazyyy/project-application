@@ -1,4 +1,6 @@
 import { PartialRecordString, StringNum } from '@type/common.type';
+import { SideBarVariant } from '@type/sidebar.types';
+import { SharedTabMenuProps } from '@type/tab-menu.type';
 import { CSSProperties } from 'react';
 
 // Font family key
@@ -322,4 +324,20 @@ declare module '@mui/material/OutlinedInput' {
 
 declare module '@mui/material/FilledInput' {
     interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/Tabs' {
+    interface TabsOwnProps extends SharedTabMenuProps {}
+}
+
+declare module '@mui/material/Tab' {
+    interface TabOwnProps extends SharedTabMenuProps {}
+}
+
+declare module '@mui/material/Accordion' {
+    interface AccordionOwnProps { sidebarVariant?: SideBarVariant;}
+}
+
+declare module '@mui/material/AccordionSummary' {
+    interface AccordionSummaryOwnProps {sidebarVariant?: SideBarVariant;}
 }

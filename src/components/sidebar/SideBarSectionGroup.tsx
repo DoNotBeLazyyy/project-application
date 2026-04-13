@@ -1,8 +1,8 @@
 import type { SideBarSection } from '@components/sidebar/CommonSideBarList';
 import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
 import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
-import { SideBarGroup, SideBarItem, SideBarVariant, VariantStyle } from '@type/sidebar.types';
-
+import { isSideBarGroup } from '@constants/sidebar.constant';
+import { SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 
 interface SideBarSectionGroupProps {
@@ -17,16 +17,6 @@ interface SideBarSectionGroupProps {
 
     // Visual variant for accordion theme matching.
     variant: SideBarVariant;
-}
-
-/**
- * Type guard to determine if an item is a SideBarGroup (has sub-items) or a simple SideBarItem.
- *
- * @param item - The item to check.
- * @returns
- */
-function isSideBarGroup(item: SideBarItem | SideBarGroup): item is SideBarGroup {
-    return 'items' in item;
 }
 
 /**
@@ -46,12 +36,13 @@ export default function SideBarSectionGroup({
                         classMerge(
                             'px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-2)] text-[length:var(--mui-tokens-fontSize-sm)] font-semibold uppercase tracking-wider',
                             sectionLabelStyle
-                        )}
+                        )
+                    }
                 >
                     {section.sectionLabel}
                 </p>
             )}
-            {section.items.map((item) =>
+            {section.items.map((item) => (
                 isSideBarGroup(item)
                     ? <SideBarAccordionGroup
                         group={item}
@@ -63,8 +54,8 @@ export default function SideBarSectionGroup({
                         item={item}
                         key={item.label}
                         styles={styles}
-                    />)
-            }
+                    />
+            ))}
         </div>
     );
 }

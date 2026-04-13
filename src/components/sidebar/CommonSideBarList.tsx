@@ -3,7 +3,7 @@ import SideBarSectionGroup from '@components/sidebar/SideBarSectionGroup';
 import { DivProps } from '@type/common.type';
 import { SideBarGroup, SideBarItem, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { VARIANT_STYLES } from '@utils/theme-util';
+import { VARIANT_STYLES } from '@constants/sidebar.constant';
 
 // Type for items in a sidebar section.
 type SideBarSectionItems = (SideBarItem | SideBarGroup)[];

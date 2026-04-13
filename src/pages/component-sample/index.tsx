@@ -28,6 +28,10 @@ export default function ComponentSample() {
         {
             label: 'Sidebar',
             path: 'sidebar'
+        },
+        {
+            label: 'Tab Menu',
+            path: 'tab-menu'
         }
     ] as const;
 

@@ -22,7 +22,7 @@ export interface CommonNavarProps extends DivProps {
  *     rightContent={<>Notifications and Profile</>}
  * />
  */
-export default function CommonNavar({
+export default function CommonNavigationBar({
     className,
     leftContent,
     rightContent,
@@ -34,7 +34,8 @@ export default function CommonNavar({
                 classMerge(
                     'flex items-center justify-between bg-[var(--mui-tokens-color-brand-950)] px-[var(--mui-tokens-spacing-6)] py-[var(--mui-tokens-spacing-4)]',
                     className
-                )}
+                )
+            }
             {...props}
         >
             <div className="flex items-center gap-[var(--mui-tokens-spacing-4)]">

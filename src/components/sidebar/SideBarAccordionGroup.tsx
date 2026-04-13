@@ -1,14 +1,10 @@
 import SubItemBorderLine from '@components/sidebar/SubItemBorderLine';
+import { StyledAccordion, StyledAccordionSummary } from '@constants/sidebar.constant';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import { AccordionSummary, Accordion, styled } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ButtonBase from '@mui/material/ButtonBase';
 import { SideBarGroup, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { STYLED_OPTIONS } from '@utils/theme-util';
-
-const StyledAccordion = styled(Accordion, STYLED_OPTIONS)({}); // Styled Accordion using shared styled options
-const StyledAccordionSummary = styled(AccordionSummary, STYLED_OPTIONS)({}); // Styled AccordionSummary using shared styled options
 
 interface SideBarAccordionGroupProps {
     // The accordion group data to render
@@ -64,7 +60,8 @@ export default function SideBarAccordionGroup({
                             classMerge(
                                 'flex shrink-0 [&>svg]:h-[1.25rem] [&>svg]:w-[1.25rem]',
                                 groupIcon
-                            )}
+                            )
+                        }
                     >
                         {icon}
                     </span>
@@ -74,7 +71,8 @@ export default function SideBarAccordionGroup({
                         classMerge(
                             'text-sm',
                             groupText
-                        )}
+                        )
+                    }
                 >
                     {label}
                 </span>
@@ -103,7 +101,7 @@ export default function SideBarAccordionGroup({
                             sx={{
                                 width: '100%',
                                 justifyContent: 'flex-start',
-                                borderRadius: '8px',
+                                borderRadius: 'var(--mui-shape-corner-radius-lg)',
                                 px: 4,
                                 py: 1.5,
                                 fontSize: 'var(--mui-tokens-fontSize-sm)',

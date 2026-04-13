@@ -1,24 +1,8 @@
 import { Components, Theme } from '@mui/material';
-import { SideBarVariant } from '@type/sidebar.types';
-
-// Module augmentation to support custom sidebarVariant prop on MUI Accordion components
-declare module '@mui/material/Accordion' {
-    interface AccordionOwnProps {
-        sidebarVariant?: SideBarVariant;
-    }
-}
-
-declare module '@mui/material/AccordionSummary' {
-    interface AccordionSummaryOwnProps {
-        sidebarVariant?: SideBarVariant;
-    }
-}
 
 export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
     MuiAccordion: {
-        defaultProps: {
-            disableGutters: true
-        },
+        defaultProps: { disableGutters: true },
         styleOverrides: {
             root: {
                 backgroundColor: 'transparent',
@@ -32,15 +16,11 @@ export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
         variants: [
             {
                 props: { sidebarVariant: 'dark' },
-                style: {
-                    color: 'var(--mui-tokens-color-common-white)'
-                }
+                style: { color: 'var(--mui-tokens-color-common-white)' }
             },
             {
                 props: { sidebarVariant: 'light' },
-                style: {
-                    color: 'inherit'
-                }
+                style: { color: 'inherit' }
             }
         ]
     },
@@ -57,35 +37,19 @@ export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
                     gap: '10px',
                     '&.Mui-expanded': { margin: 0 }
                 },
-                '& .MuiAccordionSummary-expandIconWrapper': {
-                    transition: 'transform 200ms'
-                }
+                '& .MuiAccordionSummary-expandIconWrapper': { transition: 'transform 200ms' }
             }
         },
         variants: [
             {
                 props: { sidebarVariant: 'dark' },
-                style: {
-                    '&:hover': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-900)'
-                    }
-                }
+                style: { '&:hover': { backgroundColor: 'var(--mui-tokens-color-brand-900)' } }
             },
             {
                 props: { sidebarVariant: 'light' },
-                style: {
-                    '&:hover': {
-                        backgroundColor: 'rgba(0,0,0,0.04)'
-                    }
-                }
+                style: { '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }
             }
         ]
     },
-    MuiAccordionDetails: {
-        styleOverrides: {
-            root: {
-                padding: '4px 0 0 0'
-            }
-        }
-    }
+    MuiAccordionDetails: { styleOverrides: { root: { padding: '4px 0 0 0' } } }
 };

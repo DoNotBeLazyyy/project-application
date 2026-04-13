@@ -3,6 +3,7 @@ import { formControlOverrides } from '@constants/theme/override/form-control.ove
 import { inputOverrides } from '@constants/theme/override/input.override';
 import { radioOverrides } from '@constants/theme/override/radio.override';
 import { sidebarOverrides } from '@constants/theme/override/sidebar.override';
+import { tabMenuOverrides } from '@constants/theme/override/tab-menu.override';
 import { Components, Theme } from '@mui/material';
 
 export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
@@ -10,5 +11,6 @@ export const COMPONENTS: Components<Omit<Theme, 'components'>> = {
     ...formControlOverrides,
     ...inputOverrides,
     ...radioOverrides,
-    ...sidebarOverrides
+    ...sidebarOverrides,
+    ...tabMenuOverrides
 };
