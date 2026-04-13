@@ -31,7 +31,9 @@ export default function CalendarWeekDays() {
             }
         >
             {days.map((day) => (
-                <div key={day}>{day}</div>
+                <div key={day}>
+                    {day}
+                </div>
             ))}
         </div>
     );
