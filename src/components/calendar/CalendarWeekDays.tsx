@@ -30,8 +30,8 @@ export default function CalendarWeekDays() {
                 )
             }
         >
-            {days.map((d) => (
-                <div key={d}>{d}</div>
+            {days.map((day) => (
+                <div key={day}>{day}</div>
             ))}
         </div>
     );
