@@ -20,6 +20,10 @@ export default function ComponentSample() {
         {
             label: 'Input',
             path: 'input'
+        },
+        {
+            label: 'Toggle',
+            path: 'toggle'
         }
     ] as const;
 
