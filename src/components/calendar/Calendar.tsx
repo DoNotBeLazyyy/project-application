@@ -10,11 +10,11 @@ import { classMerge } from '@utils/css.util';
 import { useState } from 'react';
 
 interface CalendarProps extends Omit<CalendarPickerProps, 'date' | 'onChangeMonth'> {
-    // Main title displayed above the calendar
-    title: string;
-
     // Subtitle displayed below the title
     subtitle: string;
+
+    // Main title displayed above the calendar
+    title: string;
 }
 
 /**
@@ -33,8 +33,8 @@ interface CalendarProps extends Omit<CalendarPickerProps, 'date' | 'onChangeMont
 export default function Calendar({
     calendarPickerAlign,
     calendarPickerSize,
-    title,
-    subtitle
+    subtitle,
+    title
 }: CalendarProps) {
     const [date, setDate] = useState<Date>(new Date()); // Current selected date state, initialized to today
     const [searchValue, setSearchValue] = useState(''); // Input value for a date search or text search
