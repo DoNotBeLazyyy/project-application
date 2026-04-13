@@ -1,6 +1,8 @@
 import ComponentSample from '@pages/component-sample';
 import CalendarSample from '@pages/component-sample/calendar';
+import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
+import CommonRadioSample from '@pages/component-sample/radio';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -23,6 +25,14 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CalendarSample />,
             path: 'calendar'
+        },
+        {
+            element: <CommonRadioSample />,
+            path: 'radio'
+        },
+        {
+            element: <CommonCheckboxSample />,
+            path: 'checkbox'
         },
         {
             element: <CommonInputSample />,

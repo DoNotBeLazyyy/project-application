@@ -28,9 +28,6 @@ export type BooleanFunction = () => boolean;
 // Grid props
 export type GridApiNull = GridApi | null;
 
-// Icon props
-export type IconSvgProps = SVGProps<SVGSVGElement>;
-
 // Input change props
 export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 
@@ -38,6 +35,10 @@ export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 export type AlignType = 'LEFT' | 'CENTER' | 'RIGHT';
 export type SizeType = 'BIG' | 'SMALL';
 export type CalendarTitlePosition = 'RIGHT' | 'MIDDLE' | 'LEFT';
+
+// SVG props
+export type IconSvgProps = SVGProps<SVGSVGElement>;
+
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
