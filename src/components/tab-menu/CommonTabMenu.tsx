@@ -1,15 +1,9 @@
+import TabMenuIcon from '@components/tab-menu/TabMenuIcon';
+import TabMenuLabel from '@components/tab-menu/TabMenuLabel';
 import { Tab, Tabs, TabsProps } from '@mui/material';
-import { CaretRightIcon } from '@phosphor-icons/react';
-import { TabItemData, TabMenuSize, TabMenuStyle } from '@type/tab-menu.type';
-import { classMerge } from '@utils/css.util';
+import { TabItemData } from '@type/tab-menu.type';
 
-export interface CommonTabMenuProps extends TabsProps {
-    // Tab menu style variant
-    menuStyle?: TabMenuStyle;
-
-    // Tab size variant
-    size?: TabMenuSize;
-
+interface CommonTabMenuProps extends TabsProps {
     // Array of tab configurations to render
     tabs: TabItemData[];
 }
@@ -55,51 +49,34 @@ export default function CommonTabMenu({
             size={size}
             {...props}
         >
-            {tabs.map((tab) => (
+            {tabs.map(({
+                badge,
+                hasArrow,
+                icon,
+                label,
+                value
+            }) => (
                 <Tab
-                    icon={tab.icon
-                        ? (
-                            <span
-                                className={
-                                    classMerge(
-                                        'flex items-center justify-center shrink-0 tab-icon',
-                                        iconSize
-                                    )
-                                }
-                            >
-                                {tab.icon}
-                            </span>
-                        )
-                        : undefined}
+                    icon={icon
+                        ? <TabMenuIcon
+                            icon={icon}
+                            iconSize={iconSize}
+                        />
+                        : undefined
+                    }
                     iconPosition="start"
-                    key={tab.value}
+                    key={value}
                     label={
-                        <span className="flex gap-[var(--mui-tokens-spacing-2)] items-center whitespace-nowrap">
-                            {tab.label}
-                            {tab.badge !== undefined && (
-                                <span
-                                    className={
-                                        classMerge(
-                                            'bg-[var(--mui-tokens-color-brand-500)] flex font-bold items-center justify-center rounded-[var(--mui-tokens-radius-full)] shrink-0 text-[var(--mui-tokens-color-common-white)]',
-                                            badgeSize
-                                        )
-                                    }
-                                >
-                                    {tab.badge}
-                                </span>
-                            )}
-                            {tab.hasArrow && (
-                                <CaretRightIcon
-                                    className="shrink-0"
-                                    size={16}
-                                    weight="bold"
-                                />
-                            )}
-                        </span>
+                        <TabMenuLabel
+                            badge={badge}
+                            badgeSize={badgeSize}
+                            hasArrow={hasArrow}
+                            label={label}
+                        />
                     }
                     menuStyle={menuStyle}
                     size={size}
-                    value={tab.value}
+                    value={value}
                 />
             ))}
         </Tabs>

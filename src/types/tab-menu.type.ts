@@ -1,10 +1,13 @@
 import { ReactNode } from 'react';
 
-// Tab menu style variants
-export type TabMenuStyle = 'outline' | 'pill' | 'vertical';
+// Shared tab menu props for MUI module augmentation
+export interface SharedTabMenuProps {
+    // Tab menu style variant
+    menuStyle?: 'outline' | 'pill' | 'vertical';
 
-// Tab menu size variants
-export type TabMenuSize = 'default' | 'small';
+    // Tab menu size
+    size?: 'default' | 'small';
+}
 
 // Single tab item configuration
 export interface TabItemData {
