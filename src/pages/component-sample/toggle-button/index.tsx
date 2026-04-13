@@ -14,9 +14,10 @@ export default function CommonToggleSample() {
     }
 
     return (
-        <Stack spacing={2}>
-            <div className="flex flex-col justify-center gap-10">
-                <div className="flex flex-col justify-center gap-1">
+        <div className="flex gap-10 h-full items-center justify-center p-5 w-full">
+            <Stack spacing={10}>
+                <div className="flex flex-col justify-center gap-1 text-[50px]">
+                    Toggle with label
                     <CommonToggle
                         label="Common Toggle with custom styles"
                         sx={{
@@ -43,8 +44,8 @@ export default function CommonToggleSample() {
                         onChange={handleToggleChange}
                     />
                 </div>
-                <div className="flex flex-col justify-center gap-1">
-                toggle without label
+                <div className="flex flex-col justify-center gap-1 text-[50px]">
+                    Toggle without label
                     <CommonToggle />
                     <CommonToggle disabled />
                     <CommonToggle
@@ -52,7 +53,7 @@ export default function CommonToggleSample() {
                         disabled
                     />
                 </div>
-            </div>
-        </Stack>
+            </Stack>
+        </div>
     );
 }
