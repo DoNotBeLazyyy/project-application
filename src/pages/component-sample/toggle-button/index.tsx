@@ -15,35 +15,43 @@ export default function CommonToggleSample() {
 
     return (
         <Stack spacing={2}>
-            <div className="flex flex-col justify-center gap-1">
-                <CommonToggle
-                    label="Common Toggle with custom styles"
-                    sx={{
-                        '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': {
-                            backgroundColor: '#ABFA00'
-                        },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                            backgroundColor: '#FF0000'
-                        }
-                    }}
-                />
-                <CommonToggle
-                    checked={true}
-                    disabled
-                    label="disabled Toggle on"
-                />
-                <CommonToggle
-                    disabled
-                    label="disabled Toggle off"
-                />
-                <CommonToggle
-                    checked={checked}
-                    label="Common Toggle on and off"
-                    onChange={handleToggleChange}
-                />
-            </div>
-            <div className="flex flex-col justify-center gap-1">
-                <CommonToggle />
+            <div className="flex flex-col justify-center gap-10">
+                <div className="flex flex-col justify-center gap-1">
+                    <CommonToggle
+                        label="Common Toggle with custom styles"
+                        sx={{
+                            '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': {
+                                backgroundColor: '#ABFA00'
+                            },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                backgroundColor: '#FF0000'
+                            }
+                        }}
+                    />
+                    <CommonToggle
+                        checked={true}
+                        disabled
+                        label="disabled Toggle on"
+                    />
+                    <CommonToggle
+                        disabled
+                        label="disabled Toggle off"
+                    />
+                    <CommonToggle
+                        checked={checked}
+                        label="Common Toggle on and off"
+                        onChange={handleToggleChange}
+                    />
+                </div>
+                <div className="flex flex-col justify-center gap-1">
+                toggle without label
+                    <CommonToggle />
+                    <CommonToggle disabled />
+                    <CommonToggle
+                        checked={true}
+                        disabled
+                    />
+                </div>
             </div>
         </Stack>
     );
