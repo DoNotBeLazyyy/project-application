@@ -1,7 +1,7 @@
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { House } from '@phosphor-icons/react';
 import { TabItemData } from '@type/tab-menu.type';
-import { useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 
 const SAMPLE_TABS: TabItemData[] = [
     { label: 'Tab Item', value: 'tab-1', icon: <House size={24} weight="fill" /> },
@@ -43,62 +43,122 @@ export default function CommonTabMenuSample() {
     const [smallPillTab, setSmallPillTab] = useState('tab-1'); // Active small pill tab
     const [badgeTab, setBadgeTab] = useState('tab-1'); // Active badge sample tab
 
+    /**
+     * Handles outline tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handleOutlineChange(_event: SyntheticEvent, newValue: string) {
+        setOutlineTab(newValue);
+    }
+
+    /**
+     * Handles pill tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handlePillChange(_event: SyntheticEvent, newValue: string) {
+        setPillTab(newValue);
+    }
+
+    /**
+     * Handles vertical tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handleVerticalChange(_event: SyntheticEvent, newValue: string) {
+        setVerticalTab(newValue);
+    }
+
+    /**
+     * Handles small outline tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handleSmallOutlineChange(_event: SyntheticEvent, newValue: string) {
+        setSmallOutlineTab(newValue);
+    }
+
+    /**
+     * Handles small pill tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handleSmallPillChange(_event: SyntheticEvent, newValue: string) {
+        setSmallPillTab(newValue);
+    }
+
+    /**
+     * Handles badge sample tab change.
+     *
+     * @param _event - The synthetic event (unused).
+     * @param newValue - The selected tab value.
+     */
+    function handleBadgeChange(_event: SyntheticEvent, newValue: string) {
+        setBadgeTab(newValue);
+    }
+
     return (
         <div className="flex flex-col gap-10 p-5">
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">Outline (Default)</h3>
                 <CommonTabMenu
+                    menuStyle="outline"
                     tabs={SAMPLE_TABS}
                     value={outlineTab}
-                    variant="outline"
-                    onChange={setOutlineTab}
+                    onChange={handleOutlineChange}
                 />
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">Pill</h3>
                 <CommonTabMenu
+                    menuStyle="pill"
                     tabs={SAMPLE_TABS_3}
                     value={pillTab}
-                    variant="pill"
-                    onChange={setPillTab}
+                    onChange={handlePillChange}
                 />
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">Vertical</h3>
                 <CommonTabMenu
+                    menuStyle="vertical"
                     tabs={SAMPLE_TABS}
                     value={verticalTab}
-                    variant="vertical"
-                    onChange={setVerticalTab}
+                    onChange={handleVerticalChange}
                 />
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">Outline - Small</h3>
                 <CommonTabMenu
+                    menuStyle="outline"
                     size="small"
                     tabs={SAMPLE_TABS_SMALL}
                     value={smallOutlineTab}
-                    variant="outline"
-                    onChange={setSmallOutlineTab}
+                    onChange={handleSmallOutlineChange}
                 />
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">Pill - Small</h3>
                 <CommonTabMenu
+                    menuStyle="pill"
                     size="small"
                     tabs={SAMPLE_TABS_SMALL}
                     value={smallPillTab}
-                    variant="pill"
-                    onChange={setSmallPillTab}
+                    onChange={handleSmallPillChange}
                 />
             </div>
             <div className="flex flex-col gap-3">
                 <h3 className="font-bold text-[var(--mui-tokens-color-neutral-900)] text-[var(--mui-tokens-fontSize-lg)]">With Badge & Arrow</h3>
                 <CommonTabMenu
+                    menuStyle="outline"
                     tabs={SAMPLE_TABS_WITH_BADGE}
                     value={badgeTab}
-                    variant="outline"
-                    onChange={setBadgeTab}
+                    onChange={handleBadgeChange}
                 />
             </div>
         </div>
