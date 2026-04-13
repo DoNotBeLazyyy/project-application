@@ -1,10 +1,11 @@
-import type { SideBarGroup, VariantStyle } from '@components/sidebar/CommonSideBarList';
 import SubItemBorderLine from '@components/sidebar/SubItemBorderLine';
-import Accordion from '@mui/material/Accordion';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import ButtonBase from '@mui/material/ButtonBase';
+import { SideBarGroup } from '@type/sidebar.types';
+import { VariantStyle } from '@type/tab.types';
 import { classMerge } from '@utils/css.util';
 
 interface SideBarAccordionGroupProps {
@@ -25,13 +26,24 @@ export default function SideBarAccordionGroup({
         items,
         label
     } = group; // Destructure group properties for easier access.
+    const {
+        expandIcon,
+        groupIcon,
+        groupText,
+        subItemActive,
+        subItemBorder,
+        subItemBorderActive,
+        subItemBorderInactive,
+        subItemHover,
+        subItemText
+    } = styles; // Destructure styles for easier access.
 
     return (
         <Accordion defaultExpanded={defaultExpanded}>
             <AccordionSummary
                 expandIcon={
                     <KeyboardArrowDownRoundedIcon
-                        className={styles.expandIcon}
+                        className={expandIcon}
                         fontSize="small"
                     />
                 }
@@ -41,7 +53,7 @@ export default function SideBarAccordionGroup({
                         className={
                             classMerge(
                                 'flex shrink-0 [&>svg]:h-[1.25rem] [&>svg]:w-[1.25rem]',
-                                styles.groupIcon
+                                groupIcon
                             )}
                     >
                         {icon}
@@ -51,7 +63,7 @@ export default function SideBarAccordionGroup({
                     className={
                         classMerge(
                             'text-sm',
-                            styles.groupText
+                            groupText
                         )}
                 >
                     {label}
@@ -59,25 +71,25 @@ export default function SideBarAccordionGroup({
             </AccordionSummary>
             <AccordionDetails>
                 <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
-                    {styles.subItemBorder && (
+                    {subItemBorder && (
                         <SubItemBorderLine
-                            activeColor={styles.subItemBorderActive}
-                            inactiveColor={styles.subItemBorderInactive}
+                            activeColor={subItemBorderActive}
+                            inactiveColor={subItemBorderInactive}
                             items={items}
                         />
                     )}
-                    {items.map((subItem, index) => (
+                    {items.map((subItem) => (
                         <ButtonBase
                             className={
                                 subItem.isActive
-                                    ? styles.subItemActive
+                                    ? subItemActive
                                     : classMerge(
-                                        styles.subItemText,
-                                        styles.subItemHover
+                                        subItemText,
+                                        subItemHover
                                     )
                             }
                             disableRipple
-                            key={index}
+                            key={subItem.label}
                             sx={{
                                 width: '100%',
                                 justifyContent: 'flex-start',

@@ -1,5 +1,5 @@
 import {
-  AppBar, Box, Button, Stack, Toolbar, Typography
+    AppBar, Box, Button, Stack, Toolbar, Typography
 } from '@mui/material';
 import { NavLink, Outlet } from 'react-router-dom';
 
@@ -10,8 +10,24 @@ export default function ComponentSample() {
             path: 'table'
         },
         {
+            label: 'Radio',
+            path: 'radio'
+        },
+        {
+            label: 'Checkbox',
+            path: 'checkbox'
+        },
+        {
             label: 'Input',
             path: 'input'
+        },
+        {
+            label: 'Sidebar',
+            path: 'sidebar'
+        },
+        {
+            label: 'Tab Menu',
+            path: 'tab-menu'
         }
     ] as const;
 

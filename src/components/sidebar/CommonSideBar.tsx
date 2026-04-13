@@ -1,19 +1,14 @@
-import { GearSix } from '@phosphor-icons/react';
 import CommonHeaderSideBar, { CommonHeaderSideBarProps } from '@components/sidebar/CommonHeaderSideBar';
 import { TOKENS } from '@constants/theme/tokens.constant';
-import Button from '@mui/material/Button';
+import Button, { ButtonProps } from '@mui/material/Button';
+import { GearSixIcon } from '@phosphor-icons/react';
 import { DivProps } from '@type/common.type';
+import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 
-// Visual variant for the sidebar
-type SideBarVariant = 'dark' | 'light';
-
-interface SideBarFooterProps {
+interface SideBarFooterProps extends ButtonProps {
     // Footer button label
     label?: string;
-
-    // Click handler for the footer button
-    onClick?: () => void;
 }
 
 type SideBarHeaderProps = Pick<CommonHeaderSideBarProps, 'buttonProps' | 'hasArrow' | 'isExpanded' | 'logo' | 'subtitle' | 'title'>;
@@ -56,11 +51,6 @@ interface CommonSideBarProps extends DivProps {
  * </CommonSideBar>
  */
 
-const SIDEBAR_BG = {
-    dark: TOKENS.color?.brand?.[950],
-    light: TOKENS.color?.common?.white
-} as const;
-
 export default function CommonSideBar({
     children,
     className,
@@ -72,6 +62,10 @@ export default function CommonSideBar({
     variant = 'dark',
     ...props
 }: CommonSideBarProps) {
+    const SIDEBAR_BG = {
+        dark: TOKENS.color?.brand?.[950],
+        light: TOKENS.color?.common?.white
+    } as const; // Define default background colors for dark and light variants of the sidebar.
     const footerVariantStyles = {
         dark: {
             color: TOKENS.color?.common?.white,
@@ -85,6 +79,9 @@ export default function CommonSideBar({
         }
     }; // Define styles for the footer button based on the sidebar variant.
     const footerStyle = footerVariantStyles[variant]; // Get the appropriate styles for the footer button based on the sidebar variant.
+    const darkVariant = variant === 'dark';
+    const sidebarStyle = { backgroundColor: color ?? SIDEBAR_BG[variant] };
+
     return (
         <div
             className={
@@ -97,7 +94,7 @@ export default function CommonSideBar({
                 )
             }
             style={{
-                backgroundColor: color ?? SIDEBAR_BG[variant],
+                ...sidebarStyle,
                 ...style
             }}
             {...props}
@@ -112,7 +109,7 @@ export default function CommonSideBar({
                 className={
                     classMerge(
                         'flex-1 overflow-y-auto px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)] [&::-webkit-scrollbar-thumb]:rounded-[var(--mui-tokens-radius-sm)] [&::-webkit-scrollbar]:w-[var(--mui-tokens-spacing-2)]',
-                        variant === 'dark'
+                        darkVariant
                             ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                             : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
                     )}>
@@ -122,7 +119,8 @@ export default function CommonSideBar({
                 <div className="shrink-0 px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)]">
                     <Button
                         disableRipple
-                        startIcon={<GearSix size={20} />}
+                        startIcon={<GearSixIcon size={20} />}
+                        {...footerProps}
                         sx={{
                             width: '100%',
                             justifyContent: 'flex-start',
@@ -144,7 +142,6 @@ export default function CommonSideBar({
                                 marginRight: 0
                             }
                         }}
-                        onClick={footerProps.onClick}
                     >
                         {/* TODO: use locales for default label */}
                         {footerProps.label ?? 'Settings'}

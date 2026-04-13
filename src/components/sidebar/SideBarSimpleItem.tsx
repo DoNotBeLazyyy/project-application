@@ -1,5 +1,6 @@
-import type { SideBarItem, VariantStyle } from '@components/sidebar/CommonSideBarList';
 import ButtonBase from '@mui/material/ButtonBase';
+import { SideBarItem } from '@type/sidebar.types';
+import { VariantStyle } from '@type/tab.types';
 import { classMerge } from '@utils/css.util';
 
 interface SideBarSimpleItemProps {
@@ -14,7 +15,18 @@ export default function SideBarSimpleItem({
     item,
     styles
 }: SideBarSimpleItemProps) {
-    const isActive = item.isActive; // Determine if the item is active for styling purposes.
+    const {
+        icon,
+        isActive,
+        label,
+        onClick
+    } = item; // Destructure item properties for easier access.
+    const {
+        itemActive,
+        itemHover,
+        itemIcon,
+        itemText
+    } = styles; // Destructure styles for easier access.
 
     return (
         <ButtonBase
@@ -22,10 +34,10 @@ export default function SideBarSimpleItem({
                 classMerge(
                     'flex w-fit items-center rounded-[var(--mui-tokens-radius-md)] text-left transition-colors',
                     isActive
-                        ? styles.itemActive
+                        ? itemActive
                         : classMerge(
-                            styles.itemText,
-                            styles.itemHover
+                            itemText,
+                            itemHover
                         )
                 )}
             disableRipple
@@ -39,22 +51,22 @@ export default function SideBarSimpleItem({
                     width: '20px'
                 }
             }}
-            onClick={item.onClick}
+            onClick={onClick}
         >
-            {item.icon && (
+            {icon && (
                 <span
                     className={
                         classMerge(
                             'sidebar-icon flex shrink-0',
                             isActive
                                 ? ''
-                                : styles.itemIcon
+                                : itemIcon
                         )}
                 >
-                    {item.icon}
+                    {icon}
                 </span>
             )}
-            {item.label}
+            {label}
         </ButtonBase>
     );
 }

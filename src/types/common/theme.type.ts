@@ -1,4 +1,5 @@
 import { PartialRecordString, StringNum } from '@type/common.type';
+import { TabMenuVariant } from '@type/tab.types';
 import { CSSProperties } from 'react';
 
 // Font family key
@@ -322,4 +323,15 @@ declare module '@mui/material/OutlinedInput' {
 
 declare module '@mui/material/FilledInput' {
     interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
+}
+
+declare module '@mui/material/Tab' {
+    interface TabOwnProps { tabVariant?: TabMenuVariant }
+}
+
+declare module '@mui/material/Tab' {
+    interface TabOwnProps { tabVariant?: TabMenuVariant }
+}
+
+declare module '@mui/material/Tabs' { interface TabsOwnProps { tabVariant?: TabMenuVariant }
 }

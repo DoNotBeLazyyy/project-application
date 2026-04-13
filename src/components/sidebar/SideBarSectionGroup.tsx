@@ -1,11 +1,8 @@
-import type {
-    SideBarGroup,
-    SideBarItem,
-    SideBarSection,
-    VariantStyle
-} from '@components/sidebar/CommonSideBarList';
+import type { SideBarSection } from '@components/sidebar/CommonSideBarList';
 import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
 import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
+import { SideBarGroup, SideBarItem } from '@type/sidebar.types';
+import { VariantStyle } from '@type/tab.types';
 import { classMerge } from '@utils/css.util';
 
 interface SideBarSectionGroupProps {
@@ -50,19 +47,19 @@ export default function SideBarSectionGroup({
                     {section.sectionLabel}
                 </p>
             )}
-            {section.items.map((item, index) =>
+            {section.items.map((item) =>
                 isSideBarGroup(item)
                     ? (
                         <SideBarAccordionGroup
                             group={item}
-                            key={index}
+                            key={item.label}
                             styles={styles}
                         />
                     )
                     : (
                         <SideBarSimpleItem
                             item={item}
-                            key={index}
+                            key={item.label}
                             styles={styles}
                         />
                     ))

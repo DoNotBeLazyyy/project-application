@@ -1,13 +1,15 @@
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import { CaretRight } from '@phosphor-icons/react';
-import { DivProps } from '@type/common.type';
+import { DivProps, ThemeSx } from '@type/common.type';
+import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
+import { normalizeSx } from '@utils/theme-util';
 import { ReactNode } from 'react';
 
-// Variant type for the sidebar header
-type SideBarVariant = 'dark' | 'light';
-
 export interface CommonHeaderSideBarProps extends DivProps {
+    // Props spread onto the arrow IconButton
+    buttonProps?: IconButtonProps;
+
     // Whether to show the dropdown arrow icon
     hasArrow?: boolean;
 
@@ -19,9 +21,6 @@ export interface CommonHeaderSideBarProps extends DivProps {
 
     // Subtitle text displayed below the title
     subtitle?: string;
-
-    // Props spread onto the arrow IconButton
-    buttonProps?: IconButtonProps;
 
     // Visual variant (controls text colors)
     variant?: SideBarVariant;
@@ -56,15 +55,16 @@ export default function CommonHeaderSideBar({
 }: CommonHeaderSideBarProps) {
     const headerVariantStyles = {
         dark: {
-            titleColor: 'text-white',
-            subtitleColor: 'text-white/60'
+            titleColor: 'text-[var(--mui-tokens-color-common-white)]',
+            subtitleColor: 'text-[#ffffff99]'
         },
         light: {
             titleColor: 'text-[var(--mui-tokens-color-neutral-900)]',
             subtitleColor: 'text-[var(--mui-tokens-color-neutral-500)]'
         }
-    };
-    const headerStyle = headerVariantStyles[variant];
+    }; // Predefined styles for dark and light variants
+    const { titleColor, subtitleColor } = headerVariantStyles[variant]; // Destructure styles based on the current variant
+    const arrowRotateClass = isExpanded && 'rotate-90'; // Rotate arrow if expanded
 
     return (
         <div
@@ -81,8 +81,9 @@ export default function CommonHeaderSideBar({
                     className={
                         classMerge(
                             'text-[length:var(--mui-tokens-fontSize-nm)] font-[var(--mui-tokens-fontWeight-bold)] leading-[1.25rem]',
-                            headerStyle.titleColor
-                        )}
+                            titleColor
+                        )
+                    }
                 >
                     {title}
                 </p>
@@ -91,7 +92,7 @@ export default function CommonHeaderSideBar({
                         className={
                             classMerge(
                                 'text-[12px] leading-snug',
-                                headerStyle.subtitleColor
+                                subtitleColor
                             )
                         }
                     >
@@ -103,17 +104,21 @@ export default function CommonHeaderSideBar({
                 <IconButton
                     disableRipple
                     {...buttonProps}
-                    sx={{
-                        flexShrink: 0,
-                        p: 0,
-                        ...buttonProps?.sx
-                    }}
+                    sx={[
+                        {
+                            flexShrink: 0,
+                            p: 0
+                        },
+                        ...normalizeSx(buttonProps?.sx as ThemeSx)
+                    ]}
                 >
                     <CaretRight
-                        className={classMerge(
-                            'transition-transform duration-200',
-                            isExpanded && 'rotate-90'
-                        )}
+                        className={
+                            classMerge(
+                                'transition-transform duration-200',
+                                arrowRotateClass
+                            )
+                        }
                         color="#022179"
                         size={12}
                         weight="bold"

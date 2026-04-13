@@ -1,4 +1,4 @@
-import type { SideBarItem } from '@components/sidebar/CommonSideBarList';
+import { SideBarItem } from '@type/sidebar.types';
 
 interface SubItemBorderLineProps {
     // Color for the active segment of the border line.
@@ -27,12 +27,13 @@ export default function SubItemBorderLine({
     const end = activeIndex >= 0
         ? ((activeIndex + 1) / total) * 100
         : 0; // Calculate the end position for the gradient based on the active index and total items.
+    const hasActiveBackground = activeIndex >= 0; // check if there is an active tab
 
     return (
         <div
             className="absolute left-0 top-0 h-full w-0.5 rounded-full"
             style={{
-                background: activeIndex >= 0
+                background: hasActiveBackground
                     ? `linear-gradient(to bottom, ${inactiveColor} ${start}%, ${activeColor} ${start}%, ${activeColor} ${end}%, ${inactiveColor} ${end}%)`
                     : inactiveColor
             }}
