@@ -63,10 +63,10 @@ export default function Calendar({
             return;
         }
 
-        const parsedDate = new Date(searchValue);
+        const { getTime, getFullYear, getMonth } = new Date(searchValue);
 
-        if (!isNaN(parsedDate.getTime())) {
-            setDate(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
+        if (!isNaN(getTime())) {
+            setDate(new Date(getFullYear(), getMonth(), 1));
         }
         else {
             alert('Invalid date format. Try "2026-04" or "April 2026"'); {/* TODO */}
@@ -76,7 +76,7 @@ export default function Calendar({
     /**
      * Updates the search input state when the user types.
      *
-     * @param event - The input change event
+     * @param event - The input change event.
      */
     function handleInputChange(event: ChangeEventInputElement) {
         setSearchValue(event.target.value);

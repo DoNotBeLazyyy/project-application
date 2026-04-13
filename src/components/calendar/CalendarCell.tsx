@@ -34,10 +34,7 @@ export default function CalendarCell({ day }: CalendarCellProps) {
             }
         >
             <div className="flex gap-[var(--mui-tokens-spacing-4)] truncate">
-                <CalendarCellDate
-                    day={day.day}
-                    isToday={day.isToday}
-                />
+                <CalendarCellDate {...day} />
             </div>
         </div>
     );
