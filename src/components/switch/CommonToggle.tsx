@@ -1,4 +1,4 @@
-import { Switch, SwitchProps, Typography } from '@mui/material';
+import { Switch, SwitchProps } from '@mui/material';
 
 interface CommonToggleProps extends SwitchProps {
     // Label for toggle switch.
@@ -63,19 +63,14 @@ export default function CommonToggle({
     }; // Base styles for the switch component.
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16
-            }}>
+        <div className="flex items-center gap-4">
             <Switch
                 sx={baseStyle}
                 {...props}
             />
-            {label && <Typography>
+            <div className="flex items-start text-[10px]">
                 {label}
-            </Typography>}
+            </div>
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import CommonToggle from '@components/switch/CommonToggle';
+import { Switch } from '@mui/material';
 import { Stack } from '@mui/system';
 import { InputChangeEvent } from '@type/common.type';
 import { useState } from 'react';
@@ -43,12 +44,37 @@ export default function CommonToggleSample() {
                         label="Common Toggle on and off"
                         onChange={handleToggleChange}
                     />
+                    {checked && (
+                        <div className="text-[50px] font-bold">
+                            HELLO WORLD
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-col justify-center gap-1 text-[50px]">
                     Toggle without label
                     <CommonToggle />
                     <CommonToggle disabled />
                     <CommonToggle
+                        checked={true}
+                        disabled
+                    />
+                </div>
+
+                <div className="flex flex-col justify-center gap-1 text-[50px]">
+                    NEW SWITCH
+                    <Switch
+                        onChange={handleToggleChange}
+                    />
+                    {checked && (
+                        <div className="text-[50px] font-bold">
+                            HELLO WORLD
+                        </div>
+                    )}
+                    <Switch
+                        checked={false}
+                        disabled
+                    />
+                    <Switch
                         checked={true}
                         disabled
                     />
