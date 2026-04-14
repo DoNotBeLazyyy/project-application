@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { Components, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { SharedTabMenuProps } from '@type/tab-menu.type';
