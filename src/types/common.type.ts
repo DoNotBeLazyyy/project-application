@@ -1,11 +1,14 @@
 import { Components, Theme } from '@mui/material'; // Mui dependency
 import { GridApi } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, KeyboardEvent, MouseEvent, SetStateAction
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction
 } from 'react';
 
 // String props
 export type StringNum = string | number;
+
+// Span props
+export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
 
 // Div props
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
