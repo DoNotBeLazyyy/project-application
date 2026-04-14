@@ -24,6 +24,10 @@ export default function ComponentSample() {
         {
             label: 'Tab Menu',
             path: 'tab-menu'
+        },
+        {
+            label: 'Button',
+            path: 'button'
         }
     ] as const;
 

@@ -1,4 +1,5 @@
 import ComponentSample from '@pages/component-sample';
+import CommonButtonSample from '@pages/component-sample/button';
 import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
@@ -42,6 +43,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTabMenuSample />,
             path: 'tab-menu'
+        },
+        {
+            element: <CommonButtonSample />,
+            path: 'button'
         }
     ]
 }] as const;
