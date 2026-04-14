@@ -30,10 +30,7 @@ export default function FilterModalSample() {
 
     return (
         <div>
-            <CommonButton
-                variant="primary"
-                onClick={handleOpen}
-            >
+            <CommonButton onClick={handleOpen}>
                 Open Filter Modal
             </CommonButton>
             {isOpen && <FilterModal

@@ -1,18 +1,14 @@
-import { ModalButtonProps } from '@components/button/ModalButtons';
-import BaseActionModal, { BaseActionModalProps } from '@components/modal/BaseActionModal';
+import CommonActionModal, { CommonActionModalProps } from '@components/modal/CommonActionModal';
 import { HTMLAttributesSpanElement } from '@type/common.type';
 import { ActionIconProps } from '@type/common/modal.type';
 import { classMerge } from '@utils/css.util';
 
-export interface CommonPromptModalProps extends BaseActionModalProps {
+export interface CommonPromptModalProps extends CommonActionModalProps {
     // Action icon props
     actionIconProps?: ActionIconProps;
 
     // Main content
     mainContent?: HTMLAttributesSpanElement;
-
-    // Modal button props
-    modalButtonProps?: ModalButtonProps;
 
     // Sub content
     subContent?: HTMLAttributesSpanElement;
@@ -39,8 +35,11 @@ export default function CommonPromptModal({
     subContent,
     ...props
 }: CommonPromptModalProps) {
+    const { icon: Icon, iconContainerClassName, iconProps } = actionIconProps ?? {}; // Destructured icon configuration for the action trigger
+    const { cancelProps, className, isButtonsFullWidth = true } = modalButtonProps ?? {}; // Destructured button properties
+
     return (
-        <BaseActionModal
+        <CommonActionModal
             {...props}
             containerClassName={
                 classMerge(
@@ -50,30 +49,33 @@ export default function CommonPromptModal({
             }
             modalButtonProps={{
                 ...modalButtonProps,
-                className: 'flex-row-reverse',
-                isButtonsFullWidth: modalButtonProps?.isButtonsFullWidth ?? true,
+                className: classMerge(
+                    'flex-row-reverse',
+                    className
+                ),
+                isButtonsFullWidth,
                 cancelProps: {
-                    variant: 'outlined' as const,
-                    ...modalButtonProps?.cancelProps
+                    variant: 'outlined',
+                    ...cancelProps
                 }
             }}
         >
             <div className="flex flex-col gap-(--mui-tokens-spacing-5) items-center w-full">
-                {actionIconProps?.icon && (
+                {Icon && (
                     <div
                         className={
                             classMerge(
                                 'h-22 p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-full) w-22',
-                                actionIconProps.iconContainerClassName
+                                iconContainerClassName
                             )
                         }
                     >
-                        <actionIconProps.icon
-                            {...actionIconProps.iconProps}
+                        <Icon
+                            {...iconProps}
                             className={
                                 classMerge(
                                     'h-12 w-12',
-                                    actionIconProps.iconProps?.className
+                                    iconProps?.className
                                 )
                             }
                             weight="bold"
@@ -109,6 +111,6 @@ export default function CommonPromptModal({
                     )}
                 </div>
             </div>
-        </BaseActionModal>
+        </CommonActionModal>
     );
 }

@@ -32,10 +32,7 @@ export default function AlertPromptModalSample() {
 
     return (
         <div>
-            <CommonButton
-                variant="primary"
-                onClick={handleOpen}
-            >
+            <CommonButton onClick={handleOpen}>
                 Open Alert Modal
             </CommonButton>
             {isOpen && <AlertPromptModal

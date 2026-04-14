@@ -32,16 +32,17 @@ export default function DeletePromptModalSample() {
 
     return (
         <div>
-            <CommonButton
-                variant="primary"
-                onClick={handleOpen}
-            >
+            <CommonButton onClick={handleOpen}>
                 Open Delete Modal
             </CommonButton>
             {isOpen && <DeletePromptModal
                 mainContent={{ title: t('delete_main_label_placeholder') }}
                 open={isOpen}
-                subContent={{ title: t('delete_sub_label_placeholder') }}
+                subContent={{
+                    title: t('delete_sub_label_placeholder', {
+                        title: 'Item'
+                    })
+                }}
                 onClose={handleClose}
             />}
         </div>

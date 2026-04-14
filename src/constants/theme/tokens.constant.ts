@@ -24,6 +24,17 @@ export const TOKENS: SharedTokenProps = {
             light: '#8A38F533',
             main: '#8A38F5'
         },
+        green: {
+            100: '#E5FBEE',
+            200: '#CEF6DF',
+            300: '#A3EDC3',
+            400: '#79E3A6',
+            500: '#2DCC70',
+            600: '#24A85B',
+            700: '#1B8547',
+            800: '#136334',
+            900: '#0C4221'
+        },
         neutral: {
             50: '#FAFAFA',
             100: '#F4F4F5',
@@ -36,6 +47,17 @@ export const TOKENS: SharedTokenProps = {
             800: '#27272A',
             900: '#18181B'
         },
+        red: {
+            100: '#FFF0F0',
+            200: '#FFDDDD',
+            300: '#FCA5A5',
+            400: '#F87171',
+            500: '#EB5757',
+            600: '#DC2626',
+            700: '#B91C1C',
+            800: '#991B1B',
+            900: '#7F1D1D'
+        },
         secondary: {
             light: '#DFEDFE',
             main: '#5196F6'
@@ -47,6 +69,17 @@ export const TOKENS: SharedTokenProps = {
             successLight: '#CEF6DF',
             warning: '#FBA732',
             warningLight: '#FFE5C0'
+        },
+        yellow: {
+            100: '#FFF2E0',
+            200: '#FFE5C0',
+            300: '#FFD090',
+            400: '#FFBC60',
+            500: '#FBA732',
+            600: '#E08C22',
+            700: '#C27014',
+            800: '#A3550B',
+            900: '#803E05'
         }
     },
     fontFamily: {

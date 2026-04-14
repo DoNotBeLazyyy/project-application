@@ -1,8 +1,8 @@
-import AlertPromptModalSample from '@pages/component-sample/modal/AlertPromptModalSample';
-import ConfirmPromptModalSample from '@pages/component-sample/modal/ConfirmPromptModalSample';
-import DeletePromptModalSample from '@pages/component-sample/modal/DeletePromptModalSample';
+import AlertPromptModalSample from '@pages/component-sample/modal/AlertModalSample';
+import ConfirmPromptModalSample from '@pages/component-sample/modal/ConfirmModalSample';
+import DeletePromptModalSample from '@pages/component-sample/modal/DeleteModalSample';
 import FilterModalSample from '@pages/component-sample/modal/FilterModalSample';
-import TypedDeletePromptModalSample from '@pages/component-sample/modal/TypedDeletePromptModalSample';
+import TypedDeletePromptModalSample from '@pages/component-sample/modal/TypedDeleteModalSample';
 
 /**
  * ModalSamplePage

@@ -90,8 +90,7 @@ export default function CommonModal({
      * @returns
      */
     function handleClose(event: DialogCloseProps[0], reason?: DialogCloseProps[1]) {
-        if (
-            (reason === 'backdropClick' && !closeOnBackdropClick)
+        if ((reason === 'backdropClick' && !closeOnBackdropClick)
             || (reason === 'escapeKeyDown' && !closeOnEscape)
         ) {
             return;
@@ -100,18 +99,16 @@ export default function CommonModal({
         onClose?.(event, reason ?? 'escapeKeyDown');
     }
 
-    return (
-        <Dialog
-            {...props}
-            slotProps={{
-                ...slotProps,
-                paper: resolvedPaperSlot
-            }}
-            slots={{
-                paper: CommonCard,
-                ...slots
-            }}
-            onClose={handleClose}
-        />
-    );
+    return <Dialog
+        {...props}
+        slotProps={{
+            ...slotProps,
+            paper: resolvedPaperSlot
+        }}
+        slots={{
+            paper: CommonCard,
+            ...slots
+        }}
+        onClose={handleClose}
+    />;
 }

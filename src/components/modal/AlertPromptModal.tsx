@@ -21,21 +21,19 @@ export default function AlertPromptModal({
 }: CommonPromptModalProps) {
     const { t } = useTranslation(); // Translation hook
 
-    return (
-        <CommonPromptModal
-            {...props}
-            actionIconProps={{
-                icon: WarningIcon,
-                iconContainerClassName: 'bg-[var(--mui-tokens-color-state-warningLight)] text-[var(--mui-tokens-color-state-warning)]',
-                ...actionIconProps
-            }}
-            modalButtonProps={{
-                ...modalButtonProps,
-                confirmProps: {
-                    children: t('continue'),
-                    ...modalButtonProps?.confirmProps
-                }
-            }}
-        />
-    );
+    return <CommonPromptModal
+        {...props}
+        actionIconProps={{
+            icon: WarningIcon,
+            iconContainerClassName: 'bg-[var(--mui-tokens-color-200)] text-[var(--mui-tokens-color-500)]',
+            ...actionIconProps
+        }}
+        modalButtonProps={{
+            ...modalButtonProps,
+            confirmProps: {
+                children: t('continue'),
+                ...modalButtonProps?.confirmProps
+            }
+        }}
+    />;
 }

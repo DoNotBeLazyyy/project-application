@@ -2,11 +2,11 @@ import CommonButton, { CommonButtonProps } from '@components/button/CommonButton
 import { classMerge } from '@utils/css.util';
 
 export interface ModalButtonProps {
-    // Additional class name
-    className?: string;
-
     // Delete button props
     cancelProps?: CommonButtonProps;
+
+    // Additional class name
+    className?: string;
 
     // Confirm button props
     confirmProps?: CommonButtonProps;
@@ -23,8 +23,8 @@ export interface ModalButtonProps {
  *
  * @example
  * <ModalButtons
- * cancelProps={{ children: 'No' }}
- * confirmProps={{ children: 'Yes' }}
+ *  cancelProps={{ children: 'No' }}
+ *  confirmProps={{ children: 'Yes' }}
  * />
  */
 export default function ModalButtons({

@@ -9,10 +9,10 @@ import { ComponentTheme } from '@type/common/theme.type';
 
 export const COMPONENTS: ComponentTheme = {
     ...buttonOverrides,
+    ...cardOverrides,
     ...checkboxOverrides,
     ...dialogOverrides,
     ...formControlOverrides,
-    ...cardOverrides,
     ...inputOverrides,
     ...paperOverrides
 }; // Components configuration

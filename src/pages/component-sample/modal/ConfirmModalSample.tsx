@@ -32,16 +32,19 @@ export default function ConfirmPromptModalSample() {
 
     return (
         <div>
-            <CommonButton
-                variant="primary"
-                onClick={handleOpen}
-            >
+            <CommonButton onClick={handleOpen}>
                 Open Confirm Modal
             </CommonButton>
             {isOpen && <ConfirmPromptModal
-                mainContent={{ title: t('warning_main_label_placeholder') }}
+                mainContent={{
+                    title: t('confirm_main_label_placeholder')
+                }}
                 open={isOpen}
-                subContent={{ title: t('warning_sub_label_placeholder') }}
+                subContent={{
+                    title: t('confirm_sub_label_placeholder', {
+                        title: 'Holiday'
+                    })
+                }}
                 onClose={handleClose}
             />}
         </div>

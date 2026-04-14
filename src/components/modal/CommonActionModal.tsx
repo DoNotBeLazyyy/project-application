@@ -3,7 +3,7 @@ import CommonModal, { CommonModalProps } from '@components/modal/CommonModal';
 import { classMerge } from '@utils/css.util';
 import { useTranslation } from 'react-i18next';
 
-export interface BaseActionModalProps extends CommonModalProps {
+export interface CommonActionModalProps extends CommonModalProps {
     // Additional container class name
     containerClassName?: string;
 
@@ -12,26 +12,27 @@ export interface BaseActionModalProps extends CommonModalProps {
 }
 
 /**
- * BaseActionModal
+ * CommonActionModal
  *
  * A foundational action modal component that integrates CommonModal with standardized action buttons.
  *
  * @example
- * <BaseActionModal
- * title="Confirm Action"
- * onClose={handleClose}
- * isOpen={isOpen}
+ * <CommonActionModal
+ *  title="Confirm Action"
+ *  onClose={handleClose}
+ *  isOpen={isOpen}
  * >
- * <p>Are you sure you want to proceed?</p>
- * </BaseActionModal>
+ *  <p>Are you sure you want to proceed?</p>
+ * </CommonActionModal>
  */
-export default function BaseActionModal({
+export default function CommonActionModal({
     children,
     containerClassName,
     modalButtonProps,
     ...props
-}: BaseActionModalProps) {
+}: CommonActionModalProps) {
     const { t } = useTranslation(); // Translation hook
+    const { cancelProps, className } = modalButtonProps ?? {}; // Destructure modalButtonProps for easy access
 
     return (
         <CommonModal {...props}>
@@ -48,12 +49,12 @@ export default function BaseActionModal({
                     {...modalButtonProps}
                     cancelProps={{
                         children: t('cancel'),
-                        ...modalButtonProps?.cancelProps
+                        ...cancelProps
                     }}
                     className={
                         classMerge(
                             'mt-auto w-full',
-                            modalButtonProps?.className
+                            className
                         )
                     }
                 />

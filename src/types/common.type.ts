@@ -1,7 +1,7 @@
 
 import { GridApi } from 'ag-grid-community';
 import {
-  ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -14,7 +14,6 @@ export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
-export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
 
 // Node props
 export type NodeNull = Node | null;

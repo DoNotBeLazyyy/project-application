@@ -1,9 +1,9 @@
-import BaseActionModal, { BaseActionModalProps } from '@components/modal/BaseActionModal';
+import CommonActionModal, { CommonActionModalProps } from '@components/modal/CommonActionModal';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export interface FilterModalProps extends BaseActionModalProps {
+export interface FilterModalProps extends CommonActionModalProps {
     // Form content
     formContent?: ReactNode;
 }
@@ -28,9 +28,10 @@ export default function FilterModal({
     ...props
 }: FilterModalProps) {
     const { t } = useTranslation(); // Translation hook
+    const { cancelProps, confirmProps } = modalButtonProps ?? {}; // Destructured button properties
 
     return (
-        <BaseActionModal
+        <CommonActionModal
             {...props}
             cardProps={{
                 cardHeaderProps: {
@@ -47,16 +48,16 @@ export default function FilterModal({
             modalButtonProps={{
                 ...modalButtonProps,
                 cancelProps: {
-                    variant: 'secondary' as const,
-                    ...modalButtonProps?.cancelProps
+                    color: 'secondary',
+                    ...cancelProps
                 },
                 confirmProps: {
                     children: t('filter_list'),
-                    ...modalButtonProps?.confirmProps
+                    ...confirmProps
                 }
             }}
         >
             {formContent}
-        </BaseActionModal>
+        </CommonActionModal>
     );
 }

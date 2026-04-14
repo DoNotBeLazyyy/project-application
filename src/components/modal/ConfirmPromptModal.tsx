@@ -10,8 +10,8 @@ import { useTranslation } from 'react-i18next';
  *
  * @example
  * <ConfirmPromptModal
- * open={true}
- * onClose={handleClose}
+ *  open={true}
+ *  onClose={handleClose}
  * />
  */
 export default function ConfirmPromptModal({
@@ -21,21 +21,19 @@ export default function ConfirmPromptModal({
 }: CommonPromptModalProps) {
     const { t } = useTranslation(); // Translation hook
 
-    return (
-        <CommonPromptModal
-            {...props}
-            actionIconProps={{
-                icon: CheckIcon,
-                iconContainerClassName: 'bg-(--mui-tokens-color-state-successLight) text-(--mui-tokens-color-state-success)',
-                ...actionIconProps
-            }}
-            modalButtonProps={{
-                ...modalButtonProps,
-                confirmProps: {
-                    children: t('proceed'),
-                    ...modalButtonProps?.confirmProps
-                }
-            }}
-        />
-    );
+    return <CommonPromptModal
+        {...props}
+        actionIconProps={{
+            icon: CheckIcon,
+            iconContainerClassName: 'bg-(--mui-tokens-color-state-successLight) text-(--mui-tokens-color-state-success)',
+            ...actionIconProps
+        }}
+        modalButtonProps={{
+            ...modalButtonProps,
+            confirmProps: {
+                children: t('proceed'),
+                ...modalButtonProps?.confirmProps
+            }
+        }}
+    />;
 }

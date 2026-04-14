@@ -86,14 +86,23 @@ interface ColorTokenProps {
     // UI graveyard/disabled colors
     graveyard?: ColorVariantProps;
 
+    // Green color
+    green?: ColorWeightRecord;
+
     // Neutral gray scale
     neutral?: ColorWeightRecord;
+
+    // Red color
+    red?: ColorWeightRecord;
 
     // Secondary brand colors
     secondary?: ColorVariantProps;
 
     // Semantic state colors
     state?: ColorStateProps;
+
+    // Yellow color
+    yellow?: ColorWeightRecord;
 }
 
 interface FontFamilyTokenProps {
@@ -343,17 +352,6 @@ declare module '@mui/material/Button' {
     interface ButtonPropsSizeOverrides {
         // Extra small size
         xsmall: true;
-    }
-
-    interface ButtonPropsVariantOverrides {
-        // Primary variant
-        primary: true;
-
-        // Secondary variant
-        secondary: true;
-
-        // Ghost variant
-        ghost: true;
     }
 }
 

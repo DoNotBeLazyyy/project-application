@@ -22,27 +22,20 @@ export default function DeletePromptModal({
 }: CommonPromptModalProps) {
     const { t } = useTranslation(); // Translation hook
 
-    return (
-        <CommonPromptModal
-            {...props}
-            actionIconProps={{
-                icon: TrashIcon,
-                iconContainerClassName: 'bg-(--mui-tokens-color-state-errorLight) text-(--mui-tokens-color-state-error)',
-                ...actionIconProps
-            }}
-            modalButtonProps={{
-                ...modalButtonProps,
-                confirmProps: {
-                    children: t('yes_delete'),
-                    sx: {
-                        backgroundColor: 'var(--mui-tokens-color-state-error)',
-                        '&:hover': { backgroundColor: 'var(--mui-tokens-color-state-error)' },
-                        '&:active': { backgroundColor: 'var(--mui-tokens-color-state-error)' },
-                        '&.Mui-disabled': { backgroundColor: 'var(--mui-tokens-color-state-error)' }
-                    },
-                    ...modalButtonProps?.confirmProps
-                }
-            }}
-        />
-    );
+    return <CommonPromptModal
+        {...props}
+        actionIconProps={{
+            icon: TrashIcon,
+            iconContainerClassName: 'bg-(--mui-tokens-color-red-200) text-(--mui-tokens-color-red-500)',
+            ...actionIconProps
+        }}
+        modalButtonProps={{
+            ...modalButtonProps,
+            confirmProps: {
+                children: t('yes_delete'),
+                color: 'error',
+                ...modalButtonProps?.confirmProps
+            }
+        }}
+    />;
 }

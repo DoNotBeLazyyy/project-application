@@ -1,20 +1,3 @@
 {
-    "Login": "로그인",
-    "showing_rows_info": "{{totalElements}}개 중 {{startRow}}-{{endRow}}행 표시",
-    "page_of_total": "{{totalPages}} 중 <input /> 페이지",
-    "items_per_page": "{{count}} / 페이지",
-    "cancel": "취소",
-    "yes_delete": "예, 삭제",
-    "continue": "계속",
-    "proceed": "진행",
-    "delete_main_label_placeholder": "항목 삭제",
-    "delete_sub_label_placeholder": "이 \"항목\"을(를) 삭제하시겠습니까?",
-    "warning_main_label_placeholder": "경고",
-    "warning_sub_label_placeholder": "저장되지 않은 변경 사항이 있습니다.",
-    "confirm_main_label_placeholder": "수정 확인",
-    "confirm_sub_label_placeholder": "\"휴일\"에 대한 변경 사항을 저장하시겠습니까?",
-    "confirm": "확인",
-    "filter_list": "필터 목록",
-    "default_filter_modal_title": "카테고리별 목록 필터링",
-    "default_filter_modal_subtitle": "필터링할 특정 카테고리 선택 및 수정"
+
 }
