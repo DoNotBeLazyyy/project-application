@@ -24,10 +24,10 @@ export default function CalendarTitle({
 }: CalendarHeaderProps) {
     return (
         <div>
-            <div className="font-[var(--mui-tokens-fontWeight-bold)] text-[length:var(--mui-tokens-fontSize-lg)] text-[var(--mui-tokens-color-neutral-900)]">
+            <div className="font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-900) text-(length:--mui-tokens-fontSize-lg)">
                 {title}
             </div>
-            <div className="text-[length:var(--mui-tokens-fontSize-xs)] text-[var(--mui-tokens-color-neutral-500)]">
+            <div className="text-(--mui-tokens-color-neutral-500) text-(length:--mui-tokens-fontSize-xs)">
                 {subtitle}
             </div>
         </div>

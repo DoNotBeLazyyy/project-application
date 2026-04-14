@@ -83,8 +83,8 @@ export default function Calendar({
     }
 
     return (
-        <div className="bg-[var(--mui-tokens-color-common-white)] flex flex-col gap-[var(--mui-tokens-spacing-5)] h-full min-w-[67.5rem] mx-auto p-[var(--mui-tokens-spacing-6)] rounded-[var(--mui-tokens-radius-lg)] shadow">
-            <div className="grid grid-cols-6 items-center mx-[var(--mui-tokens-spacing-6)] my-[var(--mui-tokens-spacing-5)]">
+        <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-(--mui-tokens-spacing-5) h-full min-w-270 mx-auto p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-lg) shadow">
+            <div className="grid grid-cols-6 items-center mx-(--mui-tokens-spacing-6) my-(--mui-tokens-spacing-5)">
                 <div className="col-span-2">
                     <CalendarTitle
                         subtitle={subtitle}
@@ -100,7 +100,7 @@ export default function Calendar({
                     />
                 </div>
                 {/* TODO: when the search component is ready and make it props */}
-                <div className="flex gap-[var(--mui-tokens-spacing-4)] col-span-2 relative">
+                <div className="col-span-2 flex gap-(--mui-tokens-spacing-4) relative">
                     <CalendarSearchInput
                         value={searchValue}
                         onChange={handleInputChange}
@@ -112,7 +112,7 @@ export default function Calendar({
             <div
                 className={
                     classMerge(
-                        'gap-[var(--mui-tokens-spacing-3)] grid grid-cols-7',
+                        'gap-(--mui-tokens-spacing-3) grid grid-cols-7',
                         needsSixRows
                             ? 'grid-rows-6'
                             : 'grid-rows-5'

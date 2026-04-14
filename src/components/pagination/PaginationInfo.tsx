@@ -40,7 +40,7 @@ export default function PaginationInfo({
         <div
             className={
                 classMerge(
-                    'absolute min-w-max right-[16px] text-(--mui-tokens-color-neutral-600) top-[50%] translate-y-[-50%] tw_body_small',
+                    'absolute min-w-max right-4 text-(--mui-tokens-color-neutral-600) top-[50%] translate-y-[-50%] tw_body_small',
                     className
                 )
             }

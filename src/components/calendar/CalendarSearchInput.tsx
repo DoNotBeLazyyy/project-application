@@ -47,7 +47,7 @@ export default function CalendarSearchInput({
                         edge="start"
                         onClick={onSearch}
                     >
-                        <MagnifyingGlassIcon className="text-[var(--mui-tokens-color-neutral-900)] h-[1.25rem] w-[1.25rem]"/>
+                        <MagnifyingGlassIcon className="h-5 text-(--mui-tokens-color-neutral-900) w-5"/>
                     </IconButton>
                 </InputAdornment>
             }
