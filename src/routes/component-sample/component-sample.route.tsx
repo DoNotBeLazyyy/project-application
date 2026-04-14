@@ -1,5 +1,6 @@
 import ComponentSample from '@pages/component-sample';
 import CommonButtonSample from '@pages/component-sample/button';
+import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
 import CommonRadioSample from '@pages/component-sample/radio';
@@ -24,6 +25,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTableSample />,
             path: 'table'
+        },
+        {
+            element: <CalendarSample />,
+            path: 'calendar'
         },
         {
             element: <CommonRadioSample />,

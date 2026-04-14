@@ -38,6 +38,9 @@ export type ThemeSx = SxProps<Theme>;
 
 // React element or boolean type
 export type ReactElementOrBoolean = ReactElement | boolean;
+// Input change props
+export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
+
 // SVG props
 export type IconSvgProps = SVGProps<SVGSVGElement>;
 
