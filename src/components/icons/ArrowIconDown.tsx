@@ -5,10 +5,27 @@ import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme-util';
 
 interface HeaderArrowButtonProps {
+    // Props passed to the IconButton component.
     buttonProps?: IconButtonProps;
+
+    // Controls whether the accordion/group is expanded.
     isExpanded: boolean;
 }
 
+/**
+ * ArrowIconDown
+ * Renders an arrow button that rotates when expanded.
+ *
+ * Props:
+ * - buttonProps: props for the MUI IconButton.
+ * - isExpanded: controls the arrow rotation state.
+ *
+ * @example
+ * <ArrowIconDown
+ *  buttonProps={buttonProps}
+    isExpanded={isExpanded}
+ * />
+ */
 export default function ArrowIconDown({
     buttonProps,
     isExpanded

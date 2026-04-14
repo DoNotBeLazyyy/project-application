@@ -1,16 +1,11 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonHeaderSideBar from '@components/sidebar/CommonHeaderSideBar';
-import Button, { ButtonProps } from '@mui/material/Button';
 import { IconButtonProps } from '@mui/material/IconButton';
 import { GearSixIcon } from '@phosphor-icons/react';
-import { DivProps } from '@type/common.type';
-import { SideBarVariant } from '@type/sidebar.types';
+import { HTMLAttributesDivElement } from '@type/common.type';
+import { SideBarFooterProps, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
-
-interface SideBarFooterProps extends ButtonProps {
-    // Footer button label
-    label?: string;
-}
 
 interface SideBarHeaderProps {
     // Props spread onto the arrow IconButton
@@ -32,7 +27,7 @@ interface SideBarHeaderProps {
     title?: string;
 }
 
-interface CommonSideBarProps extends DivProps {
+interface CommonSideBarProps extends HTMLAttributesDivElement {
     // Footer button configuration
     footerProps?: SideBarFooterProps;
 
@@ -85,19 +80,6 @@ export default function CommonSideBar({
         dark: 'var(--mui-tokens-color-brand-950)',
         light: 'var(--mui-tokens-color-common-white)'
     } as const; // Define default background colors for dark and light variants of the sidebar.
-    const footerVariantStyles = {
-        dark: {
-            color: 'var(--mui-tokens-color-common-white)',
-            hoverBg: 'rgba(255,255,255,0.1)',
-            iconColor: 'var(--mui-tokens-color-neutral-300)'
-        },
-        light: {
-            color: 'var(--mui-tokens-color-neutral-600)',
-            hoverBg: 'rgba(161,161,170,0.1)',
-            iconColor: 'var(--mui-tokens-color-neutral-400)'
-        }
-    }; // Define styles for the footer button based on the sidebar variant.
-    const footerStyle = footerVariantStyles[variant]; // Get the appropriate styles for the footer button based on the sidebar variant.
 
     return (
         <div
@@ -105,7 +87,7 @@ export default function CommonSideBar({
                 classMerge(
                     'flex h-screen flex-col overflow-hidden transition-[width,min-width] duration-300',
                     isOpen
-                        ? 'w-[15.625rem] min-w-[15.625rem]'
+                        ? 'w-62.5 min-w-62.5'
                         : 'w-0 min-w-0',
                     className
                 )
@@ -134,34 +116,38 @@ export default function CommonSideBar({
             </div>
             {footerProps && (
                 <div className="shrink-0 px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4)">
-                    <Button
-                        disableRipple
+                    <CommonButton
                         startIcon={<GearSixIcon size={20} />}
-                        {...footerProps}
                         sx={{
                             width: '100%',
                             justifyContent: 'flex-start',
-                            gap: 1,
-                            borderRadius: 'var(--mui-tokens-radius-sm)',
+                            gap: 'var(--mui-tokens-spacing-3)',
+                            borderRadius: 'var(--mui-tokens-radius-md)',
                             border: '2px solid var(--mui-tokens-color-neutral-300)',
                             backgroundColor: 'transparent',
-                            px: 4,
-                            py: 1.5,
+                            paddingInline: 'var(--mui-tokens-spacing-4)',
+                            paddingBlock: '0.375rem',
                             fontSize: 'var(--mui-tokens-fontSize-sm)',
-                            textTransform: 'none',
-                            color: footerStyle.color,
+                            fontWeight: 'var(--mui-tokens-fontWeight-normal)',
+                            color: variant === 'dark'
+                                ? 'var(--mui-tokens-color-common-white)'
+                                : 'var(--mui-tokens-color-neutral-600)',
                             '&:hover': {
-                                backgroundColor: footerStyle.hoverBg,
+                                backgroundColor: variant === 'dark'
+                                    ? 'rgba(255,255,255,0.1)'
+                                    : 'rgba(161,161,170,0.1)',
                                 border: '2px solid var(--mui-tokens-color-neutral-300)'
                             },
                             '& .MuiButton-startIcon': {
-                                color: footerStyle.iconColor,
-                                marginRight: 0
+                                color: variant === 'dark'
+                                    ? 'var(--mui-tokens-color-neutral-300)'
+                                    : 'var(--mui-tokens-color-neutral-400)'
                             }
                         }}
+                        {...footerProps}
                     >
                         {footerProps.label}
-                    </Button>
+                    </CommonButton>
                 </div>
             )}
         </div>

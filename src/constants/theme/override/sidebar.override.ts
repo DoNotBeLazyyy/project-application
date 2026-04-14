@@ -1,6 +1,6 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common/theme.type';
 
-export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
+export const sidebarOverrides: ComponentTheme = {
     MuiAccordion: {
         defaultProps: {
             disableGutters: true
@@ -11,20 +11,20 @@ export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
                 backgroundImage: 'none',
                 boxShadow: 'none',
                 margin: 0,
-                '&:before': { display: 'none' },
-                '&.Mui-expanded': { margin: 0 }
+                '&:before': {
+                    display: 'none'
+                },
+                '&.Mui-expanded': {
+                    margin: 0
+                },
+                '&.sidebar_dark': {
+                    color: 'var(--mui-tokens-color-common-white)'
+                },
+                '&.sidebar_light': {
+                    color: 'inherit'
+                }
             }
-        },
-        variants: [
-            {
-                props: { sidebarVariant: 'dark' },
-                style: { color: 'var(--mui-tokens-color-common-white)' }
-            },
-            {
-                props: { sidebarVariant: 'light' },
-                style: { color: 'inherit' }
-            }
-        ]
+        }
     },
     MuiAccordionSummary: {
         styleOverrides: {
@@ -45,31 +45,15 @@ export const sidebarOverrides: Components<Omit<Theme, 'components'>> = {
                 },
                 '& .MuiAccordionSummary-expandIconWrapper': {
                     transition: 'transform 200ms'
+                },
+                '&.sidebar_dark:hover': {
+                    backgroundColor: 'var(--mui-tokens-color-brand-900)'
+                },
+                '&.sidebar_light:hover': {
+                    backgroundColor: 'rgba(0,0,0,0.04)'
                 }
             }
-        },
-        variants: [
-            {
-                props: {
-                    sidebarVariant: 'dark'
-                },
-                style: {
-                    '&:hover': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-900)'
-                    }
-                }
-            },
-            {
-                props: {
-                    sidebarVariant: 'light'
-                },
-                style: {
-                    '&:hover': {
-                        backgroundColor: 'rgba(0,0,0,0.04)'
-                    }
-                }
-            }
-        ]
+        }
     },
     MuiAccordionDetails: {
         styleOverrides: {

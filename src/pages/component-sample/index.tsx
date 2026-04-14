@@ -23,8 +23,8 @@ export default function ComponentSample() {
             path: 'input'
         },
         {
-            label: 'Navar',
-            path: 'navar'
+            label: 'Navigation',
+            path: 'navigation'
         },
         {
             label: 'Sidebar',
@@ -33,6 +33,10 @@ export default function ComponentSample() {
         {
             label: 'Tab Menu',
             path: 'tab-menu'
+        },
+        {
+            label: 'Toggle',
+            path: 'toggle'
         },
         {
             label: 'Button',

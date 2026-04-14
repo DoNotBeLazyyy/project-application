@@ -1,3 +1,4 @@
+import { toggleOverrides } from '@constants/theme//override/toggle.override';
 import { buttonOverrides } from '@constants/theme/override/button.override';
 import { cardOverrides } from '@constants/theme/override/card.override';
 import { inputOverrides } from '@constants/theme/override/input.override';
@@ -12,7 +13,8 @@ export const COMPONENTS: ComponentTheme = {
     ...cardOverrides,
     ...inputOverrides,
     ...radioOverrides,
-    ...sidebarOverrides,
+    ...toggleOverrides,
     ...tabMenuOverrides,
-    ...paperOverrides
+    ...paperOverrides,
+    ...sidebarOverrides
 }; // Components configuration

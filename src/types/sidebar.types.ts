@@ -1,11 +1,18 @@
+import { CommonButtonProps } from '@components/button/CommonButton';
 import { ReactNode } from 'react';
 
 // Visual variant for the sidebar
 export type SideBarVariant = 'dark' | 'light';
 
+// Props for the sidebar footer
+export type SideBarFooterProps = CommonButtonProps;
+
+// Type for items in a sidebar section.
+export type SideBarSectionItems = (SideBarItem | SideBarGroup)[];
+
 // Utility type for string or number values
 export interface SideBarItem {
-    // Whether this item is currently active/selected
+    // Whether this item is currently active/selecteds
     isActive?: boolean;
 
     // Icon element for the item
@@ -73,4 +80,14 @@ export interface VariantStyle {
 
     // Sub-item text class
     subItemText: string;
+}
+
+
+// Represents a section in the sidebar containing items and an optional label
+export interface SideBarSection {
+    // Items in this section.
+    items: SideBarSectionItems;
+
+    // Optional section category label.
+    sectionLabel?: string;
 }

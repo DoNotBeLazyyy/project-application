@@ -1,21 +1,10 @@
 import SideBarSectionGroup from '@components/sidebar/SideBarSectionGroup';
-import { DivProps } from '@type/common.type';
-import { SideBarGroup, SideBarItem, SideBarVariant } from '@type/sidebar.types';
+import { HTMLAttributesDivElement } from '@type/common.type';
+import { SideBarSection, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { VARIANT_STYLES } from '@constants/sidebar.constant';
 
-// Type for items in a sidebar section.
-type SideBarSectionItems = (SideBarItem | SideBarGroup)[];
-
-export interface SideBarSection {
-    // Items in this section (can be simple items or accordion groups)
-    items: SideBarSectionItems;
-
-    // Optional section category label
-    sectionLabel?: string;
-}
-
-interface CommonSideBarListProps extends DivProps {
+interface CommonSideBarListProps extends HTMLAttributesDivElement {
     // Array of sections to render
     sections: SideBarSection[];
 

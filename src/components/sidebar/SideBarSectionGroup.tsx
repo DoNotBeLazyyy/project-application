@@ -1,7 +1,6 @@
-import type { SideBarSection } from '@components/sidebar/CommonSideBarList';
 import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
 import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
-import { SideBarVariant, VariantStyle } from '@type/sidebar.types';
+import { SideBarSection, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { isSideBarGroup } from '@utils/sidebar.util';
 
@@ -20,7 +19,19 @@ interface SideBarSectionGroupProps {
 }
 
 /**
- * Renders a single sidebar section with an optional label and a list of items or accordion groups.
+ * SideBarSectionGroup
+ *
+ * Renders a sidebar section containing a label and a list of items.
+ * Items can be either simple sidebar items or accordion groups.
+ * Applies styles based on the selected sidebar variant.
+ *
+ * @example
+ * <SideBarSectionGroup
+ *     section={section}
+ *     styles={variantStyles}
+ *     sectionLabelStyle="text-gray-400"
+ *     variant="dark"
+ * />
  */
 export default function SideBarSectionGroup({
     section,

@@ -1,5 +1,4 @@
 import { classMerge } from '@utils/css.util';
-import React from 'react';
 
 interface HeaderSubtitleProps {
     // CSS class used to control the subtitle text color

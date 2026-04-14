@@ -1,8 +1,8 @@
+import CommonButton from '@components/button/CommonButton';
 import SubItemBorderLine from '@components/sidebar/SubItemBorderLine';
-import { StyledAccordion, StyledAccordionSummary } from '@constants/sidebar.constant';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import { Accordion, AccordionSummary } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import ButtonBase from '@mui/material/ButtonBase';
 import { SideBarGroup, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 
@@ -17,6 +17,20 @@ interface SideBarAccordionGroupProps {
     variant: SideBarVariant;
 }
 
+/**
+ * SideBarAccordionGroup
+ *
+ * Renders a sidebar accordion group with a header and nested sub-items.
+ * Uses MUI Accordion to allow expanding and collapsing sections.
+ * Sub-items are displayed with optional active highlighting and a border indicator.
+ *
+ * @example
+ * <SideBarAccordionGroup
+ *     group={group}
+ *     styles={variantStyles}
+ *     variant="dark"
+ * />
+ */
 export default function SideBarAccordionGroup({
     group,
     styles,
@@ -41,24 +55,32 @@ export default function SideBarAccordionGroup({
     } = styles; // Destructure styles for easier access.
 
     return (
-        <StyledAccordion
+        <Accordion
+            className={
+                variant === 'dark'
+                    ? 'sidebar_dark'
+                    : 'sidebar_light'
+            }
             defaultExpanded={defaultExpanded}
-            sidebarVariant={variant}
         >
-            <StyledAccordionSummary
+            <AccordionSummary
+                className={
+                    variant === 'dark'
+                        ? 'sidebar_dark'
+                        : 'sidebar_light'
+                }
                 expandIcon={
                     <KeyboardArrowDownRoundedIcon
                         className={expandIcon}
                         fontSize="small"
                     />
                 }
-                sidebarVariant={variant}
             >
                 {icon && (
                     <span
                         className={
                             classMerge(
-                                'flex shrink-0 [&>svg]:h-[1.25rem] [&>svg]:w-[1.25rem]',
+                                'flex shrink-0 [&>svg]:h-5 [&>svg]:w-5',
                                 groupIcon
                             )
                         }
@@ -76,7 +98,7 @@ export default function SideBarAccordionGroup({
                 >
                     {label}
                 </span>
-            </StyledAccordionSummary>
+            </AccordionSummary>
             <AccordionDetails>
                 <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
                     {subItemBorder && <SubItemBorderLine
@@ -85,7 +107,7 @@ export default function SideBarAccordionGroup({
                         items={items}
                     />}
                     {items.map((subItem) => (
-                        <ButtonBase
+                        <CommonButton
                             className={
                                 subItem.isActive
                                     ? subItemActive
@@ -94,26 +116,31 @@ export default function SideBarAccordionGroup({
                                         subItemHover
                                     )
                             }
-                            disableRipple
                             key={subItem.label}
                             sx={{
                                 width: '100%',
                                 justifyContent: 'flex-start',
-                                borderRadius: 'var(--mui-shape-corner-radius-lg)',
+                                borderRadius: 'var(--mui-tokens-radius-md)',
+                                backgroundColor: 'transparent',
                                 paddingLeft: 'var(--mui-tokens-spacing-4)',
                                 paddingRight: 'var(--mui-tokens-spacing-4)',
                                 paddingTop: '0.375rem',
                                 paddingBottom: '0.375rem',
                                 fontSize: 'var(--mui-tokens-fontSize-sm)',
-                                transition: 'color 150ms, background-color 150ms'
+                                fontWeight: 'var(--mui-tokens-fontWeight-normal)',
+                                color: 'inherit',
+                                transition: 'color 150ms, background-color 150ms',
+                                '&:hover': {
+                                    backgroundColor: 'transparent'
+                                }
                             }}
                             onClick={subItem.onClick}
                         >
                             {subItem.label}
-                        </ButtonBase>
+                        </CommonButton>
                     ))}
                 </div>
             </AccordionDetails>
-        </StyledAccordion>
+        </Accordion>
     );
 }

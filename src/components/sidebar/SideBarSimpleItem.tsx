@@ -1,4 +1,4 @@
-import ButtonBase from '@mui/material/ButtonBase';
+import CommonButton from '@components/button/CommonButton';
 import { SideBarItem } from '@type/sidebar.types';
 import { VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
@@ -11,6 +11,23 @@ interface SideBarSimpleItemProps {
     styles: VariantStyle;
 }
 
+/**
+ * SideBarSimpleItem
+ *
+ * Renders a single clickable sidebar item with an optional icon and label.
+ * Applies active and hover styles based on the current sidebar variant.
+ *
+ * @example
+ * <SideBarSimpleItem
+ *     item={{
+ *         label: "Dashboard",
+ *         icon: <DashboardIcon />,
+ *         isActive: true,
+ *         onClick: () => console.log("Dashboard clicked")
+ *     }}
+ *     styles={variantStyles}
+ * />
+ */
 export default function SideBarSimpleItem({
     item,
     styles
@@ -29,7 +46,7 @@ export default function SideBarSimpleItem({
     } = styles; // Destructure styles for easier access.
 
     return (
-        <ButtonBase
+        <CommonButton
             className={
                 classMerge(
                     'flex w-fit items-center rounded-(--mui-tokens-radius-md) text-left transition-colors',
@@ -41,12 +58,17 @@ export default function SideBarSimpleItem({
                         )
                 )
             }
-            disableRipple
             sx={{
                 gap: '10px',
-                px: 4,
-                py: 3,
+                backgroundColor: 'transparent',
+                px: 'var(--mui-tokens-spacing-4)',
+                py: 'var(--mui-tokens-spacing-3)',
                 fontSize: 'var(--mui-tokens-fontSize-sm)',
+                fontWeight: 'var(--mui-tokens-fontWeight-normal)',
+                color: 'inherit',
+                '&:hover': {
+                    backgroundColor: 'transparent'
+                },
                 '& .sidebar-icon svg': {
                     height: 'var(--mui-tokens-spacing-6)',
                     width: 'var(--mui-tokens-spacing-6)'
@@ -67,6 +89,6 @@ export default function SideBarSimpleItem({
                 </span>
             )}
             {label}
-        </ButtonBase>
+        </CommonButton>
     );
 }

@@ -11,7 +11,7 @@ export type StringNum = string | number;
 export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
 
 // Div props
-export type DivProps = HTMLAttributes<HTMLDivElement>;
+export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
@@ -53,3 +53,5 @@ export type IconSvg = IconSvgProps & { color?: string }
 
 // React element or undefined type
 export type ReactUndefined = ReactElement | undefined;
+// event type for input change events.
+export type InputChangeEvent = ChangeEvent<HTMLInputElement>;

@@ -2,12 +2,12 @@ import ArrowIconDown from '@components/icons/ArrowIconDown';
 import CommonHeaderSubtitle from '@components/sidebar/CommonHeaderSubtitle';
 import { CommonHeaderTitle } from '@components/sidebar/CommonHeaderTitle';
 import { IconButtonProps } from '@mui/material/IconButton';
-import { DivProps } from '@type/common.type';
+import { HTMLAttributesDivElement } from '@type/common.type';
 import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
-export interface CommonHeaderSideBarProps extends DivProps {
+export interface CommonHeaderSideBarProps extends HTMLAttributesDivElement {
     // Props spread onto the arrow IconButton
     buttonProps?: IconButtonProps;
 
@@ -84,7 +84,8 @@ export default function CommonHeaderSideBar({
                 />
                 {subtitle && <CommonHeaderSubtitle
                     colorClassName={subtitleColor}
-                    text={subtitle} />}
+                    text={subtitle}
+                />}
             </div>
             {hasArrow && <ArrowIconDown
                 buttonProps={buttonProps}

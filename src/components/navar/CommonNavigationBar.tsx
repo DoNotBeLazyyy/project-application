@@ -1,8 +1,8 @@
-import { DivProps } from '@type/common.type';
+import { HTMLAttributesDivElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
-export interface CommonNavarProps extends DivProps {
+export interface CommonNavarProps extends HTMLAttributesDivElement {
     // Content rendered on the left side of the navbar (e.g., search, tabs).
     leftContent?: ReactNode;
 
@@ -32,16 +32,16 @@ export default function CommonNavigationBar({
         <div
             className={
                 classMerge(
-                    'flex items-center justify-between bg-[var(--mui-tokens-color-brand-950)] px-[var(--mui-tokens-spacing-6)] py-[var(--mui-tokens-spacing-4)]',
+                    'flex items-center justify-between bg-(--mui-tokens-color-brand-950) px-(--mui-tokens-spacing-6) py-(--mui-tokens-spacing-4)',
                     className
                 )
             }
             {...props}
         >
-            <div className="flex items-center gap-[var(--mui-tokens-spacing-4)]">
+            <div className="flex items-center gap-(--mui-tokens-spacing-4)">
                 {leftContent}
             </div>
-            <div className="flex items-center gap-[var(--mui-tokens-spacing-4)]">
+            <div className="flex items-center gap-(--mui-tokens-spacing-4)">
                 {rightContent}
             </div>
         </div>

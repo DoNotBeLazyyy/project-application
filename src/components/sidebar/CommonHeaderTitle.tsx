@@ -26,7 +26,7 @@ export function CommonHeaderTitle({
         <p
             className={
                 classMerge(
-                    'text-(length:--mui-tokens-fontSize-nm) font-(--mui-tokens-fontWeight-bold) leading-[1.25rem]',
+                    'text-(length:--mui-tokens-fontSize-nm) font-(--mui-tokens-fontWeight-bold) leading-5',
                     colorClassName
                 )
             }

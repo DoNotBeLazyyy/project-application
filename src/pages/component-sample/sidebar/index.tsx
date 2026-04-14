@@ -1,11 +1,12 @@
 import EgemcoIcon from '@assets/images/icons/egemco.png';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
-import CommonSideBarList, { SideBarSection } from '@components/sidebar/CommonSideBarList';
+import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
     HouseIcon, CalendarIcon, ClockIcon, BuildingsIcon, UsersIcon, CalendarDotsIcon, ClockUserIcon,
     DatabaseIcon,
     GlobeIcon
 } from '@phosphor-icons/react';
+import { SideBarSection } from '@type/sidebar.types';
 import { useState } from 'react';
 
 export default function CommonSideBarSample() {
@@ -126,8 +127,9 @@ export default function CommonSideBarSample() {
     ]; // Dark variant sections data for the sidebar
 
     return (
-        <div className="flex justify-between bg-[#F4F4F5]">
+        <div className="flex h-full justify-between bg-[#F4F4F5]">
             <CommonSideBar
+                className="h-full"
                 // eslint-disable-next-line no-console
                 footerProps={{ label: 'Settings', onClick: () => console.log('Settings') }}
                 headerProps={{
@@ -144,6 +146,7 @@ export default function CommonSideBarSample() {
             </CommonSideBar>
 
             <CommonSideBar
+                className="h-full"
                 // eslint-disable-next-line no-console
                 footerProps={{ label: 'Settings', onClick: () => console.log('Settings') }}
                 headerProps={{
