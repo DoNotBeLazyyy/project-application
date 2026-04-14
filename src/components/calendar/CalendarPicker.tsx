@@ -34,14 +34,6 @@ export default function CalendarPicker({
     size,
     onChangeMonth
 }: CalendarPickerProps) {
-    const containerClasses = classMerge(
-        'flex items-center gap-[var(--mui-tokens-spacing-6)]',
-        {
-            'justify-center': calendarPickerAlign === 'CENTER',
-            'justify-start': calendarPickerAlign === 'LEFT',
-            'justify-end': calendarPickerAlign === 'RIGHT'
-        }
-    );
 
     /**
      * Handles the click event for the next month button.
@@ -58,7 +50,16 @@ export default function CalendarPicker({
     }
 
     return (
-        <div className={containerClasses}>
+        <div
+            className={classMerge(
+                'flex items-center gap-[var(--mui-tokens-spacing-6)]',
+                {
+                    'justify-center': calendarPickerAlign === 'CENTER',
+                    'justify-start': calendarPickerAlign === 'LEFT',
+                    'justify-end': calendarPickerAlign === 'RIGHT'
+                }
+            )}
+        >
             <CalendarContent
                 title={
                     <CalendarPickerTitle

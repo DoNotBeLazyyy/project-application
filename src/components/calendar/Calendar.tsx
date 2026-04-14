@@ -44,9 +44,6 @@ export default function Calendar({
         return getCalendarDays(year, month);
     }, [year, month]); // Generate calendar days only when year or month changes
     const needsSixRows = days.length === 42; // Determine if the calendar layout requires 6 rows (42 cells)
-    const gridRowClass = needsSixRows
-        ? 'grid-rows-6'
-        : 'grid-rows-5'; // Set CSS class for grid rows
 
     /**
      * Changes the current month by a given direction.
@@ -116,7 +113,9 @@ export default function Calendar({
                 className={
                     classMerge(
                         'gap-[var(--mui-tokens-spacing-3)] grid grid-cols-7',
-                        gridRowClass
+                        needsSixRows
+                            ? 'grid-rows-6'
+                            : 'grid-rows-5'
                     )
                 }
             >

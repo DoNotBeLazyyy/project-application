@@ -40,7 +40,7 @@ export default function CalendarContent({
 }: CalendarContentProps) {
     const isRight = titlePosition === 'RIGHT'; // True when the title should appear on the right side of the navigation buttons
     const isLeft = titlePosition === 'LEFT'; // True when the title should appear on the left side of the navigation buttons
-    const iconClass = 'text-[var(--mui-tokens-color-neutral-500)] h-[1.25rem] w-[1.25rem]'; // Shared icon size and neutral color for calendar navigation icons
+    const iconClass ='text-[var(--mui-tokens-color-neutral-500)] h-[1.25rem] w-[1.25rem]'; // Shared icon size and neutral color for calendar navigation icons
 
     return (
         <div className="flex items-center gap-[var(--mui-tokens-spacing-3)]">
