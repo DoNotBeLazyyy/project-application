@@ -35,16 +35,14 @@ const CommonCard = forwardRef<HTMLDivElement, CommonCardProps>(({
         {...props}
         ref={ref}
     >
-        {cardHeaderProps && (
-            <CardHeader
-                {...cardHeaderProps}
-                action={
-                    defaultActionProps
-                        ? <ModalCloseIcon {...defaultActionProps} />
-                        : cardHeaderProps?.action
-                }
-            />
-        )}
+        {cardHeaderProps && <CardHeader
+            {...cardHeaderProps}
+            action={
+                defaultActionProps
+                    ? <ModalCloseIcon {...defaultActionProps} />
+                    : cardHeaderProps?.action
+            }
+        />}
         {children}
     </Card>;
 });

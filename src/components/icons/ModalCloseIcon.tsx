@@ -14,16 +14,14 @@ import { classMerge } from '@utils/css.util';
  * />
  */
 export default function ModalCloseIcon(props: IconProps) {
-    return (
-        <XIcon
-            weight="bold"
-            {...props}
-            className={
-                classMerge(
-                    'cursor-pointer h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-brand-900) w-[2.25rem]',
-                    props.className
-                )
-            }
-        />
-    );
+    return <XIcon
+        weight="bold"
+        {...props}
+        className={
+            classMerge(
+                'cursor-pointer h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-brand-900) w-[2.25rem]',
+                props.className
+            )
+        }
+    />;
 }
