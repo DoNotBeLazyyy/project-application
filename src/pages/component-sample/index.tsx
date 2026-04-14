@@ -22,6 +22,10 @@ export default function ComponentSample() {
             path: 'input'
         },
         {
+            label: 'Tab Menu',
+            path: 'tab-menu'
+        },
+        {
             label: 'Toggle',
             path: 'toggle'
         }
