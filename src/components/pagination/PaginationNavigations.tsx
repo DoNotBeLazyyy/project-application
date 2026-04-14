@@ -55,7 +55,12 @@ export default function PaginationNavigations({
     navigationButtonProps,
     inputProps
 }: PaginationNavigationsProps) {
-    const { prevButtonProps, nextButtonProps, lastButtonProps, firstButtonProps } = navigationButtonProps; // Navigation destructuring
+    const {
+        prevButtonProps,
+        nextButtonProps,
+        lastButtonProps,
+        firstButtonProps
+    } = navigationButtonProps; // Navigation destructuring
 
     return (
         <div className="flex h-[1.75rem] items-center">

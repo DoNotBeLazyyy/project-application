@@ -152,7 +152,9 @@ export default function CommonTable({
         leadingColumnDefs, trailingColumnDefs, onActionMenuClick, onEditClick
     ]); // Resolved column definitions
     const resolvedColDefs = useMemo<ColDef>(() => {
-        const commonSortIconProps = { className: 'cursor-pointer font-[700] h-[0.875rem] text-current w-[0.875rem]' };
+        const commonSortIconProps = {
+            className: 'cursor-pointer font-[700] h-[0.875rem] text-current w-[0.875rem]'
+        };
 
         return {
             icons: {
@@ -235,7 +237,11 @@ export default function CommonTable({
             // TODO: Update when alert modal is ready
             params.api.applyColumnState({
                 state: prevSortModelRef.current,
-                ...(prevSortModelRef.current && { defaultState: { sort: null } })
+                ...(prevSortModelRef.current && {
+                    defaultState: {
+                        sort: null
+                    }
+                })
             });
 
             return;
