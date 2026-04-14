@@ -95,7 +95,7 @@ export default function CommonTableSample() {
     }, [allRowData.length, pagination.rowsPerPage, pagination.totalElements, pagination.totalPages]);
 
     return (
-        <div className="bg-(--mui-tokens-color-common-white) flex flex-col h-full p-var(--mui-tokens-spacing-6) w-full">
+        <div className="bg-[var(--mui-tokens-color-common-white)] flex flex-col h-[calc(100%-4rem)] p-[var(--mui-tokens-spacing-6)] w-full">
             <CommonTable
                 containerClassName="flex-1 min-h-0"
                 leadingColumnDefs={columnDefs}
