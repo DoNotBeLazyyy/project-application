@@ -24,59 +24,53 @@ export const inputOverrides: ComponentTheme = {
         variants: [
             {
                 props: { size: 'small' },
-                style: {
-                    fontSize: 'var(--mui-tokens-fontSize-sm)',
+                style: ({ theme }) => ({
                     height: '100%',
-                    lineHeight: 'var(--mui-tokens-lineHeight-sm)',
                     maxHeight: '2.25rem',
                     padding: 'var(--mui-tokens-spacing-3)',
+                    ...theme.typography.bodySmall,
                     [`
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
                     `]: { padding: 'var(--mui-tokens-spacing-3)' },
                     '& .MuiInputAdornment-positionStart': {
                         '& svg': {
-                            fontSize: 'var(--mui-tokens-fontSize-lg)',
-                            height: 'var(--mui-tokens-spacing-6)',
-                            width: 'var(--mui-tokens-spacing-6)'
+                            height: '1.25rem',
+                            width: '1.25rem'
                         }
                     },
                     '& .MuiInputAdornment-positionEnd': {
                         '& svg': {
-                            fontSize: 'var(--mui-tokens-fontSize-nm)',
-                            height: 'var(--mui-tokens-spacing-5)',
-                            width: 'var(--mui-tokens-spacing-5)'
+                            height: '1rem',
+                            width: '1rem'
                         }
                     }
-                }
+                })
             },
             {
                 props: { size: 'large' },
-                style: {
-                    fontSize: 'var(--mui-tokens-fontSize-nm)',
+                style: ({ theme }) => ({
                     height: '100%',
-                    lineHeight: 'var(--mui-tokens-lineHeight-md)',
                     maxHeight: '3rem',
                     padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)',
+                    ...theme.typography.bodyNormal,
                     [`
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
                     `]: { padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)' },
                     '& .MuiInputAdornment-positionStart': {
                         '& svg': {
-                            fontSize: 'var(--mui-tokens-fontSize-h5)',
-                            height: 'var(--mui-tokens-spacing-7)',
-                            width: 'var(--mui-tokens-spacing-7)'
+                            height: '1.5rem',
+                            width: '1.5rem'
                         }
                     },
                     '& .MuiInputAdornment-positionEnd': {
                         '& svg': {
-                            fontSize: 'var(--mui-tokens-fontSize-lg)',
-                            height: 'var(--mui-tokens-spacing-6)',
-                            width: 'var(--mui-tokens-spacing-6)'
+                            height: '1.25rem',
+                            width: '1.25rem'
                         }
                     }
-                }
+                })
             }
         ]
     },
