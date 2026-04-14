@@ -1,6 +1,6 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common/theme.type';
 
-export const tabMenuOverrides: Components<Omit<Theme, 'components'>> = {
+export const tabMenuOverrides: ComponentTheme = {
     MuiTabs: {
         styleOverrides: {
             root: {

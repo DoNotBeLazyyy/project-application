@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { Components, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { SharedTabMenuProps } from '@type/tab-menu.type';
 import { CSSProperties } from 'react';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
+
+// Mui props
+export type ComponentTheme = Components<Omit<Theme, 'components'>>;
 
 // Standardized color weight scale
 type ColorWeight = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
