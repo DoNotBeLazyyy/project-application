@@ -1,6 +1,9 @@
 import ComponentSample from '@pages/component-sample';
 import CommonButtonSample from '@pages/component-sample/button';
+import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
+import CommonRadioSample from '@pages/component-sample/radio';
+import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -21,8 +24,20 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
             path: 'table'
         },
         {
+            element: <CommonRadioSample />,
+            path: 'radio'
+        },
+        {
+            element: <CommonCheckboxSample />,
+            path: 'checkbox'
+        },
+        {
             element: <CommonInputSample />,
             path: 'input'
+        },
+        {
+            element: <CommonTabMenuSample />,
+            path: 'tab-menu'
         },
         {
             element: <CommonButtonSample />,

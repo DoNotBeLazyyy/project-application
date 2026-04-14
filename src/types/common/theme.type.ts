@@ -1,8 +1,13 @@
+import { Components, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
+import { SharedTabMenuProps } from '@type/tab-menu.type';
 import { CSSProperties } from 'react';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
+
+// Mui props
+export type ComponentTheme = Components<Omit<Theme, 'components'>>;
 
 // Standardized color weight scale
 type ColorWeight = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
@@ -332,4 +337,12 @@ declare module '@mui/material/Button' {
         // Ghost variant
         ghost: true;
     }
+}
+
+declare module '@mui/material/Tabs' {
+    interface TabsOwnProps extends SharedTabMenuProps {}
+}
+
+declare module '@mui/material/Tab' {
+    interface TabOwnProps extends SharedTabMenuProps {}
 }
