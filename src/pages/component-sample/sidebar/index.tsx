@@ -126,7 +126,7 @@ export default function CommonSideBarSample() {
     ]; // Dark variant sections data for the sidebar
 
     return (
-        <div className="flex justify-between">
+        <div className="flex justify-between bg-[#F4F4F5]">
             <CommonSideBar
                 // eslint-disable-next-line no-console
                 footerProps={{ label: 'Settings', onClick: () => console.log('Settings') }}

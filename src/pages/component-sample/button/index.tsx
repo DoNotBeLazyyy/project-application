@@ -10,10 +10,10 @@ import SectionCard from '@pages/component-sample/button/SectionCard';
 import VariantGroup from '@pages/component-sample/button/VariantGroup';
 import { CircleNotchIcon, PlusIcon } from '@phosphor-icons/react';
 
-export type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
+export type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large';
 export type ButtonVariant = 'primary' | 'secondary' | 'outlined' | 'ghost';
 
-const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large', 'xlarge']; // List of button sizes
+const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large']; // List of button sizes
 const BUTTON_VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'outlined', 'ghost']; // List of button variants
 
 /**

@@ -369,5 +369,22 @@ declare module '@mui/material/Accordion' {
 declare module '@mui/material/AccordionSummary' {
     interface AccordionSummaryOwnProps {
         sidebarVariant?: SideBarVariant;
+
+    }
+}
+
+declare module '@mui/material/Paper' {
+    interface PaperPropsVariantOverrides {
+        // Large size
+        large: true;
+
+        // Medium size
+        medium: true;
+
+        // Small size
+        small: true;
+
+        // Extra small size
+        xsmall: true;
     }
 }

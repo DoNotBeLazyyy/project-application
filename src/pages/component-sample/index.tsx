@@ -1,3 +1,4 @@
+import CommonCard from '@components/card/CommonCard';
 import {
     AppBar, Box, Button, Stack, Toolbar, Typography
 } from '@mui/material';
@@ -102,7 +103,9 @@ export default function ComponentSample() {
                     maxWidth: '1440px'
                 }}
             >
-                <Outlet />
+                <CommonCard className="h-[calc(100%-64px)] min-h-0">
+                    <Outlet />
+                </CommonCard>
             </Box>
         </div>
     );
