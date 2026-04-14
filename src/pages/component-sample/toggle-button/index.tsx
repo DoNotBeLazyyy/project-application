@@ -46,7 +46,7 @@ export default function CommonToggleSample() {
                                 disabled
                             />
                             <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
-                            Toggle Button
+                            Toggle Button disabled true
                             </div>
                         </div>
                         <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
@@ -54,7 +54,7 @@ export default function CommonToggleSample() {
                                 disabled
                             />
                             <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
-                            Toggle Button
+                            Toggle Button disabled false
                             </div>
                         </div>
                         <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
