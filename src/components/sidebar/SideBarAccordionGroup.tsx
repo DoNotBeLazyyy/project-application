@@ -54,16 +54,18 @@ export default function SideBarAccordionGroup({
                 }
                 sidebarVariant={variant}
             >
-                {icon && <span
-                    className={
-                        classMerge(
-                            'flex shrink-0 [&>svg]:h-[1.25rem] [&>svg]:w-[1.25rem]',
-                            groupIcon
-                        )
-                    }
-                >
-                    {icon}
-                </span>}
+                {icon && (
+                    <span
+                        className={
+                            classMerge(
+                                'flex shrink-0 [&>svg]:h-[1.25rem] [&>svg]:w-[1.25rem]',
+                                groupIcon
+                            )
+                        }
+                    >
+                        {icon}
+                    </span>
+                )}
                 <span
                     className={
                         classMerge(
@@ -81,8 +83,7 @@ export default function SideBarAccordionGroup({
                         activeColor={subItemBorderActive}
                         inactiveColor={subItemBorderInactive}
                         items={items}
-                    />
-                    }
+                    />}
                     {items.map((subItem) => (
                         <ButtonBase
                             className={

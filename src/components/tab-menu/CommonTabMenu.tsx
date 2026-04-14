@@ -32,20 +32,15 @@ export default function CommonTabMenu({
     ...props
 }: CommonTabMenuProps) {
     const isSmall = size === 'small'; // Small size flag
-    const orientation = menuStyle === 'vertical'
-        ? 'vertical'
-        : 'horizontal'; // Tabs orientation
-    const iconSize = isSmall
-        ? 'size-[var(--mui-tokens-spacing-6)]'
-        : 'size-[var(--mui-tokens-spacing-7)]'; // Icon size
-    const badgeSize = isSmall
-        ? 'leading-[9.6px] min-w-[var(--mui-tokens-spacing-5)] p-[3.2px] text-[8px] w-[var(--mui-tokens-spacing-5)]'
-        : 'leading-[12px] min-w-[var(--mui-tokens-spacing-6)] p-[var(--mui-tokens-spacing-2)] text-[10px] w-[var(--mui-tokens-spacing-6)]'; // Badge size
 
     return (
         <Tabs
             menuStyle={menuStyle}
-            orientation={orientation}
+            orientation={
+                menuStyle === 'vertical'
+                    ? 'vertical'
+                    : 'horizontal'
+            }
             size={size}
             {...props}
         >
@@ -60,7 +55,11 @@ export default function CommonTabMenu({
                     icon={icon
                         ? <TabMenuIcon
                             icon={icon}
-                            iconSize={iconSize}
+                            iconSize={
+                                isSmall
+                                    ? 'size-[var(--mui-tokens-spacing-6)]'
+                                    : 'size-[var(--mui-tokens-spacing-7)]'
+                            }
                         />
                         : undefined
                     }
@@ -69,7 +68,11 @@ export default function CommonTabMenu({
                     label={
                         <TabMenuLabel
                             badge={badge}
-                            badgeSize={badgeSize}
+                            badgeSize={
+                                isSmall
+                                    ? 'leading-[9.6px] min-w-[var(--mui-tokens-spacing-5)] p-[3.2px] text-[8px] w-[var(--mui-tokens-spacing-5)]'
+                                    : 'leading-[12px] min-w-[var(--mui-tokens-spacing-6)] p-[var(--mui-tokens-spacing-2)] text-[10px] w-[var(--mui-tokens-spacing-6)]'
+                            }
                             hasArrow={hasArrow}
                             label={label}
                         />

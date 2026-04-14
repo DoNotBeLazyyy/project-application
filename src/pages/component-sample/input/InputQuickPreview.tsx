@@ -98,6 +98,62 @@ export default function InputQuickPreview() {
                     />
                 </InputPreviewCard>
             </InputDemoRow>
+            <InputDemoRow label="Filled with adornments">
+                <InputPreviewCard label="Filled / Start icon">
+                    <CommonInput
+                        placeholder="Search"
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                )
+                            }
+                        }}
+                        variant="filled"
+                    />
+                </InputPreviewCard>
+                <CommonInput
+                    label="Common Label Input"
+                    placeholder="Password"
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <VisibilityOffOutlinedIcon fontSize="small" />
+                                </InputAdornment>
+                            )
+                        }
+                    }}
+                    variant="filled"
+                />
+                <CommonInput
+                    isRequired
+                    label="Common Label Input Required"
+                    placeholder="Password"
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <VisibilityOffOutlinedIcon fontSize="small" />
+                                </InputAdornment>
+                            )
+                        }
+                    }}
+                    variant="filled"
+                />
+            </InputDemoRow>
         </InputSectionCard>
     );
 }

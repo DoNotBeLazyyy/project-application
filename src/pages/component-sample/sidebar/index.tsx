@@ -9,7 +9,7 @@ import {
 import { useState } from 'react';
 
 export default function CommonSideBarSample() {
-    const [isLightExpanded, setIsLightExpanded] = useState(true);
+    const [isLightExpanded, setIsLightExpanded] = useState(true); // Controls light sidebar expansion
 
     const LIGHTSECTIONS: SideBarSection[] = [
         {

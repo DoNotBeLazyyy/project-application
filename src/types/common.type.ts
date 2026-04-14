@@ -7,6 +7,9 @@ import {
 // String props
 export type StringNum = string | number;
 
+// Span props
+export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
+
 // Div props
 export type DivProps = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;

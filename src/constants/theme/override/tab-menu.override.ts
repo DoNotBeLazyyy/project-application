@@ -7,7 +7,9 @@ export const tabMenuOverrides: ComponentTheme = {
                 minHeight: 'unset',
                 padding: 'var(--mui-tokens-spacing-2)',
                 width: 'fit-content',
-                '& .MuiTabs-indicator': { display: 'none' }
+                '& .MuiTabs-indicator': {
+                    display: 'none'
+                }
             },
             flexContainer: {
                 gap: 'var(--mui-tokens-spacing-3)'
@@ -15,7 +17,9 @@ export const tabMenuOverrides: ComponentTheme = {
         },
         variants: [
             {
-                props: { menuStyle: 'outline' },
+                props: {
+                    menuStyle: 'outline'
+                },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
                     '& .MuiTabs-indicator': {
@@ -27,14 +31,18 @@ export const tabMenuOverrides: ComponentTheme = {
                 }
             },
             {
-                props: { menuStyle: 'pill' },
+                props: {
+                    menuStyle: 'pill'
+                },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-neutral-100)',
                     borderRadius: 'var(--mui-tokens-radius-lg)'
                 }
             },
             {
-                props: { menuStyle: 'vertical' },
+                props: {
+                    menuStyle: 'vertical'
+                },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
                     borderRadius: 'var(--mui-tokens-radius-md)',
@@ -80,7 +88,9 @@ export const tabMenuOverrides: ComponentTheme = {
         },
         variants: [
             {
-                props: { menuStyle: 'pill' },
+                props: {
+                    menuStyle: 'pill'
+                },
                 style: {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&:hover': {
@@ -99,7 +109,9 @@ export const tabMenuOverrides: ComponentTheme = {
                 }
             },
             {
-                props: { menuStyle: 'vertical' },
+                props: {
+                    menuStyle: 'vertical'
+                },
                 style: {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&.Mui-selected': {
@@ -109,7 +121,9 @@ export const tabMenuOverrides: ComponentTheme = {
                 }
             },
             {
-                props: { size: 'small' },
+                props: {
+                    size: 'small'
+                },
                 style: {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     fontSize: 'var(--mui-tokens-fontSize-sm)',

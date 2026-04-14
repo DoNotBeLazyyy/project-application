@@ -72,7 +72,7 @@ export default function CommonSideBarList({
         <div
             className={
                 classMerge(
-                    'flex flex-col gap-[var(--mui-tokens-spacing-5)]',
+                    'flex flex-col gap-(--mui-tokens-spacing-5)',
                     className
                 )
             }

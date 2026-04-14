@@ -28,7 +28,7 @@ export default function CommonHeaderSubtitle({
         <p
             className={
                 classMerge(
-                    'text-[length:var(--mui-tokens-fontSize-xs)] leading-snug',
+                    'text-(length:--mui-tokens-fontSize-xs) leading-snug',
                     colorClassName
                 )
             }

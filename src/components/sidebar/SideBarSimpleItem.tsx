@@ -32,7 +32,7 @@ export default function SideBarSimpleItem({
         <ButtonBase
             className={
                 classMerge(
-                    'flex w-fit items-center rounded-[var(--mui-tokens-radius-md)] text-left transition-colors',
+                    'flex w-fit items-center rounded-(--mui-tokens-radius-md) text-left transition-colors',
                     isActive
                         ? itemActive
                         : classMerge(

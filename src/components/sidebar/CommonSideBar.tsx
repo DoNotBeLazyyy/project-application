@@ -123,7 +123,7 @@ export default function CommonSideBar({
             <div
                 className={
                     classMerge(
-                        'flex-1 overflow-y-auto px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)] [&::-webkit-scrollbar-thumb]:rounded-[var(--mui-tokens-radius-sm)] [&::-webkit-scrollbar]:w-[var(--mui-tokens-spacing-2)]',
+                        'flex-1 overflow-y-auto px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4) [&::-webkit-scrollbar-thumb]:rounded-(--mui-tokens-radius-sm) [&::-webkit-scrollbar]:w-(--mui-tokens-spacing-2)',
                         variant === 'dark'
                             ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                             : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
@@ -133,7 +133,7 @@ export default function CommonSideBar({
                 {children}
             </div>
             {footerProps && (
-                <div className="shrink-0 px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)]">
+                <div className="shrink-0 px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4)">
                     <Button
                         disableRipple
                         startIcon={<GearSixIcon size={20} />}

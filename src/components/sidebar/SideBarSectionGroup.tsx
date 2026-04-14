@@ -29,12 +29,12 @@ export default function SideBarSectionGroup({
     variant
 }: SideBarSectionGroupProps) {
     return (
-        <div className="flex flex-col gap-[var(--mui-tokens-spacing-1)]">
+        <div className="flex flex-col gap-(--mui-tokens-spacing-1)">
             {section.sectionLabel && (
                 <p
                     className={
                         classMerge(
-                            'px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-2)] text-[length:var(--mui-tokens-fontSize-sm)] font-semibold uppercase tracking-wider',
+                            'px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-2) text-(length:--mui-tokens-fontSize-sm) font-semibold uppercase tracking-wider',
                             sectionLabelStyle
                         )
                     }
