@@ -100,8 +100,10 @@ export default function SideBarAccordionGroup({
                                 width: '100%',
                                 justifyContent: 'flex-start',
                                 borderRadius: 'var(--mui-shape-corner-radius-lg)',
-                                px: 4,
-                                py: 1.5,
+                                paddingLeft: 'var(--mui-tokens-spacing-4)',
+                                paddingRight: 'var(--mui-tokens-spacing-4)',
+                                paddingTop: '0.375rem',
+                                paddingBottom: '0.375rem',
                                 fontSize: 'var(--mui-tokens-fontSize-sm)',
                                 transition: 'color 150ms, background-color 150ms'
                             }}

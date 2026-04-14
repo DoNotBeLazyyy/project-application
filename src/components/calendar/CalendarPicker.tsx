@@ -52,7 +52,7 @@ export default function CalendarPicker({
     return (
         <div
             className={classMerge(
-                'flex items-center gap-[var(--mui-tokens-spacing-6)]',
+                'flex items-center gap-(--mui-tokens-spacing-6)',
                 {
                     'justify-center': calendarPickerAlign === 'CENTER',
                     'justify-start': calendarPickerAlign === 'LEFT',

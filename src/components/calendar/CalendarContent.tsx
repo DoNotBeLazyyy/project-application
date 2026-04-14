@@ -43,9 +43,9 @@ export default function CalendarContent({
     const iconClass ='text-[var(--mui-tokens-color-neutral-500)] h-[1.25rem] w-[1.25rem]'; // Shared icon size and neutral color for calendar navigation icons
 
     return (
-        <div className="flex items-center gap-[var(--mui-tokens-spacing-3)]">
+        <div className="flex gap-(--mui-tokens-spacing-3) items-center">
             {isRight && title && <div>{title}</div>}
-            <div className="flex gap-[var(--mui-tokens-spacing-5)] items-center">
+            <div className="flex gap-(--mui-tokens-spacing-5) items-center">
                 <CalendarNavButton onClick={onPrev}>
                     <CaretLeftIcon className={iconClass} />
                 </CalendarNavButton>
