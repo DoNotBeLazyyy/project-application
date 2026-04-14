@@ -359,6 +359,13 @@ declare module '@mui/material/FilledInput' {
     interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
 }
 
+declare module '@mui/material/Chip' {
+    interface ChipPropsVariantOverrides {
+        // Status badge variant
+        status: true;
+    }
+}
+
 declare module '@mui/material/Button' {
     interface ButtonPropsSizeOverrides {
         // Extra small size
