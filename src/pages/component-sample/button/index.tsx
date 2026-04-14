@@ -5,8 +5,6 @@ import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import { Box, Stack, Typography } from '@mui/material';
-import { BUTTON_SIZES, BUTTON_VARIANTS } from '@pages/component-sample/button/constant';
 import DemoRow from '@pages/component-sample/button/DemoRow';
 import SectionCard from '@pages/component-sample/button/SectionCard';
 import VariantGroup from '@pages/component-sample/button/VariantGroup';
@@ -15,50 +13,37 @@ import { CircleNotchIcon, PlusIcon } from '@phosphor-icons/react';
 export type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
 export type ButtonVariant = 'primary' | 'secondary' | 'outlined' | 'ghost';
 
+const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large', 'xlarge']; // List of button sizes
+const BUTTON_VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'outlined', 'ghost']; // List of button variants
+
+/**
+ * CommonButtonSample
+ *
+ * A showcase page that demonstrates the various states, sizes, and variants of the CommonButton component.
+ * It provides an organized layout for visual regression testing and design system reference.
+ *
+ * @example
+ * <CommonButtonSample />
+ */
 export default function CommonButtonSample() {
+    const pageContainerClasses = 'bg-[#F8FAFC] min-h-screen p-5 md:p-8'; // Outer page container classes
+    const pageContentClasses = 'flex flex-col gap-8'; // Main content stack classes
+    const headerWrapperClasses = 'flex flex-col gap-2'; // Header section wrapper classes
+    const titleClasses = 'text-[#18181B] text-[28px] md:text-[36px] font-bold leading-[36px] md:leading-[44px]'; // Page title classes
+    const descriptionClasses = 'text-[#52525B] text-[15px] font-normal leading-[24px] max-w-[900px]'; // Page description classes
+
     return (
-        <Box
-            sx={{
-                backgroundColor: '#F8FAFC',
-                minHeight: '100vh',
-                p: {
-                    xs: '20px',
-                    md: '32px'
-                }
-            }}
-        >
-            <Stack spacing={4}>
-                <Box>
-                    <Typography
-                        sx={{
-                            color: '#18181B',
-                            fontSize: {
-                                xs: '28px',
-                                md: '36px'
-                            },
-                            fontWeight: 700,
-                            lineHeight: {
-                                xs: '36px',
-                                md: '44px'
-                            },
-                            mb: '8px'
-                        }}
-                    >
+        <div className={pageContainerClasses}>
+            <div className={pageContentClasses}>
+                <div className={headerWrapperClasses}>
+                    <span className={titleClasses}>
                         CommonButton Display Page
-                    </Typography>
-                    <Typography
-                        sx={{
-                            color: '#52525B',
-                            fontSize: '15px',
-                            fontWeight: 400,
-                            lineHeight: '24px',
-                            maxWidth: '900px'
-                        }}
-                    >
+                    </span>
+                    <span className={descriptionClasses}>
                         This page displays the available CommonButton combinations in an organized layout,
                         grouped by usage, variant, size, icon position, loading state, and disabled state.
-                    </Typography>
-                </Box>
+                    </span>
+                </div>
                 <SectionCard
                     label="Quick Preview"
                     subtitle="A quick preview of the most common button actions."
@@ -252,7 +237,7 @@ export default function CommonButtonSample() {
                         variant={variant}
                     />
                 ))}
-            </Stack>
-        </Box>
+            </div>
+        </div>
     );
 }

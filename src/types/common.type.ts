@@ -1,7 +1,6 @@
-import { Components, Theme } from '@mui/material'; // Mui dependency
 import { GridApi } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -32,9 +31,9 @@ export type BooleanFunction = () => boolean;
 // Grid props
 export type GridApiNull = GridApi | null;
 
+// SVG props
+export type IconSvgProps = SVGProps<SVGSVGElement>;
+
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
-
-// Mui props
-export type ComponentTheme = Components<Omit<Theme, 'components'>>;
