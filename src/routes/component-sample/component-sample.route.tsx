@@ -1,4 +1,5 @@
 import ComponentSample from '@pages/component-sample';
+import CommonButtonSample from '@pages/component-sample/button';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
 import CommonRadioSample from '@pages/component-sample/radio';
@@ -42,6 +43,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonToggleSample />,
             path: 'toggle'
+        },
+        {
+            element: <CommonButtonSample />,
+            path: 'button'
         }
     ]
 }] as const;

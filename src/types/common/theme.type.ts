@@ -319,6 +319,27 @@ declare module '@mui/material/FilledInput' {
     interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
 }
 
+declare module '@mui/material/Button' {
+    interface ButtonPropsSizeOverrides {
+        // Extra small size
+        xsmall: true;
+
+        // Extra large size
+        xlarge: true;
+    }
+
+    interface ButtonPropsVariantOverrides {
+        // Primary variant
+        primary: true;
+
+        // Secondary variant
+        secondary: true;
+
+        // Ghost variant
+        ghost: true;
+    }
+}
+
 declare module '@mui/material/Tabs' {
     interface TabsOwnProps extends SharedTabMenuProps {}
 }

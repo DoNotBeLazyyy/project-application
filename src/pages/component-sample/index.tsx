@@ -28,6 +28,10 @@ export default function ComponentSample() {
         {
             label: 'Toggle',
             path: 'toggle'
+        },
+        {
+            label: 'Button',
+            path: 'button'
         }
     ] as const;
 
