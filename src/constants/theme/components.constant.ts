@@ -13,7 +13,6 @@ export const COMPONENTS: ComponentTheme = {
     ...dialogOverrides,
     ...formControlOverrides,
     ...inputOverrides,
-    ...inputOverrides,
     ...radioOverrides,
     ...tabMenuOverrides
 }; // Components configuration

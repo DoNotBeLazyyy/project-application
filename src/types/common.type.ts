@@ -33,6 +33,9 @@ export type BooleanFunction = () => boolean;
 // Grid props
 export type GridApiNull = GridApi | null;
 
+// Input change props
+export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
+
 // SVG props
 export type IconSvgProps = SVGProps<SVGSVGElement>;
 
