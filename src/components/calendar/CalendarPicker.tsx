@@ -64,7 +64,8 @@ export default function CalendarPicker({
                     <CalendarPickerTitle
                         date={date}
                         size={size}
-                    />}
+                    />
+                }
                 titlePosition={
                     calendarPickerAlign === 'CENTER'
                         ? undefined

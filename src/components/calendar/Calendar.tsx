@@ -61,7 +61,9 @@ export default function Calendar({
      * Handles date search from the input.
      */
     function handleSearch() {
-        if (!searchValue) return;
+        if (!searchValue) {
+            return;
+        }
 
         const parsedDate = new Date(searchValue);
 
@@ -69,6 +71,7 @@ export default function Calendar({
             setDate(new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1));
         }
         else {
+            // TODO: change
             alert('Invalid date format. Try "2026-04" or "April 2026"');
         }
     }

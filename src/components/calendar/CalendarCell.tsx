@@ -20,16 +20,14 @@ interface CalendarCellProps {
  * />
  */
 export default function CalendarCell({ day }: CalendarCellProps) {
-    const cellStateClass = !day.isCurrentMonth
-        ? 'opacity-40'
-        : 'cursor-pointer hover:bg-[var(--mui-tokens-color-secondary-light)] hover:outline hover:outline-[var(--mui-tokens-color-secondary-main)]'; // Dim non-current month days, add hover/click styles for current month days
-
     return (
         <div
             className={
                 classMerge(
                     'bg-[var(--mui-tokens-color-neutral-100)] duration-200 flex flex-col min-h-[7.5rem] min-w-[10rem] p-[var(--mui-tokens-spacing-3)] rounded-[var(--mui-tokens-radius-md)] transition-colors',
-                    cellStateClass
+                    !day.isCurrentMonth
+                        ? 'opacity-40'
+                        : 'cursor-pointer hover:bg-[var(--mui-tokens-color-secondary-light)] hover:outline hover:outline-[var(--mui-tokens-color-secondary-main)]'
                 )
             }
         >
