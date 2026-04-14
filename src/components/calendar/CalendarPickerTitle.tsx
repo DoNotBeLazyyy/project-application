@@ -28,8 +28,8 @@ export default function CalendarPickerTitle({
         <div
             className={
                 size === 'BIG'
-                    ? 'font-[var(--mui-tokens-fontWeight-bold)] text-[length:var(--mui-tokens-fontSize-h3)] leading-[var(--mui-tokens-spacing-9)] align-middle text-[var(--mui-tokens-color-neutral-900)]'
-                    : 'font-[var(--mui-tokens-fontWeight-bold)] text-[length:var(--mui-tokens-fontSize-lg)] leading-[var(--mui-tokens-spacing-7)] align-middle text-[var(--mui-tokens-color-neutral-900)]'
+                    ? 'font-(--mui-tokens-fontWeight-bold) text-(length:--mui-tokens-fontSize-h3) leading-(--mui-tokens-spacing-9) align-middle text-(--mui-tokens-color-neutral-900)'
+                    : 'font-(--mui-tokens-fontWeight-bold) text-(length:--mui-tokens-fontSize-lg) leading-(--mui-tokens-spacing-7) align-middle text-(--mui-tokens-color-neutral-900)'
             }
         >
             {date.toLocaleString('default', {

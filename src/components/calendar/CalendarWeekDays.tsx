@@ -26,7 +26,7 @@ export default function CalendarWeekDays() {
         <div
             className={
                 classMerge(
-                    'font-[var(--mui-tokens-fontWeight-bold)] grid grid-cols-7 leading-[var(--mui-tokens-spacing-6)] mb-[var(--mui-tokens-spacing-4)] text-[length:var(--mui-tokens-fontSize-nm)] text-center text-[var(--mui-tokens-color-neutral-500)]'
+                    'font-(--mui-tokens-fontWeight-bold) grid grid-cols-7 leading-(--mui-tokens-spacing-6) mb-(--mui-tokens-spacing-4) text-(length:--mui-tokens-fontSize-nm) text-center text-(--mui-tokens-color-neutral-500)'
                 )
             }
         >

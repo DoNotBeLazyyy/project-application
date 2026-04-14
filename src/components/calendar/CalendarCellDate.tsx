@@ -25,10 +25,10 @@ export default function CalendarCellDate({
         <div
             className={
                 classMerge(
-                    'flex font-[var(--mui-tokens-fontWeight-bold)] h-[1.75rem] items-center justify-center p-[var(--mui-tokens-spacing-2)] text-[var(--mui-tokens-fontSize-nm)] w-[1.75rem]',
+                    'flex font-(--mui-tokens-fontWeight-bold) h-7 items-center justify-center p-(--mui-tokens-spacing-2) text-(--mui-tokens-fontSize-nm) w-7',
                     isToday
-                        ? 'bg-[var(--mui-tokens-color-brand-900)] rounded-[var(--mui-tokens-radius-full)] text-[var(--mui-tokens-color-common-white)]'
-                        : 'text-[var(--mui-tokens-color-neutral-900)]'
+                        ? 'bg-(--mui-tokens-color-brand-900) rounded-(--mui-tokens-radius-full) text-(--mui-tokens-color-common-white)'
+                        : 'text-(--mui-tokens-color-neutral-900)'
                 )
             }
         >
