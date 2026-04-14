@@ -33,13 +33,13 @@ export default function TabMenuLabel({
     label
 }: TabMenuLabelProps) {
     return (
-        <span className="flex gap-[var(--mui-tokens-spacing-2)] items-center whitespace-nowrap">
+        <span className="flex gap-(--mui-tokens-spacing-2) items-center whitespace-nowrap">
             {label}
             {badge !== undefined && (
                 <span
                     className={
                         classMerge(
-                            'bg-[var(--mui-tokens-color-brand-500)] flex font-bold items-center justify-center rounded-[var(--mui-tokens-radius-full)] shrink-0 text-[var(--mui-tokens-color-common-white)]',
+                            'bg-(--mui-tokens-color-brand-500) flex font-bold items-center justify-center rounded-(--mui-tokens-radius-full) shrink-0 text-(--mui-tokens-color-common-white)',
                             badgeSize
                         )
                     }
