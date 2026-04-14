@@ -62,22 +62,67 @@ export default function CommonToggleSample() {
 
                 <div className="flex flex-col justify-center gap-1 text-[50px]">
                     NEW SWITCH
-                    <Switch
-                        onChange={handleToggleChange}
-                    />
-                    {checked && (
-                        <div className="text-[50px] font-bold">
-                            HELLO WORLD
-                        </div>
-                    )}
+
                     <Switch
                         checked={false}
                         disabled
                     />
-                    <Switch
-                        checked={true}
-                        disabled
-                    />
+                    <div className="gap-4 text-[16px] flex">
+                        <Switch
+                            checked={true}
+                            disabled
+                        />
+                        <div className="justify-center text-[#FF0000]">hello</div>
+                    </div>
+
+                    {/** Eto lang need ko */}
+                    <div className="gap-2 flex-col p-10 text-[30px] flex">
+                        Switches with label
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch
+                                checked={true}
+                            />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            Toggle Button
+                            </div>
+                        </div>
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            Toggle Button
+                            </div>
+                        </div>
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch
+                                checked={true}
+                                disabled
+                            />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            Toggle Button
+                            </div>
+                        </div>
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch
+                                disabled
+                            />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            Toggle Button 4
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch
+                                onChange={handleToggleChange}
+                            />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                                Toggle Button
+                            </div>
+                            {checked && (
+                                <div className="flex text-[50px] font-bold">
+                                    HELLO WORLD
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </Stack>
         </div>
