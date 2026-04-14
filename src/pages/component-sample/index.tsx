@@ -27,6 +27,10 @@ export default function ComponentSample() {
             path: 'tab-menu'
         },
         {
+            label: 'Toggle',
+            path: 'toggle'
+        },
+        {
             label: 'Button',
             path: 'button'
         }

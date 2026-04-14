@@ -6,6 +6,7 @@ import CommonInputSample from '@pages/component-sample/input';
 import CommonRadioSample from '@pages/component-sample/radio';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
+import CommonToggleSample from '@pages/component-sample/toggle-button';
 import { Navigate, RouteObject } from 'react-router-dom';
 
 // Sample routes
@@ -43,6 +44,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTabMenuSample />,
             path: 'tab-menu'
+        },
+        {
+            element: <CommonToggleSample />,
+            path: 'toggle'
         },
         {
             element: <CommonButtonSample />,

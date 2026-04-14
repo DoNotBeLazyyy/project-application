@@ -40,3 +40,6 @@ export type IconSvgProps = SVGProps<SVGSVGElement>;
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+
+// event type for input change events.
+export type InputChangeEvent = ChangeEvent<HTMLInputElement>;
