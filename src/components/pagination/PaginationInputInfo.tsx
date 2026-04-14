@@ -31,7 +31,7 @@ export default function PaginationInputInfo({
     inputProps
 }: PaginationInputInfoProps) {
     return (
-        <div className="flex gap-[var(--mui-tokens-spacing-3)] items-center text-[var(--mui-tokens-color-neutral-900)] tw_body_small w-auto">
+        <div className="flex gap-(--mui-tokens-spacing-3) items-center text-(--mui-tokens-color-neutral-900) tw_body_small w-auto">
             <Trans
                 components={{
                     input: <PaginationInput {...inputProps} />
