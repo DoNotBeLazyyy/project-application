@@ -43,7 +43,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
         <div
             className={
                 classMerge(
-                    'flex flex-col gap-[var(--mui-tokens-spacing-2)] relative',
+                    'flex flex-col gap-(--mui-tokens-spacing-2) relative',
                     fullWidth && 'w-full',
                     containerClassName
                 )
@@ -53,14 +53,14 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                 <span
                     className={
                         classMerge(
-                            'tw_body_small_bold flex gap-[var(--mui-tokens-spacing-2)]',
+                            'tw_body_small_bold flex gap-(--mui-tokens-spacing-2)',
                             labelClassName
                         )
                     }
                 >
                     {label}
                     {isRequired && (
-                        <span className="text-[length:var(--mui-tokens-fontSize-lg)] text-[var(--mui-tokens-color-state-error)]">
+                        <span className="text-(--mui-tokens-color-state-error) text-(length:--mui-tokens-fontSize-lg)">
                             *
                         </span>
                     )}
