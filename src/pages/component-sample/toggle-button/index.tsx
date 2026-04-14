@@ -4,10 +4,14 @@ import { InputChangeEvent } from '@type/common.type';
 import { useState } from 'react';
 
 export default function CommonToggleSample() {
-    const [checked, setChecked] = useState(false); //
+    const [checked, setChecked] = useState(false); // State hook for controlling the toggle/switch value
 
     /**
+     * Handles the toggle/switch state change event.
+     * Updates the `checked` state based on the current value of the toggle.
      *
+     * @param _event - The input change event triggered by the toggle action
+     * @param value - The new boolean value of the toggle (true = on, false = off)
      */
     function handleToggleChange(
         _event: InputChangeEvent,
