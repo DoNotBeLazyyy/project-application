@@ -106,22 +106,37 @@ export default function CommonToggleSample() {
                                 disabled
                             />
                             <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
-                            Toggle Button 4
+                            Toggle Button
                             </div>
                         </div>
-                        <div className="flex flex-col gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                            <Switch
+                                sx={{
+                                    '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': {
+                                        backgroundColor: '#ABFA00'
+                                    },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                        backgroundColor: '#FF0000'
+                                    }
+                                }}
+                            />
+                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                                Toggle Button with different color
+                            </div>
+                        </div>
+                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
                             <Switch
                                 onChange={handleToggleChange}
                             />
                             <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
-                                Toggle Button
+                                Toggle Button with checked state
                             </div>
-                            {checked && (
-                                <div className="flex text-[50px] font-bold">
-                                    HELLO WORLD
-                                </div>
-                            )}
                         </div>
+                        {checked && (
+                            <div className="flex text-[50px] font-bold">
+                                    HELLO WORLD
+                            </div>
+                        )}
                     </div>
                 </div>
             </Stack>

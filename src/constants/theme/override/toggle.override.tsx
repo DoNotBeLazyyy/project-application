@@ -26,6 +26,7 @@ export const toggleOverrides: Components<Omit<Theme, 'components'>> = {
                         }
                     },
                     '&.Mui-checked.Mui-disabled': {
+                        color: 'var(--mui-tokens-color-common-white)',
                         '& + .MuiSwitch-track': {
                             backgroundColor: 'var(--mui-tokens-color-neutral-400)',
                             opacity: 1
