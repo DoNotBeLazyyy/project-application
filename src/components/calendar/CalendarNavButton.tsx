@@ -27,6 +27,7 @@ export default function CalendarNavButton({
     return (
         <Button
             sx={{
+                backgroundColor: 'transparent',
                 minWidth: '1.25rem',
                 padding: 0,
                 '&:hover': {
