@@ -19,12 +19,12 @@ export interface ModalButtonProps {
  * ModalButtons
  *
  * A layout component that groups the action buttons for modals, ensuring
- * a single JSX return by pre-resolving conditional button elements into variables.
+ * standardized spacing and responsive width handling.
  *
  * @example
  * <ModalButtons
- *  cancelProps={{ children: 'No' }}
- *  confirmProps={{ children: 'Yes' }}
+ * cancelProps={{ children: 'No' }}
+ * confirmProps={{ children: 'Yes' }}
  * />
  */
 export default function ModalButtons({
@@ -33,29 +33,28 @@ export default function ModalButtons({
     confirmProps,
     isButtonsFullWidth
 }: ModalButtonProps) {
-    const resolvedClassName = classMerge(
-        'flex gap-(--mui-tokens-spacing-5) justify-center',
-        className
-    ); // Resolved container class names
     const commonProps = {
         fullWidth: isButtonsFullWidth,
         size: 'small' as const
-    }; // Common props
+    }; // Common props for buttons
 
     return (
-        <div className={resolvedClassName}>
-            {cancelProps && (
-                <CommonButton
-                    {...commonProps}
-                    {...cancelProps}
-                />
-            )}
-            {confirmProps && (
-                <CommonButton
-                    {...commonProps}
-                    {...confirmProps}
-                />
-            )}
+        <div
+            className={
+                classMerge(
+                    'flex gap-(--mui-tokens-spacing-5) justify-center',
+                    className
+                )
+            }
+        >
+            {cancelProps && <CommonButton
+                {...commonProps}
+                {...cancelProps}
+            />}
+            {confirmProps && <CommonButton
+                {...commonProps}
+                {...confirmProps}
+            />}
         </div>
     );
 }

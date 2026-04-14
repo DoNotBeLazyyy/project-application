@@ -4,7 +4,7 @@ import { HTMLAttributesSpanElement } from '@type/common.type';
 import { ActionIconProps } from '@type/common/modal.type';
 import { classMerge } from '@utils/css.util';
 
-export interface CommonActionModalProps extends BaseActionModalProps {
+export interface CommonPromptModalProps extends BaseActionModalProps {
     // Action icon props
     actionIconProps?: ActionIconProps;
 
@@ -19,72 +19,64 @@ export interface CommonActionModalProps extends BaseActionModalProps {
 }
 
 /**
- * CommonActionModal
+ * CommonPromptModal
  *
  * The foundational layout for transactional dialogs. It standardizes the centered
  * icon, typography, and button placement, utilizing an intent prop to manage state colors.
  *
  * @example
- * <CommonActionModal
+ * <CommonPromptModal
  *  actionIconProps={resolvedActionIconProps}
  *  modalButtonProps={resolvedModalButtonProps}
  *  {...props}
  * />
  */
-export default function CommonActionModal({
+export default function CommonPromptModal({
     actionIconProps,
     containerClassName,
     mainContent,
     modalButtonProps,
     subContent,
     ...props
-}: CommonActionModalProps) {
-    const Icon = actionIconProps?.icon; // Icon component reference
-    const { iconProps, iconContainerClassName } = actionIconProps ?? {}; // Destructured action icon props
-    const resolvedIconContainerClassName = classMerge(
-        'h-[5.5rem] p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-full) w-[5.5rem]',
-        iconContainerClassName
-    ); // Resolved container class for the icon
-    const resolvedIconClassName = classMerge(
-        'h-[3rem] w-[3rem]',
-        iconProps?.className
-    ); // Resolved icon class name
-    const resolvedMainContentClassname = classMerge(
-        'text-(--mui-tokens-color-neutral-900) tw_body_medium_bold',
-        mainContent?.className
-    ); // Resolved class name for main content
-    const resolvedSubContentClassname = classMerge(
-        'text-(--mui-tokens-color-neutral-400) tw_body_small',
-        subContent?.className
-    ); // Resolved class name for sub content
-    const resolvedCancelProps = {
-        variant: 'outlined' as const,
-        ...modalButtonProps?.cancelProps
-    }; // Resolved cancel props
-
+}: CommonPromptModalProps) {
     return (
         <BaseActionModal
+            {...props}
             containerClassName={
                 classMerge(
                     'items-center min-h-[14.5625rem] w-[30.1875rem] pt-(--mui-tokens-spacing-5)',
                     containerClassName
                 )
             }
-            {...props}
             modalButtonProps={{
                 ...modalButtonProps,
                 className: 'flex-row-reverse',
                 isButtonsFullWidth: modalButtonProps?.isButtonsFullWidth ?? true,
-                cancelProps: resolvedCancelProps
+                cancelProps: {
+                    variant: 'outlined' as const,
+                    ...modalButtonProps?.cancelProps
+                }
             }}
         >
-            <div className="flex flex-col gap-var(--mui-tokens-spacing-5) items-center w-full">
-                {Icon && (
-                    <div className={resolvedIconContainerClassName}>
-                        <Icon
-                            className={resolvedIconClassName}
+            <div className="flex flex-col gap-(--mui-tokens-spacing-5) items-center w-full">
+                {actionIconProps?.icon && (
+                    <div
+                        className={
+                            classMerge(
+                                'h-22 p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-full) w-22',
+                                actionIconProps.iconContainerClassName
+                            )
+                        }
+                    >
+                        <actionIconProps.icon
+                            {...actionIconProps.iconProps}
+                            className={
+                                classMerge(
+                                    'h-12 w-12',
+                                    actionIconProps.iconProps?.className
+                                )
+                            }
                             weight="bold"
-                            {...iconProps}
                         />
                     </div>
                 )}
@@ -92,7 +84,12 @@ export default function CommonActionModal({
                     {mainContent && (
                         <span
                             {...mainContent}
-                            className={resolvedMainContentClassname}
+                            className={
+                                classMerge(
+                                    'text-(--mui-tokens-color-neutral-900) tw_body_medium_bold',
+                                    mainContent.className
+                                )
+                            }
                         >
                             {mainContent.title}
                         </span>
@@ -100,7 +97,12 @@ export default function CommonActionModal({
                     {subContent && (
                         <span
                             {...subContent}
-                            className={resolvedSubContentClassname}
+                            className={
+                                classMerge(
+                                    'text-(--mui-tokens-color-neutral-400) tw_body_small',
+                                    subContent.className
+                                )
+                            }
                         >
                             {subContent.title}
                         </span>

@@ -18,11 +18,11 @@ export interface BaseActionModalProps extends CommonModalProps {
  *
  * @example
  * <BaseActionModal
- *  title="Confirm Action"
- *  onClose={handleClose}
- *  isOpen={isOpen}
+ * title="Confirm Action"
+ * onClose={handleClose}
+ * isOpen={isOpen}
  * >
- *  <p>Are you sure you want to proceed?</p>
+ * <p>Are you sure you want to proceed?</p>
  * </BaseActionModal>
  */
 export default function BaseActionModal({
@@ -32,27 +32,30 @@ export default function BaseActionModal({
     ...props
 }: BaseActionModalProps) {
     const { t } = useTranslation(); // Translation hook
-    const resolvedCancelProps = {
-        children: t('cancel'),
-        ...modalButtonProps?.cancelProps
-    }; // Resolved props for the cancel button
-    const resolvedModalButtonsClassName = classMerge(
-        'mt-auto w-full',
-        modalButtonProps?.className
-    ); // Resolved class name for the button container
-    const containerClasses = classMerge(
-        'flex flex-col gap-(--mui-tokens-spacing-8) pt-(--mui-tokens-spacing-5)',
-        containerClassName
-    ); // Merged container classes
 
     return (
         <CommonModal {...props}>
-            <div className={containerClasses}>
+            <div
+                className={
+                    classMerge(
+                        'flex flex-col gap-(--mui-tokens-spacing-8) pt-(--mui-tokens-spacing-5)',
+                        containerClassName
+                    )
+                }
+            >
                 {children}
                 <ModalButtons
                     {...modalButtonProps}
-                    cancelProps={resolvedCancelProps}
-                    className={resolvedModalButtonsClassName}
+                    cancelProps={{
+                        children: t('cancel'),
+                        ...modalButtonProps?.cancelProps
+                    }}
+                    className={
+                        classMerge(
+                            'mt-auto w-full',
+                            modalButtonProps?.className
+                        )
+                    }
                 />
             </div>
         </CommonModal>

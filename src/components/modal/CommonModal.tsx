@@ -1,7 +1,7 @@
 import CommonCard, { CommonCardProps } from '@components/card/CommonCard';
 import Dialog, { DialogOwnerState, DialogProps } from '@mui/material/Dialog';
 import { PaperProps } from '@mui/material/Paper';
-import { DialogCloseProps } from '@type/common.type';
+import { DialogCloseProps } from '@type/common/theme.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 
