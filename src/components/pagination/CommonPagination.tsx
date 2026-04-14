@@ -221,7 +221,7 @@ export default function CommonPagination({
             }
             {...propss}
         >
-            <div className="flex gap-[var(--mui-tokens-spacing-5)]">
+            <div className="flex gap-(--mui-tokens-spacing-5)">
                 <PaginationNavigations
                     inputProps={{
                         totalPages,

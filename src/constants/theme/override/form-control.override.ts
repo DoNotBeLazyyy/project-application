@@ -16,7 +16,9 @@ export const formControlOverrides: ComponentTheme = {
                     }
                 }
             },
-            label: { marginLeft: '7px' }
+            label: {
+                marginLeft: '7px'
+            }
         }
     }
 };

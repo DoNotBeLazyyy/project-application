@@ -20,7 +20,7 @@ export default function ModalCloseIcon(props: IconProps) {
             {...props}
             className={
                 classMerge(
-                    'cursor-pointer h-[2.25rem] p-[var(--mui-tokens-spacing-3)] text-[var(--mui-tokens-color-brand-900)] w-[2.25rem]',
+                    'cursor-pointer h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-brand-900) w-[2.25rem]',
                     props.className
                 )
             }

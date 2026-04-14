@@ -25,20 +25,16 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     isRoundedFull,
     ...props
 }, ref) => {
-    const roundedClassName = isRoundedFull && 'common_input_rounded_full'; // Classname when isRoundedFull is true
-
-    return (
-        <TextField
-            className={
-                classMerge(
-                    className,
-                    roundedClassName
-                )
-            }
-            ref={ref}
-            {...props}
-        />
-    );
+    return <TextField
+        className={
+            classMerge(
+                className,
+                isRoundedFull && 'common_input_rounded_full'
+            )
+        }
+        ref={ref}
+        {...props}
+    />;
 });
 CommonInput.displayName = 'CommonInput';
 

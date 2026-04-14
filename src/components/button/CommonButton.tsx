@@ -41,7 +41,6 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
     const resolvedEndIcon = startIcon
         ? null
         : resolveIcon(endIcon); // Only resolve end icon when no start icon is present
-    const loadingClassName = isLoading && 'is_loading'; // Classname when loading is true
 
     /**
      * Resolves the icon to display based on the loading state.
@@ -63,7 +62,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
         className={
             classMerge(
                 className,
-                loadingClassName
+                isLoading && 'is_loading'
             )
         }
         disabled={isDisabled}

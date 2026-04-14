@@ -42,7 +42,9 @@ export default function PaginationSelect({
                 [`
                     .MuiOutlinedInput-notchedOutline,
                     &:hover .MuiOutlinedInput-notchedOutline
-                `]: { borderColor: 'var(--mui-tokens-color-neutral-300)' },
+                `]: {
+                    borderColor: 'var(--mui-tokens-color-neutral-300)'
+                },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                     borderWidth: 'var(--mui-tokens-stroke-1)'
                 },
@@ -58,7 +60,9 @@ export default function PaginationSelect({
             {options.map((option) => (
                 <MenuItem
                     key={option}
-                    sx={{ fontSize: 'var(--mui-tokens-fontSize-sm)' }}
+                    sx={{
+                        fontSize: 'var(--mui-tokens-fontSize-sm)'
+                    }}
                     value={option}
                 >
                     {t('items_per_page', {

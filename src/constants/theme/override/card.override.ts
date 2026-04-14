@@ -19,26 +19,34 @@ export const cardOverrides: ComponentTheme = {
         },
         variants: [
             {
-                props: { variant: 'xsmall' },
+                props: {
+                    variant: 'xsmall'
+                },
                 style: {
                     borderRadius: '5px',
                     gap: '1.625rem'
                 }
             },
             {
-                props: { variant: 'small' },
+                props: {
+                    variant: 'small'
+                },
                 style: {
                     gap: 'var(--mui-tokens-spacing-5)'
                 }
             },
             {
-                props: { variant: 'medium' },
+                props: {
+                    variant: 'medium'
+                },
                 style: {
                     gap: 'var(--mui-tokens-spacing-4)'
                 }
             },
             {
-                props: { variant: 'large' },
+                props: {
+                    variant: 'large'
+                },
                 style: {
                     gap: '6.25rem'
                 }
