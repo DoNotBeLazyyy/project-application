@@ -1,12 +1,14 @@
-import CommonToggle from '@components/switch/CommonToggle';
 import { Switch } from '@mui/material';
 import { Stack } from '@mui/system';
 import { InputChangeEvent } from '@type/common.type';
 import { useState } from 'react';
 
 export default function CommonToggleSample() {
-    const [checked, setChecked] = useState(false);
+    const [checked, setChecked] = useState(false); //
 
+    /**
+     *
+     */
     function handleToggleChange(
         _event: InputChangeEvent,
         value: boolean
@@ -15,102 +17,45 @@ export default function CommonToggleSample() {
     }
 
     return (
-        <div className="flex gap-10 h-full items-center justify-center p-5 w-full">
+        <div className="flex gap-[var(--mui-tokens-spacing-9)] h-full items-center justify-center p-[var(--mui-tokens-spacing-6)] w-full">
             <Stack spacing={10}>
-                <div className="flex flex-col justify-center gap-1 text-[50px]">
-                    Toggle with label
-                    <CommonToggle
-                        label="Common Toggle with custom styles"
-                        sx={{
-                            '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': {
-                                backgroundColor: '#ABFA00'
-                            },
-                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                backgroundColor: '#FF0000'
-                            }
-                        }}
-                    />
-                    <CommonToggle
-                        checked={true}
-                        disabled
-                        label="disabled Toggle on"
-                    />
-                    <CommonToggle
-                        disabled
-                        label="disabled Toggle off"
-                    />
-                    <CommonToggle
-                        checked={checked}
-                        label="Common Toggle on and off"
-                        onChange={handleToggleChange}
-                    />
-                    {checked && (
-                        <div className="text-[50px] font-bold">
-                            HELLO WORLD
-                        </div>
-                    )}
-                </div>
-                <div className="flex flex-col justify-center gap-1 text-[50px]">
-                    Toggle without label
-                    <CommonToggle />
-                    <CommonToggle disabled />
-                    <CommonToggle
-                        checked={true}
-                        disabled
-                    />
-                </div>
-
-                <div className="flex flex-col justify-center gap-1 text-[50px]">
-                    NEW SWITCH
-
-                    <Switch
-                        checked={false}
-                        disabled
-                    />
-                    <div className="gap-4 text-[16px] flex">
-                        <Switch
-                            checked={true}
-                            disabled
-                        />
-                        <div className="justify-center text-[#FF0000]">hello</div>
-                    </div>
-
-                    {/** Eto lang need ko */}
-                    <div className="gap-2 flex-col p-10 text-[30px] flex">
+                <div className="flex flex-col gap-[var(--mui-tokens-spacing-2)] justify-center text-[3.125rem]">
+                    <div className="flex flex-col gap-[var(--mui-tokens-spacing-3)] p-[var(--mui-tokens-spacing-9)] text-[1.875rem]">
                         Switches with label
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[20px] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch
                                 checked={true}
                             />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                             Toggle Button
                             </div>
                         </div>
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                             Toggle Button
                             </div>
                         </div>
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[20px] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch
                                 checked={true}
                                 disabled
                             />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                             Toggle Button
                             </div>
                         </div>
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch
                                 disabled
                             />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                             Toggle Button
                             </div>
                         </div>
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch
+                                checked={true}
                                 sx={{
                                     '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': {
                                         backgroundColor: '#ABFA00'
@@ -120,23 +65,36 @@ export default function CommonToggleSample() {
                                     }
                                 }}
                             />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                                 Toggle Button with different color
                             </div>
                         </div>
-                        <div className="flex gap-[16px] leading-[20px] align-middle text-[#4F4F4F]">
+                        <div className="align-middle flex gap-[var(--mui-tokens-spacing-5)] leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600])">
                             <Switch
                                 onChange={handleToggleChange}
                             />
-                            <div className="font-normal text-base leading-5 tracking-normal align-middle text-[#4F4F4F]">
+                            <div className="align-middle font-normal leading-[var(--mui-tokens-spacing-6)] text-[var(--mui-tokens-color-neutral-600]) text-base tracking-normal">
                                 Toggle Button with checked state
                             </div>
                         </div>
                         {checked && (
-                            <div className="flex text-[50px] font-bold">
+                            <div className="flex text-[3.125rem]">
                                     HELLO WORLD
                             </div>
                         )}
+                    </div>
+                    <div className="flex flex-col gap-[var(--mui-tokens-spacing-3)] p-[var(--mui-tokens-spacing-9)] text-[1.875rem]">
+                        Switches without label
+                        <Switch checked={true} />
+                        <Switch />
+                        <Switch
+                            checked={true}
+                            disabled
+                        />
+                        <Switch
+                            checked={false}
+                            disabled
+                        />
                     </div>
                 </div>
             </Stack>
