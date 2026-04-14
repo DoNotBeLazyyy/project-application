@@ -9,7 +9,7 @@ interface VariantGroupProps {
     variant: ButtonVariant;
 }
 
-const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large', 'xlarge']; // List of button sizes
+const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large']; // List of button sizes
 
 export default function VariantGroup({ variant }: VariantGroupProps) {
     return (
