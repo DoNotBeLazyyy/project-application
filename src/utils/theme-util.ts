@@ -8,7 +8,9 @@ import { createTheme } from '@mui/material/styles';
 import { FontFamilyKey } from '@type/common/theme.type';
 
 export const theme = createTheme({
-    cssVariables: { nativeColor: true },
+    cssVariables: {
+        nativeColor: true
+    },
     components: COMPONENTS,
     palette: PALETTE,
     shape: SHAPE,
