@@ -1,5 +1,4 @@
 import CommonHeaderSideBar from '@components/sidebar/CommonHeaderSideBar';
-import { TOKENS } from '@constants/theme/tokens.constant';
 import Button, { ButtonProps } from '@mui/material/Button';
 import { IconButtonProps } from '@mui/material/IconButton';
 import { GearSixIcon } from '@phosphor-icons/react';
@@ -82,55 +81,50 @@ export default function CommonSideBar({
     variant = 'dark',
     ...props
 }: CommonSideBarProps) {
-    const SIDEBAR_BG = {
-        dark: TOKENS.color?.brand?.[950],
-        light: TOKENS.color?.common?.white
+    const sidebarBg = {
+        dark: 'var(--mui-tokens-color-brand-950)',
+        light: 'var(--mui-tokens-color-common-white)'
     } as const; // Define default background colors for dark and light variants of the sidebar.
     const footerVariantStyles = {
         dark: {
-            color: TOKENS.color?.common?.white,
+            color: 'var(--mui-tokens-color-common-white)',
             hoverBg: 'rgba(255,255,255,0.1)',
-            iconColor: TOKENS.color?.neutral?.[300]
+            iconColor: 'var(--mui-tokens-color-neutral-300)'
         },
         light: {
-            color: TOKENS.color?.neutral?.[600],
+            color: 'var(--mui-tokens-color-neutral-600)',
             hoverBg: 'rgba(161,161,170,0.1)',
-            iconColor: TOKENS.color?.neutral?.[400]
+            iconColor: 'var(--mui-tokens-color-neutral-400)'
         }
     }; // Define styles for the footer button based on the sidebar variant.
     const footerStyle = footerVariantStyles[variant]; // Get the appropriate styles for the footer button based on the sidebar variant.
-    const isDark = variant === 'dark'; // Check if the current variant is dark
-    const sidebarStyle = { backgroundColor: color ?? SIDEBAR_BG[variant] }; // Determine sidebar background color
-    const isSidebarOpen = isOpen; // Store the sidebar open/close state in a descriptive variable
 
     return (
         <div
             className={
                 classMerge(
                     'flex h-screen flex-col overflow-hidden transition-[width,min-width] duration-300',
-                    isSidebarOpen
+                    isOpen
                         ? 'w-[15.625rem] min-w-[15.625rem]'
                         : 'w-0 min-w-0',
                     className
                 )
             }
             style={{
-                ...sidebarStyle,
+                backgroundColor: color ?? sidebarBg[variant],
                 ...style
             }}
             {...props}
         >
-            {headerProps && (
-                <CommonHeaderSideBar
-                    {...headerProps}
-                    variant={variant}
-                />
-            )}
+            {headerProps && <CommonHeaderSideBar
+                {...headerProps}
+                variant={variant}
+            />}
             <div
                 className={
                     classMerge(
                         'flex-1 overflow-y-auto px-[var(--mui-tokens-spacing-4)] pb-[var(--mui-tokens-spacing-4)] [&::-webkit-scrollbar-thumb]:rounded-[var(--mui-tokens-radius-sm)] [&::-webkit-scrollbar]:w-[var(--mui-tokens-spacing-2)]',
-                        isDark
+                        variant === 'dark'
                             ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                             : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
                     )
@@ -149,7 +143,7 @@ export default function CommonSideBar({
                             justifyContent: 'flex-start',
                             gap: 1,
                             borderRadius: 'var(--mui-tokens-radius-sm)',
-                            border: `2px solid ${TOKENS.color?.neutral?.[300]}`,
+                            border: '2px solid var(--mui-tokens-color-neutral-300)',
                             backgroundColor: 'transparent',
                             px: 4,
                             py: 1.5,
@@ -158,7 +152,7 @@ export default function CommonSideBar({
                             color: footerStyle.color,
                             '&:hover': {
                                 backgroundColor: footerStyle.hoverBg,
-                                border: `2px solid ${TOKENS.color?.neutral?.[300]}`
+                                border: '2px solid var(--mui-tokens-color-neutral-300)'
                             },
                             '& .MuiButton-startIcon': {
                                 color: footerStyle.iconColor,

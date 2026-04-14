@@ -1,4 +1,3 @@
-
 import SideBarSectionGroup from '@components/sidebar/SideBarSectionGroup';
 import { DivProps } from '@type/common.type';
 import { SideBarGroup, SideBarItem, SideBarVariant } from '@type/sidebar.types';

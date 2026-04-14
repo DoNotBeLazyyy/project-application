@@ -1,8 +1,8 @@
 import RadioButtonCheckedIcon from '@components/icons/RadioChecked';
 import RadioButtonUncheckedIcon from '@components/icons/RadioUnchecked';
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common/theme.type';
 
-export const radioOverrides: Components<Omit<Theme, 'components'>> = {
+export const radioOverrides: ComponentTheme = {
     MuiRadio: {
         defaultProps: {
             icon: <RadioButtonUncheckedIcon />,

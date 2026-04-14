@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { Components, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { SideBarVariant } from '@type/sidebar.types';
 import { SharedTabMenuProps } from '@type/tab-menu.type';
@@ -5,6 +7,9 @@ import { CSSProperties } from 'react';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
+
+// Mui props
+export type ComponentTheme = Components<Omit<Theme, 'components'>>;
 
 // Standardized color weight scale
 type ColorWeight = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
@@ -326,6 +331,27 @@ declare module '@mui/material/FilledInput' {
     interface FilledInputPropsSizeOverrides extends SharedSizeProps {}
 }
 
+declare module '@mui/material/Button' {
+    interface ButtonPropsSizeOverrides {
+        // Extra small size
+        xsmall: true;
+
+        // Extra large size
+        xlarge: true;
+    }
+
+    interface ButtonPropsVariantOverrides {
+        // Primary variant
+        primary: true;
+
+        // Secondary variant
+        secondary: true;
+
+        // Ghost variant
+        ghost: true;
+    }
+}
+
 declare module '@mui/material/Tabs' {
     interface TabsOwnProps extends SharedTabMenuProps {}
 }
@@ -335,9 +361,13 @@ declare module '@mui/material/Tab' {
 }
 
 declare module '@mui/material/Accordion' {
-    interface AccordionOwnProps { sidebarVariant?: SideBarVariant;}
+    interface AccordionOwnProps {
+        sidebarVariant?: SideBarVariant;
+    }
 }
 
 declare module '@mui/material/AccordionSummary' {
-    interface AccordionSummaryOwnProps {sidebarVariant?: SideBarVariant;}
+    interface AccordionSummaryOwnProps {
+        sidebarVariant?: SideBarVariant;
+    }
 }

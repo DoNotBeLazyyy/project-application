@@ -6,8 +6,10 @@ import {
     DatabaseIcon,
     GlobeIcon
 } from '@phosphor-icons/react';
+import { useState } from 'react';
 
 export default function CommonSideBarSample() {
+    const [isLightExpanded, setIsLightExpanded] = useState(true);
 
     const LIGHTSECTIONS: SideBarSection[] = [
         {
@@ -147,7 +149,10 @@ export default function CommonSideBarSample() {
                 headerProps={{
                     logo: <img alt="logo" className="h-11 w-11 rounded-[20%] border-2 border-white/20" src={EgemcoIcon} />,
                     title: 'EGEMCO HRIS',
-                    subtitle: 'Super User Access'
+                    subtitle: 'Super User Access',
+                    hasArrow: true,
+                    isExpanded: isLightExpanded,
+                    buttonProps: { onClick: () => setIsLightExpanded((prev) => !prev) }
                 }}
                 variant="light"
             >

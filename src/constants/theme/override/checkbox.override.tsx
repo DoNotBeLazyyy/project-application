@@ -1,9 +1,9 @@
 import CheckboxButtonCheckedIcon from '@components/icons/CheckboxChecked';
 import CheckboxIndeterminateIcon from '@components/icons/CheckboxIndeterminate';
 import CheckboxButtonUncheckedIcon from '@components/icons/CheckboxUnchecked';
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common/theme.type';
 
-export const checkboxOverrides: Components<Omit<Theme, 'components'>> = {
+export const checkboxOverrides: ComponentTheme = {
     MuiCheckbox: {
         defaultProps: {
             icon: <CheckboxButtonUncheckedIcon />,
@@ -27,5 +27,5 @@ export const checkboxOverrides: Components<Omit<Theme, 'components'>> = {
                 }
             }
         }
-    },
+    }
 };

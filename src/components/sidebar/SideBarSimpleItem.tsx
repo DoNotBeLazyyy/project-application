@@ -44,12 +44,12 @@ export default function SideBarSimpleItem({
             disableRipple
             sx={{
                 gap: '10px',
-                px: '12px',
-                py: '8px',
-                fontSize: '14px',
+                px: 4,
+                py: 3,
+                fontSize: 'var(--mui-tokens-fontSize-sm)',
                 '& .sidebar-icon svg': {
-                    height: '20px',
-                    width: '20px'
+                    height: 'var(--mui-tokens-spacing-6)',
+                    width: 'var(--mui-tokens-spacing-6)'
                 }
             }}
             onClick={onClick}

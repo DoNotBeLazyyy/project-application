@@ -1,9 +1,9 @@
 import type { SideBarSection } from '@components/sidebar/CommonSideBarList';
 import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
 import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
-import { isSideBarGroup } from '@constants/sidebar.constant';
 import { SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
+import { isSideBarGroup } from '@utils/sidebar.util';
 
 interface SideBarSectionGroupProps {
     // The section data to render.

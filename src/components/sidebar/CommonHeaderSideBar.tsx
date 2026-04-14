@@ -1,9 +1,10 @@
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
-import { CaretRight } from '@phosphor-icons/react';
-import { DivProps, ThemeSx } from '@type/common.type';
+import ArrowIconDown from '@components/icons/ArrowIconDown';
+import CommonHeaderSubtitle from '@components/sidebar/CommonHeaderSubtitle';
+import { CommonHeaderTitle } from '@components/sidebar/CommonHeaderTitle';
+import { IconButtonProps } from '@mui/material/IconButton';
+import { DivProps } from '@type/common.type';
 import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { normalizeSx } from '@utils/theme-util';
 import { ReactNode } from 'react';
 
 export interface CommonHeaderSideBarProps extends DivProps {
@@ -56,7 +57,7 @@ export default function CommonHeaderSideBar({
     const headerVariantStyles = {
         dark: {
             titleColor: 'text-[var(--mui-tokens-color-common-white)]',
-            subtitleColor: 'text-[#ffffff99]'
+            subtitleColor: 'text-[var(--mui-tokens-color-common-white)]'
         },
         light: {
             titleColor: 'text-[var(--mui-tokens-color-neutral-900)]',
@@ -64,7 +65,6 @@ export default function CommonHeaderSideBar({
         }
     }; // Predefined styles for dark and light variants
     const { titleColor, subtitleColor } = headerVariantStyles[variant]; // Destructure styles based on the current variant
-    const arrowRotateClass = isExpanded && 'rotate-90'; // Rotate arrow if expanded
 
     return (
         <div
@@ -78,54 +78,18 @@ export default function CommonHeaderSideBar({
         >
             {logo}
             <div className="min-w-0 flex-1">
-                <p
-                    className={
-                        classMerge(
-                            'text-[length:var(--mui-tokens-fontSize-nm)] font-[var(--mui-tokens-fontWeight-bold)] leading-[1.25rem]',
-                            titleColor
-                        )
-                    }
-                >
-                    {title}
-                </p>
-                {subtitle && (
-                    <p
-                        className={
-                            classMerge(
-                                'text-[12px] leading-snug',
-                                subtitleColor
-                            )
-                        }
-                    >
-                        {subtitle}
-                    </p>
-                )}
+                <CommonHeaderTitle
+                    colorClassName={titleColor}
+                    text={title}
+                />
+                {subtitle && <CommonHeaderSubtitle
+                    colorClassName={subtitleColor}
+                    text={subtitle} />}
             </div>
-            {hasArrow && (
-                <IconButton
-                    disableRipple
-                    {...buttonProps}
-                    sx={[
-                        {
-                            flexShrink: 0,
-                            p: 0
-                        },
-                        ...normalizeSx(buttonProps?.sx as ThemeSx)
-                    ]}
-                >
-                    <CaretRight
-                        className={
-                            classMerge(
-                                'transition-transform duration-200',
-                                arrowRotateClass
-                            )
-                        }
-                        color="#022179"
-                        size={12}
-                        weight="bold"
-                    />
-                </IconButton>
-            )}
+            {hasArrow && <ArrowIconDown
+                buttonProps={buttonProps}
+                isExpanded={isExpanded}
+            />}
         </div>
     );
 }

@@ -1,51 +1,41 @@
 import { Accordion, AccordionSummary, styled } from '@mui/material';
-import { SideBarItem, SideBarGroup } from '@type/sidebar.types';
+import { shouldForwardSidebarVariant } from '@utils/sidebar.util';
 
 // Sidebar variant style configuration (dark and light)
 export const VARIANT_STYLES = {
     dark: {
-        sectionLabel: 'text-white',
-        itemText: '!text-white',
-        itemHover: 'hover:bg-[#022179]',
-        itemIcon: 'text-white',
-        itemActive: 'bg-[#022179] !text-white',
-        groupText: 'text-white',
-        groupIcon: 'text-white',
-        expandIcon: 'text-[#387BE0]',
-        subItemText: '!text-white',
-        subItemHover: 'hover:bg-[#022179]',
-        subItemActive: 'bg-[#022179] !text-white',
+        sectionLabel: 'text-[var(--mui-tokens-color-common-white)]',
+        itemText: '!text-[var(--mui-tokens-color-common-white)]',
+        itemHover: 'hover:bg-[var(--mui-tokens-color-brand-900)]',
+        itemIcon: 'text-[var(--mui-tokens-color-common-white)]',
+        itemActive: 'bg-[var(--mui-tokens-color-brand-900)] !text-[var(--mui-tokens-color-common-white)]',
+        groupText: 'text-[var(--mui-tokens-color-common-white)]',
+        groupIcon: 'text-[var(--mui-tokens-color-common-white)]',
+        expandIcon: 'text-[var(--mui-tokens-color-brand-600)]',
+        subItemText: '!text-[var(--mui-tokens-color-common-white)]',
+        subItemHover: 'hover:bg-[var(--mui-tokens-color-brand-900)]',
+        subItemActive: 'bg-[var(--mui-tokens-color-brand-900)] !text-[var(--mui-tokens-color-common-white)]',
         subItemBorder: '',
         subItemBorderActive: '',
         subItemBorderInactive: ''
     },
     light: {
-        sectionLabel: 'text-[#52525B]',
-        itemText: '!text-[#52525B]',
-        itemHover: 'hover:bg-gray-100',
-        itemIcon: 'text-gray-500',
-        itemActive: 'bg-[#EEF2FF] !text-[#3B5BDB]',
-        groupText: 'text-gray-900',
-        groupIcon: 'text-gray-700',
-        expandIcon: 'text-[#011554]',
-        subItemText: '!text-gray-600',
-        subItemHover: 'hover:bg-gray-50',
-        subItemActive: '!text-gray-600',
+        sectionLabel: 'text-[var(--mui-tokens-color-neutral-600)]',
+        itemText: '!text-[var(--mui-tokens-color-neutral-600)]',
+        itemHover: 'hover:bg-[var(--mui-tokens-color-neutral-100)]',
+        itemIcon: 'text-[var(--mui-tokens-color-neutral-500)]',
+        itemActive: 'bg-[var(--mui-tokens-color-sidebar-activeLight)] !text-[var(--mui-tokens-color-sidebar-active)]',
+        groupText: 'text-[var(--mui-tokens-color-neutral-900)]',
+        groupIcon: 'text-[var(--mui-tokens-color-neutral-700)]',
+        expandIcon: 'text-[var(--mui-tokens-color-brand-950)]',
+        subItemText: '!text-[var(--mui-tokens-color-neutral-600)]',
+        subItemHover: 'hover:bg-[var(--mui-tokens-color-neutral-50)]',
+        subItemActive: '!text-[var(--mui-tokens-color-neutral-600)]',
         subItemBorder: 'show',
-        subItemBorderActive: '#022179',
+        subItemBorderActive: 'var(--mui-tokens-color-brand-900)',
         subItemBorderInactive: '#D1D5DB'
     }
 };
-
-/**
- * Custom prop forwarding function to prevent 'sidebarVariant' from being passed to DOM elements in styled components.
- *
- * @param prop - The prop name to check for forwarding in styled components.
- * @returns
- */
-export function shouldForwardSidebarVariant(prop: PropertyKey) {
-    return prop !== 'sidebarVariant';
-}
 
 // Shared styled configuration to filter sidebar variant props
 export const STYLED_OPTIONS = { shouldForwardProp: shouldForwardSidebarVariant };
@@ -55,13 +45,3 @@ export const StyledAccordion = styled(Accordion, STYLED_OPTIONS)({});
 
 // Styled AccordionSummary using shared styled options
 export const StyledAccordionSummary = styled(AccordionSummary, STYLED_OPTIONS)({});
-
-/**
- * Type guard to determine if an item is a SideBarGroup (has sub-items) or a simple SideBarItem.
- *
- * @param item - The item to check.
- * @returns
- */
-export function isSideBarGroup(item: SideBarItem | SideBarGroup): item is SideBarGroup {
-    return 'items' in item;
-}
