@@ -347,3 +347,19 @@ declare module '@mui/material/Tabs' {
 declare module '@mui/material/Tab' {
     interface TabOwnProps extends SharedTabMenuProps {}
 }
+
+declare module '@mui/material/Paper' {
+    interface PaperPropsVariantOverrides {
+        // Large size
+        large: true;
+
+        // Medium size
+        medium: true;
+
+        // Small size
+        small: true;
+
+        // Extra small size
+        xsmall: true;
+    }
+}

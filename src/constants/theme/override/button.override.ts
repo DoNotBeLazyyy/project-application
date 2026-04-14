@@ -88,22 +88,6 @@ export const buttonOverrides: ComponentTheme = {
             },
             {
                 props: {
-                    size: 'xlarge'
-                },
-                style: ({ theme }) => ({
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    gap: 'var(--mui-tokens-spacing-6)',
-                    maxHeight: '4.25rem',
-                    padding: 'var(--mui-tokens-spacing-6)',
-                    ...theme.typography.bodyLargeBold,
-                    '& .MuiButton-icon svg': {
-                        height: '1.5rem',
-                        width: '1.5rem'
-                    }
-                })
-            },
-            {
-                props: {
                     variant: 'primary'
                 },
                 style: {
