@@ -34,7 +34,7 @@ export default function ModalButtons({
     isButtonsFullWidth
 }: ModalButtonProps) {
     const resolvedClassName = classMerge(
-        'flex gap-[var(--mui-tokens-spacing-5)] justify-center',
+        'flex gap-(--mui-tokens-spacing-5) justify-center',
         className
     ); // Resolved container class names
     const commonProps = {

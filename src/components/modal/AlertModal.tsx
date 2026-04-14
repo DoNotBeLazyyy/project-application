@@ -22,7 +22,7 @@ export default function AlertModal({
     const { t } = useTranslation(); // Translation hook
     const resolvedActionIconProps = {
         icon: WarningIcon,
-        iconContainerClassName: 'bg-[var(--mui-tokens-color-state-warningLight)] text-[var(--mui-tokens-color-state-warning)]',
+        iconContainerClassName: 'bg-(--mui-tokens-color-state-warningLight) text-(--mui-tokens-color-state-warning)',
         ...actionIconProps
     }; // Resolved icon configuration
     const resolvedModalButtonProps = {

@@ -23,7 +23,7 @@ export default function DeleteModal({
     const { t } = useTranslation(); // Translation hook
     const resolvedActionIconProps = {
         icon: TrashIcon,
-        iconContainerClassName: 'bg-[var(--mui-tokens-color-state-errorLight)] text-[var(--mui-tokens-color-state-error)]',
+        iconContainerClassName: 'bg-(--mui-tokens-color-state-errorLight) text-(--mui-tokens-color-state-error)',
         ...actionIconProps
     }; // Resolved icon configuration
     const resolvedModalButtonProps = {

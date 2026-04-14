@@ -1,11 +1,20 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { Components, DialogProps, SxProps, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
+import { SharedTabMenuProps } from '@type/tab-menu.type';
 import { CSSProperties } from 'react';
 
 // Component standard sizes
-export type ComponentSize = 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge';
+export type ComponentSize = 'xsmall' | 'small' | 'medium' | 'large';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
+
+// Mui props
+type DialogOnClose = NonNullable<DialogProps['onClose']>;
+export type DialogCloseProps = Parameters<DialogOnClose>;
+export type ComponentTheme = Components<Omit<Theme, 'components'>>;
+export type ThemeSx = SxProps<Theme>;
 
 // Standardized color weight scale
 type ColorWeight = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
@@ -206,9 +215,6 @@ interface SharedSizeProps {
 
     // Large size
     large: true;
-
-    // Extra large size
-    xlarge: true;
 }
 
 declare module '@mui/material/Paper' {
@@ -337,9 +343,6 @@ declare module '@mui/material/Button' {
     interface ButtonPropsSizeOverrides {
         // Extra small size
         xsmall: true;
-
-        // Extra large size
-        xlarge: true;
     }
 
     interface ButtonPropsVariantOverrides {
@@ -352,4 +355,12 @@ declare module '@mui/material/Button' {
         // Ghost variant
         ghost: true;
     }
+}
+
+declare module '@mui/material/Tabs' {
+    interface TabsOwnProps extends SharedTabMenuProps {}
+}
+
+declare module '@mui/material/Tab' {
+    interface TabOwnProps extends SharedTabMenuProps {}
 }

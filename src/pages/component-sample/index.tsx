@@ -14,8 +14,20 @@ export default function ComponentSample() {
             path: 'modal'
         },
         {
+            label: 'Radio',
+            path: 'radio'
+        },
+        {
+            label: 'Checkbox',
+            path: 'checkbox'
+        },
+        {
             label: 'Input',
             path: 'input'
+        },
+        {
+            label: 'Tab Menu',
+            path: 'tab-menu'
         },
         {
             label: 'Button',

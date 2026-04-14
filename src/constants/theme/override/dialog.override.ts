@@ -1,4 +1,4 @@
-import { ComponentTheme } from '@type/common.type';
+import { ComponentTheme } from '@type/common/theme.type';
 
 export const dialogOverrides: ComponentTheme = {
     MuiDialog: {

@@ -1,5 +1,5 @@
 import { ModalButtonProps } from '@components/button/ModalButtons';
-import CommonLabelInput, { CommonLabelInputProps } from '@components/input/CommonLabelInput';
+import CommonInput, { CommonInputProps } from '@components/input/CommonInput';
 import BaseActionModal from '@components/modal/BaseActionModal';
 import { CommonActionModalProps } from '@components/modal/CommonActionModal';
 import { HTMLAttributesDivElement } from '@type/common.type';
@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 export interface TypedConfirmDeleteModalProps extends CommonActionModalProps {
     // Props for the confirmation input field
-    inputProps?: CommonLabelInputProps;
+    inputProps?: CommonInputProps;
 
     // Modal button props
     modalButtonProps?: ModalButtonProps;
@@ -82,7 +82,7 @@ export default function TypedConfirmDeleteModal({
             {...props}
             containerClassName={
                 classMerge(
-                    'flex flex-col gap-[var(--mui-tokens-spacing-8)] pt-[var(--mui-tokens-spacing-6)] w-[23rem]',
+                    'flex flex-col gap-(--mui-tokens-spacing-8) pt-(--mui-tokens-spacing-6) w-[23rem]',
                     containerClassName
                 )
             }
@@ -90,7 +90,7 @@ export default function TypedConfirmDeleteModal({
         >
             {modalHeader && <div {...modalHeader} />}
             {modalContent && <div {...modalContent} />}
-            <CommonLabelInput {...resolvedInputProps} />
+            <CommonInput {...resolvedInputProps} />
         </BaseActionModal>
     );
 }

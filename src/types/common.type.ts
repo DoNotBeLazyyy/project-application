@@ -1,7 +1,7 @@
-import { DialogProps, SxProps, Theme, Components } from '@mui/material';
+
 import { GridApi } from 'ag-grid-community';
 import {
-  ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction
+  ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -15,11 +15,6 @@ export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
 export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
-
-// MUI props
-type DialogOnClose = NonNullable<DialogProps['onClose']>;
-export type DialogCloseProps = Parameters<DialogOnClose>;
-export type ThemeSx = SxProps<Theme>;
 
 // Node props
 export type NodeNull = Node | null;
@@ -38,9 +33,9 @@ export type BooleanFunction = () => boolean;
 // Grid props
 export type GridApiNull = GridApi | null;
 
+// SVG props
+export type IconSvgProps = SVGProps<SVGSVGElement>;
+
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
-
-// Mui props
-export type ComponentTheme = Components<Omit<Theme, 'components'>>;

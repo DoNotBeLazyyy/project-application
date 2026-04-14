@@ -41,7 +41,7 @@ export default function BaseActionModal({
         modalButtonProps?.className
     ); // Resolved class name for the button container
     const containerClasses = classMerge(
-        'flex flex-col gap-[var(--mui-tokens-spacing-8)] pt-[var(--mui-tokens-spacing-5)]',
+        'flex flex-col gap-(--mui-tokens-spacing-8) pt-(--mui-tokens-spacing-5)',
         containerClassName
     ); // Merged container classes
 

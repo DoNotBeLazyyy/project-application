@@ -38,7 +38,6 @@ export default function CommonModal({
     cardProps,
     closeOnBackdropClick = true,
     closeOnEscape = true,
-    size = 'medium',
     slotProps,
     slots,
     onClose,
@@ -104,7 +103,6 @@ export default function CommonModal({
     return (
         <Dialog
             {...props}
-            size={size}
             slotProps={{
                 ...slotProps,
                 paper: resolvedPaperSlot

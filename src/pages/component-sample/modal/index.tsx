@@ -39,11 +39,6 @@ export default function ModalSamplePage() {
             }
         }
     }; // Resolved card properties for the typed delete modal
-    const resolvedTypedDeleteInputProps = {
-        labelProps: {
-            title: t('confirm')
-        }
-    }; // Resolved input configuration for typed delete
     const resolvedTypedDeleteButtonProps = {
         confirmProps: {
             children: 'I understand, delete this mandatory deduction'
@@ -52,19 +47,19 @@ export default function ModalSamplePage() {
     const typedDeleteContentMessage = 'We’re about to delete “SSS Pagibig” and all associated data including its pay rates. This may affect payroll generation. \n\nIf you’re certain, type sss-pagibig below to confirm. '; // Raw message string
     const resolvedTypedDeleteContent = {
         children: (
-            <p className="text-[var(--mui-tokens-color-neutral-700)] whitespace-pre-wrap">
+            <p className="text-(--mui-tokens-color-neutral-700) whitespace-pre-wrap">
                 {typedDeleteContentMessage}
             </p>
         )
     }; // Resolved content attributes for typed delete
     const resolvedTypedDeleteHeader = {
         children: (
-            <div className="flex flex-col pl-[12px]">
+            <div className="flex flex-col pl-(--mui-tokens-spacing-4)">
                 <span>
                     SSS Pag-ibig
                 </span>
-                <div className="flex gap-[8px] items-center">
-                    <div className="bg-[blue] h-[16px] w-[16px]" /> Philippines
+                <div className="flex gap-(--mui-tokens-spacing-3) items-center">
+                    <div className="bg-[blue] h-[1rem] w-[1rem]" /> Philippines
                 </div>
             </div>
         )
@@ -256,7 +251,9 @@ export default function ModalSamplePage() {
             {isTypedDeleteOpen && (
                 <TypedConfirmDeleteModal
                     cardProps={resolvedTypedDeleteCardProps}
-                    inputProps={resolvedTypedDeleteInputProps}
+                    inputProps={{
+                        label: t('confirm')
+                    }}
                     modalButtonProps={resolvedTypedDeleteButtonProps}
                     modalContent={resolvedTypedDeleteContent}
                     modalHeader={resolvedTypedDeleteHeader}

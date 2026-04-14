@@ -42,7 +42,7 @@ export default function CommonActionModal({
     const Icon = actionIconProps?.icon; // Icon component reference
     const { iconProps, iconContainerClassName } = actionIconProps ?? {}; // Destructured action icon props
     const resolvedIconContainerClassName = classMerge(
-        'h-[5.5rem] p-[var(--mui-tokens-spacing-6)] rounded-[var(--mui-tokens-radius-full)] w-[5.5rem]',
+        'h-[5.5rem] p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-full) w-[5.5rem]',
         iconContainerClassName
     ); // Resolved container class for the icon
     const resolvedIconClassName = classMerge(
@@ -50,11 +50,11 @@ export default function CommonActionModal({
         iconProps?.className
     ); // Resolved icon class name
     const resolvedMainContentClassname = classMerge(
-        'text-[var(--mui-tokens-color-neutral-900)] tw_body_medium_bold',
+        'text-(--mui-tokens-color-neutral-900) tw_body_medium_bold',
         mainContent?.className
     ); // Resolved class name for main content
     const resolvedSubContentClassname = classMerge(
-        'text-[var(--mui-tokens-color-neutral-400)] tw_body_small',
+        'text-(--mui-tokens-color-neutral-400) tw_body_small',
         subContent?.className
     ); // Resolved class name for sub content
     const resolvedCancelProps = {
@@ -66,7 +66,7 @@ export default function CommonActionModal({
         <BaseActionModal
             containerClassName={
                 classMerge(
-                    'items-center min-h-[14.5625rem] w-[30.1875rem] pt-[var(--mui-tokens-spacing-5)]',
+                    'items-center min-h-[14.5625rem] w-[30.1875rem] pt-(--mui-tokens-spacing-5)',
                     containerClassName
                 )
             }
@@ -74,11 +74,11 @@ export default function CommonActionModal({
             modalButtonProps={{
                 ...modalButtonProps,
                 className: 'flex-row-reverse',
-                isButtonFullWidth: modalButtonProps?.isButtonFullWidth ?? true,
+                isButtonsFullWidth: modalButtonProps?.isButtonsFullWidth ?? true,
                 cancelProps: resolvedCancelProps
             }}
         >
-            <div className="flex flex-col gap-[var(--mui-tokens-spacing-5)] items-center w-full">
+            <div className="flex flex-col gap-var(--mui-tokens-spacing-5) items-center w-full">
                 {Icon && (
                     <div className={resolvedIconContainerClassName}>
                         <Icon

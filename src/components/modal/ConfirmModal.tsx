@@ -22,7 +22,7 @@ export default function ConfirmModal({
     const { t } = useTranslation(); // Translation hook
     const resolvedActionIconProps = {
         icon: CheckIcon,
-        iconContainerClassName: 'bg-[var(--mui-tokens-color-state-successLight)] text-[var(--mui-tokens-color-state-success)]',
+        iconContainerClassName: 'bg-(--mui-tokens-color-state-successLight) text-(--mui-tokens-color-state-success)',
         ...actionIconProps
     }; // Resolved icon configuration
     const resolvedModalButtonProps = {

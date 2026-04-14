@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
-import { ButtonVariant } from '@pages/component-sample/button';
-import { BUTTON_SIZES } from '@pages/component-sample/button/constant';
+import { ButtonSize, ButtonVariant } from '@pages/component-sample/button';
 import DemoRow from '@pages/component-sample/button/DemoRow';
 import SectionCard from '@pages/component-sample/button/SectionCard';
 import { DownloadSimpleIcon, FloppyDiskIcon, PlusIcon } from '@phosphor-icons/react';
@@ -9,6 +8,8 @@ interface VariantGroupProps {
     // Button variant
     variant: ButtonVariant;
 }
+
+const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large']; // List of button sizes
 
 export default function VariantGroup({ variant }: VariantGroupProps) {
     return (

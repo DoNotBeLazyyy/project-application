@@ -1,4 +1,4 @@
-import { ComponentTheme } from '@type/common.type';
+import { ComponentTheme } from '@type/common/theme.type';
 
 export const buttonOverrides: ComponentTheme = {
     MuiButton: {
@@ -16,12 +16,16 @@ export const buttonOverrides: ComponentTheme = {
                 justifyContent: 'center',
                 minWidth: 'unset',
                 textTransform: 'none',
-                '& .MuiButton-icon': { margin: 0 }
+                '& .MuiButton-icon': {
+                    margin: 0
+                }
             }
         },
         variants: [
             {
-                props: { size: 'xsmall' },
+                props: {
+                    size: 'xsmall'
+                },
                 style: ({ theme }) => ({
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     gap: 'var(--mui-tokens-spacing-2)',
@@ -35,7 +39,9 @@ export const buttonOverrides: ComponentTheme = {
                 })
             },
             {
-                props: { size: 'small' },
+                props: {
+                    size: 'small'
+                },
                 style: ({ theme }) => ({
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     gap: 'var(--mui-tokens-spacing-3)',
@@ -49,7 +55,9 @@ export const buttonOverrides: ComponentTheme = {
                 })
             },
             {
-                props: { size: 'medium' },
+                props: {
+                    size: 'medium'
+                },
                 style: ({ theme }) => ({
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     gap: 'var(--mui-tokens-spacing-4)',
@@ -63,7 +71,9 @@ export const buttonOverrides: ComponentTheme = {
                 })
             },
             {
-                props: { size: 'large' },
+                props: {
+                    size: 'large'
+                },
                 style: ({ theme }) => ({
                     borderRadius: 'var(--mui-tokens-radius-lg)',
                     gap: 'var(--mui-tokens-spacing-5)',
@@ -77,21 +87,9 @@ export const buttonOverrides: ComponentTheme = {
                 })
             },
             {
-                props: { size: 'xlarge' },
-                style: ({ theme }) => ({
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    gap: 'var(--mui-tokens-spacing-6)',
-                    maxHeight: '4.25rem',
-                    padding: 'var(--mui-tokens-spacing-6)',
-                    ...theme.typography.bodyLargeBold,
-                    '& .MuiButton-icon svg': {
-                        height: '1.5rem',
-                        width: '1.5rem'
-                    }
-                })
-            },
-            {
-                props: { variant: 'primary' },
+                props: {
+                    variant: 'primary'
+                },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-brand-900)',
                     color: 'var(--mui-tokens-color-common-white)',
@@ -114,7 +112,9 @@ export const buttonOverrides: ComponentTheme = {
                 }
             },
             {
-                props: { variant: 'secondary' },
+                props: {
+                    variant: 'secondary'
+                },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-neutral-200)',
                     border: 'var(--mui-tokens-stroke-1) solid transparent',
@@ -139,7 +139,9 @@ export const buttonOverrides: ComponentTheme = {
                 }
             },
             {
-                props: { variant: 'outlined' },
+                props: {
+                    variant: 'outlined'
+                },
                 style: {
                     backgroundColor: 'transparent',
                     border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)',
@@ -158,16 +160,26 @@ export const buttonOverrides: ComponentTheme = {
                         border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-neutral-400)',
                         color: 'var(--mui-tokens-color-neutral-400)'
                     },
-                    '&.is_loading.Mui-disabled': { border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)' }
+                    '&.is_loading.Mui-disabled': {
+                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
+                    }
                 }
             },
             {
-                props: { variant: 'ghost' },
+                props: {
+                    variant: 'ghost'
+                },
                 style: {
                     color: 'var(--mui-tokens-color-brand-900)',
-                    '&:hover': { backgroundColor: '#A9CEF733' },
-                    '&:active': { backgroundColor: '#81B5F380' },
-                    '&.Mui-disabled': { color: 'var(--mui-tokens-color-neutral-400)' },
+                    '&:hover': {
+                        backgroundColor: '#A9CEF733'
+                    },
+                    '&:active': {
+                        backgroundColor: '#81B5F380'
+                    },
+                    '&.Mui-disabled': {
+                        color: 'var(--mui-tokens-color-neutral-400)'
+                    },
                     '&.is_loading.Mui-disabled': {
                         backgroundColor: 'transparent',
                         border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
