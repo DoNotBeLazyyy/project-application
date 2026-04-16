@@ -1,4 +1,5 @@
 import ComponentSample from '@pages/component-sample';
+import CommonBadgeSample from '@pages/component-sample/badge';
 import CommonButtonSample from '@pages/component-sample/button';
 import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
@@ -52,6 +53,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonButtonSample />,
             path: 'button'
+        },
+        {
+            element: <CommonBadgeSample />,
+            path: 'badge'
         }
     ]
 }] as const;
