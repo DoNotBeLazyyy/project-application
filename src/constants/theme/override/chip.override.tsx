@@ -1,6 +1,6 @@
-import { Components, Theme } from '@mui/material';
+import { ComponentTheme } from '@type/common/theme.type';
 
-export const ChipOverrides: Components<Omit<Theme, 'components'>> = {
+export const ChipOverrides: ComponentTheme = {
     MuiChip: {
         styleOverrides: {
             root: {
@@ -8,100 +8,100 @@ export const ChipOverrides: Components<Omit<Theme, 'components'>> = {
                     backgroundColor: 'var(--mui-tokens-color-secondary-light)',
                     borderColor: 'var(--mui-tokens-color-secondary-main)',
                     borderStyle: 'solid',
-                    borderWidth: '1px',
+                    borderWidth: 'var(--mui-tokens-stroke-0)',
                     color: 'var(--mui-tokens-color-secondary-main)'
                 },
                 '&.MuiChip-colorSuccess': {
-                    backgroundColor: '#DCFCE7',
-                    borderColor: '#22C55E',
+                    backgroundColor: 'var(--mui-tokens-color-state-successLight)',
+                    borderColor: 'var(--mui-tokens-color-state-success)',
                     borderStyle: 'solid',
-                    borderWidth: '1px',
-                    color: '#22C55E'
+                    borderWidth: 'var(--mui-tokens-stroke-0)',
+                    color: 'var(--mui-tokens-color-state-success)'
                 },
                 '&.MuiChip-colorWarning': {
-                    backgroundColor: '#FEF3C7',
-                    borderColor: '#F59E0B',
+                    backgroundColor: 'var(--mui-tokens-color-state-warningLight)',
+                    borderColor: 'var(--mui-tokens-color-state-warning)',
                     borderStyle: 'solid',
-                    borderWidth: '1px',
-                    color: '#F59E0B'
+                    borderWidth: 'var(--mui-tokens-stroke-0)',
+                    color: 'var(--mui-tokens-color-state-warning)'
                 },
                 '&.MuiChip-colorError': {
-                    backgroundColor: '#FEE2E2',
-                    borderColor: '#EF4444',
+                    backgroundColor: 'var(--mui-tokens-color-state-errorLight)',
+                    borderColor: 'var(--mui-tokens-color-state-error)',
                     borderStyle: 'solid',
-                    borderWidth: '1px',
-                    color: '#EF4444'
+                    borderWidth: 'var(--mui-tokens-stroke-0)',
+                    color: 'var(--mui-tokens-color-state-error)'
                 },
                 '&.MuiChip-colorActive': {
-                    backgroundColor: '#CEF6DF',
-                    color: '#2DCC70'
+                    backgroundColor: 'var(--mui-tokens-color-state-successLight)',
+                    color: 'var(--mui-tokens-color-state-success)'
                 },
                 '&.MuiChip-colorInactive': {
-                    backgroundColor: '#E4E4E7',
-                    color: '#71717A'
+                    backgroundColor: 'var(--mui-tokens-color-neutral-200)',
+                    color: 'var(--mui-tokens-color-neutral-500)'
                 },
                 '&.MuiChip-colorLight': {
-                    backgroundColor: '#E0EDFD',
-                    color: '#123F8A'
+                    backgroundColor: 'var(--mui-tokens-color-brand-100)',
+                    color: 'var(--mui-tokens-color-brand-800)'
                 },
                 '&.MuiChip-colorDark': {
-                    backgroundColor: '#022179',
-                    color: '#FFFFFF'
+                    backgroundColor: 'var(--mui-tokens-color-brand-900)',
+                    color: 'var(--mui-tokens-color-common-white)'
                 },
                 '&.MuiChip-colorGhost': {
-                    backgroundColor: '#FFFFFF',
-                    color: '#123F8A'
+                    backgroundColor: 'var(--mui-tokens-color-common-white)',
+                    color: 'var(--mui-tokens-color-brand-800)'
                 },
                 '&.MuiChip-colorOutline': {
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#022179',
+                    backgroundColor: 'var(--mui-tokens-color-common-white)',
+                    borderColor: 'var(--mui-tokens-color-brand-900)',
                     borderStyle: 'solid',
-                    borderWidth: '1px',
-                    color: '#022179'
+                    borderWidth: 'var(--mui-tokens-stroke-0)',
+                    color: 'var(--mui-tokens-color-brand-900)'
                 },
                 '&.MuiChip-sizeSmall': {
-                    borderRadius: 4,
-                    fontSize: '0.75rem',
+                    borderRadius: 'var(--mui-tokens-radius-sm)',
+                    fontSize: 'var(--mui-tokens-fontSize-xs)',
                     gap: 0,
-                    height: 18,
+                    height: '1.125rem',
                     margin: 0,
-                    padding: '0 4px',
+                    padding: '0 var(--mui-tokens-spacing-2)',
                     '& .MuiChip-icon': {
-                        fontSize: 12,
+                        fontSize: 'var(--mui-tokens-fontSize-xs)',
                         margin: 0
                     },
                     '& .MuiChip-label': {
-                        padding: '0 4px'
+                        padding: '0 var(--mui-tokens-spacing-2)'
                     }
                 },
                 '&.MuiChip-sizeMedium': {
-                    borderRadius: 8,
-                    fontSize: '0.875rem',
-                    height: 22,
+                    borderRadius: 'var(--mui-tokens-radius-md)',
+                    fontSize: 'var(--mui-tokens-fontSize-sm)',
+                    height: '1.375rem',
                     gap: 0,
                     margin: 0,
                     padding: '0 8px',
                     '& .MuiChip-icon': {
-                        fontSize: 14,
+                        fontSize: 'var(--mui-tokens-fontSize-sm)',
                         margin: 0
                     },
                     '& .MuiChip-label': {
-                        padding: '0 4px'
+                        padding: '0 var(--mui-tokens-spacing-2)'
                     }
                 },
                 '&.MuiChip-sizeLarge': {
-                    borderRadius: 8,
-                    fontSize: '1.125rem',
-                    height: 28,
+                    borderRadius: 'var(--mui-tokens-radius-md)',
+                    fontSize: 'var(--mui-tokens-fontSize-md)',
+                    height: '1.75rem',
                     gap: 0,
                     margin: 0,
-                    padding: '0 8px',
+                    padding: '0 var(--mui-tokens-spacing-3)',
                     '& .MuiChip-icon': {
-                        fontSize: 20,
+                        fontSize: 'var(--mui-tokens-fontSize-md)',
                         margin: 0
                     },
                     '& .MuiChip-label': {
-                        padding: '0 4px'
+                        padding: '0 var(--mui-tokens-spacing-2)'
                     }
                 }
             }

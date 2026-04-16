@@ -199,6 +199,7 @@ export default function CommonBadgeSample() {
                     GROUP BADGE
                     <div className="flex gap-(--mui-tokens-spacing-3) justify-center">
                         <Chip color="light" label="Badge" size="small" />
+                        <Chip color="light" label="Badge" size="small" />
                         <Chip label="+7" size="small" />
                     </div>
                     <div className="flex gap-(--mui-tokens-spacing-3) justify-center">
@@ -211,6 +212,44 @@ export default function CommonBadgeSample() {
                         <Chip color="light" label="Badge" size="large" />
                         <Chip color="light" label="Badge" size="large" />
                         <Chip label="+7" size="large" />
+                        <Chip label="+7" size="large" />
+                    </div>
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3) justify-center items-start">
+                        You can replace custom colors with the sx prop.
+                        <div className="flex gap-(--mui-tokens-spacing-3) justify-center">
+                            <Chip
+                                label="Active"
+                                sx={{
+                                    backgroundColor: '#FF0000',
+                                    color: '#FFFFFF',
+                                    border: '1px solid #1E40AF'
+                                }}
+                            />
+                            <Chip
+                                label="Active"
+                                sx={{
+                                    backgroundColor: '#BE3122',
+                                    color: '#FFFFFF',
+                                    border: '1px solid #1E40AF'
+                                }}
+                            />
+                            <Chip
+                                label="Active"
+                                sx={{
+                                    backgroundColor: '#12D122',
+                                    color: '#FFFFFF',
+                                    border: '1px solid #1E40AF'
+                                }}
+                            />
+                            <Chip
+                                label="Active"
+                                sx={{
+                                    backgroundColor: '#12D122',
+                                    color: '#FFFFFF',
+                                    border: '1px solid #1E40AF'
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </Stack>
