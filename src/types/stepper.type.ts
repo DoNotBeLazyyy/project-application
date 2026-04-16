@@ -1,4 +1,4 @@
-import { StatusBadgeProps } from '@type/status-badge.type';
+import { CommonBadgeStatusProps } from '@type/common/badge.type';
 import { ReactNode } from 'react';
 
 // Visual state of a step in the stepper
@@ -19,7 +19,7 @@ export interface StepConfig {
     progress?: number;
 
     // Optional status badge displayed below the title
-    statusBadge?: StatusBadgeProps;
+    statusBadge?: CommonBadgeStatusProps;
 
     // The main title of the step
     title: string;

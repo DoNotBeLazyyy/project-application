@@ -60,7 +60,7 @@ export default function CommonProgressBar({
     fillClassName,
     hasSubtext = true,
     height = 8,
-    isVertical = false,
+    isVertical,
     label = '',
     percentage,
     subText = '',
@@ -70,34 +70,29 @@ export default function CommonProgressBar({
     const clampedPercentage = Math.max(0, Math.min(100, percentage)); // Clamped 0–100
     const displayPercentage = `${Math.round(clampedPercentage)}%`; // Formatted display string
     const fillColor = fillClassName || 'bg-(--mui-tokens-color-brand-500)'; // Resolved fill color class
+    const commonProps = {
+        className,
+        fillColor,
+        height,
+        percentage: clampedPercentage,
+        ...props
+    }; // Shared props across all variants
+    const textProps = {
+        percentageText: displayPercentage,
+        ...commonProps
+    }; // Shared props for label and percent variants
 
     return type === 'bar'
         ? <ProgressTrack
-            className={className}
-            fillColor={fillColor}
-            height={height}
             isVertical={isVertical}
-            percentage={clampedPercentage}
-            {...props}
+            {...commonProps}
         />
         : type === 'label'
             ? <ProgressBarLabel
-                className={className}
-                fillColor={fillColor}
                 hasSubtext={hasSubtext}
-                height={height}
                 label={label}
-                percentage={clampedPercentage}
-                percentageText={displayPercentage}
                 subText={subText}
-                {...props}
+                {...textProps}
             />
-            : <ProgressBarPercent
-                className={className}
-                fillColor={fillColor}
-                height={height}
-                percentage={clampedPercentage}
-                percentageText={displayPercentage}
-                {...props}
-            />;
+            : <ProgressBarPercent {...textProps} />;
 }

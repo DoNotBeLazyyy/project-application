@@ -28,34 +28,35 @@ interface StepperConnectorProps {
  * <StepperConnector active isVertical progress={75} />
  */
 export default function StepperConnector({
-    active = false,
-    completed = false,
-    isVertical = false,
+    active,
+    completed,
+    isVertical,
     progress
 }: StepperConnectorProps) {
-    const defaultPercentage = completed
-        ? 100
-        : active
-            ? 50
-            : 0; // Default fill percentage by state
-    const percentage = active && progress !== undefined
-        ? progress
-        : defaultPercentage; // Use custom progress when active, otherwise default
-    const fillClassName = completed
-        ? 'bg-(--mui-tokens-color-state-success)'
-        : active
-            ? 'bg-(--mui-tokens-color-brand-500)'
-            : undefined; // Resolved fill color class
-    const connectorClass = isVertical
-        ? 'flex-1 min-h-[48px] my-(--mui-tokens-spacing-3)'
-        : 'flex-1 ml-(--mui-tokens-spacing-3) mr-(--mui-tokens-spacing-3)'; // Layout class by orientation
-
     return <CommonProgressBar
-        className={connectorClass}
-        fillClassName={fillClassName}
+        className={
+            isVertical
+                ? 'flex-1 mb-(--mui-tokens-spacing-5) min-h-12 mt-(--mui-tokens-spacing-4)'
+                : 'flex-1 ml-(--mui-tokens-spacing-3) mr-(--mui-tokens-spacing-3)'
+        }
+        fillClassName={
+            completed
+                ? 'bg-(--mui-tokens-color-state-success)'
+                : active
+                    ? 'bg-(--mui-tokens-color-brand-500)'
+                    : undefined
+        }
         height={4}
         isVertical={isVertical}
-        percentage={percentage}
+        percentage={
+            active && progress !== undefined
+                ? progress
+                : completed
+                    ? 100
+                    : active
+                        ? 50
+                        : 0
+        }
         type="bar"
     />;
 }

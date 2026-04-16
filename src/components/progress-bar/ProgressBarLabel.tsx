@@ -48,7 +48,7 @@ export default function ProgressBarLabel({
         <div
             className={
                 classMerge(
-                    'flex flex-col gap-[6px] items-center justify-center w-full',
+                    'flex flex-col gap-1.5 items-center justify-center w-full',
                     className
                 )
             }
@@ -68,7 +68,7 @@ export default function ProgressBarLabel({
                 percentage={percentage}
             />
             {hasSubtext && (
-                <span className="h-[18px] shrink-0 text-(--mui-tokens-color-neutral-500) tw_body_extra-small_bold w-full">
+                <span className="h-4.5 shrink-0 text-(--mui-tokens-color-neutral-500) tw_body_extra-small_bold w-full">
                     {subText}
                 </span>
             )}

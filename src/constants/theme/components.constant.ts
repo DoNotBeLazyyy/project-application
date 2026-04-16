@@ -8,10 +8,9 @@ import { inputOverrides } from '@constants/theme/override/input.override';
 import { paperOverrides } from '@constants/theme/override/paper.override';
 import { radioOverrides } from '@constants/theme/override/radio.override';
 import { sidebarOverrides } from '@constants/theme/override/sidebar.override';
-import { statusBadgeOverrides } from '@constants/theme/override/status-badge.override';
 import { tabMenuOverrides } from '@constants/theme/override/tab-menu.override';
+import { toggleOverrides } from '@constants/theme/override/toggle.override';
 import { ComponentTheme } from '@type/common/theme.type';
-import { toggleOverrides } from '@constants/theme//override/toggle.override';
 
 export const COMPONENTS: ComponentTheme = {
     ...buttonOverrides,
@@ -24,7 +23,6 @@ export const COMPONENTS: ComponentTheme = {
     ...paperOverrides,
     ...radioOverrides,
     ...sidebarOverrides,
-    ...statusBadgeOverrides,
     ...tabMenuOverrides,
     ...toggleOverrides
 }; // Components configuration

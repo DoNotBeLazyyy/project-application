@@ -33,7 +33,7 @@ export default function ProgressBarPercent({
         <div
             className={
                 classMerge(
-                    'flex gap-[6px] items-center justify-center w-full',
+                    'flex gap-1.5 items-center justify-center w-full',
                     className
                 )
             }

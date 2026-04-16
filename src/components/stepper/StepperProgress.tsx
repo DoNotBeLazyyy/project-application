@@ -56,25 +56,25 @@ export default function StepperProgress({
     status,
     stepNumber
 }: StepperProgressProps) {
-    const containerClass = isVertical
-        ? 'flex flex-col items-center self-stretch shrink-0'
-        : 'flex gap-(--mui-tokens-spacing-2) items-center shrink-0 w-full'; // Layout class by orientation
-
     return (
-        <div className={containerClass}>
+        <div
+            className={
+                isVertical
+                    ? 'flex flex-col items-center self-stretch shrink-0'
+                    : 'flex gap-(--mui-tokens-spacing-2) items-center shrink-0 w-full'
+            }
+        >
             <StepperIcon
                 icon={icon}
                 status={status}
                 stepNumber={stepNumber}
             />
-            {hasLine && (
-                <StepperConnector
-                    active={active}
-                    completed={completed}
-                    isVertical={isVertical}
-                    progress={progress}
-                />
-            )}
+            {hasLine && <StepperConnector
+                active={active}
+                completed={completed}
+                isVertical={isVertical}
+                progress={progress}
+            />}
         </div>
     );
 }

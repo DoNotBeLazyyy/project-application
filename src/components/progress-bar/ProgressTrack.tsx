@@ -21,42 +21,41 @@ export default function ProgressTrack({
     className,
     fillColor,
     height,
-    isVertical = false,
+    isVertical,
     percentage,
     ...props
 }: ProgressTrackProps) {
-    const trackDimension = isVertical
-        ? { width: `${height}px` }
-        : { height: `${height}px` }; // Track thickness style
-    const trackClass = isVertical
-        ? 'bg-(--mui-tokens-color-neutral-200) h-full overflow-hidden relative rounded-full'
-        : 'bg-(--mui-tokens-color-neutral-200) overflow-hidden relative rounded-full shrink-0 w-full'; // Track orientation class
-    const fillDimension = isVertical
-        ? { height: `${percentage}%` }
-        : { width: `${percentage}%` }; // Fill progress style
-    const fillClass = isVertical
-        ? 'absolute duration-200 left-0 rounded-full top-0 transition-all w-full'
-        : 'absolute duration-200 h-full left-0 rounded-full top-0 transition-all'; // Fill orientation class
-
     return (
         <div
             className={
                 classMerge(
-                    trackClass,
+                    isVertical
+                        ? 'bg-(--mui-tokens-color-neutral-200) h-full overflow-hidden relative rounded-full'
+                        : 'bg-(--mui-tokens-color-neutral-200) overflow-hidden relative rounded-full shrink-0 w-full',
                     className
                 )
             }
-            style={trackDimension}
+            style={
+                isVertical
+                    ? { width: height }
+                    : { height }
+            }
             {...props}
         >
             <div
                 className={
                     classMerge(
-                        fillClass,
+                        isVertical
+                            ? 'absolute duration-200 left-0 rounded-full top-0 transition-all w-full'
+                            : 'absolute duration-200 h-full left-0 rounded-full top-0 transition-all',
                         fillColor
                     )
                 }
-                style={fillDimension}
+                style={
+                    isVertical
+                        ? { height: `${percentage}%` }
+                        : { width: `${percentage}%` }
+                }
             />
         </div>
     );

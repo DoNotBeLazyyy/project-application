@@ -32,21 +32,16 @@ export default function StepperIcon({
     status,
     stepNumber
 }: StepperIconProps) {
-    const containerStyle = status === 'complete'
-        ? 'bg-(--mui-tokens-color-state-success) border-[3px] border-(--mui-tokens-color-state-success)/30'
-        : status === 'in-progress'
-            ? 'bg-(--mui-tokens-color-brand-500) border-(--mui-tokens-stroke-3) border-(--mui-tokens-color-brand-950) border-solid'
-            : 'bg-(--mui-tokens-color-neutral-200) border-[3px] border-transparent'; // Resolved bg + border classes
-    const textColorClass = status === 'default'
-        ? 'text-(--mui-tokens-color-neutral-400)'
-        : 'text-(--mui-tokens-color-common-white)'; // Active = white, default = gray
-
     return (
         <div
             className={
                 classMerge(
-                    'duration-500 flex items-center justify-center rounded-full shrink-0 size-[40px] transition-colors',
-                    containerStyle
+                    'duration-500 flex items-center justify-center rounded-full shrink-0 size-10 transition-colors',
+                    status === 'complete'
+                        ? 'bg-(--mui-tokens-color-state-success) border-[3px] border-(--mui-tokens-color-state-success)/30'
+                        : status === 'in-progress'
+                            ? 'bg-(--mui-tokens-color-brand-500) border-(length:--mui-tokens-stroke-3) border-(--mui-tokens-color-brand-600) border-solid'
+                            : 'bg-(--mui-tokens-color-neutral-200) border-[3px] border-transparent'
                 )
             }
         >
@@ -54,19 +49,24 @@ export default function StepperIcon({
                 ? icon
                 : status === 'complete'
                     ? <CheckIcon
-                        className="shrink-0 size-[20px] text-(--mui-tokens-color-common-white)"
+                        className="shrink-0 size-5 text-(--mui-tokens-color-common-white)"
                         weight="bold"
                     />
-                    : <span
-                        className={
-                            classMerge(
-                                'shrink-0 tw_body_normal_bold',
-                                textColorClass
-                            )
-                        }
-                    >
-                        {stepNumber}
-                    </span>}
+                    : (
+                        <span
+                            className={
+                                classMerge(
+                                    'shrink-0 tw_body_normal_bold',
+                                    status === 'default'
+                                        ? 'text-(--mui-tokens-color-neutral-400)'
+                                        : 'text-(--mui-tokens-color-common-white)'
+                                )
+                            }
+                        >
+                            {stepNumber}
+                        </span>
+                    )
+            }
         </div>
     );
 }

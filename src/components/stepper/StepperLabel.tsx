@@ -1,5 +1,5 @@
-import CommonStatusBadge from '@components/status-badge/CommonStatusBadge';
-import { StatusBadgeProps } from '@type/status-badge.type';
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { CommonBadgeStatusProps } from '@type/common/badge.type';
 
 interface StepperLabelProps {
     // Whether the label renders in vertical orientation
@@ -9,7 +9,7 @@ interface StepperLabelProps {
     label: string;
 
     // Optional status badge displayed below the title
-    statusBadge?: StatusBadgeProps;
+    statusBadge?: CommonBadgeStatusProps;
 
     // The step title text
     title: string;
@@ -35,16 +35,20 @@ export default function StepperLabel({
     statusBadge,
     title
 }: StepperLabelProps) {
-    const containerClass = isVertical
-        ? 'flex flex-col gap-(--mui-tokens-spacing-2) items-start min-w-0 pt-(--mui-tokens-spacing-1)'
-        : 'flex flex-col items-start shrink-0'; // Outer wrapper class
-    const innerClass = isVertical
-        ? 'flex flex-col items-start'
-        : 'flex flex-col gap-(--mui-tokens-spacing-3) items-start justify-center'; // Inner content class
-
     return (
-        <div className={containerClass}>
-            <div className={innerClass}>
+        <div
+            className={
+                isVertical
+                    ? 'flex flex-col gap-(--mui-tokens-spacing-2) items-start min-w-0 pt-(--mui-tokens-spacing-1)'
+                    : 'flex flex-col items-start shrink-0'
+            }
+        >
+            <div
+                className={
+                    isVertical
+                        ? 'flex flex-col items-start'
+                        : 'flex flex-col gap-(--mui-tokens-spacing-3) items-start justify-center'}
+            >
                 <div className="flex flex-col items-start">
                     <span className="text-(--mui-tokens-color-neutral-400) tw_body_extra-small uppercase">
                         {label}
@@ -53,12 +57,7 @@ export default function StepperLabel({
                         {title}
                     </span>
                 </div>
-                {statusBadge && (
-                    <CommonStatusBadge
-                        label={statusBadge.label}
-                        variant={statusBadge.variant}
-                    />
-                )}
+                {statusBadge && <CommonBadgeStatus {...statusBadge} />}
             </div>
         </div>
     );

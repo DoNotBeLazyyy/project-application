@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
-import CommonStatusBadge from '@components/status-badge/CommonStatusBadge';
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonStepper from '@components/stepper/CommonStepper';
 import { StepConfig } from '@type/stepper.type';
 import { Slider, Stack, Typography } from '@mui/material';
@@ -63,6 +63,7 @@ export default function CommonStepperSample() {
 
     return (
         <div className="flex flex-col gap-10 h-full overflow-y-auto p-10 w-full">
+            <FormWizardDemo />
             <Stack spacing={4}>
                 <Typography
                     sx={{
@@ -77,19 +78,19 @@ export default function CommonStepperSample() {
                     direction="row"
                     spacing={2}
                 >
-                    <CommonStatusBadge
+                    <CommonBadgeStatus
                         label="Pending"
                         variant="info"
                     />
-                    <CommonStatusBadge
+                    <CommonBadgeStatus
                         label="Completed"
                         variant="success"
                     />
-                    <CommonStatusBadge
+                    <CommonBadgeStatus
                         label="2 Issues"
                         variant="warning"
                     />
-                    <CommonStatusBadge
+                    <CommonBadgeStatus
                         label="Cancelled"
                         variant="error"
                     />
@@ -105,7 +106,7 @@ export default function CommonStepperSample() {
                 >
                     Progress Bar
                 </Typography>
-                <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-8 p-6 rounded-(--mui-tokens-radius-lg) w-[400px]">
+                <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-8 p-6 rounded-(--mui-tokens-radius-lg) w-100">
                     <CommonProgressBar
                         label="Upload Progress"
                         percentage={barPercentage}
@@ -194,7 +195,7 @@ export default function CommonStepperSample() {
                         );
                     })}
                     <CommonButton
-                        variant="secondary"
+                        color="secondary"
                         onClick={() => setHorizontalStep(PAYROLL_STEPS.length)}
                     >
                         All Complete
@@ -236,7 +237,7 @@ export default function CommonStepperSample() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col gap-2 w-[300px]">
+                <div className="flex flex-col gap-2 w-75">
                     <Typography
                         sx={{
                             color: 'var(--mui-tokens-color-neutral-700)',
@@ -276,7 +277,7 @@ export default function CommonStepperSample() {
                         );
                     })}
                     <CommonButton
-                        variant="secondary"
+                        color="secondary"
                         onClick={() => setDynamicStep(dynamicSteps.length)}
                     >
                         All Complete
@@ -314,15 +315,20 @@ export default function CommonStepperSample() {
                     spacing={1}
                 >
                     {EMPLOYEE_STEPS.map(({ title }, index) => {
+                        const isDisabled = index > navCompleted || index === navStep; // Only completed steps are navigable
+
                         /**
                          * Handles nav step click.
                          */
                         function handleClick() {
-                            setNavStep(index);
+                            if (!isDisabled) {
+                                setNavStep(index);
+                            }
                         }
 
                         return (
                             <CommonButton
+                                disabled={isDisabled}
                                 key={title}
                                 variant="contained"
                                 onClick={handleClick}
@@ -350,8 +356,8 @@ export default function CommonStepperSample() {
 
                         return (
                             <CommonButton
+                                color="secondary"
                                 key={step}
-                                variant="secondary"
                                 onClick={handleClick}
                             >
                                 {buttonLabel}
@@ -428,7 +434,7 @@ export default function CommonStepperSample() {
                 >
                     The stepper fills the 800px container. Lines stretch to distribute steps evenly.
                 </Typography>
-                <div className="bg-(--mui-tokens-color-common-white) flex h-[800px] p-6 rounded-(--mui-tokens-radius-lg) w-[320px]">
+                <div className="bg-(--mui-tokens-color-common-white) flex h-200 p-6 rounded-(--mui-tokens-radius-lg) w-[320px]">
                     <CommonStepper
                         activeStep={tallStep}
                         className="h-full"
@@ -460,7 +466,7 @@ export default function CommonStepperSample() {
                         );
                     })}
                     <CommonButton
-                        variant="secondary"
+                        color="secondary"
                         onClick={() => setTallStep(EMPLOYEE_STEPS.length)}
                     >
                         All Complete
@@ -468,5 +474,147 @@ export default function CommonStepperSample() {
                 </Stack>
             </Stack>
         </div>
+    );
+}
+
+// Step content for the form wizard demo
+const WIZARD_STEPS: StepConfig[] = [
+    { title: 'Personal Info' },
+    { title: 'Employment' },
+    { title: 'Documents' },
+    { title: 'Review & Submit' }
+]; // 4-step wizard data
+
+/**
+ * FormWizardDemo
+ *
+ * Simulates a real multi-step form with content switching, Next/Back
+ * navigation, and completedUpTo tracking.
+ *
+ * @example
+ * <FormWizardDemo />
+ */
+function FormWizardDemo() {
+    const [activeStep, setActiveStep] = useState(0); // Current form step
+    const [completedUpTo, setCompletedUpTo] = useState(0); // Highest completed step
+    const isFirstStep = activeStep === 0; // Whether on the first step
+    const isLastStep = activeStep === WIZARD_STEPS.length - 1; // Whether on the last step
+
+    /**
+     * Advances to the next step and updates completion.
+     */
+    function handleNext() {
+        const nextStep = activeStep + 1; // Next step index
+
+        setActiveStep(nextStep);
+        setCompletedUpTo(Math.max(completedUpTo, nextStep));
+    }
+
+    /**
+     * Goes back one step without changing completion.
+     */
+    function handleBack() {
+        setActiveStep(activeStep - 1);
+    }
+
+    /**
+     * Resets the wizard to step 1.
+     */
+    function handleReset() {
+        setActiveStep(0);
+        setCompletedUpTo(0);
+    }
+
+    return (
+        <Stack spacing={4}>
+            <Typography
+                sx={{
+                    color: 'var(--mui-palette-primary-main)',
+                    fontSize: '24px',
+                    fontWeight: 700
+                }}
+            >
+                Form Wizard Demo
+            </Typography>
+            <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)', fontSize: '14px' }}>
+                A real use case — Next/Back buttons control navigation. Click a completed step to jump back.
+            </Typography>
+
+            <div className="bg-(--mui-tokens-color-common-white) p-6 rounded-(--mui-tokens-radius-lg)">
+                <CommonStepper
+                    activeStep={activeStep}
+                    completedUpTo={completedUpTo}
+                    steps={WIZARD_STEPS}
+                    onStepClick={setActiveStep}
+                />
+            </div>
+            <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-(--mui-tokens-spacing-5) min-h-[200px] p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-lg)">
+                {activeStep === 0 && (
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3)">
+                        <Typography sx={{ fontSize: '20px', fontWeight: 700 }}>Personal Information</Typography>
+                        <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)' }}>
+                            Enter your name, email, and contact details.
+                        </Typography>
+                    </div>
+                )}
+                {activeStep === 1 && (
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3)">
+                        <Typography sx={{ fontSize: '20px', fontWeight: 700 }}>Employment Details</Typography>
+                        <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)' }}>
+                            Select your department, designation, and start date.
+                        </Typography>
+                    </div>
+                )}
+                {activeStep === 2 && (
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3)">
+                        <Typography sx={{ fontSize: '20px', fontWeight: 700 }}>Documents</Typography>
+                        <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)' }}>
+                            Upload your ID, contracts, and certifications.
+                        </Typography>
+                    </div>
+                )}
+                {activeStep === 3 && (
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3)">
+                        <Typography sx={{ fontSize: '20px', fontWeight: 700 }}>Review & Submit</Typography>
+                        <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)' }}>
+                            Review all information before submitting.
+                        </Typography>
+                    </div>
+                )}
+                {activeStep === WIZARD_STEPS.length && (
+                    <div className="flex flex-col gap-(--mui-tokens-spacing-3)">
+                        <Typography sx={{ fontSize: '20px', fontWeight: 700 }}>All Done!</Typography>
+                        <Typography sx={{ color: 'var(--mui-tokens-color-neutral-500)' }}>
+                            Form submitted successfully.
+                        </Typography>
+                    </div>
+                )}
+            </div>
+            <Stack
+                direction="row"
+                spacing={2}
+            >
+                <CommonButton
+                    disabled={isFirstStep}
+                    onClick={handleBack}
+                >
+                    Back
+                </CommonButton>
+                {activeStep < WIZARD_STEPS.length
+                    ? <CommonButton
+                        onClick={handleNext}
+                    >
+                        {isLastStep
+                            ? 'Submit'
+                            : 'Next'}
+                    </CommonButton>
+                    : <CommonButton
+                        color="secondary"
+                        onClick={handleReset}
+                    >
+                        Reset
+                    </CommonButton>}
+            </Stack>
+        </Stack>
     );
 }

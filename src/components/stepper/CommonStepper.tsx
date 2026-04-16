@@ -1,5 +1,4 @@
-import StepperLabel from '@components/stepper/StepperLabel';
-import StepperProgress from '@components/stepper/StepperProgress';
+import StepperItem from '@components/stepper/StepperItem';
 import { HTMLAttributesDivElement } from '@type/common.type';
 import { StepConfig, StepperOrientation } from '@type/stepper.type';
 import { classMerge } from '@utils/css.util';
@@ -62,9 +61,6 @@ export default function CommonStepper({
     const effectiveCompleted = completedUpTo ?? activeStep; // Resolved completion boundary
     const [animatedCompleted, setAnimatedCompleted] = useState(effectiveCompleted); // Animated completion position
     const isVertical = orientation === 'vertical'; // Layout direction flag
-    const containerClass = isVertical
-        ? 'flex flex-col'
-        : 'flex flex-row items-start w-full'; // Resolved container layout class
 
     useEffect(() => {
         if (animatedCompleted === effectiveCompleted) {
@@ -80,7 +76,7 @@ export default function CommonStepper({
      * Advances animatedCompleted one step toward effectiveCompleted.
      *
      * @param prev - The current animated position.
-     * @returns The next animated position.
+     * @returns
      */
     function stepToward(prev: number): number {
         return prev < effectiveCompleted
@@ -99,7 +95,9 @@ export default function CommonStepper({
         <div
             className={
                 classMerge(
-                    containerClass,
+                    isVertical
+                        ? 'flex flex-col'
+                        : 'flex flex-row items-start w-full',
                     className
                 )
             }
@@ -111,70 +109,23 @@ export default function CommonStepper({
                 progress,
                 statusBadge,
                 title
-            }, index) => {
-                const isAnimating = animatedCompleted !== effectiveCompleted; // Whether sequential animation is in progress
-                const isForward = effectiveCompleted > animatedCompleted; // Whether animating forward
-                const isCompleted = isAnimating && isForward
-                    ? index <= animatedCompleted
-                    : index < animatedCompleted; // Connector completion state
-                const isActive = index === activeStep; // Whether this is the current step
-                const status = isActive
-                    ? 'in-progress'
-                    : isCompleted
-                        ? 'complete'
-                        : 'default'; // Icon status: active overrides completed
-                const hasLine = index < steps.length - 1; // Whether connector follows
-                const isClickable = onStepClick && index <= effectiveCompleted && index !== activeStep; // Only completed or next step is clickable
-                const stepLabel = label || `${t('step')} ${index + 1}`; // Resolved label text
-                const stepClass = isVertical
-                    ? 'flex gap-(--mui-tokens-spacing-4) items-start'
-                    : 'flex flex-col gap-(--mui-tokens-spacing-4) items-start p-(--mui-tokens-spacing-3)'; // Step wrapper class
-                const flexClass = hasLine
-                    ? isVertical
-                        ? 'flex-1'
-                        : 'flex-1 min-h-px'
-                    : 'shrink-0'; // Stretch or hug based on line
-
-                /**
-                 * Handles click for this step.
-                 */
-                function handleClick() {
-                    if (isClickable) {
-                        onStepClick(index);
-                    }
-                }
-
-                return (
-                    <div
-                        className={
-                            classMerge(
-                                stepClass,
-                                flexClass,
-                                isClickable && 'cursor-pointer'
-                            )
-                        }
-                        key={title}
-                        onClick={handleClick}
-                    >
-                        <StepperProgress
-                            active={!isAnimating && isActive}
-                            completed={isCompleted}
-                            hasLine={hasLine}
-                            icon={icon}
-                            isVertical={isVertical}
-                            progress={progress}
-                            status={status}
-                            stepNumber={index + 1}
-                        />
-                        <StepperLabel
-                            isVertical={isVertical}
-                            label={stepLabel}
-                            statusBadge={statusBadge}
-                            title={title}
-                        />
-                    </div>
-                );
-            })}
+            }, index) => (
+                <StepperItem
+                    activeStep={activeStep}
+                    animatedCompleted={animatedCompleted}
+                    effectiveCompleted={effectiveCompleted}
+                    icon={icon}
+                    index={index}
+                    isVertical={isVertical}
+                    key={index}
+                    label={label || `${t('step')} ${index + 1}`}
+                    progress={progress}
+                    statusBadge={statusBadge}
+                    title={title}
+                    totalSteps={steps.length}
+                    onStepClick={onStepClick}
+                />
+            ))}
         </div>
     );
 }
