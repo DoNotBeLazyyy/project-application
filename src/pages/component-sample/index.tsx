@@ -23,6 +23,14 @@ export default function ComponentSample() {
             path: 'input'
         },
         {
+            label: 'Navigation',
+            path: 'navigation'
+        },
+        {
+            label: 'Sidebar',
+            path: 'sidebar'
+        },
+        {
             label: 'Tab Menu',
             path: 'tab-menu'
         },

@@ -40,6 +40,10 @@ export const TOKENS: SharedTokenProps = {
             light: '#DFEDFE',
             main: '#5196F6'
         },
+        sidebar: {
+            active: '#3B5BDB',
+            activeLight: '#EEF2FF'
+        },
         state: {
             error: '#EB5757',
             errorLight: '#FFDDDD',
