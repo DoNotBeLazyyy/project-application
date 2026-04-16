@@ -244,7 +244,7 @@ export default function CommonBadgeSample() {
                             <Chip
                                 label="Active"
                                 sx={{
-                                    backgroundColor: '#12D122',
+                                    backgroundColor: '#00FFFF',
                                     color: '#FFFFFF',
                                     border: '1px solid #1E40AF'
                                 }}
