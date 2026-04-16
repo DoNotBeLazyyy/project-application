@@ -5,6 +5,8 @@ import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
 import ModalSamplePage from '@pages/component-sample/modal';
 import CommonRadioSample from '@pages/component-sample/radio';
+import CommonNavarSample from '@pages/component-sample/navar';
+import CommonSideBarSample from '@pages/component-sample/sidebar';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
 import CommonToggleSample from '@pages/component-sample/toggle-button';
@@ -45,6 +47,14 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonInputSample />,
             path: 'input'
+        },
+        {
+            element: <CommonNavarSample />,
+            path: 'navigation'
+        },
+        {
+            element: <CommonSideBarSample />,
+            path: 'sidebar'
         },
         {
             element: <CommonTabMenuSample />,

@@ -1,7 +1,8 @@
 
-import { GridApi } from 'ag-grid-community';
+import { SxProps } from '@mui/system';
+import { GridApi, Theme } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, SetStateAction, SVGProps
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -11,6 +12,7 @@ export type StringNum = string | number;
 export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
 
 // Div props
+export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
@@ -32,6 +34,11 @@ export type BooleanFunction = () => boolean;
 // Grid props
 export type GridApiNull = GridApi | null;
 
+// MUI props
+export type ThemeSx = SxProps<Theme> | undefined;
+
+// React element or boolean type
+export type ReactElementOrBoolean = ReactElement | boolean;
 // Input change props
 export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 
@@ -42,5 +49,10 @@ export type IconSvgProps = SVGProps<SVGSVGElement>;
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 
+// Icon SVG type with optional color prop
+export type IconSvg = IconSvgProps & { color?: string }
+
+// React element or undefined type
+export type ReactUndefined = ReactElement | undefined;
 // event type for input change events.
 export type InputChangeEvent = ChangeEvent<HTMLInputElement>;

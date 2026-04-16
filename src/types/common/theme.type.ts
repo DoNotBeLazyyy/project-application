@@ -76,6 +76,14 @@ interface ColorVariantProps {
     main?: string;
 }
 
+interface SidebarColorProps {
+    // Sidebar active state background
+    active?: string;
+
+    // Sidebar active state background (light variant)
+    activeLight?: string;
+}
+
 interface ColorTokenProps {
     // Primary brand scale
     brand?: ColorWeightRecord;
@@ -97,6 +105,9 @@ interface ColorTokenProps {
 
     // Secondary brand colors
     secondary?: ColorVariantProps;
+
+    // Sidebar-specific colors
+    sidebar?: SidebarColorProps;
 
     // Semantic state colors
     state?: ColorStateProps;
