@@ -195,7 +195,7 @@ export default function CommonPagination({
      */
     function handleButtonNavigationProps(condition: boolean, onClick: VoidFunction) {
         return {
-            className: 'h-[2.25rem] p-[var(--mui-tokens-spacing-3)] text-[var(--mui-tokens-color-neutral-500)] w-[2.25rem]',
+            className: 'h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-500) w-[2.25rem]',
             style: {
                 cursor: condition
                     ? 'default'

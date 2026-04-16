@@ -60,7 +60,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                 >
                     {label}
                     {isRequired && (
-                        <span className="text-(--mui-tokens-color-state-error) text-(length:--mui-tokens-fontSize-lg)">
+                        <span className="text-(--mui-tokens-color-red-500) text-(length:--mui-tokens-fontSize-lg)">
                             *
                         </span>
                     )}

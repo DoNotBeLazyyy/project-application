@@ -3,7 +3,10 @@ import CommonButtonSample from '@pages/component-sample/button';
 import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
+import ModalSamplePage from '@pages/component-sample/modal';
 import CommonRadioSample from '@pages/component-sample/radio';
+import CommonNavarSample from '@pages/component-sample/navar';
+import CommonSideBarSample from '@pages/component-sample/sidebar';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
 import TableCardSample from '@pages/component-sample/table-card';
@@ -27,6 +30,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
             path: 'table'
         },
         {
+            element: <ModalSamplePage />,
+            path: 'modal'
+        },
+        {
             element: <CalendarSample />,
             path: 'calendar'
         },
@@ -41,6 +48,14 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonInputSample />,
             path: 'input'
+        },
+        {
+            element: <CommonNavarSample />,
+            path: 'navigation'
+        },
+        {
+            element: <CommonSideBarSample />,
+            path: 'sidebar'
         },
         {
             element: <CommonTabMenuSample />,
