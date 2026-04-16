@@ -33,6 +33,10 @@ export default function ComponentSample() {
         {
             label: 'Button',
             path: 'button'
+        },
+        {
+            label: 'Table Card',
+            path: 'table-card'
         }
     ] as const;
 

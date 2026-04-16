@@ -38,7 +38,7 @@ interface TableActionConfig {
     onEditClick?: VoidFunction;
 }
 
-interface CommonTableProps extends Omit<AgGridReactProps, 'columnDefs'> {
+export interface CommonTableProps extends Omit<AgGridReactProps, 'columnDefs'> {
     // Configuration object for the action column
     actionConfig?: TableActionConfig;
 

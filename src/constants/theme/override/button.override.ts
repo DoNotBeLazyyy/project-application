@@ -185,6 +185,22 @@ export const buttonOverrides: ComponentTheme = {
                         border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
                     }
                 }
+            },
+            {
+                props: {
+                    variant: 'outlined',
+                    color: 'grey-300'
+                },
+                style: {
+                    '&.MuiButton-outlined': {
+                        borderColor: 'var(--mui-palette-grey-300)',
+                        color: 'var(--mui-palette-grey-500)'
+                    },
+                    '&:hover': {
+                        borderColor: 'var(--mui-palette-grey-400)',
+                        backgroundColor: '#A9CEF733'
+                    }
+                }
             }
         ]
     }

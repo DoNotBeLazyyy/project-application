@@ -338,6 +338,11 @@ declare module '@mui/material/Button' {
         // Ghost variant
         ghost: true;
     }
+
+    interface ButtonPropsColorOverrides {
+        // grey-300 variant
+        'grey-300': true;
+    }
 }
 
 declare module '@mui/material/Tabs' {
