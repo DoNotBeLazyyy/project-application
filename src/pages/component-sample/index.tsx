@@ -11,6 +11,10 @@ export default function ComponentSample() {
             path: 'table'
         },
         {
+            label: 'Modal',
+            path: 'modal'
+        },
+        {
             label: 'Radio',
             path: 'radio'
         },
@@ -107,8 +111,14 @@ export default function ComponentSample() {
                     maxWidth: '1440px'
                 }}
             >
-                <CommonCard className="h-[calc(100%-64px)] min-h-0">
-                    <Outlet />
+                <CommonCard
+                    cardHeaderProps={{ title: 'Some Title' }}
+                    className="h-[calc(100%-64px)] min-h-0"
+                    sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+                >
+                    <Box sx={{ flex: 1, overflow: 'auto' }}>
+                        <Outlet />
+                    </Box>
                 </CommonCard>
             </Box>
         </div>

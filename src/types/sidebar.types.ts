@@ -82,7 +82,6 @@ export interface VariantStyle {
     subItemText: string;
 }
 
-
 // Represents a section in the sidebar containing items and an optional label
 export interface SideBarSection {
     // Items in this section.

@@ -110,7 +110,7 @@ export default function CommonTable({
     const [gridApi, setGridApi] = useState<GridApiNull>(null); // Grid API state
     const resolvedColumnDefs = useMemo<ColDef[]>(() => {
         const commonClassName = classMerge(
-            'cursor-pointer h-[2.25rem] w-[2.25rem] p-[var(--mui-tokens-spacing-3)] text-[var(--mui-palette-grey-500)]',
+            'cursor-pointer h-[2.25rem] w-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-palette-grey-500)',
             actionIconClassName
         );
 

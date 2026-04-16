@@ -1,14 +1,20 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { Components, Theme } from '@mui/material';
+import { Components, DialogProps, SxProps, Theme } from '@mui/material';
 import { PartialRecordString, StringNum } from '@type/common.type';
 import { SharedTabMenuProps } from '@type/tab-menu.type';
 import { CSSProperties } from 'react';
+
+// Component standard sizes
+export type ComponentSize = 'xsmall' | 'small' | 'medium' | 'large';
 
 // Font family key
 export type FontFamilyKey = 'body' | 'headings';
 
 // Mui props
+type DialogOnClose = NonNullable<DialogProps['onClose']>;
+export type DialogCloseProps = Parameters<DialogOnClose>;
 export type ComponentTheme = Components<Omit<Theme, 'components'>>;
+export type ThemeSx = SxProps<Theme>;
 
 // Standardized color weight scale
 type ColorWeight = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
@@ -88,8 +94,14 @@ interface ColorTokenProps {
     // UI graveyard/disabled colors
     graveyard?: ColorVariantProps;
 
+    // Green color
+    green?: ColorWeightRecord;
+
     // Neutral gray scale
     neutral?: ColorWeightRecord;
+
+    // Red color
+    red?: ColorWeightRecord;
 
     // Secondary brand colors
     secondary?: ColorVariantProps;
@@ -99,6 +111,9 @@ interface ColorTokenProps {
 
     // Semantic state colors
     state?: ColorStateProps;
+
+    // Yellow color
+    yellow?: ColorWeightRecord;
 }
 
 interface FontFamilyTokenProps {
@@ -213,15 +228,29 @@ export interface SharedTokenProps {
     stroke?: StrokeWeightRecord;
 }
 
+// Augments the core theme engine to include custom shape and typography configurations.
 interface SharedSizeProps {
     // Extra small size
     xsmall: true;
 
     // Large size
     large: true;
+}
 
-    // Extra large size
-    xlarge: true;
+declare module '@mui/material/Paper' {
+    interface PaperPropsVariantOverrides {
+        // Large size
+        large: true;
+
+        // Medium size
+        medium: true;
+
+        // Small size
+        small: true;
+
+        // Extra small size
+        xsmall: true;
+    }
 }
 
 declare module '@mui/material/styles' {
@@ -334,20 +363,6 @@ declare module '@mui/material/Button' {
     interface ButtonPropsSizeOverrides {
         // Extra small size
         xsmall: true;
-
-        // Extra large size
-        xlarge: true;
-    }
-
-    interface ButtonPropsVariantOverrides {
-        // Primary variant
-        primary: true;
-
-        // Secondary variant
-        secondary: true;
-
-        // Ghost variant
-        ghost: true;
     }
 }
 

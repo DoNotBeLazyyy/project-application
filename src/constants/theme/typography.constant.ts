@@ -1,5 +1,5 @@
 import { TypographyVariantsOptions } from '@mui/material';
-import { createTypographyVariant } from '@utils/theme-util'; // Utils dependency
+import { createTypographyVariant } from '@utils/theme.util'; // Utils dependency
 
 /**
  * Creates a standard bold heading variant.

@@ -1,3 +1,4 @@
+
 import { SxProps } from '@mui/system';
 import { GridApi, Theme } from 'ag-grid-community';
 import {
@@ -34,7 +35,7 @@ export type BooleanFunction = () => boolean;
 export type GridApiNull = GridApi | null;
 
 // MUI props
-export type ThemeSx = SxProps<Theme>;
+export type ThemeSx = SxProps<Theme> | undefined;
 
 // React element or boolean type
 export type ReactElementOrBoolean = ReactElement | boolean;

@@ -10,11 +10,26 @@ import SectionCard from '@pages/component-sample/button/SectionCard';
 import VariantGroup from '@pages/component-sample/button/VariantGroup';
 import { CircleNotchIcon, PlusIcon } from '@phosphor-icons/react';
 
-export type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large';
-export type ButtonVariant = 'primary' | 'secondary' | 'outlined' | 'ghost';
+export type ButtonColor = 'primary' | 'secondary';
+export type ButtonSize = 'large' | 'medium' | 'small' | 'xsmall';
+export type ButtonVariant = 'contained' | 'outlined' | 'text';
+
+interface ButtonConfig {
+    // Button color
+    color: ButtonColor;
+    // Display label
+    label: string;
+    // Button variant
+    variant: ButtonVariant;
+}
 
 const BUTTON_SIZES: ButtonSize[] = ['xsmall', 'small', 'medium', 'large']; // List of button sizes
-const BUTTON_VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'outlined', 'ghost']; // List of button variants
+const BUTTON_CONFIGS: ButtonConfig[] = [
+    { color: 'primary', label: 'Contained Primary', variant: 'contained' },
+    { color: 'secondary', label: 'Contained Secondary', variant: 'contained' },
+    { color: 'primary', label: 'Outlined Primary', variant: 'outlined' },
+    { color: 'primary', label: 'Text (Ghost) Primary', variant: 'text' }
+];
 
 /**
  * CommonButtonSample
@@ -50,52 +65,59 @@ export default function CommonButtonSample() {
                 >
                     <DemoRow label="Primary actions">
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<PlusIcon />}
-                            variant="primary"
+                            variant="contained"
                         >
                             Create
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<SaveOutlinedIcon />}
-                            variant="primary"
+                            variant="contained"
                         >
                             Save
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             endIcon={<DownloadOutlinedIcon />}
                             size="medium"
-                            variant="primary"
+                            variant="contained"
                         >
                             Export
                         </CommonButton>
                     </DemoRow>
                     <DemoRow label="Secondary actions">
                         <CommonButton
+                            color="secondary"
                             size="medium"
                             startIcon={<SearchOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Search
                         </CommonButton>
                         <CommonButton
+                            color="secondary"
                             size="medium"
                             startIcon={<EditOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Edit
                         </CommonButton>
                         <CommonButton
+                            color="secondary"
                             size="medium"
                             startIcon={<CalendarMonthOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Schedule
                         </CommonButton>
                     </DemoRow>
                     <DemoRow label="Outline / ghost actions">
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<DeleteOutlineIcon />}
                             variant="outlined"
@@ -103,12 +125,14 @@ export default function CommonButtonSample() {
                             Delete
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
-                            variant="ghost"
+                            variant="text"
                         >
                             Cancel
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<CircleNotchIcon className="animate-spin" />}
                             variant="outlined"
@@ -124,10 +148,11 @@ export default function CommonButtonSample() {
                     <DemoRow label="Sizes">
                         {BUTTON_SIZES.map((size) => (
                             <CommonButton
+                                color="primary"
                                 key={`size-scale-${size}`}
                                 size={size}
                                 startIcon={<PlusIcon />}
-                                variant="primary"
+                                variant="contained"
                             >
                                 {size}
                             </CommonButton>
@@ -140,20 +165,23 @@ export default function CommonButtonSample() {
                 >
                     <DemoRow label="Enabled">
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<SaveOutlinedIcon />}
-                            variant="primary"
+                            variant="contained"
                         >
                             Save Changes
                         </CommonButton>
                         <CommonButton
+                            color="secondary"
                             size="medium"
                             startIcon={<SearchOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Search Records
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<DeleteOutlineIcon />}
                             variant="outlined"
@@ -161,30 +189,34 @@ export default function CommonButtonSample() {
                             Remove
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
-                            variant="ghost"
+                            variant="text"
                         >
                             Back
                         </CommonButton>
                     </DemoRow>
                     <DemoRow label="Disabled">
                         <CommonButton
+                            color="primary"
                             disabled
                             size="medium"
                             startIcon={<SaveOutlinedIcon />}
-                            variant="primary"
+                            variant="contained"
                         >
                             Save Changes
                         </CommonButton>
                         <CommonButton
+                            color="secondary"
                             disabled
                             size="medium"
                             startIcon={<SearchOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Search Records
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             disabled
                             size="medium"
                             startIcon={<DeleteOutlineIcon />}
@@ -193,29 +225,33 @@ export default function CommonButtonSample() {
                             Remove
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             disabled
                             size="medium"
-                            variant="ghost"
+                            variant="text"
                         >
                             Back
                         </CommonButton>
                     </DemoRow>
                     <DemoRow label="Loading">
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<SaveOutlinedIcon />}
-                            variant="primary"
+                            variant="contained"
                         >
                             Saving
                         </CommonButton>
                         <CommonButton
+                            color="secondary"
                             size="medium"
                             startIcon={<SearchOutlinedIcon />}
-                            variant="secondary"
+                            variant="contained"
                         >
                             Searching
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<DeleteOutlineIcon />}
                             variant="outlined"
@@ -223,18 +259,21 @@ export default function CommonButtonSample() {
                             Removing
                         </CommonButton>
                         <CommonButton
+                            color="primary"
                             size="medium"
                             startIcon={<CalendarMonthOutlinedIcon />}
-                            variant="ghost"
+                            variant="text"
                         >
                             Loading
                         </CommonButton>
                     </DemoRow>
                 </SectionCard>
-                {BUTTON_VARIANTS.map((variant) => (
+                {BUTTON_CONFIGS.map((config) => (
                     <VariantGroup
-                        key={variant}
-                        variant={variant}
+                        color={config.color}
+                        key={`${config.variant}-${config.color}`}
+                        label={config.label}
+                        variant={config.variant}
                     />
                 ))}
             </div>

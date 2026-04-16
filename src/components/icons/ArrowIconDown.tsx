@@ -1,8 +1,7 @@
 import ArrowIconRight from '@components/icons/ArrowIconRight';
-import { IconButtonProps, IconButton } from '@mui/material';
-import { ThemeSx } from '@type/common.type';
+import { IconButton, IconButtonProps } from '@mui/material';
 import { classMerge } from '@utils/css.util';
-import { normalizeSx } from '@utils/theme-util';
+import { normalizeSx } from '@utils/theme.util';
 
 interface HeaderArrowButtonProps {
     // Props passed to the IconButton component.
@@ -39,7 +38,7 @@ export default function ArrowIconDown({
                     flexShrink: 0,
                     p: 0
                 },
-                ...normalizeSx(buttonProps?.sx as ThemeSx)
+                ...normalizeSx(buttonProps?.sx)
             ]}
         >
             <ArrowIconRight

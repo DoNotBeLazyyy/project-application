@@ -1,6 +1,3 @@
 {
-    "Login": "Login",
-    "showing_rows_info": "Showing rows {{startRow}}-{{endRow}} of {{totalElements}}",
-    "page_of_total": "<input /> of {{totalPages}}",
-    "items_per_page": "{{count}} / page"
+
 }

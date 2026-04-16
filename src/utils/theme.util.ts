@@ -5,8 +5,7 @@ import { getSpacings } from '@constants/theme/spacing.constant';
 import { TOKENS } from '@constants/theme/tokens.constant';
 import { TYPOGRAPHY } from '@constants/theme/typography.constant';
 import { createTheme } from '@mui/material/styles';
-import { ThemeSx } from '@type/common.type';
-import { FontFamilyKey } from '@type/common/theme.type';
+import { FontFamilyKey, ThemeSx } from '@type/common/theme.type';
 
 export const theme = createTheme({
     cssVariables: {

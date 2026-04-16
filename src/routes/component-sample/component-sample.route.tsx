@@ -3,6 +3,7 @@ import CommonButtonSample from '@pages/component-sample/button';
 import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
+import ModalSamplePage from '@pages/component-sample/modal';
 import CommonRadioSample from '@pages/component-sample/radio';
 import CommonNavarSample from '@pages/component-sample/navar';
 import CommonSideBarSample from '@pages/component-sample/sidebar';
@@ -26,6 +27,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonTableSample />,
             path: 'table'
+        },
+        {
+            element: <ModalSamplePage />,
+            path: 'modal'
         },
         {
             element: <CalendarSample />,
