@@ -26,10 +26,10 @@ export default function SectionCard({
     subtitle,
     label
 }: SectionCardProps) {
-    const cardClasses = 'bg-white border border-[var(--mui-tokens-color-neutral-200)] rounded-[24px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] p-6'; // Card container classes
+    const cardClasses = 'bg-white border border-(--mui-tokens-color-neutral-200) rounded-[24px] shadow-[0px_8px_24px_0px_rgba(0,0,0,0.05)] p-6'; // Card container classes
     const headerClasses = 'flex flex-col gap-1 mb-5'; // Header section classes
-    const labelClasses = 'text-[20px] font-bold leading-7 text-[var(--mui-tokens-color-neutral-900)]'; // Title typography classes
-    const subtitleClasses = 'text-[14px] leading-5 text-[var(--mui-tokens-color-neutral-500)]'; // Subtitle typography classes
+    const labelClasses = 'text-[20px] font-bold leading-7 text-(--mui-tokens-color-neutral-900)'; // Title typography classes
+    const subtitleClasses = 'text-[14px] leading-5 text-(--mui-tokens-color-neutral-500)'; // Subtitle typography classes
 
     return (
         <div className={cardClasses}>

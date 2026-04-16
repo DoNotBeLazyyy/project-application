@@ -3,15 +3,17 @@ import { ComponentTheme } from '@type/common/theme.type';
 export const buttonOverrides: ComponentTheme = {
     MuiButton: {
         defaultProps: {
+            color: 'primary',
             disableElevation: true,
             disableFocusRipple: true,
             disableRipple: true,
             size: 'medium',
-            variant: 'primary'
+            variant: 'contained'
         },
         styleOverrides: {
             root: {
                 alignItems: 'center',
+                border: 'var(--mui-tokens-stroke-1) solid transparent',
                 display: 'inline-flex',
                 justifyContent: 'center',
                 minWidth: 'unset',
@@ -88,7 +90,8 @@ export const buttonOverrides: ComponentTheme = {
             },
             {
                 props: {
-                    variant: 'primary'
+                    color: 'primary',
+                    variant: 'contained'
                 },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-brand-900)',
@@ -113,11 +116,11 @@ export const buttonOverrides: ComponentTheme = {
             },
             {
                 props: {
-                    variant: 'secondary'
+                    color: 'secondary',
+                    variant: 'contained'
                 },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-neutral-200)',
-                    border: 'var(--mui-tokens-stroke-1) solid transparent',
                     color: 'var(--mui-tokens-color-brand-600)',
                     '&:hover': {
                         backgroundColor: 'var(--mui-tokens-color-neutral-300)',
@@ -125,7 +128,7 @@ export const buttonOverrides: ComponentTheme = {
                     },
                     '&:active': {
                         backgroundColor: 'var(--mui-tokens-color-neutral-100)',
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-neutral-300)',
+                        borderColor: 'var(--mui-tokens-color-neutral-300)',
                         boxShadow: '0 0 10px 0 #00000040 inset'
                     },
                     '&.Mui-disabled': {
@@ -140,34 +143,34 @@ export const buttonOverrides: ComponentTheme = {
             },
             {
                 props: {
+                    color: 'primary',
                     variant: 'outlined'
                 },
                 style: {
-                    backgroundColor: 'transparent',
-                    border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)',
+                    borderColor: 'var(--mui-tokens-color-brand-900)',
                     color: 'var(--mui-tokens-color-brand-900)',
                     '&:hover': {
                         backgroundColor: '#A9CEF733',
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
+                        borderColor: 'var(--mui-tokens-color-brand-900)'
                     },
                     '&:active': {
                         backgroundColor: '#81B5F380',
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)',
+                        borderColor: 'var(--mui-tokens-color-brand-900)',
                         boxShadow: '0 0 10px 0 #00000040 inset'
                     },
                     '&.Mui-disabled': {
-                        backgroundColor: 'transparent',
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-neutral-400)',
+                        borderColor: 'var(--mui-tokens-color-neutral-400)',
                         color: 'var(--mui-tokens-color-neutral-400)'
                     },
                     '&.is_loading.Mui-disabled': {
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
+                        borderColor: 'var(--mui-tokens-color-brand-900)'
                     }
                 }
             },
             {
                 props: {
-                    variant: 'ghost'
+                    color: 'primary',
+                    variant: 'text'
                 },
                 style: {
                     color: 'var(--mui-tokens-color-brand-900)',
@@ -181,8 +184,59 @@ export const buttonOverrides: ComponentTheme = {
                         color: 'var(--mui-tokens-color-neutral-400)'
                     },
                     '&.is_loading.Mui-disabled': {
-                        backgroundColor: 'transparent',
-                        border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
+                        borderColor: 'var(--mui-tokens-color-brand-900)'
+                    }
+                }
+            },
+            {
+                props: {
+                    color: 'error',
+                    variant: 'contained'
+                },
+                style: {
+                    backgroundColor: 'var(--mui-tokens-color-red-500)',
+                    color: 'var(--mui-tokens-color-common-white)',
+                    '&:hover': {
+                        backgroundColor: 'var(--mui-tokens-color-red-600)',
+                        boxShadow: '0 0 20px 0 #00000040'
+                    },
+                    '&:active': {
+                        backgroundColor: 'var(--mui-tokens-color-red-300)',
+                        boxShadow: 'none'
+                    },
+                    '&.Mui-disabled': {
+                        backgroundColor: 'var(--mui-tokens-color-neutral-400)',
+                        color: 'var(--mui-tokens-color-common-white)'
+                    },
+                    '&.is_loading.Mui-disabled': {
+                        backgroundColor: 'var(--mui-tokens-color-red-500)',
+                        color: 'var(--mui-tokens-color-common-white)'
+                    }
+                }
+            },
+            {
+                props: {
+                    color: 'error',
+                    variant: 'outlined'
+                },
+                style: {
+                    borderColor: 'var(--mui-tokens-color-red-500)',
+                    color: 'var(--mui-tokens-color-red-500)',
+                    '&:hover': {
+                        backgroundColor: '#FFDDDD33',
+                        borderColor: 'var(--mui-tokens-color-red-500)'
+                    },
+                    '&:active': {
+                        backgroundColor: '#FCA5A580',
+                        borderColor: 'var(--mui-tokens-color-red-500)',
+                        boxShadow: '0 0 10px 0 #00000040 inset'
+                    },
+                    '&.Mui-disabled': {
+                        borderColor: 'var(--mui-tokens-color-neutral-400)',
+                        color: 'var(--mui-tokens-color-neutral-400)'
+                    },
+                    '&.is_loading.Mui-disabled': {
+                        borderColor: 'var(--mui-tokens-color-red-500)'
                     }
                 }
             }
