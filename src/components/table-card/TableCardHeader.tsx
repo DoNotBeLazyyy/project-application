@@ -9,37 +9,27 @@ import { Children, isValidElement } from 'react';
  * detects if TableCardControls is passed as a child and assigns it to
  * the 'action' slot for consistent positioning in the top-right corner.
  *
- * @param {CardHeaderProps} props - The component props.
- * @param {ReactNode} [props.children] - Accepts TableCardControls to be placed in the action slot.
- * @param {ReactNode} [props.title] - The main title text or element.
- * @param {ReactNode} [props.subheader] - The subheader text or element.
- *
  * @example
  * <TableCard>
- * <TableCardHeader
- * title="Table Card Title"
- * subheader="Table Card Subheader"
- * >
- * <TableCardControls />
- * </TableCardHeader>
- * <TableCardContent rowData={data} />
+ *  <TableCardHeader
+ *      title="Table Card Title"
+ *      subheader="Table Card Subheader"
+ *  >
+ *  <TableCardControls />
+ *  </TableCardHeader>
+ *  <TableCardContent rowData={data} />
  * </TableCard>
  */
 export default function TableCardHeader({
     children,
-    title,
-    subheader,
     ...props
 }: CardHeaderProps) {
-    const childrenArray = Children.toArray(children);
-    const controls = childrenArray.find(
-        (child) => isValidElement(child) && child.type === TableCardControls
-    );
+    const controls = Children
+        .toArray(children)
+        .find((child) => isValidElement(child) && child.type === TableCardControls); // Logic to extract TableCardControls
 
     return <CardHeader
         action={controls}
-        subheader={subheader}
-        title={title}
         {...props}
     />;
 }

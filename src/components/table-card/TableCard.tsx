@@ -1,4 +1,4 @@
-import { TableCardContext } from '@constants/context/TableCardContext';
+import { TableCardContext } from '@contexts/TableCardContext';
 import Card, { CardProps } from '@mui/material/Card';
 import { GridApiNull } from '@type/common.type';
 import { useRef } from 'react';
@@ -13,20 +13,20 @@ import { useRef } from 'react';
  *
  * @example
  * <TableCard>
- * <TableCardHeader
- * subheader="Table Card Subheader"
- * title="Table Card Title"
- * >
- * <TableCardControls allowCreate />
- * </TableCardHeader>
- * <TableCardContent
- * leadingColumnDefs={columnDefs}
- * rowData={displayedData}
- * />
- * <TableCardPagination
- * pagination={pagination}
- * onSetPagination={setPagination}
- * />
+ *  <TableCardHeader
+ *  subheader="Table Card Subheader"
+ *  title="Table Card Title"
+ *  >
+ *  <TableCardControls allowCreate />
+ *  </TableCardHeader>
+ *  <TableCardContent
+ *  leadingColumnDefs={columnDefs}
+ *  rowData={displayedData}
+ *  />
+ *  <TableCardPagination
+ *  pagination={pagination}
+ *  onSetPagination={setPagination}
+ *  />
  * </TableCard>
  */
 export default function TableCard({

@@ -19,4 +19,4 @@ export const TableCardContext = createContext<TableCardContextTypeNull>(null); /
  */
 export function useTableCardContext() {
     return useContext(TableCardContext);
-};
+}
