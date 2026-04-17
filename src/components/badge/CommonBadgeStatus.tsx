@@ -1,10 +1,5 @@
 import { Chip } from '@mui/material';
-import {
-    CheckFatIcon,
-    CircleIcon,
-    WarningIcon,
-    XCircleIcon
-} from '@phosphor-icons/react';
+import { CheckFatIcon, CircleIcon, WarningIcon, XCircleIcon } from '@phosphor-icons/react';
 import { BadgeStatusVariantElementMap, CommonBadgeStatusProps } from '@type/common/badge.type';
 
 export function CommonBadgeStatus({

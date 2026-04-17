@@ -1,17 +1,29 @@
-import CommonButton from '@components/button/CommonButton';
+import CommonButton, { CommonButtonProps } from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import { useTableCardContext } from '@contexts/TableCardContext';
 import { InputAdornment } from '@mui/material';
-import CardActions from '@mui/material/CardActions';
-import { BoxProps } from '@mui/system';
-import { FunnelIcon, FunnelSimpleIcon, MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
+import CardActions, { CardActionsProps } from '@mui/material/CardActions';
+import {
+    FunnelIcon, FunnelSimpleIcon,
+    IconProps,
+    MagnifyingGlassIcon, PlusIcon
+} from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDiv } from '@type/common.type';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export interface TableCardControlsProps extends BoxProps {
+export interface TableCardControlsProps extends CardActionsProps {
+    // Configuration properties for the create button
+    createButtonProps?: CommonButtonProps;
+
+    // Configuration properties for the filter button
+    filterButtonProps?: CommonButtonProps;
+
     // Optional flag to toggle the visibility of the "Create" button
-    allowCreate?: boolean;
+    hasCreate?: boolean;
+
+    // Configuration properties for the sort button
+    sortByButtonProps?: CommonButtonProps;
 }
 
 /**
@@ -23,7 +35,7 @@ export interface TableCardControlsProps extends BoxProps {
  * @example
  * <TableCard>
  *  <TableCardHeader title="Table Card Title">
- *  <TableCardControls allowCreate={true} />
+ *  <TableCardControls hasCreate={true} />
  *  </TableCardHeader>
  *  <TableCardContent
  *  leadingColumnDefs={columnDefs}
@@ -33,11 +45,21 @@ export interface TableCardControlsProps extends BoxProps {
  * </TableCard>
  */
 export default function TableCardControls({
-    allowCreate
+    createButtonProps,
+    filterButtonProps,
+    hasCreate,
+    sortByButtonProps
 }: TableCardControlsProps) {
     const { t } = useTranslation(); // Hook for handling multi-language support and string keys
     const context = useTableCardContext(); // Accesses the shared table state and search logic
     const [searchQuery, setSearchQuery] = useState<string>(''); // Manages the raw text input for the search field
+    const commonIconProps: IconProps = {
+        size: 20,
+        style: {
+            color: 'var(--mui-palette-grey-400)'
+        },
+        weight: 'bold'
+    }; // Shared configuration for filter and sort by icons
 
     /**
      * Handles the search query state updates.
@@ -102,38 +124,29 @@ export default function TableCardControls({
                 onKeyDown={handleSearchSubmit}
             />
             <CommonButton
-                color="light-grey"
+                color="lightGrey"
                 size="small"
                 startIcon={
-                    <FunnelIcon
-                        size={20}
-                        style={{
-                            color: 'var(--mui-palette-grey-400)'
-                        }}
-                        weight="bold"
-                    />
+                    <FunnelIcon {...commonIconProps} />
                 }
                 variant="outlined"
+
+                {...filterButtonProps}
             >
                 {t('filters')}
             </CommonButton>
             <CommonButton
-                color="light-grey"
+                color="lightGrey"
                 size="small"
                 startIcon={
-                    <FunnelSimpleIcon
-                        size={20}
-                        style={{
-                            color: 'var(--mui-palette-grey-400)'
-                        }}
-                        weight="bold"
-                    />
+                    <FunnelSimpleIcon {...commonIconProps} />
                 }
                 variant="outlined"
+                {...sortByButtonProps}
             >
                 {t('sort_by')}
             </CommonButton>
-            {allowCreate && (
+            {hasCreate && (
                 <CommonButton
                     size="small"
                     startIcon={
@@ -145,6 +158,7 @@ export default function TableCardControls({
                             weight="bold"
                         />
                     }
+                    {...createButtonProps}
                 >
                     {t('create')}
                 </CommonButton>

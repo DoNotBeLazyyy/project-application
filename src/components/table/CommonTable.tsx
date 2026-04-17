@@ -25,11 +25,11 @@ interface TableActionConfig {
     // Additional container action class name
     actionContainerClassName?: string;
 
-    // Whether to show an action column
-    hasAction?: boolean;
-
     // Additional icon action class name
     actionIconClassName?: string;
+
+    // Whether to show an action column
+    hasAction?: boolean;
 
     // Callback executed when the action menu button is clicked
     onActionMenuClick?: VoidFunction;
@@ -86,8 +86,8 @@ export default function CommonTable({
     actionConfig: {
         actionColDef,
         actionContainerClassName,
-        hasAction,
         actionIconClassName,
+        hasAction,
         onEditClick,
         onActionMenuClick
     } = {},

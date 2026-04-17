@@ -52,8 +52,8 @@ interface PaginationNavigationsProps {
  * />
  */
 export default function PaginationNavigations({
-    navigationButtonProps,
-    inputProps
+    inputProps,
+    navigationButtonProps
 }: PaginationNavigationsProps) {
     const {
         prevButtonProps,

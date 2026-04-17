@@ -23,8 +23,6 @@ import { GridReadyEvent } from 'ag-grid-community';
  * </TableCard>
  */
 export default function TableCardContent({
-    leadingColumnDefs,
-    rowData,
     onGridReady,
     ...props
 }: CommonTableProps) {
@@ -53,8 +51,6 @@ export default function TableCardContent({
             }}
         >
             <CommonTable
-                leadingColumnDefs={leadingColumnDefs}
-                rowData={rowData}
                 onGridReady={handleGridReady}
                 {...props}
             />

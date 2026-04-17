@@ -366,8 +366,8 @@ declare module '@mui/material/Button' {
     }
 
     interface ButtonPropsColorOverrides {
-        // light-grey variant
-        'light-grey': true;
+        // lightGrey variant
+        'lightGrey': true;
     }
 }
 
