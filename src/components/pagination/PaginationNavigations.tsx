@@ -5,10 +5,10 @@ import {
 
 interface NavigationButtonProps {
     // Props for the "First Page" navigation button
-    firstButtonProps: IconProps;
+    firstButtonProps?: IconProps;
 
     // Props for the "Last Page" navigation button
-    lastButtonProps: IconProps;
+    lastButtonProps?: IconProps;
 
     // Props for the "Next Page" navigation button
     nextButtonProps: IconProps;
@@ -19,7 +19,7 @@ interface NavigationButtonProps {
 
 interface PaginationNavigationsProps {
     // Navigation input props
-    inputProps: PaginationInputInfoProps
+    inputProps?: PaginationInputInfoProps
 
     // Navigation button props
     navigationButtonProps: NavigationButtonProps
@@ -56,19 +56,19 @@ export default function PaginationNavigations({
     navigationButtonProps
 }: PaginationNavigationsProps) {
     const {
-        prevButtonProps,
-        nextButtonProps,
+        firstButtonProps,
         lastButtonProps,
-        firstButtonProps
+        nextButtonProps,
+        prevButtonProps
     } = navigationButtonProps; // Navigation destructuring
 
     return (
         <div className="flex h-7 items-center">
-            <CaretDoubleLeftIcon {...firstButtonProps} />
+            {firstButtonProps && <CaretDoubleLeftIcon {...firstButtonProps} />}
             <CaretLeftIcon {...prevButtonProps} />
-            <PaginationInputInfo {...inputProps} />
+            {inputProps && <PaginationInputInfo {...inputProps} />}
             <CaretRightIcon {...nextButtonProps} />
-            <CaretDoubleRightIcon {...lastButtonProps} />
+            {lastButtonProps && <CaretDoubleRightIcon {...lastButtonProps} />}
         </div>
     );
 }

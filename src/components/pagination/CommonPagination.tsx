@@ -2,17 +2,33 @@ import PaginationInfo from '@components/pagination/PaginationInfo';
 import PaginationNavigations from '@components/pagination/PaginationNavigations';
 import PaginationSelect from '@components/pagination/PaginationSelect';
 import { SelectChangeEvent } from '@mui/material';
-import {
-    BooleanFunction, ChangeEventInputTextarea, KeyboardEventInputTextareaElement, StateProps, StringNum
-} from '@type/common.type';
+import { BooleanFunction, ChangeEventInputTextarea, KeyboardEventDivElement, StateProps, StringNum } from '@type/common.type';
 import { PaginationData } from '@type/table.type';
 import { classMerge } from '@utils/css.util';
 import { calculateRowRange, changePagination, clampPage } from '@utils/pagination.util';
 import { HTMLAttributes, useEffect, useState } from 'react';
 
 export interface CommonPaginationProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+    // Whether to show jump to first page button
+    hasFirstButton?: boolean;
+
+    // Whether to show jump to last page button
+    hasLastButton?: boolean;
+
+    // Whether to show the navigation buttons and input
+    hasNavigationInput?: boolean;
+
+    // Whether to show the row range info
+    hasPaginationRowsInfo?: boolean;
+
+    // Whether to show the rows per page select
+    hasPaginationSelect?: boolean;
+
     // Whether currentPage input is committed on blur or not
     isPageInputCommitOnBlur?: boolean;
+
+    // Navigation container additional class name
+    navigationContainerClassName?: string;
 
     // Pagination data containing current state
     pagination: PaginationData;
@@ -41,12 +57,18 @@ export interface CommonPaginationProps extends Omit<HTMLAttributes<HTMLDivElemen
  */
 export default function CommonPagination({
     className,
+    hasFirstButton = true,
+    hasLastButton = true,
+    hasNavigationInput = true,
+    hasPaginationRowsInfo = true,
+    hasPaginationSelect = true,
     isPageInputCommitOnBlur = true,
+    navigationContainerClassName,
     pagination,
     rowsPerPageOptions = [10, 25, 50, 100],
     onConfirmNavigation,
     onSetPagination,
-    ...propss
+    ...props
 }: CommonPaginationProps) {
     const {
         currentPage = 1,
@@ -140,7 +162,7 @@ export default function CommonPagination({
      *
      * @param event - Keyboard event from the input element.
      */
-    function handlePageInputKeyDown(event: KeyboardEventInputTextareaElement) {
+    function handlePageInputKeyDown(event: KeyboardEventDivElement) {
         if (event.key === 'Enter') {
             commitPageInput();
         }
@@ -219,41 +241,56 @@ export default function CommonPagination({
                     className
                 )
             }
-            {...propss}
+            {...props}
         >
-            <div className="flex gap-(--mui-tokens-spacing-5)">
+            <div
+                className={
+                    classMerge(
+                        'flex gap-(--mui-tokens-spacing-5)',
+                        navigationContainerClassName
+                    )
+                }
+            >
                 <PaginationNavigations
-                    inputProps={{
-                        totalPages,
-                        inputProps: {
-                            inputProps: {
-                                min: 1,
-                                step: 1
-                            },
-                            value: pageInput,
-                            onBlur: handlePageInputOnBlur,
-                            onChange: handlePageInputChange,
-                            onKeyDown: handlePageInputKeyDown
-                        }
-                    }}
+                    inputProps={
+                        hasNavigationInput
+                            ? {
+                                totalPages,
+                                inputProps: {
+                                    inputProps: {
+                                        min: 1,
+                                        step: 1
+                                    },
+                                    value: pageInput,
+                                    onBlur: handlePageInputOnBlur,
+                                    onChange: handlePageInputChange,
+                                    onKeyDown: handlePageInputKeyDown
+                                }
+                            }
+                            : undefined
+                    }
                     navigationButtonProps={{
-                        firstButtonProps: handleButtonNavigationProps(isFirstPage, navigateToFirstPage),
-                        lastButtonProps: handleButtonNavigationProps(isLastPage, navigateToLastPage),
+                        firstButtonProps: hasFirstButton
+                            ? handleButtonNavigationProps(isFirstPage, navigateToFirstPage)
+                            : undefined,
+                        lastButtonProps: hasLastButton
+                            ? handleButtonNavigationProps(isLastPage, navigateToLastPage)
+                            : undefined,
                         nextButtonProps: handleButtonNavigationProps(isLastPage, navigateToNextPage),
                         prevButtonProps: handleButtonNavigationProps(isFirstPage, navigateToPreviousPage)
                     }}
                 />
-                <PaginationSelect
+                {hasPaginationSelect && <PaginationSelect
                     options={rowsPerPageOptions}
                     value={rowsPerPage}
                     onChange={handleRowsPerPageChange}
-                />
+                />}
             </div>
-            <PaginationInfo
+            {hasPaginationRowsInfo && <PaginationInfo
                 endRow={end}
                 startRow={start}
                 totalElements={totalElements}
-            />
+            />}
         </div>
     );
 }

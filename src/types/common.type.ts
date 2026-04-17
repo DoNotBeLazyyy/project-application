@@ -15,7 +15,7 @@ export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
 export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
-export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
+export type KeyboardEventDivElement = KeyboardEvent<HTMLDivElement>;
 
 // Node props
 export type NodeNull = Node | null;
