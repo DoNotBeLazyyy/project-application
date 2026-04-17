@@ -1,11 +1,12 @@
 import ComponentSample from '@pages/component-sample';
+import CommonBadgeSample from '@pages/component-sample/badge';
 import CommonButtonSample from '@pages/component-sample/button';
 import CalendarSample from '@pages/component-sample/calendar';
 import CommonCheckboxSample from '@pages/component-sample/checkbox';
 import CommonInputSample from '@pages/component-sample/input';
 import ModalSamplePage from '@pages/component-sample/modal';
-import CommonRadioSample from '@pages/component-sample/radio';
 import CommonNavarSample from '@pages/component-sample/navar';
+import CommonRadioSample from '@pages/component-sample/radio';
 import CommonSideBarSample from '@pages/component-sample/sidebar';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
@@ -72,6 +73,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <TableCardSample />,
             path: 'table-card'
+        },
+        {
+            element: <CommonBadgeSample />,
+            path: 'badge'
         }
     ]
 }] as const;
