@@ -29,11 +29,16 @@ export interface CalendarPickerProps extends CalendarPickerTitleProps{
  * />
  */
 export default function CalendarPicker({
-    date,
     calendarPickerAlign = 'CENTER',
+    date,
     size,
     onChangeMonth
 }: CalendarPickerProps) {
+    const calendarAlignment: Record<AlignType, string> = {
+        CENTER: 'justify-center',
+        LEFT: 'justify-start',
+        RIGHT: 'justify-end'
+    };
 
     /**
      * Handles the click event for the next month button.
@@ -51,14 +56,12 @@ export default function CalendarPicker({
 
     return (
         <div
-            className={classMerge(
-                'flex items-center gap-(--mui-tokens-spacing-6)',
-                {
-                    'justify-center': calendarPickerAlign === 'CENTER',
-                    'justify-start': calendarPickerAlign === 'LEFT',
-                    'justify-end': calendarPickerAlign === 'RIGHT'
-                }
-            )}
+            className={
+                classMerge(
+                    'flex items-center gap-(--mui-tokens-spacing-6)',
+                    calendarAlignment[calendarPickerAlign]
+                )
+            }
         >
             <CalendarContent
                 title={

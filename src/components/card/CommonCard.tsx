@@ -27,8 +27,8 @@ export interface CommonCardProps extends CardProps {
  */
 const CommonCard = forwardRef<HTMLDivElement, CommonCardProps>(({
     cardHeaderProps,
-    defaultActionProps,
     children,
+    defaultActionProps,
     ...props
 }, ref) => {
     return <Card

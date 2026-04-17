@@ -32,11 +32,11 @@ export type CommonInputProps = TextFieldProps & {
 const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     className,
     containerClassName,
+    fullWidth,
     isRequired,
     isRoundedFull,
     label,
     labelClassName,
-    fullWidth,
     ...props
 }, ref) => {
     return (

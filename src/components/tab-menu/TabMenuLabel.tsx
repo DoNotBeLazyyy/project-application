@@ -47,13 +47,11 @@ export default function TabMenuLabel({
                     {badge}
                 </span>
             )}
-            {hasArrow && (
-                <CaretRightIcon
-                    className="shrink-0"
-                    size={16}
-                    weight="bold"
-                />
-            )}
+            {hasArrow && <CaretRightIcon
+                className="shrink-0"
+                size={16}
+                weight="bold"
+            />}
         </span>
     );
 }
