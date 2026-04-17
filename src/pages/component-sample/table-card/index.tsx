@@ -160,7 +160,7 @@ export default function TableCardSample() {
                             : 'Admin View'
                     }
                 >
-                    <TableCardControls allowCreate={activeTab === 'admin'} />
+                    <TableCardControls hasCreate={activeTab === 'admin'} />
                 </TableCardHeader>
                 <TableCardContent
                     leadingColumnDefs={columnDefs}

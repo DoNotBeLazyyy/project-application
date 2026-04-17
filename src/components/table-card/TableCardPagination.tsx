@@ -1,15 +1,4 @@
 import CommonPagination, { CommonPaginationProps } from '@components/pagination/CommonPagination';
-import { CardActionsProps } from '@mui/material';
-import { StateProps } from '@type/common.type';
-import { PaginationData } from '@type/table.type';
-
-export interface TableCardPaginationProps extends CardActionsProps, CommonPaginationProps {
-    // The data object containing current page, limit, and total counts
-    pagination: PaginationData;
-
-    // Function to update the pagination state
-    onSetPagination: StateProps<PaginationData>;
-}
 
 /**
  * TableCardPagination
@@ -34,13 +23,13 @@ export interface TableCardPaginationProps extends CardActionsProps, CommonPagina
  */
 export default function TableCardPagination({
     pagination,
-    onSetPagination
-}: TableCardPaginationProps) {
-    return (
-        <CommonPagination
-            className="flex h-18 items-center"
-            pagination={pagination}
-            onSetPagination={onSetPagination}
-        />
-    );
+    onSetPagination,
+    ...props
+}: CommonPaginationProps) {
+    return <CommonPagination
+        className="flex h-18 items-center"
+        pagination={pagination}
+        onSetPagination={onSetPagination}
+        {...props}
+    />;
 }
