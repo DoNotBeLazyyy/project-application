@@ -8,6 +8,7 @@ import ModalSamplePage from '@pages/component-sample/modal';
 import CommonNavarSample from '@pages/component-sample/navar';
 import CommonRadioSample from '@pages/component-sample/radio';
 import CommonSideBarSample from '@pages/component-sample/sidebar';
+import CommonStepperSample from '@pages/component-sample/stepper';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
 import TableCardSample from '@pages/component-sample/table-card';
@@ -77,6 +78,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonBadgeSample />,
             path: 'badge'
+        },
+        {
+            element: <CommonStepperSample />,
+            path: 'stepper'
         }
     ]
 }] as const;

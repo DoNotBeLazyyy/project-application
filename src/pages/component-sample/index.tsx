@@ -53,6 +53,10 @@ export default function ComponentSample() {
         {
             label: 'Badge',
             path: 'badge'
+        },
+        {
+            label: 'Stepper',
+            path: 'stepper'
         }
     ] as const;
 
