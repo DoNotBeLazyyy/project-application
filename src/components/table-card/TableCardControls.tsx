@@ -4,9 +4,11 @@ import { useTableCardContext } from '@contexts/TableCardContext';
 import { InputAdornment } from '@mui/material';
 import CardActions, { CardActionsProps } from '@mui/material/CardActions';
 import {
-    FunnelIcon, FunnelSimpleIcon,
+    FunnelIcon,
+    FunnelSimpleIcon,
     IconProps,
-    MagnifyingGlassIcon, PlusIcon
+    MagnifyingGlassIcon,
+    PlusIcon
 } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDiv } from '@type/common.type';
 import { useState } from 'react';
@@ -18,9 +20,6 @@ export interface TableCardControlsProps extends CardActionsProps {
 
     // Configuration properties for the filter button
     filterButtonProps?: CommonButtonProps;
-
-    // Optional flag to toggle the visibility of the "Create" button
-    hasCreate?: boolean;
 
     // Configuration properties for the sort button
     sortByButtonProps?: CommonButtonProps;
@@ -47,8 +46,8 @@ export interface TableCardControlsProps extends CardActionsProps {
 export default function TableCardControls({
     createButtonProps,
     filterButtonProps,
-    hasCreate,
-    sortByButtonProps
+    sortByButtonProps,
+    ...props
 }: TableCardControlsProps) {
     const { t } = useTranslation(); // Hook for handling multi-language support and string keys
     const context = useTableCardContext(); // Accesses the shared table state and search logic
@@ -91,7 +90,7 @@ export default function TableCardControls({
     }
 
     return (
-        <CardActions>
+        <CardActions {...props}>
             <CommonInput
                 className="bg-white border-2"
                 isRoundedFull
@@ -130,7 +129,6 @@ export default function TableCardControls({
                     <FunnelIcon {...commonIconProps} />
                 }
                 variant="outlined"
-
                 {...filterButtonProps}
             >
                 {t('filters')}
@@ -146,7 +144,7 @@ export default function TableCardControls({
             >
                 {t('sort_by')}
             </CommonButton>
-            {hasCreate && (
+            {createButtonProps && (
                 <CommonButton
                     size="small"
                     startIcon={

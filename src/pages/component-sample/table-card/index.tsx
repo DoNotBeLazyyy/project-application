@@ -160,7 +160,11 @@ export default function TableCardSample() {
                             : 'Admin View'
                     }
                 >
-                    <TableCardControls hasCreate={activeTab === 'admin'} />
+                    <TableCardControls
+                        {...(activeTab === 'admin'
+                            ? { createButtonProps: { onClick: () => {} } }
+                            : {})}
+                    />
                 </TableCardHeader>
                 <TableCardContent
                     leadingColumnDefs={columnDefs}
