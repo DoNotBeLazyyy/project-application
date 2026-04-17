@@ -1,8 +1,9 @@
 
+import { TableCardContextType } from '@components/table-card/TableCard';
 import { SxProps } from '@mui/system';
 import { GridApi, Theme } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, SetStateAction, SVGProps
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, RefObject, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -16,6 +17,7 @@ export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
 export type MouseEventDivElement = MouseEvent<HTMLDivElement>;
 export type HtmlDivElementNull = HTMLDivElement | null;
 export type KeyboardEventInputTextareaElement = KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>;
+export type KeyboardEventDiv = KeyboardEvent<HTMLDivElement>
 
 // Node props
 export type NodeNull = Node | null;
@@ -33,6 +35,10 @@ export type BooleanFunction = () => boolean;
 
 // Grid props
 export type GridApiNull = GridApi | null;
+export type GridRef = RefObject<GridApiNull>;
+
+// Table props
+export type TableCardContextTypeNull = TableCardContextType | null
 
 // MUI props
 export type ThemeSx = SxProps<Theme> | undefined;

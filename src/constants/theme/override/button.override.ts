@@ -243,7 +243,7 @@ export const buttonOverrides: ComponentTheme = {
             {
                 props: {
                     variant: 'outlined',
-                    color: 'grey-300'
+                    color: 'light-grey'
                 },
                 style: {
                     '&.MuiButton-outlined': {

@@ -1,24 +1,34 @@
+import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import TableCard from '@components/table-card/TableCard';
+import TableCardContent from '@components/table-card/TableCardContent';
+import TableCardControls from '@components/table-card/TableCardControls';
+import TableCardHeader from '@components/table-card/TableCardHeader';
+import TableCardPagination from '@components/table-card/TableCardPagination';
 import { DEFAULT_PAGINATION } from '@constants/table.constant';
+import { Box } from '@mui/material';
 import { PaginationData } from '@type/table.type';
 import { ColDef } from 'ag-grid-community';
-import { useEffect, useMemo, useState } from 'react';
+import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 /**
  * TableCardSample
- *
- * A sample component demonstrating the implementation of the TableCard compound component.
- * It showcases local state management for pagination, column definitions, and
- * data slicing for a mock server-side pagination effect.
- *
- * @example
- * <TableCardSample />
+ * * A sample component demonstrating the implementation of the TableCard compound component.
+ * * It showcases local state management for pagination, column definitions, and
+ * * data slicing for a mock server-side pagination effect.
  */
 export default function TableCardSample() {
-    /** State object managing the current page, rows per page, and total record counts. */
-    const [pagination, setPagination] = useState<PaginationData>(DEFAULT_PAGINATION);
+    const [activeTab, setActiveTab] = useState('employee'); // State for switching between views
+    const [pagination, setPagination] = useState<PaginationData>(DEFAULT_PAGINATION); // State managing page, rows, and counts
 
-    /** Definition of table columns, specifying fields, headers, and sorting behavior. */
+    /**
+     * handleTabChange
+     * * Handles the transition between different table views.
+     */
+    function handleTabChange(_: SyntheticEvent, newValue: string) {
+        setActiveTab(newValue);
+    }
+
+    // Definition of table columns, specifying fields, headers, and sorting behavior
     const columnDefs: ColDef[] = [
         {
             field: 'id',
@@ -46,7 +56,7 @@ export default function TableCardSample() {
         }
     ];
 
-    /** Generates a static list of 100 mock faculty records for demonstration. */
+    // Generates a static list of 100 mock faculty records for demonstration
     const allRowData = useMemo(() => {
         const departments = [
             'Computer Science',
@@ -58,7 +68,12 @@ export default function TableCardSample() {
             'Architecture',
             'Education'
         ];
-        const statuses = ['Active', 'On Leave', 'Retired', 'Probationary'];
+        const statuses = [
+            'Active',
+            'On Leave',
+            'Retired',
+            'Probationary'
+        ];
         const names = [
             'Dr. Smith',
             'Prof. Jones',
@@ -80,7 +95,7 @@ export default function TableCardSample() {
         }));
     }, []);
 
-    /** Computes the specific subset of data to be displayed based on pagination state. */
+    // Computes the specific subset of data to be displayed based on pagination state
     const displayedData = useMemo(() => {
         const startIndex = (pagination.currentPage - 1) * pagination.rowsPerPage;
         const endIndex = startIndex + pagination.rowsPerPage;
@@ -88,7 +103,7 @@ export default function TableCardSample() {
         return allRowData.slice(startIndex, endIndex);
     }, [allRowData, pagination.currentPage, pagination.rowsPerPage]);
 
-    /** Synchronizes pagination metadata (total elements and pages) when source data changes. */
+    // Synchronizes pagination metadata when source data changes
     useEffect(() => {
         const totalElements = allRowData.length;
         const totalPages = Math.ceil(totalElements / pagination.rowsPerPage);
@@ -103,20 +118,59 @@ export default function TableCardSample() {
     }, [allRowData.length, pagination.rowsPerPage, pagination.totalElements, pagination.totalPages]);
 
     return (
-        <TableCard>
-            <TableCard.Header>
-                <TableCard.Title>Table Title</TableCard.Title>
-                <TableCard.Description>Table Description</TableCard.Description>
-                <TableCard.Controls allowCreate />
-            </TableCard.Header>
-            <TableCard.Content
-                leadingColumnDefs={columnDefs}
-                rowData={displayedData}
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                height: '100%'
+            }}
+        >
+            <CommonTabMenu
+                tabs={[
+                    {
+                        label: 'Employee',
+                        value: 'employee'
+                    },
+                    {
+                        label: 'Admin',
+                        value: 'admin'
+                    }
+                ]}
+                value={activeTab}
+                onChange={handleTabChange}
             />
-            <TableCard.Pagination
-                pagination={pagination}
-                onSetPagination={setPagination}
-            />
-        </TableCard>
+            <TableCard
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0
+                }}
+            >
+                <TableCardHeader
+                    subheader={
+                        activeTab === 'employee'
+                            ? 'Employee View Subheader'
+                            : 'Admin View Subheader'
+                    }
+                    title={
+                        activeTab === 'employee'
+                            ? 'Employee View'
+                            : 'Admin View'
+                    }
+                >
+                    <TableCardControls allowCreate={activeTab === 'admin'} />
+                </TableCardHeader>
+                <TableCardContent
+                    leadingColumnDefs={columnDefs}
+                    rowData={displayedData}
+                />
+                <TableCardPagination
+                    pagination={pagination}
+                    onSetPagination={setPagination}
+                />
+            </TableCard>
+        </Box>
     );
 }
