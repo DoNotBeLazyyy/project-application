@@ -7,6 +7,7 @@ import { BoxProps } from '@mui/system';
 import { FunnelIcon, FunnelSimpleIcon, MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import { KeyboardEventDiv } from '@type/common.type';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface TableCardControlsProps extends BoxProps {
     // Optional flag to toggle the visibility of the "Create" button.
@@ -32,6 +33,7 @@ export interface TableCardControlsProps extends BoxProps {
 export default function TableCardControls({ allowCreate }: TableCardControlsProps) {
     const context = useTableCardContext(); // Accesses the shared table state and search logic
     const [searchQuery, setSearchQuery] = useState<string>(''); // Manages the raw text input for the search field
+    const { t } = useTranslation();
 
     /**
      * handleSearchSubmit
@@ -43,6 +45,7 @@ export default function TableCardControls({ allowCreate }: TableCardControlsProp
     function handleSearchSubmit(event: KeyboardEventDiv) {
         if (event.key === 'Enter' && context) {
             const contextGridRefCurrent = context.gridRef.current;
+
             if (contextGridRefCurrent) {
                 contextGridRefCurrent.setGridOption('quickFilterText', searchQuery);
             }
@@ -54,7 +57,7 @@ export default function TableCardControls({ allowCreate }: TableCardControlsProp
             <CommonInput
                 className="bg-white border-2"
                 isRoundedFull
-                placeholder="Search..."
+                placeholder={t('search_placeholder')}
                 size="small"
                 slotProps={{
                     input: {
@@ -95,7 +98,7 @@ export default function TableCardControls({ allowCreate }: TableCardControlsProp
                 }
                 variant="outlined"
             >
-                Filters
+                {t('filters')}
             </CommonButton>
             <CommonButton
                 color={'light-grey'}
@@ -111,7 +114,7 @@ export default function TableCardControls({ allowCreate }: TableCardControlsProp
                 }
                 variant="outlined"
             >
-                Sort by
+                {t('sort_by')}
             </CommonButton>
             {allowCreate && (
                 <CommonButton
@@ -126,7 +129,7 @@ export default function TableCardControls({ allowCreate }: TableCardControlsProp
                         />
                     }
                 >
-                    Create
+                    {t('create')}
                 </CommonButton>
             )}
         </CardActions>

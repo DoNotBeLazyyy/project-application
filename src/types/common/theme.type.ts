@@ -394,3 +394,30 @@ declare module '@mui/material/Paper' {
         xsmall: true;
     }
 }
+
+declare module '@mui/material/Chip' {
+    interface ChipPropsColorOverrides {
+        // Custom "active" state color
+        active: true;
+
+        // Custom "inactive" state color
+        inactive: true;
+
+        // Light-themed chip variant
+        light: true;
+
+        // Dark-themed chip variant
+        dark: true;
+
+        // Ghost style
+        ghost: true;
+
+        // Outline-only chip style
+        outline: true;
+    }
+
+    interface ChipPropsSizeOverrides {
+        // Custom large size
+        large: true
+    }
+}
