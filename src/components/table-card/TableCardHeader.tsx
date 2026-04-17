@@ -1,6 +1,6 @@
 import TableCardControls from '@components/table-card/TableCardControls';
 import { CardHeader, CardHeaderProps } from '@mui/material';
-import { Children, isValidElement } from 'react';
+import { Children, isValidElement, useMemo } from 'react';
 
 /**
  * TableCardHeader
@@ -24,9 +24,10 @@ export default function TableCardHeader({
     children,
     ...props
 }: CardHeaderProps) {
-    const controls = Children
-        .toArray(children)
-        .find((child) => isValidElement(child) && child.type === TableCardControls); // Logic to extract TableCardControls
+    const controls = useMemo(() => (
+        Children.toArray(children)
+            .find((child) => isValidElement(child) && child.type === TableCardControls)
+    ), [children]); // Logic to extract TableCardControls
 
     return <CardHeader
         action={controls}
