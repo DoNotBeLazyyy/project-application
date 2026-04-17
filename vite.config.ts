@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
                 { find: '@assets', replacement: path.resolve(__dirname, 'src/assets') },
                 { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
                 { find: '@constants', replacement: path.resolve(__dirname, 'src/constants') },
+                { find: '@contexts', replacement: path.resolve(__dirname, 'src/contexts') },
                 { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
                 { find: '@locales', replacement: path.resolve(__dirname, 'src/locales') },
                 { find: '@pages', replacement: path.resolve(__dirname, 'src/pages') },

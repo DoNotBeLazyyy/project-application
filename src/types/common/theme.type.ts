@@ -379,18 +379,29 @@ declare module '@mui/material/Tab' {
     interface TabOwnProps extends SharedTabMenuProps {}
 }
 
-declare module '@mui/material/Paper' {
-    interface PaperPropsVariantOverrides {
-        // Large size
-        large: true;
+declare module '@mui/material/Chip' {
+    interface ChipPropsColorOverrides {
+        // Custom "active" state color
+        active: true;
 
-        // Medium size
-        medium: true;
+        // Custom "inactive" state color
+        inactive: true;
 
-        // Small size
-        small: true;
+        // Light-themed chip variant
+        light: true;
 
-        // Extra small size
-        xsmall: true;
+        // Dark-themed chip variant
+        dark: true;
+
+        // Ghost style
+        ghost: true;
+
+        // Outline-only chip style
+        outline: true;
+    }
+
+    interface ChipPropsSizeOverrides {
+        // Custom large size
+        large: true
     }
 }

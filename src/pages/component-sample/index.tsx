@@ -49,6 +49,14 @@ export default function ComponentSample() {
         {
             label: 'Table Card',
             path: 'table-card'
+        },
+        {
+            label: 'Badge',
+            path: 'badge'
+        },
+        {
+            label: 'Stepper',
+            path: 'stepper'
         }
     ] as const;
 
