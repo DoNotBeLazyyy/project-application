@@ -2,7 +2,9 @@ import PaginationInfo from '@components/pagination/PaginationInfo';
 import PaginationNavigations from '@components/pagination/PaginationNavigations';
 import PaginationSelect from '@components/pagination/PaginationSelect';
 import { SelectChangeEvent } from '@mui/material';
-import { BooleanFunction, ChangeEventInputTextarea, KeyboardEventDivElement, StateProps, StringNum } from '@type/common.type';
+import {
+    BooleanFunction, ChangeEventInputTextarea, KeyboardEventDivElement, StateProps, StringNum
+} from '@type/common.type';
 import { PaginationData } from '@type/table.type';
 import { classMerge } from '@utils/css.util';
 import { calculateRowRange, changePagination, clampPage } from '@utils/pagination.util';

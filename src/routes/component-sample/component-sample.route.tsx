@@ -11,6 +11,7 @@ import CommonSideBarSample from '@pages/component-sample/sidebar';
 import CommonStepperSample from '@pages/component-sample/stepper';
 import CommonTabMenuSample from '@pages/component-sample/tab-menu';
 import CommonTableSample from '@pages/component-sample/table';
+import TableCardSample from '@pages/component-sample/table-card';
 import CommonToggleSample from '@pages/component-sample/toggle-button';
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -69,6 +70,10 @@ export const componentSampleRoutes: readonly RouteObject[] = [{
         {
             element: <CommonButtonSample />,
             path: 'button'
+        },
+        {
+            element: <TableCardSample />,
+            path: 'table-card'
         },
         {
             element: <CommonBadgeSample />,

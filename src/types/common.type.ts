@@ -1,8 +1,8 @@
-
+import { TableCardContextType } from '@contexts/TableCardContext';
 import { SxProps } from '@mui/system';
 import { GridApi, Theme } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, SetStateAction, SVGProps
+    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, RefObject, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -33,6 +33,10 @@ export type BooleanFunction = () => boolean;
 
 // Grid props
 export type GridApiNull = GridApi | null;
+export type GridRef = RefObject<GridApiNull>;
+
+// Table props
+export type TableCardContextTypeNull = TableCardContextType | null;
 
 // MUI props
 export type ThemeSx = SxProps<Theme> | undefined;
@@ -50,7 +54,7 @@ export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 
 // Icon SVG type with optional color prop
-export type IconSvg = IconSvgProps & { color?: string }
+export type IconSvg = IconSvgProps & { color?: string };
 
 // React element or undefined type
 export type ReactUndefined = ReactElement | undefined;

@@ -1,5 +1,9 @@
 {
     "showing_rows_info": "Showing rows {{startRow}}-{{endRow}} of {{totalElements}}",
     "page_of_total": "<input /> of {{totalPages}}",
-    "items_per_page": "{{count}} / page"
+    "items_per_page": "{{count}} / page",
+    "search_placeholder": "Search...",
+    "filters": "Filters",
+    "sort_by": "Sort by",
+    "create": "Create"
 }

@@ -47,6 +47,10 @@ export default function ComponentSample() {
             path: 'button'
         },
         {
+            label: 'Table Card',
+            path: 'table-card'
+        },
+        {
             label: 'Badge',
             path: 'badge'
         },
@@ -120,11 +124,10 @@ export default function ComponentSample() {
                 }}
             >
                 <CommonCard
-                    cardHeaderProps={{ title: 'Some Title' }}
                     className="h-[calc(100%-64px)] min-h-0"
                     sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
                 >
-                    <Box sx={{ flex: 1, overflow: 'auto' }}>
+                    <Box sx={{ flex: 1, overflow: 'shown' }}>
                         <Outlet />
                     </Box>
                 </CommonCard>

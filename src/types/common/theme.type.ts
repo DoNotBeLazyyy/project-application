@@ -364,6 +364,11 @@ declare module '@mui/material/Button' {
         // Extra small size
         xsmall: true;
     }
+
+    interface ButtonPropsColorOverrides {
+        // lightGrey variant
+        'lightGrey': true;
+    }
 }
 
 declare module '@mui/material/Tabs' {
