@@ -2,7 +2,7 @@ import { HTMLAttributesDivElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
-export interface CommonNavarProps extends HTMLAttributesDivElement {
+export interface CommonNavbarProps extends HTMLAttributesDivElement {
     // Content rendered on the left side of the navbar (e.g., search, tabs).
     leftContent?: ReactNode;
 
@@ -22,12 +22,12 @@ export interface CommonNavarProps extends HTMLAttributesDivElement {
  *     rightContent={<>Notifications and Profile</>}
  * />
  */
-export default function CommonNavigationBar({
+export default function CommonNavbar({
     className,
     leftContent,
     rightContent,
     ...props
-}: CommonNavarProps) {
+}: CommonNavbarProps) {
     return (
         <div
             className={
@@ -38,10 +38,10 @@ export default function CommonNavigationBar({
             }
             {...props}
         >
-            <div className="flex items-center gap-(--mui-tokens-spacing-4)">
+            <div className="flex gap-(--mui-tokens-spacing-4) items-center">
                 {leftContent}
             </div>
-            <div className="flex items-center gap-(--mui-tokens-spacing-4)">
+            <div className="flex gap-(--mui-tokens-spacing-4) items-center">
                 {rightContent}
             </div>
         </div>

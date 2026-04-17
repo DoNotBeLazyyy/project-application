@@ -1,9 +1,9 @@
 interface CalendarHeaderProps {
-    // Main title displayed above the calendar header
-    title?: string;
-
     // Subtitle displayed below the title
     subtitle?: string;
+
+    // Main title displayed above the calendar header
+    title?: string;
 }
 
 /**
@@ -19,8 +19,8 @@ interface CalendarHeaderProps {
  * />
  */
 export default function CalendarTitle({
-    title,
-    subtitle
+    subtitle,
+    title
 }: CalendarHeaderProps) {
     return (
         <div>

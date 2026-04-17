@@ -4,11 +4,11 @@ import { OutlinedInputProps } from '@mui/material';
 import { Trans } from 'react-i18next';
 
 export interface PaginationInputInfoProps {
-    // Total number of pages available for navigation
-    totalPages: number;
-
     // Input props
     inputProps: OutlinedInputProps
+
+    // Total number of pages available for navigation
+    totalPages: number;
 }
 
 /**
@@ -27,8 +27,8 @@ export interface PaginationInputInfoProps {
  * />
  */
 export default function PaginationInputInfo({
-    totalPages,
-    inputProps
+    inputProps,
+    totalPages
 }: PaginationInputInfoProps) {
     return (
         <div className="flex gap-(--mui-tokens-spacing-3) items-center text-(--mui-tokens-color-neutral-900) tw_body_small w-auto">

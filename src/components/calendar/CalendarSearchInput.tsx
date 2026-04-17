@@ -40,7 +40,7 @@ export default function CalendarSearchInput({
             disableUnderline
             fullWidth
             placeholder={t('calendar_year_month')}
-            startAdornment={
+            startAdornment={(
                 <InputAdornment position="start">
                     <IconButton
                         disableRipple
@@ -50,7 +50,7 @@ export default function CalendarSearchInput({
                         <MagnifyingGlassIcon className="h-5 text-(--mui-tokens-color-neutral-900) w-5"/>
                     </IconButton>
                 </InputAdornment>
-            }
+            )}
             sx={{
                 border: '1px solid #d1d5db',
                 borderRadius: '999px',

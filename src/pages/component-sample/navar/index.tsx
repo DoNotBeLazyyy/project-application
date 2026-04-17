@@ -1,16 +1,16 @@
-import CommonNavigationBar from '@components/navar/CommonNavigationBar';
+import CommonNavbar from '@components/navbar/CommonNavbar';
 import { BellIcon, MagnifyingGlassIcon, UserCircleIcon } from '@phosphor-icons/react';
 
 export default function CommonNavarSample() {
     return (
         <div className="flex flex-col gap-(--mui-tokens-spacing-8) p-(--mui-tokens-spacing-6)">
             <div>
-                <p className="mb-(--mui-tokens-spacing-3) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-600)">
+                <p className="font-(--mui-tokens-fontWeight-bold) mb-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-600) text-(length:--mui-tokens-fontSize-sm)">
                     Default
                 </p>
-                <CommonNavigationBar
+                <CommonNavbar
                     leftContent={
-                        <span className="text-(length:--mui-tokens-fontSize-sm) text-(--mui-tokens-color-common-white)">
+                        <span className="text-(--mui-tokens-color-common-white) text-(length:--mui-tokens-fontSize-sm)">
                             Dashboard
                         </span>
                     }
@@ -24,13 +24,13 @@ export default function CommonNavarSample() {
             </div>
 
             <div>
-                <p className="mb-(--mui-tokens-spacing-3) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-600)">
+                <p className="font-(--mui-tokens-fontWeight-bold) mb-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-600) text-(length:--mui-tokens-fontSize-sm)">
                     Rounded
                 </p>
-                <CommonNavigationBar
+                <CommonNavbar
                     className="rounded-(--mui-tokens-radius-lg)"
                     leftContent={
-                        <span className="text-(length:--mui-tokens-fontSize-sm) text-(--mui-tokens-color-common-white)">
+                        <span className="text-(--mui-tokens-color-common-white) text-(length:--mui-tokens-fontSize-sm)">
                             Dashboard
                         </span>
                     }
@@ -44,13 +44,13 @@ export default function CommonNavarSample() {
             </div>
 
             <div>
-                <p className="mb-(--mui-tokens-spacing-3) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-600)">
+                <p className="font-(--mui-tokens-fontWeight-bold) mb-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-600) text-(length:--mui-tokens-fontSize-sm)">
                     Full Rounded
                 </p>
-                <CommonNavigationBar
+                <CommonNavbar
                     className="rounded-(--mui-tokens-radius-full)"
                     leftContent={
-                        <span className="text-(length:--mui-tokens-fontSize-sm) text-(--mui-tokens-color-common-white)">
+                        <span className="text-(--mui-tokens-color-common-white) text-(length:--mui-tokens-fontSize-sm)">
                             Dashboard
                         </span>
                     }
@@ -64,13 +64,13 @@ export default function CommonNavarSample() {
             </div>
 
             <div>
-                <p className="mb-(--mui-tokens-spacing-3) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-600)">
+                <p className="font-(--mui-tokens-fontWeight-bold) mb-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-600) text-(length:--mui-tokens-fontSize-sm)">
                     With Search
                 </p>
-                <CommonNavigationBar
+                <CommonNavbar
                     className="rounded-(--mui-tokens-radius-lg)"
                     leftContent={
-                        <div className="flex items-center gap-(--mui-tokens-spacing-2) rounded-(--mui-tokens-radius-md) bg-white/10 px-(--mui-tokens-spacing-3) py-(--mui-tokens-spacing-2)">
+                        <div className="bg-white/10 flex gap-(--mui-tokens-spacing-2) items-center px-(--mui-tokens-spacing-3) py-(--mui-tokens-spacing-2) rounded-(--mui-tokens-radius-md)">
                             <MagnifyingGlassIcon className="text-(--mui-tokens-color-common-white)" size={16} />
                             <span className="text-(length:--mui-tokens-fontSize-sm) text-white/60">
                                 Search...
@@ -87,13 +87,13 @@ export default function CommonNavarSample() {
             </div>
 
             <div>
-                <p className="mb-(--mui-tokens-spacing-3) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold) text-(--mui-tokens-color-neutral-600)">
+                <p className="font-(--mui-tokens-fontWeight-bold) mb-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-600) text-(length:--mui-tokens-fontSize-sm)">
                     Custom Background
                 </p>
-                <CommonNavigationBar
-                    className="rounded-(--mui-tokens-radius-lg) bg-(--mui-tokens-color-brand-900)"
+                <CommonNavbar
+                    className="bg-(--mui-tokens-color-brand-900) rounded-(--mui-tokens-radius-lg)"
                     leftContent={
-                        <span className="text-(length:--mui-tokens-fontSize-sm) text-(--mui-tokens-color-common-white)">
+                        <span className="text-(--mui-tokens-color-common-white) text-(length:--mui-tokens-fontSize-sm)">
                             Dashboard
                         </span>
                     }
