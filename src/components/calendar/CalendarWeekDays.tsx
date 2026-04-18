@@ -1,27 +1,8 @@
 import { classMerge } from '@utils/css.util';
-import { useTranslation } from 'react-i18next';
 
-/**
- * CalendarWeekDays
- *
- * Renders the weekday headers (Sun–Sat) for the calendar grid.
- * Each day is displayed in a fixed-width column and styled for readability.
- *
- * @example
- * <CalendarWeekDays />
- */
+const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 export default function CalendarWeekDays() {
-    const { t } = useTranslation(); // Translation hook
-    const days = [
-        t('sun'),
-        t('mon'),
-        t('tue'),
-        t('wed'),
-        t('thu'),
-        t('fri'),
-        t('sat')
-    ]; // Array of weekday abbreviations
-
     return (
         <div
             className={
@@ -30,7 +11,7 @@ export default function CalendarWeekDays() {
                 )
             }
         >
-            {days.map((day) => (
+            {WEEK_DAYS.map((day) => (
                 <div key={day}>
                     {day}
                 </div>

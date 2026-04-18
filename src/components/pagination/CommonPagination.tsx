@@ -2,6 +2,7 @@ import PaginationInfo from '@components/pagination/PaginationInfo';
 import PaginationNavigations from '@components/pagination/PaginationNavigations';
 import PaginationSelect from '@components/pagination/PaginationSelect';
 import { SelectChangeEvent } from '@mui/material';
+import { useLoadingStore } from '@stores/loading.store';
 import {
     BooleanFunction, ChangeEventInputTextarea, KeyboardEventDivElement, StateProps, StringNum
 } from '@type/common.type';
@@ -72,18 +73,14 @@ export default function CommonPagination({
     onSetPagination,
     ...props
 }: CommonPaginationProps) {
+    const { isLoading } = useLoadingStore();
+    const [pageInput, setPageInput] = useState<StringNum>(1); // Local input state
     const {
         currentPage = 1,
         rowsPerPage = rowsPerPageOptions[0],
         totalElements = 0,
         totalPages = 0
     } = pagination; // Destructured pagination data
-
-    if (!totalPages) {
-        return null;
-    }
-
-    const [pageInput, setPageInput] = useState<StringNum>(currentPage); // Local input state
     const { end, start } = calculateRowRange(currentPage, rowsPerPage, totalElements); // JIT range calculation
     const isFirstPage = currentPage <= 1; // JIT logic for boundary check
     const isLastPage = currentPage >= totalPages; // JIT logic for boundary check
@@ -221,18 +218,22 @@ export default function CommonPagination({
         return {
             className: 'h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-500) w-[2.25rem]',
             style: {
-                cursor: condition
+                cursor: isLoading || condition
                     ? 'default'
                     : 'pointer',
-                opacity: condition
+                opacity: isLoading || condition
                     ? 0.4
                     : 1
             },
             weight: 'bold' as const,
-            onClick: condition
+            onClick: isLoading || condition
                 ? undefined
                 : onClick
         };
+    }
+
+    if (!totalPages) {
+        return null;
     }
 
     return (
@@ -264,6 +265,7 @@ export default function CommonPagination({
                                         step: 1
                                     },
                                     value: pageInput,
+                                    disabled: isLoading,
                                     onBlur: handlePageInputOnBlur,
                                     onChange: handlePageInputChange,
                                     onKeyDown: handlePageInputKeyDown
@@ -283,6 +285,7 @@ export default function CommonPagination({
                     }}
                 />
                 {hasPaginationSelect && <PaginationSelect
+                    disabled={isLoading}
                     options={rowsPerPageOptions}
                     value={rowsPerPage}
                     onChange={handleRowsPerPageChange}

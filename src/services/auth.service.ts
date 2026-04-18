@@ -1,14 +1,14 @@
-import { Session } from '@supabase/supabase-js';
 import { supabase } from '@services/supabase.client';
 import { callQuery, callSingle } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
+import { Session } from '@supabase/supabase-js';
 import { RoleItem, UserProfile, UserRole } from '@type/app.type';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
 interface UserRoleJoinRow {
     role_id: string;
-    roles: { id: string; code: UserRole; label: string }[];
+    roles: { id: string; code: UserRole; label: string } | null;
 }
 
 export async function login(email: string, password: string): Promise<ServiceResult<Session>> {
@@ -37,14 +37,12 @@ export async function initAuthSession(): Promise<void> {
         return;
     }
 
-    store.setIsLoading(true);
-
     const userId = session.user.id;
 
     const profileResult = await callSingle<UserProfile>((client) =>
         client
             .from('users')
-            .select('id, first_name, middle_name, last_name, suffix, preferred_name, email, mobile_number, avatar_url')
+            .select('id, first_name, middle_name, last_name, suffix, preferred_name, email, mobile_number, avatar_url, status')
             .eq('id', userId)
             .is('deleted_at', null)
             .single());
@@ -62,12 +60,10 @@ export async function initAuthSession(): Promise<void> {
 
     if (rolesResult.data) {
         const roles: RoleItem[] = rolesResult.data
-            .map((row) => row.roles[0])
+            .map((row) => row.roles)
             .filter((r): r is RoleItem => r !== null && r !== undefined);
 
         store.setAvailableRoles(roles);
         store.resolveActiveRole();
     }
-
-    store.setIsLoading(false);
 }

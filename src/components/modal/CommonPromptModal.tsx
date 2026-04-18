@@ -23,7 +23,7 @@ export interface CommonPromptModalProps extends CommonActionModalProps {
  * @example
  * <CommonPromptModal
  *  actionIconProps={resolvedActionIconProps}
- *  modalButtonProps={resolvedModalButtonProps}
+ *  formButtonsProps={resolvedFormButtonsProps}
  *  {...props}
  * />
  */
@@ -31,12 +31,12 @@ export default function CommonPromptModal({
     actionIconProps,
     containerClassName,
     mainContent,
-    modalButtonProps,
+    formButtonsProps,
     subContent,
     ...props
 }: CommonPromptModalProps) {
     const { icon: Icon, iconContainerClassName, iconProps } = actionIconProps ?? {}; // Destructured icon configuration for the action trigger
-    const { cancelProps, className, isButtonsFullWidth = true } = modalButtonProps ?? {}; // Destructured button properties
+    const { cancelProps, className, isButtonsFullWidth = true } = formButtonsProps ?? {}; // Destructured button properties
 
     return (
         <CommonActionModal
@@ -47,8 +47,8 @@ export default function CommonPromptModal({
                     containerClassName
                 )
             }
-            modalButtonProps={{
-                ...modalButtonProps,
+            formButtonsProps={{
+                ...formButtonsProps,
                 className: classMerge(
                     'flex-row-reverse',
                     className

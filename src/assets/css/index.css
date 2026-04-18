@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@layer base {
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #FAFAFA inset !important;
+        -webkit-transition: color 9999s ease-out, background-color 9999s ease-out;
+        -webkit-transition-delay: 9999s;
+        caret-color: #000000;
+    }
+
+    input:-webkit-autofill {
+        -webkit-text-fill-color: inherit !important;
+    }
+}
+
 @layer utilities {
     .tw_h1 {
         line-height: var(--mui-tokens-lineHeight-h1);
@@ -149,7 +165,7 @@
     padding-left: var(--mui-tokens-spacing-5);
 }
 
-.ag-cell {
+.ag-row:not(.ag-floating-bottom-container .ag-row) .ag-cell {
     align-items: center;
     display: flex;
     height: 4rem;
@@ -191,7 +207,7 @@
     background-color: var(--mui-tokens-color-brand-50);
 }
 
-.ag-row::after {
+.ag-row:not(.ag-floating-bottom-container .ag-row)::after {
     border-radius: var(--mui-tokens-radius-full);
     border-top: 1px solid var(--mui-palette-grey-300);
     bottom: 7px;
@@ -201,4 +217,23 @@
     pointer-events: none;
     position: absolute;
     right: var(--mui-tokens-spacing-4);
+}
+
+.ag-floating-bottom,
+.ag-floating-bottom-container {
+    border: none;
+    height: 20px !important;
+    padding: 0 !important;
+    min-height: auto !important;
+}
+
+.ag-floating-bottom-container .ag-cell {
+    height: 20px !important;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.disable_sort_interaction .ag-header-cell-label {
+    pointer-events: none;
+    opacity: 0.6; /* Optional: gives it a "disabled" look */
 }

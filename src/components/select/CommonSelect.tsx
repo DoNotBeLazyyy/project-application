@@ -80,7 +80,6 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
         </TextField>
     );
 });
-
 CommonSelect.displayName = 'CommonSelect';
 
 export default CommonSelect;

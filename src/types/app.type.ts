@@ -10,6 +10,7 @@ export interface UserProfile {
     email: string;
     mobile_number: string | null;
     avatar_url: string | null;
+    status: string;
 }
 
 export interface RoleItem {

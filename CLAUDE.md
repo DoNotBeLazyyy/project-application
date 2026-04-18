@@ -86,6 +86,7 @@ Always use the pre-built component library. Raw MUI primitives are forbidden whe
 
 | Use Case | Component | Import Path |
 |---|---|---|
+| **Form Input** | `ValidCommonInput` | `@components/input/ValidCommonInput`
 | Button | `CommonButton` | `@components/button/CommonButton` |
 | Text Input | `CommonInput` | `@components/input/CommonInput` |
 | Dropdown / Select | `CommonSelect` | `@components/input/CommonSelect` |
@@ -107,6 +108,11 @@ Always use the pre-built component library. Raw MUI primitives are forbidden whe
 | Tab Menu | `CommonTabMenu` | `@components/tab-menu/CommonTabMenu` |
 | Progress Bar | `CommonProgressBar` | `@components/progress-bar/CommonProgressBar` |
 | Navbar | `CommonNavbar` | `@components/navbar/CommonNavbar` |
+
+### Form Standards
+- **Standard:** Use `ValidCommonInput` for all form fields. It handles `useController` internally.
+- **No Wrappers:** Do not manually wrap components in `<Controller>` or use `register`.
+- **Error Handling:** Use the `formErrors` utility in the `onError` callback of `handleSubmit`. It handles `window.alert` and automatic focus.
 
 ### Component-Specific Rules
 
@@ -255,3 +261,44 @@ src/
 - The active role is resolved by `resolveActiveRole()` — if the persisted `activeRole` is still in `availableRoles`, keep it. Otherwise default to `availableRoles[0]`.
 - Role switching is exposed via a `CommonSelect` in the sidebar. On change, call `useAppStore.getState().setActiveRole(role)`.
 - All sidebar navigation, page guards, and conditional UI must read `activeRole` from the store — never re-derive it from the session or profile.
+
+## 9. UI & Layout Standards (MUI vs. Tailwind)
+### Component Split
+- **MUI:** Used ONLY for **Interactive Components** (Inputs, Buttons, Cards, Modals).
+- **HTML + Tailwind:** Used for all **Layout and Text**.
+
+### Typography & Layout Rules
+- **FORBIDDEN:** `<Typography>`, `<Box>`, `<Stack>`, `<Grid>`.
+- **MANDATORY:** Use standard HTML tags (`<h1>`-`<h6>`, `<p>`, `<span>`, `<div>`).
+- **Styling:** Use Tailwind CSS for all font sizes, weights, and layouts.
+- **Theme Colors:** Use MUI CSS variables:
+    - Text: `text-[var(--mui-palette-text-primary)]`
+    - Primary: `text-[var(--mui-palette-primary-main)]`
+    - Error: `text-[var(--mui-palette-error-main)]`
+- **Layouts:** Use Tailwind Flex (`flex`) or Grid (`grid`).
+
+## 10. Role-Based Access Control (Single Responsibility)
+The system strictly enforces Single Responsibility. Roles must not overlap in functionality in the UI. If a user needs multiple capabilities, they are assigned multiple roles and must switch between them using the Role Switcher.
+
+* **Admin (System & Infrastructure):** Manages `users`, `user_roles`, `school_years`, `terms`, and global system settings. (No access to academic curriculum or student records).
+* **Dean (Academic Architecture):** Manages `departments`, `programs`, `courses`, `curriculum_maps`, and assigns faculty to sections.
+* **Registrar (Student & Records):** Manages `enrollments`, `student_clearances`, official student rosters, and final grade releases.
+* **Faculty (Instructional):** Manages assigned `sections`, attendance, grading, and assessments.
+* **Student (Learning):** Views schedules, submits assessments, and checks grades/clearances.
+
+## 11. The Thick DB CRUD Standard (Foundational Architecture)
+All major management screens must follow the "Thick DB" CRUD pattern, centralizing business logic in PostgreSQL:
+
+* **Multi-Table Writes:** Operations that affect multiple tables (e.g., Auth + Public profiles + Role-specific tables) MUST be handled by a single PostgreSQL RPC (e.g., `fn_provision_single_user`). The frontend only calls this RPC.
+* **Auth Syncing:** Creating users utilizes Supabase `auth.admin.inviteUserByEmail()`. The UI must track the invitation state and provide a "Resend Invite" row action.
+* **Bulk Operations (Delete):** `CommonTable` (AG Grid) checkboxes must be enabled for bulk selection. Deletions must send an array of UUIDs to a single RPC (e.g., `fn_bulk_delete_users`) for transaction-safe soft deletes.
+* **Bulk Operations (Create/Update):** Management screens must provide "Download CSV Template" and "Upload CSV" actions. The frontend parses the CSV to a JSON array and passes the payload to a bulk RPC (e.g., `fn_bulk_provision_users`) to handle the loop on the server side.
+* **Strict Onboarding Gate:** The `public.users` table must track a status ('Invited' or 'Active'). If a user authenticates but their profile status is 'Invited', the frontend router (AuthGuard) must aggressively trap them on the `/set-password` page.
+* **Invitation Resend Logic:** If an invite needs to be resent to an existing email, use the password recovery flow via `supabase.auth.resetPasswordForEmail()` to securely trigger a fresh setup link.
+* **Database Pagination Wrapper:** All list-fetching RPCs MUST return a `JSONB` payload formatted exactly like the Spring Boot `CommonListResDto<T>`. This is achieved by passing the base query to a centralized PostgreSQL wrapper function (`fn_build_pageable_dto`). The frontend service layer simply returns this JSONB directly.
+* **Zero-Indexed Pages:** The UI is 1-indexed, but the `CommonListResDto` DTO `number` and `pageNumber` properties generated by the DB must strictly be 0-indexed.
+* **Dynamic RPC Sorting:** RPC functions handling lists must accept `p_sort_col` (TEXT) and `p_sort_dir` (TEXT) to apply dynamic `ORDER BY` clauses using secure dynamic SQL (`EXECUTE format(...)`).
+* **CommonTableCard Encapsulation (God Component):** `CommonTableCard` MUST internally manage the state (`isOpen`) for Create, Filter, and Sort modals. It handles the pagination layout and controls internally.
+* **Property Injection over Callbacks:** `CommonTableCard` must accept a `controls: Partial<TableCardControlsProps>` prop containing `tableInputProps` and `tableButtonsProps` (which use `CommonButtonProps`). It MUST NOT use loose `onClick` props.
+* **Parent Pages:** Parent pages (like `UsersPage`) MUST NOT manage modal states or render loose Action Modals. They must pass the form contents via props like `createModalContent` directly into `CommonTableCard`.
+* **Service Responses:** Never use Axios DTOs (`Promise<AxiosResponse>`). Use the internal `ServiceResult<T>` pattern.

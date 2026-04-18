@@ -53,7 +53,6 @@ interface CommonSideBarProps extends HTMLAttributesDivElement {
  *   variant="dark"
  *   headerProps={{
  *     logo: <img src={logo} alt="logo" />,
- *     title: "EGEMCO HRIS",
  *     subtitle: "Super User Access"
  *   }}
  *   footerProps={{
@@ -115,7 +114,7 @@ export default function CommonSideBar({
                 {children}
             </div>
             {footerProps && (
-                <div className="shrink-0 px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4)">
+                <div className="pb-(--mui-tokens-spacing-4) px-(--mui-tokens-spacing-4) shrink-0">
                     <CommonButton
                         startIcon={<GearSixIcon size={20} />}
                         sx={{

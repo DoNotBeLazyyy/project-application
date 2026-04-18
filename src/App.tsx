@@ -1,7 +1,8 @@
+import CommonToast from '@components/toast/CommonToast';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { initAuthSession } from '@services/auth.service';
 import appRouter from '@routes/AppRouter';
+import { initAuthSession } from '@services/auth.service';
 import { theme } from '@utils/theme.util';
 import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
@@ -15,6 +16,7 @@ export default function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <RouterProvider router={appRouter} />
+            <CommonToast />
         </ThemeProvider>
     );
 }

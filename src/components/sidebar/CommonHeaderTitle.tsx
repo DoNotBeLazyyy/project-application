@@ -15,7 +15,6 @@ interface HeaderTitleProps {
  * @example
  * <HeaderTitle
  *   colorClassName="text-[var(--mui-tokens-color-common-white)]"
- *   text="EGEMCO HRIS"
  * />
  */
 export function CommonHeaderTitle({

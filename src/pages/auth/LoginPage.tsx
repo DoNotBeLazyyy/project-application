@@ -1,14 +1,18 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import CommonInput from '@components/input/CommonInput';
-import { Typography } from '@mui/material';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import { login } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { formErrors } from '@utils/form.util';
+import { useEffect, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+interface LoginLocationState {
+    activationSuccess?: boolean;
+}
 
 const ROLE_PATHS: Record<UserRole, RoleDashboardPath> = {
     Admin: '/admin',
@@ -20,23 +24,40 @@ const ROLE_PATHS: Record<UserRole, RoleDashboardPath> = {
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const locationState = location.state as LoginLocationState | null;
     const [loginError, setLoginError] = useState<string | null>(null);
-
-    const { control, handleSubmit, formState: { isSubmitting } } = useForm<LoginFormValues>({
+    const activeRole = useAppStore((state) => state.activeRole);
+    const methods = useForm<LoginFormValues>({
         defaultValues: { email: '', password: '' }
     });
+    const { handleSubmit, formState: { isSubmitting } } = methods;
+
+    useEffect(() => {
+        if (activeRole) {
+            navigate(ROLE_PATHS[activeRole], { replace: true });
+        }
+    }, [activeRole, navigate]);
 
     async function onSubmit(values: LoginFormValues) {
         setLoginError(null);
         const result = await login(values.email, values.password);
         if (result.error) {
             setLoginError(result.error.message);
+
             return;
         }
-        const role = useAppStore.getState().activeRole;
-        navigate(role
-            ? ROLE_PATHS[role]
+
+        // Fetch fresh state to avoid stale closures during the async login
+        const currentRole = useAppStore.getState().activeRole;
+
+        navigate(currentRole
+            ? ROLE_PATHS[currentRole]
             : '/unauthorized');
+    }
+
+    function handleFormError(errors: FieldErrors<LoginFormValues>) {
+        formErrors(errors, methods);
     }
 
     return (
@@ -48,59 +69,48 @@ export default function LoginPage() {
             >
                 <form
                     className="flex flex-col gap-6 p-6"
-                    onSubmit={handleSubmit(onSubmit)}
+                    onSubmit={handleSubmit(onSubmit, handleFormError)}
                 >
-                    <Typography variant="h6">
+                    <h6 className="font-medium m-0 text-xl">
                         Sign in to your account
-                    </Typography>
+                    </h6>
 
-                    {loginError && (
-                        <Typography
-                            color="error"
-                            variant="body2"
-                        >
-                            {loginError}
-                        </Typography>
+                    {locationState?.activationSuccess && (
+                        <p className="m-0 text-(--mui-palette-success-main) text-sm">
+                            Account activated successfully. Please sign in.
+                        </p>
                     )}
 
-                    <Controller
-                        control={control}
+                    {loginError && (
+                        <p className="m-0 text-(--mui-tokens-color-red-500) text-sm">
+                            {loginError}
+                        </p>
+                    )}
+
+                    <ValidCommonInput
+                        control={methods.control}
+                        fullWidth
+                        isRequired
+                        label="Email"
                         name="email"
-                        render={({ field, fieldState }) => (
-                            <CommonInput
-                                {...field}
-                                error={!!fieldState.error}
-                                fullWidth
-                                helperText={fieldState.error?.message}
-                                isRequired
-                                label="Email"
-                                placeholder="Enter your email"
-                                size="small"
-                                type="email"
-                                variant="outlined"
-                            />
-                        )}
+                        placeholder="Enter your email"
                         rules={{ required: 'Email is required' }}
+                        size="small"
+                        type="email"
+                        variant="outlined"
                     />
 
-                    <Controller
-                        control={control}
+                    <ValidCommonInput
+                        control={methods.control}
+                        fullWidth
+                        isRequired
+                        label="Password"
                         name="password"
-                        render={({ field, fieldState }) => (
-                            <CommonInput
-                                {...field}
-                                error={!!fieldState.error}
-                                fullWidth
-                                helperText={fieldState.error?.message}
-                                isRequired
-                                label="Password"
-                                placeholder="Enter your password"
-                                size="small"
-                                type="password"
-                                variant="outlined"
-                            />
-                        )}
+                        placeholder="Enter your password"
                         rules={{ required: 'Password is required' }}
+                        size="small"
+                        type="password"
+                        variant="outlined"
                     />
 
                     <CommonButton

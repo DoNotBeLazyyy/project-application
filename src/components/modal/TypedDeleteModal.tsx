@@ -2,43 +2,22 @@ import CommonInput, { CommonInputProps } from '@components/input/CommonInput';
 import CommonActionModal, { CommonActionModalProps } from '@components/modal/CommonActionModal';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 
 export interface TypedDeletePromptModalProps extends CommonActionModalProps {
-    // Props for the confirmation input field
     inputProps?: CommonInputProps;
-
-    // Modal content container attributes
     modalContent?: ReactNode;
-
-    // Modal header container attributes
     modalHeader?: ReactNode;
 }
 
-/**
- * TypedDeletePromptModal
- *
- * A specialized modal used for destructive confirmation workflows. It forces
- * the user to interact with a specific input field before proceeding with
- * a delete action.
- *
- * @example
- * <TypedDeletePromptModal
- *  inputProps={{ label: 'Type "DELETE" to confirm' }}
- *  modalHeader={{ children: 'Confirm Deletion' }}
- *  open={isOpen}
- * />
- */
 export default function TypedDeletePromptModal({
     containerClassName,
     inputProps,
-    modalButtonProps,
+    formButtonsProps,
     modalContent,
     modalHeader,
     ...props
 }: TypedDeletePromptModalProps) {
-    const { t } = useTranslation(); // Translation hook
-    const { cancelProps, confirmProps, className } = modalButtonProps ?? {}; // Destructured button properties
+    const { cancelProps, confirmProps, className } = formButtonsProps ?? {};
 
     return (
         <CommonActionModal
@@ -49,10 +28,10 @@ export default function TypedDeletePromptModal({
                     containerClassName
                 )
             }
-            modalButtonProps={{
-                ...modalButtonProps,
+            formButtonsProps={{
+                ...formButtonsProps,
                 cancelProps: {
-                    children: t('cancel'),
+                    children: 'Cancel',
                     ...cancelProps
                 },
                 confirmProps: {

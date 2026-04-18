@@ -1,4 +1,5 @@
 import { StateProps } from '@type/common.type';
+import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { PaginationData } from '@type/table.type';
 
 /**
@@ -45,4 +46,40 @@ export function changePagination(
         ...prev,
         ...values
     }));
+}
+
+export function mapToPageableDto<T>(
+    data: T[],
+    page: number,
+    size: number,
+    sort: SortStringDto[]
+): CommonListResDto<T> {
+    const totalElements = (data[0] as (T & { total_count?: number }) | undefined)?.total_count ?? 0;
+    const totalPages = size > 0
+        ? Math.ceil(totalElements / size)
+        : 0;
+    const pageNumber = page - 1;
+    const sorted = sort.length > 0;
+    const sortDto = { empty: !sorted, sorted, unsorted: !sorted };
+
+    return {
+        content: data,
+        empty: data.length === 0,
+        first: true,
+        last: pageNumber >= totalPages - 1,
+        number: pageNumber,
+        numberOfElements: data.length,
+        pageable: {
+            offset: pageNumber * size,
+            paged: true,
+            pageNumber,
+            pageSize: size,
+            sort: sortDto,
+            unpaged: false
+        },
+        size,
+        sort: sortDto,
+        totalElements,
+        totalPages
+    };
 }

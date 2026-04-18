@@ -1,30 +1,14 @@
 import { MenuItem, Select, SelectProps } from '@mui/material';
 import { CaretDownIcon } from '@phosphor-icons/react';
-import { useTranslation } from 'react-i18next';
 
 export type PaginationSelectProps = SelectProps<number> & {
-    // Available numerical options for the select dropdown
     options: number[];
 }
 
-/**
- * PaginationSelect
- *
- * A customized MUI Select component designed for pagination rows-per-page selection.
- *
- * @example
- * <PaginationSelect
- *  options={[10, 25, 50, 100]}
- *  value={10}
- *  onChange={handleChange}
- * />
- */
 export default function PaginationSelect({
     options,
     ...props
 }: PaginationSelectProps) {
-    const { t } = useTranslation(); // Translation hook
-
     return (
         <Select<number>
             IconComponent={CaretDownIcon}
@@ -65,9 +49,7 @@ export default function PaginationSelect({
                     }}
                     value={option}
                 >
-                    {t('items_per_page', {
-                        count: option
-                    })}
+                    {`${option} / page`}
                 </MenuItem>
             ))}
         </Select>

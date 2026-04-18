@@ -12,7 +12,7 @@ export interface CommonBadgeStateProps {
     variant: StateVariant;
 }
 
-export interface CommonBadgeStatusProps {
+export interface CommonBadgeStatusProps extends Omit<ChipProps, 'variant'> {
     // Text displayed inside the badge
     label: string;
 

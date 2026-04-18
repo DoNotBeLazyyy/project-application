@@ -8,7 +8,6 @@ interface AppState {
     activeRole: UserRole | null;
     userProfile: UserProfile | null;
     availableRoles: RoleItem[];
-    isLoading: boolean;
 }
 
 interface AppActions {
@@ -16,7 +15,6 @@ interface AppActions {
     setActiveRole: (role: UserRole) => void;
     setUserProfile: (profile: UserProfile | null) => void;
     setAvailableRoles: (roles: RoleItem[]) => void;
-    setIsLoading: (loading: boolean) => void;
     resolveActiveRole: () => void;
     clearSession: () => void;
 }
@@ -30,12 +28,10 @@ export const useAppStore = create<AppStore>()(
             activeRole: null,
             userProfile: null,
             availableRoles: [],
-            isLoading: false,
             setSession: (session) => set({ session }),
             setActiveRole: (role) => set({ activeRole: role }),
             setUserProfile: (profile) => set({ userProfile: profile }),
             setAvailableRoles: (roles) => set({ availableRoles: roles }),
-            setIsLoading: (loading) => set({ isLoading: loading }),
             resolveActiveRole: () => {
                 const { activeRole, availableRoles } = get();
                 if (availableRoles.length === 0) {

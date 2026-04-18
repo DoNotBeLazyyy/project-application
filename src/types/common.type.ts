@@ -2,7 +2,7 @@ import { TableCardContextType } from '@contexts/TableCardContext';
 import { SxProps } from '@mui/system';
 import { GridApi, Theme } from 'ag-grid-community';
 import {
-    ChangeEvent, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, RefObject, SetStateAction, SVGProps
+    ChangeEvent, ComponentPropsWithoutRef, Dispatch, HTMLAttributes, KeyboardEvent, MouseEvent, ReactElement, RefObject, SetStateAction, SVGProps
 } from 'react';
 
 // String props
@@ -10,6 +10,8 @@ export type StringNum = string | number;
 
 // Span props
 export type HTMLAttributesSpanElement = HTMLAttributes<HTMLSpanElement>;
+
+export type TimeoutRef = RefObject<number | null>;
 
 // Div props
 export type HTMLAttributesDivElement = HTMLAttributes<HTMLDivElement>;
@@ -48,10 +50,12 @@ export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 
 // SVG props
 export type IconSvgProps = SVGProps<SVGSVGElement>;
+export type MouseEventSvgElement = MouseEvent<SVGSVGElement>;
 
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;
 export type ChangeEventInputTextarea = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+export type HtmlInputElementNull = HTMLInputElement | null;
 
 // Icon SVG type with optional color prop
 export type IconSvg = IconSvgProps & { color?: string };
@@ -62,3 +66,5 @@ export type ReactUndefined = ReactElement | undefined;
 export type InputChangeEvent = ChangeEvent<HTMLInputElement>;
 
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export type ComponentPropsForm = ComponentPropsWithoutRef<'form'>;

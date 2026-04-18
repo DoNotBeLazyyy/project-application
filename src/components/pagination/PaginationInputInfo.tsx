@@ -29,7 +29,7 @@ export interface PaginationInputInfoProps {
  * />
  */
 export default function PaginationInputInfo({
-    hasTotalPage,
+    hasTotalPage = true,
     inputProps,
     totalPages
 }: PaginationInputInfoProps) {

@@ -5,7 +5,9 @@ import { ReactNode } from 'react';
 export type SideBarVariant = 'dark' | 'light';
 
 // Props for the sidebar footer
-export type SideBarFooterProps = CommonButtonProps;
+export type SideBarFooterProps = CommonButtonProps & {
+    label?: string;
+};
 
 // Type for items in a sidebar section.
 export type SideBarSectionItems = (SideBarItem | SideBarGroup)[];

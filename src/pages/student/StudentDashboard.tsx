@@ -1,0 +1,145 @@
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import CommonButton from '@components/button/CommonButton';
+import CommonCard from '@components/card/CommonCard';
+import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import { getStudentDashboard } from '@services/student-portal.service';
+import { AssessmentType } from '@type/assessment.type';
+import { StudentDashboardProps, UpcomingAssessment } from '@type/student-portal.type';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'warning' | 'info'> = {
+    Quiz: 'info',
+    Exam: 'error',
+    Activity: 'success',
+    Assignment: 'warning',
+    Project: 'info',
+    'Lab Report': 'warning'
+};
+
+export default function StudentDashboard() {
+    const navigate = useNavigate();
+    const [dashboard, setDashboard] = useState<StudentDashboardProps | null>(null);
+
+    useEffect(function() {
+        async function fetchDashboard() {
+            const result = await getStudentDashboard();
+            if (result.data) setDashboard(result.data);
+        }
+
+        fetchDashboard();
+    }, []);
+
+    return (
+        <div className="flex flex-col gap-4 h-full">
+            <div className="flex gap-4">
+                <CommonCard className="flex-1 p-4">
+                    <div className="flex gap-3 items-center">
+                        <div className="bg-(--mui-palette-primary-light) flex h-10 items-center justify-center rounded-lg w-10">
+                            <BookOpenIcon
+                                className="text-(--mui-palette-primary-main)"
+                                size={20}
+                                weight="bold"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
+                                {dashboard?.enrolled_count ?? '—'}
+                            </span>
+                            <span className="text-(--mui-palette-text-secondary) text-sm">
+                                Enrolled Subjects
+                            </span>
+                        </div>
+                    </div>
+                </CommonCard>
+                <CommonCard className="flex-1 p-4">
+                    <div className="flex gap-3 items-center">
+                        <div className="bg-(--mui-palette-warning-light) flex h-10 items-center justify-center rounded-lg w-10">
+                            <CalendarCheckIcon
+                                className="text-(--mui-palette-warning-main)"
+                                size={20}
+                                weight="bold"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
+                                {dashboard?.upcoming_assessments?.length ?? '—'}
+                            </span>
+                            <span className="text-(--mui-palette-text-secondary) text-sm">
+                                Upcoming Assessments
+                            </span>
+                        </div>
+                    </div>
+                </CommonCard>
+                <CommonCard className="flex-1 p-4">
+                    <div className="flex gap-3 items-center">
+                        <div className="bg-(--mui-palette-info-light) flex h-10 items-center justify-center rounded-lg w-10">
+                            <GraduationCapIcon
+                                className="text-(--mui-palette-info-main)"
+                                size={20}
+                                weight="bold"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
+                                {dashboard?.pending_grades_count ?? '—'}
+                            </span>
+                            <span className="text-(--mui-palette-text-secondary) text-sm">
+                                Grades to View
+                            </span>
+                        </div>
+                    </div>
+                </CommonCard>
+            </div>
+            <CommonCard
+                cardHeaderProps={{
+                    subheader: 'Assessments that are open and not yet submitted.',
+                    title: 'Upcoming Assessments'
+                }}
+                className="flex flex-1 flex-col"
+            >
+                <div className="flex flex-col gap-2 p-4">
+                    {!dashboard?.upcoming_assessments?.length && (
+                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                            No upcoming assessments.
+                        </p>
+                    )}
+                    {dashboard?.upcoming_assessments?.map((assessment: UpcomingAssessment) => (
+                        <div
+                            className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg"
+                            key={assessment.id}
+                        >
+                            <div className="flex flex-col gap-1 min-w-0">
+                                <div className="flex gap-2 items-center">
+                                    <CommonBadgeStatus
+                                        label={assessment.assessment_type}
+                                        variant={ASSESSMENT_TYPE_VARIANT[assessment.assessment_type]}
+                                    />
+                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                        {assessment.title}
+                                    </span>
+                                </div>
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                    {assessment.course_code} · {assessment.section_code}
+                                    {assessment.due_at && (
+                                        ` · Due ${new Date(assessment.due_at)
+                                            .toLocaleString()}`
+                                    )}
+                                </span>
+                            </div>
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={function() {
+                                    navigate(`/student/subjects/${assessment.enrollment_id}/assessments/${assessment.id}`);
+                                }}
+                            >
+                                Take
+                            </CommonButton>
+                        </div>
+                    ))}
+                </div>
+            </CommonCard>
+        </div>
+    );
+}

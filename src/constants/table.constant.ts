@@ -4,6 +4,6 @@ import { PaginationData } from '@type/table.type';
 export const DEFAULT_PAGINATION: PaginationData = {
     currentPage: 1,
     rowsPerPage: 10,
-    totalElements: 10000,
-    totalPages: 10000
+    totalElements: 0,
+    totalPages: 0
 };

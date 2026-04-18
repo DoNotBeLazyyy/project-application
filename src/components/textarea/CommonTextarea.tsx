@@ -5,7 +5,7 @@ import { ChangeEventInputTextarea, ThemeSx } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 import {
-  CSSProperties, forwardRef, useEffect, useMemo, useRef, useState
+    CSSProperties, forwardRef, useEffect, useMemo, useRef, useState
 } from 'react';
 
 type ResizeMode = 'none' | 'horizontal' | 'vertical' | 'both';

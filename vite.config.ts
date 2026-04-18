@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
             host: true,
             port: 3000,
             proxy: {
-                '/hris-api': {
+                '/lms-api': {
                     changeOrigin: true,
                     target: process.env.VITE_APP_API_PROXY_URL,
                     secure: false,

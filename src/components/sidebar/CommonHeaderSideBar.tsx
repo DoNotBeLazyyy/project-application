@@ -36,7 +36,6 @@ export interface CommonHeaderSideBarProps extends HTMLAttributesDivElement {
  * @example
  * <CommonHeaderSideBar
  *   logo={<img src={logo} alt="logo" />}
- *   title="EGEMCO HRIS"
  *   subtitle="Super User Access"
  *   variant="dark"
  *   hasArrow
@@ -77,7 +76,7 @@ export default function CommonHeaderSideBar({
             {...props}
         >
             {logo}
-            <div className="min-w-0 flex-1">
+            <div className="flex-1 min-w-0">
                 <CommonHeaderTitle
                     colorClassName={titleColor}
                     text={title}

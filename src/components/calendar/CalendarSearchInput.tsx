@@ -1,45 +1,23 @@
 import { IconButton, Input, InputAdornment } from '@mui/material';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { ChangeEventInputElement } from '@type/common.type';
-import { useTranslation } from 'react-i18next';
 
 interface CalendarSearchInputProps {
-    // Current value of the search input
     value: string;
-
-    // Handler triggered when the user types in the input field
     onChange: (event: ChangeEventInputElement) => void;
-
-    // Function triggered when the user clicks the search icon or submits the input
     onSearch: VoidFunction;
 }
 
-/**
- * CalendarSearchInput
- *
- * A reusable search input component for the calendar that allows users
- * to input a date (e.g., "YYYY-MM" or "Month YYYY") and trigger a search
- * via a clickable icon button.
- *
- * @example
- * <CalendarSearchInput
- *   value={searchValue}
- *   onChange={handleInputChange}
- *   onSearch={handleSearch}
- * />
- */
 export default function CalendarSearchInput({
     value,
     onChange,
     onSearch
 }: CalendarSearchInputProps) {
-    const { t } = useTranslation(); // Translation hook
-
     return (
         <Input
             disableUnderline
             fullWidth
-            placeholder={t('calendar_year_month')}
+            placeholder="YYYY-MM"
             startAdornment={(
                 <InputAdornment position="start">
                     <IconButton

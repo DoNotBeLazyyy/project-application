@@ -5,9 +5,6 @@ import { classMerge } from '@utils/css.util';
 import { ReactNode, forwardRef } from 'react';
 
 export interface CommonButtonProps extends ButtonProps {
-    // Button label
-    label?: string;
-
     // Loading icon
     loadingIcon?: ReactNode;
 }
@@ -69,7 +66,8 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
         endIcon={resolvedEndIcon}
         ref={ref}
         startIcon={resolvedStartIcon}
-        {...props} />;
+        {...props}
+    />;
 });
 CommonButton.displayName = 'CommonButton';
 
