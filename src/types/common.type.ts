@@ -60,3 +60,5 @@ export type IconSvg = IconSvgProps & { color?: string };
 export type ReactUndefined = ReactElement | undefined;
 // event type for input change events.
 export type InputChangeEvent = ChangeEvent<HTMLInputElement>;
+
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

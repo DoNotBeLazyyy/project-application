@@ -1,7 +1,6 @@
 
 import { CommonInputProps } from '@components/input/CommonInput';
 import PaginationInput from '@components/pagination/PaginationInput';
-import { Trans } from 'react-i18next';
 
 export interface PaginationInputInfoProps {
     // Determines whether it has total page or not
@@ -36,16 +35,12 @@ export default function PaginationInputInfo({
 }: PaginationInputInfoProps) {
     return (
         <div className="flex gap-(--mui-tokens-spacing-3) items-center text-(--mui-tokens-color-neutral-900) tw_body_small w-auto">
-            {hasTotalPage
-                ? <Trans
-                    components={{
-                        input: <PaginationInput {...inputProps} />
-                    }}
-                    i18nKey="page_of_total"
-                    values={{ totalPages }}
-                />
-                : <PaginationInput {...inputProps} />
-            }
+            <PaginationInput {...inputProps} />
+            {hasTotalPage && (
+                <span>
+                    of {totalPages}
+                </span>
+            )}
         </div>
     );
 }

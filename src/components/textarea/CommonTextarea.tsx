@@ -1,16 +1,16 @@
 import { CommonInputProps } from '@components/input/CommonInput';
 import { TextField } from '@mui/material';
 import { NotchesIcon } from '@phosphor-icons/react';
-import { ThemeSx } from '@type/common.type';
+import { ChangeEventInputTextarea, ThemeSx } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 import {
-    CSSProperties, forwardRef, useEffect, useMemo, useRef, useState
+  CSSProperties, forwardRef, useEffect, useMemo, useRef, useState
 } from 'react';
 
 type ResizeMode = 'none' | 'horizontal' | 'vertical' | 'both';
 
-type CommonTextareaProps = CommonInputProps & {
+export type CommonTextareaProps = CommonInputProps & {
     // Whether there's a text counter or not
     hasTextCount?: boolean;
 
@@ -19,6 +19,9 @@ type CommonTextareaProps = CommonInputProps & {
 
     // Resize behavior
     resize?: ResizeMode;
+
+    // Callback triggered when the text area value changed
+    onChangeText?: (value: string) => void;
 };
 
 interface ResizeMetadata {
@@ -216,7 +219,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
      * @param event - React change event from the textarea.
      * @returns
      */
-    function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    function handleChange(event: ChangeEventInputTextarea) {
         setCharCount(event.target.value.length);
         onChange?.(event);
     }

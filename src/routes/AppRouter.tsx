@@ -1,6 +1,7 @@
+import LoginPage from '@pages/auth/LoginPage';
+import UnauthorizedPage from '@pages/auth/UnauthorizedPage';
 import BasePage from '@pages/BasePage';
-import { componentSampleRoutes } from '@routes/component-sample/component-sample.route';
-import { systemRoutes } from '@routes/system/system.route';
+import AuthGuard from '@routes/guards/AuthGuard';
 import { createBrowserRouter } from 'react-router-dom';
 
 const appRouter = createBrowserRouter([
@@ -8,10 +9,13 @@ const appRouter = createBrowserRouter([
         element: <BasePage />,
         path: '/',
         children: [
-            ...componentSampleRoutes,
-            ...systemRoutes
+            { element: <LoginPage />, path: 'login' },
+            { element: <UnauthorizedPage />, path: 'unauthorized' },
+            {
+                element: <AuthGuard />
+            }
         ]
     }
-] as const);
+]);
 
 export default appRouter;
