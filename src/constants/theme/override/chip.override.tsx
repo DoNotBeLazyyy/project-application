@@ -1,6 +1,6 @@
 import { ComponentTheme } from '@type/common/theme.type';
 
-export const ChipOverrides: ComponentTheme = {
+export const chipOverrides: ComponentTheme = {
     MuiChip: {
         styleOverrides: {
             root: {

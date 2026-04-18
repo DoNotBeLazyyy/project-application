@@ -37,6 +37,21 @@ export const inputOverrides: ComponentTheme = {
                     maxHeight: '2.25rem',
                     padding: 'var(--mui-tokens-spacing-3)',
                     ...theme.typography.bodySmall,
+                    '&.MuiSelect-root': { padding: 0 },
+                    '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-3)' },
+                    '&.MuiInputBase-multiline': {
+                        alignItems: 'flex-start',
+                        height: 'auto',
+                        minHeight: '8.375rem',
+                        minWidth: '17rem',
+                        width: 'auto'
+                    },
+                    '&.common_textarea_input.MuiInputBase-multiline': {
+                        minHeight: '8.375rem',
+                        minWidth: '17rem',
+                        width: '100%',
+                        padding: 'var(--mui-tokens-spacing-3) var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-8) var(--mui-tokens-spacing-3)'
+                    },
                     [`
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
@@ -66,6 +81,21 @@ export const inputOverrides: ComponentTheme = {
                     maxHeight: '3rem',
                     padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)',
                     ...theme.typography.bodyNormal,
+                    '&.MuiSelect-root': { padding: 0 },
+                    '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)' },
+                    '&.MuiInputBase-multiline': {
+                        alignItems: 'flex-start',
+                        height: 'auto',
+                        minHeight: '10.625rem',
+                        minWidth: '16.5rem',
+                        width: 'auto'
+                    },
+                    '&.common_textarea_input.MuiInputBase-multiline': {
+                        minHeight: '10.625rem',
+                        minWidth: '16.5rem',
+                        width: '100%',
+                        padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-8) var(--mui-tokens-spacing-5)'
+                    },
                     [`
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
@@ -104,7 +134,7 @@ export const inputOverrides: ComponentTheme = {
                 '& .MuiInputAdornment-positionStart svg, & .MuiInputAdornment-positionEnd svg': {
                     color: 'var(--mui-tokens-color-neutral-700)'
                 },
-                '&.CommonTextarea-input.MuiInputBase-multiline': {
+                '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
                 '& .MuiInputAdornment-root.MuiInputAdornment-positionStart:not(.MuiInputAdornment-hiddenLabel)': {
@@ -151,4 +181,4 @@ export const inputOverrides: ComponentTheme = {
             }
         }
     }
-};
+}; // TextField component overrides

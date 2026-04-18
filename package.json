@@ -58,6 +58,7 @@
     "globals": "^17.4.0",
     "luxon": "^3.7.2",
     "postcss": "^8.5.8",
+    "supabase": "^2.92.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",

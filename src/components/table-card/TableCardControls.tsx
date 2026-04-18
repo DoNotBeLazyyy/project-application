@@ -4,13 +4,9 @@ import { useTableCardContext } from '@contexts/TableCardContext';
 import { InputAdornment } from '@mui/material';
 import CardActions, { CardActionsProps } from '@mui/material/CardActions';
 import {
-    FunnelIcon,
-    FunnelSimpleIcon,
-    IconProps,
-    MagnifyingGlassIcon,
-    PlusIcon
+  FunnelIcon, FunnelSimpleIcon, IconProps, MagnifyingGlassIcon, PlusIcon
 } from '@phosphor-icons/react';
-import { ChangeEventInputTextarea, KeyboardEventDiv } from '@type/common.type';
+import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -76,7 +72,7 @@ export default function TableCardControls({
      *
      * @param event - Keyboard event from the input container.
      */
-    function handleSearchSubmit(event: KeyboardEventDiv) {
+    function handleSearchSubmit(event: KeyboardEventDivElement) {
         if (event.key === 'Enter' && context) {
             const contextGridRefCurrent = context.gridRef.current; // Local reference for grid API
 
