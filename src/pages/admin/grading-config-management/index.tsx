@@ -22,7 +22,7 @@ const TABS = [
 
 export default function GradingConfiguration() {
     const [activeTab, setActiveTab] = useState<GradingTab>('general');
-    const [isLoading, setIsLoading] = useState(true);
+    const [tabLoading, setTabLoading] = useState(true);
     const [initialTransmutationRows, setInitialTransmutationRows] = useState<TransmutationRow[]>([]);
     const [periodTemplates, setPeriodTemplates] = useState<GradingPeriodTemplate[]>([]);
     const [specialGrades, setSpecialGrades] = useState<SpecialGradeConfig[]>([]);
@@ -34,24 +34,23 @@ export default function GradingConfiguration() {
     });
 
     useEffect(function() {
-        async function loadAll() {
-            const [configResult, transmutationResult, periodsResult, specialResult] = await Promise.all([
-                getGradingConfig(),
-                getTransmutationTable(),
-                getGradingPeriodTemplates(),
-                getSpecialGradeConfigs()
-            ]);
+        let isActive = true;
 
-            if (configResult.data) {
+        async function loadGeneral() {
+            const result = await getGradingConfig();
+            if (isActive && result.data) {
                 configMethods.reset({
-                    passing_grade: String(configResult.data.passing_grade),
-                    max_absence_percentage: String(configResult.data.max_absence_percentage)
+                    passing_grade: String(result.data.passing_grade),
+                    max_absence_percentage: String(result.data.max_absence_percentage)
                 });
             }
+        }
 
-            if (transmutationResult.data) {
+        async function loadTransmutation() {
+            const result = await getTransmutationTable();
+            if (isActive) {
                 setInitialTransmutationRows(
-                    transmutationResult.data.map((row) => ({
+                    (result.data ?? []).map((row) => ({
                         ...row,
                         min_percentage: String(row.min_percentage),
                         max_percentage: String(row.max_percentage),
@@ -60,9 +59,12 @@ export default function GradingConfiguration() {
                     }))
                 );
             }
+        }
 
-            if (periodsResult.data) {
-                setPeriodTemplates(periodsResult.data.map((period) => ({
+        async function loadPeriods() {
+            const result = await getGradingPeriodTemplates();
+            if (isActive) {
+                setPeriodTemplates((result.data ?? []).map((period) => ({
                     ...period,
                     weight: String(period.weight),
                     components: period.components.map((comp) => ({
@@ -71,20 +73,46 @@ export default function GradingConfiguration() {
                     }))
                 })));
             }
+        }
 
-            if (specialResult.data) {
-                setSpecialGrades(specialResult.data.map((sg) => ({
+        async function loadSpecial() {
+            const result = await getSpecialGradeConfigs();
+            if (isActive) {
+                setSpecialGrades((result.data ?? []).map((sg) => ({
                     ...sg,
                     min_absence_percentage: String(sg.min_absence_percentage ?? ''),
                     completion_deadline_days: String(sg.completion_deadline_days ?? '')
                 })));
             }
-
-            setIsLoading(false);
         }
 
-        loadAll();
-    }, []);
+        async function loadActiveTab() {
+            setTabLoading(true);
+
+            if (activeTab === 'general') {
+                await loadGeneral();
+            }
+            else if (activeTab === 'transmutation') {
+                await loadTransmutation();
+            }
+            else if (activeTab === 'periods') {
+                await loadPeriods();
+            }
+            else if (activeTab === 'special') {
+                await loadSpecial();
+            }
+
+            if (isActive) {
+                setTabLoading(false);
+            }
+        }
+
+        loadActiveTab();
+
+        return function() {
+            isActive = false;
+        };
+    }, [activeTab]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as GradingTab);
@@ -164,16 +192,6 @@ export default function GradingConfiguration() {
                 : grade));
     }
 
-    if (isLoading) {
-        return (
-            <div className="flex h-full items-center justify-center">
-                <span className="text-(--mui-palette-text-secondary) text-sm">
-                    Loading grading configuration...
-                </span>
-            </div>
-        );
-    }
-
     return (
         <CommonCard
             cardHeaderProps={{
@@ -189,20 +207,27 @@ export default function GradingConfiguration() {
                 onChange={handleTabChange}
             />
             <div className="flex-1 min-h-0 overflow-y-auto">
-                {activeTab === 'general' && (
+                {tabLoading && (
+                    <div className="flex h-full items-center justify-center">
+                        <span className="text-(--mui-palette-text-secondary) text-sm">
+                            Loading...
+                        </span>
+                    </div>
+                )}
+                {!tabLoading && activeTab === 'general' && (
                     <GeneralTab
                         methods={configMethods}
                         onSubmit={handleSaveConfig}
                     />
                 )}
-                {activeTab === 'transmutation' && (
+                {!tabLoading && activeTab === 'transmutation' && (
                     <TransmutationTab
                         initialRows={initialTransmutationRows}
                         isSaving={isSavingTransmutation}
                         onSave={handleSaveTransmutation}
                     />
                 )}
-                {activeTab === 'periods' && (
+                {!tabLoading && activeTab === 'periods' && (
                     <PeriodsTab
                         periods={periodTemplates}
                         onAddPeriod={handleAddPeriod}
@@ -210,7 +235,7 @@ export default function GradingConfiguration() {
                         onUpdatePeriod={handleUpdatePeriod}
                     />
                 )}
-                {activeTab === 'special' && (
+                {!tabLoading && activeTab === 'special' && (
                     <SpecialGradesTab
                         grades={specialGrades}
                         isSaving={isSavingSpecial}

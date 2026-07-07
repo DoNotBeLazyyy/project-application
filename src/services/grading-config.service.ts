@@ -26,9 +26,8 @@ export async function saveTransmutationTable(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_save_transmutation_table', {
         p_rows: rows.map((row) => ({
-            min_percentage: Number(row.min_percentage),
-            max_percentage: Number(row.max_percentage),
             transmuted_grade: Number(row.transmuted_grade),
+            min_percentage: Number(row.min_percentage),
             description: row.description
         }))
     });

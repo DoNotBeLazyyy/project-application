@@ -1,8 +1,7 @@
 import PeriodForm, { PeriodFormProps } from '@pages/admin/grading-config-management/PeriodForm';
 import PeriodTableForm, { PeriodTableFormProps } from '@pages/admin/grading-config-management/PeriodTableForm';
-import { useToastStore } from '@stores/toast.store';
 import { GradingComponentTemplate } from '@type/grading-config.type';
-import { checkForMessage, formErrors } from '@utils/form.util';
+import { formErrors } from '@utils/form.util';
 import { FieldValues, useFieldArray, UseFormReturn } from 'react-hook-form';
 
 export interface PeriodFormValues extends FieldValues {
@@ -45,13 +44,6 @@ export default function PeriodModalForm({
         .reduce((sum, c) => sum + Number(c.weight || 0), 0);
 
     function handleError(errors: FieldValues) {
-        const error = checkForMessage(errors);
-
-        if (error.firstError?.message) {
-            useToastStore.getState()
-                .showToast(error.firstError.message, 'error');
-        }
-
         formErrors(errors, methods);
     }
 

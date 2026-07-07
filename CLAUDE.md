@@ -1,4 +1,42 @@
-# CLAUDE.md — Arellano University LMS: AI Rulebook
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+> **Arellano University LMS: AI Rulebook.** Sections 0–11 are binding. Section 0 covers commands, environment, and runtime wiring; sections 1–11 are the coding standards you must follow exactly.
+
+## 0. Commands, Environment & Runtime Wiring
+
+### Commands
+| Task | Command |
+|---|---|
+| Run dev server | `npm run dev` (or `npm run start-dev` for `.env.dev`, `npm run start-prd` for `.env.prd`) |
+| Typecheck + build (dev) | `npm run build-dev` |
+| Typecheck + build (prod) | `npm run build-prd` |
+| Lint | `npm run lint` |
+| Lint + autofix | `npm run lint:fix` |
+| Preview built bundle | `npm run preview` |
+
+- **`npm run build` runs `tsc -b` first** — the build is the typecheck. There is no separate `typecheck` script; run `npm run build-dev` to verify types.
+- **There is no test runner configured.** No Jest/Vitest, no `*.test.ts` files. Do not invent test commands or assume tests exist — verify changes via the dev server and `build-dev`.
+- ESLint flat config lives in `eslint.config.js`; Prettier config in `.prettierrc.json`. The strict style rules in sections 3 & 6 are enforced by these — run `lint:fix` before considering work done.
+
+### Environment
+- Vite loads env by `--mode`: `.env.dev` and `.env.prd` are the two mode files (no plain `.env`). Required vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. A service-role key is used by `@services/supabase.admin.ts` for admin-only auth operations (user provisioning).
+- Two Supabase clients exist: `supabase.client.ts` (anon, for normal calls) and `supabase.admin.ts` (service role, for `auth.admin.*`). Never use the admin client for regular data reads.
+
+### Service Layer Contract (read before writing any service)
+Every service call returns `ServiceResult<T>` = `{ data: T | null; error: ServiceErrorProps | null }` — never throw, never return raw Supabase responses, never use Axios DTOs. Route everything through the three wrappers in `@services/supabase.wrapper.ts`:
+- `callRpc<T>(fn, params)` — for `supabase.rpc()`. Auto-shows toasts: it inspects the JSONB payload for `{ success: false, message }` (error toast) or `{ success: true, message }` (success toast). Design RPCs to return that shape when a user-facing message is wanted.
+- `callQuery<T>(client => ...)` — returns `T[]` from a `.from().select()` chain.
+- `callSingle<T>(client => ...)` — returns a single `T` (use with `.single()`).
+
+All three manage the global `isLoading` via `useLoadingStore` and redirect to `/login` on 401/403. **Never call `setLoading`/`show`/`hide` yourself, and never build a `supabase.from()` chain outside a `@services` file.**
+
+### Routing & Auth Flow
+- `App.tsx` calls `initAuthSession()` once on mount to rehydrate `userProfile`/`availableRoles` from the persisted session (`@services/auth.service.ts`).
+- Route tree (`@routes/AppRouter.tsx`): `BasePage` → public `login`/`set-password` → `AuthGuard` → `ProtectedLayout` → per-role subtrees each wrapped in `<RoleGate allowedRoles={[...]} />`. Role route files live in `src/routes/{admin,dean,registrar,faculty,student}/`.
+- `AuthGuard` traps `userProfile.status === 'Invited'` on `/set-password` (the onboarding gate from §11). `RoleRedirect` sends the index route to the active role's home; `RoleGate` blocks and redirects to `/unauthorized`.
+- Role subtrees map 1:1 to the RBAC boundaries in §10 — put a new page under the route folder for the single role that owns that capability.
 
 ## 1. Project Paradigm: Thick Database, Thin Client
 
@@ -152,6 +190,30 @@ All form fields must use `Controller`. Never use `register` with custom componen
 
 All SQL generated or modified must comply with these rules without exception.
 
+### Live Schema Reference — READ THIS FIRST
+
+**`supabase_ai_context.sql`** (repo root) is a full `pg_dump` of the live database (PostgreSQL 17.6) and is the **source of truth for the schema**. Before writing any migration, RPC, service call, or type, grep this file for the real table columns, enum values, and existing function signatures instead of guessing or inventing names.
+
+- It is a **generated dump, not a migration** — never hand-edit it and never run it as a migration. Regenerate it via `pg_dump` when the DB changes. Real schema changes go through Supabase migrations.
+- The frontend already binds to ~153 of these RPCs by name; adding a new RPC in a service means the corresponding `fn_*` must exist in the database.
+
+**Public schema surface (~55 tables, ~200 `fn_*` RPCs, 20 enums).** Tables grouped by owning role (§10):
+- **Admin/system:** `users`, `user_roles`, `roles`, `school_years`, `terms`, `term_types`, `system_settings`, `notifications`
+- **Dean/academic architecture:** `departments`, `programs`, `program_levels`, `courses`, `course_types`, `course_prerequisites`, `curriculum_maps`, `sections`, `section_schedules`
+- **Registrar/records:** `enrollments`, `students`, `student_clearances`, `clearance_requirements`, `section_final_grades`, `grade_audit_logs`
+- **Faculty/instruction:** `assessments` domain (`assessment_items`, `assessment_questions`, `assessment_question_choices`, `assessment_submissions`, `assessment_attachments`, `assessment_timer_sessions`, `assessment_timer_heartbeats`, `student_answers`), `attendance_sessions`, `attendance_records`, `grading_config`, `grading_components`, `grading_component_templates`, `grading_periods`, `grading_period_templates`, `grade_transmutation_tables`, `special_grade_configs`, `rubrics`, `rubric_criteria`, `rubric_evaluations`, `modules`, `course_materials`, `announcements`
+- **Evaluation:** `evaluation_templates`, `evaluation_questions`, `evaluation_responses`, `evaluation_period_locks`
+- **Student-facing prefs:** `student_section_colors`
+
+**RPC naming conventions (match these — do not invent new shapes):**
+- `fn_get_<entity>_by_id` / `fn_get_<entity>` — single-record or scalar reads
+- `fn_list_<entity>_json` — paginated list, returns the `CommonListResDto`-shaped JSONB via `fn_build_pageable_dto` (§11). Accepts `p_sort_col` / `p_sort_dir` for dynamic sorting
+- `fn_create_<entity>` / `fn_update_<entity>` / `fn_delete_<entity>` — single-record writes (soft delete)
+- `fn_bulk_create_<entity>` / `fn_bulk_delete_<entity>` / `fn_bulk_provision_users` — array-payload transactional writes (§11)
+- `fn_set_updated_audit()` — the shared audit trigger function attached to every table
+
+**Enums (`CREATE TYPE public.*_type AS ENUM`):** `announcement_audience_type`, `assessment_type`, `attendance_status_type`, `audit_action_type`, `civil_status_type`, `clearance_status_type`, `day_of_week_type`, `enrollment_status_type`, `evaluation_question_type`, `faculty_status_type`, `gender_type`, `grade_status_type`, `material_type`, `prerequisite_type`, `question_type`, `section_status_type`, `student_status_type`, `submission_status_type`, `submission_timer_status`, `term_status_type`. Grep the dump for the exact allowed values before using one in a type or form.
+
 ### Primary Keys
 Every table uses UUID: `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`.
 
@@ -302,3 +364,17 @@ All major management screens must follow the "Thick DB" CRUD pattern, centralizi
 * **Property Injection over Callbacks:** `CommonTableCard` must accept a `controls: Partial<TableCardControlsProps>` prop containing `tableInputProps` and `tableButtonsProps` (which use `CommonButtonProps`). It MUST NOT use loose `onClick` props.
 * **Parent Pages:** Parent pages (like `UsersPage`) MUST NOT manage modal states or render loose Action Modals. They must pass the form contents via props like `createModalContent` directly into `CommonTableCard`.
 * **Service Responses:** Never use Axios DTOs (`Promise<AxiosResponse>`). Use the internal `ServiceResult<T>` pattern.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Uses the five canonical triage roles with default strings (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.

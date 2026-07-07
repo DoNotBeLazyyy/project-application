@@ -70,11 +70,13 @@ export type FormFieldConfig<T extends FieldValues> =
 interface FormFieldProps<T extends FieldValues> {
     control: Control<T>;
     field: FormFieldConfig<T>;
+    hasHelper?: boolean;
 }
 
 export function FormField<T extends FieldValues>({
     control,
-    field
+    field,
+    hasHelper
 }: FormFieldProps<T>) {
     if (field.type === 'select') {
         return (
@@ -135,6 +137,7 @@ export function FormField<T extends FieldValues>({
                 control={control}
                 disabled={field.disabled}
                 fullWidth
+                hasHelper={hasHelper}
                 name={field.name}
                 placeholder={field.placeholder}
                 rules={field.rules}
@@ -162,6 +165,7 @@ export function FormField<T extends FieldValues>({
             control={control}
             disabled={field.disabled}
             fullWidth
+            hasHelper={hasHelper}
             name={field.name}
             placeholder={field.placeholder}
             rules={field.rules}

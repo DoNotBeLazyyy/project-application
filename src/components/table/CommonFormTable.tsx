@@ -1,10 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
-import CommonTable from '@components/table/CommonTable';
 import { MinusCircleIcon, PlusIcon } from '@phosphor-icons/react';
 import { CommonTableProps } from '@type/table.type';
+import { classMerge } from '@utils/css.util';
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { ReactNode, useMemo } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 import { Control, FieldValues } from 'react-hook-form';
 
 export interface CommonFormTableCellParams<TForm extends FieldValues> extends ICellRendererParams {
@@ -28,9 +28,10 @@ export interface CommonFormTableProps<TRow, TForm extends FieldValues> {
     title?: string;
     emptyDataMessage?: string;
     disabled?: boolean;
+    hideRowActions?: boolean;
     tableProps?: CommonTableProps;
     onAddRow?: () => void;
-    onRemoveRow: (index: number) => void;
+    onRemoveRow?: (index: number) => void;
 }
 
 export default function CommonFormTable<TRow, TForm extends FieldValues>({
@@ -39,106 +40,123 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     disabled,
     emptyDataMessage,
     fieldArrayName,
+    hideRowActions,
     rows,
     title,
     tableProps,
     onAddRow,
     onRemoveRow
 }: CommonFormTableProps<TRow, TForm>) {
-    const columnDefs = useMemo<ColDef[]>(function() {
-        const dataCols: ColDef[] = columns.map((col) => {
-            const { key, fieldConfig, renderCell, ...colDefProps } = col;
+    const showActions = !disabled && !hideRowActions;
 
-            return {
-                ...colDefProps,
-                colId: String(key),
-                suppressMovable: true,
-                cellRendererParams: (params: ICellRendererParams) => ({
-                    control,
-                    disabled,
-                    fieldName: `${fieldArrayName}.${params.data._index}.${String(key)}`,
-                    rowIndex: params.data._index,
-                    ...params
-                }),
-                cellRenderer: (params: CommonFormTableCellParams<TForm>) => (
-                    <div className="flex h-full items-center w-full">
-                        {fieldConfig
-                            ? (
-                                <FormField
-                                    control={params.control as unknown as Control<FieldValues>}
-                                    field={{
-                                        ...fieldConfig,
-                                        name: params.fieldName,
-                                        disabled: params.disabled ?? fieldConfig.disabled
-                                    } as FormFieldConfig<FieldValues>}
-                                />
-                            )
-                            : renderCell
-                                ? renderCell(params)
-                                : null
-                        }
-                    </div>
-                )
-            };
-        });
-
-        if (!disabled) {
-            dataCols.push({
-                colId: 'remove',
-                headerName: '',
-                maxWidth: 48,
-                minWidth: 48,
-                suppressMovable: true,
-                headerComponent: () => (
-                    <div className="flex h-full items-center justify-center w-full">
-                        <CommonButton
-                            size="small"
-                            startIcon={<PlusIcon
-                                className="text-(--mui-palette-primary-main)"
-                                size={18}
-                                weight="bold"
-                            />}
-                            variant="text"
-                            onClick={onAddRow}
-                        />
-                    </div>
-                ),
-                cellRenderer: (params: ICellRendererParams) => (
-                    <div className="flex h-full items-center justify-center w-full">
-                        <MinusCircleIcon
-                            className="cursor-pointer text-(--mui-palette-error-main)"
-                            size={18}
-                            weight="bold"
-                            onClick={function() {
-                                onRemoveRow(params.data._index);
-                            }}
-                        />
-                    </div>
-                )
-            });
-        }
-
-        return dataCols;
-    }, [columns, control, disabled, fieldArrayName, onRemoveRow]);
-
-    const rowDataWithIndex = useMemo(function() {
-        return rows.map((row, index) => ({ ...row, _index: index }));
-    }, [rows]);
+    function columnStyle(flex?: number): CSSProperties {
+        return {
+            flex: flex ?? 1,
+            minWidth: 0
+        };
+    }
 
     return (
         <div className="flex flex-col gap-2 h-full w-full">
-            <div className="flex items-center justify-between">
+            {title && (
                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                     {title}
                 </span>
+            )}
+            <div className={classMerge('flex flex-col flex-1 min-h-0 overflow-auto', tableProps?.containerClassName)}>
+                <div className="border-b border-(--mui-palette-divider) flex gap-2 items-center pb-2 sticky top-0 z-10 bg-(--mui-palette-background-paper)">
+                    {columns.map((column) => (
+                        <div
+                            className="font-medium text-(--mui-palette-text-secondary) text-xs uppercase"
+                            key={String(column.key)}
+                            style={columnStyle(column.flex)}
+                        >
+                            {column.headerName}
+                        </div>
+                    ))}
+                    {showActions && (
+                        <div className="flex items-center justify-center shrink-0 w-12">
+                            <CommonButton
+                                size="small"
+                                startIcon={
+                                    <PlusIcon
+                                        className="text-(--mui-palette-primary-main)"
+                                        size={18}
+                                        weight="bold"
+                                    />
+                                }
+                                variant="text"
+                                onClick={onAddRow}
+                            />
+                        </div>
+                    )}
+                </div>
+                {rows.length === 0
+                    ? (
+                        <div className="flex items-center justify-center py-6 text-(--mui-palette-text-secondary) text-sm">
+                            {emptyDataMessage}
+                        </div>
+                    )
+                    : rows.map((row, index) => (
+                        <div
+                            className="flex gap-2 py-1.5"
+                            key={row.id}
+                        >
+                            {columns.map((column) => {
+                                const fieldName = `${fieldArrayName}.${index}.${String(column.key)}`;
+                                const params = {
+                                    control,
+                                    data: row,
+                                    disabled,
+                                    fieldName,
+                                    rowIndex: index
+                                } as unknown as CommonFormTableCellParams<TForm>;
+
+                                return (
+                                    <div
+                                        className="flex flex-col justify-center"
+                                        key={String(column.key)}
+                                        style={columnStyle(column.flex)}
+                                    >
+                                        {column.fieldConfig
+                                            ? (
+                                                <FormField
+                                                    control={control as unknown as Control<FieldValues>}
+                                                    field={{
+                                                        ...column.fieldConfig,
+                                                        name: fieldName,
+                                                        disabled: disabled ?? column.fieldConfig.disabled,
+                                                        fieldProps: {
+                                                            size: 'small',
+                                                            ...column.fieldConfig.fieldProps
+                                                        }
+                                                    } as FormFieldConfig<FieldValues>}
+                                                    hasHelper
+                                                />
+                                            )
+                                            : column.renderCell
+                                                ? column.renderCell(params)
+                                                : null
+                                        }
+                                    </div>
+                                );
+                            })}
+                            {showActions && (
+                                <div className="flex items-center justify-center shrink-0 w-12">
+                                    <MinusCircleIcon
+                                        className="cursor-pointer text-(--mui-palette-error-main)"
+                                        size={18}
+                                        weight="bold"
+                                        onClick={function() {
+                                            onRemoveRow?.(index);
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))
+                }
             </div>
-            <CommonTable
-                {...tableProps}
-                leadingColumnDefs={columnDefs}
-                noRowsOverlayComponent={emptyDataMessage}
-                rowData={rowDataWithIndex}
-                suppressRowVirtualisation
-            />
         </div>
     );
 }
