@@ -70,6 +70,7 @@ export default function GeneralTab({ methods, onSubmit }: GeneralTabProps) {
                 containerClassName: 'flex flex-col gap-4 grid grid-cols-2 w-200',
                 control: methods.control,
                 fields: configFields,
+                hasHelper: true,
                 formProps: {
                     id: GRADING_CONFIG_FORM_ID,
                     onSubmit: methods.handleSubmit(onSubmit, handleError)

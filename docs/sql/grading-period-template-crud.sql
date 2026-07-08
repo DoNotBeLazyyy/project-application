@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION public.fn_create_grading_period_template(
 DECLARE
     v_component JSONB;
     v_comp_total NUMERIC := 0;
+    v_existing_total NUMERIC := 0;
     v_sequence SMALLINT;
     v_period_id UUID;
 BEGIN
@@ -49,6 +50,21 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'A grading period named "' || btrim(p_name) || '" already exists.');
     END IF;
 
+    SELECT COALESCE(SUM(weight), 0) INTO v_existing_total
+    FROM public.grading_period_templates
+    WHERE deleted_at IS NULL;
+
+    IF v_existing_total >= 100 THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Grading periods already total 100%. You cannot add another period.');
+    END IF;
+
+    IF v_existing_total + p_weight > 100 THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'message', 'Adding this period (' || p_weight || '%) would exceed 100%. Only ' || (100 - v_existing_total) || '% remaining.'
+        );
+    END IF;
+
     SELECT COALESCE(MAX(sequence), 0) + 1 INTO v_sequence
     FROM public.grading_period_templates
     WHERE deleted_at IS NULL;
@@ -86,6 +102,7 @@ CREATE OR REPLACE FUNCTION public.fn_update_grading_period_template(
 DECLARE
     v_component JSONB;
     v_comp_total NUMERIC := 0;
+    v_others_total NUMERIC := 0;
     v_exists BOOLEAN;
 BEGIN
     SELECT EXISTS(
@@ -133,6 +150,17 @@ BEGIN
         WHERE lower(name) = lower(btrim(p_name)) AND id <> p_id AND deleted_at IS NULL
     ) THEN
         RETURN jsonb_build_object('success', false, 'message', 'A grading period named "' || btrim(p_name) || '" already exists.');
+    END IF;
+
+    SELECT COALESCE(SUM(weight), 0) INTO v_others_total
+    FROM public.grading_period_templates
+    WHERE deleted_at IS NULL AND id <> p_id;
+
+    IF v_others_total + p_weight > 100 THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'message', 'This weight would make the total exceed 100%. Only ' || (100 - v_others_total) || '% is available for this period.'
+        );
     END IF;
 
     UPDATE public.grading_period_templates

@@ -56,6 +56,7 @@ export default function TermTypeForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

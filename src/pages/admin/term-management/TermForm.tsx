@@ -123,6 +123,7 @@ export default function TermForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

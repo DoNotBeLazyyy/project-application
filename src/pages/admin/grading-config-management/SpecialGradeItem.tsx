@@ -29,18 +29,11 @@ export default function SpecialGradeItem({
     });
 
     return (
-        <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
-            <div className="flex gap-3 items-start">
+        <div className="border border-(--mui-palette-divider) flex gap-4 items-stretch p-4 rounded-lg">
+            <div className="flex flex-col gap-4 grow min-w-0">
                 <CommonInput
-                    label="Code"
-                    size="small"
-                    sx={{ width: 100 }}
-                    value={grade.code}
-                    onChange={function(e) {
-                        onUpdate('code', e.target.value);
-                    }}
-                />
-                <CommonInput
+                    containerClassName="w-full"
+                    fullWidth
                     label="Label"
                     size="small"
                     value={grade.label}
@@ -48,69 +41,87 @@ export default function SpecialGradeItem({
                         onUpdate('label', e.target.value);
                     }}
                 />
-                <CommonInput
-                    label="Description"
-                    size="small"
-                    sx={{ flex: 1 }}
-                    value={grade.description}
-                    onChange={function(e) {
-                        onUpdate('description', e.target.value);
-                    }}
-                />
-                <CommonButton
-                    color="error"
-                    size="small"
-                    onClick={onRemove}
-                >
-                    <MinusCircleIcon size={16} weight="bold" />
-                </CommonButton>
+                <div className="flex gap-4 items-end">
+                    <CommonInput
+                        containerClassName="flex-[1] min-w-0"
+                        fullWidth
+                        label="Code"
+                        size="small"
+                        value={grade.code}
+                        onChange={function(e) {
+                            onUpdate('code', e.target.value);
+                        }}
+                    />
+                    <CommonInput
+                        containerClassName="flex-[3] min-w-0"
+                        fullWidth
+                        label="Description"
+                        size="small"
+                        value={grade.description}
+                        onChange={function(e) {
+                            onUpdate('description', e.target.value);
+                        }}
+                    />
+                </div>
+                <div className="flex gap-4 items-end">
+                    <CommonInput
+                        containerClassName="flex-1 min-w-0"
+                        fullWidth
+                        label="Min Absence % (optional)"
+                        size="small"
+                        type="number"
+                        value={grade.min_absence_percentage}
+                        onChange={function(e) {
+                            onUpdate('min_absence_percentage', e.target.value);
+                        }}
+                    />
+                    <CommonInput
+                        containerClassName="flex-1 min-w-0"
+                        fullWidth
+                        label="Completion Deadline (days)"
+                        size="small"
+                        type="number"
+                        value={grade.completion_deadline_days}
+                        onChange={function(e) {
+                            onUpdate('completion_deadline_days', e.target.value);
+                        }}
+                    />
+                </div>
+                <div className="flex flex-wrap gap-6 items-center">
+                    <ValidCommonCheckbox
+                        control={control}
+                        label="Requires Completion"
+                        name="requires_completion"
+                        onChange={function(e) {
+                            onUpdate('requires_completion', e.target.checked);
+                        }}
+                    />
+                    <ValidCommonCheckbox
+                        control={control}
+                        label="Is Passing"
+                        name="is_passing"
+                        onChange={function(e) {
+                            onUpdate('is_passing', e.target.checked);
+                        }}
+                    />
+                    <ValidCommonCheckbox
+                        control={control}
+                        label="Active"
+                        name="is_active"
+                        onChange={function(e) {
+                            onUpdate('is_active', e.target.checked);
+                        }}
+                    />
+                </div>
             </div>
-            <div className="flex flex-wrap gap-4 items-center">
-                <CommonInput
-                    label="Min Absence % (optional)"
-                    size="small"
-                    sx={{ width: 200 }}
-                    type="number"
-                    value={grade.min_absence_percentage}
-                    onChange={function(e) {
-                        onUpdate('min_absence_percentage', e.target.value);
-                    }}
-                />
-                <CommonInput
-                    label="Completion Deadline (days)"
-                    size="small"
-                    sx={{ width: 220 }}
-                    type="number"
-                    value={grade.completion_deadline_days}
-                    onChange={function(e) {
-                        onUpdate('completion_deadline_days', e.target.value);
-                    }}
-                />
-                <ValidCommonCheckbox
-                    control={control}
-                    label="Requires Completion"
-                    name="requires_completion"
-                    onChange={function(e) {
-                        onUpdate('requires_completion', e.target.checked);
-                    }}
-                />
-                <ValidCommonCheckbox
-                    control={control}
-                    label="Is Passing"
-                    name="is_passing"
-                    onChange={function(e) {
-                        onUpdate('is_passing', e.target.checked);
-                    }}
-                />
-                <ValidCommonCheckbox
-                    control={control}
-                    label="Active"
-                    name="is_active"
-                    onChange={function(e) {
-                        onUpdate('is_active', e.target.checked);
-                    }}
-                />
-            </div>
+            <CommonButton
+                color="error"
+                size="small"
+                sx={{ alignSelf: 'stretch', maxHeight: 'none', minWidth: 56, width: 56 }}
+                onClick={onRemove}
+            >
+                <MinusCircleIcon size={16} weight="bold" />
+            </CommonButton>
         </div>
     );
 }

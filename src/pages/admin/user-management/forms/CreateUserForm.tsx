@@ -42,6 +42,7 @@ export default function CreateUserForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

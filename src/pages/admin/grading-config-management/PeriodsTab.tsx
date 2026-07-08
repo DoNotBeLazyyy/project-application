@@ -3,6 +3,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import PeriodModalForm, { PeriodFormValues } from '@pages/admin/grading-config-management/PeriodModalForm';
 import { createGradingPeriodTemplate, deleteGradingPeriodTemplate, getGradingPeriodTemplates, updateGradingPeriodTemplate } from '@services/grading-config.service';
+import { useToastStore } from '@stores/toast.store';
 import { CommonListResDto } from '@type/http.type';
 import { GradingPeriodTemplate } from '@type/grading-config.type';
 import { ColDef } from 'ag-grid-community';
@@ -66,6 +67,12 @@ export default function PeriodsTab() {
         (sum, p) => sum + Number(p.weight || 0), 0
     );
 
+    const remainingWeight = Math.max(0, 100 - periodWeightTotal);
+    const selectedPeriod = periods.find((p) => p.id === selectedId);
+    const updateRemainingWeight = selectedPeriod
+        ? Math.max(0, 100 - (periodWeightTotal - Number(selectedPeriod.weight || 0)))
+        : 100;
+
     const createMethods = useForm<PeriodFormValues>({
         defaultValues: DEFAULT_VALUES,
         mode: 'all'
@@ -78,6 +85,15 @@ export default function PeriodsTab() {
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
+    }
+
+    function handleOpenCreate() {
+        if (periodWeightTotal >= 100) {
+            useToastStore.getState()
+                .showToast('Grading periods already total 100%. You cannot add another period.', 'warning');
+            return;
+        }
+        setIsCreateOpen(true);
     }
 
     async function fetchPeriods() {
@@ -242,6 +258,7 @@ export default function PeriodsTab() {
                 formContent: (
                     <PeriodModalForm
                         formId={CREATE_FORM_ID}
+                        maxWeight={remainingWeight}
                         methods={createMethods}
                         onSubmit={handleCreate}
                     />
@@ -270,6 +287,7 @@ export default function PeriodsTab() {
                 formContent: (
                     <PeriodModalForm
                         formId={UPDATE_FORM_ID}
+                        maxWeight={updateRemainingWeight}
                         methods={updateMethods}
                         onSubmit={handleUpdate}
                     />
@@ -305,9 +323,7 @@ export default function PeriodsTab() {
                 open: isViewOpen,
                 onClose: handleCloseView
             }}
-            onCreate={function() {
-                setIsCreateOpen(true);
-            }}
+            onCreate={handleOpenCreate}
             onDeleteRow={handleDeleteRow}
             onFetch={fetchPeriods}
             onRowClick={handleOpenView}

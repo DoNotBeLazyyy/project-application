@@ -8,13 +8,15 @@ export interface CommonFormProps<T extends FieldValues> {
     fields: FormFieldConfig<T>[];
     containerClassName?: string;
     formProps?: ComponentPropsForm;
+    hasHelper?: boolean;
 }
 
 export default function CommonForm<T extends FieldValues>({
     control,
     fields,
     containerClassName = 'flex flex-col gap-4',
-    formProps
+    formProps,
+    hasHelper
 }: CommonFormProps<T>) {
     function formatLabel(name: string) {
         return name
@@ -50,6 +52,7 @@ export default function CommonForm<T extends FieldValues>({
                             <FormField
                                 control={control}
                                 field={field}
+                                hasHelper={hasHelper}
                             />
                         </div>
                     );

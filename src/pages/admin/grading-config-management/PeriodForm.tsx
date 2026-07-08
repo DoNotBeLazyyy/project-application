@@ -6,12 +6,14 @@ import { Control } from 'react-hook-form';
 export interface PeriodFormProps {
     control: Control<PeriodFormValues>;
     disabled?: boolean;
+    maxWeight?: number;
     formProps?: CommonFormProps<PeriodFormValues>['formProps'];
 }
 
 export default function PeriodForm({
     control,
     disabled = false,
+    maxWeight = 100,
     formProps
 }: PeriodFormProps) {
     const fields: FormFieldConfig<PeriodFormValues>[] = [
@@ -31,11 +33,11 @@ export default function PeriodForm({
                 : {
                     required: 'Weight is required',
                     min: { value: 1, message: 'Min 1' },
-                    max: { value: 100, message: 'Max 100' }
+                    max: { value: maxWeight, message: `Max ${maxWeight}` }
                 },
             type: 'number',
             fieldProps: {
-                max: 100,
+                max: maxWeight,
                 min: 1
             }
         }
@@ -47,6 +49,7 @@ export default function PeriodForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

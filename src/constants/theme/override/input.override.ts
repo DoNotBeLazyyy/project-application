@@ -134,6 +134,16 @@ export const inputOverrides: ComponentTheme = {
                 '& .MuiInputAdornment-positionStart svg, & .MuiInputAdornment-positionEnd svg': {
                     color: 'var(--mui-tokens-color-neutral-700)'
                 },
+                '&.Mui-error, &.Mui-error.common_textarea_input.MuiInputBase-multiline': {
+                    backgroundColor: 'var(--mui-tokens-color-red-100)'
+                },
+                [`
+                    &.Mui-error .MuiOutlinedInput-notchedOutline,
+                    &.Mui-error:hover .MuiOutlinedInput-notchedOutline,
+                    &.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline
+                `]: {
+                    border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-red-500)'
+                },
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
@@ -157,11 +167,16 @@ export const inputOverrides: ComponentTheme = {
             root: {
                 backgroundColor: 'var(--mui-tokens-color-neutral-100)',
                 borderRadius: 'var(--mui-tokens-radius-md)',
+                border: 'var(--mui-tokens-stroke-1) solid transparent',
                 '&.Mui-focused': {
                     backgroundColor: 'var(--mui-tokens-color-brand-100)'
                 },
                 '&.Mui-disabled': {
                     backgroundColor: 'var(--mui-tokens-color-neutral-200)'
+                },
+                '&.Mui-error, &.Mui-error.Mui-focused': {
+                    backgroundColor: 'var(--mui-tokens-color-red-100)',
+                    borderColor: 'var(--mui-tokens-color-red-500)'
                 },
                 '& .MuiInputAdornment-positionStart svg': {
                     color: 'var(--mui-tokens-color-brand-950)'

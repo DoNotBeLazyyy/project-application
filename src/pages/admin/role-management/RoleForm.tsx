@@ -45,6 +45,7 @@ export default function RoleForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

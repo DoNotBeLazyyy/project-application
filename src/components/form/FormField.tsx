@@ -10,6 +10,7 @@ import ValidCommonMultiSelect from '@components/select/ValidCommonMultiSelect';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import { CommonTextareaProps } from '@components/textarea/CommonTextarea';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
+import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { CheckboxProps } from '@mui/material';
 import { Control, FieldValues, Path, RegisterOptions } from 'react-hook-form';
 
@@ -84,6 +85,7 @@ export function FormField<T extends FieldValues>({
                 {...field.fieldProps}
                 control={control}
                 disabled={field.disabled}
+                hasHelper={hasHelper}
                 name={field.name}
                 options={field.options ?? []}
                 rules={field.rules}
@@ -112,6 +114,7 @@ export function FormField<T extends FieldValues>({
                 control={control}
                 disabled={field.disabled}
                 fullWidth
+                hasHelper={hasHelper}
                 name={field.name}
                 rules={field.rules}
             />
@@ -152,12 +155,18 @@ export function FormField<T extends FieldValues>({
                 {...field.fieldProps}
                 control={control}
                 disabled={field.disabled}
+                hasHelper={hasHelper}
                 name={field.name}
                 options={field.options ?? []}
                 rules={field.rules}
             />
         );
     }
+
+    const isEmail = field.type === 'email';
+    const resolvedRules = isEmail
+        ? { ...field.rules, pattern: field.rules?.pattern ?? EMAIL_PATTERN }
+        : field.rules;
 
     return (
         <ValidCommonInput
@@ -168,8 +177,10 @@ export function FormField<T extends FieldValues>({
             hasHelper={hasHelper}
             name={field.name}
             placeholder={field.placeholder}
-            rules={field.rules}
-            type={field.type}
+            rules={resolvedRules}
+            type={isEmail
+                ? 'text'
+                : field.type}
         />
     );
 }

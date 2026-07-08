@@ -248,6 +248,7 @@ export default function SystemSettings() {
                         containerClassName="gap-4 grid grid-cols-2"
                         control={methods.control}
                         fields={fields}
+                        hasHelper
                     />
                 </form>
                 <div className="flex gap-2 justify-start">

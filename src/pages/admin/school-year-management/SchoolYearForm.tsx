@@ -101,6 +101,7 @@ export default function SchoolYearForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

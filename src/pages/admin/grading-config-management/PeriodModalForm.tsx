@@ -21,6 +21,7 @@ type PeriodTableFormOverrideProps = Omit<PeriodTableFormProps, 'control' | 'comp
 export interface PeriodModalFormProps {
     disabled?: boolean;
     formId?: string;
+    maxWeight?: number;
     methods: UseFormReturn<PeriodFormValues>;
     periodFormProps?: PeriodFormOverrideProps;
     periodTableFormProps?: PeriodTableFormOverrideProps;
@@ -30,6 +31,7 @@ export interface PeriodModalFormProps {
 export default function PeriodModalForm({
     disabled = false,
     formId,
+    maxWeight,
     methods,
     periodFormProps,
     periodTableFormProps,
@@ -57,6 +59,7 @@ export default function PeriodModalForm({
                     id: formId,
                     onSubmit: methods.handleSubmit(onSubmit, handleError)
                 }}
+                maxWeight={maxWeight}
             />
             <PeriodTableForm
                 {...periodTableFormProps}
