@@ -127,11 +127,13 @@ export default function SystemSettings() {
         },
         {
             name: 'institution_address',
+            rules: { required: 'Institution address is required' },
             type: 'text'
         },
         {
             name: 'institution_email',
             rules: {
+                required: 'Institution email is required',
                 pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                     message: 'Invalid email address'
@@ -141,6 +143,7 @@ export default function SystemSettings() {
         },
         {
             name: 'institution_phone',
+            rules: { required: 'Institution phone is required' },
             type: 'text'
         },
         {
