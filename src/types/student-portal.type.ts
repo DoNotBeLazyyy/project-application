@@ -104,8 +104,6 @@ export interface SubjectDetail {
     term_label: string;
     faculty_name: string | null;
     enrollment_status: EnrollmentStatus;
-    assessments: SubjectAssessmentItem[];
-    grades: SubjectGradeItem[];
 }
 
 export interface StudentAssessment {

@@ -4,8 +4,8 @@ import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
 import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
 import { ArrowLeftIcon, ClipboardTextIcon, GraduationCapIcon } from '@phosphor-icons/react';
-import { getSubjectDetail } from '@services/student-portal.service';
-import { SubjectDetail } from '@type/student-portal.type';
+import { getSubjectAssessments, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
+import { SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -16,6 +16,8 @@ export default function SubjectDetailPage() {
     const navigate = useNavigate();
     const [subject, setSubject] = useState<SubjectDetail | null>(null);
     const [activeTab, setActiveTab] = useState<SubjectTab>('assessments');
+    const [assessments, setAssessments] = useState<SubjectAssessmentItem[] | null>(null);
+    const [grades, setGrades] = useState<SubjectGradeItem[] | null>(null);
 
     useEffect(function() {
         if (!enrollmentId) return;
@@ -27,6 +29,23 @@ export default function SubjectDetailPage() {
 
         fetchSubject();
     }, [enrollmentId]);
+
+    useEffect(function() {
+        if (!enrollmentId) return;
+
+        async function fetchAssessments() {
+            const result = await getSubjectAssessments(enrollmentId);
+            if (result.data) setAssessments(result.data);
+        }
+
+        async function fetchGrades() {
+            const result = await getSubjectGrades(enrollmentId);
+            if (result.data) setGrades(result.data);
+        }
+
+        if (activeTab === 'assessments' && assessments === null) fetchAssessments();
+        if (activeTab === 'grades' && grades === null) fetchGrades();
+    }, [activeTab, assessments, enrollmentId, grades]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as SubjectTab);
@@ -98,15 +117,15 @@ export default function SubjectDetailPage() {
                 value={activeTab}
                 onChange={handleTabChange}
             />
-            <div className="flex-1 min-h-0">
+            <div className="flex flex-1 flex-col min-h-0">
                 {activeTab === 'assessments' && (
                     <SubjectAssessmentList
-                        assessments={subject?.assessments ?? []}
+                        assessments={assessments ?? []}
                         enrollmentId={enrollmentId}
                     />
                 )}
                 {activeTab === 'grades' && (
-                    <SubjectGradeList grades={subject?.grades ?? []} />
+                    <SubjectGradeList grades={grades ?? []} />
                 )}
             </div>
         </CommonCard>

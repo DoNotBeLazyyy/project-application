@@ -2,7 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentDashboard, StudentQuestion, StudentScheduleSection, SubjectDetail
+    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentDashboard, StudentQuestion, StudentScheduleSection, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem
 } from '@type/student-portal.type';
 
 export async function getStudentDashboard(): Promise<ServiceResult<StudentDashboard>> {
@@ -33,6 +33,22 @@ export async function getSubjectDetail(
     enrollmentId: string
 ): Promise<ServiceResult<SubjectDetail>> {
     return callRpc<SubjectDetail>('fn_get_subject_detail', {
+        p_enrollment_id: enrollmentId
+    });
+}
+
+export async function getSubjectAssessments(
+    enrollmentId: string
+): Promise<ServiceResult<SubjectAssessmentItem[]>> {
+    return callRpc<SubjectAssessmentItem[]>('fn_get_subject_assessments', {
+        p_enrollment_id: enrollmentId
+    });
+}
+
+export async function getSubjectGrades(
+    enrollmentId: string
+): Promise<ServiceResult<SubjectGradeItem[]>> {
+    return callRpc<SubjectGradeItem[]>('fn_get_subject_grades', {
         p_enrollment_id: enrollmentId
     });
 }
