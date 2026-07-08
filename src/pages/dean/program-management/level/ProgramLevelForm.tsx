@@ -45,6 +45,7 @@ export default function ProgramLevelForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

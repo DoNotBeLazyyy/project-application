@@ -91,7 +91,7 @@ export default function StudentLayout() {
                     onClick: () => navigate('/registrar/settings')
                 }}
                 headerProps={{
-                    subtitle: 'Dean Panel',
+                    subtitle: 'Student Panel',
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}

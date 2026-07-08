@@ -74,7 +74,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                         ...props.slotProps?.textField,
                         error: errorProp ?? !!fieldState.error,
                         helperText: hasHelper
-                            ? helperTextProp ?? fieldState.error?.message
+                            ? fieldState.error?.message ?? helperTextProp
                             : undefined,
                         fullWidth,
                         size: 'medium',

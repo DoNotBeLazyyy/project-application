@@ -137,6 +137,7 @@ export default function SectionForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

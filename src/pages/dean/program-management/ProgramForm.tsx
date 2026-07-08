@@ -93,6 +93,7 @@ export default function ProgramForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

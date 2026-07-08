@@ -8,14 +8,21 @@ import { CalendarCheckIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon } 
 import { getSectionDetail } from '@services/faculty.service';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments';
 
+const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments'];
+
 export default function SectionDetailPage() {
     const { sectionId = '' } = useParams<{ sectionId: string }>();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [section, setSection] = useState<SectionDetail | null>(null);
-    const [activeTab, setActiveTab] = useState<SectionTab>('students');
+
+    const tabParam = searchParams.get('tab') as SectionTab | null;
+    const activeTab: SectionTab = tabParam && SECTION_TABS.includes(tabParam)
+        ? tabParam
+        : 'students';
 
     useEffect(function() {
         if (!sectionId) return;
@@ -32,7 +39,7 @@ export default function SectionDetailPage() {
     }, [sectionId]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
-        setActiveTab(value as SectionTab);
+        setSearchParams({ tab: value }, { replace: true });
     }
 
     if (!sectionId) return null;

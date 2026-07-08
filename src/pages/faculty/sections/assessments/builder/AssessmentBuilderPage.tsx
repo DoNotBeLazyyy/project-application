@@ -183,7 +183,7 @@ export default function AssessmentBuilderPage() {
                         startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                         variant="outlined"
                         onClick={function() {
-                            navigate(`/faculty/sections/${sectionId}`);
+                            navigate(`/faculty/sections/${sectionId}?tab=assessments`);
                         }}
                     >
                     Back

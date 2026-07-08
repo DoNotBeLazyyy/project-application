@@ -53,30 +53,33 @@ export default function EnrollmentForm({
     const fields: FormFieldConfig<EnrollmentFormValues>[] = [
         {
             disabled,
+            fieldProps: { helperText: 'Student to enroll in the section' },
             name: 'student_id',
             options: studentOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a student' },
             type: 'select'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Section the student will be enrolled into' },
             name: 'section_id',
             options: sectionOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a section' },
             type: 'select'
         },
         ...(!isCreate
             ? [{
                 disabled,
+                fieldProps: { helperText: 'Current status of this enrollment' },
                 name: 'status' as const,
                 options: STATUS_OPTIONS,
                 rules: disabled
                     ? undefined
-                    : { required: 'Required' },
+                    : { required: 'Please select a status' },
                 type: 'select' as const
             }]
             : [])
@@ -88,6 +91,7 @@ export default function EnrollmentForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

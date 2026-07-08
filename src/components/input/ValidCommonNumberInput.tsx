@@ -25,7 +25,7 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
         error={errorProp ?? !!fieldState.error}
         helperText={
             hasHelper
-                ? helperTextProp ?? fieldState.error?.message
+                ? fieldState.error?.message ?? helperTextProp
                 : undefined
         }
         inputRef={ref}

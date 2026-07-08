@@ -91,7 +91,7 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar/settings')
                 }}
                 headerProps={{
-                    subtitle: 'Dean Panel',
+                    subtitle: 'Registrar Panel',
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}

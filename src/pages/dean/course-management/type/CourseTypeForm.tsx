@@ -45,6 +45,7 @@ export default function CourseTypeForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

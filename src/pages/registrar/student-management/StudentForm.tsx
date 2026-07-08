@@ -60,15 +60,20 @@ export default function StudentForm({
         }
     }, [isCreate]);
 
+    const today = new Date()
+        .toISOString()
+        .slice(0, 10);
+
     const fields: FormFieldConfig<StudentFormValues>[] = [
         ...(isCreate
             ? [{
                 disabled,
+                fieldProps: { helperText: 'Select the user account to link to this student record' },
                 name: 'user_id' as const,
                 options: userOptions,
                 rules: disabled
                     ? undefined
-                    : { required: 'Required' },
+                    : { required: 'Please select a user account' },
                 type: 'select' as const,
                 gridCols: 2
             }]
@@ -76,44 +81,74 @@ export default function StudentForm({
         ),
         {
             disabled,
+            fieldProps: { helperText: 'Unique school-issued number, e.g. 2024-00123' },
             name: 'student_number',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : {
+                    required: 'Student number is required',
+                    minLength: {
+                        value: 3,
+                        message: 'Must be at least 3 characters'
+                    },
+                    maxLength: {
+                        value: 20,
+                        message: 'Must be at most 20 characters'
+                    },
+                    pattern: {
+                        value: /^[A-Za-z0-9-]+$/,
+                        message: 'Only letters, numbers and dashes are allowed'
+                    }
+                },
             type: 'text',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'The program the student is enrolled in' },
             name: 'program_id',
             options: programOptions,
+            rules: disabled
+                ? undefined
+                : { required: 'Please select a program' },
             type: 'select',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'The student\'s current year level' },
             name: 'year_level',
             options: YEAR_LEVEL_OPTIONS,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a year level' },
             type: 'select',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'Date the student was admitted (cannot be in the future)' },
             name: 'admitted_at',
+            rules: disabled
+                ? undefined
+                : {
+                    validate: (value) =>
+                        !value || (value as string) <= today
+                            ? true
+                            : 'Admission date cannot be in the future'
+                },
             type: 'date',
             gridCols: 2
         },
         ...(!isCreate
             ? [{
                 disabled,
+                fieldProps: { helperText: 'Current enrollment standing of the student' },
                 name: 'status' as const,
                 options: STATUS_OPTIONS,
                 rules: disabled
                     ? undefined
-                    : { required: 'Required' },
+                    : { required: 'Please select a status' },
                 type: 'select' as const,
                 gridCols: 2
             }]
@@ -127,6 +162,7 @@ export default function StudentForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

@@ -2,7 +2,9 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
 import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/useCourseTypeTableConfig';
-import { createCourseType, deleteCourseType, getCourseTypeById, listCourseTypes, updateCourseType } from '@services/course/course-type.service';
+import {
+    createCourseType, deleteCourseType, getCourseTypeById, listCourseTypes, updateCourseType
+} from '@services/course/course-type.service';
 import { CourseTypeFormValues, CourseTypeListRow } from '@type/course/course-type.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';

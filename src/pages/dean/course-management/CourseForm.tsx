@@ -282,6 +282,7 @@ export default function CourseForm({
                 control={control}
                 fields={fields_config}
                 formProps={formProps}
+                hasHelper
             />
             {<CommonFormTable<PrerequisiteRow>
                 columns={prerequisiteColumns}

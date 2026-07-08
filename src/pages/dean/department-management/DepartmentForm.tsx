@@ -57,6 +57,7 @@ export default function DepartmentForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

@@ -33,6 +33,7 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
     ...props
 }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
+    const [draft, setDraft] = useState<string | null>(null);
 
     const numericValue = typeof value === 'string'
         ? parseFloat(value.replace(/,/g, ''))
@@ -99,16 +100,18 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
         if (maxDigits && parts[0].replace('-', '').length > maxDigits) return;
         if (parts[1] && parts[1].length > maxDecimals) return;
 
+        setDraft(rawValue);
+
         if (onChange) {
-            if (rawValue === '' || rawValue === '-') {
+            if (rawValue === '' || rawValue === '-' || rawValue === '.') {
                 onChange(undefined);
                 return;
             }
             let numericParsed = parseFloat(rawValue);
 
-            // Auto-clamp to max on change to prevent invalid state
             if (!isNaN(numericParsed) && max !== undefined && numericParsed > max) {
                 numericParsed = max;
+                setDraft(String(max));
             }
 
             onChange(numericParsed);
@@ -117,12 +120,7 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
 
     function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
         setIsFocused(false);
-        if (onChange && numericValue !== undefined) {
-            // Apply min boundary strictly on blur
-            if (min !== undefined && numericValue < min) {
-                onChange(min);
-            }
-        }
+        setDraft(null);
         props.onBlur?.(e);
     }
 
@@ -153,7 +151,9 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
                     ...props.slotProps?.input
                 }
             }}
-            value={formatDisplayValue(value)}
+            value={draft !== null
+                ? draft
+                : formatDisplayValue(value)}
             onBlur={handleBlur}
             onChange={handleChange}
             onFocus={handleFocus}

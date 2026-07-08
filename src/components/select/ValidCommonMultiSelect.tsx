@@ -26,7 +26,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
-                    ? helperTextProp ?? fieldState.error?.message
+                    ? fieldState.error?.message ?? helperTextProp
                     : undefined
             }
             ref={ref}

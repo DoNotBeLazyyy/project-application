@@ -1,16 +1,42 @@
 import { CurriculumMapEntry, CurriculumMapGrouped } from '@type/curriculum-map.type';
 import { useMemo } from 'react';
 
+const YEAR_LEVEL_LABELS: Record<number, string> = {
+    1: 'FIRST YEAR',
+    2: 'SECOND YEAR',
+    3: 'THIRD YEAR',
+    4: 'FOURTH YEAR',
+    5: 'FIFTH YEAR',
+    6: 'SIXTH YEAR'
+};
+
+function isSummerEntry(entry: CurriculumMapEntry): boolean {
+    return /summer/i.test(entry.term_type_code) || /summer/i.test(entry.term_type_label);
+}
+
+function buildGroupLabel(yearLevel: number, isSummer: boolean): string {
+    const yearLabel = YEAR_LEVEL_LABELS[yearLevel] ?? `YEAR ${yearLevel}`;
+
+    return isSummer
+        ? `${yearLabel} — SUMMER`
+        : yearLabel;
+}
+
 export function useCurriculumMapGrouped(entries: CurriculumMapEntry[]): CurriculumMapGrouped[] {
     return useMemo(function() {
-        const yearMap = new Map<number, Map<string, CurriculumMapEntry[]>>();
+        const groupMap = new Map<string, Map<string, CurriculumMapEntry[]>>();
 
         entries.forEach(function(entry) {
-            if (!yearMap.has(entry.year_level)) {
-                yearMap.set(entry.year_level, new Map());
+            const summer = isSummerEntry(entry);
+            const groupKey = `${entry.year_level}-${summer
+                ? 'summer'
+                : 'regular'}`;
+
+            if (!groupMap.has(groupKey)) {
+                groupMap.set(groupKey, new Map());
             }
 
-            const termMap = yearMap.get(entry.year_level);
+            const termMap = groupMap.get(groupKey);
 
             if (!termMap?.has(entry.term_type_id)) {
                 termMap?.set(entry.term_type_id, []);
@@ -20,11 +46,25 @@ export function useCurriculumMapGrouped(entries: CurriculumMapEntry[]): Curricul
                 ?.push(entry);
         });
 
-        const yearLevels = Array.from(yearMap.keys())
-            .sort((a, b) => a - b);
+        const groupKeys = Array.from(groupMap.keys())
+            .sort(function(a, b) {
+                const [yearA, kindA] = a.split('-');
+                const [yearB] = b.split('-');
 
-        return yearLevels.map(function(yearLevel) {
-            const termMap = yearMap.get(yearLevel);
+                if (Number(yearA) !== Number(yearB)) {
+                    return Number(yearA) - Number(yearB);
+                }
+
+                return kindA === 'summer'
+                    ? 1
+                    : -1;
+            });
+
+        return groupKeys.map(function(groupKey) {
+            const [yearLevelStr, kind] = groupKey.split('-');
+            const yearLevel = Number(yearLevelStr);
+            const isSummer = kind === 'summer';
+            const termMap = groupMap.get(groupKey);
 
             const terms = Array.from(termMap?.entries() ?? [])
                 .map(function([termTypeId, termEntries]) {
@@ -41,7 +81,13 @@ export function useCurriculumMapGrouped(entries: CurriculumMapEntry[]): Curricul
 
             terms.sort((a, b) => a.termTypeSequence - b.termTypeSequence);
 
-            return { yearLevel, terms };
+            return {
+                key: groupKey,
+                yearLevel,
+                isSummer,
+                label: buildGroupLabel(yearLevel, isSummer),
+                terms
+            };
         });
     }, [entries]);
 }

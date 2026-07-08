@@ -89,16 +89,18 @@ export function useCurriculumTableConfig({
             {
                 colId: 'is_elective',
                 headerName: '',
-                maxWidth: 80,
-                minWidth: 80,
+                maxWidth: 110,
+                minWidth: 110,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
-                    <div className="flex h-full items-center">
+                    <div className="flex h-full items-center justify-center">
                         {params.data.is_elective && (
-                            <CommonBadgeStatus
-                                label="Elective"
-                                variant="info"
-                            />
+                            <span className="whitespace-nowrap">
+                                <CommonBadgeStatus
+                                    label="Elective"
+                                    variant="info"
+                                />
+                            </span>
                         )}
                     </div>
                 )
@@ -106,8 +108,8 @@ export function useCurriculumTableConfig({
             {
                 colId: 'actions',
                 headerName: '',
-                maxWidth: 40,
-                minWidth: 40,
+                maxWidth: 64,
+                minWidth: 64,
                 sortable: false,
                 cellClass: 'no-print',
                 headerClass: 'no-print',
@@ -115,15 +117,19 @@ export function useCurriculumTableConfig({
                     if (params.data.id === '__total__') return null;
                     return (
                         <div className="flex h-full items-center justify-center">
-                            <TrashIcon
-                                className="cursor-pointer text-(--mui-palette-error-main)"
-                                size={14}
-                                weight="bold"
+                            <button
+                                className="cursor-pointer flex h-8 items-center justify-center rounded-full text-(--mui-palette-error-main) transition-colors w-8 hover:bg-(--mui-palette-error-main)/10"
+                                type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete(params.data.id);
                                 }}
-                            />
+                            >
+                                <TrashIcon
+                                    size={20}
+                                    weight="bold"
+                                />
+                            </button>
                         </div>
                     );
                 }

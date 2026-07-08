@@ -72,6 +72,7 @@ export default function CurriculumMapForm({
             control={control}
             fields={fields}
             formProps={formProps}
+            hasHelper
         />
     );
 }

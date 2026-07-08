@@ -36,7 +36,10 @@ export interface CurriculumMapBulkRow {
 }
 
 export interface CurriculumMapGrouped {
+    key: string;
     yearLevel: number;
+    isSummer: boolean;
+    label: string;
     terms: {
         termTypeId: string;
         termTypeLabel: string;

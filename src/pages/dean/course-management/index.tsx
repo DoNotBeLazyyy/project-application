@@ -4,9 +4,13 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseForm from '@pages/dean/course-management/CourseForm';
 import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
-import { bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse } from '@services/course/course.service';
+import {
+    bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse
+} from '@services/course/course.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
-import { CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, PrerequisiteRow } from '@type/course/course.type';
+import {
+    CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, PrerequisiteRow
+} from '@type/course/course.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';

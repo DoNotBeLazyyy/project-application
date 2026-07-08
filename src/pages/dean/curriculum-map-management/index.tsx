@@ -39,15 +39,6 @@ const defaultFormValues: CurriculumMapFormValues = {
     is_elective: false
 };
 
-const YEAR_LEVEL_LABELS: Record<number, string> = {
-    1: 'FIRST YEAR',
-    2: 'SECOND YEAR',
-    3: 'THIRD YEAR',
-    4: 'FOURTH YEAR',
-    5: 'FIFTH YEAR',
-    6: 'SIXTH YEAR'
-};
-
 export default function CurriculumMapManagement() {
     const [selectedProgramId, setSelectedProgramId] = useState('');
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
@@ -305,11 +296,11 @@ export default function CurriculumMapManagement() {
                                         )}
                                     </div>
 
-                                    {grouped.map(function({ yearLevel, terms }) {
+                                    {grouped.map(function({ key, label, terms }) {
                                         return (
-                                            <div className="flex flex-col gap-3" key={yearLevel}>
+                                            <div className="flex flex-col gap-3" key={key}>
                                                 <h2 className="font-bold text-(--mui-palette-text-primary) text-center text-sm tracking-widest uppercase">
-                                                    {YEAR_LEVEL_LABELS[yearLevel] ?? `Year ${yearLevel}`}
+                                                    {label}
                                                 </h2>
                                                 <div className="flex gap-4">
                                                     {terms.map((term) => renderCurriculumTable(term))}

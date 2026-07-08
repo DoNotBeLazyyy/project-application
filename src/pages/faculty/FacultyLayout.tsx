@@ -79,7 +79,7 @@ export default function FacultyLayout() {
                     onClick: () => navigate('/dean/settings')
                 }}
                 headerProps={{
-                    subtitle: 'Dean Panel',
+                    subtitle: 'Faculty Panel',
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}
