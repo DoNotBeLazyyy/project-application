@@ -1,7 +1,9 @@
-import CommonButton from '@components/button/CommonButton';
+import { MenuOption } from '@components/table/TableActionCell';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { TableActionConfig } from '@components/table/useTableConfigs';
 import PeriodModalForm, { PeriodFormValues } from '@pages/admin/grading-config-management/PeriodModalForm';
-import { EyeIcon, PencilIcon, TrashIcon } from '@phosphor-icons/react';
+import { createGradingPeriodTemplate, deleteGradingPeriodTemplate, getGradingPeriodTemplates, updateGradingPeriodTemplate } from '@services/grading-config.service';
+import { CommonListResDto } from '@type/http.type';
 import { GradingPeriodTemplate } from '@type/grading-config.type';
 import { ColDef } from 'ag-grid-community';
 import { useMemo, useState } from 'react';
@@ -10,31 +12,55 @@ import { useForm } from 'react-hook-form';
 const CREATE_FORM_ID = 'period-form-create';
 const UPDATE_FORM_ID = 'period-form-update';
 
-type PeriodRow = GradingPeriodTemplate & { _index: number };
-
 const DEFAULT_VALUES: PeriodFormValues = {
     name: '',
     weight: '',
     components: [{ name: '', weight: '' }]
 };
 
-interface PeriodsTabProps {
-    periods: GradingPeriodTemplate[];
-    onAddPeriod: (values: PeriodFormValues) => Promise<boolean>;
-    onDeletePeriod: (index: number) => Promise<boolean>;
-    onUpdatePeriod: (index: number, values: PeriodFormValues) => Promise<boolean>;
+function mapPeriodTemplates(periods: GradingPeriodTemplate[]): GradingPeriodTemplate[] {
+    return periods.map((period) => ({
+        ...period,
+        weight: String(period.weight),
+        components: period.components.map((comp) => ({
+            ...comp,
+            weight: String(comp.weight)
+        }))
+    }));
 }
 
-export default function PeriodsTab({
-    periods,
-    onAddPeriod,
-    onDeletePeriod,
-    onUpdatePeriod
-}: PeriodsTabProps) {
+function buildPeriodListDto(content: GradingPeriodTemplate[]): CommonListResDto<GradingPeriodTemplate> {
+    const size = content.length || 1;
+
+    return {
+        content,
+        empty: content.length === 0,
+        first: true,
+        last: true,
+        number: 0,
+        numberOfElements: content.length,
+        pageable: {
+            offset: 0,
+            paged: true,
+            pageNumber: 0,
+            pageSize: size,
+            sort: { empty: true, sorted: false, unsorted: true },
+            unpaged: false
+        },
+        size,
+        sort: { empty: true, sorted: false, unsorted: true },
+        totalElements: content.length,
+        totalPages: 1
+    };
+}
+
+export default function PeriodsTab() {
+    const [periods, setPeriods] = useState<GradingPeriodTemplate[]>([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
     const periodWeightTotal = periods.reduce(
         (sum, p) => sum + Number(p.weight || 0), 0
@@ -50,8 +76,26 @@ export default function PeriodsTab({
         mode: 'all'
     });
 
-    function loadIntoForm(index: number) {
-        const period = periods[index];
+    function triggerRefresh() {
+        setRefreshKey((prev) => prev + 1);
+    }
+
+    async function fetchPeriods() {
+        const result = await getGradingPeriodTemplates();
+        if (!result.data) {
+            return { data: null, error: result.error };
+        }
+        const mapped = mapPeriodTemplates(result.data);
+        setPeriods(mapped);
+
+        return { data: buildPeriodListDto(mapped), error: null };
+    }
+
+    function loadIntoForm(id: string) {
+        const period = periods.find((p) => p.id === id);
+        if (!period) {
+            return;
+        }
         updateMethods.reset({
             name: period.name,
             weight: period.weight,
@@ -61,21 +105,21 @@ export default function PeriodsTab({
         });
     }
 
-    function handleOpenView(index: number) {
-        setSelectedIndex(index);
-        loadIntoForm(index);
+    function handleOpenView(id: string) {
+        setSelectedId(id);
+        loadIntoForm(id);
         setIsViewOpen(true);
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
-        setSelectedIndex(null);
+        setSelectedId(null);
         updateMethods.reset(DEFAULT_VALUES);
     }
 
-    function handleOpenUpdate(index: number) {
-        setSelectedIndex(index);
-        loadIntoForm(index);
+    function handleOpenUpdate(id: string) {
+        setSelectedId(id);
+        loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
@@ -86,29 +130,45 @@ export default function PeriodsTab({
 
     function handleCloseUpdate() {
         setIsUpdateOpen(false);
-        setSelectedIndex(null);
+        setSelectedId(null);
         updateMethods.reset(DEFAULT_VALUES);
     }
 
     async function handleCreate(values: PeriodFormValues) {
-        const saved = await onAddPeriod(values);
-        if (saved) {
+        const result = await createGradingPeriodTemplate({
+            name: values.name,
+            sequence: periods.length + 1,
+            weight: values.weight,
+            components: values.components
+        });
+        if (!result.error) {
             createMethods.reset(DEFAULT_VALUES);
             setIsCreateOpen(false);
+            triggerRefresh();
         }
     }
 
     async function handleUpdate(values: PeriodFormValues) {
-        if (selectedIndex === null) {
+        if (!selectedId) {
             return;
         }
-        const saved = await onUpdatePeriod(selectedIndex, values);
-        if (saved) {
+        const result = await updateGradingPeriodTemplate(selectedId, {
+            name: values.name,
+            sequence: 1,
+            weight: values.weight,
+            components: values.components
+        });
+        if (!result.error) {
             handleCloseUpdate();
+            triggerRefresh();
         }
     }
 
-    const columnDefs = useMemo<ColDef<PeriodRow>[]>(function() {
+    async function handleDeleteRow(id: string) {
+        return deleteGradingPeriodTemplate(id);
+    }
+
+    const columnDefs = useMemo<ColDef<GradingPeriodTemplate>[]>(function() {
         return [
             {
                 field: 'name',
@@ -125,7 +185,7 @@ export default function PeriodsTab({
                     : '—'
             },
             {
-                flex: 2,
+                flex: 3,
                 headerName: 'Components',
                 sortable: false,
                 valueGetter: (params) => params.data?.components?.length
@@ -133,66 +193,42 @@ export default function PeriodsTab({
                         .map((c) => `${c.name} (${c.weight}%)`)
                         .join(' · ')
                     : '—'
-            },
-            {
-                headerName: '',
-                maxWidth: 120,
-                minWidth: 120,
-                sortable: false,
-                cellRenderer: (params: { data: PeriodRow }) => (
-                    <div className="flex gap-1 h-full items-center">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            onClick={function() {
-                                handleOpenView(params.data._index);
-                            }}
-                        >
-                            <EyeIcon
-                                size={14}
-                                weight="bold"
-                            />
-                        </CommonButton>
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            onClick={function() {
-                                handleOpenUpdate(params.data._index);
-                            }}
-                        >
-                            <PencilIcon
-                                size={14}
-                                weight="bold"
-                            />
-                        </CommonButton>
-                        <CommonButton
-                            color="error"
-                            size="small"
-                            onClick={function() {
-                                onDeletePeriod(params.data._index);
-                            }}
-                        >
-                            <TrashIcon
-                                size={14}
-                                weight="bold"
-                            />
-                        </CommonButton>
-                    </div>
-                )
             }
         ];
-    }, [onDeletePeriod]);
+    }, []);
 
-    const rowData = useMemo<PeriodRow[]>(function() {
-        return periods.map((p, index) => ({ ...p, _index: index }));
+    const tableActionConfig = useMemo(function() {
+        return function(onDelete: (id: string) => void): TableActionConfig<GradingPeriodTemplate> {
+            return {
+                onEditClick: (row: GradingPeriodTemplate) => function() {
+                    if (row.id) {
+                        handleOpenUpdate(row.id);
+                    }
+                },
+                menuOptions: (row: GradingPeriodTemplate): MenuOption[] => [
+                    {
+                        preset: 'view',
+                        onClick: () => row.id && handleOpenView(row.id)
+                    },
+                    {
+                        preset: 'edit',
+                        onClick: () => row.id && handleOpenUpdate(row.id)
+                    },
+                    {
+                        preset: 'delete',
+                        onClick: () => row.id && onDelete(row.id)
+                    }
+                ]
+            };
+        };
     }, [periods]);
 
     return (
-        <CommonTableCard<PeriodRow>
+        <CommonTableCard<GradingPeriodTemplate>
             cardHeaderProps={{
                 subheader: `Total weight: ${periodWeightTotal}%${periodWeightTotal === 100
                     ? ' ✓'
-                    : ' (must equal 100%)'}`,
+                    : ' (should equal 100%)'}`,
                 title: 'Grading Periods'
             }}
             createModalProps={{
@@ -216,11 +252,12 @@ export default function PeriodsTab({
                     setIsCreateOpen(false);
                 }
             }}
+            dependencies={[refreshKey]}
+            tableActionConfig={tableActionConfig}
             tableProps={{
-                leadingColumnDefs: columnDefs,
-                rowData
+                leadingColumnDefs: columnDefs
             }}
-            uniqueIdKey="_index"
+            uniqueIdKey="id"
             updateModalProps={{
                 cardProps: {
                     cardHeaderProps: {
@@ -271,12 +308,9 @@ export default function PeriodsTab({
             onCreate={function() {
                 setIsCreateOpen(true);
             }}
-            onRowClick={function(id) {
-                const index = rowData.find((r) => String(r._index) === id)?._index;
-                if (index !== undefined) {
-                    handleOpenView(index);
-                }
-            }}
+            onDeleteRow={handleDeleteRow}
+            onFetch={fetchPeriods}
+            onRowClick={handleOpenView}
         />
     );
 }

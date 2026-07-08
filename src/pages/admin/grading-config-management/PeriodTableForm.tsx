@@ -78,6 +78,8 @@ export default function PeriodTableForm({
                     disabled={disabled}
                     emptyDataMessage="No components yet. Click + to add one."
                     fieldArrayName="components"
+                    hideAddRow={componentTotal >= 100}
+                    minRows={1}
                     rows={fields}
                     tableProps={{
                         containerClassName: 'min-h-0 h-full'

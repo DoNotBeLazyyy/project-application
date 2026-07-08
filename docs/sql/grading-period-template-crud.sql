@@ -19,6 +19,17 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'Period weight must be greater than 0 and at most 100.');
     END IF;
 
+    IF jsonb_array_length(p_components) = 0 THEN
+        RETURN jsonb_build_object('success', false, 'message', 'At least one component is required.');
+    END IF;
+
+    IF (
+        SELECT COUNT(DISTINCT lower(btrim(c->>'name')))
+        FROM jsonb_array_elements(p_components) c
+    ) <> jsonb_array_length(p_components) THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Component names within a grading period must be unique.');
+    END IF;
+
     FOR v_component IN SELECT * FROM jsonb_array_elements(p_components)
     LOOP
         v_comp_total := v_comp_total + (v_component->>'weight')::NUMERIC;
@@ -29,6 +40,13 @@ BEGIN
             'success', false,
             'message', 'Component weights for ' || p_name || ' must sum to exactly 100%. Current total: ' || v_comp_total || '%'
         );
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.grading_period_templates
+        WHERE lower(name) = lower(btrim(p_name)) AND deleted_at IS NULL
+    ) THEN
+        RETURN jsonb_build_object('success', false, 'message', 'A grading period named "' || btrim(p_name) || '" already exists.');
     END IF;
 
     SELECT COALESCE(MAX(sequence), 0) + 1 INTO v_sequence
@@ -87,6 +105,17 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'Period weight must be greater than 0 and at most 100.');
     END IF;
 
+    IF jsonb_array_length(p_components) = 0 THEN
+        RETURN jsonb_build_object('success', false, 'message', 'At least one component is required.');
+    END IF;
+
+    IF (
+        SELECT COUNT(DISTINCT lower(btrim(c->>'name')))
+        FROM jsonb_array_elements(p_components) c
+    ) <> jsonb_array_length(p_components) THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Component names within a grading period must be unique.');
+    END IF;
+
     FOR v_component IN SELECT * FROM jsonb_array_elements(p_components)
     LOOP
         v_comp_total := v_comp_total + (v_component->>'weight')::NUMERIC;
@@ -97,6 +126,13 @@ BEGIN
             'success', false,
             'message', 'Component weights for ' || p_name || ' must sum to exactly 100%. Current total: ' || v_comp_total || '%'
         );
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.grading_period_templates
+        WHERE lower(name) = lower(btrim(p_name)) AND id <> p_id AND deleted_at IS NULL
+    ) THEN
+        RETURN jsonb_build_object('success', false, 'message', 'A grading period named "' || btrim(p_name) || '" already exists.');
     END IF;
 
     UPDATE public.grading_period_templates

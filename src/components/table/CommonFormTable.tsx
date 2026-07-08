@@ -28,7 +28,9 @@ export interface CommonFormTableProps<TRow, TForm extends FieldValues> {
     title?: string;
     emptyDataMessage?: string;
     disabled?: boolean;
+    hideAddRow?: boolean;
     hideRowActions?: boolean;
+    minRows?: number;
     tableProps?: CommonTableProps;
     onAddRow?: () => void;
     onRemoveRow?: (index: number) => void;
@@ -40,7 +42,9 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     disabled,
     emptyDataMessage,
     fieldArrayName,
+    hideAddRow,
     hideRowActions,
+    minRows = 0,
     rows,
     title,
     tableProps,
@@ -48,6 +52,7 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     onRemoveRow
 }: CommonFormTableProps<TRow, TForm>) {
     const showActions = !disabled && !hideRowActions;
+    const canRemoveRow = rows.length > minRows;
 
     function columnStyle(flex?: number): CSSProperties {
         return {
@@ -76,18 +81,20 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
                     ))}
                     {showActions && (
                         <div className="flex items-center justify-center shrink-0 w-12">
-                            <CommonButton
-                                size="small"
-                                startIcon={
-                                    <PlusIcon
-                                        className="text-(--mui-palette-primary-main)"
-                                        size={18}
-                                        weight="bold"
-                                    />
-                                }
-                                variant="text"
-                                onClick={onAddRow}
-                            />
+                            {!hideAddRow && (
+                                <CommonButton
+                                    size="small"
+                                    startIcon={
+                                        <PlusIcon
+                                            className="text-(--mui-palette-primary-main)"
+                                            size={18}
+                                            weight="bold"
+                                        />
+                                    }
+                                    variant="text"
+                                    onClick={onAddRow}
+                                />
+                            )}
                         </div>
                     )}
                 </div>
@@ -143,14 +150,16 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
                             })}
                             {showActions && (
                                 <div className="flex items-center justify-center shrink-0 w-12">
-                                    <MinusCircleIcon
-                                        className="cursor-pointer text-(--mui-palette-error-main)"
-                                        size={18}
-                                        weight="bold"
-                                        onClick={function() {
-                                            onRemoveRow?.(index);
-                                        }}
-                                    />
+                                    {canRemoveRow && (
+                                        <MinusCircleIcon
+                                            className="cursor-pointer text-(--mui-palette-error-main)"
+                                            size={18}
+                                            weight="bold"
+                                            onClick={function() {
+                                                onRemoveRow?.(index);
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>
