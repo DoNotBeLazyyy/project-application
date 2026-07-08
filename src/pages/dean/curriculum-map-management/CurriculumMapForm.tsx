@@ -23,38 +23,42 @@ export default function CurriculumMapForm({
     const fields: FormFieldConfig<CurriculumMapFormValues>[] = [
         {
             disabled,
+            fieldProps: { helperText: 'Select the course to add to this curriculum' },
             name: 'course_id',
             options: courseOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a course' },
             type: 'select'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Year level when this course is taken' },
             name: 'year_level',
             options: YEAR_LEVEL_OPTIONS,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a year level' },
             type: 'select'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Term when this course is offered' },
             name: 'term_type_id',
             options: termTypeOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a term' },
             type: 'select'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Display order within the term (starts at 1)' },
             name: 'sequence',
             rules: disabled
                 ? undefined
                 : {
-                    required: 'Required',
+                    required: 'Sequence is required',
                     min: { value: 1, message: 'Must be at least 1' }
                 },
             type: 'number'

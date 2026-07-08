@@ -19,18 +19,20 @@ export default function CourseTypeForm({
     const fields: FormFieldConfig<CourseTypeFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Short unique code, e.g. LEC' },
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Code is required' },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Display name, e.g. Lecture' },
             name: 'label',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Label is required' },
             type: 'text'
         },
         {

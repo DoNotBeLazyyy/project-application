@@ -19,18 +19,20 @@ export default function ProgramLevelForm({
     const fields: FormFieldConfig<ProgramLevelFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Short unique code, e.g. UG' },
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Code is required' },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Display name, e.g. Undergraduate' },
             name: 'label',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Label is required' },
             type: 'text'
         },
         {

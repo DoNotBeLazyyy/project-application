@@ -40,10 +40,11 @@ export default function CourseForm({
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
             disabled,
+            fieldProps: { helperText: 'Full course title' },
             name: 'title',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Course title is required' },
             type: 'text',
             gridCols: isSplit
                 ? 6
@@ -51,40 +52,44 @@ export default function CourseForm({
         },
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Unique course code, e.g. CS101' },
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Course code is required' },
             type: 'text',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'Department that owns this course' },
             name: 'department_id',
             options: departmentOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a department' },
             type: 'select',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'Type of course, e.g. Lecture or Laboratory' },
             name: 'course_type_id',
             options: courseTypeOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Please select a course type' },
             type: 'select',
             gridCols: 2
         },
         {
             disabled,
+            fieldProps: { helperText: 'Lecture units (0-10)' },
             name: 'lecture_units',
             rules: disabled
                 ? undefined
                 : {
-                    required: 'Required',
+                    required: 'Lecture units is required',
                     min: { value: 0, message: 'Must be at least 0' },
                     max: { value: 10, message: 'Cannot exceed 10' }
                 },
@@ -94,11 +99,12 @@ export default function CourseForm({
         ...(isSplit
             ? [{
                 disabled,
+                fieldProps: { helperText: 'Laboratory units (0-10)' },
                 name: 'laboratory_units' as const,
                 rules: disabled
                     ? undefined
                     : {
-                        required: 'Required',
+                        required: 'Laboratory units is required',
                         min: { value: 0, message: 'Must be at least 0' },
                         max: { value: 10, message: 'Cannot exceed 10' }
                     },
@@ -109,6 +115,7 @@ export default function CourseForm({
         ),
         {
             disabled,
+            fieldProps: { helperText: 'Credit hours (0-20, optional)' },
             name: 'credit_hours',
             rules: disabled
                 ? undefined

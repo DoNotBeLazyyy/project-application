@@ -22,22 +22,25 @@ export default function DepartmentForm({
     const fields: FormFieldConfig<DepartmentFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Short unique code, e.g. CCS' },
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Department code is required' },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Full department name' },
             name: 'name',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Department name is required' },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Faculty or dean who heads this department (optional)' },
             name: 'head_user_id',
             options: [
                 { label: 'None', value: '' },
