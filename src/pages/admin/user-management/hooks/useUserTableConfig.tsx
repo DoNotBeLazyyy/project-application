@@ -13,7 +13,6 @@ interface UseUserTableConfigProps {
 }
 
 export function useUserTableConfig({
-    onRequestDeleteRow,
     onEdit,
     onView
 }: UseUserTableConfigProps) {

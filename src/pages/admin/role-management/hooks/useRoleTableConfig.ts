@@ -11,7 +11,6 @@ interface UseRoleTableConfigProps {
 }
 
 export function useRoleTableConfig({
-    onRequestDeleteRow,
     onEdit,
     onView
 }: UseRoleTableConfigProps) {

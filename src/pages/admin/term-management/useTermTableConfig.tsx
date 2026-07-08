@@ -16,7 +16,6 @@ interface UseTermTableConfigProps {
 export function useTermTableConfig({
     onAdvanceStatus,
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseTermTableConfigProps) {
     const columnDefs = useMemo<ColDef<TermListRow>[]>(() => [

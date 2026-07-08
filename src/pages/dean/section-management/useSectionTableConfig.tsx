@@ -21,7 +21,6 @@ const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' 
 
 export function useSectionTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseSectionTableConfigProps) {
     const columnDefs = useMemo<ColDef<SectionListRow>[]>(function() {

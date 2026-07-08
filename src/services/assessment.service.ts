@@ -4,6 +4,7 @@ import {
     AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionFormValues, SubmissionForGrading, SubmissionListRow
 } from '@type/assessment.type';
 import { ServiceResult } from '@type/service.type';
+import { parseServiceError } from '@utils/error.util';
 
 export async function listAssessments(
     sectionId: string
@@ -128,12 +129,8 @@ export async function uploadAssessmentAttachment(
         .upload(path, file, { upsert: false });
 
     if (uploadError) {
-        return { data: null, error: { message: uploadError.message } };
+        return { data: null, error: parseServiceError(uploadError) };
     }
-
-    const { data: urlData } = supabase.storage
-        .from('materials')
-        .getPublicUrl(path);
 
     return callRpc<null>('fn_create_assessment_attachment', {
         p_assessment_id:    assessmentId,

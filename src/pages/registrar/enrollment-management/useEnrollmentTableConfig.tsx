@@ -22,7 +22,6 @@ const STATUS_VARIANT_MAP: Record<EnrollmentStatus, 'success' | 'error' | 'warnin
 
 export function useEnrollmentTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseEnrollmentTableConfigProps) {
     const columnDefs = useMemo<ColDef<EnrollmentListRow>[]>(function() {

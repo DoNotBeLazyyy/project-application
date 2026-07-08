@@ -22,7 +22,6 @@ const STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' 
 
 export function useStudentTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView,
     onEvaluate
 }: UseStudentTableConfigProps) {

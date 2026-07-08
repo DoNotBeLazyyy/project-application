@@ -10,8 +10,7 @@ interface UseCurriculumTableConfigProps {
 }
 
 export function useCurriculumTableConfig({
-    onDelete,
-    onView
+    onDelete
 }: UseCurriculumTableConfigProps) {
     const columnDefs = useMemo<ColDef<CurriculumMapEntry>[]>(function() {
         return [

@@ -13,7 +13,6 @@ interface UseDepartmentTableConfigProps {
 
 export function useDepartmentTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseDepartmentTableConfigProps) {
     const columnDefs = useMemo<ColDef<DepartmentListRow>[]>(function() {

@@ -4,7 +4,7 @@ import CommonCard from '@components/card/CommonCard';
 import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { getStudentDashboard } from '@services/student-portal.service';
 import { AssessmentType } from '@type/assessment.type';
-import { StudentDashboardProps, UpcomingAssessment } from '@type/student-portal.type';
+import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,7 @@ const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'war
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
-    const [dashboard, setDashboard] = useState<StudentDashboardProps | null>(null);
+    const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
 
     useEffect(function() {
         async function fetchDashboard() {

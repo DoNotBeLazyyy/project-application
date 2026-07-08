@@ -1,5 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
-import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimePicker';
+import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
@@ -9,7 +9,7 @@ import { FieldErrors, UseFormReturn } from 'react-hook-form';
 
 const SETTINGS_FORM_ID = 'assessment-settings-form';
 
-export const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
+const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
     { label: 'Quiz', value: 'Quiz' },
     { label: 'Exam', value: 'Exam' },
     { label: 'Activity', value: 'Activity' },
@@ -17,26 +17,6 @@ export const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[]
     { label: 'Project', value: 'Project' },
     { label: 'Lab Report', value: 'Lab Report' }
 ];
-
-export const defaultAssessmentValues: AssessmentFormValues = {
-    title: '',
-    description: '',
-    assessment_type: 'Quiz',
-    grading_component_id: '',
-    total_points: '100',
-    passing_points: '',
-    time_limit_minutes: '',
-    max_attempts: '1',
-    opens_at: '',
-    due_at: '',
-    closes_at: '',
-    show_results_at: '',
-    scheduled_publish_at: '',
-    shuffle_questions: false,
-    shuffle_choices: false,
-    show_all_questions: true,
-    questions_per_page: ''
-};
 
 interface AssessmentSettingsFormProps {
     componentOptions: CommonSelectOption[];

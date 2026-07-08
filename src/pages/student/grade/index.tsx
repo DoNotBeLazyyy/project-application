@@ -6,7 +6,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';
 import { SortStringDto } from '@type/http.type';
-import { MyGradeListRow, StudentGradesFilterValues } from '@type/student-portal.type';
+import { MyGradeListRow, MyGradesFilterValues } from '@type/student-portal.type';
 import { ColDef } from 'ag-grid-community';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -22,7 +22,7 @@ export default function StudentGrades() {
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [activeTermId, setActiveTermId] = useState('');
 
-    const filterMethods = useForm<StudentGradesFilterValues>({
+    const filterMethods = useForm<MyGradesFilterValues>({
         defaultValues: { term_id: '' }
     });
 

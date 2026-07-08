@@ -13,7 +13,6 @@ interface UseCourseTableConfigProps {
 
 export function useCourseTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseCourseTableConfigProps) {
     const columnDefs = useMemo<ColDef<CourseListRow>[]>(function() {

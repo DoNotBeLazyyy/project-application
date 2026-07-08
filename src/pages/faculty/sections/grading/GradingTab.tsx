@@ -84,7 +84,7 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
         return (
             <div className="flex flex-1 items-center justify-center">
                 <p className="text-(--mui-palette-text-secondary) text-sm">
-                    No grading periods found for this section's term.
+                    No grading periods found for this section&apos;s term.
                 </p>
             </div>
         );

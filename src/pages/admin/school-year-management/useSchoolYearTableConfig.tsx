@@ -13,7 +13,6 @@ interface UseSchoolYearTableConfigProps {
 
 export function useSchoolYearTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: UseSchoolYearTableConfigProps) {
     const columnDefs = useMemo<ColDef<SchoolYearListRow>[]>(function() {

@@ -13,7 +13,6 @@ interface useProgramTableConfigProps {
 
 export function useProgramTableConfig({
     onEdit,
-    onRequestDeleteRow,
     onView
 }: useProgramTableConfigProps) {
     const columnDefs = useMemo<ColDef<ProgramListRow>[]>(function() {

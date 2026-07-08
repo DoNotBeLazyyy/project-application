@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import CommonSelect from '@components/select/CommonSelect';
+import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
@@ -8,7 +8,146 @@ import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions
 import { useDepartmentOptions } from '@pages/dean/department-management/useDepartmentOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, PrerequisiteRow } from '@type/course/course.type';
-import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import {
+    Control, FieldPath, useController, useFieldArray, useWatch
+} from 'react-hook-form';
+
+type PrerequisiteField =
+    | 'prerequisite_kind'
+    | 'course_id'
+    | 'prerequisite_type'
+    | 'year_level_required'
+    | 'minimum_grade';
+
+const MINIMUM_GRADE_OPTIONS: CommonSelectOption[] = [
+    { label: '—', value: '' },
+    { label: '1.0', value: '1.0' },
+    { label: '1.25', value: '1.25' },
+    { label: '1.5', value: '1.5' },
+    { label: '1.75', value: '1.75' },
+    { label: '2.0', value: '2.0' },
+    { label: '2.25', value: '2.25' },
+    { label: '2.5', value: '2.5' },
+    { label: '2.75', value: '2.75' },
+    { label: '3.0', value: '3.0' }
+];
+
+function prerequisiteName(index: number, field: PrerequisiteField): FieldPath<CourseFormValues> {
+    return `prerequisites.${index}.${field}` as FieldPath<CourseFormValues>;
+}
+
+interface PrerequisiteCellProps {
+    control: Control<CourseFormValues>;
+    disabled?: boolean;
+    rowIndex: number;
+}
+
+function PrerequisiteKindCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
+    const kind = useController({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
+    const courseId = useController({ control, name: prerequisiteName(rowIndex, 'course_id') });
+    const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
+    const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
+
+    return (
+        <CommonSelect
+            disabled={disabled}
+            fullWidth
+            options={PREREQUISITE_KIND_OPTIONS}
+            size="small"
+            value={String(kind.field.value ?? '')}
+            onChange={(e) => {
+                kind.field.onChange(e.target.value);
+                courseId.field.onChange('');
+                yearLevel.field.onChange('');
+                minimumGrade.field.onChange('');
+            }}
+        />
+    );
+}
+
+interface PrerequisiteTargetCellProps extends PrerequisiteCellProps {
+    courseOptions: CommonSelectOption[];
+}
+
+function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: PrerequisiteTargetCellProps) {
+    const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
+    const prerequisites = useWatch({ control, name: 'prerequisites' });
+    const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
+    const courseId = useController({ control, name: prerequisiteName(rowIndex, 'course_id') });
+
+    if (kind === 'standing') {
+        return (
+            <CommonSelect
+                disabled={disabled}
+                fullWidth
+                options={YEAR_LEVEL_STANDING_OPTIONS}
+                size="small"
+                value={String(yearLevel.field.value ?? '')}
+                onChange={(e) => yearLevel.field.onChange(e.target.value)}
+            />
+        );
+    }
+
+    const selectedInOtherRows = (prerequisites ?? [])
+        .filter((prereq, i) => i !== rowIndex && prereq.prerequisite_kind === 'course')
+        .map((prereq) => prereq.course_id)
+        .filter(Boolean);
+
+    const availableOptions = courseOptions.filter(
+        (option) => !selectedInOtherRows.includes(String(option.value))
+    );
+
+    return (
+        <CommonSelect
+            disabled={disabled}
+            fullWidth
+            options={availableOptions}
+            size="small"
+            value={String(courseId.field.value ?? '')}
+            onChange={(e) => courseId.field.onChange(e.target.value)}
+        />
+    );
+}
+
+function PrerequisiteTypeCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
+    const type = useController({ control, name: prerequisiteName(rowIndex, 'prerequisite_type') });
+    const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
+
+    return (
+        <CommonSelect
+            disabled={disabled}
+            fullWidth
+            options={PREREQUISITE_TYPE_OPTIONS}
+            size="small"
+            value={String(type.field.value ?? '')}
+            onChange={(e) => {
+                type.field.onChange(e.target.value);
+                if (e.target.value === 'Co-requisite') minimumGrade.field.onChange('');
+            }}
+        />
+    );
+}
+
+function PrerequisiteMinGradeCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
+    const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
+    const type = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_type') });
+    const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
+
+    const isLocked = type === 'Co-requisite' || kind === 'standing';
+
+    return (
+        <CommonSelect
+            disabled={disabled || isLocked}
+            fullWidth
+            options={MINIMUM_GRADE_OPTIONS}
+            size="small"
+            value={isLocked
+                ? ''
+                : String(minimumGrade.field.value ?? '')}
+            onChange={(e) => minimumGrade.field.onChange(e.target.value)}
+        />
+    );
+}
 
 interface CourseFormProps extends ComponentPropsForm {
     control: Control<CourseFormValues>;
@@ -33,7 +172,7 @@ export default function CourseForm({
         excludeIds: [excludeCourseId].filter((id): id is string => !!id)
     });
     const isSplit = useWatch({ control, name: 'is_split' });
-    const { fields, append, remove, update } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: 'prerequisites'
     });
@@ -150,24 +289,16 @@ export default function CourseForm({
             gridCols: 2
         }
     ];
-    const prerequisiteColumns: CommonFormTableColumn<PrerequisiteRow>[] = [
+    const prerequisiteColumns: CommonFormTableColumn<PrerequisiteRow, CourseFormValues>[] = [
         {
             key: 'prerequisite_kind',
             headerName: 'Kind',
             flex: 1,
-            renderCell: (row, index, onChange) => (
-                <CommonSelect
-                    disabled={disabled}
-                    fullWidth
-                    options={PREREQUISITE_KIND_OPTIONS}
-                    size="small"
-                    value={row.prerequisite_kind}
-                    onChange={(e) => {
-                        onChange(index, 'prerequisite_kind', e.target.value);
-                        onChange(index, 'course_id', '');
-                        onChange(index, 'year_level_required', '');
-                        onChange(index, 'minimum_grade', '');
-                    }}
+            renderCell: (params) => (
+                <PrerequisiteKindCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
                 />
             )
         },
@@ -175,43 +306,24 @@ export default function CourseForm({
             key: 'course_id',
             headerName: 'Course / Year Level',
             flex: 3,
-            renderCell: (row, index, onChange) => {
-                if (row.prerequisite_kind === 'standing') {
-                    return (
-                        <CommonSelect
-                            disabled={disabled}
-                            fullWidth
-                            options={YEAR_LEVEL_STANDING_OPTIONS}
-                            size="small"
-                            value={row.year_level_required}
-                            onChange={(e) => onChange(index, 'year_level_required', e.target.value)}
-                        />
-                    );
-                }
-                return (
-                    <CommonSelect
-                        disabled={disabled}
-                        fullWidth
-                        options={getCourseOptionsForRow(index)}
-                        size="small"
-                        value={row.course_id}
-                        onChange={(e) => onChange(index, 'course_id', e.target.value)}
-                    />
-                );
-            }
+            renderCell: (params) => (
+                <PrerequisiteTargetCell
+                    control={params.control}
+                    courseOptions={allCourseOptions}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
+                />
+            )
         },
         {
             key: 'prerequisite_type',
             headerName: 'Type',
             flex: 2,
-            renderCell: (row, index, onChange) => (
-                <CommonSelect
-                    disabled={disabled}
-                    fullWidth
-                    options={PREREQUISITE_TYPE_OPTIONS}
-                    size="small"
-                    value={row.prerequisite_type}
-                    onChange={(e) => onChange(index, 'prerequisite_type', e.target.value)}
+            renderCell: (params) => (
+                <PrerequisiteTypeCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
                 />
             )
         },
@@ -219,34 +331,18 @@ export default function CourseForm({
             key: 'minimum_grade',
             headerName: 'Min Grade',
             flex: 1,
-            renderCell: (row, index, onChange) => (
-                <CommonSelect
-                    disabled={disabled || row.prerequisite_type === 'Co-requisite' || row.prerequisite_kind === 'standing'}
-                    fullWidth
-                    options={[
-                        { label: '—', value: '' },
-                        { label: '1.0', value: '1.0' },
-                        { label: '1.25', value: '1.25' },
-                        { label: '1.5', value: '1.5' },
-                        { label: '1.75', value: '1.75' },
-                        { label: '2.0', value: '2.0' },
-                        { label: '2.25', value: '2.25' },
-                        { label: '2.5', value: '2.5' },
-                        { label: '2.75', value: '2.75' },
-                        { label: '3.0', value: '3.0' }
-                    ]}
-                    size="small"
-                    value={row.prerequisite_type === 'Co-requisite' || row.prerequisite_kind === 'standing'
-                        ? ''
-                        : row.minimum_grade
-                    }
-                    onChange={(e) => onChange(index, 'minimum_grade', e.target.value)}
+            renderCell: (params) => (
+                <PrerequisiteMinGradeCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
                 />
             )
         }
     ];
-    const courseKindCount = fields.filter((field) =>
-        (field as unknown as PrerequisiteRow).prerequisite_kind === 'course').length;
+    const courseKindCount = (prerequisites ?? []).filter(
+        (prereq) => prereq.prerequisite_kind === 'course'
+    ).length;
 
     function handleAddPrerequisite() {
         append({
@@ -262,26 +358,6 @@ export default function CourseForm({
         remove(index);
     }
 
-    function handlePrerequisiteChange(
-        index: number,
-        field: keyof PrerequisiteRow,
-        value: unknown
-    ) {
-        const current = fields[index];
-        update(index, { ...current, [field]: value });
-    }
-
-    function getCourseOptionsForRow(rowIndex: number) {
-        const selectedInOtherRows = prerequisites
-            .filter((prereq, i) => i !== rowIndex && prereq.prerequisite_kind === 'course')
-            .map((prereq) => prereq.course_id)
-            .filter(Boolean);
-
-        return allCourseOptions.filter(
-            (option) => !selectedInOtherRows.includes(String(option.value))
-        );
-    }
-
     return (
         <div className="flex flex-col gap-4">
             <CommonForm
@@ -291,11 +367,13 @@ export default function CourseForm({
                 formProps={formProps}
                 hasHelper
             />
-            {<CommonFormTable<PrerequisiteRow>
+            <CommonFormTable<PrerequisiteRow, CourseFormValues>
                 columns={prerequisiteColumns}
+                control={control}
                 disabled={disabled}
                 emptyDataMessage="No prerequisites added yet"
-                rows={fields as unknown as PrerequisiteRow[]}
+                fieldArrayName="prerequisites"
+                rows={fields as unknown as (PrerequisiteRow & { id: string })[]}
                 tableProps={{
                     containerClassName: 'h-[180px]'
                 }}
@@ -303,9 +381,8 @@ export default function CourseForm({
                 onAddRow={courseKindCount < allCourseOptions.length
                     ? handleAddPrerequisite
                     : undefined}
-                onChange={handlePrerequisiteChange}
                 onRemoveRow={handleRemovePrerequisite}
-            />}
+            />
         </div>
     );
 }

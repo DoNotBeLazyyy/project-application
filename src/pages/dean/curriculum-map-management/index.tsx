@@ -90,18 +90,6 @@ export default function CurriculumMapManagement() {
         setIsCreateOpen(true);
     }
 
-    function handleOpenUpdate(entry: CurriculumMapEntry) {
-        setSelectedEntry(entry);
-        updateMethods.reset({
-            course_id: entry.course_id,
-            year_level: String(entry.year_level),
-            term_type_id: entry.term_type_id,
-            sequence: String(entry.sequence),
-            is_elective: entry.is_elective
-        });
-        setIsUpdateOpen(true);
-    }
-
     function handleOpenView(entry: CurriculumMapEntry) {
         setSelectedEntry(entry);
         updateMethods.reset({
