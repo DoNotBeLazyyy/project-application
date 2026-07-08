@@ -20,9 +20,9 @@ const DEFAULT_VALUES: PeriodFormValues = {
 
 interface PeriodsTabProps {
     periods: GradingPeriodTemplate[];
-    onAddPeriod: (values: PeriodFormValues) => void;
-    onDeletePeriod: (index: number) => void;
-    onUpdatePeriod: (index: number, values: PeriodFormValues) => void;
+    onAddPeriod: (values: PeriodFormValues) => Promise<boolean>;
+    onDeletePeriod: (index: number) => Promise<boolean>;
+    onUpdatePeriod: (index: number, values: PeriodFormValues) => Promise<boolean>;
 }
 
 export default function PeriodsTab({
@@ -90,17 +90,22 @@ export default function PeriodsTab({
         updateMethods.reset(DEFAULT_VALUES);
     }
 
-    function handleCreate(values: PeriodFormValues) {
-        onAddPeriod(values);
-        createMethods.reset(DEFAULT_VALUES);
-        setIsCreateOpen(false);
+    async function handleCreate(values: PeriodFormValues) {
+        const saved = await onAddPeriod(values);
+        if (saved) {
+            createMethods.reset(DEFAULT_VALUES);
+            setIsCreateOpen(false);
+        }
     }
 
-    function handleUpdate(values: PeriodFormValues) {
-        if (selectedIndex !== null) {
-            onUpdatePeriod(selectedIndex, values);
+    async function handleUpdate(values: PeriodFormValues) {
+        if (selectedIndex === null) {
+            return;
         }
-        handleCloseUpdate();
+        const saved = await onUpdatePeriod(selectedIndex, values);
+        if (saved) {
+            handleCloseUpdate();
+        }
     }
 
     const columnDefs = useMemo<ColDef<PeriodRow>[]>(function() {

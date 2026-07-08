@@ -1,17 +1,29 @@
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import GeneralTab from '@pages/admin/grading-config-management/GeneralTab';
-import PeriodsTab, { PeriodFormValues } from '@pages/admin/grading-config-management/PeriodsTab';
+import PeriodsTab from '@pages/admin/grading-config-management/PeriodsTab';
+import { PeriodFormValues } from '@pages/admin/grading-config-management/PeriodModalForm';
 import SpecialGradesTab from '@pages/admin/grading-config-management/SpecialGradesTab';
 import TransmutationTab from '@pages/admin/grading-config-management/TransmutationTab';
 import {
-    deleteSpecialGradeConfig, getGradingConfig, getGradingPeriodTemplates, getSpecialGradeConfigs, getTransmutationTable, saveSpecialGradeConfigs, saveTransmutationTable, updateGradingConfig
+    createGradingPeriodTemplate, deleteGradingPeriodTemplate, deleteSpecialGradeConfig, getGradingConfig, getGradingPeriodTemplates, getSpecialGradeConfigs, getTransmutationTable, saveSpecialGradeConfigs, saveTransmutationTable, updateGradingConfig, updateGradingPeriodTemplate
 } from '@services/grading-config.service';
 import { GradingConfigFormValues, GradingPeriodTemplate, SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 type GradingTab = 'general' | 'transmutation' | 'periods' | 'special';
+
+function mapPeriodTemplates(periods: GradingPeriodTemplate[]): GradingPeriodTemplate[] {
+    return periods.map((period) => ({
+        ...period,
+        weight: String(period.weight),
+        components: period.components.map((comp) => ({
+            ...comp,
+            weight: String(comp.weight)
+        }))
+    }));
+}
 
 const TABS = [
     { label: 'General', value: 'general' },
@@ -64,14 +76,7 @@ export default function GradingConfiguration() {
         async function loadPeriods() {
             const result = await getGradingPeriodTemplates();
             if (isActive) {
-                setPeriodTemplates((result.data ?? []).map((period) => ({
-                    ...period,
-                    weight: String(period.weight),
-                    components: period.components.map((comp) => ({
-                        ...comp,
-                        weight: String(comp.weight)
-                    }))
-                })));
+                setPeriodTemplates(mapPeriodTemplates(result.data ?? []));
             }
         }
 
@@ -129,32 +134,54 @@ export default function GradingConfiguration() {
         setIsSavingTransmutation(false);
     }
 
-    function handleAddPeriod(values: PeriodFormValues) {
-        setPeriodTemplates((prev) => [
-            ...prev,
-            {
-                name: values.name,
-                sequence: prev.length + 1,
-                weight: values.weight,
-                components: values.components
-            }
-        ]);
+    async function reloadPeriods() {
+        const refreshed = await getGradingPeriodTemplates();
+        setPeriodTemplates(mapPeriodTemplates(refreshed.data ?? []));
     }
 
-    function handleUpdatePeriod(index: number, values: PeriodFormValues) {
-        setPeriodTemplates((prev) => prev.map((period, i) =>
-            i === index
-                ? {
-                    ...period,
-                    name: values.name,
-                    weight: values.weight,
-                    components: values.components
-                }
-                : period));
+    async function handleAddPeriod(values: PeriodFormValues): Promise<boolean> {
+        const result = await createGradingPeriodTemplate({
+            name: values.name,
+            sequence: periodTemplates.length + 1,
+            weight: values.weight,
+            components: values.components
+        });
+        if (result.error) {
+            return false;
+        }
+        await reloadPeriods();
+        return true;
     }
 
-    function handleDeletePeriod(index: number) {
-        setPeriodTemplates((prev) => prev.filter((_, i) => i !== index));
+    async function handleUpdatePeriod(index: number, values: PeriodFormValues): Promise<boolean> {
+        const target = periodTemplates[index];
+        if (!target?.id) {
+            return false;
+        }
+        const result = await updateGradingPeriodTemplate(target.id, {
+            ...target,
+            name: values.name,
+            weight: values.weight,
+            components: values.components
+        });
+        if (result.error) {
+            return false;
+        }
+        await reloadPeriods();
+        return true;
+    }
+
+    async function handleDeletePeriod(index: number): Promise<boolean> {
+        const target = periodTemplates[index];
+        if (!target?.id) {
+            return false;
+        }
+        const result = await deleteGradingPeriodTemplate(target.id);
+        if (result.error) {
+            return false;
+        }
+        await reloadPeriods();
+        return true;
     }
 
     async function handleSaveSpecial() {

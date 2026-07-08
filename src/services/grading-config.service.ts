@@ -37,20 +37,36 @@ export async function getGradingPeriodTemplates(): Promise<ServiceResult<Grading
     return callRpc<GradingPeriodTemplate[]>('fn_get_grading_period_templates');
 }
 
-export async function saveGradingPeriodTemplates(
-    periods: GradingPeriodTemplate[]
+export async function createGradingPeriodTemplate(
+    period: GradingPeriodTemplate
 ): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_save_grading_period_templates', {
-        p_periods: periods.map((period, index) => ({
-            name: period.name,
-            sequence: index + 1,
-            weight: Number(period.weight),
-            components: period.components.map((component) => ({
-                name: component.name,
-                weight: Number(component.weight)
-            }))
+    return callRpc<null>('fn_create_grading_period_template', {
+        p_name: period.name,
+        p_weight: Number(period.weight),
+        p_components: period.components.map((component) => ({
+            name: component.name,
+            weight: Number(component.weight)
         }))
     });
+}
+
+export async function updateGradingPeriodTemplate(
+    id: string,
+    period: GradingPeriodTemplate
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_update_grading_period_template', {
+        p_id: id,
+        p_name: period.name,
+        p_weight: Number(period.weight),
+        p_components: period.components.map((component) => ({
+            name: component.name,
+            weight: Number(component.weight)
+        }))
+    });
+}
+
+export async function deleteGradingPeriodTemplate(id: string): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_delete_grading_period_template', { p_id: id });
 }
 
 export async function getSpecialGradeConfigs(): Promise<ServiceResult<SpecialGradeConfig[]>> {
