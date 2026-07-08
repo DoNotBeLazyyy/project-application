@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentEvaluation
+    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -52,6 +52,24 @@ export async function getSectionStudentEvaluation(
 ): Promise<ServiceResult<StudentEvaluation>> {
     return callRpc<StudentEvaluation>('fn_get_section_student_evaluation', {
         p_enrollment_id: enrollmentId
+    });
+}
+
+export async function getStudentAttendance(
+    enrollmentId: string
+): Promise<ServiceResult<StudentAttendanceRow[]>> {
+    return callRpc<StudentAttendanceRow[]>('fn_get_student_attendance', {
+        p_enrollment_id: enrollmentId
+    });
+}
+
+export async function getStudentGradeBreakdown(
+    enrollmentId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<StudentGradeBreakdown>> {
+    return callRpc<StudentGradeBreakdown>('fn_get_student_grade_breakdown', {
+        p_enrollment_id: enrollmentId,
+        p_grading_period_id: gradingPeriodId
     });
 }
 

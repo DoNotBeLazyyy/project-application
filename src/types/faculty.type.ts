@@ -58,12 +58,16 @@ export interface StudentEvaluationAttendance {
 export interface StudentEvaluationAssessment {
     id: string;
     title: string;
+    description: string | null;
     assessment_type: string;
     total_points: number;
     passing_points: number | null;
     due_at: string | null;
+    question_count: number;
     grading_period_name: string | null;
+    grading_period_id: string | null;
     grading_period_sequence: number | null;
+    submission_id: string | null;
     submission_status: string | null;
     raw_score: number | null;
     final_score: number | null;
@@ -89,6 +93,36 @@ export interface StudentEvaluation {
     attendance: StudentEvaluationAttendance;
     assessments: StudentEvaluationAssessment[];
     grades: StudentEvaluationGrade[];
+}
+
+export interface StudentAttendanceRow {
+    record_id: string;
+    session_id: string;
+    session_date: string;
+    notes: string | null;
+    status: AttendanceStatus;
+    remarks: string | null;
+}
+
+export interface StudentGradeComponent {
+    id: string;
+    name: string;
+    weight: number;
+    earned_points: number;
+    max_points: number;
+    weighted_score: number;
+}
+
+export interface StudentGradeBreakdown {
+    grading_period_id: string;
+    grading_period_name: string;
+    weight: number;
+    raw_grade: number | null;
+    final_grade: number | null;
+    transmuted_grade: number | null;
+    special_grade: string | null;
+    status: GradeStatus | null;
+    components: StudentGradeComponent[];
 }
 
 export interface AttendanceSession {
