@@ -38,14 +38,14 @@ export default function SubjectDetailPage() {
             if (result.data) setAssessments(result.data);
         }
 
-        async function fetchGrades() {
-            const result = await getSubjectGrades(enrollmentId);
-            if (result.data) setGrades(result.data);
-        }
-
         if (activeTab === 'assessments' && assessments === null) fetchAssessments();
         if (activeTab === 'grades' && grades === null) fetchGrades();
     }, [activeTab, assessments, enrollmentId, grades]);
+
+    async function fetchGrades() {
+        const result = await getSubjectGrades(enrollmentId);
+        if (result.data) setGrades(result.data);
+    }
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as SubjectTab);
@@ -125,7 +125,11 @@ export default function SubjectDetailPage() {
                     />
                 )}
                 {activeTab === 'grades' && (
-                    <SubjectGradeList grades={grades ?? []} />
+                    <SubjectGradeList
+                        enrollmentId={enrollmentId}
+                        grades={grades ?? []}
+                        onEvaluated={fetchGrades}
+                    />
                 )}
             </div>
         </CommonCard>

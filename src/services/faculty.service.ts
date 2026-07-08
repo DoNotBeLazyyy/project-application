@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent
+    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentEvaluation
 } from '@type/faculty.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -44,6 +44,14 @@ export async function listSectionStudents(
         p_sort: sort.length > 0
             ? sort
             : null
+    });
+}
+
+export async function getSectionStudentEvaluation(
+    enrollmentId: string
+): Promise<ServiceResult<StudentEvaluation>> {
+    return callRpc<StudentEvaluation>('fn_get_section_student_evaluation', {
+        p_enrollment_id: enrollmentId
     });
 }
 

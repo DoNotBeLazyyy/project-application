@@ -65,11 +65,16 @@ export interface MySubjectListRow {
 export interface SubjectAssessmentItem {
     id: string;
     title: string;
+    description: string | null;
     assessment_type: AssessmentType;
+    grading_period_id: string | null;
+    grading_period_name: string | null;
+    grading_period_sequence: number | null;
     total_points: number;
     passing_points: number | null;
     time_limit_minutes: number | null;
     max_attempts: number;
+    question_count: number;
     show_all_questions: boolean;
     questions_per_page: number | null;
     opens_at: string | null;

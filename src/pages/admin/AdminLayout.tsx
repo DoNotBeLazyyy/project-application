@@ -4,7 +4,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    CalendarIcon, ChartBarIcon, ClockIcon, GearIcon, ListChecksIcon, ListIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
+    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, ListChecksIcon, ListIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -86,6 +86,12 @@ export default function AdminLayout() {
                         isActive: pathname === '/admin/grade-configurations',
                         label: 'Grading',
                         onClick: () => navigate('/admin/grade-configurations')
+                    },
+                    {
+                        icon: <ClipboardTextIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/evaluations'),
+                        label: 'Evaluations',
+                        onClick: () => navigate('/admin/evaluations')
                     },
                     {
                         icon: <ShieldCheckIcon size={18} />,

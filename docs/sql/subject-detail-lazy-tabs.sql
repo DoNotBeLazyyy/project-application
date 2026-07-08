@@ -66,19 +66,29 @@ BEGIN
 
     SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
-            'id',                    ai.id,
-            'title',                 ai.title,
-            'assessment_type',       ai.assessment_type,
-            'total_points',          ai.total_points,
-            'passing_points',        ai.passing_points,
-            'time_limit_minutes',    ai.time_limit_minutes,
-            'max_attempts',          ai.max_attempts,
-            'show_all_questions',    ai.show_all_questions,
-            'questions_per_page',    ai.questions_per_page,
-            'opens_at',              ai.opens_at,
-            'due_at',                ai.due_at,
-            'closes_at',             ai.closes_at,
-            'scheduled_publish_at',  ai.scheduled_publish_at,
+            'id',                       ai.id,
+            'title',                    ai.title,
+            'description',              ai.description,
+            'assessment_type',          ai.assessment_type,
+            'grading_period_id',        gp.id,
+            'grading_period_name',      gp.name,
+            'grading_period_sequence',  gp.sequence,
+            'total_points',             ai.total_points,
+            'passing_points',           ai.passing_points,
+            'time_limit_minutes',       ai.time_limit_minutes,
+            'max_attempts',             ai.max_attempts,
+            'question_count', (
+                SELECT COUNT(*)
+                FROM public.assessment_questions aq
+                WHERE aq.assessment_item_id = ai.id
+                AND aq.deleted_at IS NULL
+            ),
+            'show_all_questions',       ai.show_all_questions,
+            'questions_per_page',       ai.questions_per_page,
+            'opens_at',                 ai.opens_at,
+            'due_at',                   ai.due_at,
+            'closes_at',                ai.closes_at,
+            'scheduled_publish_at',     ai.scheduled_publish_at,
             'submission_status', (
                 SELECT asub.status
                 FROM public.assessment_submissions asub
@@ -119,10 +129,12 @@ BEGIN
                 WHERE aa.assessment_item_id = ai.id AND aa.deleted_at IS NULL
             )
         )
-        ORDER BY ai.opens_at ASC NULLS LAST, ai.due_at ASC NULLS LAST
+        ORDER BY gp.sequence ASC NULLS LAST, ai.opens_at ASC NULLS LAST, ai.due_at ASC NULLS LAST
     ), '[]'::JSONB)
     INTO v_result
     FROM public.assessment_items ai
+    LEFT JOIN public.grading_components gc ON gc.id = ai.grading_component_id AND gc.deleted_at IS NULL
+    LEFT JOIN public.grading_periods gp ON gp.id = gc.grading_period_id AND gp.deleted_at IS NULL
     WHERE ai.section_id = v_section_id
     AND ai.deleted_at IS NULL
     AND (

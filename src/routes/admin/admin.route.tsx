@@ -1,5 +1,6 @@
 import AdminDashboard from '@pages/admin/AdminDashboard';
 import AdminLayout from '@pages/admin/AdminLayout';
+import EvaluationManagement from '@pages/admin/evaluation-management';
 import GradingConfiguration from '@pages/admin/grading-config-management';
 import RoleManagement from '@pages/admin/role-management';
 import SchoolYearManagement from '@pages/admin/school-year-management';
@@ -18,6 +19,7 @@ export const adminRoutes: RouteObject[] = [
             { element: <UserManagement />, path: 'users' },
             { element: <SchoolYearManagement />, path: 'school-years' },
             { element: <GradingConfiguration />, path: 'grade-configurations' },
+            { element: <EvaluationManagement />, path: 'evaluations' },
             { element: <RoleManagement />, path: 'roles' },
             { element: <TermManagement />, path: 'terms' },
             { element: <TermTypeManagement />, path: 'term-types' },

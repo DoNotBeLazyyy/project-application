@@ -1,10 +1,11 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import StudentEvaluationModal from '@pages/faculty/sections/StudentEvaluationModal';
 import { listSectionStudents } from '@services/faculty.service';
 import { SectionStudent } from '@type/faculty.type';
 import { SortStringDto } from '@type/http.type';
 import { ColDef } from 'ag-grid-community';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'student_number', label: 'Student No.' },
@@ -19,6 +20,8 @@ interface StudentsTabProps {
 }
 
 export default function StudentsTab({ sectionId }: StudentsTabProps) {
+    const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(null);
+
     const columnDefs = useMemo<ColDef<SectionStudent>[]>(function() {
         return [
             {
@@ -74,17 +77,27 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
     }
 
     return (
-        <CommonTableCard<SectionStudent>
-            cardHeaderProps={{
-                subheader: 'Students enrolled in this section.',
-                title: 'Roster'
-            }}
-            sortColumns={SORT_COLUMNS}
-            tableProps={{
-                leadingColumnDefs: columnDefs
-            }}
-            uniqueIdKey="enrollment_id"
-            onFetch={fetchStudents}
-        />
+        <>
+            <CommonTableCard<SectionStudent>
+                cardHeaderProps={{
+                    subheader: 'Select a student to view their attendance, assessments, and grades.',
+                    title: 'Roster'
+                }}
+                sortColumns={SORT_COLUMNS}
+                tableProps={{
+                    leadingColumnDefs: columnDefs
+                }}
+                uniqueIdKey="enrollment_id"
+                onFetch={fetchStudents}
+                onRowClick={setSelectedEnrollmentId}
+            />
+            <StudentEvaluationModal
+                enrollmentId={selectedEnrollmentId}
+                open={Boolean(selectedEnrollmentId)}
+                onClose={function() {
+                    setSelectedEnrollmentId(null);
+                }}
+            />
+        </>
     );
 }

@@ -34,6 +34,63 @@ export interface SectionStudent {
     enrolled_at: string;
 }
 
+export interface StudentEvaluationProfile {
+    enrollment_id: string;
+    student_id: string;
+    student_number: string;
+    full_name: string;
+    email: string;
+    year_level: number;
+    program_name: string | null;
+    enrollment_status: string;
+    enrolled_at: string;
+}
+
+export interface StudentEvaluationAttendance {
+    total_sessions: number;
+    present: number;
+    absent: number;
+    late: number;
+    excused: number;
+    recorded: number;
+}
+
+export interface StudentEvaluationAssessment {
+    id: string;
+    title: string;
+    assessment_type: string;
+    total_points: number;
+    passing_points: number | null;
+    due_at: string | null;
+    grading_period_name: string | null;
+    grading_period_sequence: number | null;
+    submission_status: string | null;
+    raw_score: number | null;
+    final_score: number | null;
+    is_late: boolean | null;
+    submitted_at: string | null;
+    graded_at: string | null;
+}
+
+export interface StudentEvaluationGrade {
+    grading_period_id: string;
+    grading_period_name: string;
+    sequence: number;
+    weight: number;
+    raw_grade: number | null;
+    final_grade: number | null;
+    transmuted_grade: number | null;
+    special_grade: string | null;
+    status: GradeStatus | null;
+}
+
+export interface StudentEvaluation {
+    profile: StudentEvaluationProfile;
+    attendance: StudentEvaluationAttendance;
+    assessments: StudentEvaluationAssessment[];
+    grades: StudentEvaluationGrade[];
+}
+
 export interface AttendanceSession {
     id: string;
     session_date: string;
