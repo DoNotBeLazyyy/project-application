@@ -1,28 +1,77 @@
 import CommonButton from '@components/button/CommonButton';
+import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
-import CommonTable from '@components/table/CommonTable';
-import { CheckCircleIcon, ClockIcon } from '@phosphor-icons/react';
-import { approveAndReleaseGrades, listGradeRelease } from '@services/grade-release.service';
+import { CalendarBlankIcon, CheckCircleIcon, ClockIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import ReleaseScheduleForm from '@pages/registrar/grade-release-management/ReleaseScheduleForm';
+import { listGradeReleaseSchedule, releaseGradingPeriodNow, setGradingPeriodReleaseAt } from '@services/grade-release.service';
 import { getTerms, TermOption } from '@services/section.service';
 import { ChangeEventInputTextarea } from '@type/common.type';
-import { GradeReleaseListRow, GradingPeriodStat } from '@type/grade-release.type';
-import { ColDef } from 'ag-grid-community';
-import { useEffect, useMemo, useState } from 'react';
+import { GradeReleaseSchedule } from '@type/grade-release.type';
+import { DateTime } from 'luxon';
+import { useCallback, useEffect, useState } from 'react';
+
+function formatReleaseAt(releaseAt: string): string {
+    return DateTime.fromISO(releaseAt)
+        .toFormat('MMM d, yyyy · h:mm a');
+}
+
+function isDue(period: GradeReleaseSchedule): boolean {
+    return !!period.release_at && DateTime.fromISO(period.release_at) <= DateTime.now();
+}
+
+function resolveStatusLabel(period: GradeReleaseSchedule): string {
+    if (period.total_grades === 0) {
+        return 'No grades submitted yet';
+    }
+
+    if (period.released_count === period.total_grades) {
+        return 'Fully released';
+    }
+
+    if (!period.release_at) {
+        return 'No release scheduled';
+    }
+
+    if (!isDue(period)) {
+        return `Releases ${formatReleaseAt(period.release_at)}`;
+    }
+
+    return `Releasing — ${period.blocked_count} awaiting evaluation`;
+}
 
 export default function GradeRelease() {
     const [termOptions, setTermOptions] = useState<{ label: string; value: string }[]>([]);
     const [selectedTermId, setSelectedTermId] = useState<string>('');
-    const [rows, setRows] = useState<GradeReleaseListRow[]>([]);
+    const [periods, setPeriods] = useState<GradeReleaseSchedule[]>([]);
+    const [activePeriod, setActivePeriod] = useState<GradeReleaseSchedule | null>(null);
+    const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [releaseTarget, setReleaseTarget] = useState<GradeReleaseSchedule | null>(null);
+
+    const fetchPeriods = useCallback(async function(termId: string) {
+        if (!termId) {
+            return;
+        }
+
+        const result = await listGradeReleaseSchedule(termId);
+
+        if (result.data) {
+            setPeriods(result.data);
+        }
+    }, []);
 
     useEffect(function() {
         async function fetchTerms() {
             const result = await getTerms();
 
             if (result.data) {
-                const options = result.data.map((term: TermOption) => ({
-                    label: term.label,
-                    value: term.id
-                }));
+                const options = result.data.map(function(term: TermOption) {
+                    return {
+                        label: term.label,
+                        value: term.id
+                    };
+                });
+
                 setTermOptions(options);
 
                 if (options.length > 0) {
@@ -35,133 +84,61 @@ export default function GradeRelease() {
     }, []);
 
     useEffect(function() {
-        async function fetchRows() {
-            if (!selectedTermId) return;
-
-            const result = await listGradeRelease(1, 200, '', [], selectedTermId);
-
-            if (result.data) {
-                setRows(result.data.content);
-            }
-        }
-
-        fetchRows();
-    }, [selectedTermId]);
-
-    async function handleRelease(sectionId: string, gradingPeriodId: string) {
-        const result = await approveAndReleaseGrades(sectionId, gradingPeriodId);
-
-        if (!result.error) {
-            const refreshed = await listGradeRelease(1, 200, '', [], selectedTermId);
-
-            if (refreshed.data) {
-                setRows(refreshed.data.content);
-            }
-        }
-    }
+        fetchPeriods(selectedTermId);
+    }, [selectedTermId, fetchPeriods]);
 
     function handleTermChange(e: ChangeEventInputTextarea) {
         setSelectedTermId(e.target.value);
     }
 
-    const columnDefs = useMemo<ColDef<GradeReleaseListRow>[]>(function() {
-        return [
-            {
-                field: 'section_code',
-                flex: 1,
-                headerName: 'Section',
-                sortable: true
-            },
-            {
-                field: 'course_code',
-                flex: 1,
-                headerName: 'Course Code',
-                sortable: true
-            },
-            {
-                field: 'course_title',
-                flex: 3,
-                headerName: 'Course Title',
-                sortable: true
-            },
-            {
-                field: 'faculty_name',
-                flex: 2,
-                headerName: 'Faculty',
-                sortable: true,
-                valueFormatter: (params) => params.value || '—'
-            },
-            {
-                field: 'grading_periods',
-                flex: 4,
-                headerName: 'Grading Periods',
-                sortable: false,
-                autoHeight: true,
-                cellRenderer: (params: { data: GradeReleaseListRow }) => {
-                    const periods = params.data.grading_periods;
+    function handleOpenSchedule(period: GradeReleaseSchedule) {
+        setActivePeriod(period);
+        setIsScheduleOpen(true);
+    }
 
-                    if (!periods || periods.length === 0) {
-                        return (
-                            <div className="flex h-full items-center">
-                                <span className="text-[var(--mui-palette-text-disabled)] text-xs">
-                                    No grading periods
-                                </span>
-                            </div>
-                        );
-                    }
+    function handleCloseSchedule() {
+        setIsScheduleOpen(false);
+        setActivePeriod(null);
+    }
 
-                    return (
-                        <div className="flex flex-wrap gap-2 py-2">
-                            {periods.map((period: GradingPeriodStat) => {
-                                const isFullyReleased = period.released_count === period.total_grades
-                                    && period.total_grades > 0;
-                                const hasGrades = period.total_grades > 0;
+    async function persistReleaseAt(releaseAt: string | null) {
+        if (!activePeriod) {
+            return;
+        }
 
-                                return (
-                                    <div
-                                        className="border border-[var(--mui-palette-divider)] flex flex-col gap-1 min-w-36 px-3 py-2 rounded-lg"
-                                        key={period.grading_period_id}
-                                    >
-                                        <span className="font-medium text-[var(--mui-palette-text-primary)] text-xs">
-                                            {period.grading_period_name}
-                                        </span>
-                                        <span className="text-[var(--mui-palette-text-secondary)] text-xs">
-                                            {period.released_count}/{period.total_grades} released
-                                        </span>
-                                        {isFullyReleased
-                                            ? (
-                                                <div className="flex gap-1 items-center text-[var(--mui-palette-success-main)]">
-                                                    <CheckCircleIcon size={12} weight="bold" />
-                                                    <span className="text-xs">Released</span>
-                                                </div>
-                                            )
-                                            : (
-                                                <CommonButton
-                                                    disabled={!hasGrades}
-                                                    size="small"
-                                                    startIcon={<ClockIcon size={12} weight="bold" />}
-                                                    sx={{ fontSize: '0.7rem', minWidth: 0, px: 1, py: 0.25 }}
-                                                    variant="contained"
-                                                    onClick={function() {
-                                                        handleRelease(
-                                                            params.data.id,
-                                                            period.grading_period_id
-                                                        );
-                                                    }}
-                                                >
-                                                    Release
-                                                </CommonButton>
-                                            )
-                                        }
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    );
-                }
-            }
-        ];
-    }, [selectedTermId]);
+        setIsSaving(true);
+
+        const result = await setGradingPeriodReleaseAt(activePeriod.grading_period_id, releaseAt);
+
+        setIsSaving(false);
+
+        if (!result.error) {
+            handleCloseSchedule();
+            await fetchPeriods(selectedTermId);
+        }
+    }
+
+    function handleSaveSchedule(releaseAt: string) {
+        persistReleaseAt(releaseAt);
+    }
+
+    function handleClearSchedule() {
+        persistReleaseAt(null);
+    }
+
+    async function handleConfirmReleaseNow() {
+        if (!releaseTarget) {
+            return;
+        }
+
+        const result = await releaseGradingPeriodNow(releaseTarget.grading_period_id);
+
+        setReleaseTarget(null);
+
+        if (!result.error) {
+            await fetchPeriods(selectedTermId);
+        }
+    }
 
     return (
         <div className="flex flex-col gap-4 h-full">
@@ -170,7 +147,8 @@ export default function GradeRelease() {
                     Grade Release
                 </h1>
                 <p className="text-[var(--mui-palette-text-secondary)] text-sm">
-                    Approve and release grades per section and grading period.
+                    Schedule when each grading period&apos;s grades become visible to students. Release runs
+                    automatically once the scheduled time passes.
                 </p>
             </div>
             <div className="flex gap-3 items-center">
@@ -187,12 +165,128 @@ export default function GradeRelease() {
                     />
                 </div>
             </div>
-            <div className="flex-1 min-h-0">
-                <CommonTable<GradeReleaseListRow>
-                    leadingColumnDefs={columnDefs}
-                    rowData={rows}
-                />
-            </div>
+            {periods.length === 0
+                ? (
+                    <p className="text-[var(--mui-palette-text-disabled)] text-sm">
+                        This term has no grading periods configured.
+                    </p>
+                )
+                : (
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 md:grid-cols-2">
+                        {periods.map(function(period) {
+                            const isFullyReleased = period.total_grades > 0
+                                && period.released_count === period.total_grades;
+                            const hasBlocked = period.blocked_count > 0;
+
+                            return (
+                                <div
+                                    className="border border-[var(--mui-palette-divider)] flex flex-col gap-3 p-4 rounded-xl"
+                                    key={period.grading_period_id}
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <h2 className="font-semibold text-[var(--mui-palette-text-primary)] text-base">
+                                            {period.grading_period_name}
+                                        </h2>
+                                        {isFullyReleased
+                                            ? (
+                                                <CheckCircleIcon
+                                                    className="text-[var(--mui-palette-success-main)]"
+                                                    size={20}
+                                                    weight="fill"
+                                                />
+                                            )
+                                            : (
+                                                <ClockIcon
+                                                    className="text-[var(--mui-palette-text-disabled)]"
+                                                    size={20}
+                                                />
+                                            )
+                                        }
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[var(--mui-palette-text-secondary)] text-sm">
+                                            {period.released_count}/{period.total_grades} grades released
+                                        </span>
+                                        <span className="text-[var(--mui-palette-text-secondary)] text-xs">
+                                            {resolveStatusLabel(period)}
+                                        </span>
+                                    </div>
+                                    {hasBlocked
+                                        ? (
+                                            <div className="flex gap-1 items-center text-[var(--mui-palette-warning-main)]">
+                                                <WarningCircleIcon size={14} weight="fill" />
+                                                <span className="text-xs">
+                                                    {period.blocked_count} student(s) have not submitted their evaluation
+                                                </span>
+                                            </div>
+                                        )
+                                        : null
+                                    }
+                                    <div className="flex gap-2 mt-auto pt-2">
+                                        <CommonButton
+                                            fullWidth
+                                            size="small"
+                                            startIcon={<CalendarBlankIcon size={14} />}
+                                            variant="contained"
+                                            onClick={function() {
+                                                handleOpenSchedule(period);
+                                            }}
+                                        >
+                                            {period.release_at
+                                                ? 'Edit Schedule'
+                                                : 'Schedule'
+                                            }
+                                        </CommonButton>
+                                        <CommonButton
+                                            disabled={isFullyReleased || period.total_grades === 0}
+                                            fullWidth
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={function() {
+                                                setReleaseTarget(period);
+                                            }}
+                                        >
+                                            Release Now
+                                        </CommonButton>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )
+            }
+            <ReleaseScheduleForm
+                isSaving={isSaving}
+                open={isScheduleOpen}
+                period={activePeriod}
+                onClear={handleClearSchedule}
+                onClose={handleCloseSchedule}
+                onSave={handleSaveSchedule}
+            />
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Cancel',
+                        onClick: function() {
+                            setReleaseTarget(null);
+                        }
+                    },
+                    confirmProps: {
+                        children: 'Release Now',
+                        onClick: handleConfirmReleaseNow
+                    }
+                }}
+                mainContent={{ title: 'Release grades immediately?' }}
+                open={!!releaseTarget}
+                subContent={{
+                    title: releaseTarget
+                        ? `${releaseTarget.grading_period_name} grades become visible to students right away. Students with a pending faculty evaluation stay blocked until they submit it. This cannot be undone.`
+                        : ''
+                }}
+                onClose={function() {
+                    setReleaseTarget(null);
+                }}
+            />
         </div>
     );
 }

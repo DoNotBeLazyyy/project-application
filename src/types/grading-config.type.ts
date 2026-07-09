@@ -1,14 +1,3 @@
-export interface GradingConfig {
-    id: string;
-    passing_grade: number;
-    max_absence_percentage: number;
-}
-
-export interface GradingConfigFormValues {
-    passing_grade: string;
-    max_absence_percentage: string;
-}
-
 export interface TransmutationRow {
     id?: string;
     min_percentage: string;

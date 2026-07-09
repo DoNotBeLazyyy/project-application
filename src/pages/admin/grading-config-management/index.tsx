@@ -1,49 +1,32 @@
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import GeneralTab from '@pages/admin/grading-config-management/GeneralTab';
 import PeriodsTab from '@pages/admin/grading-config-management/PeriodsTab';
 import SpecialGradesTab from '@pages/admin/grading-config-management/SpecialGradesTab';
 import TransmutationTab from '@pages/admin/grading-config-management/TransmutationTab';
 import {
-    deleteSpecialGradeConfig, getGradingConfig, getSpecialGradeConfigs, getTransmutationTable, saveSpecialGradeConfigs, saveTransmutationTable, updateGradingConfig
+    deleteSpecialGradeConfig, getSpecialGradeConfigs, getTransmutationTable, saveSpecialGradeConfigs, saveTransmutationTable
 } from '@services/grading-config.service';
-import { GradingConfigFormValues, SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
+import { SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 
-type GradingTab = 'general' | 'transmutation' | 'periods' | 'special';
+type GradingTab = 'transmutation' | 'periods' | 'special';
 
 const TABS = [
-    { label: 'General', value: 'general' },
     { label: 'Transmutation', value: 'transmutation' },
     { label: 'Periods', value: 'periods' },
     { label: 'Special Grades', value: 'special' }
 ];
 
 export default function GradingConfiguration() {
-    const [activeTab, setActiveTab] = useState<GradingTab>('general');
+    const [activeTab, setActiveTab] = useState<GradingTab>('transmutation');
     const [tabLoading, setTabLoading] = useState(true);
     const [initialTransmutationRows, setInitialTransmutationRows] = useState<TransmutationRow[]>([]);
     const [specialGrades, setSpecialGrades] = useState<SpecialGradeConfig[]>([]);
     const [isSavingTransmutation, setIsSavingTransmutation] = useState(false);
     const [isSavingSpecial, setIsSavingSpecial] = useState(false);
 
-    const configMethods = useForm<GradingConfigFormValues>({
-        defaultValues: { passing_grade: '3.0', max_absence_percentage: '20' }
-    });
-
     useEffect(function() {
         let isActive = true;
-
-        async function loadGeneral() {
-            const result = await getGradingConfig();
-            if (isActive && result.data) {
-                configMethods.reset({
-                    passing_grade: String(result.data.passing_grade),
-                    max_absence_percentage: String(result.data.max_absence_percentage)
-                });
-            }
-        }
 
         async function loadTransmutation() {
             const result = await getTransmutationTable();
@@ -74,10 +57,7 @@ export default function GradingConfiguration() {
         async function loadActiveTab() {
             setTabLoading(true);
 
-            if (activeTab === 'general') {
-                await loadGeneral();
-            }
-            else if (activeTab === 'transmutation') {
+            if (activeTab === 'transmutation') {
                 await loadTransmutation();
             }
             else if (activeTab === 'special') {
@@ -98,11 +78,6 @@ export default function GradingConfiguration() {
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as GradingTab);
-    }
-
-    async function handleSaveConfig(values: GradingConfigFormValues) {
-        await updateGradingConfig(values);
-        configMethods.reset(values);
     }
 
     async function handleSaveTransmutation(rows: TransmutationRow[]) {
@@ -167,12 +142,6 @@ export default function GradingConfiguration() {
                             Loading...
                         </span>
                     </div>
-                )}
-                {!tabLoading && activeTab === 'general' && (
-                    <GeneralTab
-                        methods={configMethods}
-                        onSubmit={handleSaveConfig}
-                    />
                 )}
                 {!tabLoading && activeTab === 'transmutation' && (
                     <TransmutationTab

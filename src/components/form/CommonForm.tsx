@@ -46,7 +46,7 @@ export default function CommonForm<T extends FieldValues>({
                         >
                             {field.type !== 'checkbox' && (
                                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                    {formatLabel(field.name as string)}
+                                    {field.label ?? formatLabel(field.name as string)}
                                 </span>
                             )}
                             <FormField

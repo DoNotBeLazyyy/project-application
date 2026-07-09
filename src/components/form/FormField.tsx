@@ -51,6 +51,7 @@ type CheckboxFieldConfig<T extends FieldValues> = {
 
 interface BaseFieldConfig<T extends FieldValues> {
     name: Path<T>;
+    label?: string;
     rules?: Omit<RegisterOptions<T, Path<T>>, 'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'>;
     disabled?: boolean;
     options?: CommonSelectOption[];

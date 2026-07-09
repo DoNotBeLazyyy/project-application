@@ -1,10 +1,10 @@
 import { CommonInputProps } from '@components/input/CommonInput';
-import TableCardButtons, { TableCardButtonsProps } from '@components/table-card/TableCardButtons';
+import TableCardActionMenu, { TableCardActionMenuProps } from '@components/table-card/TableCardActionMenu';
 import TableCardInput from '@components/table-card/TableCardInput';
 
 export interface TableCardControlsProps {
-    // Table button props
-    tableButtonsProps?: TableCardButtonsProps;
+    // Table action menu props
+    tableButtonsProps?: TableCardActionMenuProps;
 
     // Table input props
     tableInputProps?: CommonInputProps;
@@ -20,7 +20,7 @@ export default function TableCardControls({
     return (
         <div className="flex gap-2 items-center">
             {hasInput && <TableCardInput {...tableInputProps} />}
-            <TableCardButtons {...tableButtonsProps} />
+            <TableCardActionMenu {...tableButtonsProps} />
         </div>
     );
 }

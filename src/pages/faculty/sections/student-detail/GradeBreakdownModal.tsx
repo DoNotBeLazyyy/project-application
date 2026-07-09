@@ -1,12 +1,11 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonModal from '@components/modal/CommonModal';
-import CommonTable from '@components/table/CommonTable';
+import GradeComponentAccordion from '@pages/faculty/sections/student-detail/GradeComponentAccordion';
 import { formatScore, gradeStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { getStudentGradeBreakdown } from '@services/faculty.service';
-import { StudentGradeBreakdown, StudentGradeComponent } from '@type/faculty.type';
-import { ColDef } from 'ag-grid-community';
-import { useEffect, useMemo, useState } from 'react';
+import { StudentGradeBreakdown } from '@type/faculty.type';
+import { useEffect, useState } from 'react';
 
 interface GradeBreakdownModalProps {
     enrollmentId: string;
@@ -52,37 +51,6 @@ export default function GradeBreakdownModal({ enrollmentId, gradingPeriodId, onC
 
         fetchData(gradingPeriodId);
     }, [enrollmentId, gradingPeriodId]);
-
-    const columnDefs = useMemo<ColDef<StudentGradeComponent>[]>(function() {
-        return [
-            {
-                field: 'name',
-                flex: 3,
-                headerName: 'Component',
-                sortable: false
-            },
-            {
-                field: 'weight',
-                flex: 1,
-                headerName: 'Weight',
-                sortable: false,
-                valueFormatter: (params) => `${params.value}%`
-            },
-            {
-                headerName: 'Points',
-                flex: 2,
-                sortable: false,
-                valueGetter: (params) => `${formatScore(params.data?.earned_points ?? null)} / ${params.data?.max_points ?? 0}`
-            },
-            {
-                field: 'weighted_score',
-                flex: 1,
-                headerName: 'Weighted',
-                sortable: false,
-                valueFormatter: (params) => formatScore(params.value)
-            }
-        ];
-    }, []);
 
     const transmutedDisplay = data
         ? data.special_grade
@@ -138,9 +106,14 @@ export default function GradeBreakdownModal({ enrollmentId, gradingPeriodId, onC
                         <SummaryField label="Period Weight" value={`${data.weight}%`} />
                     </div>
                     <div className="flex flex-col gap-2">
-                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Components
-                        </span>
+                        <div className="flex items-baseline justify-between">
+                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                Components
+                            </span>
+                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                                Expand a component to see each assessment
+                            </span>
+                        </div>
                         {data.components.length === 0
                             ? (
                                 <p className="italic py-4 text-(--mui-palette-text-secondary) text-sm">
@@ -148,11 +121,16 @@ export default function GradeBreakdownModal({ enrollmentId, gradingPeriodId, onC
                                 </p>
                             )
                             : (
-                                <div className="h-64">
-                                    <CommonTable<StudentGradeComponent>
-                                        leadingColumnDefs={columnDefs}
-                                        rowData={data.components}
-                                    />
+                                <div className="flex flex-col gap-2">
+                                    {data.components.map(function(component) {
+                                        return (
+                                            <GradeComponentAccordion
+                                                component={component}
+                                                defaultExpanded={data.components.length === 1}
+                                                key={component.id}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             )
                         }

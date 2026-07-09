@@ -1,164 +1,124 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
-import EnrollmentFilterForm from '@pages/registrar/enrollment-management/EnrollmentFilterForm';
-import EnrollmentForm from '@pages/registrar/enrollment-management/EnrollmentForm';
-import { useEnrollmentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentTableConfig';
-import {
-    bulkCreateEnrollments, bulkDeleteEnrollments, createEnrollment, deleteEnrollment, getEnrollmentById, listEnrollments, updateEnrollment
-} from '@services/enrollment.service';
+import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
+import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
+import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
+import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
+import { getTerms } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
-import { EnrollmentBulkRow, EnrollmentFilterValues, EnrollmentFormValues, EnrollmentListRow } from '@type/enrollment.type';
+import { EnrollmentBulkRow, EnrollmentStudentFilterValues, EnrollmentStudentRow } from '@type/enrollment.type';
 import { SortStringDto } from '@type/http.type';
-import { formErrors } from '@utils/form.util';
-import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'student_number', label: 'Student No.' },
     { field: 'student_name', label: 'Student Name' },
-    { field: 'section_code', label: 'Section' },
-    { field: 'course_code', label: 'Course' },
-    { field: 'term_label', label: 'Term' }
+    { field: 'program_code', label: 'Program' },
+    { field: 'year_level', label: 'Year Level' },
+    { field: 'enrolled_units', label: 'Enrolled Units' },
+    { field: 'enrollment_state', label: 'Enrollment State' }
 ];
 
-const CREATE_FORM_ID = 'create-enrollment-form';
-const UPDATE_FORM_ID = 'update-enrollment-form';
-const FILTER_FORM_ID = 'filter-enrollment-form';
+const FILTER_FORM_ID = 'filter-enrollment-students-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'student_number', label: 'Student Number', hint: 'e.g. 2024-00001' },
-    { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester - School Year 2026-2026' },
-    { key: 'section_code', label: 'Section Code', hint: 'e.g. BSCS3-A' }
+    { key: 'term_label', label: 'Term Label', hint: 'Blank uses the active term, e.g. 1st Semester - School Year 2026-2027' },
+    { key: 'section_codes', label: 'Section Codes', hint: 'Pipe-separated, e.g. BSCS3-A|BSIT2-C|GE101-B' },
+    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'true or false' },
+    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'true or false' },
+    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Required when Allow Conflict is true' }
 ];
 
-const defaultFormValues: EnrollmentFormValues = {
-    student_id: '',
-    section_id: '',
-    status: 'Enrolled'
+const defaultFilterValues: EnrollmentStudentFilterValues = {
+    program_ids: [],
+    year_levels: [],
+    statuses: [],
+    enrollment_states: []
 };
 
 export default function EnrollmentManagement() {
-    const [activeFilters, setActiveFilters] = useState<EnrollmentFilterValues | null>(null);
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [activeFilters, setActiveFilters] = useState<EnrollmentStudentFilterValues | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [isViewOpen, setIsViewOpen] = useState(false);
-    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+    const [targetTermId, setTargetTermId] = useState<string | null>(null);
+    const [targetTermLabel, setTargetTermLabel] = useState('');
+    const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    const createMethods = useForm<EnrollmentFormValues>({
-        defaultValues: defaultFormValues
+    const filterMethods = useForm<EnrollmentStudentFilterValues>({
+        defaultValues: defaultFilterValues
     });
 
-    const filterMethods = useForm<EnrollmentFilterValues>({
-        defaultValues: {
-            term_ids: [],
-            section_ids: [],
-            statuses: []
+    useEffect(function() {
+        async function fetchTermContext() {
+            const [targetTerm, terms] = await Promise.all([
+                getEnrollmentTargetTerm(),
+                getTerms()
+            ]);
+
+            if (targetTerm.data) {
+                setTargetTermId(targetTerm.data.id);
+                setTargetTermLabel(targetTerm.data.label);
+            }
+
+            if (terms.data) {
+                setTermOptions(
+                    terms.data.map((term) => ({
+                        label: term.label,
+                        value: term.id
+                    }))
+                );
+            }
         }
+
+        fetchTermContext();
+    }, []);
+
+    function handleOpenWorkspace(id: string) {
+        setSelectedStudentId(id);
+        setIsWorkspaceOpen(true);
+    }
+
+    function handleCloseWorkspace() {
+        setIsWorkspaceOpen(false);
+        setSelectedStudentId(null);
+    }
+
+    function handleRefresh() {
+        setRefreshKey((previous) => previous + 1);
+    }
+
+    const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
+        onManage: handleOpenWorkspace
     });
 
-    const updateMethods = useForm<EnrollmentFormValues>({
-        defaultValues: defaultFormValues
-    });
-
-    async function loadIntoForm(id: string) {
-        const result = await getEnrollmentById(id);
-
-        if (result.data) {
-            updateMethods.reset({
-                student_id: result.data.student_id,
-                section_id: result.data.section_id,
-                status: result.data.status
-            });
-        }
-    }
-
-    async function handleOpenView(id: string) {
-        setSelectedId(id);
-        await loadIntoForm(id);
-        setIsViewOpen(true);
-    }
-
-    function handleCloseView() {
-        setIsViewOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
-    }
-
-    async function handleOpenUpdate(id: string) {
-        setSelectedId(id);
-        await loadIntoForm(id);
-        setIsUpdateOpen(true);
-    }
-
-    async function handleSwitchToEdit(id: string) {
-        setIsViewOpen(false);
-        await loadIntoForm(id);
-        setIsUpdateOpen(true);
-    }
-
-    function handleCloseUpdate() {
-        setIsUpdateOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
-    }
-
-    const { columnDefs, tableActionConfig } = useEnrollmentTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
-
-    async function fetchEnrollments(
+    async function fetchStudents(
         page: number,
         size: number,
         search: string,
         sort: SortStringDto[]
     ) {
-        return listEnrollments(page, size, search, sort, activeFilters);
+        return listEnrollmentStudents(page, size, search, sort, targetTermId, activeFilters);
     }
 
-    async function handleCreateSubmit(values: EnrollmentFormValues) {
-        const result = await createEnrollment(values);
-
-        if (!result.error) {
-            createMethods.reset(defaultFormValues);
-            setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as EnrollmentFilterValues));
-        }
-    }
-
-    function handleCreateFormError(errors: FieldErrors<EnrollmentFormValues>) {
-        formErrors(errors, createMethods);
-    }
-
-    function handleFilterSubmit(values: EnrollmentFilterValues) {
+    function handleFilterSubmit(values: EnrollmentStudentFilterValues) {
         setActiveFilters(values);
         setIsFilterOpen(false);
     }
 
-    async function handleUpdateSubmit(values: EnrollmentFormValues) {
-        if (!selectedId) return;
-
-        const result = await updateEnrollment(selectedId, values);
-
-        if (!result.error) {
-            handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as EnrollmentFilterValues));
-        }
-    }
-
-    function handleUpdateFormError(errors: FieldErrors<EnrollmentFormValues>) {
-        formErrors(errors, updateMethods);
-    }
-
     return (
         <div className="flex flex-col gap-4 h-full">
-            <CommonTableCard<EnrollmentListRow>
+            <CommonTableCard<EnrollmentStudentRow>
                 cardHeaderProps={{
-                    subheader: 'Manage student enrollments per section.',
+                    subheader: targetTermLabel
+                        ? `Enroll students into their curriculum subjects for ${targetTermLabel}.`
+                        : 'Enroll students into their curriculum subjects.',
                     title: 'Enrollment Management'
                 }}
                 controls={{
@@ -175,44 +135,18 @@ export default function EnrollmentManagement() {
                         }
                     }
                 }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Enroll a student into a section.',
-                            title: 'Create Enrollment'
-                        }
-                    },
-                    containerClassName: 'w-120',
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <EnrollmentForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            isCreate
-                            onSubmit={createMethods.handleSubmit(
-                                handleCreateSubmit,
-                                handleCreateFormError
-                            )}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
-                    }
-                }}
-                dependencies={[activeFilters]}
+                dependencies={[activeFilters, targetTermId, refreshKey]}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
-                            subheader: 'Filter enrollments by term, section or status.',
-                            title: 'Filter Enrollments'
+                            subheader: 'Narrow the roster by program, year level or enrollment state.',
+                            title: 'Filter Students'
                         }
                     },
                     confirmText: 'Apply Filters',
                     formId: FILTER_FORM_ID,
                     formContent: (
-                        <EnrollmentFilterForm
+                        <EnrollmentStudentFilterForm
                             control={filterMethods.control}
                             id={FILTER_FORM_ID}
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
@@ -226,90 +160,40 @@ export default function EnrollmentManagement() {
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{
-                    hasCheckbox: true,
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update enrollment status.',
-                            title: 'Edit Enrollment'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
-                        <EnrollmentForm
-                            control={updateMethods.control}
-                            id={UPDATE_FORM_ID}
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                handleUpdateFormError
-                            )}
-                        />
-                    ),
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
-                }}
-                viewModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Viewing enrollment details.',
-                            title: 'View Enrollment'
-                        }
-                    },
-                    confirmText: 'Edit',
-                    formContent: (
-                        <EnrollmentForm
-                            control={updateMethods.control}
-                            disabled
-                        />
-                    ),
-                    formButtonsProps: {
-                        confirmProps: {
-                            onClick: function() {
-                                if (selectedId) {
-                                    handleSwitchToEdit(selectedId);
-                                }
-                            }
-                        }
-                    },
-                    open: isViewOpen,
-                    onClose: handleCloseView
-                }}
-                onCreate={function() {
-                    setIsCreateOpen(true);
-                }}
-                onDelete={bulkDeleteEnrollments}
-                onDeleteRow={deleteEnrollment}
-                onFetch={fetchEnrollments}
+                onFetch={fetchStudents}
                 onFilter={function() {
                     setIsFilterOpen(true);
                 }}
-                onRowClick={handleOpenView}
+                onRowClick={handleOpenWorkspace}
+            />
+            <EnrollmentWorkspaceModal
+                defaultTermId={targetTermId}
+                open={isWorkspaceOpen}
+                studentId={selectedStudentId}
+                termOptions={termOptions}
+                onClose={handleCloseWorkspace}
+                onEnrolled={handleRefresh}
             />
             <BulkImportModal<EnrollmentBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
-                title="Bulk Import Enrollments"
-                onBulkImport={bulkCreateEnrollments}
+                title="Bulk Enroll Students"
+                onBulkImport={bulkEnrollStudents}
                 onClose={function() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={(row) => ({
                     student_number: row.student_number,
                     term_label: row.term_label,
-                    section_code: row.section_code
+                    section_codes: row.section_codes,
+                    allow_conflict: row.allow_conflict,
+                    override_prerequisites: row.override_prerequisites,
+                    conflict_reason: row.conflict_reason
                 })}
-                onSuccess={function() {
-                    setActiveFilters((prev) => ({ ...prev } as EnrollmentFilterValues));
-                }}
+                onSuccess={handleRefresh}
             />
         </div>
     );

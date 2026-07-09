@@ -51,6 +51,7 @@ export type ChangeEventInputElement = React.ChangeEvent<HTMLInputElement>;
 // SVG props
 export type IconSvgProps = SVGProps<SVGSVGElement>;
 export type MouseEventSvgElement = MouseEvent<SVGSVGElement>;
+export type MouseEventButtonElement = MouseEvent<HTMLButtonElement>;
 
 // Input props
 export type ChangeEventInput = ChangeEvent<HTMLInputElement>;

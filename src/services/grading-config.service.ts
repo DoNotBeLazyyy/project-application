@@ -1,21 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
-import {
-    GradingConfig, GradingConfigFormValues, GradingPeriodTemplate, SpecialGradeConfig, TransmutationRow
-} from '@type/grading-config.type';
+import { GradingPeriodTemplate, SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
 import { ServiceResult } from '@type/service.type';
-
-export async function getGradingConfig(): Promise<ServiceResult<GradingConfig>> {
-    return callRpc<GradingConfig>('fn_get_grading_config');
-}
-
-export async function updateGradingConfig(
-    params: GradingConfigFormValues
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_update_grading_config', {
-        p_passing_grade: Number(params.passing_grade),
-        p_max_absence_percentage: Number(params.max_absence_percentage)
-    });
-}
 
 export async function getTransmutationTable(): Promise<ServiceResult<TransmutationRow[]>> {
     return callRpc<TransmutationRow[]>('fn_get_transmutation_table');

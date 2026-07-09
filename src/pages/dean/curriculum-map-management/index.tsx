@@ -216,21 +216,15 @@ export default function CurriculumMapManagement() {
                                     setIsBulkImportOpen(true);
                                 }
                             },
-                            extraButtons: (
-                                <CommonButton
-                                    color="inherit"
-                                    disabled={!selectedProgramId || !entries.length}
-                                    key="print"
-                                    size="small"
-                                    startIcon={<PrinterIcon weight="bold" />}
-                                    variant="outlined"
-                                    onClick={function() {
-                                        window.print();
-                                    }}
-                                >
-                                Print
-                                </CommonButton>
-                            )
+                            extraOptions: [{
+                                children: 'Print',
+                                disabled: !selectedProgramId || !entries.length,
+                                icon: <PrinterIcon size={20} weight="bold" />,
+                                key: 'print',
+                                onClick: function() {
+                                    window.print();
+                                }
+                            }]
                         }}
                     />
                 </div>

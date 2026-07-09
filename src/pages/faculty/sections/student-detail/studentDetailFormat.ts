@@ -49,6 +49,14 @@ export function formatScore(value: number | null): string {
     return String(value);
 }
 
+export function formatPercent(earned: number | null, max: number): string {
+    if (earned === null || earned === undefined || max <= 0) {
+        return '—';
+    }
+
+    return `${Math.round((earned / max) * 100)}%`;
+}
+
 export function formatDate(value: string | null): string {
     if (!value) {
         return '—';

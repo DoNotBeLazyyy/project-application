@@ -1,6 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
+import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
 import { formErrors } from '@utils/form.util';
 import { FieldValues, useFieldArray, UseFormReturn } from 'react-hook-form';
@@ -19,6 +20,25 @@ const DEFAULT_QUESTION: EvaluationQuestionForm = {
     max_rating: '5'
 };
 
+function validateUniqueQuestion(value: string, formValues: FieldValues) {
+    const normalized = String(value ?? '')
+        .trim()
+        .toLowerCase();
+
+    if (!normalized) {
+        return true;
+    }
+
+    const questions = (formValues.questions ?? []) as EvaluationQuestionForm[];
+    const occurrences = questions.filter(function(question) {
+        return String(question.question_text ?? '')
+            .trim()
+            .toLowerCase() === normalized;
+    }).length;
+
+    return occurrences < 2 || 'Question must be unique';
+}
+
 const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, EvaluationTemplateForm>[] = [
     {
         key: 'question_text',
@@ -26,7 +46,10 @@ const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, Evaluation
         flex: 4,
         fieldConfig: {
             type: 'text',
-            rules: { required: 'Required' }
+            rules: {
+                required: 'Required',
+                validate: validateUniqueQuestion
+            }
         }
     },
     {
@@ -84,15 +107,46 @@ export default function EvaluationTemplateFormPanel({
         control: methods.control,
         name: 'questions'
     });
+    const { programOptions } = useProgramOptions();
 
     const templateFields: FormFieldConfig<EvaluationTemplateForm>[] = [
         {
             name: 'title',
+            label: 'Section Title',
             disabled,
             rules: disabled
                 ? undefined
-                : { required: 'Template title is required' },
-            type: 'text'
+                : { required: 'Section title is required' },
+            type: 'text',
+            fieldProps: { helperText: 'Shown as the section heading on the student form.' }
+        },
+        {
+            name: 'sequence',
+            label: 'Order',
+            disabled,
+            rules: disabled
+                ? undefined
+                : {
+                    required: 'Order is required',
+                    min: { value: 1, message: 'Order must be at least 1' }
+                },
+            type: 'number',
+            fieldProps: {
+                min: 1,
+                helperText: 'Lower numbers appear first on the student form.'
+            }
+        },
+        {
+            name: 'program_ids',
+            label: 'Programs',
+            disabled,
+            gridCols: 2,
+            options: programOptions,
+            type: 'multi-select',
+            fieldProps: {
+                placeholder: 'All programs',
+                helperText: 'Leave empty to show this section to every program.'
+            }
         },
         {
             name: 'is_active',

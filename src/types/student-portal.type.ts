@@ -26,6 +26,8 @@ export interface StudentScheduleSection {
     course_title: string;
     faculty_name: string;
     enrollment_id: string;
+    is_conflict_authorized: boolean;
+    conflict_reason: string | null;
     schedules: SectionScheduleSlot[];
 }
 

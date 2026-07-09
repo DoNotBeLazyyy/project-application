@@ -1,8 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import EvaluationTemplateFormPanel from '@pages/admin/evaluation-management/EvaluationTemplateForm';
+import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { createEvaluationTemplate, deleteEvaluationTemplate, getEvaluationTemplates, updateEvaluationTemplate } from '@services/evaluation.service';
 import { EvaluationTemplateForm, EvaluationTemplateRow } from '@type/evaluation.type';
 import { CommonListResDto } from '@type/http.type';
@@ -17,6 +19,8 @@ const DEFAULT_VALUES: EvaluationTemplateForm = {
     title: '',
     description: '',
     is_active: true,
+    sequence: '1',
+    program_ids: [],
     questions: [
         {
             question_text: '',
@@ -34,6 +38,8 @@ function mapToFormValues(template: EvaluationTemplateRow): EvaluationTemplateFor
         title: template.title,
         description: template.description ?? '',
         is_active: template.is_active,
+        sequence: String(template.sequence ?? 1),
+        program_ids: template.program_ids ?? [],
         questions: template.questions.length
             ? template.questions.map((question) => ({
                 id: question.id,
@@ -45,6 +51,18 @@ function mapToFormValues(template: EvaluationTemplateRow): EvaluationTemplateFor
             }))
             : DEFAULT_VALUES.questions
     };
+}
+
+function formatPrograms(programIds: string[], options: CommonSelectOption[]): string {
+    if (!programIds.length) {
+        return 'All programs';
+    }
+
+    return programIds
+        .map(function(programId) {
+            return options.find((option) => option.value === programId)?.label ?? programId;
+        })
+        .join(', ');
 }
 
 function buildListDto(content: EvaluationTemplateRow[]): CommonListResDto<EvaluationTemplateRow> {
@@ -89,6 +107,8 @@ export default function EvaluationManagement() {
         defaultValues: DEFAULT_VALUES,
         mode: 'all'
     });
+
+    const { programOptions } = useProgramOptions();
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
@@ -168,10 +188,23 @@ export default function EvaluationManagement() {
     const columnDefs = useMemo<ColDef<EvaluationTemplateRow>[]>(function() {
         return [
             {
+                field: 'sequence',
+                flex: 1,
+                headerName: 'Order',
+                maxWidth: 100,
+                sortable: false
+            },
+            {
                 field: 'title',
                 flex: 3,
-                headerName: 'Title',
+                headerName: 'Section',
                 sortable: false
+            },
+            {
+                flex: 3,
+                headerName: 'Programs',
+                sortable: false,
+                valueGetter: (params) => formatPrograms(params.data?.program_ids ?? [], programOptions)
             },
             {
                 flex: 1,
@@ -197,7 +230,7 @@ export default function EvaluationManagement() {
                 )
             }
         ];
-    }, []);
+    }, [programOptions]);
 
     const tableActionConfig = useMemo(function() {
         return function(onDelete: (id: string) => void): TableActionConfig<EvaluationTemplateRow> {
@@ -226,14 +259,14 @@ export default function EvaluationManagement() {
     return (
         <CommonTableCard<EvaluationTemplateRow>
             cardHeaderProps={{
-                subheader: 'Build the faculty evaluation forms students complete before viewing released grades.',
+                subheader: 'Build the ordered sections of the faculty evaluation students complete before viewing released grades.',
                 title: 'Faculty Evaluations'
             }}
             createModalProps={{
                 cardProps: {
                     cardHeaderProps: {
-                        title: 'Add Evaluation Form',
-                        subheader: 'Define an evaluation form and its questions.'
+                        title: 'Add Evaluation Section',
+                        subheader: 'Define a section, its program scope, and its questions.'
                     }
                 },
                 formId: CREATE_FORM_ID,
@@ -259,8 +292,8 @@ export default function EvaluationManagement() {
             updateModalProps={{
                 cardProps: {
                     cardHeaderProps: {
-                        title: 'Edit Evaluation Form',
-                        subheader: 'Update this evaluation form and its questions.'
+                        title: 'Edit Evaluation Section',
+                        subheader: 'Update this section, its program scope, and its questions.'
                     }
                 },
                 confirmText: 'Save',
@@ -283,8 +316,8 @@ export default function EvaluationManagement() {
             viewModalProps={{
                 cardProps: {
                     cardHeaderProps: {
-                        title: 'View Evaluation Form',
-                        subheader: 'Viewing evaluation form details.'
+                        title: 'View Evaluation Section',
+                        subheader: 'Viewing evaluation section details.'
                     }
                 },
                 confirmText: 'Edit',
@@ -304,6 +337,10 @@ export default function EvaluationManagement() {
                 onClose: handleCloseView
             }}
             onCreate={function() {
+                createMethods.reset({
+                    ...DEFAULT_VALUES,
+                    sequence: String(templates.length + 1)
+                });
                 setIsCreateOpen(true);
             }}
             onDeleteRow={handleDeleteRow}

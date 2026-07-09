@@ -104,6 +104,18 @@ export interface StudentAttendanceRow {
     remarks: string | null;
 }
 
+export interface StudentGradeComponentItem {
+    id: string;
+    title: string;
+    assessment_type: string;
+    earned_points: number | null;
+    max_points: number;
+    submission_status: string | null;
+    is_late: boolean | null;
+    due_at: string | null;
+    graded_at: string | null;
+}
+
 export interface StudentGradeComponent {
     id: string;
     name: string;
@@ -111,6 +123,7 @@ export interface StudentGradeComponent {
     earned_points: number;
     max_points: number;
     weighted_score: number;
+    items: StudentGradeComponentItem[];
 }
 
 export interface StudentGradeBreakdown {

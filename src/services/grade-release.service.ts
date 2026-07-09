@@ -1,32 +1,29 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
-import { GradeReleaseListRow } from '@type/grade-release.type';
+import { GradeReleaseSchedule } from '@type/grade-release.type';
 
-export async function listGradeRelease(
-    page: number,
-    size: number,
-    search: string,
-    sort: SortStringDto[],
-    termId: string | null
-): Promise<ServiceResult<CommonListResDto<GradeReleaseListRow>>> {
-    return callRpc<CommonListResDto<GradeReleaseListRow>>('fn_list_grade_release_json', {
-        p_page: page,
-        p_search: search || null,
-        p_size: size,
-        p_sort: sort.length > 0
-            ? sort
-            : null,
-        p_term_id: termId || null
+export async function listGradeReleaseSchedule(
+    termId: string
+): Promise<ServiceResult<GradeReleaseSchedule[]>> {
+    return callRpc<GradeReleaseSchedule[]>('fn_list_grade_release_schedule', {
+        p_term_id: termId
     });
 }
 
-export async function approveAndReleaseGrades(
-    sectionId: string,
+export async function setGradingPeriodReleaseAt(
+    gradingPeriodId: string,
+    releaseAt: string | null
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_set_grading_period_release_at', {
+        p_grading_period_id: gradingPeriodId,
+        p_release_at: releaseAt
+    });
+}
+
+export async function releaseGradingPeriodNow(
     gradingPeriodId: string
 ): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_approve_and_release_grades', {
-        p_section_id: sectionId,
+    return callRpc<null>('fn_release_grading_period_now', {
         p_grading_period_id: gradingPeriodId
     });
 }

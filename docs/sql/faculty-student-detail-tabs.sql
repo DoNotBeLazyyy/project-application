@@ -228,7 +228,8 @@ BEGIN
                 WHEN c.max_points > 0
                 THEN ROUND((c.earned_points / c.max_points) * c.weight, 2)
                 ELSE 0
-            END
+            END,
+            'items',          c.items
         )
         ORDER BY c.name ASC
     ), '[]'::jsonb)
@@ -238,17 +239,58 @@ BEGIN
             gc.id,
             gc.name,
             gc.weight,
-            COALESCE(SUM(asub.final_score), 0) AS earned_points,
-            COALESCE(SUM(ai.total_points), 0) AS max_points
+            COALESCE(SUM(i.earned_points), 0) AS earned_points,
+            COALESCE(SUM(i.max_points), 0) AS max_points,
+            COALESCE(jsonb_agg(
+                jsonb_build_object(
+                    'id',                i.id,
+                    'title',             i.title,
+                    'assessment_type',   i.assessment_type,
+                    'earned_points',     i.graded_points,
+                    'max_points',        i.max_points,
+                    'submission_status', i.submission_status,
+                    'is_late',           i.is_late,
+                    'due_at',            i.due_at,
+                    'graded_at',         i.graded_at
+                )
+                ORDER BY i.due_at ASC NULLS LAST, i.title ASC
+            ) FILTER (WHERE i.id IS NOT NULL), '[]'::jsonb) AS items
         FROM public.grading_components gc
-        LEFT JOIN public.assessment_items ai
-            ON ai.grading_component_id = gc.id
+        LEFT JOIN LATERAL (
+            SELECT
+                ai.id,
+                ai.title,
+                ai.assessment_type,
+                ai.due_at,
+                ai.total_points AS max_points,
+                sub.final_score AS graded_points,
+                COALESCE(sub.final_score, 0) AS earned_points,
+                latest.status AS submission_status,
+                latest.is_late,
+                sub.graded_at
+            FROM public.assessment_items ai
+            LEFT JOIN LATERAL (
+                SELECT asub.final_score, asub.graded_at
+                FROM public.assessment_submissions asub
+                WHERE asub.assessment_item_id = ai.id
+                AND asub.enrollment_id = p_enrollment_id
+                AND asub.status = 'Graded'
+                AND asub.deleted_at IS NULL
+                ORDER BY asub.attempt_number DESC
+                LIMIT 1
+            ) sub ON true
+            LEFT JOIN LATERAL (
+                SELECT asub.status, asub.is_late
+                FROM public.assessment_submissions asub
+                WHERE asub.assessment_item_id = ai.id
+                AND asub.enrollment_id = p_enrollment_id
+                AND asub.deleted_at IS NULL
+                ORDER BY asub.attempt_number DESC
+                LIMIT 1
+            ) latest ON true
+            WHERE ai.grading_component_id = gc.id
             AND ai.deleted_at IS NULL
-        LEFT JOIN public.assessment_submissions asub
-            ON asub.assessment_item_id = ai.id
-            AND asub.enrollment_id = p_enrollment_id
-            AND asub.status = 'Graded'
-            AND asub.deleted_at IS NULL
+        ) i ON true
         WHERE gc.section_id = v_section_id
         AND gc.grading_period_id = p_grading_period_id
         AND gc.deleted_at IS NULL
