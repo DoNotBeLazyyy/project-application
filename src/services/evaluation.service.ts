@@ -1,5 +1,8 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { EvaluationForm, EvaluationResponseInput, EvaluationTemplateForm, EvaluationTemplateRow } from '@type/evaluation.type';
+import { BulkImportResult } from '@type/bulk-import.type';
+import {
+    EvaluationForm, EvaluationResponseInput, EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateRow
+} from '@type/evaluation.type';
 import { ServiceResult } from '@type/service.type';
 
 export async function getEvaluationTemplates(): Promise<ServiceResult<EvaluationTemplateRow[]>> {
@@ -36,6 +39,25 @@ export async function updateEvaluationTemplate(
 
 export async function deleteEvaluationTemplate(id: string): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_evaluation_template', { p_id: id });
+}
+
+export async function bulkCreateEvaluationTemplates(
+    rows: EvaluationTemplateBulkRow[]
+): Promise<BulkImportResult> {
+    const result = await callRpc<{
+        provisioned_count: number;
+        errors: { row: number; code: string; message: string }[];
+    }>('fn_bulk_create_evaluation_templates', { p_rows: rows });
+
+    if (result.error) {
+        return { provisioned_count: 0, errors: [result.error.message] };
+    }
+
+    return {
+        provisioned_count: result.data?.provisioned_count ?? 0,
+        errors: (result.data?.errors ?? []).map((error) =>
+            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`)
+    };
 }
 
 export async function getEvaluationForm(

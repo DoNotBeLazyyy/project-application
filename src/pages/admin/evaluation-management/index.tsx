@@ -1,12 +1,16 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import BulkImportModal from '@components/modal/BulkImportModal';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import EvaluationTemplateFormPanel from '@pages/admin/evaluation-management/EvaluationTemplateForm';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { createEvaluationTemplate, deleteEvaluationTemplate, getEvaluationTemplates, updateEvaluationTemplate } from '@services/evaluation.service';
-import { EvaluationTemplateForm, EvaluationTemplateRow } from '@type/evaluation.type';
+import {
+    bulkCreateEvaluationTemplates, createEvaluationTemplate, deleteEvaluationTemplate, getEvaluationTemplates, updateEvaluationTemplate
+} from '@services/evaluation.service';
+import { CsvTemplateColumn } from '@type/bulk-import.type';
+import { EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateRow } from '@type/evaluation.type';
 import { CommonListResDto } from '@type/http.type';
 import { ColDef } from 'ag-grid-community';
 import { useMemo, useState } from 'react';
@@ -14,6 +18,19 @@ import { useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'evaluation-template-create';
 const UPDATE_FORM_ID = 'evaluation-template-update';
+
+const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness' },
+    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)' },
+    { key: 'section_description', label: 'Section Description', hint: 'optional, no commas' },
+    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
+    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)' },
+    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly (no commas)' },
+    { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended' },
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
+    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only)' },
+    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only)' }
+];
 
 const DEFAULT_VALUES: EvaluationTemplateForm = {
     title: '',
@@ -97,6 +114,7 @@ export default function EvaluationManagement() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
     const createMethods = useForm<EvaluationTemplateForm>({
         defaultValues: DEFAULT_VALUES,
@@ -257,95 +275,133 @@ export default function EvaluationManagement() {
     }, [templates]);
 
     return (
-        <CommonTableCard<EvaluationTemplateRow>
-            cardHeaderProps={{
-                subheader: 'Build the ordered sections of the faculty evaluation students complete before viewing released grades.',
-                title: 'Faculty Evaluations'
-            }}
-            createModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        title: 'Add Evaluation Section',
-                        subheader: 'Define a section, its program scope, and its questions.'
+        <>
+            <CommonTableCard<EvaluationTemplateRow>
+                cardHeaderProps={{
+                    subheader: 'Build the ordered sections of the faculty evaluation students complete before viewing released grades.',
+                    title: 'Faculty Evaluations'
+                }}
+                controls={{
+                    tableButtonsProps: {
+                        downloadCsvButtonProps: {
+                            onClick: function() {
+                                setIsBulkImportOpen(true);
+                            }
+                        },
+                        uploadCsvButtonProps: {
+                            onClick: function() {
+                                setIsBulkImportOpen(true);
+                            }
+                        }
                     }
-                },
-                formId: CREATE_FORM_ID,
-                formContent: (
-                    <EvaluationTemplateFormPanel
-                        formId={CREATE_FORM_ID}
-                        methods={createMethods}
-                        onSubmit={handleCreate}
-                    />
-                ),
-                open: isCreateOpen,
-                onClose: function() {
-                    createMethods.reset(DEFAULT_VALUES);
-                    setIsCreateOpen(false);
-                }
-            }}
-            dependencies={[refreshKey]}
-            tableActionConfig={tableActionConfig}
-            tableProps={{
-                leadingColumnDefs: columnDefs
-            }}
-            uniqueIdKey="id"
-            updateModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        title: 'Edit Evaluation Section',
-                        subheader: 'Update this section, its program scope, and its questions.'
+                }}
+                createModalProps={{
+                    cardProps: {
+                        cardHeaderProps: {
+                            title: 'Add Evaluation Section',
+                            subheader: 'Define a section, its program scope, and its questions.'
+                        }
+                    },
+                    formId: CREATE_FORM_ID,
+                    formContent: (
+                        <EvaluationTemplateFormPanel
+                            formId={CREATE_FORM_ID}
+                            methods={createMethods}
+                            onSubmit={handleCreate}
+                        />
+                    ),
+                    open: isCreateOpen,
+                    onClose: function() {
+                        createMethods.reset(DEFAULT_VALUES);
+                        setIsCreateOpen(false);
                     }
-                },
-                confirmText: 'Save',
-                formId: UPDATE_FORM_ID,
-                formContent: (
-                    <EvaluationTemplateFormPanel
-                        formId={UPDATE_FORM_ID}
-                        methods={updateMethods}
-                        onSubmit={handleUpdate}
-                    />
-                ),
-                onConfirmClose: function() {
-                    const current = updateMethods.getValues();
-                    const snapshot = updateMethods.formState.defaultValues;
-                    return JSON.stringify(current) === JSON.stringify(snapshot);
-                },
-                open: isUpdateOpen,
-                onClose: handleCloseUpdate
-            }}
-            viewModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        title: 'View Evaluation Section',
-                        subheader: 'Viewing evaluation section details.'
-                    }
-                },
-                confirmText: 'Edit',
-                formContent: (
-                    <EvaluationTemplateFormPanel
-                        disabled
-                        methods={updateMethods}
-                        onSubmit={handleUpdate}
-                    />
-                ),
-                formButtonsProps: {
-                    confirmProps: {
-                        onClick: handleSwitchToEdit
-                    }
-                },
-                open: isViewOpen,
-                onClose: handleCloseView
-            }}
-            onCreate={function() {
-                createMethods.reset({
-                    ...DEFAULT_VALUES,
-                    sequence: String(templates.length + 1)
-                });
-                setIsCreateOpen(true);
-            }}
-            onDeleteRow={handleDeleteRow}
-            onFetch={fetchTemplates}
-            onRowClick={handleOpenView}
-        />
+                }}
+                dependencies={[refreshKey]}
+                tableActionConfig={tableActionConfig}
+                tableProps={{
+                    leadingColumnDefs: columnDefs
+                }}
+                uniqueIdKey="id"
+                updateModalProps={{
+                    cardProps: {
+                        cardHeaderProps: {
+                            title: 'Edit Evaluation Section',
+                            subheader: 'Update this section, its program scope, and its questions.'
+                        }
+                    },
+                    confirmText: 'Save',
+                    formId: UPDATE_FORM_ID,
+                    formContent: (
+                        <EvaluationTemplateFormPanel
+                            formId={UPDATE_FORM_ID}
+                            methods={updateMethods}
+                            onSubmit={handleUpdate}
+                        />
+                    ),
+                    onConfirmClose: function() {
+                        const current = updateMethods.getValues();
+                        const snapshot = updateMethods.formState.defaultValues;
+                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                    },
+                    open: isUpdateOpen,
+                    onClose: handleCloseUpdate
+                }}
+                viewModalProps={{
+                    cardProps: {
+                        cardHeaderProps: {
+                            title: 'View Evaluation Section',
+                            subheader: 'Viewing evaluation section details.'
+                        }
+                    },
+                    confirmText: 'Edit',
+                    formContent: (
+                        <EvaluationTemplateFormPanel
+                            disabled
+                            methods={updateMethods}
+                            onSubmit={handleUpdate}
+                        />
+                    ),
+                    formButtonsProps: {
+                        confirmProps: {
+                            onClick: handleSwitchToEdit
+                        }
+                    },
+                    open: isViewOpen,
+                    onClose: handleCloseView
+                }}
+                onCreate={function() {
+                    createMethods.reset({
+                        ...DEFAULT_VALUES,
+                        sequence: String(templates.length + 1)
+                    });
+                    setIsCreateOpen(true);
+                }}
+                onDeleteRow={handleDeleteRow}
+                onFetch={fetchTemplates}
+                onRowClick={handleOpenView}
+            />
+            <BulkImportModal<EvaluationTemplateBulkRow>
+                open={isBulkImportOpen}
+                templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                title="Bulk Import Evaluation Sections"
+                onBulkImport={bulkCreateEvaluationTemplates}
+                onClose={function() {
+                    setIsBulkImportOpen(false);
+                }}
+                onMapRow={(row) => ({
+                    section_title: row.section_title,
+                    section_sequence: row.section_sequence,
+                    section_description: row.section_description,
+                    is_active: row.is_active,
+                    program_codes: row.program_codes,
+                    question_text: row.question_text,
+                    question_type: row.question_type,
+                    is_required: row.is_required,
+                    min_rating: row.min_rating,
+                    max_rating: row.max_rating
+                })}
+                onSuccess={triggerRefresh}
+            />
+        </>
     );
 }

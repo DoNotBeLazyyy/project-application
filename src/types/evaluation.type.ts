@@ -19,6 +19,19 @@ export interface EvaluationTemplateForm {
     questions: EvaluationQuestionForm[];
 }
 
+export interface EvaluationTemplateBulkRow {
+    section_title: string;
+    section_sequence: string;
+    section_description: string;
+    is_active: string;
+    program_codes: string;
+    question_text: string;
+    question_type: string;
+    is_required: string;
+    min_rating: string;
+    max_rating: string;
+}
+
 export interface EvaluationQuestionRow {
     id: string;
     question_text: string;

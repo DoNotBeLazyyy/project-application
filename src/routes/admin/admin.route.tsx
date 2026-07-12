@@ -1,3 +1,4 @@
+import AcademicThresholdManagement from '@pages/admin/academic-threshold-management';
 import AdminDashboard from '@pages/admin/AdminDashboard';
 import AdminLayout from '@pages/admin/AdminLayout';
 import EvaluationManagement from '@pages/admin/evaluation-management';
@@ -23,6 +24,7 @@ export const adminRoutes: RouteObject[] = [
             { element: <RoleManagement />, path: 'roles' },
             { element: <TermManagement />, path: 'terms' },
             { element: <TermTypeManagement />, path: 'term-types' },
+            { element: <AcademicThresholdManagement />, path: 'academic-thresholds' },
             { element: <SystemSettings />, path: 'system-settings' }
         ]
     }

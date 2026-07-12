@@ -1,6 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import { IconButton, InputAdornment } from '@mui/material';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import { login } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -27,6 +29,7 @@ export default function LoginPage() {
     const location = useLocation();
     const locationState = location.state as LoginLocationState | null;
     const [loginError, setLoginError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
     const activeRole = useAppStore((state) => state.activeRole);
     const methods = useForm<LoginFormValues>({
         defaultValues: { email: '', password: '' }
@@ -109,7 +112,31 @@ export default function LoginPage() {
                         placeholder="Enter your password"
                         rules={{ required: 'Password is required' }}
                         size="small"
-                        type="password"
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label={showPassword
+                                                ? 'Hide password'
+                                                : 'Show password'
+                                            }
+                                            edge="end"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                        >
+                                            {showPassword
+                                                ? <EyeSlash size={20} />
+                                                : <Eye size={20} />
+                                            }
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
+                        }}
+                        type={showPassword
+                            ? 'text'
+                            : 'password'
+                        }
                         variant="outlined"
                     />
 

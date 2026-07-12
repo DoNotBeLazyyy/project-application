@@ -4,7 +4,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, ListChecksIcon, ListIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
+    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -98,6 +98,12 @@ export default function AdminLayout() {
                         isActive: pathname.startsWith('/admin/roles'),
                         label: 'Permissions',
                         onClick: () => navigate('/admin/roles')
+                    },
+                    {
+                        icon: <GraduationCapIcon size={18} />,
+                        isActive: pathname === '/admin/academic-thresholds',
+                        label: 'Academic Thresholds',
+                        onClick: () => navigate('/admin/academic-thresholds')
                     },
                     {
                         icon: <GearIcon size={18} />,
