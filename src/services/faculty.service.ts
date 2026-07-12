@@ -187,3 +187,21 @@ export async function calculateAllGradesForPeriod(
         p_grading_period_id: gradingPeriodId
     });
 }
+
+export async function isSectionGradingLocked(
+    sectionId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<boolean>> {
+    return callRpc<boolean>('fn_is_section_grading_locked', {
+        p_section_id: sectionId,
+        p_grading_period_id: gradingPeriodId
+    });
+}
+
+export async function reseedSectionGrading(
+    sectionId: string
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_reseed_section_grading', {
+        p_section_id: sectionId
+    });
+}

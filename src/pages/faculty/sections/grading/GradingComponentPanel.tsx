@@ -3,7 +3,9 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import CommonTable from '@components/table/CommonTable';
-import { PencilIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import {
+    ArrowsClockwiseIcon, LockIcon, PencilIcon, PlusIcon, TrashIcon
+} from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
 import { ColDef } from 'ag-grid-community';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -37,15 +39,19 @@ const componentFields: FormFieldConfig<GradingComponentFormValues>[] = [
 
 interface GradingComponentPanelProps {
     components: GradingComponent[];
+    locked: boolean;
     onCreate: (values: GradingComponentFormValues) => Promise<void>;
     onDelete: (componentId: string) => Promise<void>;
+    onReseed: () => Promise<void>;
     onUpdate: (componentId: string, values: GradingComponentFormValues) => Promise<void>;
 }
 
 export default function GradingComponentPanel({
     components,
+    locked,
     onCreate,
     onDelete,
+    onReseed,
     onUpdate
 }: GradingComponentPanelProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -108,6 +114,7 @@ export default function GradingComponentPanel({
                     <div className="flex gap-1 h-full items-center justify-center">
                         <CommonButton
                             color="primary"
+                            disabled={locked}
                             size="small"
                             onClick={function() {
                                 handleOpenUpdate(params.data);
@@ -117,6 +124,7 @@ export default function GradingComponentPanel({
                         </CommonButton>
                         <CommonButton
                             color="error"
+                            disabled={locked}
                             size="small"
                             onClick={function() {
                                 onDelete(params.data.id);
@@ -128,7 +136,7 @@ export default function GradingComponentPanel({
                 )
             }
         ];
-    }, [onDelete]);
+    }, [locked, onDelete]);
 
     return (
         <div className="flex flex-col gap-3 w-72 flex-shrink-0">
@@ -142,7 +150,7 @@ export default function GradingComponentPanel({
                     </span>
                 </div>
                 <CommonButton
-                    disabled={totalWeight >= 100}
+                    disabled={locked || totalWeight >= 100}
                     size="small"
                     startIcon={<PlusIcon size={14} weight="bold" />}
                     variant="contained"
@@ -153,6 +161,32 @@ export default function GradingComponentPanel({
                     Add
                 </CommonButton>
             </div>
+            {locked
+                ? (
+                    <div className="flex gap-2 items-start rounded-md bg-(--mui-palette-action-hover) p-2">
+                        <LockIcon
+                            className="mt-0.5 text-(--mui-palette-text-secondary)"
+                            size={14}
+                            weight="bold"
+                        />
+                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                        Locked: grades have been recorded for this period, so components can no longer be changed.
+                        </span>
+                    </div>
+                )
+                : null}
+            {!locked && components.length === 0
+                ? (
+                    <CommonButton
+                        size="small"
+                        startIcon={<ArrowsClockwiseIcon size={14} weight="bold" />}
+                        variant="outlined"
+                        onClick={onReseed}
+                    >
+                    Reset to institutional template
+                    </CommonButton>
+                )
+                : null}
             <div className="flex-1 min-h-0">
                 <CommonTable<GradingComponent>
                     leadingColumnDefs={columnDefs}

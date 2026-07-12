@@ -5,9 +5,11 @@ import {
     calculateAllGradesForPeriod,
     createGradingComponent,
     deleteGradingComponent,
+    isSectionGradingLocked,
     listGradeSheet,
     listGradingComponents,
     listGradingPeriodsBySection,
+    reseedSectionGrading,
     updateGradingComponent
 } from '@services/faculty.service';
 import {
@@ -27,6 +29,7 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     const [activePeriodId, setActivePeriodId] = useState('');
     const [components, setComponents] = useState<GradingComponent[]>([]);
     const [gradeSheet, setGradeSheet] = useState<GradeSheetRow[]>([]);
+    const [isLocked, setIsLocked] = useState(false);
 
     useEffect(function() {
         async function fetchPeriods() {
@@ -47,13 +50,15 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     }, [sectionId, activePeriodId]);
 
     async function fetchPeriodData() {
-        const [componentsResult, gradeSheetResult] = await Promise.all([
+        const [componentsResult, gradeSheetResult, lockedResult] = await Promise.all([
             listGradingComponents(sectionId, activePeriodId),
-            listGradeSheet(sectionId, activePeriodId)
+            listGradeSheet(sectionId, activePeriodId),
+            isSectionGradingLocked(sectionId, activePeriodId)
         ]);
 
         if (componentsResult.data) setComponents(componentsResult.data);
         if (gradeSheetResult.data) setGradeSheet(gradeSheetResult.data);
+        setIsLocked(Boolean(lockedResult.data));
     }
 
     function handleTabChange(_: SyntheticEvent, value: string) {
@@ -80,6 +85,11 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
         if (!result.error) await fetchPeriodData();
     }
 
+    async function handleReseed() {
+        const result = await reseedSectionGrading(sectionId);
+        if (!result.error) await fetchPeriodData();
+    }
+
     if (periods.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center">
@@ -102,8 +112,10 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
             <div className="flex gap-4 flex-1 min-h-0">
                 <GradingComponentPanel
                     components={components}
+                    locked={isLocked}
                     onCreate={handleCreate}
                     onDelete={handleDelete}
+                    onReseed={handleReseed}
                     onUpdate={handleUpdate}
                 />
                 <GradeSheetPanel
