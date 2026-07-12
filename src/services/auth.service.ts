@@ -1,15 +1,10 @@
 import { supabase } from '@services/supabase.client';
-import { callQuery, callSingle } from '@services/supabase.wrapper';
+import { callRpc } from '@services/supabase.wrapper';
 import { useAppStore } from '@stores/app.store';
 import { Session } from '@supabase/supabase-js';
-import { RoleItem, UserProfile, UserRole } from '@type/app.type';
+import { AuthContext } from '@type/app.type';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
-
-interface UserRoleJoinRow {
-    role_id: string;
-    roles: { id: string; code: UserRole; label: string } | null;
-}
 
 export async function login(email: string, password: string): Promise<ServiceResult<Session>> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -26,6 +21,10 @@ export async function logout(): Promise<void> {
         .clearSession();
 }
 
+export async function getAuthContext(): Promise<ServiceResult<AuthContext>> {
+    return callRpc<AuthContext>('fn_get_auth_context');
+}
+
 export async function initAuthSession(): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -37,33 +36,13 @@ export async function initAuthSession(): Promise<void> {
         return;
     }
 
-    const userId = session.user.id;
+    const { data: context } = await getAuthContext();
 
-    const profileResult = await callSingle<UserProfile>((client) =>
-        client
-            .from('users')
-            .select('id, first_name, middle_name, last_name, suffix, preferred_name, email, mobile_number, avatar_url, status')
-            .eq('id', userId)
-            .is('deleted_at', null)
-            .single());
-
-    if (profileResult.data) {
-        store.setUserProfile(profileResult.data);
+    if (!context) {
+        return;
     }
 
-    const rolesResult = await callQuery<UserRoleJoinRow>((client) =>
-        client
-            .from('user_roles')
-            .select('role_id, roles(id, code, label)')
-            .eq('user_id', userId)
-            .is('deleted_at', null));
-
-    if (rolesResult.data) {
-        const roles: RoleItem[] = rolesResult.data
-            .map((row) => row.roles)
-            .filter((r): r is RoleItem => r !== null && r !== undefined);
-
-        store.setAvailableRoles(roles);
-        store.resolveActiveRole();
-    }
+    store.setUserProfile(context.profile);
+    store.setAvailableRoles(context.roles);
+    store.resolveActiveRole();
 }

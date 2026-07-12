@@ -18,3 +18,10 @@ export interface RoleItem {
     code: UserRole;
     label: string;
 }
+
+export interface AuthContext {
+    user_id: string;
+    profile: UserProfile;
+    roles: RoleItem[];
+    role_codes: UserRole[];
+}
