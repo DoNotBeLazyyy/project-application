@@ -44,12 +44,21 @@ function isRpcSuccessPayload(data: unknown): data is { success: true; message: s
     );
 }
 
+interface CallRpcOptions {
+    silent?: boolean;
+}
+
 export async function callRpc<T>(
     fn: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<T>> {
-    useLoadingStore.getState()
-        .show();
+    const isSilent = options?.silent === true;
+
+    if (!isSilent) {
+        useLoadingStore.getState()
+            .show();
+    }
     try {
         const { data, error, status } = await supabase.rpc(fn, params);
 
@@ -86,8 +95,10 @@ export async function callRpc<T>(
         return { data: null, error: parsed };
     }
     finally {
-        useLoadingStore.getState()
-            .hide();
+        if (!isSilent) {
+            useLoadingStore.getState()
+                .hide();
+        }
     }
 }
 

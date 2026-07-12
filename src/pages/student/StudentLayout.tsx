@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
+import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
@@ -130,6 +131,7 @@ export default function StudentLayout() {
                     }
                     rightContent={
                         <div className="flex gap-3 items-center">
+                            <NotificationBell />
                             <span className="text-sm text-white/80">
                                 {displayName}
                             </span>

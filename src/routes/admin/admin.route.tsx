@@ -4,6 +4,10 @@ import AdminLayout from '@pages/admin/AdminLayout';
 import EvaluationManagement from '@pages/admin/evaluation-management';
 import GradingConfiguration from '@pages/admin/grading-config-management';
 import RoleManagement from '@pages/admin/role-management';
+import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
+import AnnouncementManagement from '@pages/shared/announcement-management';
+import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
+import EventManagement from '@pages/shared/event-management';
 import SchoolYearManagement from '@pages/admin/school-year-management';
 import SystemSettings from '@pages/admin/system-settings-management';
 import TermManagement from '@pages/admin/term-management';
@@ -25,6 +29,12 @@ export const adminRoutes: RouteObject[] = [
             { element: <TermManagement />, path: 'terms' },
             { element: <TermTypeManagement />, path: 'term-types' },
             { element: <AcademicThresholdManagement />, path: 'academic-thresholds' },
+            { element: <AnnouncementManagement />, path: 'announcement-management' },
+            { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
+            { element: <AnnouncementDetailPage />, path: 'announcement-management/:id' },
+            { element: <EventManagement />, path: 'event-management' },
+            { element: <EventDetailPage />, path: 'event-management/new' },
+            { element: <EventDetailPage />, path: 'event-management/:id' },
             { element: <SystemSettings />, path: 'system-settings' }
         ]
     }

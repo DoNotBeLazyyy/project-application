@@ -4,15 +4,18 @@ import AssessmentsTab from '@pages/faculty/sections/AssessmentsTab';
 import AttendanceTab from '@pages/faculty/sections/attendance/AttendanceTab';
 import GradingTab from '@pages/faculty/sections/grading/GradingTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
-import { CalendarCheckIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon } from '@phosphor-icons/react';
+import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
+import {
+    CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon
+} from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments';
+type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'discussion';
 
-const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments'];
+const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments', 'discussion'];
 
 export default function SectionDetailPage() {
     const { sectionId = '' } = useParams<{ sectionId: string }>();
@@ -92,6 +95,11 @@ export default function SectionDetailPage() {
                             icon: <NotepadIcon />,
                             label: 'Assessments',
                             value: 'assessments'
+                        },
+                        {
+                            icon: <ChatCircleTextIcon />,
+                            label: 'Discussion',
+                            value: 'discussion'
                         }
                     ]}
                     value={activeTab}
@@ -109,6 +117,9 @@ export default function SectionDetailPage() {
                     )}
                     {activeTab === 'assessments' && (
                         <AssessmentsTab sectionId={sectionId} />
+                    )}
+                    {activeTab === 'discussion' && (
+                        <SectionDiscussionPanel sectionId={sectionId} />
                     )}
                 </div>
             </div>

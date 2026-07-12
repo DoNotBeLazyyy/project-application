@@ -1,9 +1,12 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
+import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
-import { ListIcon, SignOutIcon, SquaresFourIcon } from '@phosphor-icons/react';
+import {
+    CalendarIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
+} from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -58,6 +61,18 @@ export default function RegistrarLayout() {
                     isActive: pathname === '/registrar/grade-release',
                     label: 'Grade Release',
                     onClick: () => navigate('/registrar/grade-release')
+                },
+                {
+                    icon: <MegaphoneIcon size={18} />,
+                    isActive: pathname.startsWith('/registrar/announcement-management'),
+                    label: 'Announcements',
+                    onClick: () => navigate('/registrar/announcement-management')
+                },
+                {
+                    icon: <CalendarIcon size={18} />,
+                    isActive: pathname.startsWith('/registrar/event-management'),
+                    label: 'Events',
+                    onClick: () => navigate('/registrar/event-management')
                 }
             ]
         }
@@ -130,6 +145,7 @@ export default function RegistrarLayout() {
                     }
                     rightContent={
                         <div className="flex gap-3 items-center">
+                            <NotificationBell />
                             <span className="text-sm text-white/80">
                                 {displayName}
                             </span>

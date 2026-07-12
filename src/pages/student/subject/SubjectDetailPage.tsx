@@ -3,13 +3,14 @@ import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
 import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
-import { ArrowLeftIcon, ClipboardTextIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
+import { ArrowLeftIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { getSubjectAssessments, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
 import { SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-type SubjectTab = 'assessments' | 'grades';
+type SubjectTab = 'assessments' | 'grades' | 'discussion';
 
 export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
@@ -112,6 +113,11 @@ export default function SubjectDetailPage() {
                         icon: <GraduationCapIcon />,
                         label: 'Grades',
                         value: 'grades'
+                    },
+                    {
+                        icon: <ChatCircleTextIcon />,
+                        label: 'Discussion',
+                        value: 'discussion'
                     }
                 ]}
                 value={activeTab}
@@ -130,6 +136,9 @@ export default function SubjectDetailPage() {
                         grades={grades ?? []}
                         onEvaluated={fetchGrades}
                     />
+                )}
+                {activeTab === 'discussion' && subject?.section_id && (
+                    <SectionDiscussionPanel sectionId={subject.section_id} />
                 )}
             </div>
         </CommonCard>

@@ -8,6 +8,10 @@ import DepartmentManagement from '@pages/dean/department-management';
 import ProgramManagement from '@pages/dean/program-management';
 import ProgramLevelManagement from '@pages/dean/program-management/level';
 import SectionManagement from '@pages/dean/section-management';
+import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
+import AnnouncementManagement from '@pages/shared/announcement-management';
+import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
+import EventManagement from '@pages/shared/event-management';
 import { RouteObject } from 'react-router-dom';
 
 export const deanRoutes: RouteObject[] = [
@@ -24,7 +28,13 @@ export const deanRoutes: RouteObject[] = [
             { element: <ProgramManagement />, path: 'program-management' },
             { element: <CourseManagement />, path: 'course-management' },
             { element: <CurriculumMapManagement />, path: 'curriculum-map-management' },
-            { element: <SectionManagement />, path: 'section-management' }
+            { element: <SectionManagement />, path: 'section-management' },
+            { element: <AnnouncementManagement />, path: 'announcement-management' },
+            { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
+            { element: <AnnouncementDetailPage />, path: 'announcement-management/:id' },
+            { element: <EventManagement />, path: 'event-management' },
+            { element: <EventDetailPage />, path: 'event-management/new' },
+            { element: <EventDetailPage />, path: 'event-management/:id' }
         ]
     }
 ];

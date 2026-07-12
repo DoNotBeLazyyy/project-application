@@ -1,10 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
+import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
+    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, MegaphoneIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -106,6 +107,18 @@ export default function AdminLayout() {
                         onClick: () => navigate('/admin/academic-thresholds')
                     },
                     {
+                        icon: <MegaphoneIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/announcement-management'),
+                        label: 'Announcements',
+                        onClick: () => navigate('/admin/announcement-management')
+                    },
+                    {
+                        icon: <CalendarIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/event-management'),
+                        label: 'Events',
+                        onClick: () => navigate('/admin/event-management')
+                    },
+                    {
                         icon: <GearIcon size={18} />,
                         isActive: pathname === '/admin/system-settings',
                         label: 'Settings',
@@ -184,6 +197,7 @@ export default function AdminLayout() {
                     }
                     rightContent={
                         <div className="flex gap-3 items-center">
+                            <NotificationBell />
                             <span className="text-sm text-white/80">
                                 {displayName}
                             </span>
