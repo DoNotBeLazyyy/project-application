@@ -5,7 +5,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    CalendarIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
+    CalendarIcon, ChalkboardTeacherIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -87,6 +87,12 @@ export default function DeanLayout() {
                     onClick: () => navigate('/dean/section-management')
                 },
                 {
+                    icon: <ChalkboardTeacherIcon size={18} />,
+                    isActive: pathname.startsWith('/dean/faculty-load'),
+                    label: 'Faculty Load',
+                    onClick: () => navigate('/dean/faculty-load')
+                },
+                {
                     icon: <MegaphoneIcon size={18} />,
                     isActive: pathname.startsWith('/dean/announcement-management'),
                     label: 'Announcements',
@@ -126,8 +132,8 @@ export default function DeanLayout() {
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
                 footerProps={{
-                    label: 'Settings',
-                    onClick: () => navigate('/dean/settings')
+                    label: 'My Profile',
+                    onClick: () => navigate('/dean/profile')
                 }}
                 headerProps={{
                     subtitle: 'Dean Panel',

@@ -103,7 +103,7 @@ export async function updateUser(
         p_user_id: userId,
         p_first_name: params.first_name,
         p_last_name: params.last_name,
-        p_role_code: params.role_code
+        p_role_codes: params.role_codes
     });
 }
 

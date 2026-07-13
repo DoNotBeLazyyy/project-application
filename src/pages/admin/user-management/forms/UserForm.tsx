@@ -1,6 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { useRoleOptions } from '@pages/admin/role-management/hooks/useRoleOptions';
+import { UserRole } from '@type/app.type';
 import { ComponentPropsForm } from '@type/common.type';
 import { UpdateUserFormValues } from '@type/user.type';
 import { Control } from 'react-hook-form';
@@ -41,9 +42,22 @@ export default function UserForm({
         },
         {
             disabled,
-            name: 'role_code',
+            label: 'Roles',
+            name: 'role_codes',
             options: roleOptions,
-            type: 'select'
+            rules: disabled
+                ? undefined
+                : {
+                    validate: function(value: string | UserRole[]) {
+                        return (Array.isArray(value) && value.length > 0)
+                            || 'Assign at least one role';
+                    }
+                },
+            type: 'multi-select',
+            fieldProps: {
+                helperText: 'A user may hold several roles and switch between them in the sidebar.',
+                placeholder: 'Select roles'
+            }
         }
     ];
 

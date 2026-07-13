@@ -102,8 +102,8 @@ export default function RegistrarLayout() {
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
                 footerProps={{
-                    label: 'Settings',
-                    onClick: () => navigate('/registrar/settings')
+                    label: 'My Profile',
+                    onClick: () => navigate('/registrar/profile')
                 }}
                 headerProps={{
                     subtitle: 'Registrar Panel',

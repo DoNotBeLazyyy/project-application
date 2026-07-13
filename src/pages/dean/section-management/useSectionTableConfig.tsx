@@ -1,11 +1,13 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { CopyIcon } from '@phosphor-icons/react';
 import { SectionListRow, SectionStatus } from '@type/section.type';
 import { ColDef } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface UseSectionTableConfigProps {
+    onCopySetup: (id: string) => void;
     onEdit: (id: string) => void;
     onRequestDeleteRow: (id: string) => void;
     onView: (id: string) => void;
@@ -20,6 +22,7 @@ const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' 
 };
 
 export function useSectionTableConfig({
+    onCopySetup,
     onEdit,
     onView
 }: UseSectionTableConfigProps) {
@@ -100,11 +103,20 @@ export function useSectionTableConfig({
                     {
                         preset: 'delete',
                         onClick: () => onDelete(row.id)
+                    },
+                    {
+                        children: (
+                            <div className="flex gap-2 items-center">
+                                <CopyIcon size={18} />
+                                <span>Copy Grading Setup</span>
+                            </div>
+                        ),
+                        onClick: () => onCopySetup(row.id)
                     }
                 ]
             };
         };
-    }, [onEdit, onView]);
+    }, [onCopySetup, onEdit, onView]);
 
     return { columnDefs, tableActionConfig };
 }

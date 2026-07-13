@@ -1,6 +1,7 @@
 import AcademicThresholdManagement from '@pages/admin/academic-threshold-management';
 import AdminDashboard from '@pages/admin/AdminDashboard';
 import AdminLayout from '@pages/admin/AdminLayout';
+import AuditLogManagement from '@pages/admin/audit-log-management';
 import EvaluationManagement from '@pages/admin/evaluation-management';
 import GradingConfiguration from '@pages/admin/grading-config-management';
 import RoleManagement from '@pages/admin/role-management';
@@ -8,6 +9,7 @@ import AnnouncementDetailPage from '@pages/shared/announcement-management/Announ
 import AnnouncementManagement from '@pages/shared/announcement-management';
 import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
 import EventManagement from '@pages/shared/event-management';
+import ProfilePage from '@pages/shared/profile';
 import SchoolYearManagement from '@pages/admin/school-year-management';
 import SystemSettings from '@pages/admin/system-settings-management';
 import TermManagement from '@pages/admin/term-management';
@@ -35,6 +37,8 @@ export const adminRoutes: RouteObject[] = [
             { element: <EventManagement />, path: 'event-management' },
             { element: <EventDetailPage />, path: 'event-management/new' },
             { element: <EventDetailPage />, path: 'event-management/:id' },
+            { element: <AuditLogManagement />, path: 'audit-logs' },
+            { element: <ProfilePage />, path: 'profile' },
             { element: <SystemSettings />, path: 'system-settings' }
         ]
     }

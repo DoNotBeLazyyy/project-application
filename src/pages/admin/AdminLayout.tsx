@@ -5,7 +5,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, MegaphoneIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
+    CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, MegaphoneIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -119,6 +119,12 @@ export default function AdminLayout() {
                         onClick: () => navigate('/admin/event-management')
                     },
                     {
+                        icon: <ClockCounterClockwiseIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/audit-logs'),
+                        label: 'Audit Log',
+                        onClick: () => navigate('/admin/audit-logs')
+                    },
+                    {
                         icon: <GearIcon size={18} />,
                         isActive: pathname === '/admin/system-settings',
                         label: 'Settings',
@@ -153,8 +159,8 @@ export default function AdminLayout() {
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
                 footerProps={{
-                    label: 'Settings',
-                    onClick: () => navigate('/admin/settings')
+                    label: 'My Profile',
+                    onClick: () => navigate('/admin/profile')
                 }}
                 headerProps={{
                     subtitle: 'Admin Panel',

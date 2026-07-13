@@ -90,8 +90,8 @@ export default function FacultyLayout() {
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
                 footerProps={{
-                    label: 'Settings',
-                    onClick: () => navigate('/dean/settings')
+                    label: 'My Profile',
+                    onClick: () => navigate('/faculty/profile')
                 }}
                 headerProps={{
                     subtitle: 'Faculty Panel',

@@ -28,13 +28,13 @@ export interface UpdateUserFormValues {
     first_name: string;
     last_name: string;
     email: string;
-    role_code: UserRole;
+    role_codes: UserRole[];
 }
 
 export interface UpdateUserParams {
     first_name: string;
     last_name: string;
-    role_code: UserRole;
+    role_codes: UserRole[];
 }
 
 export interface SetPasswordFormValues {

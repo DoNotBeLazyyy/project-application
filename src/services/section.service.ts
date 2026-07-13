@@ -111,6 +111,16 @@ export async function bulkDeleteSections(
     });
 }
 
+export async function copySectionSetupToSections(
+    sourceSectionId: string,
+    targetSectionIds: string[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_copy_section_setup_to_sections', {
+        p_source_section_id: sourceSectionId,
+        p_target_section_ids: targetSectionIds
+    });
+}
+
 export async function bulkCreateSections(
     sections: SectionBulkRow[]
 ): Promise<BulkImportResult> {

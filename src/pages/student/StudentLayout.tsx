@@ -102,8 +102,8 @@ export default function StudentLayout() {
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
                 footerProps={{
-                    label: 'Settings',
-                    onClick: () => navigate('/registrar/settings')
+                    label: 'My Profile',
+                    onClick: () => navigate('/student/profile')
                 }}
                 headerProps={{
                     subtitle: 'Student Panel',

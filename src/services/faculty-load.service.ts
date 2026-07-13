@@ -1,0 +1,40 @@
+import { callRpc } from '@services/supabase.wrapper';
+import { FacultyLoadDetail, FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictReport } from '@type/faculty-load.type';
+import { CommonListResDto, SortStringDto } from '@type/http.type';
+import { ServiceResult } from '@type/service.type';
+
+export async function listFacultyLoad(
+    page: number,
+    size: number,
+    search: string,
+    sort: SortStringDto[],
+    filters: FacultyLoadFilterValues | null
+): Promise<ServiceResult<CommonListResDto<FacultyLoadRow>>> {
+    return callRpc<CommonListResDto<FacultyLoadRow>>('fn_list_faculty_load_json', {
+        p_page: page,
+        p_search: search || null,
+        p_size: size,
+        p_sort: sort.length > 0
+            ? sort
+            : null,
+        p_term_id: filters?.term_id || null
+    });
+}
+
+export async function listScheduleConflicts(
+    termId: string | null
+): Promise<ServiceResult<ScheduleConflictReport>> {
+    return callRpc<ScheduleConflictReport>('fn_list_schedule_conflicts', {
+        p_term_id: termId || null
+    }, { silent: true });
+}
+
+export async function getFacultyLoadDetail(
+    facultyId: string,
+    termId: string | null
+): Promise<ServiceResult<FacultyLoadDetail>> {
+    return callRpc<FacultyLoadDetail>('fn_get_faculty_load_detail', {
+        p_faculty_id: facultyId,
+        p_term_id: termId || null
+    });
+}

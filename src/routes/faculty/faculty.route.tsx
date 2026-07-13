@@ -9,6 +9,7 @@ import AnnouncementDetailPage from '@pages/shared/announcement-management/Announ
 import AnnouncementManagement from '@pages/shared/announcement-management';
 import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
 import EventManagement from '@pages/shared/event-management';
+import ProfilePage from '@pages/shared/profile';
 import { RouteObject } from 'react-router-dom';
 
 export const facultyRoutes: RouteObject[] = [
@@ -22,6 +23,7 @@ export const facultyRoutes: RouteObject[] = [
             { element: <AssessmentBuilderPage />, path: 'sections/:sectionId/assessments/:assessmentId/builder' },
             { element: <SubmissionsPage />, path: 'sections/:sectionId/assessments/:assessmentId/submissions' },
             { element: <ItemAnalysisPage />, path: 'sections/:sectionId/assessments/:assessmentId/analysis' },
+            { element: <ProfilePage />, path: 'profile' },
             { element: <AnnouncementManagement />, path: 'announcement-management' },
             { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
             { element: <AnnouncementDetailPage />, path: 'announcement-management/:id' },

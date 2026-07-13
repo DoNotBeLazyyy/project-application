@@ -1,6 +1,7 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import CopySectionSetupModal from '@pages/dean/section-management/CopySectionSetupModal';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionForm from '@pages/dean/section-management/SectionForm';
 import { useSectionTableConfig } from '@pages/dean/section-management/useSectionTableConfig';
@@ -53,6 +54,7 @@ export default function SectionManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [copySourceId, setCopySourceId] = useState<string | null>(null);
 
     const createMethods = useForm<SectionFormValues>({
         defaultValues: defaultFormValues
@@ -116,7 +118,12 @@ export default function SectionManagement() {
         updateMethods.reset(defaultFormValues);
     }
 
+    function handleOpenCopySetup(id: string) {
+        setCopySourceId(id);
+    }
+
     const { columnDefs, tableActionConfig } = useSectionTableConfig({
+        onCopySetup: handleOpenCopySetup,
         onEdit: handleOpenUpdate,
         onRequestDeleteRow: function() {},
         onView: handleOpenView
@@ -321,6 +328,16 @@ export default function SectionManagement() {
                     room: row.room,
                     max_slots: row.max_slots
                 })}
+                onSuccess={function() {
+                    setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
+                }}
+            />
+            <CopySectionSetupModal
+                open={copySourceId !== null}
+                sourceSectionId={copySourceId}
+                onClose={function() {
+                    setCopySourceId(null);
+                }}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
                 }}

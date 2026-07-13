@@ -57,7 +57,7 @@ export default function UserManagement() {
             email: '',
             first_name: '',
             last_name: '',
-            role_code: 'Student' as UserRole
+            role_codes: []
         }
     });
 
@@ -69,7 +69,7 @@ export default function UserManagement() {
                 email: result.data.email,
                 first_name: result.data.first_name,
                 last_name: result.data.last_name,
-                role_code: result.data.role_code
+                role_codes: result.data.role_codes ?? []
             });
         }
     }
@@ -143,7 +143,7 @@ export default function UserManagement() {
         const result = await updateUser(selectedUserId, {
             first_name: values.first_name,
             last_name: values.last_name,
-            role_code: values.role_code
+            role_codes: values.role_codes
         });
 
         if (!result.error) {

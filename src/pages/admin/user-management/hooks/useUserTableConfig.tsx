@@ -39,8 +39,9 @@ export function useUserTableConfig({
             {
                 field: 'role_code',
                 flex: 2,
-                headerName: 'Role',
-                sortable: true
+                headerName: 'Roles',
+                sortable: true,
+                tooltipField: 'role_code'
             },
             {
                 field: 'status',

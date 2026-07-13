@@ -3,6 +3,7 @@ import TakeAssessmentPage from '@pages/student/assessment/TakeAssessmentPage';
 import StudentCurriculum from '@pages/student/curriculum';
 import StudentGrades from '@pages/student/grade';
 import StudentInsight from '@pages/student/insight';
+import ProfilePage from '@pages/shared/profile';
 import StudentSchedule from '@pages/student/schedule';
 import StudentDashboard from '@pages/student/StudentDashboard';
 import StudentLayout from '@pages/student/StudentLayout';
@@ -23,7 +24,8 @@ export const studentRoutes: RouteObject[] = [
             { element: <AssessmentResultPage />, path: 'subjects/:enrollmentId/assessments/:assessmentId/result' },
             { element: <StudentGrades />, path: 'grade' },
             { element: <StudentCurriculum />, path: 'curriculum' },
-            { element: <StudentInsight />, path: 'insight' }
+            { element: <StudentInsight />, path: 'insight' },
+            { element: <ProfilePage />, path: 'profile' }
         ]
     }
 ];
