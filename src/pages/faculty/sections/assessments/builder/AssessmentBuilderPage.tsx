@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import BulkImportModal from '@components/modal/BulkImportModal';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
 import AssessmentSettingsForm from '@pages/faculty/sections/assessments/builder/AssessmentSettingsForm';
@@ -7,13 +8,23 @@ import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionLi
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
-    createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, updateAssessment, upsertQuestion
+    bulkImportQuestions, createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, updateAssessment, upsertQuestion
 } from '@services/assessment.service';
 import { listGradingComponents } from '@services/faculty.service';
-import { AssessmentFormValues, AssessmentQuestion, QuestionFormValues } from '@type/assessment.type';
+import { AssessmentFormValues, AssessmentQuestion, QuestionBulkRow, QuestionFormValues } from '@type/assessment.type';
+import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
+
+const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'question_text', label: 'Question', hint: 'e.g. What is the capital of France?' },
+    { key: 'question_type', label: 'Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload' },
+    { key: 'points', label: 'Points', hint: 'e.g. 2' },
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE' },
+    { key: 'explanation', label: 'Explanation', hint: 'Optional' },
+    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with *' }
+];
 
 export default function AssessmentBuilderPage() {
     const { sectionId = '', assessmentId = '' } = useParams<{ sectionId: string; assessmentId: string }>();
@@ -29,6 +40,7 @@ export default function AssessmentBuilderPage() {
     const [editingQuestion, setEditingQuestion] = useState<AssessmentQuestion | null>(null);
     const [expandedQuestionId, setExpandedQuestionId] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isImportOpen, setIsImportOpen] = useState(false);
 
     const settingsMethods = useForm<AssessmentFormValues>({ defaultValues: DEFAULT_ASSSESSMENT_VALUES });
     const questionMethods = useForm<QuestionFormValues>({ defaultValues: DEFAULT_QUESTION_VALUES });
@@ -214,9 +226,33 @@ export default function AssessmentBuilderPage() {
                         onAddQuestion={handleOpenAddQuestion}
                         onDeleteQuestion={handleDeleteQuestion}
                         onEditQuestion={handleOpenEditQuestion}
+                        onImportQuestions={function() {
+                            setIsImportOpen(true);
+                        }}
                         onToggleExpand={handleToggleExpand}
                     />
                 </div>
+                <BulkImportModal<QuestionBulkRow>
+                    open={isImportOpen}
+                    templateColumns={QUESTION_TEMPLATE_COLUMNS}
+                    title="Import Questions"
+                    onBulkImport={function(rows: QuestionBulkRow[]) {
+                        return bulkImportQuestions(assessmentDbId, rows);
+                    }}
+                    onClose={function() {
+                        setIsImportOpen(false);
+                        refreshQuestions();
+                    }}
+                    onMapRow={(row) => ({
+                        choices:       row.choices,
+                        explanation:   row.explanation,
+                        is_required:   row.is_required,
+                        points:        row.points,
+                        question_text: row.question_text,
+                        question_type: row.question_type
+                    })}
+                    onSuccess={refreshQuestions}
+                />
                 <QuestionModal
                     editingQuestion={editingQuestion}
                     isOpen={isQuestionModalOpen}

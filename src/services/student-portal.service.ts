@@ -1,9 +1,11 @@
+import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentDashboard, StudentQuestion, StudentScheduleSection, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem
+    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
 } from '@type/student-portal.type';
+import { parseServiceError } from '@utils/error.util';
 
 export async function getStudentDashboard(): Promise<ServiceResult<StudentDashboard>> {
     return callRpc<StudentDashboard>('fn_get_student_dashboard');
@@ -75,6 +77,16 @@ export async function getAssessmentQuestionsForStudent(
     });
 }
 
+export async function getMyAssessmentResult(
+    enrollmentId: string,
+    assessmentId: string
+): Promise<ServiceResult<StudentAssessmentResult>> {
+    return callRpc<StudentAssessmentResult>('fn_get_my_assessment_result', {
+        p_assessment_id: assessmentId,
+        p_enrollment_id: enrollmentId
+    });
+}
+
 export async function startAssessmentTimer(
     enrollmentId: string,
     assessmentId: string
@@ -95,6 +107,36 @@ export async function saveStudentAnswer(
         p_answer_text:   answer.answer_text || null,
         p_choice_id:     answer.choice_id || null
     });
+}
+
+export async function uploadSubmissionFile(
+    submissionId: string,
+    questionId: string,
+    file: File
+): Promise<ServiceResult<SubmissionFileAttachment>> {
+    const path = `${submissionId}/${questionId}/${Date.now()}_${file.name}`;
+
+    const { error } = await supabase.storage
+        .from('submissions')
+        .upload(path, file, { upsert: false });
+
+    if (error) {
+        return { data: null, error: parseServiceError(error) };
+    }
+
+    return { data: { name: file.name, path }, error: null };
+}
+
+export async function saveStudentAnswerFiles(
+    submissionId: string,
+    questionId: string,
+    files: SubmissionFileAttachment[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_save_student_answer_files', {
+        p_files: files,
+        p_question_id: questionId,
+        p_submission_id: submissionId
+    }, { silent: true });
 }
 
 export async function submitAssessment(

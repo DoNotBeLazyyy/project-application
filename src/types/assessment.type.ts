@@ -23,6 +23,15 @@ export type SubmissionStatus =
     | 'Graded'
     | 'Returned';
 
+export interface QuestionBulkRow {
+    question_text: string;
+    question_type: string;
+    points: string;
+    is_required: string;
+    explanation: string;
+    choices: string;
+}
+
 export interface AssessmentAttachment {
     id: string;
     file_name: string;
@@ -143,7 +152,7 @@ export interface SubmissionAnswer {
     points_earned: number | null;
     is_correct: boolean | null;
     grader_notes: string | null;
-    file_attachments: { name: string; url: string }[];
+    file_attachments: { name: string; path: string }[];
 }
 
 export interface SubmissionForGrading {

@@ -1,5 +1,6 @@
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import FileUploadAnswer from '@pages/student/assessment/FileUploadAnswer';
 import { StudentQuestion } from '@type/student-portal.type';
 import { Control } from 'react-hook-form';
 
@@ -7,12 +8,14 @@ interface AssessmentQuestionCardProps {
     control: Control<Record<string, string>>;
     index: number;
     question: StudentQuestion;
+    submissionId: string;
 }
 
 export default function AssessmentQuestionCard({
     control,
     index,
-    question
+    question,
+    submissionId
 }: AssessmentQuestionCardProps) {
     const choiceOptions = question.choices.map((c) => ({
         label: c.choice_text,
@@ -61,17 +64,10 @@ export default function AssessmentQuestionCard({
                 />
             )}
             {question.question_type === 'File Upload' && (
-                <div className="flex flex-col gap-1">
-                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                        File upload is handled through the submission portal.
-                    </span>
-                    {question.allowed_file_types && (
-                        <span className="text-(--mui-palette-text-secondary) text-xs">
-                            Allowed: {question.allowed_file_types.join(', ')}
-                            {question.max_file_size_mb && ` · Max ${question.max_file_size_mb}MB`}
-                        </span>
-                    )}
-                </div>
+                <FileUploadAnswer
+                    question={question}
+                    submissionId={submissionId}
+                />
             )}
         </div>
     );

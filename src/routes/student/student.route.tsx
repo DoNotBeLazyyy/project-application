@@ -1,3 +1,4 @@
+import AssessmentResultPage from '@pages/student/assessment/AssessmentResultPage';
 import TakeAssessmentPage from '@pages/student/assessment/TakeAssessmentPage';
 import StudentGrades from '@pages/student/grade';
 import StudentSchedule from '@pages/student/schedule';
@@ -17,6 +18,7 @@ export const studentRoutes: RouteObject[] = [
             { element: <StudentSubjects />, path: 'subjects' },
             { element: <SubjectDetailPage />, path: 'subjects/:enrollmentId' },
             { element: <TakeAssessmentPage />, path: 'subjects/:enrollmentId/assessments/:assessmentId' },
+            { element: <AssessmentResultPage />, path: 'subjects/:enrollmentId/assessments/:assessmentId/result' },
             { element: <StudentGrades />, path: 'grade' }
         ]
     }

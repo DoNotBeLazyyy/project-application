@@ -4,7 +4,7 @@ import CommonTable from '@components/table/CommonTable';
 import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
-import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
+import { BulkImportError, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { classMerge } from '@utils/css.util';
 import { ColDef } from 'ag-grid-community';
 import { useMemo, useRef, useState } from 'react';
@@ -12,16 +12,6 @@ import { useMemo, useRef, useState } from 'react';
 type BulkImportStep = 'upload' | 'preview' | 'results';
 
 type ParsedRow = Record<string, string>;
-
-export interface BulkImportError {
-    row: number;
-    code: string;
-    message: string;
-}
-
-export interface DetailedBulkImportResult extends BulkImportResult {
-    structuredErrors?: BulkImportError[];
-}
 
 interface BulkImportModalProps<TPayload> {
     open: boolean;

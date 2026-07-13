@@ -4,18 +4,19 @@ import AssessmentsTab from '@pages/faculty/sections/AssessmentsTab';
 import AttendanceTab from '@pages/faculty/sections/attendance/AttendanceTab';
 import GradingTab from '@pages/faculty/sections/grading/GradingTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
+import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon
+    BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'discussion';
+type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'content' | 'discussion';
 
-const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments', 'discussion'];
+const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments', 'content', 'discussion'];
 
 export default function SectionDetailPage() {
     const { sectionId = '' } = useParams<{ sectionId: string }>();
@@ -97,6 +98,11 @@ export default function SectionDetailPage() {
                             value: 'assessments'
                         },
                         {
+                            icon: <BookOpenIcon />,
+                            label: 'Content',
+                            value: 'content'
+                        },
+                        {
                             icon: <ChatCircleTextIcon />,
                             label: 'Discussion',
                             value: 'discussion'
@@ -117,6 +123,9 @@ export default function SectionDetailPage() {
                     )}
                     {activeTab === 'assessments' && (
                         <AssessmentsTab sectionId={sectionId} />
+                    )}
+                    {activeTab === 'content' && (
+                        <SectionContentPanel sectionId={sectionId} />
                     )}
                     {activeTab === 'discussion' && (
                         <SectionDiscussionPanel sectionId={sectionId} />

@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import QuestionCard from '@pages/faculty/sections/assessments/builder/QuestionCard';
-import { PlusIcon } from '@phosphor-icons/react';
+import { ArrowLineUpIcon, PlusIcon } from '@phosphor-icons/react';
 import { AssessmentQuestion } from '@type/assessment.type';
 
 interface QuestionListProps {
@@ -10,6 +10,7 @@ interface QuestionListProps {
     onAddQuestion: () => void;
     onDeleteQuestion: (id: string) => Promise<void>;
     onEditQuestion: (question: AssessmentQuestion) => void;
+    onImportQuestions: () => void;
     onToggleExpand: (id: string) => void;
 }
 
@@ -20,6 +21,7 @@ export default function QuestionList({
     onAddQuestion,
     onDeleteQuestion,
     onEditQuestion,
+    onImportQuestions,
     onToggleExpand
 }: QuestionListProps) {
     const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
@@ -37,15 +39,27 @@ export default function QuestionList({
                             : ''} · {totalPoints} pts total
                     </span>
                 </div>
-                <CommonButton
-                    disabled={!assessmentDbId}
-                    size="small"
-                    startIcon={<PlusIcon size={14} weight="bold" />}
-                    variant="contained"
-                    onClick={onAddQuestion}
-                >
-                    Add Question
-                </CommonButton>
+                <div className="flex gap-2 items-center">
+                    <CommonButton
+                        color="inherit"
+                        disabled={!assessmentDbId}
+                        size="small"
+                        startIcon={<ArrowLineUpIcon size={14} weight="bold" />}
+                        variant="outlined"
+                        onClick={onImportQuestions}
+                    >
+                        Import CSV
+                    </CommonButton>
+                    <CommonButton
+                        disabled={!assessmentDbId}
+                        size="small"
+                        startIcon={<PlusIcon size={14} weight="bold" />}
+                        variant="contained"
+                        onClick={onAddQuestion}
+                    >
+                        Add Question
+                    </CommonButton>
+                </div>
             </div>
             {!assessmentDbId && (
                 <div className="flex flex-1 items-center justify-center">

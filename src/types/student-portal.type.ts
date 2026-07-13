@@ -1,4 +1,4 @@
-import { AssessmentAttachment, AssessmentType, QuestionType } from '@type/assessment.type';
+import { AssessmentAttachment, AssessmentType, QuestionType, SubmissionStatus } from '@type/assessment.type';
 import { EnrollmentStatus } from '@type/enrollment.type';
 import { GradeStatus } from '@type/faculty.type';
 
@@ -140,10 +140,16 @@ export interface StudentQuestionChoice {
     sequence: number;
 }
 
+export interface SubmissionFileAttachment {
+    name: string;
+    path: string;
+}
+
 export interface SavedAnswer {
     id: string;
     answer_text: string | null;
     choice_id: string | null;
+    file_attachments: SubmissionFileAttachment[];
 }
 
 export interface StudentQuestion {
@@ -164,6 +170,51 @@ export interface DraftAnswer {
     question_id: string;
     answer_text: string;
     choice_id: string;
+}
+
+export interface StudentResultChoice {
+    id: string;
+    choice_text: string;
+    sequence: number;
+    is_correct: boolean | null;
+}
+
+export interface StudentResultAnswer {
+    id: string;
+    question_text: string;
+    question_type: QuestionType;
+    points: number;
+    sequence: number;
+    explanation: string | null;
+    answer_text: string | null;
+    choice_id: string | null;
+    file_attachments: SubmissionFileAttachment[];
+    points_earned: number | null;
+    is_correct: boolean | null;
+    grader_notes: string | null;
+    choices: StudentResultChoice[];
+}
+
+export interface StudentAssessmentResult {
+    submission_id: string;
+    assessment_id: string;
+    title: string;
+    description: string | null;
+    assessment_type: AssessmentType;
+    status: SubmissionStatus;
+    attempt_number: number;
+    max_attempts: number;
+    submitted_at: string | null;
+    graded_at: string | null;
+    is_late: boolean;
+    total_points: number;
+    passing_points: number | null;
+    show_results_at: string | null;
+    results_available: boolean;
+    raw_score: number | null;
+    final_score: number | null;
+    feedback: string | null;
+    answers: StudentResultAnswer[];
 }
 
 export interface MyGradeListRow {

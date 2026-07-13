@@ -84,6 +84,8 @@ export default function TakeAssessmentPage() {
         const question = questions.find((q) => q.id === questionId);
         if (!question) return;
 
+        if (question.question_type === 'File Upload') return;
+
         const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
 
         await saveStudentAnswer(submissionId, {
@@ -243,6 +245,7 @@ export default function TakeAssessmentPage() {
                             : currentPage * questionsPerPage + index}
                         key={question.id}
                         question={question}
+                        submissionId={submissionId}
                     />
                 ))}
             </div>

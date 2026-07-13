@@ -92,13 +92,17 @@ function DetailField({ label, value }: DetailFieldProps) {
 interface AssessmentDetailModalProps {
     assessment: SubjectAssessmentItem | null;
     onClose: () => void;
+    onViewResults: (assessment: SubjectAssessmentItem) => void;
 }
 
-function AssessmentDetailModal({ assessment, onClose }: AssessmentDetailModalProps) {
+function AssessmentDetailModal({ assessment, onClose, onViewResults }: AssessmentDetailModalProps) {
     if (!assessment) return null;
 
     const state = getAssessmentState(assessment);
     const attachments = assessment.attachments ?? [];
+    const hasSubmission = ['Submitted', 'Late', 'Graded', 'Returned'].includes(
+        assessment.submission_status ?? ''
+    );
 
     return (
         <CommonModal
@@ -228,6 +232,20 @@ function AssessmentDetailModal({ assessment, onClose }: AssessmentDetailModalPro
                         </span>
                     )}
             </div>
+
+            {hasSubmission && (
+                <div className="flex justify-end">
+                    <CommonButton
+                        size="small"
+                        variant="contained"
+                        onClick={function() {
+                            onViewResults(assessment);
+                        }}
+                    >
+                        View Results
+                    </CommonButton>
+                </div>
+            )}
         </CommonModal>
     );
 }
@@ -353,6 +371,25 @@ export default function SubjectAssessmentList({
                 sortable: false,
                 cellRenderer: (params: { data: SubjectAssessmentItem }) => {
                     const { canTake, label } = getAssessmentState(params.data);
+                    const hasSubmission = ['Submitted', 'Late', 'Graded', 'Returned'].includes(
+                        params.data.submission_status ?? ''
+                    );
+
+                    if (hasSubmission) {
+                        return (
+                            <div className="flex h-full ignore_row_click items-center">
+                                <CommonButton
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={function() {
+                                        navigate(`/student/subjects/${enrollmentId}/assessments/${params.data.id}/result`);
+                                    }}
+                                >
+                                    View Results
+                                </CommonButton>
+                            </div>
+                        );
+                    }
 
                     return (
                         <div className="flex h-full ignore_row_click items-center">
@@ -411,6 +448,9 @@ export default function SubjectAssessmentList({
                 assessment={detailItem}
                 onClose={function() {
                     setDetailItem(null);
+                }}
+                onViewResults={function(assessment) {
+                    navigate(`/student/subjects/${enrollmentId}/assessments/${assessment.id}/result`);
                 }}
             />
         </div>

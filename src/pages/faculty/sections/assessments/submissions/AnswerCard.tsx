@@ -1,6 +1,12 @@
+import { getFileUrl } from '@services/storage.service';
 import { GradeAnswerUpdate, SubmissionAnswer } from '@type/assessment.type';
 
 const MANUAL_GRADE_TYPES = ['Essay', 'Short Answer', 'File Upload'];
+
+async function openSubmissionFile(path: string) {
+    const result = await getFileUrl('submissions', path);
+    if (result.data) window.open(result.data.url, '_blank', 'noopener');
+}
 
 interface AnswerCardProps {
     answer: SubmissionAnswer;
@@ -42,17 +48,18 @@ export default function AnswerCard({
                     )
                     : answer.file_attachments?.length > 0
                         ? (
-                            <div className="flex flex-col gap-1">
-                                {answer.file_attachments.map((file, i) => (
-                                    <a
-                                        className="text-(--mui-palette-primary-main) text-sm underline"
-                                        href={file.url}
-                                        key={i}
-                                        rel="noreferrer"
-                                        target="_blank"
+                            <div className="flex flex-col gap-1 items-start">
+                                {answer.file_attachments.map((file) => (
+                                    <button
+                                        className="text-(--mui-palette-primary-main) text-left text-sm underline"
+                                        key={file.path}
+                                        type="button"
+                                        onClick={function() {
+                                            openSubmissionFile(file.path);
+                                        }}
                                     >
                                         {file.name}
-                                    </a>
+                                    </button>
                                 ))}
                             </div>
                         )

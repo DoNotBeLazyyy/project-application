@@ -3,14 +3,17 @@ import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
 import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
+import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
-import { ArrowLeftIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import {
+    ArrowLeftIcon, BookOpenIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon
+} from '@phosphor-icons/react';
 import { getSubjectAssessments, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
 import { SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-type SubjectTab = 'assessments' | 'grades' | 'discussion';
+type SubjectTab = 'assessments' | 'grades' | 'content' | 'discussion';
 
 export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
@@ -115,6 +118,11 @@ export default function SubjectDetailPage() {
                         value: 'grades'
                     },
                     {
+                        icon: <BookOpenIcon />,
+                        label: 'Content',
+                        value: 'content'
+                    },
+                    {
                         icon: <ChatCircleTextIcon />,
                         label: 'Discussion',
                         value: 'discussion'
@@ -136,6 +144,9 @@ export default function SubjectDetailPage() {
                         grades={grades ?? []}
                         onEvaluated={fetchGrades}
                     />
+                )}
+                {activeTab === 'content' && subject?.section_id && (
+                    <SectionContentPanel sectionId={subject.section_id} />
                 )}
                 {activeTab === 'discussion' && subject?.section_id && (
                     <SectionDiscussionPanel sectionId={subject.section_id} />

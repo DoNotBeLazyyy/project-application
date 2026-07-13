@@ -1,8 +1,9 @@
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionFormValues, SubmissionForGrading, SubmissionListRow
+    AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionBulkRow, QuestionFormValues, SubmissionForGrading, SubmissionListRow
 } from '@type/assessment.type';
+import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
@@ -118,6 +119,16 @@ export async function deleteAssessment(
     });
 }
 
+export async function duplicateAssessmentToSections(
+    assessmentId: string,
+    sectionIds: string[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_duplicate_assessment_to_sections', {
+        p_assessment_id: assessmentId,
+        p_section_ids:   sectionIds
+    });
+}
+
 export async function uploadAssessmentAttachment(
     assessmentId: string,
     file: File
@@ -200,6 +211,31 @@ export async function upsertQuestion(
             ? params.choices.map((c) => ({ choice_text: c.choice_text, is_correct: c.is_correct }))
             : null
     });
+}
+
+export async function bulkImportQuestions(
+    assessmentId: string,
+    questions: QuestionBulkRow[]
+): Promise<DetailedBulkImportResult> {
+    const result = await callRpc<{
+        provisioned_count: number;
+        errors: BulkImportError[];
+    }>('fn_bulk_import_questions', {
+        p_assessment_id: assessmentId,
+        p_questions:     questions
+    });
+
+    if (result.error) {
+        return { errors: [result.error.message], provisioned_count: 0 };
+    }
+
+    const structuredErrors = result.data?.errors ?? [];
+
+    return {
+        errors: structuredErrors.map((error) => `Row ${error.row}: ${error.message}`),
+        provisioned_count: result.data?.provisioned_count ?? 0,
+        structuredErrors
+    };
 }
 
 export async function deleteQuestion(

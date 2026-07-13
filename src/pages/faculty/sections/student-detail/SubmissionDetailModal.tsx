@@ -4,6 +4,7 @@ import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { formatDateTime, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { InfoIcon, ListChecksIcon, XIcon } from '@phosphor-icons/react';
 import { getSubmissionForGrading } from '@services/assessment.service';
+import { getFileUrl } from '@services/storage.service';
 import { SubmissionAnswer, SubmissionForGrading } from '@type/assessment.type';
 import { StudentEvaluationAssessment } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -35,6 +36,11 @@ function DetailField({ label, value }: DetailFieldProps) {
 
 const MANUAL_TYPES = ['Essay', 'Short Answer', 'File Upload'];
 
+async function openSubmissionFile(path: string) {
+    const result = await getFileUrl('submissions', path);
+    if (result.data) window.open(result.data.url, '_blank', 'noopener');
+}
+
 function AnswerRow({ answer }: { answer: SubmissionAnswer }) {
     const isManual = MANUAL_TYPES.includes(answer.question_type);
 
@@ -60,17 +66,18 @@ function AnswerRow({ answer }: { answer: SubmissionAnswer }) {
                     )
                     : answer.file_attachments?.length > 0
                         ? (
-                            <div className="flex flex-col gap-1">
-                                {answer.file_attachments.map((file, i) => (
-                                    <a
-                                        className="text-(--mui-palette-primary-main) text-sm underline"
-                                        href={file.url}
-                                        key={i}
-                                        rel="noreferrer"
-                                        target="_blank"
+                            <div className="flex flex-col gap-1 items-start">
+                                {answer.file_attachments.map((file) => (
+                                    <button
+                                        className="text-(--mui-palette-primary-main) text-left text-sm underline"
+                                        key={file.path}
+                                        type="button"
+                                        onClick={function() {
+                                            openSubmissionFile(file.path);
+                                        }}
                                     >
                                         {file.name}
-                                    </a>
+                                    </button>
                                 ))}
                             </div>
                         )

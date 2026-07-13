@@ -1,10 +1,14 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
+import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import {
-    BookOpenIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon, TrashIcon
+    BookOpenIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon, TrashIcon
 } from '@phosphor-icons/react';
-import { deleteAssessment, listAssessments, publishAssessment, unpublishAssessment } from '@services/assessment.service';
+import {
+    deleteAssessment, duplicateAssessmentToSections, listAssessments, publishAssessment,
+    unpublishAssessment
+} from '@services/assessment.service';
 import { AssessmentListRow, AssessmentType } from '@type/assessment.type';
 import { ColDef } from 'ag-grid-community';
 import { useEffect, useMemo, useState } from 'react';
@@ -26,6 +30,7 @@ interface AssessmentsTabProps {
 export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
+    const [duplicating, setDuplicating] = useState<AssessmentListRow | null>(null);
 
     useEffect(function() {
         fetchAssessments();
@@ -128,8 +133,8 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
             },
             {
                 headerName: '',
-                minWidth: 160,
-                maxWidth: 160,
+                minWidth: 200,
+                maxWidth: 200,
                 sortable: false,
                 cellRenderer: (params: { data: AssessmentListRow }) => (
                     <div className="flex gap-1 h-full items-center">
@@ -173,6 +178,15 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                             }
                         </button>
                         <button
+                            className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
+                            title="Copy to other sections"
+                            onClick={function() {
+                                setDuplicating(params.data);
+                            }}
+                        >
+                            <CopySimpleIcon size={14} weight="bold" />
+                        </button>
+                        <button
                             className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-error-main) transition-colors"
                             title="Delete"
                             onClick={function() {
@@ -212,6 +226,21 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                     rowData={assessments}
                 />
             </div>
+            {duplicating && (
+                <DuplicateToSectionsModal
+                    entityLabel="Assessment"
+                    entityTitle={duplicating.title}
+                    open={duplicating !== null}
+                    sectionId={sectionId}
+                    onClose={function() {
+                        setDuplicating(null);
+                    }}
+                    onConfirm={function(sectionIds: string[]) {
+                        return duplicateAssessmentToSections(duplicating.id, sectionIds);
+                    }}
+                    onDuplicated={fetchAssessments}
+                />
+            )}
         </div>
     );
 }
