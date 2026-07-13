@@ -1,8 +1,14 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import EventsFeedCard from '@components/dashboard/EventsFeedCard';
+import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
+import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import { getStudentInsight } from '@services/analytics.service';
 import { getStudentDashboard } from '@services/student-portal.service';
+import { StudentInsight } from '@type/analytics.type';
 import { AssessmentType } from '@type/assessment.type';
 import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
@@ -19,7 +25,9 @@ const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'war
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
+    const { announcements, events } = useDashboardFeeds();
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
+    const [insight, setInsight] = useState<StudentInsight | null>(null);
 
     useEffect(function() {
         async function fetchDashboard() {
@@ -27,11 +35,21 @@ export default function StudentDashboard() {
             if (result.data) setDashboard(result.data);
         }
 
+        async function fetchInsight() {
+            const result = await getStudentInsight();
+            if (result.data?.success) setInsight(result.data);
+        }
+
         fetchDashboard();
+        fetchInsight();
     }, []);
 
+    function handleViewInsight() {
+        navigate('/student/insight');
+    }
+
     return (
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex flex-col gap-4">
             <div className="flex gap-4">
                 <CommonCard className="flex-1 p-4">
                     <div className="flex gap-3 items-center">
@@ -91,16 +109,22 @@ export default function StudentDashboard() {
                     </div>
                 </CommonCard>
             </div>
+
+            <StudentInsightSummaryCard
+                insight={insight}
+                onViewInsight={handleViewInsight}
+            />
+
             <CommonCard
                 cardHeaderProps={{
                     subheader: 'Assessments that are open and not yet submitted.',
                     title: 'Upcoming Assessments'
                 }}
-                className="flex flex-1 flex-col"
+                className="flex flex-col"
             >
-                <div className="flex flex-col gap-2 p-4">
+                <div className="flex flex-col gap-2 p-4 pt-0">
                     {!dashboard?.upcoming_assessments?.length && (
-                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                        <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
                             No upcoming assessments.
                         </p>
                     )}
@@ -140,6 +164,11 @@ export default function StudentDashboard() {
                     ))}
                 </div>
             </CommonCard>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <AnnouncementsFeedCard announcements={announcements} />
+                <EventsFeedCard events={events} />
+            </div>
         </div>
     );
 }

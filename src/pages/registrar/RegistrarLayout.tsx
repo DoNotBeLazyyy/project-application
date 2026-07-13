@@ -17,7 +17,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const ROLE_DASHBOARD: Record<UserRole, string> = {
     Admin: '/admin',
-    Dean: '/registrar',
+    Dean: '/dean',
     Faculty: '/faculty',
     Registrar: '/registrar',
     Student: '/student'

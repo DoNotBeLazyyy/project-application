@@ -1,4 +1,7 @@
 import StatCard from '@components/card/StatCard';
+import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import EventsFeedCard from '@components/dashboard/EventsFeedCard';
+import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
     BookOpenIcon, CalendarCheckIcon, ChalkboardTeacherIcon, ClipboardTextIcon, GraduationCapIcon, SealCheckIcon
 } from '@phosphor-icons/react';
@@ -60,6 +63,7 @@ const DASHBOARD_CARDS: DashboardCard[] = [
 ];
 
 export default function AdminDashboard() {
+    const { announcements, events } = useDashboardFeeds();
     const [stats, setStats] = useState<AdminDashboardStats | null>(null);
 
     useEffect(() => {
@@ -97,6 +101,11 @@ export default function AdminDashboard() {
                         }
                     />
                 ))}
+            </div>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <AnnouncementsFeedCard announcements={announcements} />
+                <EventsFeedCard events={events} />
             </div>
         </div>
     );

@@ -1,85 +1,217 @@
+import CommonCard from '@components/card/CommonCard';
 import StatCard from '@components/card/StatCard';
+import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import DashboardHeader from '@components/dashboard/DashboardHeader';
+import EventsFeedCard from '@components/dashboard/EventsFeedCard';
+import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChalkboardTeacherIcon, ClipboardTextIcon, GraduationCapIcon, SealCheckIcon
+    BookOpenIcon,
+    BuildingsIcon,
+    ChalkboardTeacherIcon,
+    GraduationCapIcon,
+    StackIcon,
+    UserMinusIcon,
+    UsersThreeIcon,
+    WarningCircleIcon,
+    WarningIcon
 } from '@phosphor-icons/react';
-import { AdminDashboardStats } from '@type/admin.type';
-import { ReactNode } from 'react';
+import { getDeanDashboard } from '@services/dashboard.service';
+import { DeanDashboard as DeanDashboardData, DeanDashboardStats } from '@type/dashboard.type';
+import { ReactNode, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface DashboardCard {
+interface DeanStatCard {
     icon: ReactNode;
     iconBg: string;
     iconColor: string;
     label: string;
-    statKey: keyof AdminDashboardStats;
+    statKey: keyof DeanDashboardStats;
 }
 
-const DASHBOARD_CARDS: DashboardCard[] = [
+const STAT_CARDS: DeanStatCard[] = [
     {
-        icon: <GraduationCapIcon size={24} />,
+        icon: <BuildingsIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
-        label: 'Active Students',
-        statKey: 'total_students'
+        label: 'Departments',
+        statKey: 'total_departments'
     },
     {
-        icon: <ChalkboardTeacherIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-success-50)]',
-        iconColor: 'text-[var(--mui-palette-success-main)]',
-        label: 'Active Faculty',
-        statKey: 'total_faculty'
-    },
-    {
-        icon: <BookOpenIcon size={24} />,
+        icon: <GraduationCapIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
-        label: 'Total Programs',
+        label: 'Programs',
         statKey: 'total_programs'
     },
     {
-        icon: <CalendarCheckIcon size={24} />,
+        icon: <BookOpenIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
-        label: 'Active Terms',
-        statKey: 'active_terms'
+        label: 'Courses',
+        statKey: 'total_courses'
     },
     {
-        icon: <ClipboardTextIcon size={24} />,
+        icon: <StackIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-success-50)]',
+        iconColor: 'text-[var(--mui-palette-success-main)]',
+        label: 'Sections This Term',
+        statKey: 'sections_this_term'
+    },
+    {
+        icon: <UsersThreeIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-primary-50)]',
+        iconColor: 'text-[var(--mui-palette-primary-main)]',
+        label: 'Enrolled Students',
+        statKey: 'enrolled_students'
+    },
+    {
+        icon: <ChalkboardTeacherIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-secondary-50)]',
+        iconColor: 'text-[var(--mui-palette-secondary-main)]',
+        label: 'Faculty',
+        statKey: 'total_faculty'
+    },
+    {
+        icon: <UserMinusIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
-        label: 'Active Enrollments',
-        statKey: 'active_enrollments'
+        label: 'Unassigned Sections',
+        statKey: 'unassigned_sections'
     },
     {
-        icon: <SealCheckIcon size={24} />,
+        icon: <WarningIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
-        label: 'Pending Clearances',
-        statKey: 'pending_clearances'
+        label: 'Schedule Conflicts',
+        statKey: 'schedule_conflicts'
+    },
+    {
+        icon: <WarningCircleIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-error-50)]',
+        iconColor: 'text-[var(--mui-palette-error-main)]',
+        label: 'At-Risk Students',
+        statKey: 'at_risk_students'
     }
 ];
 
 export default function DeanDashboard() {
+    const navigate = useNavigate();
+    const { announcements, events } = useDashboardFeeds();
+    const [dashboard, setDashboard] = useState<DeanDashboardData | null>(null);
+
+    useEffect(function() {
+        async function fetchDashboard() {
+            const result = await getDeanDashboard();
+            if (result.data) setDashboard(result.data);
+        }
+
+        fetchDashboard();
+    }, []);
+
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <h1 className="font-semibold m-0 text-(--mui-palette-text-primary) text-2xl">
-                    Dashboard
-                </h1>
-                <p className="m-0 text-(--mui-palette-text-secondary) text-sm">
-                    Welcome to the AU-JAS LMS Dean Panel
-                </p>
-            </div>
+            <DashboardHeader
+                subtitle="Academic architecture at a glance."
+                term={dashboard?.term}
+                title="Dashboard"
+            />
+
             <div className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                {DASHBOARD_CARDS.map((card) => (
+                {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}
                         iconBg={card.iconBg}
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
-                        value={'-' }
+                        value={dashboard
+                            ? dashboard.stats[card.statKey]
+                            : '—'
+                        }
                     />
                 ))}
+            </div>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <CommonCard
+                    cardHeaderProps={{
+                        subheader: 'Sections in this term with no faculty assigned.',
+                        title: 'Needs a Faculty Assignment'
+                    }}
+                    className="flex flex-col"
+                >
+                    <div className="flex flex-col gap-2 p-4 pt-0">
+                        {dashboard?.unassigned_sections.length === 0 && (
+                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                                Every section in this term has a faculty assigned.
+                            </p>
+                        )}
+                        {dashboard?.unassigned_sections.map((section) => (
+                            <button
+                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                key={section.section_id}
+                                type="button"
+                                onClick={function() {
+                                    navigate('/dean/section-management');
+                                }}
+                            >
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                        {section.course_code} · {section.section_code}
+                                    </span>
+                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                        {section.course_title}
+                                    </span>
+                                </div>
+                                <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                    {section.enrolled_count} enrolled
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </CommonCard>
+
+                <CommonCard
+                    cardHeaderProps={{
+                        subheader: 'Sections carrying the most at-risk students.',
+                        title: 'Insight Highlights'
+                    }}
+                    className="flex flex-col"
+                >
+                    <div className="flex flex-col gap-2 p-4 pt-0">
+                        {dashboard?.at_risk_sections.length === 0 && (
+                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                                No at-risk students detected this term.
+                            </p>
+                        )}
+                        {dashboard?.at_risk_sections.map((section) => (
+                            <div
+                                className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg"
+                                key={section.section_id}
+                            >
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                        {section.course_code} · {section.section_code}
+                                    </span>
+                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                        {section.faculty_name ?? 'Unassigned'}
+                                        {section.avg_score_pct !== null && (
+                                            ` · Avg ${section.avg_score_pct}%`
+                                        )}
+                                    </span>
+                                </div>
+                                <span className="font-semibold shrink-0 text-(--mui-palette-error-main) text-sm">
+                                    {section.at_risk_count}/{section.enrolled_count} at risk
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </CommonCard>
+            </div>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <AnnouncementsFeedCard announcements={announcements} />
+                <EventsFeedCard events={events} />
             </div>
         </div>
     );

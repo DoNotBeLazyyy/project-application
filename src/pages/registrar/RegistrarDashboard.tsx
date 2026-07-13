@@ -1,85 +1,210 @@
+import CommonCard from '@components/card/CommonCard';
 import StatCard from '@components/card/StatCard';
+import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import DashboardHeader from '@components/dashboard/DashboardHeader';
+import EventsFeedCard from '@components/dashboard/EventsFeedCard';
+import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChalkboardTeacherIcon, ClipboardTextIcon, GraduationCapIcon, SealCheckIcon
+    ClipboardTextIcon,
+    GraduationCapIcon,
+    HourglassIcon,
+    PauseCircleIcon,
+    SealCheckIcon,
+    SignOutIcon,
+    UsersThreeIcon
 } from '@phosphor-icons/react';
-import { AdminDashboardStats } from '@type/admin.type';
-import { ReactNode } from 'react';
+import { getRegistrarDashboard } from '@services/dashboard.service';
+import { RegistrarDashboard as RegistrarDashboardData, RegistrarDashboardStats } from '@type/dashboard.type';
+import { ReactNode, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface DashboardCard {
+interface RegistrarStatCard {
     icon: ReactNode;
     iconBg: string;
     iconColor: string;
     label: string;
-    statKey: keyof AdminDashboardStats;
+    statKey: keyof RegistrarDashboardStats;
 }
 
-const DASHBOARD_CARDS: DashboardCard[] = [
+const STAT_CARDS: RegistrarStatCard[] = [
     {
-        icon: <GraduationCapIcon size={24} />,
+        icon: <UsersThreeIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Active Students',
-        statKey: 'total_students'
-    },
-    {
-        icon: <ChalkboardTeacherIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-success-50)]',
-        iconColor: 'text-[var(--mui-palette-success-main)]',
-        label: 'Active Faculty',
-        statKey: 'total_faculty'
-    },
-    {
-        icon: <BookOpenIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-secondary-50)]',
-        iconColor: 'text-[var(--mui-palette-secondary-main)]',
-        label: 'Total Programs',
-        statKey: 'total_programs'
-    },
-    {
-        icon: <CalendarCheckIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-info-50)]',
-        iconColor: 'text-[var(--mui-palette-info-main)]',
-        label: 'Active Terms',
-        statKey: 'active_terms'
+        statKey: 'active_students'
     },
     {
         icon: <ClipboardTextIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-warning-50)]',
-        iconColor: 'text-[var(--mui-palette-warning-main)]',
-        label: 'Active Enrollments',
-        statKey: 'active_enrollments'
+        iconBg: 'bg-[var(--mui-palette-info-50)]',
+        iconColor: 'text-[var(--mui-palette-info-main)]',
+        label: 'Enrollments This Term',
+        statKey: 'enrollments_this_term'
     },
     {
         icon: <SealCheckIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-warning-50)]',
+        iconColor: 'text-[var(--mui-palette-warning-main)]',
+        label: 'Pending Grade Releases',
+        statKey: 'pending_grade_releases'
+    },
+    {
+        icon: <HourglassIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
-        label: 'Pending Clearances',
-        statKey: 'pending_clearances'
+        label: 'Incomplete Grades',
+        statKey: 'incomplete_grades'
+    },
+    {
+        icon: <SignOutIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-error-50)]',
+        iconColor: 'text-[var(--mui-palette-error-main)]',
+        label: 'Dropped This Term',
+        statKey: 'dropped_this_term'
+    },
+    {
+        icon: <PauseCircleIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-secondary-50)]',
+        iconColor: 'text-[var(--mui-palette-secondary-main)]',
+        label: 'Students on LOA',
+        statKey: 'students_on_loa'
+    },
+    {
+        icon: <GraduationCapIcon size={24} />,
+        iconBg: 'bg-[var(--mui-palette-success-50)]',
+        iconColor: 'text-[var(--mui-palette-success-main)]',
+        label: 'Graduated Students',
+        statKey: 'graduated_students'
     }
 ];
 
 export default function RegistrarDashboard() {
+    const navigate = useNavigate();
+    const { announcements, events } = useDashboardFeeds();
+    const [dashboard, setDashboard] = useState<RegistrarDashboardData | null>(null);
+
+    useEffect(function() {
+        async function fetchDashboard() {
+            const result = await getRegistrarDashboard();
+            if (result.data) setDashboard(result.data);
+        }
+
+        fetchDashboard();
+    }, []);
+
+    const totalEnrolled = dashboard?.program_distribution.reduce(
+        (sum, program) => sum + program.student_count,
+        0
+    ) ?? 0;
+
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <h1 className="font-semibold m-0 text-(--mui-palette-text-primary) text-2xl">
-                    Dashboard
-                </h1>
-                <p className="m-0 text-(--mui-palette-text-secondary) text-sm">
-                    Welcome to the AU-JAS LMS Dean Panel
-                </p>
-            </div>
+            <DashboardHeader
+                subtitle="Enrollment and records operations."
+                term={dashboard?.term}
+                title="Dashboard"
+            />
+
             <div className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                {DASHBOARD_CARDS.map((card) => (
+                {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}
                         iconBg={card.iconBg}
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
-                        value={'-' }
+                        value={dashboard
+                            ? dashboard.stats[card.statKey]
+                            : '—'
+                        }
                     />
                 ))}
+            </div>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <CommonCard
+                    cardHeaderProps={{
+                        subheader: 'Grades submitted or approved but not yet released.',
+                        title: 'Awaiting Grade Release'
+                    }}
+                    className="flex flex-col"
+                >
+                    <div className="flex flex-col gap-2 p-4 pt-0">
+                        {dashboard?.pending_releases.length === 0 && (
+                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                                No grades are waiting for release.
+                            </p>
+                        )}
+                        {dashboard?.pending_releases.map((release) => (
+                            <button
+                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                key={`${release.section_id}-${release.grading_period}`}
+                                type="button"
+                                onClick={function() {
+                                    navigate('/registrar/grade-release');
+                                }}
+                            >
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                        {release.course_code} · {release.section_code}
+                                    </span>
+                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                        {release.grading_period} · {release.faculty_name ?? 'Unassigned'}
+                                    </span>
+                                </div>
+                                <span className="font-semibold shrink-0 text-(--mui-palette-warning-main) text-sm">
+                                    {release.pending_count} pending
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </CommonCard>
+
+                <CommonCard
+                    cardHeaderProps={{
+                        subheader: 'Enrolled students by program this term.',
+                        title: 'Enrollment Distribution'
+                    }}
+                    className="flex flex-col"
+                >
+                    <div className="flex flex-col gap-3 p-4 pt-0">
+                        {dashboard?.program_distribution.length === 0 && (
+                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                                No enrollments recorded this term.
+                            </p>
+                        )}
+                        {dashboard?.program_distribution.map((program) => (
+                            <div
+                                className="flex flex-col gap-1"
+                                key={program.program_code}
+                            >
+                                <div className="flex gap-3 items-center justify-between">
+                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                        {program.program_code}
+                                    </span>
+                                    <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                        {program.student_count}
+                                    </span>
+                                </div>
+                                <div className="bg-(--mui-palette-divider) h-2 overflow-hidden rounded-full w-full">
+                                    <div
+                                        className="bg-(--mui-palette-primary-main) h-full rounded-full"
+                                        style={{
+                                            width: totalEnrolled > 0
+                                                ? `${(program.student_count / totalEnrolled) * 100}%`
+                                                : '0%'
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CommonCard>
+            </div>
+
+            <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
+                <AnnouncementsFeedCard announcements={announcements} />
+                <EventsFeedCard events={events} />
             </div>
         </div>
     );
