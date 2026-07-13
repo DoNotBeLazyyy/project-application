@@ -4,19 +4,23 @@ import AssessmentsTab from '@pages/faculty/sections/AssessmentsTab';
 import AttendanceTab from '@pages/faculty/sections/attendance/AttendanceTab';
 import GradingTab from '@pages/faculty/sections/grading/GradingTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
+import SectionInsightPanel from '@pages/shared/analytics/SectionInsightPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, NotepadIcon
+    BookOpenIcon, CalendarCheckIcon, ChartLineUpIcon, ChatCircleTextIcon, ClipboardTextIcon,
+    GraduationCapIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'content' | 'discussion';
+type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'content' | 'discussion' | 'insight';
 
-const SECTION_TABS: SectionTab[] = ['students', 'attendance', 'grading', 'assessments', 'content', 'discussion'];
+const SECTION_TABS: SectionTab[] = [
+    'students', 'attendance', 'grading', 'assessments', 'content', 'discussion', 'insight'
+];
 
 export default function SectionDetailPage() {
     const { sectionId = '' } = useParams<{ sectionId: string }>();
@@ -106,6 +110,11 @@ export default function SectionDetailPage() {
                             icon: <ChatCircleTextIcon />,
                             label: 'Discussion',
                             value: 'discussion'
+                        },
+                        {
+                            icon: <ChartLineUpIcon />,
+                            label: 'Insight',
+                            value: 'insight'
                         }
                     ]}
                     value={activeTab}
@@ -129,6 +138,9 @@ export default function SectionDetailPage() {
                     )}
                     {activeTab === 'discussion' && (
                         <SectionDiscussionPanel sectionId={sectionId} />
+                    )}
+                    {activeTab === 'insight' && (
+                        <SectionInsightPanel sectionId={sectionId} />
                     )}
                 </div>
             </div>

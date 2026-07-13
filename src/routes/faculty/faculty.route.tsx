@@ -1,6 +1,7 @@
 import FacultyDashboard from '@pages/faculty/FacultyDashboard';
 import FacultyLayout from '@pages/faculty/FacultyLayout';
 import FacultySectionManagement from '@pages/faculty/sections';
+import ItemAnalysisPage from '@pages/faculty/sections/assessments/analysis/ItemAnalysisPage';
 import AssessmentBuilderPage from '@pages/faculty/sections/assessments/builder/AssessmentBuilderPage';
 import SubmissionsPage from '@pages/faculty/sections/assessments/submissions/SubmissionsPage';
 import SectionDetailPage from '@pages/faculty/sections/SectionDetailPage';
@@ -20,6 +21,7 @@ export const facultyRoutes: RouteObject[] = [
             { element: <SectionDetailPage />, path: 'sections/:sectionId' },
             { element: <AssessmentBuilderPage />, path: 'sections/:sectionId/assessments/:assessmentId/builder' },
             { element: <SubmissionsPage />, path: 'sections/:sectionId/assessments/:assessmentId/submissions' },
+            { element: <ItemAnalysisPage />, path: 'sections/:sectionId/assessments/:assessmentId/analysis' },
             { element: <AnnouncementManagement />, path: 'announcement-management' },
             { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
             { element: <AnnouncementDetailPage />, path: 'announcement-management/:id' },

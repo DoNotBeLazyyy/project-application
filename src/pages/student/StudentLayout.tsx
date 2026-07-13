@@ -4,7 +4,9 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
-import { ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon } from '@phosphor-icons/react';
+import {
+    ChartLineUpIcon, ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon
+} from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -65,6 +67,12 @@ export default function StudentLayout() {
                     isActive: pathname === '/student/curriculum',
                     label: 'Curriculum',
                     onClick: () => navigate('/student/curriculum')
+                },
+                {
+                    icon: <ChartLineUpIcon size={18} />,
+                    isActive: pathname === '/student/insight',
+                    label: 'Insight',
+                    onClick: () => navigate('/student/insight')
                 }
             ]
         }

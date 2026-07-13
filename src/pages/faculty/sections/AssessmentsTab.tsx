@@ -3,7 +3,8 @@ import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import {
-    BookOpenIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon, TrashIcon
+    BookOpenIcon, ChartBarIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon,
+    TrashIcon
 } from '@phosphor-icons/react';
 import {
     deleteAssessment, duplicateAssessmentToSections, listAssessments, publishAssessment,
@@ -133,8 +134,8 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
             },
             {
                 headerName: '',
-                minWidth: 200,
-                maxWidth: 200,
+                minWidth: 250,
+                maxWidth: 250,
                 sortable: false,
                 cellRenderer: (params: { data: AssessmentListRow }) => (
                     <div className="flex gap-1 h-full items-center">
@@ -176,6 +177,15 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                                 ? <EyeSlashIcon size={14} weight="bold" />
                                 : <EyeIcon size={14} weight="bold" />
                             }
+                        </button>
+                        <button
+                            className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
+                            title="Item analysis"
+                            onClick={function() {
+                                navigate(`/faculty/sections/${sectionId}/assessments/${params.data.id}/analysis`);
+                            }}
+                        >
+                            <ChartBarIcon size={14} weight="bold" />
                         </button>
                         <button
                             className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
