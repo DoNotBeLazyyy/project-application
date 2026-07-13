@@ -13,6 +13,7 @@ import { StudentBulkRow, StudentFilterValues, StudentFormValues, StudentListRow 
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'student_number', label: 'Student No.' },
@@ -45,6 +46,7 @@ const defaultFormValues: StudentFormValues = {
 };
 
 export default function StudentManagement() {
+    const navigate = useNavigate();
     const [activeFilters, setActiveFilters] = useState<StudentFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -119,11 +121,16 @@ export default function StudentManagement() {
         setActiveFilters((prev) => ({ ...prev } as StudentFilterValues));
     }
 
+    function handleViewRecords(id: string) {
+        navigate(`/registrar/student-management/${id}/records`);
+    }
+
     const { columnDefs, tableActionConfig } = useStudentTableConfig({
         onEdit: handleOpenUpdate,
         onEvaluate: handleEvaluate,
         onRequestDeleteRow: function() {},
-        onView: handleOpenView
+        onView: handleOpenView,
+        onViewRecords: handleViewRecords
     });
 
     async function fetchStudents(

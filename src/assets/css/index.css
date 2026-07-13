@@ -237,3 +237,26 @@
     pointer-events: none;
     opacity: 0.6; /* Optional: gives it a "disabled" look */
 }
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .print-area,
+    .print-area * {
+        visibility: visible;
+    }
+
+    .print-area {
+        left: 0;
+        overflow: visible;
+        position: absolute;
+        top: 0;
+        width: 100%;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}

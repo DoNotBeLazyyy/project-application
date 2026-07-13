@@ -1,5 +1,6 @@
 import AssessmentResultPage from '@pages/student/assessment/AssessmentResultPage';
 import TakeAssessmentPage from '@pages/student/assessment/TakeAssessmentPage';
+import StudentCurriculum from '@pages/student/curriculum';
 import StudentGrades from '@pages/student/grade';
 import StudentSchedule from '@pages/student/schedule';
 import StudentDashboard from '@pages/student/StudentDashboard';
@@ -19,7 +20,8 @@ export const studentRoutes: RouteObject[] = [
             { element: <SubjectDetailPage />, path: 'subjects/:enrollmentId' },
             { element: <TakeAssessmentPage />, path: 'subjects/:enrollmentId/assessments/:assessmentId' },
             { element: <AssessmentResultPage />, path: 'subjects/:enrollmentId/assessments/:assessmentId/result' },
-            { element: <StudentGrades />, path: 'grade' }
+            { element: <StudentGrades />, path: 'grade' },
+            { element: <StudentCurriculum />, path: 'curriculum' }
         ]
     }
 ];

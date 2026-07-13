@@ -10,6 +10,7 @@ interface UseStudentTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
     onView: (id: string) => void;
     onEvaluate: (id: string) => void;
+    onViewRecords: (id: string) => void;
 }
 
 const STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' | 'info'> = {
@@ -23,7 +24,8 @@ const STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' 
 export function useStudentTableConfig({
     onEdit,
     onView,
-    onEvaluate
+    onEvaluate,
+    onViewRecords
 }: UseStudentTableConfigProps) {
     const columnDefs = useMemo<ColDef<StudentListRow>[]>(function() {
         return [
@@ -96,6 +98,14 @@ export function useStudentTableConfig({
                     {
                         children: (
                             <div className="flex gap-2 items-center">
+                                <span>Academic Records</span>
+                            </div>
+                        ),
+                        onClick: () => onViewRecords(row.id)
+                    },
+                    {
+                        children: (
+                            <div className="flex gap-2 items-center">
                                 <span>Re-evaluate Year Level</span>
                             </div>
                         ),
@@ -108,7 +118,7 @@ export function useStudentTableConfig({
                 ]
             };
         };
-    }, [onEdit, onView, onEvaluate]);
+    }, [onEdit, onView, onEvaluate, onViewRecords]);
 
     return { columnDefs, tableActionConfig };
 }

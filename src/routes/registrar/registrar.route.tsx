@@ -3,6 +3,7 @@ import GradeRelease from '@pages/registrar/grade-release-management';
 import RegistrarDashboard from '@pages/registrar/RegistrarDashboard';
 import RegistrarLayout from '@pages/registrar/RegistrarLayout';
 import StudentManagement from '@pages/registrar/student-management';
+import StudentRecordsPage from '@pages/registrar/student-records/StudentRecordsPage';
 import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
 import AnnouncementManagement from '@pages/shared/announcement-management';
 import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
@@ -16,6 +17,7 @@ export const registrarRoutes: RouteObject[] = [
         children: [
             { element: <RegistrarDashboard />, index: true },
             { element: <StudentManagement />, path: 'student-management' },
+            { element: <StudentRecordsPage />, path: 'student-management/:studentId/records' },
             { element: <EnrollmentManagement />, path: 'enrollment-management' },
             { element: <GradeRelease />, path: 'grade-release' },
             { element: <AnnouncementManagement />, path: 'announcement-management' },

@@ -4,7 +4,7 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
-import { ListIcon, SignOutIcon, SquaresFourIcon } from '@phosphor-icons/react';
+import { ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -59,6 +59,12 @@ export default function StudentLayout() {
                     isActive: pathname === '/student/grade',
                     label: 'Grade',
                     onClick: () => navigate('/student/grade')
+                },
+                {
+                    icon: <ListChecksIcon size={18} />,
+                    isActive: pathname === '/student/curriculum',
+                    label: 'Curriculum',
+                    onClick: () => navigate('/student/curriculum')
                 }
             ]
         }
