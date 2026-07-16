@@ -3,23 +3,24 @@ import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import AssessmentsTab from '@pages/faculty/sections/AssessmentsTab';
 import AttendanceTab from '@pages/faculty/sections/attendance/AttendanceTab';
 import GradingTab from '@pages/faculty/sections/grading/GradingTab';
+import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
 import SectionInsightPanel from '@pages/shared/analytics/SectionInsightPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
     BookOpenIcon, CalendarCheckIcon, ChartLineUpIcon, ChatCircleTextIcon, ClipboardTextIcon,
-    GraduationCapIcon, NotepadIcon
+    GraduationCapIcon, ListChecksIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'content' | 'discussion' | 'insight';
+type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'rubrics' | 'content' | 'discussion' | 'insight';
 
 const SECTION_TABS: SectionTab[] = [
-    'students', 'attendance', 'grading', 'assessments', 'content', 'discussion', 'insight'
+    'students', 'attendance', 'grading', 'assessments', 'rubrics', 'content', 'discussion', 'insight'
 ];
 
 export default function SectionDetailPage() {
@@ -102,6 +103,11 @@ export default function SectionDetailPage() {
                             value: 'assessments'
                         },
                         {
+                            icon: <ListChecksIcon />,
+                            label: 'Rubrics',
+                            value: 'rubrics'
+                        },
+                        {
                             icon: <BookOpenIcon />,
                             label: 'Content',
                             value: 'content'
@@ -132,6 +138,9 @@ export default function SectionDetailPage() {
                     )}
                     {activeTab === 'assessments' && (
                         <AssessmentsTab sectionId={sectionId} />
+                    )}
+                    {activeTab === 'rubrics' && (
+                        <RubricsTab sectionId={sectionId} />
                     )}
                     {activeTab === 'content' && (
                         <SectionContentPanel sectionId={sectionId} />

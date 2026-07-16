@@ -4,7 +4,7 @@ import CommonCard from '@components/card/CommonCard';
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from '@phosphor-icons/react';
 import { getMyAssessmentResult } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
-import { StudentAssessmentResult, StudentResultAnswer } from '@type/student-portal.type';
+import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -42,6 +42,52 @@ function DetailField({ label, value }: DetailFieldProps) {
             <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                 {value}
             </span>
+        </div>
+    );
+}
+
+interface RubricBreakdownProps {
+    resultsAvailable: boolean;
+    rubric: StudentResultRubric;
+}
+
+function RubricBreakdown({ resultsAvailable, rubric }: RubricBreakdownProps) {
+    return (
+        <div className="flex flex-col gap-3">
+            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                Rubric — {rubric.title}
+            </span>
+            {rubric.criteria.map(function(criterion) {
+                return (
+                    <div
+                        className="border border-(--mui-palette-divider) flex flex-col gap-2 p-4 rounded-lg"
+                        key={criterion.id}
+                    >
+                        <div className="flex gap-2 items-start justify-between">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                    {criterion.title}
+                                </span>
+                                {criterion.description && (
+                                    <span className="text-(--mui-palette-text-secondary) text-xs">
+                                        {criterion.description}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                {resultsAvailable
+                                    ? `${formatScore(criterion.points_earned)} / ${criterion.max_points}`
+                                    : criterion.max_points} pts
+                            </span>
+                        </div>
+                        {resultsAvailable && criterion.feedback && (
+                            <p className="text-(--mui-palette-text-secondary) text-xs">
+                                Note: {criterion.feedback}
+                            </p>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -319,21 +365,30 @@ export default function AssessmentResultPage() {
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-3">
-                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                    {result.rubric && (
+                        <RubricBreakdown
+                            resultsAvailable={result.results_available}
+                            rubric={result.rubric}
+                        />
+                    )}
+
+                    {result.answers.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                             Your Answers
-                        </span>
-                        {result.answers.map(function(answer, index) {
-                            return (
-                                <ResultAnswerCard
-                                    answer={answer}
-                                    index={index}
-                                    key={answer.id}
-                                    resultsAvailable={result.results_available}
-                                />
-                            );
-                        })}
-                    </div>
+                            </span>
+                            {result.answers.map(function(answer, index) {
+                                return (
+                                    <ResultAnswerCard
+                                        answer={answer}
+                                        index={index}
+                                        key={answer.id}
+                                        resultsAvailable={result.results_available}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
         </CommonCard>

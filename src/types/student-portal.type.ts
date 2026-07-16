@@ -214,7 +214,25 @@ export interface StudentAssessmentResult {
     raw_score: number | null;
     final_score: number | null;
     feedback: string | null;
+    use_rubric_scoring: boolean;
+    rubric: StudentResultRubric | null;
     answers: StudentResultAnswer[];
+}
+
+export interface StudentResultRubricCriterion {
+    id: string;
+    title: string;
+    description: string | null;
+    max_points: number;
+    sequence: number;
+    points_earned: number | null;
+    feedback: string | null;
+}
+
+export interface StudentResultRubric {
+    title: string;
+    total_points: number;
+    criteria: StudentResultRubricCriterion[];
 }
 
 export interface MyGradeListRow {

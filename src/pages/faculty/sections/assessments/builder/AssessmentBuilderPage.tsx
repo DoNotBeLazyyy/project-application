@@ -6,6 +6,7 @@ import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/
 import AssessmentSettingsForm from '@pages/faculty/sections/assessments/builder/AssessmentSettingsForm';
 import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionList';
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
+import RubricAttachPanel from '@pages/faculty/sections/assessments/builder/RubricAttachPanel';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
     bulkImportQuestions, createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, updateAssessment, upsertQuestion
@@ -211,6 +212,12 @@ export default function AssessmentBuilderPage() {
                         </p>
                     </div>
                 </div>
+                {assessmentDbId && (
+                    <RubricAttachPanel
+                        assessmentId={assessmentDbId}
+                        sectionId={sectionId}
+                    />
+                )}
                 <div className="flex flex-1 gap-4 min-h-0">
                     <AssessmentSettingsForm
                         componentOptions={componentOptions}

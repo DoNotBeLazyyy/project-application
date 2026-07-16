@@ -162,6 +162,7 @@ export interface SubmissionForGrading {
     raw_score: number | null;
     final_score: number | null;
     feedback: string | null;
+    use_rubric_scoring: boolean;
     answers: SubmissionAnswer[];
 }
 

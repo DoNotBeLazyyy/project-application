@@ -1,10 +1,13 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import GradingPanel from '@pages/faculty/sections/assessments/submissions/GradingPanel';
+import RubricGradingPanel from '@pages/faculty/sections/assessments/submissions/RubricGradingPanel';
 import SubmissionList from '@pages/faculty/sections/assessments/submissions/SubmissionList';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { getSubmissionForGrading, gradeSubmission, listSubmissions } from '@services/assessment.service';
+import { getSubmissionRubric, gradeSubmissionRubric } from '@services/rubric.service';
 import { GradeAnswerUpdate, SubmissionForGrading, SubmissionListRow } from '@type/assessment.type';
+import { RubricEvaluationInput, SubmissionRubric } from '@type/rubric.type';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -15,6 +18,8 @@ export default function SubmissionsPage() {
     const [submissions, setSubmissions] = useState<SubmissionListRow[]>([]);
     const [selectedSubmission, setSelectedSubmission] = useState<SubmissionForGrading | null>(null);
     const [draftAnswers, setDraftAnswers] = useState<GradeAnswerUpdate[]>([]);
+    const [rubric, setRubric] = useState<SubmissionRubric | null>(null);
+    const [draftEvaluations, setDraftEvaluations] = useState<RubricEvaluationInput[]>([]);
     const [draftFeedback, setDraftFeedback] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
@@ -31,16 +36,35 @@ export default function SubmissionsPage() {
     async function handleSelectSubmission(submissionId: string) {
         const result = await getSubmissionForGrading(submissionId);
 
-        if (result.data) {
-            setSelectedSubmission(result.data);
-            setDraftFeedback(result.data.feedback ?? '');
-            setDraftAnswers(
-                result.data.answers.map((a) => ({
-                    id: a.id,
-                    points_earned: a.points_earned ?? 0,
-                    grader_notes: a.grader_notes ?? ''
-                }))
-            );
+        if (!result.data) return;
+
+        setSelectedSubmission(result.data);
+        setDraftFeedback(result.data.feedback ?? '');
+        setDraftAnswers(
+            result.data.answers.map((a) => ({
+                id: a.id,
+                points_earned: a.points_earned ?? 0,
+                grader_notes: a.grader_notes ?? ''
+            }))
+        );
+
+        if (result.data.use_rubric_scoring) {
+            const rubricResult = await getSubmissionRubric(submissionId);
+
+            if (rubricResult.data) {
+                setRubric(rubricResult.data);
+                setDraftEvaluations(
+                    rubricResult.data.criteria.map((c) => ({
+                        criteria_id: c.id,
+                        points_earned: c.points_earned ?? 0,
+                        feedback: c.feedback ?? ''
+                    }))
+                );
+            }
+        }
+        else {
+            setRubric(null);
+            setDraftEvaluations([]);
         }
     }
 
@@ -49,7 +73,9 @@ export default function SubmissionsPage() {
         setIsSaving(true);
 
         try {
-            const result = await gradeSubmission(selectedSubmission.id, draftFeedback, draftAnswers);
+            const result = selectedSubmission.use_rubric_scoring
+                ? await gradeSubmissionRubric(selectedSubmission.id, draftFeedback, draftEvaluations)
+                : await gradeSubmission(selectedSubmission.id, draftFeedback, draftAnswers);
 
             if (!result.error) {
                 await fetchSubmissions();
@@ -59,6 +85,20 @@ export default function SubmissionsPage() {
         finally {
             setIsSaving(false);
         }
+    }
+
+    function handleRubricPointsChange(criteriaId: string, value: number) {
+        setDraftEvaluations((prev) =>
+            prev.map((e) => e.criteria_id === criteriaId
+                ? { ...e, points_earned: value }
+                : e));
+    }
+
+    function handleRubricFeedbackChange(criteriaId: string, value: string) {
+        setDraftEvaluations((prev) =>
+            prev.map((e) => e.criteria_id === criteriaId
+                ? { ...e, feedback: value }
+                : e));
     }
 
     function handlePointsChange(answerId: string, value: number) {
@@ -106,26 +146,39 @@ export default function SubmissionsPage() {
                         submissions={submissions}
                         onSelect={handleSelectSubmission}
                     />
-                    {selectedSubmission
+                    {selectedSubmission && selectedSubmission.use_rubric_scoring && rubric
                         ? (
-                            <GradingPanel
-                                draftAnswers={draftAnswers}
+                            <RubricGradingPanel
+                                draftEvaluations={draftEvaluations}
                                 draftFeedback={draftFeedback}
                                 isSaving={isSaving}
-                                submission={selectedSubmission}
+                                rubric={rubric}
+                                onEvaluationFeedbackChange={handleRubricFeedbackChange}
                                 onFeedbackChange={setDraftFeedback}
-                                onNotesChange={handleNotesChange}
-                                onPointsChange={handlePointsChange}
+                                onPointsChange={handleRubricPointsChange}
                                 onSave={handleSaveGrade}
                             />
                         )
-                        : (
-                            <div className="flex flex-1 items-center justify-center">
-                                <p className="text-(--mui-palette-text-secondary) text-sm">
+                        : selectedSubmission
+                            ? (
+                                <GradingPanel
+                                    draftAnswers={draftAnswers}
+                                    draftFeedback={draftFeedback}
+                                    isSaving={isSaving}
+                                    submission={selectedSubmission}
+                                    onFeedbackChange={setDraftFeedback}
+                                    onNotesChange={handleNotesChange}
+                                    onPointsChange={handlePointsChange}
+                                    onSave={handleSaveGrade}
+                                />
+                            )
+                            : (
+                                <div className="flex flex-1 items-center justify-center">
+                                    <p className="text-(--mui-palette-text-secondary) text-sm">
                                 Select a submission to grade
-                                </p>
-                            </div>
-                        )
+                                    </p>
+                                </div>
+                            )
                     }
                 </div>
             </div>

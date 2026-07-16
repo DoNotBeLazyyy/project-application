@@ -4,6 +4,7 @@ import FacultySectionManagement from '@pages/faculty/sections';
 import ItemAnalysisPage from '@pages/faculty/sections/assessments/analysis/ItemAnalysisPage';
 import AssessmentBuilderPage from '@pages/faculty/sections/assessments/builder/AssessmentBuilderPage';
 import SubmissionsPage from '@pages/faculty/sections/assessments/submissions/SubmissionsPage';
+import RubricBuilderPage from '@pages/faculty/sections/rubrics/RubricBuilderPage';
 import SectionDetailPage from '@pages/faculty/sections/SectionDetailPage';
 import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
 import AnnouncementManagement from '@pages/shared/announcement-management';
@@ -23,6 +24,7 @@ export const facultyRoutes: RouteObject[] = [
             { element: <AssessmentBuilderPage />, path: 'sections/:sectionId/assessments/:assessmentId/builder' },
             { element: <SubmissionsPage />, path: 'sections/:sectionId/assessments/:assessmentId/submissions' },
             { element: <ItemAnalysisPage />, path: 'sections/:sectionId/assessments/:assessmentId/analysis' },
+            { element: <RubricBuilderPage />, path: 'sections/:sectionId/rubrics/:rubricId' },
             { element: <ProfilePage />, path: 'profile' },
             { element: <AnnouncementManagement />, path: 'announcement-management' },
             { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
