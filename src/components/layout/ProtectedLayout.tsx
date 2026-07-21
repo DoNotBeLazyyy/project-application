@@ -1,5 +1,6 @@
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
 import useIdleTimeout from '@hooks/useIdleTimeout';
+import AiAssistant from '@pages/shared/assistant/AiAssistant';
 import { logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
 import { useNavigate, Outlet } from 'react-router-dom';
@@ -25,6 +26,7 @@ export default function ProtectedLayout() {
     return (
         <>
             <Outlet />
+            <AiAssistant />
             <SessionTimeoutModal
                 open={isIdle}
                 onLogout={handleLogout}

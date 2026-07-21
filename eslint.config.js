@@ -12,7 +12,7 @@ const eslintConfig = typescriptESLint.config(
     ...typescriptESLint.configs.strict,
     ...typescriptESLint.configs.stylistic,
     {
-        ignores: ['node_modules/**', '@types/**', 'dist/**', '*.config.js', '*.config.ts', '*.json'],
+        ignores: ['node_modules/**', '@types/**', 'dist/**', 'supabase/**', '*.config.js', '*.config.ts', '*.json'],
         languageOptions: {
             ecmaVersion: 'latest',
             globals: {

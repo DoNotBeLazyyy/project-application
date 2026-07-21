@@ -2,8 +2,8 @@ import { supabase } from '@services/supabase.client';
 import { useAppStore } from '@stores/app.store';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { ServiceResult } from '@type/service.type';
+import { FunctionsHttpError, SupabaseClient } from '@supabase/supabase-js';
+import { ServiceErrorProps, ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
 interface RawResponse {
@@ -121,6 +121,67 @@ export async function callQuery<T>(queryFn: QueryBuilderFn): Promise<ServiceResu
     finally {
         useLoadingStore.getState()
             .hide();
+    }
+}
+
+async function parseFunctionError(error: unknown): Promise<ServiceErrorProps> {
+    if (!(error instanceof FunctionsHttpError)) {
+        return parseServiceError(error);
+    }
+
+    const response = error.context as Response;
+    const status = typeof response?.status === 'number'
+        ? response.status
+        : null;
+
+    try {
+        const payload = await response.json() as { message?: string };
+        return {
+            message: typeof payload?.message === 'string'
+                ? payload.message
+                : 'The service is unavailable right now.',
+            code: null,
+            status
+        };
+    }
+    catch {
+        return { message: 'The service is unavailable right now.', code: null, status };
+    }
+}
+
+export async function callFunction<T>(
+    name: string,
+    body?: Record<string, unknown>
+): Promise<ServiceResult<T>> {
+    try {
+        const { data, error } = await supabase.functions.invoke<T>(name, { body });
+
+        if (error) {
+            const parsed = await parseFunctionError(error);
+            if (isAuthFailure(parsed.status ?? undefined)) {
+                handleAuthFailure();
+            }
+            useToastStore.getState()
+                .showToast(parsed.message, 'error');
+            return { data: null, error: parsed };
+        }
+
+        if (isRpcFailurePayload(data)) {
+            useToastStore.getState()
+                .showToast(data.message, 'error');
+            return {
+                data: null,
+                error: { code: null, message: data.message, status: null }
+            };
+        }
+
+        return { data: data as T, error: null };
+    }
+    catch (err) {
+        const parsed = parseServiceError(err);
+        useToastStore.getState()
+            .showToast(parsed.message, 'error');
+        return { data: null, error: parsed };
     }
 }
 
