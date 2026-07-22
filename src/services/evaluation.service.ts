@@ -1,12 +1,48 @@
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
-    EvaluationForm, EvaluationResponseInput, EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateRow
+    EvaluationForm, EvaluationResponseInput, EvaluationStatusFilter, EvaluationTemplateBulkRow, EvaluationTemplateForm,
+    EvaluationTemplateListRow, EvaluationTemplateRow, MyEvaluationRow
 } from '@type/evaluation.type';
+import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
-export async function getEvaluationTemplates(): Promise<ServiceResult<EvaluationTemplateRow[]>> {
-    return callRpc<EvaluationTemplateRow[]>('fn_get_evaluation_templates');
+export async function listEvaluationTemplates(
+    page: number,
+    size: number,
+    search: string,
+    sort: SortStringDto[]
+): Promise<ServiceResult<CommonListResDto<EvaluationTemplateListRow>>> {
+    return callRpc<CommonListResDto<EvaluationTemplateListRow>>('fn_list_evaluation_templates_json', {
+        p_page: page,
+        p_size: size,
+        p_search: search || null,
+        p_sort: sort.length > 0
+            ? sort
+            : null
+    });
+}
+
+export async function getEvaluationTemplateById(id: string): Promise<ServiceResult<EvaluationTemplateRow>> {
+    return callRpc<EvaluationTemplateRow>('fn_get_evaluation_template_by_id', { p_id: id });
+}
+
+export async function listMyEvaluations(
+    page: number,
+    size: number,
+    search: string,
+    sort: SortStringDto[],
+    status: EvaluationStatusFilter
+): Promise<ServiceResult<CommonListResDto<MyEvaluationRow>>> {
+    return callRpc<CommonListResDto<MyEvaluationRow>>('fn_list_my_evaluations_json', {
+        p_page: page,
+        p_size: size,
+        p_search: search || null,
+        p_sort: sort.length > 0
+            ? sort
+            : null,
+        p_status: status || null
+    });
 }
 
 export async function createEvaluationTemplate(

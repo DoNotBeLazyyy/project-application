@@ -60,11 +60,56 @@ export interface EvaluationSection {
     questions: EvaluationQuestionRow[];
 }
 
+export interface EvaluationSavedAnswer {
+    question_id: string;
+    rating_value: number | null;
+    response_text: string | null;
+}
+
 export interface EvaluationForm {
+    enrollment_id: string;
     faculty_name: string;
+    course_code: string;
+    course_title: string;
+    section_code: string;
+    term_label: string;
     grading_period_id: string;
     grading_period_name: string;
+    is_completed: boolean;
+    answers: EvaluationSavedAnswer[];
     sections: EvaluationSection[];
+}
+
+export interface MyEvaluationRow {
+    enrollment_id: string;
+    grading_period_id: string;
+    grading_period_name: string;
+    grading_period_sequence: number;
+    section_code: string;
+    course_code: string;
+    course_title: string;
+    term_label: string;
+    faculty_name: string;
+    is_completed: boolean;
+    completed_at: string | null;
+    total_count: number;
+}
+
+export type EvaluationStatusFilter = '' | 'Pending' | 'Completed';
+
+export interface MyEvaluationsFilterValues {
+    status: EvaluationStatusFilter;
+}
+
+export interface EvaluationTemplateListRow {
+    id: string;
+    title: string;
+    description: string | null;
+    is_active: boolean;
+    sequence: number;
+    program_ids: string[];
+    question_count: number;
+    total_count: number;
 }
 
 export interface EvaluationResponseInput {

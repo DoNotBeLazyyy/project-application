@@ -142,7 +142,6 @@ export default function SubjectDetailPage() {
                     <SubjectGradeList
                         enrollmentId={enrollmentId}
                         grades={grades ?? []}
-                        onEvaluated={fetchGrades}
                     />
                 )}
                 {activeTab === 'content' && subject?.section_id && (

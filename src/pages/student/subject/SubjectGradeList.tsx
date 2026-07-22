@@ -1,15 +1,15 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
-import EvaluationModal from '@pages/student/subject/EvaluationModal';
+import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
 import { SubjectGradeItem } from '@type/student-portal.type';
 import { ColDef } from 'ag-grid-community';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface SubjectGradeListProps {
     enrollmentId: string;
     grades: SubjectGradeItem[];
-    onEvaluated: () => void;
 }
 
 function formatGrade(value: number | null): string {
@@ -18,8 +18,8 @@ function formatGrade(value: number | null): string {
         : '—';
 }
 
-export default function SubjectGradeList({ enrollmentId, grades, onEvaluated }: SubjectGradeListProps) {
-    const [activePeriodId, setActivePeriodId] = useState<string | null>(null);
+export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeListProps) {
+    const navigate = useNavigate();
 
     const columnDefs = useMemo<ColDef<SubjectGradeItem>[]>(function() {
         function isReleased(item: SubjectGradeItem): boolean {
@@ -86,7 +86,7 @@ export default function SubjectGradeList({ enrollmentId, grades, onEvaluated }: 
                                     size="small"
                                     variant="contained"
                                     onClick={function() {
-                                        setActivePeriodId(grade.grading_period_id);
+                                        navigate(toTargetPath(enrollmentId, grade.grading_period_id));
                                     }}
                                 >
                                     Evaluate to view
@@ -103,7 +103,7 @@ export default function SubjectGradeList({ enrollmentId, grades, onEvaluated }: 
                 }
             }
         ];
-    }, []);
+    }, [enrollmentId]);
 
     return (
         <div className="flex flex-1 flex-col gap-3 min-h-0">
@@ -116,15 +116,6 @@ export default function SubjectGradeList({ enrollmentId, grades, onEvaluated }: 
                     rowData={grades}
                 />
             </div>
-            <EvaluationModal
-                enrollmentId={enrollmentId}
-                gradingPeriodId={activePeriodId}
-                open={activePeriodId !== null}
-                onClose={function() {
-                    setActivePeriodId(null);
-                }}
-                onSubmitted={onEvaluated}
-            />
         </div>
     );
 }

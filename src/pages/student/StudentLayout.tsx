@@ -5,7 +5,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import {
-    ChartLineUpIcon, ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon
+    ChartLineUpIcon, ClipboardTextIcon, ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -61,6 +61,12 @@ export default function StudentLayout() {
                     isActive: pathname === '/student/grade',
                     label: 'Grade',
                     onClick: () => navigate('/student/grade')
+                },
+                {
+                    icon: <ClipboardTextIcon size={18} />,
+                    isActive: pathname.startsWith('/student/evaluations'),
+                    label: 'Evaluate',
+                    onClick: () => navigate('/student/evaluations')
                 },
                 {
                     icon: <ListChecksIcon size={18} />,

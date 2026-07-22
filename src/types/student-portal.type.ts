@@ -237,12 +237,15 @@ export interface StudentResultRubric {
 
 export interface MyGradeListRow {
     enrollment_id: string;
+    grading_period_id: string;
     section_code: string;
     course_code: string;
     course_title: string;
     term_label: string;
+    faculty_name: string;
     grading_period_name: string;
     grading_period_sequence: number;
+    evaluation_completed: boolean;
     raw_grade: number | null;
     final_grade: number | null;
     transmuted_grade: number | null;

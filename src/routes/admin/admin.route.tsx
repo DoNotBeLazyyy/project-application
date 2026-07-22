@@ -3,6 +3,7 @@ import AdminDashboard from '@pages/admin/AdminDashboard';
 import AdminLayout from '@pages/admin/AdminLayout';
 import AuditLogManagement from '@pages/admin/audit-log-management';
 import EvaluationManagement from '@pages/admin/evaluation-management';
+import EvaluationTemplateDetailPage from '@pages/admin/evaluation-management/EvaluationTemplateDetailPage';
 import GradingConfiguration from '@pages/admin/grading-config-management';
 import RoleManagement from '@pages/admin/role-management';
 import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
@@ -27,6 +28,8 @@ export const adminRoutes: RouteObject[] = [
             { element: <SchoolYearManagement />, path: 'school-years' },
             { element: <GradingConfiguration />, path: 'grade-configurations' },
             { element: <EvaluationManagement />, path: 'evaluations' },
+            { element: <EvaluationTemplateDetailPage />, path: 'evaluations/new' },
+            { element: <EvaluationTemplateDetailPage />, path: 'evaluations/:id' },
             { element: <RoleManagement />, path: 'roles' },
             { element: <TermManagement />, path: 'terms' },
             { element: <TermTypeManagement />, path: 'term-types' },

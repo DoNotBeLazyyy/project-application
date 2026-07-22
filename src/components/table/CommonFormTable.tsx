@@ -31,7 +31,9 @@ export interface CommonFormTableProps<TRow, TForm extends FieldValues> {
     hideAddRow?: boolean;
     hideRowActions?: boolean;
     minRows?: number;
+    startIndex?: number;
     tableProps?: CommonTableProps;
+    totalRows?: number;
     onAddRow?: () => void;
     onRemoveRow?: (index: number) => void;
 }
@@ -46,13 +48,15 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     hideRowActions,
     minRows = 0,
     rows,
+    startIndex = 0,
     title,
     tableProps,
+    totalRows,
     onAddRow,
     onRemoveRow
 }: CommonFormTableProps<TRow, TForm>) {
     const showActions = !disabled && !hideRowActions;
-    const canRemoveRow = rows.length > minRows;
+    const canRemoveRow = (totalRows ?? rows.length) > minRows;
 
     function columnStyle(flex?: number): CSSProperties {
         return {
@@ -104,12 +108,13 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
                             {emptyDataMessage}
                         </div>
                     )
-                    : rows.map((row, index) => (
+                    : rows.map((row, offset) => (
                         <div
                             className="flex gap-2 py-1.5"
                             key={row.id}
                         >
                             {columns.map((column) => {
+                                const index = startIndex + offset;
                                 const fieldName = `${fieldArrayName}.${index}.${String(column.key)}`;
                                 const params = {
                                     control,
@@ -156,7 +161,7 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
                                             size={18}
                                             weight="bold"
                                             onClick={function() {
-                                                onRemoveRow?.(index);
+                                                onRemoveRow?.(startIndex + offset);
                                             }}
                                         />
                                     )}

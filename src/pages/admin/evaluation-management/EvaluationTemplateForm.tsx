@@ -1,10 +1,13 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import CommonPagination from '@components/pagination/CommonPagination';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
+import { QUESTIONS_PER_PAGE } from '@constants/evaluation.constant';
+import { useFormPagination } from '@hooks/useFormPagination';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { ComponentPropsForm } from '@type/common.type';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
-import { formErrors } from '@utils/form.util';
-import { FieldValues, useFieldArray, UseFormReturn } from 'react-hook-form';
+import { Control, FieldValues, useFieldArray } from 'react-hook-form';
 
 const QUESTION_TYPE_OPTIONS = [
     { label: 'Rating', value: 'Rating' },
@@ -90,23 +93,24 @@ const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, Evaluation
     }
 ];
 
-export interface EvaluationTemplateFormProps {
+export interface EvaluationTemplateFormProps extends ComponentPropsForm {
+    control: Control<EvaluationTemplateForm>;
     disabled?: boolean;
-    formId?: string;
-    methods: UseFormReturn<EvaluationTemplateForm>;
-    onSubmit: (values: EvaluationTemplateForm) => void;
 }
 
 export default function EvaluationTemplateFormPanel({
+    control,
     disabled = false,
-    formId,
-    methods,
-    onSubmit
+    ...formProps
 }: EvaluationTemplateFormProps) {
     const { fields, append, remove } = useFieldArray({
-        control: methods.control,
+        control,
         name: 'questions'
     });
+    const { endIndex, goToIndex, pagination, setPagination, startIndex } = useFormPagination(
+        fields.length,
+        QUESTIONS_PER_PAGE
+    );
     const { programOptions } = useProgramOptions();
 
     const templateFields: FormFieldConfig<EvaluationTemplateForm>[] = [
@@ -163,20 +167,13 @@ export default function EvaluationTemplateFormPanel({
         }
     ];
 
-    function handleError(errors: FieldValues) {
-        formErrors(errors, methods);
-    }
-
     return (
         <div className="flex flex-col gap-4">
             <CommonForm
                 containerClassName="gap-4 grid grid-cols-2"
-                control={methods.control}
+                control={control}
                 fields={templateFields}
-                formProps={{
-                    id: formId,
-                    onSubmit: methods.handleSubmit(onSubmit, handleError)
-                }}
+                formProps={formProps}
                 hasHelper
             />
             <div className="flex flex-col gap-2 h-80">
@@ -186,20 +183,29 @@ export default function EvaluationTemplateFormPanel({
                 <div className="flex flex-1 min-h-0 w-full">
                     <CommonFormTable<EvaluationQuestionForm, EvaluationTemplateForm>
                         columns={QUESTION_COLUMNS}
-                        control={methods.control}
+                        control={control}
                         disabled={disabled}
                         emptyDataMessage="No questions yet. Click + to add one."
                         fieldArrayName="questions"
                         minRows={1}
-                        rows={fields as (EvaluationQuestionForm & { id: string })[]}
+                        rows={(fields as (EvaluationQuestionForm & { id: string })[]).slice(startIndex, endIndex)}
+                        startIndex={startIndex}
                         tableProps={{ containerClassName: 'min-h-0 h-full' }}
+                        totalRows={fields.length}
                         onAddRow={function() {
                             append(DEFAULT_QUESTION);
+                            goToIndex(fields.length);
                         }}
                         onRemoveRow={remove}
                     />
                 </div>
             </div>
+            <CommonPagination
+                className="flex h-14 items-center"
+                hasPaginationSelect={false}
+                pagination={pagination}
+                onSetPagination={setPagination}
+            />
         </div>
     );
 }
