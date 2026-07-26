@@ -185,7 +185,7 @@ BEGIN
                 SELECT epl.is_completed
                 FROM public.evaluation_period_locks epl
                 WHERE epl.enrollment_id = p_enrollment_id
-                AND epl.grading_period_id = gp.id
+                AND epl.grading_period_id = public.fn_resolve_evaluation_period(p_enrollment_id, gp.id)
                 AND epl.deleted_at IS NULL
                 LIMIT 1
             ), false)

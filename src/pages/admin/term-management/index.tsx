@@ -45,7 +45,8 @@ export default function TermManagement() {
         end_date: '',
         enrollment_start_date: '',
         enrollment_end_date: '',
-        grading_deadline: ''
+        grading_deadline: '',
+        evaluation_scope: ''
     };
 
     const createMethods = useForm<TermFormValues>({
@@ -74,7 +75,8 @@ export default function TermManagement() {
                 end_date: result.data.end_date,
                 enrollment_start_date: result.data.enrollment_start_date ?? '',
                 enrollment_end_date: result.data.enrollment_end_date ?? '',
-                grading_deadline: result.data.grading_deadline ?? ''
+                grading_deadline: result.data.grading_deadline ?? '',
+                evaluation_scope: result.data.evaluation_scope ?? ''
             });
         }
     }

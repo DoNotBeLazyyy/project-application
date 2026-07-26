@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
@@ -44,7 +45,8 @@ export default function SystemSettings() {
             institution_logo_url: '',
             academic_year_start_month: '6',
             max_units_per_term: '24',
-            default_term_type_id: ''
+            default_term_type_id: '',
+            default_evaluation_scope: 'Period'
         }
     });
 
@@ -63,7 +65,8 @@ export default function SystemSettings() {
                     institution_logo_url: result.data.institution_logo_url,
                     academic_year_start_month: String(result.data.academic_year_start_month),
                     max_units_per_term: String(result.data.max_units_per_term),
-                    default_term_type_id: result.data.default_term_type_id ?? ''
+                    default_term_type_id: result.data.default_term_type_id ?? '',
+                    default_evaluation_scope: result.data.default_evaluation_scope ?? 'Period'
                 });
 
                 if (result.data.institution_logo_url) {
@@ -178,6 +181,16 @@ export default function SystemSettings() {
             name: 'default_term_type_id',
             options: [{ label: 'None', value: '' }, ...termTypeOptions],
             type: 'select'
+        },
+        {
+            label: 'Faculty Evaluation Scope',
+            name: 'default_evaluation_scope',
+            options: EVALUATION_SCOPE_OPTIONS,
+            rules: { required: 'Faculty evaluation scope is required' },
+            type: 'select',
+            fieldProps: {
+                helperText: EVALUATION_SCOPE_HELPER
+            }
         }
     ];
 

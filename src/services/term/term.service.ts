@@ -38,7 +38,8 @@ export async function createTerm(params: TermFormValues): Promise<ServiceResult<
         p_end_date: params.end_date,
         p_enrollment_start_date: params.enrollment_start_date || null,
         p_enrollment_end_date: params.enrollment_end_date || null,
-        p_grading_deadline: params.grading_deadline || null
+        p_grading_deadline: params.grading_deadline || null,
+        p_evaluation_scope: params.evaluation_scope || null
     });
 }
 
@@ -54,7 +55,8 @@ export async function updateTerm(
         p_end_date: params.end_date,
         p_enrollment_start_date: params.enrollment_start_date || null,
         p_enrollment_end_date: params.enrollment_end_date || null,
-        p_grading_deadline: params.grading_deadline || null
+        p_grading_deadline: params.grading_deadline || null,
+        p_evaluation_scope: params.evaluation_scope || null
     });
 }
 

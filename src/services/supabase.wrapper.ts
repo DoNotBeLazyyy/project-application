@@ -14,8 +14,22 @@ interface RawResponse {
 
 type QueryBuilderFn = (client: SupabaseClient) => PromiseLike<RawResponse>;
 
-function isAuthFailure(status?: number): boolean {
-    return status === 401 || status === 403;
+function isPostgresRpcError(error: unknown): boolean {
+    return (
+        typeof error === 'object'
+        && error !== null
+        && 'code' in error
+        && typeof (error as { code?: unknown })['code'] === 'string'
+        && /^[0-9A-Z]{5}$/.test((error as { code: string })['code'])
+    );
+}
+
+function shouldRedirectToLogin(status: number | undefined, error: unknown): boolean {
+    if (status !== 401 && status !== 403) {
+        return false;
+    }
+
+    return !isPostgresRpcError(error);
 }
 
 function handleAuthFailure(): void {
@@ -63,7 +77,7 @@ export async function callRpc<T>(
         const { data, error, status } = await supabase.rpc(fn, params);
 
         if (error) {
-            if (isAuthFailure(status)) {
+            if (shouldRedirectToLogin(status, error)) {
                 handleAuthFailure();
             }
             const parsed = parseServiceError(error);
@@ -108,7 +122,7 @@ export async function callQuery<T>(queryFn: QueryBuilderFn): Promise<ServiceResu
     try {
         const { data, error, status } = await queryFn(supabase);
         if (error) {
-            if (isAuthFailure(status)) {
+            if (shouldRedirectToLogin(status, error)) {
                 handleAuthFailure();
             }
             return { data: null, error: parseServiceError(error) };
@@ -158,7 +172,7 @@ export async function callFunction<T>(
 
         if (error) {
             const parsed = await parseFunctionError(error);
-            if (isAuthFailure(parsed.status ?? undefined)) {
+            if (shouldRedirectToLogin(parsed.status ?? undefined, parsed)) {
                 handleAuthFailure();
             }
             useToastStore.getState()
@@ -191,7 +205,7 @@ export async function callSingle<T>(queryFn: QueryBuilderFn): Promise<ServiceRes
     try {
         const { data, error, status } = await queryFn(supabase);
         if (error) {
-            if (isAuthFailure(status)) {
+            if (shouldRedirectToLogin(status, error)) {
                 handleAuthFailure();
             }
             return { data: null, error: parseServiceError(error) };

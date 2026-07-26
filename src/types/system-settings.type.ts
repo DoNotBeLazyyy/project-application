@@ -1,3 +1,5 @@
+import { EvaluationScope } from '@type/evaluation.type';
+
 export interface SystemSettings {
     id: string;
     institution_name: string;
@@ -10,6 +12,7 @@ export interface SystemSettings {
     academic_year_start_month: number;
     max_units_per_term: number;
     default_term_type_id: string | null;
+    default_evaluation_scope: EvaluationScope;
 }
 
 export interface SystemSettingsFormValues {
@@ -23,4 +26,5 @@ export interface SystemSettingsFormValues {
     academic_year_start_month: string;
     max_units_per_term: string;
     default_term_type_id: string;
+    default_evaluation_scope: EvaluationScope;
 }

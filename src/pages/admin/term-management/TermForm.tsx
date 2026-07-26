@@ -1,6 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { EVALUATION_SCOPE_HELPER, TERM_EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
 import { ComponentPropsForm } from '@type/common.type';
 import { TermFormValues } from '@type/term/term.type';
 import { Control, useWatch } from 'react-hook-form';
@@ -113,6 +114,16 @@ export default function TermForm({
             type: 'date',
             fieldProps: {
                 disablePast: true
+            }
+        },
+        {
+            disabled,
+            label: 'Faculty Evaluation Scope',
+            name: 'evaluation_scope',
+            options: TERM_EVALUATION_SCOPE_OPTIONS,
+            type: 'select',
+            fieldProps: {
+                helperText: EVALUATION_SCOPE_HELPER
             }
         }
     ];

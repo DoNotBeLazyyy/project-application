@@ -1,5 +1,7 @@
 export type EvaluationQuestionType = 'Rating' | 'Multiple Choice' | 'Open Ended';
 
+export type EvaluationScope = 'Period' | 'Term';
+
 export interface EvaluationQuestionForm {
     id?: string;
     question_text: string;
@@ -75,6 +77,7 @@ export interface EvaluationForm {
     term_label: string;
     grading_period_id: string;
     grading_period_name: string;
+    evaluation_scope: EvaluationScope;
     is_completed: boolean;
     answers: EvaluationSavedAnswer[];
     sections: EvaluationSection[];
@@ -85,6 +88,7 @@ export interface MyEvaluationRow {
     grading_period_id: string;
     grading_period_name: string;
     grading_period_sequence: number;
+    evaluation_scope: EvaluationScope;
     section_code: string;
     course_code: string;
     course_title: string;
