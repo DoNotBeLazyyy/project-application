@@ -499,59 +499,6 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.fn_create_term(p_school_year_id uuid, p_term_type_id uuid, p_start_date date, p_end_date date, p_enrollment_start_date date DEFAULT NULL::date, p_enrollment_end_date date DEFAULT NULL::date, p_grading_deadline date DEFAULT NULL::date)
-    RETURNS jsonb
-    LANGUAGE plpgsql
-    SECURITY DEFINER
-    SET search_path = public
-    AS $$
-DECLARE
-    v_term_id UUID;
-BEGIN
-    IF p_end_date <= p_start_date THEN
-        RETURN jsonb_build_object('success', false, 'message', 'End date must be after start date');
-    END IF;
-
-    IF p_enrollment_start_date IS NOT NULL AND p_enrollment_end_date IS NOT NULL THEN
-        IF p_enrollment_end_date <= p_enrollment_start_date THEN
-            RETURN jsonb_build_object('success', false, 'message', 'Enrollment end date must be after enrollment start date');
-        END IF;
-        IF p_enrollment_start_date < p_start_date OR p_enrollment_end_date > p_end_date THEN
-            RETURN jsonb_build_object('success', false, 'message', 'Enrollment dates must be within the term date range');
-        END IF;
-    END IF;
-
-    IF p_grading_deadline IS NOT NULL AND p_grading_deadline <= p_end_date THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Grading deadline must be after the term end date');
-    END IF;
-
-    IF EXISTS (
-        SELECT 1 FROM public.terms
-        WHERE school_year_id = p_school_year_id
-        AND term_type_id = p_term_type_id
-        AND deleted_at IS NULL
-    ) THEN
-        RETURN jsonb_build_object('success', false, 'message', 'This term type already exists for the selected school year');
-    END IF;
-
-    INSERT INTO public.terms (
-        school_year_id, term_type_id, start_date, end_date,
-        enrollment_start_date, enrollment_end_date, grading_deadline,
-        status, created_by
-    )
-    VALUES (
-        p_school_year_id, p_term_type_id, p_start_date, p_end_date,
-        p_enrollment_start_date, p_enrollment_end_date, p_grading_deadline,
-        'Upcoming', auth.uid()
-    )
-    RETURNING id INTO v_term_id;
-
-    PERFORM public.fn_seed_term_grading_periods(v_term_id);
-
-    RETURN jsonb_build_object('success', true, 'message', 'Term created successfully');
-END;
-$$;
-
 REVOKE EXECUTE ON FUNCTION public.fn_seed_term_grading_periods(uuid) FROM anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.fn_seed_section_grading(uuid) FROM anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.fn_reseed_section_grading(uuid) FROM anon;
