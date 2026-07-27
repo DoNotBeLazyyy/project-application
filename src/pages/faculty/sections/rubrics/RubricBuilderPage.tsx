@@ -184,6 +184,7 @@ export default function RubricBuilderPage() {
                                         <div className="flex flex-1 flex-col gap-3">
                                             <ValidCommonInput
                                                 control={control}
+                                                hasHelper
                                                 label="Criterion"
                                                 name={`criteria.${index}.title`}
                                                 rules={{ required: 'Required.' }}
@@ -197,6 +198,7 @@ export default function RubricBuilderPage() {
                                         <div className="flex flex-col gap-1 w-28">
                                             <ValidCommonInput
                                                 control={control}
+                                                hasHelper
                                                 label="Max Points"
                                                 name={`criteria.${index}.max_points`}
                                                 rules={{ required: 'Required.' }}

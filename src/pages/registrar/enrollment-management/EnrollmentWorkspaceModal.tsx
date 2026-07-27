@@ -317,6 +317,7 @@ export default function EnrollmentWorkspaceModal({
                     {hasSelectedPrerequisiteGap && (
                         <ValidCommonCheckbox
                             control={overrideMethods.control}
+                            hasHelper
                             label="Override unmet prerequisites for the selected sections"
                             name="override_prerequisites"
                             rules={{ required: 'Confirm the prerequisite override to continue' }}
@@ -327,6 +328,7 @@ export default function EnrollmentWorkspaceModal({
                         <div className="flex flex-col gap-2">
                             <ValidCommonCheckbox
                                 control={overrideMethods.control}
+                                hasHelper
                                 label="Authorize the overlapping schedules for the selected sections"
                                 name="allow_conflict"
                                 rules={{ required: 'Authorize the schedule conflict to continue' }}

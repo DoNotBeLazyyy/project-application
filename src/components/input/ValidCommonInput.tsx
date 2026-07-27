@@ -12,7 +12,7 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
     rules,
     type,
     error: errorProp,
-    hasHelper,
+    hasHelper = true,
     helperText: helperTextProp,
     onChange: onDefaultChange,
     ...props

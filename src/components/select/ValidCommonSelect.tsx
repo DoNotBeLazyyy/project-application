@@ -13,7 +13,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     name,
     rules,
     error: errorProp,
-    hasHelper,
+    hasHelper = true,
     helperText: helperTextProp,
     onChange: onDefaultChange,
     ...props

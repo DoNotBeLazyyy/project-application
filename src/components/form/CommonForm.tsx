@@ -16,7 +16,7 @@ export default function CommonForm<T extends FieldValues>({
     fields,
     containerClassName = 'flex flex-col gap-4',
     formProps,
-    hasHelper
+    hasHelper = true
 }: CommonFormProps<T>) {
     function formatLabel(name: string) {
         return name

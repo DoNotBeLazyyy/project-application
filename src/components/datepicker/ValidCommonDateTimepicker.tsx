@@ -20,7 +20,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     name,
     rules,
     error: errorProp,
-    hasHelper,
+    hasHelper = true,
     helperText: helperTextProp,
     fullWidth = true,
     ...props

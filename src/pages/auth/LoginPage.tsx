@@ -90,6 +90,7 @@ export default function LoginPage() {
                     <ValidCommonInput
                         control={methods.control}
                         fullWidth
+                        hasHelper
                         isRequired
                         label="Email"
                         name="email"
@@ -103,6 +104,7 @@ export default function LoginPage() {
                     <ValidCommonInput
                         control={methods.control}
                         fullWidth
+                        hasHelper
                         hasPasswordToggle
                         isRequired
                         label="Password"

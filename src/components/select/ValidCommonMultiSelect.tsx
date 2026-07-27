@@ -11,7 +11,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
     name,
     rules,
     error: errorProp,
-    hasHelper,
+    hasHelper = true,
     helperText: helperTextProp,
     ...props
 }: ValidCommonMultiSelectProps<T>) {

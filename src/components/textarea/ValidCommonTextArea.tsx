@@ -2,7 +2,9 @@ import CommonTextarea, { CommonTextareaProps } from '@components/textarea/Common
 import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
-export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T>;
+export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
+    hasHelper?: boolean;
+};
 
 /**
  * ValidCommonTextarea
@@ -21,10 +23,14 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
     control,
     name,
     rules,
+    error: errorProp,
+    hasHelper = true,
+    helperText: helperTextProp,
     onChangeText: onDefaultChange,
     ...props
 }: ValidCommonTextareaProps<T>) {
-    const { field: { value, ref, onChange } } = useController({ name, control, rules }); // Text area form control
+    const { field: { value, ref, onChange }, fieldState } = useController({ name, control, rules }); // Text area form control
+    const helperMessage = fieldState.error?.message ?? helperTextProp;
 
     /**
      * Change event handler for textarea input.
@@ -38,10 +44,26 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
         onDefaultChange?.(newValue);
     }
 
-    return <CommonTextarea
-        ref={ref}
-        value={value}
-        onChange={handleChange}
-        {...props}
-    />;
+    return (
+        <div className="flex flex-col gap-1 w-full">
+            <CommonTextarea
+                error={errorProp ?? !!fieldState.error}
+                ref={ref}
+                value={value}
+                onChange={handleChange}
+                {...props}
+            />
+            {hasHelper && helperMessage && (
+                <span
+                    className={
+                        fieldState.error
+                            ? 'text-(--mui-palette-error-main) text-xs'
+                            : 'text-(--mui-palette-text-secondary) text-xs'
+                    }
+                >
+                    {helperMessage}
+                </span>
+            )}
+        </div>
+    );
 }

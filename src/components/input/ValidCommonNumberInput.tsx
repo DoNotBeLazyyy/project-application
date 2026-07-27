@@ -10,7 +10,7 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
     control,
     name,
     rules,
-    hasHelper,
+    hasHelper = true,
     helperText: helperTextProp,
     error: errorProp,
     ...props
