@@ -38,6 +38,13 @@ export default function QuestionList({
                             ? 's'
                             : ''} · {totalPoints} pts total
                     </span>
+                    {!assessmentDbId
+                        ? (
+                            <span className="text-(--mui-palette-warning-main) text-xs">
+                                Save the assessment settings first to add or import questions.
+                            </span>
+                        )
+                        : null}
                 </div>
                 <div className="flex gap-2 items-center">
                     <CommonButton

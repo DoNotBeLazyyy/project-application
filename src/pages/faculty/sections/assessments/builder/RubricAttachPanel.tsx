@@ -87,21 +87,30 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                         onChange={handleRubricChange}
                     />
                 </div>
-                <button
-                    className="flex gap-2 items-center py-2 text-left"
-                    disabled={!rubricId}
-                    type="button"
-                    onClick={function() {
-                        setUseScoring((prev) => !prev);
-                    }}
-                >
-                    {useScoring
-                        ? <CheckCircleIcon className="text-(--mui-palette-primary-main) shrink-0" size={20} weight="fill" />
-                        : <CircleIcon className="text-(--mui-palette-text-disabled) shrink-0" size={20} />}
-                    <span className="text-(--mui-palette-text-primary) text-sm">
-                        Use rubric to score submissions
-                    </span>
-                </button>
+                <div className="flex flex-col">
+                    <button
+                        className="flex gap-2 items-center py-2 text-left"
+                        disabled={!rubricId}
+                        type="button"
+                        onClick={function() {
+                            setUseScoring((prev) => !prev);
+                        }}
+                    >
+                        {useScoring
+                            ? <CheckCircleIcon className="text-(--mui-palette-primary-main) shrink-0" size={20} weight="fill" />
+                            : <CircleIcon className="text-(--mui-palette-text-disabled) shrink-0" size={20} />}
+                        <span className="text-(--mui-palette-text-primary) text-sm">
+                            Use rubric to score submissions
+                        </span>
+                    </button>
+                    {!rubricId
+                        ? (
+                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                                Attach a rubric above to score submissions with it.
+                            </span>
+                        )
+                        : null}
+                </div>
                 <CommonButton
                     disabled={isSaving}
                     size="small"

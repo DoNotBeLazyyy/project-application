@@ -75,15 +75,24 @@ export default function AttendanceRecordList({
     return (
         <div className="flex flex-col flex-1 gap-3 min-w-0">
             <div className="flex items-center justify-between">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    {new Date(selectedSession.session_date)
-                        .toLocaleDateString('en-PH', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        })}
-                </span>
+                <div className="flex flex-col">
+                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        {new Date(selectedSession.session_date)
+                            .toLocaleDateString('en-PH', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                    </span>
+                    {!isDirty
+                        ? (
+                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                                All attendance changes are saved. Change a status to enable saving.
+                            </span>
+                        )
+                        : null}
+                </div>
                 <CommonButton
                     disabled={!isDirty}
                     size="small"

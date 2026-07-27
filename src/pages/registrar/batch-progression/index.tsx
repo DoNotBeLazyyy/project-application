@@ -149,7 +149,16 @@ export default function BatchProgression() {
                         termOptions={termOptions}
                         onSubmit={cohortMethods.handleSubmit(handlePreview, handlePreviewError)}
                     />
-                    <div className="flex gap-3 justify-end">
+                    <div className="flex flex-wrap gap-3 items-center justify-end">
+                        {!hasWork
+                            ? (
+                                <span className="mr-auto text-(--mui-palette-text-secondary) text-xs">
+                                    {preview === null
+                                        ? 'Preview the cohort first — Run Progression stays disabled until there are proposed changes.'
+                                        : 'This cohort has nothing to promote or enroll for the selected term. Adjust the programs, year levels, or term and preview again.'}
+                                </span>
+                            )
+                            : null}
                         <CommonButton
                             form={COHORT_FORM_ID}
                             size="small"

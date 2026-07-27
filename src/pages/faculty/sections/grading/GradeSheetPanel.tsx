@@ -61,9 +61,18 @@ export default function GradeSheetPanel({
     return (
         <div className="flex flex-col flex-1 gap-3 min-w-0">
             <div className="flex items-center justify-between">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Grade Sheet
-                </span>
+                <div className="flex flex-col">
+                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        Grade Sheet
+                    </span>
+                    {components.length === 0
+                        ? (
+                            <span className="text-(--mui-palette-warning-main) text-xs">
+                                Add at least one grading component before grades can be calculated.
+                            </span>
+                        )
+                        : null}
+                </div>
                 <CommonButton
                     disabled={components.length === 0}
                     size="small"
