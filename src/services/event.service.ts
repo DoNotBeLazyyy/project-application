@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { EventDetail, EventFeedRow, EventFormValues, EventListRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { sanitizeUuidArray } from '@utils/uuid.util';
 
 export async function listEvents(
     page: number,
@@ -52,7 +53,7 @@ export async function createEvent(
         p_end_at: params.end_at || null,
         p_location: params.location || null,
         p_section_ids: params.target_audience === 'Section'
-            ? params.section_ids
+            ? sanitizeUuidArray(params.section_ids)
             : null,
         p_start_at: params.start_at,
         p_title: params.title
@@ -71,7 +72,7 @@ export async function updateEvent(
         p_id: eventId,
         p_location: params.location || null,
         p_section_ids: params.target_audience === 'Section'
-            ? params.section_ids
+            ? sanitizeUuidArray(params.section_ids)
             : null,
         p_start_at: params.start_at,
         p_title: params.title

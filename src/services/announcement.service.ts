@@ -8,6 +8,7 @@ import {
 } from '@type/announcement.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { sanitizeUuidArray } from '@utils/uuid.util';
 
 export async function listAnnouncements(
     page: number,
@@ -63,7 +64,7 @@ export async function createAnnouncement(
         p_expires_at: params.expires_at || null,
         p_is_pinned: params.is_pinned,
         p_section_ids: params.target_audience === 'Section'
-            ? params.section_ids
+            ? sanitizeUuidArray(params.section_ids)
             : null,
         p_title: params.title
     });
@@ -80,7 +81,7 @@ export async function updateAnnouncement(
         p_id: announcementId,
         p_is_pinned: params.is_pinned,
         p_section_ids: params.target_audience === 'Section'
-            ? params.section_ids
+            ? sanitizeUuidArray(params.section_ids)
             : null,
         p_title: params.title
     });
