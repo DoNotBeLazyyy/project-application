@@ -18,6 +18,19 @@ interface UseTableConfigsProps<TData = unknown> {
     trailingColumnDefs?: ColDef[];
 }
 
+function withHeaderTooltip(columnDefs: ColDef[]): ColDef[] {
+    return columnDefs.map((columnDef) => {
+        if (columnDef.headerTooltip !== undefined || typeof columnDef.headerName !== 'string' || !columnDef.headerName.trim()) {
+            return columnDef;
+        }
+
+        return {
+            ...columnDef,
+            headerTooltip: columnDef.headerName
+        };
+    });
+}
+
 export function useTableConfigs<TData = unknown>({
     defaultColDef,
     hasCheckbox,
@@ -30,7 +43,7 @@ export function useTableConfigs<TData = unknown>({
         const { actionColDef, actionContainerClassName, actionIconClassName, menuOptions, onEditClick } = tableActionConfig ?? {};
 
         return [
-            ...leadingColumnDefs,
+            ...withHeaderTooltip(leadingColumnDefs),
             ...(menuOptions || onEditClick
                 ? [
                     {
@@ -50,7 +63,7 @@ export function useTableConfigs<TData = unknown>({
                 ]
                 : []
             ),
-            ...trailingColumnDefs
+            ...withHeaderTooltip(trailingColumnDefs)
         ];
     }, [
         leadingColumnDefs,

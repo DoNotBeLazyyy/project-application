@@ -4,6 +4,7 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
+import { ROLE_HOME, resolvePanelLabel } from '@constants/role.constant';
 import {
     CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, ListChecksIcon, ListIcon, MegaphoneIcon, ShieldCheckIcon, SignOutIcon, SquaresFourIcon, UsersIcon
 } from '@phosphor-icons/react';
@@ -14,14 +15,6 @@ import { ChangeEventInputTextarea } from '@type/common.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-const ROLE_DASHBOARD: Record<UserRole, string> = {
-    Admin: '/admin',
-    Dean: '/dean',
-    Faculty: '/faculty',
-    Registrar: '/registrar',
-    Student: '/student'
-};
 
 export default function AdminLayout() {
     const navigate = useNavigate();
@@ -143,7 +136,7 @@ export default function AdminLayout() {
         const role = event.target.value as UserRole;
         useAppStore.getState()
             .setActiveRole(role);
-        navigate(ROLE_DASHBOARD[role]);
+        navigate(ROLE_HOME[role], { replace: true });
     }
 
     async function handleLogout() {
@@ -163,7 +156,7 @@ export default function AdminLayout() {
                     onClick: () => navigate('/admin/profile')
                 }}
                 headerProps={{
-                    subtitle: 'Admin Panel',
+                    subtitle: resolvePanelLabel(activeRole, 'Admin'),
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}

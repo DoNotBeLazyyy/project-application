@@ -1,3 +1,4 @@
+import BatchProgression from '@pages/registrar/batch-progression';
 import EnrollmentManagement from '@pages/registrar/enrollment-management';
 import GradeRelease from '@pages/registrar/grade-release-management';
 import RegistrarDashboard from '@pages/registrar/RegistrarDashboard';
@@ -20,6 +21,7 @@ export const registrarRoutes: RouteObject[] = [
             { element: <StudentManagement />, path: 'student-management' },
             { element: <StudentRecordsPage />, path: 'student-management/:studentId/records' },
             { element: <EnrollmentManagement />, path: 'enrollment-management' },
+            { element: <BatchProgression />, path: 'batch-progression' },
             { element: <GradeRelease />, path: 'grade-release' },
             { element: <ProfilePage />, path: 'profile' },
             { element: <AnnouncementManagement />, path: 'announcement-management' },

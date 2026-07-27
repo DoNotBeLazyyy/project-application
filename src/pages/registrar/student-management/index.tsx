@@ -161,6 +161,11 @@ export default function StudentManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     async function handleUpdateSubmit(values: StudentFormValues) {
         if (!selectedId) return;
 
@@ -240,6 +245,7 @@ export default function StudentManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

@@ -91,6 +91,29 @@ export async function resendInvite(email: string): Promise<ServiceResult<null>> 
     }
 }
 
+export async function resetUserPassword(email: string): Promise<ServiceResult<null>> {
+    useLoadingStore.getState()
+        .show();
+    try {
+        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/set-password`
+        });
+
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
+
+        return { data: null, error: null };
+    }
+    catch (err) {
+        return { data: null, error: parseServiceError(err) };
+    }
+    finally {
+        useLoadingStore.getState()
+            .hide();
+    }
+}
+
 export async function deleteUsers(userIds: string[]): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_bulk_delete_users', { p_user_ids: userIds });
 }

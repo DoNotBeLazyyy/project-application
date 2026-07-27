@@ -1,10 +1,24 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { resendInvite } from '@services/user.service';
+import { resendInvite, resetUserPassword } from '@services/user.service';
+import { useToastStore } from '@stores/toast.store';
 import { UserListRow } from '@type/user.type';
 import { ColDef } from 'ag-grid-community';
 import { useCallback, useMemo } from 'react';
+
+async function handleResetPassword(email: string) {
+    const { error } = await resetUserPassword(email);
+    useToastStore.getState()
+        .showToast(
+            error
+                ? error.message
+                : `Password reset link sent to ${email}.`,
+            error
+                ? 'error'
+                : 'success'
+        );
+}
 
 interface UseUserTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
@@ -86,6 +100,15 @@ export function useUserTableConfig({
                     ),
                     disabled: row.status === 'Active',
                     onClick: () => resendInvite(row.email)
+                },
+                {
+                    children: (
+                        <div className="flex gap-2 items-center">
+                            <span>Reset Password</span>
+                        </div>
+                    ),
+                    disabled: row.status !== 'Active',
+                    onClick: () => handleResetPassword(row.email)
                 }
             ]
         };

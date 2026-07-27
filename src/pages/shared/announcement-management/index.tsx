@@ -63,6 +63,11 @@ export default function AnnouncementManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<AnnouncementListRow>
@@ -96,6 +101,7 @@ export default function AnnouncementManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

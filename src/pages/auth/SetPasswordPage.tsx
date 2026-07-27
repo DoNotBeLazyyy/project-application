@@ -132,6 +132,7 @@ export default function SetPasswordPage() {
                         <ValidCommonInput
                             control={control}
                             fullWidth
+                            hasPasswordToggle
                             name="password"
                             rules={{
                                 minLength: { message: 'Password must be at least 8 characters.', value: 8 },
@@ -149,6 +150,7 @@ export default function SetPasswordPage() {
                         <ValidCommonInput
                             control={control}
                             fullWidth
+                            hasPasswordToggle
                             name="confirm_password"
                             rules={{
                                 required: 'Please confirm your password.',

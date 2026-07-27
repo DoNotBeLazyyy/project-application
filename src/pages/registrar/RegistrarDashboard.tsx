@@ -24,6 +24,7 @@ interface RegistrarStatCard {
     iconColor: string;
     label: string;
     statKey: keyof RegistrarDashboardStats;
+    to?: string;
 }
 
 const STAT_CARDS: RegistrarStatCard[] = [
@@ -32,49 +33,56 @@ const STAT_CARDS: RegistrarStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Active Students',
-        statKey: 'active_students'
+        statKey: 'active_students',
+        to: '/registrar/student-management'
     },
     {
         icon: <ClipboardTextIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Enrollments This Term',
-        statKey: 'enrollments_this_term'
+        statKey: 'enrollments_this_term',
+        to: '/registrar/enrollment-management'
     },
     {
         icon: <SealCheckIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
         label: 'Pending Grade Releases',
-        statKey: 'pending_grade_releases'
+        statKey: 'pending_grade_releases',
+        to: '/registrar/grade-release'
     },
     {
         icon: <HourglassIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Incomplete Grades',
-        statKey: 'incomplete_grades'
+        statKey: 'incomplete_grades',
+        to: '/registrar/grade-release'
     },
     {
         icon: <SignOutIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Dropped This Term',
-        statKey: 'dropped_this_term'
+        statKey: 'dropped_this_term',
+        to: '/registrar/student-management'
     },
     {
         icon: <PauseCircleIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
         label: 'Students on LOA',
-        statKey: 'students_on_loa'
+        statKey: 'students_on_loa',
+        to: '/registrar/student-management'
     },
     {
         icon: <GraduationCapIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-success-50)]',
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Graduated Students',
-        statKey: 'graduated_students'
+        statKey: 'graduated_students',
+        to: '/registrar/student-management'
     }
 ];
 
@@ -113,6 +121,7 @@ export default function RegistrarDashboard() {
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
+                        to={card.to}
                         value={dashboard
                             ? dashboard.stats[card.statKey]
                             : '—'

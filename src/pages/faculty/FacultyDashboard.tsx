@@ -32,6 +32,7 @@ interface FacultyStatCard {
     iconColor: string;
     label: string;
     statKey: keyof FacultyDashboardStats;
+    to?: string;
 }
 
 const STAT_CARDS: FacultyStatCard[] = [
@@ -40,21 +41,24 @@ const STAT_CARDS: FacultyStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'My Sections',
-        statKey: 'my_sections'
+        statKey: 'my_sections',
+        to: '/faculty/sections'
     },
     {
         icon: <UsersThreeIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Total Students',
-        statKey: 'total_students'
+        statKey: 'total_students',
+        to: '/faculty/sections'
     },
     {
         icon: <ClipboardTextIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
         label: 'Pending Grading',
-        statKey: 'pending_grading'
+        statKey: 'pending_grading',
+        to: '/faculty/sections'
     },
     {
         icon: <WarningCircleIcon size={24} />,
@@ -68,14 +72,16 @@ const STAT_CARDS: FacultyStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
         label: 'Published Assessments',
-        statKey: 'published_assessments'
+        statKey: 'published_assessments',
+        to: '/faculty/sections'
     },
     {
         icon: <CalendarCheckIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-success-50)]',
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Classes Today',
-        statKey: 'sessions_today'
+        statKey: 'sessions_today',
+        to: '/faculty/sections'
     }
 ];
 
@@ -113,6 +119,7 @@ export default function FacultyDashboard() {
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
+                        to={card.to}
                         value={dashboard
                             ? dashboard.stats[card.statKey]
                             : '—'

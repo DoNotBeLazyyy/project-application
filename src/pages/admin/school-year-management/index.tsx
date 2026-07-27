@@ -6,11 +6,12 @@ import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/us
 import {
     createSchoolYear, deleteSchoolYear, getSchoolYearById, listSchoolYears, updateSchoolYear
 } from '@services/school-year.service';
+import { useToastStore } from '@stores/toast.store';
 import { SortStringDto } from '@type/http.type';
 import { SchoolYearFilterValues, SchoolYearFormValues, SchoolYearListRow } from '@type/school-year.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -29,6 +30,7 @@ export default function SchoolYearManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
     const defaultFormValues: SchoolYearFormValues = {
         code: '',
         end_date: '',
@@ -48,12 +50,19 @@ export default function SchoolYearManagement() {
     const updateMethods = useForm<SchoolYearFormValues>({
         defaultValues: defaultFormValues
     });
+    const viewMethods = useForm<SchoolYearFormValues>({
+        defaultValues: defaultFormValues
+    });
 
-    async function loadIntoForm(id: string) {
+    function triggerRefresh() {
+        setRefreshKey((prev) => prev + 1);
+    }
+
+    async function loadIntoForm(id: string, methods: UseFormReturn<SchoolYearFormValues>) {
         const result = await getSchoolYearById(id);
 
         if (result.data) {
-            updateMethods.reset({
+            methods.reset({
                 code: result.data.code,
                 end_date: result.data.end_date,
                 is_active: result.data.is_active,
@@ -65,25 +74,26 @@ export default function SchoolYearManagement() {
 
     async function handleOpenView(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
+        await loadIntoForm(id, viewMethods);
         setIsViewOpen(true);
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
         setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
+        viewMethods.reset(defaultFormValues);
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
+        await loadIntoForm(id, updateMethods);
         setIsUpdateOpen(true);
     }
 
     async function handleSwitchToEdit(id: string) {
+        setSelectedId(id);
         setIsViewOpen(false);
-        await loadIntoForm(id);
+        await loadIntoForm(id, updateMethods);
         setIsUpdateOpen(true);
     }
 
@@ -114,7 +124,7 @@ export default function SchoolYearManagement() {
         if (!result.error) {
             createMethods.reset(defaultFormValues);
             setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as SchoolYearFilterValues));
+            triggerRefresh();
         }
     }
 
@@ -122,8 +132,15 @@ export default function SchoolYearManagement() {
         setActiveFilters(values);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     async function handleUpdateSubmit(values: SchoolYearFormValues) {
         if (!selectedId) {
+            useToastStore.getState()
+                .showToast('No school year is selected. Close the dialog and try again.', 'error');
             return;
         }
 
@@ -131,7 +148,7 @@ export default function SchoolYearManagement() {
 
         if (!result.error) {
             handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as SchoolYearFilterValues));
+            triggerRefresh();
         }
     }
 
@@ -173,7 +190,7 @@ export default function SchoolYearManagement() {
                         setIsCreateOpen(false);
                     }
                 }}
-                dependencies={[activeFilters]}
+                dependencies={[activeFilters, refreshKey]}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -190,6 +207,7 @@ export default function SchoolYearManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         filterMethods.reset();
@@ -238,9 +256,9 @@ export default function SchoolYearManagement() {
                     confirmText: 'Edit',
                     formContent: (
                         <SchoolYearForm
-                            control={updateMethods.control}
+                            control={viewMethods.control}
                             disabled
-                            setValue={updateMethods.setValue}
+                            setValue={viewMethods.setValue}
                         />
                     ),
                     formButtonsProps: {

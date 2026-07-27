@@ -7,6 +7,7 @@ export interface CommonFormModalProps extends CommonActionModalProps {
     formContent?: ReactNode;
     formId?: string;
     onConfirmClose?: () => boolean;
+    onReset?: () => void;
 }
 
 export default function CommonFormModal({
@@ -16,9 +17,10 @@ export default function CommonFormModal({
     formId,
     formButtonsProps,
     onClose,
+    onReset,
     ...props
 }: CommonFormModalProps) {
-    const { cancelProps, confirmProps } = formButtonsProps ?? {};
+    const { cancelProps, confirmProps, resetProps } = formButtonsProps ?? {};
 
     function handleCloseModal() {
         onClose?.({}, 'escapeKeyDown');
@@ -47,7 +49,16 @@ export default function CommonFormModal({
                         ? 'submit'
                         : 'button',
                     ...confirmProps
-                }
+                },
+                resetProps: onReset
+                    ? {
+                        children: 'Reset',
+                        color: 'secondary',
+                        variant: 'outlined',
+                        onClick: onReset,
+                        ...resetProps
+                    }
+                    : resetProps
             }}
         >
             {formContent}

@@ -3,7 +3,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { SchoolYearFormValues } from '@type/school-year.type';
 import { useEffect } from 'react';
-import { Control, useWatch } from 'react-hook-form';
+import { Control, useFormState, useWatch } from 'react-hook-form';
 
 interface SchoolYearFormProps extends ComponentPropsForm {
     control: Control<SchoolYearFormValues>;
@@ -21,6 +21,7 @@ export default function SchoolYearForm({
 }: SchoolYearFormProps) {
     const startDate = useWatch({ control, name: 'start_date' });
     const endDate = useWatch({ control, name: 'end_date' });
+    const { dirtyFields } = useFormState({ control, name: ['code', 'label'] });
     const fields: FormFieldConfig<SchoolYearFormValues>[] = [
         {
             disabled,
@@ -55,6 +56,7 @@ export default function SchoolYearForm({
         },
         {
             disabled,
+            fieldProps: { helperText: 'Auto-filled from the dates. Must be unique — edit it if this pair of years already exists.' },
             name: 'code',
             rules: disabled
                 ? undefined
@@ -63,6 +65,7 @@ export default function SchoolYearForm({
         },
         {
             disabled,
+            fieldProps: { helperText: 'Display name shown across the system.' },
             name: 'label',
             rules: disabled
                 ? undefined
@@ -89,8 +92,15 @@ export default function SchoolYearForm({
         const endYear = new Date(endDate)
             .getFullYear();
 
-        if (!isNaN(startYear) && !isNaN(endYear)) {
+        if (isNaN(startYear) || isNaN(endYear)) {
+            return;
+        }
+
+        if (!dirtyFields.code) {
             setValue('code', `SY-${startYear}-${endYear}`);
+        }
+
+        if (!dirtyFields.label) {
             setValue('label', `School Year ${startYear}-${endYear}`);
         }
     }, [startDate, endDate, isNew]);

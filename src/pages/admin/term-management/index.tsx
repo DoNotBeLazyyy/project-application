@@ -160,6 +160,11 @@ export default function TermManagement() {
         setActiveFilters(values);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     async function handleUpdateSubmit(values: TermFormValues) {
         if (!selectedId) return;
 
@@ -231,6 +236,7 @@ export default function TermManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

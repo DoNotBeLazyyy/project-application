@@ -59,6 +59,11 @@ export default function EventManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<EventListRow>
@@ -92,6 +97,7 @@ export default function EventManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

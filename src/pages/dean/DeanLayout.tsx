@@ -4,6 +4,7 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
+import { ROLE_HOME, resolvePanelLabel } from '@constants/role.constant';
 import {
     CalendarIcon, ChalkboardTeacherIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
 } from '@phosphor-icons/react';
@@ -14,14 +15,6 @@ import { ChangeEventInputTextarea } from '@type/common.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-const ROLE_DASHBOARD: Record<UserRole, string> = {
-    Admin: '/admin',
-    Dean: '/dean',
-    Faculty: '/faculty',
-    Registrar: '/registrar',
-    Student: '/student'
-};
 
 export default function DeanLayout() {
     const navigate = useNavigate();
@@ -116,7 +109,7 @@ export default function DeanLayout() {
         const role = event.target.value as UserRole;
         useAppStore.getState()
             .setActiveRole(role);
-        navigate(ROLE_DASHBOARD[role]);
+        navigate(ROLE_HOME[role], { replace: true });
     }
 
     async function handleLogout() {
@@ -136,7 +129,7 @@ export default function DeanLayout() {
                     onClick: () => navigate('/dean/profile')
                 }}
                 headerProps={{
-                    subtitle: 'Dean Panel',
+                    subtitle: resolvePanelLabel(activeRole, 'Dean'),
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}

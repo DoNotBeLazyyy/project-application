@@ -61,11 +61,11 @@ export default function CommonTable<TData = unknown>({
                 animateRows={false}
                 columnDefs={resolvedColumnDefs}
                 defaultColDef={resolvedColDefs}
+                enableBrowserTooltips
                 rowSelection={rowSelection}
                 suppressCellFocus
                 suppressMovableColumns
                 suppressRowHoverHighlight
-                unSortIcon
                 onGridReady={handleGridReady}
                 onRowClicked={handleRowClicked}
                 onSortChanged={handleSortChanged}

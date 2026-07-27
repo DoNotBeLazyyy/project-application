@@ -135,6 +135,11 @@ export default function UserManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     async function handleUpdateSubmit(values: UpdateUserFormValues) {
         if (!selectedUserId) {
             return;
@@ -206,6 +211,7 @@ export default function UserManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         filterMethods.reset();

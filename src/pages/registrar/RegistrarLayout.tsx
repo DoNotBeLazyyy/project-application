@@ -4,8 +4,9 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
+import { ROLE_HOME, resolvePanelLabel } from '@constants/role.constant';
 import {
-    CalendarIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
+    ArrowsClockwiseIcon, CalendarIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -14,14 +15,6 @@ import { ChangeEventInputTextarea } from '@type/common.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-const ROLE_DASHBOARD: Record<UserRole, string> = {
-    Admin: '/admin',
-    Dean: '/dean',
-    Faculty: '/faculty',
-    Registrar: '/registrar',
-    Student: '/student'
-};
 
 export default function RegistrarLayout() {
     const navigate = useNavigate();
@@ -57,6 +50,12 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar/enrollment-management')
                 },
                 {
+                    icon: <ArrowsClockwiseIcon size={18} />,
+                    isActive: pathname === '/registrar/batch-progression',
+                    label: 'Batch Progression',
+                    onClick: () => navigate('/registrar/batch-progression')
+                },
+                {
                     icon: <SquaresFourIcon size={18} />,
                     isActive: pathname === '/registrar/grade-release',
                     label: 'Grade Release',
@@ -86,7 +85,7 @@ export default function RegistrarLayout() {
         const role = event.target.value as UserRole;
         useAppStore.getState()
             .setActiveRole(role);
-        navigate(ROLE_DASHBOARD[role]);
+        navigate(ROLE_HOME[role], { replace: true });
     }
 
     async function handleLogout() {
@@ -106,7 +105,7 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar/profile')
                 }}
                 headerProps={{
-                    subtitle: 'Registrar Panel',
+                    subtitle: resolvePanelLabel(activeRole, 'Registrar'),
                     title: 'AU-JAS LMS'
                 }}
                 isOpen={isSidebarOpen}

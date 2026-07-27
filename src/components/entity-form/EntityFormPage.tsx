@@ -108,7 +108,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
             reset();
         }
 
-        if (isCreate || !fetchById) {
+        if (isCreate || !fetchById || !isEditing) {
             navigate(backTo);
             return;
         }

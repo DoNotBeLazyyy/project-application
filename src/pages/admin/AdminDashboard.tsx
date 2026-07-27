@@ -15,6 +15,7 @@ interface DashboardCard {
     iconColor: string;
     label: string;
     statKey: keyof AdminDashboardStats;
+    to?: string;
 }
 
 const DASHBOARD_CARDS: DashboardCard[] = [
@@ -23,14 +24,16 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Active Students',
-        statKey: 'total_students'
+        statKey: 'total_students',
+        to: '/admin/users'
     },
     {
         icon: <ChalkboardTeacherIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-success-50)]',
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Active Faculty',
-        statKey: 'total_faculty'
+        statKey: 'total_faculty',
+        to: '/admin/users'
     },
     {
         icon: <BookOpenIcon size={24} />,
@@ -44,7 +47,8 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Active Terms',
-        statKey: 'active_terms'
+        statKey: 'active_terms',
+        to: '/admin/terms'
     },
     {
         icon: <ClipboardTextIcon size={24} />,
@@ -95,6 +99,7 @@ export default function AdminDashboard() {
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
+                        to={card.to}
                         value={stats
                             ? stats[card.statKey]
                             : '—'

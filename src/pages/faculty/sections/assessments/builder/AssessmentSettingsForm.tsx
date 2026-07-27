@@ -134,26 +134,36 @@ export default function AssessmentSettingsForm({
             <div className="flex flex-col gap-4">
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    hasHelper
+                    helperText="When the assessment auto-publishes to students. Leave blank to publish manually."
                     label="Scheduled Publish"
                     name="scheduled_publish_at"
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    hasHelper
+                    helperText="When students can start the assessment."
                     label="Opens At"
                     name="opens_at"
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    hasHelper
+                    helperText="Submission deadline; attempts after this are marked late."
                     label="Due At"
                     name="due_at"
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    hasHelper
+                    helperText="Hard cutoff; no submissions accepted after this time."
                     label="Closes At"
                     name="closes_at"
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    hasHelper
+                    helperText="When students can view their scores and correct answers. Leave blank to release manually."
                     label="Show Results At"
                     name="show_results_at"
                 />

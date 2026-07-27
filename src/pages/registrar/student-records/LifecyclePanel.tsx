@@ -3,6 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonActionModal from '@components/modal/CommonActionModal';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { ArrowsLeftRightIcon, UserSwitchIcon } from '@phosphor-icons/react';
 import { changeStudentStatus, listStudentLifecycleEvents, shiftStudentProgram } from '@services/records.service';
@@ -19,15 +20,6 @@ const STATUS_OPTIONS: { label: string; value: StudentStatus }[] = [
     { label: 'LOA', value: 'LOA' },
     { label: 'Graduated', value: 'Graduated' },
     { label: 'Expelled', value: 'Expelled' }
-];
-
-const YEAR_LEVEL_OPTIONS = [
-    { label: '1st Year', value: '1' },
-    { label: '2nd Year', value: '2' },
-    { label: '3rd Year', value: '3' },
-    { label: '4th Year', value: '4' },
-    { label: '5th Year', value: '5' },
-    { label: '6th Year', value: '6' }
 ];
 
 const STATUS_FORM_ID = 'student-status-change-form';

@@ -51,6 +51,11 @@ export default function AuditLogManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<AuditLogRow>
@@ -76,6 +81,7 @@ export default function AuditLogManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         filterMethods.reset();

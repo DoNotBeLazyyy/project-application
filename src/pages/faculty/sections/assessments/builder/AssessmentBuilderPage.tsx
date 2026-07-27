@@ -11,7 +11,7 @@ import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
     bulkImportQuestions, createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, updateAssessment, upsertQuestion
 } from '@services/assessment.service';
-import { listGradingComponents } from '@services/faculty.service';
+import { listGradingComponents, listGradingPeriodsBySection } from '@services/faculty.service';
 import { AssessmentFormValues, AssessmentQuestion, QuestionBulkRow, QuestionFormValues } from '@type/assessment.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { useEffect, useState } from 'react';
@@ -50,20 +50,33 @@ export default function AssessmentBuilderPage() {
     const watchedChoices = questionMethods.watch('choices');
 
     useEffect(function() {
-        if (!assessmentDbId) return;
+        if (!sectionId) return;
 
         async function fetchComponents() {
-            const result = await listGradingComponents(sectionId, assessmentDbId);
+            const periodsResult = await listGradingPeriodsBySection(sectionId);
+            const periods = periodsResult.data ?? [];
 
-            if (result.data) {
-                setComponentOptions(
-                    result.data.map((c) => ({ label: `${c.name} (${c.weight}%)`, value: c.id }))
-                );
+            if (periods.length === 0) {
+                setComponentOptions([]);
+                return;
             }
+
+            const componentResults = await Promise.all(
+                periods.map((period) => listGradingComponents(sectionId, period.id))
+            );
+
+            const options = periods.flatMap((period, index) =>
+                (componentResults[index].data ?? []).map((c) => ({
+                    label: `${period.name} — ${c.name} (${c.weight}%)`,
+                    value: c.id
+                }))
+            );
+
+            setComponentOptions(options);
         }
 
         fetchComponents();
-    }, [sectionId, assessmentDbId]);
+    }, [sectionId]);
 
     useEffect(function() {
         if (isNew || !assessmentDbId) return;
@@ -89,11 +102,17 @@ export default function AssessmentBuilderPage() {
                         ? String(d.time_limit_minutes)
                         : '',
                     max_attempts:         String(d.max_attempts ?? 1),
+                    opens_at:             d.opens_at ?? '',
                     due_at:               d.due_at ?? '',
                     closes_at:            d.closes_at ?? '',
                     show_results_at:      d.show_results_at ?? '',
+                    scheduled_publish_at: d.scheduled_publish_at ?? '',
                     shuffle_questions:    d.shuffle_questions ?? false,
-                    shuffle_choices:      d.shuffle_choices ?? false
+                    shuffle_choices:      d.shuffle_choices ?? false,
+                    show_all_questions:   d.show_all_questions ?? true,
+                    questions_per_page:   d.questions_per_page
+                        ? String(d.questions_per_page)
+                        : ''
                 });
             }
 

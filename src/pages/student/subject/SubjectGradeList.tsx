@@ -110,12 +110,25 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
             <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                 Grades
             </span>
-            <div className="flex-1 min-h-0">
-                <CommonTable<SubjectGradeItem>
-                    leadingColumnDefs={columnDefs}
-                    rowData={grades}
-                />
-            </div>
+            {grades.length === 0
+                ? (
+                    <div className="flex flex-1 flex-col gap-1 items-center justify-center py-10 text-center">
+                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                            No grades to show yet
+                        </span>
+                        <span className="max-w-md text-(--mui-palette-text-secondary) text-xs">
+                            Grades appear here once your instructor has set up grading periods for this section and released them. Check back later in the term.
+                        </span>
+                    </div>
+                )
+                : (
+                    <div className="flex-1 min-h-0">
+                        <CommonTable<SubjectGradeItem>
+                            leadingColumnDefs={columnDefs}
+                            rowData={grades}
+                        />
+                    </div>
+                )}
         </div>
     );
 }

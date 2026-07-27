@@ -152,6 +152,11 @@ export default function ProgramManagement() {
         setActiveFilters(values);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     async function handleUpdateSubmit(values: ProgramFormValues) {
         if (!selectedId) {
             return;
@@ -231,6 +236,7 @@ export default function ProgramManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

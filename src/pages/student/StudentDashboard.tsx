@@ -1,8 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import StatCard from '@components/card/StatCard';
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
+import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
@@ -11,7 +13,7 @@ import { getStudentDashboard } from '@services/student-portal.service';
 import { StudentInsight } from '@type/analytics.type';
 import { AssessmentType } from '@type/assessment.type';
 import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'warning' | 'info'> = {
@@ -22,6 +24,60 @@ const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'war
     Project: 'info',
     'Lab Report': 'warning'
 };
+
+type StudentStatKey = 'enrolled' | 'upcoming' | 'pending';
+
+interface StudentStatCard {
+    icon: ReactNode;
+    iconBg: string;
+    iconColor: string;
+    label: string;
+    statKey: StudentStatKey;
+    to: string;
+}
+
+const STAT_CARDS: StudentStatCard[] = [
+    {
+        icon: <BookOpenIcon size={24} />,
+        iconBg: 'bg-(--mui-palette-primary-light)',
+        iconColor: 'text-(--mui-palette-primary-main)',
+        label: 'Enrolled Subjects',
+        statKey: 'enrolled',
+        to: '/student/subjects'
+    },
+    {
+        icon: <CalendarCheckIcon size={24} />,
+        iconBg: 'bg-(--mui-palette-warning-light)',
+        iconColor: 'text-(--mui-palette-warning-main)',
+        label: 'Upcoming Assessments',
+        statKey: 'upcoming',
+        to: '/student/subjects'
+    },
+    {
+        icon: <GraduationCapIcon size={24} />,
+        iconBg: 'bg-(--mui-palette-info-light)',
+        iconColor: 'text-(--mui-palette-info-main)',
+        label: 'Grades to View',
+        statKey: 'pending',
+        to: '/student/grade'
+    }
+];
+
+function resolveStatValue(dashboard: StudentDashboardData | null, statKey: StudentStatKey): number | string {
+    if (!dashboard) {
+        return '—';
+    }
+
+    if (statKey === 'enrolled') {
+        return dashboard.enrolled_count ?? '—';
+    }
+
+    if (statKey === 'upcoming') {
+        return dashboard.upcoming_assessments?.length ?? '—';
+    }
+
+    return dashboard.pending_grades_count ?? '—';
+}
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
@@ -50,64 +106,18 @@ export default function StudentDashboard() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
-                <CommonCard className="flex-1 p-4">
-                    <div className="flex gap-3 items-center">
-                        <div className="bg-(--mui-palette-primary-light) flex h-10 items-center justify-center rounded-lg w-10">
-                            <BookOpenIcon
-                                className="text-(--mui-palette-primary-main)"
-                                size={20}
-                                weight="bold"
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
-                                {dashboard?.enrolled_count ?? '—'}
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                Enrolled Subjects
-                            </span>
-                        </div>
-                    </div>
-                </CommonCard>
-                <CommonCard className="flex-1 p-4">
-                    <div className="flex gap-3 items-center">
-                        <div className="bg-(--mui-palette-warning-light) flex h-10 items-center justify-center rounded-lg w-10">
-                            <CalendarCheckIcon
-                                className="text-(--mui-palette-warning-main)"
-                                size={20}
-                                weight="bold"
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
-                                {dashboard?.upcoming_assessments?.length ?? '—'}
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                Upcoming Assessments
-                            </span>
-                        </div>
-                    </div>
-                </CommonCard>
-                <CommonCard className="flex-1 p-4">
-                    <div className="flex gap-3 items-center">
-                        <div className="bg-(--mui-palette-info-light) flex h-10 items-center justify-center rounded-lg w-10">
-                            <GraduationCapIcon
-                                className="text-(--mui-palette-info-main)"
-                                size={20}
-                                weight="bold"
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-(--mui-palette-text-primary) text-2xl">
-                                {dashboard?.pending_grades_count ?? '—'}
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                Grades to View
-                            </span>
-                        </div>
-                    </div>
-                </CommonCard>
+            <div className="gap-4 grid grid-cols-1 md:grid-cols-3">
+                {STAT_CARDS.map((card) => (
+                    <StatCard
+                        icon={card.icon}
+                        iconBg={card.iconBg}
+                        iconColor={card.iconColor}
+                        key={card.label}
+                        label={card.label}
+                        to={card.to}
+                        value={resolveStatValue(dashboard, card.statKey)}
+                    />
+                ))}
             </div>
 
             <StudentInsightSummaryCard
@@ -169,6 +179,8 @@ export default function StudentDashboard() {
                 <AnnouncementsFeedCard announcements={announcements} />
                 <EventsFeedCard events={events} />
             </div>
+
+            <InstitutionalIdentityCard />
         </div>
     );
 }

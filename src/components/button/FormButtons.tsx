@@ -13,6 +13,9 @@ export interface FormButtonsProps {
 
     // Determines whether buttons are full width or not
     isButtonsFullWidth?: boolean;
+
+    // Reset button props; the button renders only when provided
+    resetProps?: CommonButtonProps;
 }
 
 /**
@@ -31,7 +34,8 @@ export default function FormButtons({
     cancelProps,
     className,
     confirmProps,
-    isButtonsFullWidth
+    isButtonsFullWidth,
+    resetProps
 }: FormButtonsProps) {
     const commonProps = {
         fullWidth: isButtonsFullWidth,
@@ -47,6 +51,10 @@ export default function FormButtons({
                 )
             }
         >
+            {resetProps && <CommonButton
+                {...commonProps}
+                {...resetProps}
+            />}
             {cancelProps && <CommonButton
                 {...commonProps}
                 {...cancelProps}

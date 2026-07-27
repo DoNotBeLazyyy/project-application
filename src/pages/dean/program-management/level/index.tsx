@@ -5,11 +5,12 @@ import { useProgramLevelTableConfig } from '@pages/dean/program-management/level
 import {
     createProgramLevel, deleteProgramLevel, getProgramLevelById, listProgramLevels, updateProgramLevel
 } from '@services/program/program-level.service';
+import { useToastStore } from '@stores/toast.store';
 import { SortStringDto } from '@type/http.type';
 import { ProgramLevelFormValues, ProgramLevelListRow } from '@type/program/program-level.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -40,15 +41,19 @@ export default function ProgramLevelManagement() {
         defaultValues: defaultFormValues
     });
 
+    const viewMethods = useForm<ProgramLevelFormValues>({
+        defaultValues: defaultFormValues
+    });
+
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
     }
 
-    async function loadIntoForm(id: string) {
+    async function loadIntoForm(id: string, methods: UseFormReturn<ProgramLevelFormValues>) {
         const result = await getProgramLevelById(id);
 
         if (result.data) {
-            updateMethods.reset({
+            methods.reset({
                 code: result.data.code,
                 description: result.data.description ?? '',
                 label: result.data.label
@@ -58,25 +63,26 @@ export default function ProgramLevelManagement() {
 
     async function handleOpenView(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
+        await loadIntoForm(id, viewMethods);
         setIsViewOpen(true);
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
         setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
+        viewMethods.reset(defaultFormValues);
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
+        await loadIntoForm(id, updateMethods);
         setIsUpdateOpen(true);
     }
 
     async function handleSwitchToEdit(id: string) {
+        setSelectedId(id);
         setIsViewOpen(false);
-        await loadIntoForm(id);
+        await loadIntoForm(id, updateMethods);
         setIsUpdateOpen(true);
     }
 
@@ -117,6 +123,8 @@ export default function ProgramLevelManagement() {
 
     async function handleUpdateSubmit(values: ProgramLevelFormValues) {
         if (!selectedId) {
+            useToastStore.getState()
+                .showToast('No program level is selected. Close the dialog and try again.', 'error');
             return;
         }
 
@@ -207,7 +215,7 @@ export default function ProgramLevelManagement() {
                     confirmText: 'Edit',
                     formContent: (
                         <ProgramLevelForm
-                            control={updateMethods.control}
+                            control={viewMethods.control}
                             disabled
                         />
                     ),

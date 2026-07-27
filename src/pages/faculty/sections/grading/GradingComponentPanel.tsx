@@ -148,6 +148,13 @@ export default function GradingComponentPanel({
                     <span className="text-(--mui-palette-text-secondary) text-xs">
                         Total: {totalWeight}%
                     </span>
+                    {!locked && totalWeight >= 100
+                        ? (
+                            <span className="text-(--mui-palette-warning-main) text-xs">
+                                Components already total 100%.
+                            </span>
+                        )
+                        : null}
                 </div>
                 <CommonButton
                     disabled={locked || totalWeight >= 100}

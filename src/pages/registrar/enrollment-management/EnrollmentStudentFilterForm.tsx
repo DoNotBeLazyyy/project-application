@@ -1,20 +1,12 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
 import { getPrograms } from '@services/program/program.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { EnrollmentState, EnrollmentStudentFilterValues, StudentStatus } from '@type/enrollment.type';
 import { useEffect, useState } from 'react';
 import { Control } from 'react-hook-form';
-
-const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
-    { label: 'Year 1', value: '1' },
-    { label: 'Year 2', value: '2' },
-    { label: 'Year 3', value: '3' },
-    { label: 'Year 4', value: '4' },
-    { label: 'Year 5', value: '5' },
-    { label: 'Year 6', value: '6' }
-];
 
 const STUDENT_STATUS_OPTIONS: { label: string; value: StudentStatus }[] = [
     { label: 'Active', value: 'Active' },

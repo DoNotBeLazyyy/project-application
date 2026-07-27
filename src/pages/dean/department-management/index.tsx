@@ -53,6 +53,11 @@ export default function DepartmentManagement() {
         setIsFilterOpen(false);
     }
 
+    function handleFilterReset() {
+        filterMethods.reset();
+        setActiveFilters(null);
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<DepartmentListRow>
@@ -86,6 +91,7 @@ export default function DepartmentManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
+                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
                         setIsFilterOpen(false);

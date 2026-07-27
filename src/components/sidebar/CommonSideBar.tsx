@@ -1,7 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonHeaderSideBar from '@components/sidebar/CommonHeaderSideBar';
 import { IconButtonProps } from '@mui/material/IconButton';
-import { GearSixIcon } from '@phosphor-icons/react';
+import { UserCircleIcon } from '@phosphor-icons/react';
 import { HTMLAttributesDivElement } from '@type/common.type';
 import { SideBarFooterProps, SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
@@ -116,7 +116,7 @@ export default function CommonSideBar({
             {footerProps && (
                 <div className="pb-(--mui-tokens-spacing-4) px-(--mui-tokens-spacing-4) shrink-0">
                     <CommonButton
-                        startIcon={<GearSixIcon size={20} />}
+                        startIcon={<UserCircleIcon size={20} />}
                         sx={{
                             width: '100%',
                             justifyContent: 'flex-start',

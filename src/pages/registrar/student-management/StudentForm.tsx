@@ -1,6 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { getUsersByRoles } from '@services/user.service';
 import { ComponentPropsForm } from '@type/common.type';
@@ -15,15 +16,6 @@ const STATUS_OPTIONS: { label: string; value: StudentStatus }[] = [
     { label: 'LOA', value: 'LOA' },
     { label: 'Graduated', value: 'Graduated' },
     { label: 'Expelled', value: 'Expelled' }
-];
-
-const YEAR_LEVEL_OPTIONS = [
-    { label: '1st Year', value: '1' },
-    { label: '2nd Year', value: '2' },
-    { label: '3rd Year', value: '3' },
-    { label: '4th Year', value: '4' },
-    { label: '5th Year', value: '5' },
-    { label: '6th Year', value: '6' }
 ];
 
 interface StudentFormProps extends ComponentPropsForm {

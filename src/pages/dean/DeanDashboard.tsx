@@ -26,6 +26,7 @@ interface DeanStatCard {
     iconColor: string;
     label: string;
     statKey: keyof DeanDashboardStats;
+    to?: string;
 }
 
 const STAT_CARDS: DeanStatCard[] = [
@@ -34,28 +35,32 @@ const STAT_CARDS: DeanStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Departments',
-        statKey: 'total_departments'
+        statKey: 'total_departments',
+        to: '/dean/department-management'
     },
     {
         icon: <GraduationCapIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
         label: 'Programs',
-        statKey: 'total_programs'
+        statKey: 'total_programs',
+        to: '/dean/program-management'
     },
     {
         icon: <BookOpenIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Courses',
-        statKey: 'total_courses'
+        statKey: 'total_courses',
+        to: '/dean/course-management'
     },
     {
         icon: <StackIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-success-50)]',
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Sections This Term',
-        statKey: 'sections_this_term'
+        statKey: 'sections_this_term',
+        to: '/dean/section-management'
     },
     {
         icon: <UsersThreeIcon size={24} />,
@@ -69,21 +74,24 @@ const STAT_CARDS: DeanStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
         label: 'Faculty',
-        statKey: 'total_faculty'
+        statKey: 'total_faculty',
+        to: '/dean/faculty-load'
     },
     {
         icon: <UserMinusIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
         label: 'Unassigned Sections',
-        statKey: 'unassigned_sections'
+        statKey: 'unassigned_sections',
+        to: '/dean/section-management'
     },
     {
         icon: <WarningIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Schedule Conflicts',
-        statKey: 'schedule_conflicts'
+        statKey: 'schedule_conflicts',
+        to: '/dean/faculty-load'
     },
     {
         icon: <WarningCircleIcon size={24} />,
@@ -124,6 +132,7 @@ export default function DeanDashboard() {
                         iconColor={card.iconColor}
                         key={card.label}
                         label={card.label}
+                        to={card.to}
                         value={dashboard
                             ? dashboard.stats[card.statKey]
                             : '—'
