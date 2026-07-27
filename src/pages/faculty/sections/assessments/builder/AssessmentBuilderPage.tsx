@@ -14,6 +14,7 @@ import {
 import { listGradingComponents, listGradingPeriodsBySection } from '@services/faculty.service';
 import { AssessmentFormValues, AssessmentQuestion, QuestionBulkRow, QuestionFormValues } from '@type/assessment.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
+import { isPastDateTime } from '@utils/date.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -112,7 +113,9 @@ export default function AssessmentBuilderPage() {
                     show_all_questions:   d.show_all_questions ?? true,
                     questions_per_page:   d.questions_per_page
                         ? String(d.questions_per_page)
-                        : ''
+                        : '',
+                    allow_past_dates:     [d.due_at, d.closes_at, d.show_results_at]
+                        .some((date) => isPastDateTime(date ?? ''))
                 });
             }
 

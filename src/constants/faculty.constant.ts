@@ -17,7 +17,8 @@ export const DEFAULT_ASSSESSMENT_VALUES: AssessmentFormValues = {
     shuffle_questions: false,
     shuffle_choices: false,
     show_all_questions: true,
-    questions_per_page: ''
+    questions_per_page: '',
+    allow_past_dates: false
 };
 
 export const CHOICE_BASED_TYPES: QuestionType[] = ['Multiple Choice', 'True or False', 'Matching'];

@@ -20,13 +20,13 @@ Execution tracker for the QA pass across all five roles (Student, Registrar, Fac
 | ID | Item | Phase | Status |
 |---|---|---|---|
 | S1 | Wrapper: stop logout on business 403s | 1a | ✅ done (build + lint pass) |
-| B1 | Student schedule color `ON CONFLICT` fix | 1b | ⬜ pending |
-| B2 | `fn_start_assessment_timer` column names | 1b | ⬜ pending |
-| B3 | Create `fn_get_admin_dashboard_stats()` | 1b | ⬜ pending |
-| B5 | Apply multi-role `fn_update_user(...text[])` | 1c | ⬜ pending |
-| B6 | Resolve `fn_create_term` (`p_evaluation_scope`) | 1c | ⬜ pending |
+| B1 | Student schedule color `ON CONFLICT` fix | 1b | ✅ done (`docs/sql/phase-1b-sql-fixes.sql` applied to live) |
+| B2 | `fn_start_assessment_timer` column names | 1b | ✅ done (`docs/sql/phase-1b-sql-fixes.sql` applied to live) |
+| B3 | Create `fn_get_admin_dashboard_stats()` | 1b | ✅ done (applied; keys reconciled to `total_students`/`total_faculty`) |
+| B5 | Apply multi-role `fn_update_user(...text[])` | 1c | ✅ done (`docs/sql/phase-1c-sql-fixes.sql` applied to live) |
+| B6 | Resolve `fn_create_term` (`p_evaluation_scope`) | 1c | ✅ done (8-param canonical signature applied to live) |
 | B4 | Announcement/Event empty-uuid guard (frontend) | 1d | ✅ done (build + lint pass) |
-| B7 | Align attendance read/write access model (SQL) | 1 | 🟡 authored (awaiting apply) |
+| B7 | Align attendance read/write access model (SQL) | 1 | ✅ done (`docs/sql/phase-1-b7-attendance-access.sql` applied to live) |
 | B8 | Assessment builder grading-component id | 2 | ✅ done (build + lint pass) |
 | — | Assessment builder schedule reset-to-blank | 2 | ✅ done (build + lint pass) |
 | — | Assessment builder date-field relabel | 2 | ✅ done (build + lint pass) |
@@ -41,13 +41,14 @@ Execution tracker for the QA pass across all five roles (Student, Registrar, Fac
 | U8 | Year filter 1st–4th + Reset button | 3 | ✅ done (build + lint pass) |
 | U4 | "Dean Panel" label on wrong role | 4 | ✅ done (build + lint pass) |
 | R3 | Settings 403 (RoleGate/role-switch) | 4 | ✅ done (build + lint pass) |
-| R1 | School year create fails/doesn't display | 4 | 🟡 frontend fixed (build + lint pass); `docs/sql/qa-r1-r2-fixes.sql` awaiting apply |
-| R2 | Program level edit won't save | 4 | 🟡 frontend fixed (build + lint pass); `docs/sql/qa-r1-r2-fixes.sql` awaiting apply |
+| R1 | School year create fails/doesn't display | 4 | 🟡 frontend fixed + `docs/sql/qa-r1-r2-fixes.sql` applied; needs runtime repro to close |
+| R2 | Program level edit won't save | 4 | 🟡 frontend fixed + `docs/sql/qa-r1-r2-fixes.sql` applied; needs runtime repro to close |
 | F4 | Arellano hymn & core values | 5 | 🟡 built (build + lint pass); text needs official verification |
 | F3 | Admin reset password | 5 | ✅ done (build + lint pass) |
 | — | Grades empty-state copy | 5 | ✅ done (build + lint pass) |
 | F1 | Separate lab & lec | 6 | ❌ rejected — already satisfied by the existing `is_split` two-course model; work reverted and deleted |
-| F2 | Batch year/sem progression + auto-enroll | 6 | 🟡 frontend done (build + lint pass); `docs/sql/batch-progression.sql` awaiting apply |
+| F2 | Batch year/sem progression + auto-enroll | 6 | ✅ done (`docs/sql/batch-progression.sql` applied to live); needs runtime smoke test |
+| U10 | Dashboard hover-preview / grade summary tiles | — | ❌ not built — only the click-through half of the suggestion landed (U5) |
 
 Already satisfied (no work): a profile page with self-service name + password change already exists at `src/pages/shared/profile/index.tsx`, routed `/{role}/profile` for every role via the footer "My Profile" button.
 
@@ -136,7 +137,7 @@ All eight items are frontend-only; verified with `npm run build-dev` (tsc + vite
 
 ### Follow-ups found while working (not fixed here)
 
-- **B3 key mismatch (Phase 1b).** `AdminDashboard.tsx` reads `stats.total_students` / `stats.total_faculty`, but the Phase-1b spec for `fn_get_admin_dashboard_stats()` above names those keys `active_students` / `active_faculty`. Whichever side is wrong, the two cards will render `—` until they agree — settle it when B3's SQL is applied.
+- **B3 key mismatch (Phase 1b) — RESOLVED.** Settled on `total_students` / `total_faculty`: `fn_get_admin_dashboard_stats()` in `docs/sql/phase-1b-sql-fixes.sql` returns those keys and `AdminDashboard.tsx` reads them. The earlier `active_students` / `active_faculty` naming in the B3 spec above was never built.
 
 ## Phase 4 — Role/routing — DONE (U4, R3); R1/R2 fixed, awaiting SQL apply + runtime confirmation
 

@@ -1,10 +1,13 @@
 import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { AssessmentFormValues, AssessmentType } from '@type/assessment.type';
+import { isPastDateTime } from '@utils/date.util';
 import { formErrors } from '@utils/form.util';
+import { useEffect } from 'react';
 import { FieldErrors, UseFormReturn } from 'react-hook-form';
 
 const SETTINGS_FORM_ID = 'assessment-settings-form';
@@ -34,9 +37,27 @@ export default function AssessmentSettingsForm({
     onSubmit
 }: AssessmentSettingsFormProps) {
     const showAllQuestions = methods.watch('show_all_questions');
+    const allowPastDates = methods.watch('allow_past_dates');
+
+    useEffect(function() {
+        const dateFields = ['due_at', 'closes_at', 'show_results_at'] as const;
+        const hasDateError = dateFields.some((field) => !!methods.formState.errors[field]);
+
+        if (hasDateError) {
+            methods.trigger(dateFields);
+        }
+    }, [allowPastDates]);
 
     function handleError(errors: FieldErrors<AssessmentFormValues>) {
         formErrors(errors, methods);
+    }
+
+    function validateNotPast(label: string) {
+        return function(value: string | boolean) {
+            if (allowPastDates || typeof value !== 'string' || !isPastDateTime(value)) return true;
+
+            return `${label} is in the past. Tick "Allow past dates" if this is intentional.`;
+        };
     }
 
     const baseFields: FormFieldConfig<AssessmentFormValues>[] = [
@@ -135,7 +156,7 @@ export default function AssessmentSettingsForm({
                 <ValidCommonDateTimePicker
                     control={methods.control}
                     hasHelper
-                    helperText="When the assessment auto-publishes to students. Leave blank to publish manually."
+                    helperText="When the assessment auto-publishes to students. A past time publishes it immediately. Leave blank to publish manually."
                     label="Scheduled Publish"
                     name="scheduled_publish_at"
                 />
@@ -148,25 +169,39 @@ export default function AssessmentSettingsForm({
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    disablePast={!allowPastDates}
                     hasHelper
                     helperText="Submission deadline; attempts after this are marked late."
                     label="Due At"
                     name="due_at"
+                    rules={{ validate: validateNotPast('Due date') }}
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    disablePast={!allowPastDates}
                     hasHelper
                     helperText="Hard cutoff; no submissions accepted after this time."
                     label="Closes At"
                     name="closes_at"
+                    rules={{ validate: validateNotPast('Closing date') }}
                 />
                 <ValidCommonDateTimePicker
                     control={methods.control}
+                    disablePast={!allowPastDates}
                     hasHelper
                     helperText="When students can view their scores and correct answers. Leave blank to release manually."
                     label="Show Results At"
                     name="show_results_at"
+                    rules={{ validate: validateNotPast('Results release date') }}
                 />
+                <ValidCommonCheckbox
+                    control={methods.control}
+                    label="Allow past dates for due, closing and results"
+                    name="allow_past_dates"
+                />
+                <p className="-mt-3 text-(--mui-palette-text-secondary) text-xs">
+                    Off by default: due, closing and results dates must be in the future. Tick this to backdate an assessment that already happened.
+                </p>
             </div>
             <CommonButton
                 disabled={isSaving}

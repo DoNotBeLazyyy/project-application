@@ -85,6 +85,7 @@ export interface AssessmentFormValues {
     shuffle_choices: boolean;
     show_all_questions: boolean;
     questions_per_page: string;
+    allow_past_dates: boolean;
 }
 
 export interface QuestionChoice {

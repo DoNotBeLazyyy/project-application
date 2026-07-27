@@ -66,6 +66,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DateTimePicker
+                timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
                 {...props}
                 inputRef={ref}
                 open={isOpen}
@@ -75,7 +76,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         ...props.slotProps?.textField,
                         error: errorProp ?? !!fieldState.error,
                         helperText: hasHelper
-                            ? helperTextProp ?? fieldState.error?.message
+                            ? fieldState.error?.message ?? helperTextProp
                             : undefined,
                         fullWidth,
                         size: 'medium',
