@@ -6,6 +6,7 @@ import { PaperPlaneRightIcon, SparkleIcon, XIcon } from '@phosphor-icons/react';
 import { askAssistant } from '@services/assistant.service';
 import { useAppStore } from '@stores/app.store';
 import { AssistantMessage, AssistantTurn } from '@type/assistant.type';
+import { generateId } from '@utils/uuid.util';
 import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -56,7 +57,7 @@ const ROLE_SUGGESTIONS: Record<string, string[]> = {
 };
 
 function createMessageId(): string {
-    return window.crypto.randomUUID();
+    return generateId();
 }
 
 function extractSectionId(pathname: string): string | null {

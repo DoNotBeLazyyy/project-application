@@ -49,7 +49,10 @@ export default function StatCard({
     if (!to) {
         return (
             <CommonCard>
-                <div className="flex items-center gap-4 p-5">
+                <div
+                    className="cursor-default flex items-center gap-4 p-5"
+                    title={`${label} is a read-only figure`}
+                >
                     {content}
                 </div>
             </CommonCard>

@@ -7,6 +7,7 @@ import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services/content.service';
 import { uploadFile } from '@services/storage.service';
 import { CourseMaterial, MaterialType } from '@type/content.type';
+import { generateId } from '@utils/uuid.util';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
 interface MaterialFormModalProps {
@@ -108,7 +109,7 @@ export default function MaterialFormModal({
             return;
         }
 
-        const path = `${sectionId}/${moduleId}/${crypto.randomUUID()}-${file.name}`;
+        const path = `${sectionId}/${moduleId}/${generateId()}-${file.name}`;
         const uploadResult = await uploadFile({ bucket: 'materials', file, path });
 
         if (uploadResult.error) {

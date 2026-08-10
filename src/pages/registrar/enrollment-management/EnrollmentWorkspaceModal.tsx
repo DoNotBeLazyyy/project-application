@@ -261,7 +261,7 @@ export default function EnrollmentWorkspaceModal({
                         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                             Current Load ({detail?.current_load.length ?? 0} subject(s))
                         </span>
-                        <div className="h-48">
+                        <div className="h-[min(12rem,22vh)] min-h-32">
                             <CommonTable<CurrentLoadRow>
                                 leadingColumnDefs={CURRENT_LOAD_COLUMNS}
                                 rowData={detail?.current_load ?? []}
@@ -303,7 +303,7 @@ export default function EnrollmentWorkspaceModal({
                             Only sections whose course exists in the student&apos;s program curriculum are listed,
                             regardless of which program opened the section.
                         </p>
-                        <div className="h-96">
+                        <div className="h-[min(24rem,34vh)] min-h-48">
                             <CommonTable<EligibleSectionRow>
                                 getRowId={(params) => params.data.section_id}
                                 hasCheckbox

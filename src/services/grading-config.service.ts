@@ -27,6 +27,7 @@ export async function createGradingPeriodTemplate(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_grading_period_template', {
         p_name: period.name,
+        p_sequence: Number(period.sequence),
         p_weight: Number(period.weight),
         p_components: period.components.map((component) => ({
             name: component.name,
@@ -42,6 +43,7 @@ export async function updateGradingPeriodTemplate(
     return callRpc<null>('fn_update_grading_period_template', {
         p_id: id,
         p_name: period.name,
+        p_sequence: Number(period.sequence),
         p_weight: Number(period.weight),
         p_components: period.components.map((component) => ({
             name: component.name,

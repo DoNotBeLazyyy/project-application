@@ -5,6 +5,7 @@ import {
 } from '@type/course/course.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { nullIfBlank } from '@utils/uuid.util';
 
 export async function listCourses(
     page: number,
@@ -58,8 +59,8 @@ export async function createCourse(
     return callRpc<null>('fn_create_course', {
         p_code: params.code,
         p_title: params.title,
-        p_department_id: params.department_id,
-        p_course_type_id: params.course_type_id,
+        p_department_id: nullIfBlank(params.department_id),
+        p_course_type_id: nullIfBlank(params.course_type_id),
         p_is_split: params.is_split,
         p_lecture_units: Number(params.lecture_units) || null,
         p_laboratory_units: params.is_split
@@ -73,7 +74,7 @@ export async function createCourse(
         p_prerequisites: params.prerequisites.length
             ? params.prerequisites.map((prereq) => ({
                 course_id: prereq.prerequisite_kind === 'course'
-                    ? prereq.course_id
+                    ? nullIfBlank(prereq.course_id)
                     : null,
                 prerequisite_type: prereq.prerequisite_type,
                 prerequisite_kind: prereq.prerequisite_kind,
@@ -96,8 +97,8 @@ export async function updateCourse(
         p_course_id: courseId,
         p_code: params.code,
         p_title: params.title,
-        p_department_id: params.department_id,
-        p_course_type_id: params.course_type_id,
+        p_department_id: nullIfBlank(params.department_id),
+        p_course_type_id: nullIfBlank(params.course_type_id),
         p_lecture_units: Number(params.lecture_units) || null,
         p_laboratory_units: null,
         p_credit_hours: params.credit_hours
@@ -108,7 +109,7 @@ export async function updateCourse(
         p_prerequisites: params.prerequisites.length
             ? params.prerequisites.map((prereq) => ({
                 course_id: prereq.prerequisite_kind === 'course'
-                    ? prereq.course_id
+                    ? nullIfBlank(prereq.course_id)
                     : null,
                 prerequisite_type: prereq.prerequisite_type,
                 prerequisite_kind: prereq.prerequisite_kind,

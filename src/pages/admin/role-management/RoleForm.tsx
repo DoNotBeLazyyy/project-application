@@ -19,18 +19,32 @@ export default function RoleForm({
     const fields: FormFieldConfig<CreateRoleFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Letters, numbers and underscores, e.g. DEAN_SECRETARY' },
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : {
+                    required: 'Role code is required',
+                    pattern: {
+                        value: /^[A-Za-z][A-Za-z0-9_]*$/,
+                        message: 'Must start with a letter and use only letters, numbers or underscores'
+                    }
+                },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Display name shown across the system' },
             name: 'label',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : {
+                    required: 'Role label is required',
+                    pattern: {
+                        value: /^(?=.*[A-Za-z]).{2,}$/,
+                        message: 'Must be at least 2 characters and contain a letter'
+                    }
+                },
             type: 'text'
         },
         {

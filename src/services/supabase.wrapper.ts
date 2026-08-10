@@ -58,6 +58,16 @@ function isRpcSuccessPayload(data: unknown): data is { success: true; message: s
     );
 }
 
+function notify(message: string, variant: 'error' | 'success'): void {
+    try {
+        useToastStore.getState()
+            .showToast(message, variant);
+    }
+    catch {
+        return;
+    }
+}
+
 interface CallRpcOptions {
     silent?: boolean;
 }
@@ -81,14 +91,12 @@ export async function callRpc<T>(
                 handleAuthFailure();
             }
             const parsed = parseServiceError(error);
-            useToastStore.getState()
-                .showToast(parsed.message, 'error');
+            notify(parsed.message, 'error');
             return { data: null, error: parsed };
         }
 
         if (isRpcFailurePayload(data)) {
-            useToastStore.getState()
-                .showToast(data.message, 'error');
+            notify(data.message, 'error');
             return {
                 data: null,
                 error: { code: null, message: data.message, status: null }
@@ -96,16 +104,14 @@ export async function callRpc<T>(
         }
 
         if (isRpcSuccessPayload(data)) {
-            useToastStore.getState()
-                .showToast(data.message, 'success');
+            notify(data.message, 'success');
         }
 
         return { data: data as T, error: null };
     }
     catch (err) {
         const parsed = parseServiceError(err);
-        useToastStore.getState()
-            .showToast(parsed.message, 'error');
+        notify(parsed.message, 'error');
         return { data: null, error: parsed };
     }
     finally {
@@ -116,25 +122,42 @@ export async function callRpc<T>(
     }
 }
 
-export async function callQuery<T>(queryFn: QueryBuilderFn): Promise<ServiceResult<T[]>> {
-    useLoadingStore.getState()
-        .show();
+export async function callQuery<T>(
+    queryFn: QueryBuilderFn,
+    options?: CallRpcOptions
+): Promise<ServiceResult<T[]>> {
+    const isSilent = options?.silent === true;
+
+    if (!isSilent) {
+        useLoadingStore.getState()
+            .show();
+    }
     try {
         const { data, error, status } = await queryFn(supabase);
         if (error) {
             if (shouldRedirectToLogin(status, error)) {
                 handleAuthFailure();
             }
-            return { data: null, error: parseServiceError(error) };
+            const parsed = parseServiceError(error);
+            if (!isSilent) {
+                notify(parsed.message, 'error');
+            }
+            return { data: null, error: parsed };
         }
         return { data: data as T[], error: null };
     }
     catch (err) {
-        return { data: null, error: parseServiceError(err) };
+        const parsed = parseServiceError(err);
+        if (!isSilent) {
+            notify(parsed.message, 'error');
+        }
+        return { data: null, error: parsed };
     }
     finally {
-        useLoadingStore.getState()
-            .hide();
+        if (!isSilent) {
+            useLoadingStore.getState()
+                .hide();
+        }
     }
 }
 
@@ -165,8 +188,15 @@ async function parseFunctionError(error: unknown): Promise<ServiceErrorProps> {
 
 export async function callFunction<T>(
     name: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<T>> {
+    const isSilent = options?.silent === true;
+
+    if (!isSilent) {
+        useLoadingStore.getState()
+            .show();
+    }
     try {
         const { data, error } = await supabase.functions.invoke<T>(name, { body });
 
@@ -175,14 +205,12 @@ export async function callFunction<T>(
             if (shouldRedirectToLogin(parsed.status ?? undefined, parsed)) {
                 handleAuthFailure();
             }
-            useToastStore.getState()
-                .showToast(parsed.message, 'error');
+            notify(parsed.message, 'error');
             return { data: null, error: parsed };
         }
 
         if (isRpcFailurePayload(data)) {
-            useToastStore.getState()
-                .showToast(data.message, 'error');
+            notify(data.message, 'error');
             return {
                 data: null,
                 error: { code: null, message: data.message, status: null }
@@ -193,30 +221,52 @@ export async function callFunction<T>(
     }
     catch (err) {
         const parsed = parseServiceError(err);
-        useToastStore.getState()
-            .showToast(parsed.message, 'error');
+        notify(parsed.message, 'error');
         return { data: null, error: parsed };
+    }
+    finally {
+        if (!isSilent) {
+            useLoadingStore.getState()
+                .hide();
+        }
     }
 }
 
-export async function callSingle<T>(queryFn: QueryBuilderFn): Promise<ServiceResult<T>> {
-    useLoadingStore.getState()
-        .show();
+export async function callSingle<T>(
+    queryFn: QueryBuilderFn,
+    options?: CallRpcOptions
+): Promise<ServiceResult<T>> {
+    const isSilent = options?.silent === true;
+
+    if (!isSilent) {
+        useLoadingStore.getState()
+            .show();
+    }
     try {
         const { data, error, status } = await queryFn(supabase);
         if (error) {
             if (shouldRedirectToLogin(status, error)) {
                 handleAuthFailure();
             }
-            return { data: null, error: parseServiceError(error) };
+            const parsed = parseServiceError(error);
+            if (!isSilent) {
+                notify(parsed.message, 'error');
+            }
+            return { data: null, error: parsed };
         }
         return { data: data as T, error: null };
     }
     catch (err) {
-        return { data: null, error: parseServiceError(err) };
+        const parsed = parseServiceError(err);
+        if (!isSilent) {
+            notify(parsed.message, 'error');
+        }
+        return { data: null, error: parsed };
     }
     finally {
-        useLoadingStore.getState()
-            .hide();
+        if (!isSilent) {
+            useLoadingStore.getState()
+                .hide();
+        }
     }
 }

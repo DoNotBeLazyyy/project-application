@@ -67,7 +67,8 @@ const STAT_CARDS: DeanStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-primary-50)]',
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Enrolled Students',
-        statKey: 'enrolled_students'
+        statKey: 'enrolled_students',
+        to: '/dean/section-management'
     },
     {
         icon: <ChalkboardTeacherIcon size={24} />,
@@ -98,7 +99,8 @@ const STAT_CARDS: DeanStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'At-Risk Students',
-        statKey: 'at_risk_students'
+        statKey: 'at_risk_students',
+        to: '/dean/section-management'
     }
 ];
 

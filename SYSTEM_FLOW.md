@@ -239,10 +239,11 @@ npm run dev         # run locally and walk the flows in §2–§6
 **Current status on `develop_auth`:** `npm run build-dev` succeeds, `npm run lint` reports
 **0 errors, 0 warnings**.
 
-> **Schema snapshot note:** `supabase_ai_context.sql` is a *generated* dump used as the schema
-> reference. It is currently **stale** relative to the live DB (it predates the grading-period,
-> admin-dashboard, and department-head work). Five RPCs the frontend calls are absent from the
-> snapshot but are consistently referenced by the pages, services, and types that use them
-> (`fn_get_admin_dashboard_stats`, `fn_get_faculty_dean_users`,
-> `fn_create/update/delete_grading_period_template`). Before relying on the snapshot for new work,
-> **regenerate it with `pg_dump`** so it matches the live database.
+> **Schema snapshot note:** `supabase_ai_context.sql` is a *generated* dump kept as a structural
+> reference. It is **intentionally frozen and never regenerated**, so it lags the live DB (it
+> predates the grading-period, admin-dashboard, and department-head work). RPCs the frontend calls
+> are absent from the snapshot yet live in the database — `fn_get_admin_dashboard_stats`,
+> `fn_get_faculty_dean_users`, `fn_create/update/delete_grading_period_template` among them.
+> **`docs/sql/*.sql` is the source of truth**: every schema change is authored there and applied
+> manually. Check `docs/sql/` first for anything added or changed since the snapshot, and treat the
+> dump as a baseline for tables, columns, and enums only.

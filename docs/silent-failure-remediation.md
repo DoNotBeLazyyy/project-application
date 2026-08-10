@@ -27,7 +27,7 @@ The rule this workstream enforces: **every path that can fail, or that blocks th
 | SF1 | Inline validation messages never rendered (`hasHelper` opt-in) | 1 | ✅ done (build + lint pass) |
 | SF1b | `text-area` / `checkbox` had no error surface at all | 1 | ✅ done (build + lint pass) |
 | SF2 | Disabled controls with no stated reason | 2 | ✅ done (build + lint pass) |
-| SF3 | CSV bulk import silently mangles / drops data | 3 | ⬜ not started |
+| SF3 | CSV bulk import silently mangles / drops data | 3 | ✅ done (build + lint pass, 14 parser cases pass) |
 | SF4 | `formErrors` lost the `window.alert` CLAUDE.md still documents | 4 | ⬜ not started — needs a user decision, see item |
 | SF5 | Errors on inactive tabs/steps are invisible | 4 | ⬜ not started — unverified, needs a repro pass first |
 | SF6 | `{ silent: true }` reads fail as "empty data" | 5 | ⬜ not started |
@@ -96,22 +96,22 @@ Controls were disabled on a condition the user had no way to infer, with no adja
 
 ---
 
-## Phase 3 — CSV bulk import silently mangles data
+## Phase 3 — DONE
 
-**Status:** not started. Verified by reading `src/components/modal/BulkImportModal.tsx:90-154`.
+### SF3 — CSV bulk import silently mangled data
 
-This one is worse than SF1: it fails quietly *into the database* rather than at the button. Four distinct defects:
+All four defects fixed in `src/components/modal/BulkImportModal.tsx`. The preview step, `structuredErrors` grid, and results summary are untouched — this phase only changed what reaches them.
 
-1. **No quoted-field handling.** `parseCsv` does `line.split(',')`. A single value containing a comma (`"Dela Cruz, Juan"`, an address) shifts every subsequent column into the wrong field. Rows import successfully with scrambled data.
-2. **Headers matched by exact label.** `templateColumns.find((col) => col.label === header)` — a renamed or typo'd header is silently skipped, so that field arrives empty with no warning. Should report unrecognized/missing headers before the preview step.
-3. **The template's hint row is parsed as data.** `downloadTemplate` writes `[headers, hints]`; `parseCsv` takes `lines.slice(1)`, so the hint row becomes row 1 of the import. Either drop the hint row from the template, or detect and skip it on parse.
-4. **`reader.onerror` is unhandled.** Selecting an unreadable file does literally nothing — no error, no state change. Same shape as the original password bug.
+1. **Quoted fields.** `line.split(',')` is replaced by `splitCsvRecords`, an RFC 4180 state machine handling quoted values, `""` escapes, commas and newlines inside quotes, and CR/LF or CRLF line endings. Fully-blank records are dropped, so trailing newlines and blank separator lines no longer produce phantom rows.
+2. **Header reporting.** Headers are matched case- and whitespace-insensitively. `parseCsv` now returns `{ rows, missingHeaders, unknownHeaders }`. A missing required column **blocks** the import at the upload step with the offending labels named; unrecognized columns are non-blocking and surface as a warning line at the top of the preview, since their data is silently discarded.
+3. **Hint row.** `isHintRecord` compares the first data record against the template's own `hint` values and skips it if they all match. The template keeps its hints (they are the only per-column documentation the user gets), and a downloaded-then-filled template imports only the real rows.
+4. **`reader.onerror` / `onabort`** now set a named error mentioning the file, e.g. *"…could not be read. Check that the file is not open in another program."*
 
-**Note:** CRLF is already safe — every value is `.trim()`ed, so the trailing `\r` is stripped.
+**Also fixed while here.** `downloadTemplate` did not escape its own output — `escapeCsvValue` was added. The user-management template's Role hint is literally `Admin, Faculty, Student, Registrar, Dean`, so **the template the app generated could not be parsed by the app**: those four commas shifted every column. Two call-site hints that told users to avoid commas (`src/pages/admin/evaluation-management/index.tsx`) were dropped, since that constraint no longer exists.
 
-**What is already good, keep it:** the preview step, the per-row `structuredErrors` grid, and the results summary are solid. This phase is about getting correct rows *into* that pipeline.
+**Verified.** `npm run build-dev` (tsc -b + vite) and `npx eslint` on both touched files pass. The parser and `downloadTemplate` were additionally extracted into a scratch harness and run against 14 cases — all pass: template round-trip imports zero data rows; `"Dela Cruz, Jr."` and `"O""Brien, Ana"` survive intact; a newline inside quotes stays one row; a typo'd header appears in *both* `missingHeaders` and `unknownHeaders`; extra columns are flagged and dropped; lowercase/padded headers still match; blank lines, header-only and empty files yield no rows; a genuine data row is never mistaken for the hint row; trailing empty values stay `''`.
 
-**Done when:** a CSV containing quoted commas round-trips correctly; a mismatched header is reported to the user before import; the template's own hint row never imports; an unreadable file shows an error.
+**Not runtime-tested.** No live upload was performed against a real management screen — worth one pass on user-management (the comma-heavy template) and course-management (the `|`-delimited prerequisites column).
 
 ---
 

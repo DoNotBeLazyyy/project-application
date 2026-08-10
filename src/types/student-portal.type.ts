@@ -31,6 +31,11 @@ export interface StudentScheduleSection {
     schedules: SectionScheduleSlot[];
 }
 
+export interface StudentSectionColor {
+    section_id: string;
+    color: string;
+}
+
 export interface SectionScheduleSlot {
     id: string;
     day_of_week: DayOfWeek;
@@ -236,6 +241,7 @@ export interface StudentResultRubric {
 }
 
 export interface MyGradeListRow {
+    row_id?: string;
     enrollment_id: string;
     grading_period_id: string;
     section_code: string;

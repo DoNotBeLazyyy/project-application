@@ -108,13 +108,16 @@ export default function GradeRelease() {
 
         setIsSaving(true);
 
-        const result = await setGradingPeriodReleaseAt(activePeriod.grading_period_id, releaseAt);
+        try {
+            const result = await setGradingPeriodReleaseAt(activePeriod.grading_period_id, releaseAt);
 
-        setIsSaving(false);
-
-        if (!result.error) {
-            handleCloseSchedule();
-            await fetchPeriods(selectedTermId);
+            if (!result.error) {
+                handleCloseSchedule();
+                await fetchPeriods(selectedTermId);
+            }
+        }
+        finally {
+            setIsSaving(false);
         }
     }
 

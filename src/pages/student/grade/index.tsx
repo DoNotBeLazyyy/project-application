@@ -159,7 +159,24 @@ export default function StudentGrades() {
         _search: string,
         sort: SortStringDto[]
     ) {
-        return listStudentGrades(page, size, sort, activeTermId);
+        const result = await listStudentGrades(page, size, sort, activeTermId);
+
+        if (!result.data) {
+            return result;
+        }
+
+        return {
+            data: {
+                ...result.data,
+                content: result.data.content.map(function(row) {
+                    return {
+                        ...row,
+                        row_id: `${row.enrollment_id}:${row.grading_period_id}`
+                    };
+                })
+            },
+            error: null
+        };
     }
 
     return (
@@ -189,7 +206,7 @@ export default function StudentGrades() {
                     tableProps={{
                         leadingColumnDefs: columnDefs
                     }}
-                    uniqueIdKey="enrollment_id"
+                    uniqueIdKey="row_id"
                     onFetch={fetchGrades}
                 />
             </div>

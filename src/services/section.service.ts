@@ -5,6 +5,7 @@ import {
     SectionBulkRow, SectionFilterValues, SectionFormValues, SectionListRow, SectionOption
 } from '@type/section.type';
 import { ServiceResult } from '@type/service.type';
+import { nullIfBlank } from '@utils/uuid.util';
 
 export interface TermOption {
     id: string;
@@ -69,9 +70,9 @@ export async function createSection(
     params: SectionFormValues
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_section', {
-        p_term_id: params.term_id,
-        p_course_id: params.course_id,
-        p_faculty_id: params.faculty_id || null,
+        p_term_id: nullIfBlank(params.term_id),
+        p_course_id: nullIfBlank(params.course_id),
+        p_faculty_id: nullIfBlank(params.faculty_id),
         p_section_code: params.section_code,
         p_room: params.room || null,
         p_max_slots: Number(params.max_slots),
@@ -85,9 +86,9 @@ export async function updateSection(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_section', {
         p_section_id: sectionId,
-        p_term_id: params.term_id,
-        p_course_id: params.course_id,
-        p_faculty_id: params.faculty_id || null,
+        p_term_id: nullIfBlank(params.term_id),
+        p_course_id: nullIfBlank(params.course_id),
+        p_faculty_id: nullIfBlank(params.faculty_id),
         p_section_code: params.section_code,
         p_room: params.room || null,
         p_max_slots: Number(params.max_slots),

@@ -238,8 +238,12 @@
     opacity: 0.6; /* Optional: gives it a "disabled" look */
 }
 
+.print-only {
+    display: none;
+}
+
 @media print {
-    body * {
+    body:has(.print-area) * {
         visibility: hidden;
     }
 
@@ -254,6 +258,11 @@
         position: absolute;
         top: 0;
         width: 100%;
+    }
+
+    .print-only {
+        display: block;
+        visibility: visible;
     }
 
     .no-print {

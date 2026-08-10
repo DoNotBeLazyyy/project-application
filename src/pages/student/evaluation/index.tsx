@@ -281,14 +281,17 @@ export default function StudentEvaluations() {
                 response_text: answer.response_text
             };
         });
-        const result = await submitEvaluation(enrollmentId, gradingPeriodId, responses);
+        try {
+            const result = await submitEvaluation(enrollmentId, gradingPeriodId, responses);
 
-        setIsSubmitting(false);
-
-        if (!result.error) {
-            setRefreshKey(function(previous) {
-                return previous + 1;
-            });
+            if (!result.error) {
+                setRefreshKey(function(previous) {
+                    return previous + 1;
+                });
+            }
+        }
+        finally {
+            setIsSubmitting(false);
         }
     }
 

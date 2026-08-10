@@ -65,7 +65,8 @@ const STAT_CARDS: FacultyStatCard[] = [
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'At-Risk Students',
-        statKey: 'at_risk_students'
+        statKey: 'at_risk_students',
+        to: '/faculty/sections'
     },
     {
         icon: <FileTextIcon size={24} />,

@@ -1,3 +1,4 @@
+import { generateId } from '@utils/uuid.util';
 import { create } from 'zustand';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
@@ -18,23 +19,28 @@ export const useToastStore = create<ToastStore>(function(set) {
     return {
         toasts: [],
         showToast: function(message, variant = 'error') {
-            const id = crypto.randomUUID();
-            set(function(state) {
-                const next = [
-                    ...state.toasts.slice(-2),
-                    { id, message, variant }
-                ];
-                return { toasts: next };
-            });
-            setTimeout(function() {
+            try {
+                const id = generateId();
                 set(function(state) {
-                    return {
-                        toasts: state.toasts.filter(function(t) {
-                            return t.id !== id;
-                        })
-                    };
+                    const next = [
+                        ...state.toasts.slice(-2),
+                        { id, message, variant }
+                    ];
+                    return { toasts: next };
                 });
-            }, 4000);
+                setTimeout(function() {
+                    set(function(state) {
+                        return {
+                            toasts: state.toasts.filter(function(t) {
+                                return t.id !== id;
+                            })
+                        };
+                    });
+                }, 4000);
+            }
+            catch {
+                return;
+            }
         },
         removeToast: function(id) {
             set(function(state) {

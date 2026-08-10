@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ESLint flat config lives in `eslint.config.js`; Prettier config in `.prettierrc.json`. The strict style rules in sections 3 & 6 are enforced by these — run `lint:fix` before considering work done.
 
 ### Environment
-- Vite loads env by `--mode`: `.env.dev` and `.env.prd` are the two mode files (no plain `.env`). Required vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. A service-role key is used by `@services/supabase.admin.ts` for admin-only auth operations (user provisioning).
+- Vite loads env by `--mode`: `.env.dev` and `.env.prd` are the two mode files (no plain `.env`). Required vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_SERVICE_ROLE_KEY`. The service-role key is used by `@services/supabase.admin.ts` for admin-only auth operations (user provisioning) — that module **throws at import time** when it is missing, which breaks user creation.
 - Two Supabase clients exist: `supabase.client.ts` (anon, for normal calls) and `supabase.admin.ts` (service role, for `auth.admin.*`). Never use the admin client for regular data reads.
 
 ### Service Layer Contract (read before writing any service)
@@ -150,7 +150,7 @@ Always use the pre-built component library. Raw MUI primitives are forbidden whe
 ### Form Standards
 - **Standard:** Use `ValidCommonInput` for all form fields. It handles `useController` internally.
 - **No Wrappers:** Do not manually wrap components in `<Controller>` or use `register`.
-- **Error Handling:** Use the `formErrors` utility in the `onError` callback of `handleSubmit`. It handles `window.alert` and automatic focus.
+- **Error Handling:** Use the `formErrors` utility in the `onError` callback of `handleSubmit`. It focuses and scrolls to the first invalid field and dispatches the `FORM_ERROR_EVENT` DOM event, which `CommonToast` turns into a warning toast. It does not use `window.alert`.
 
 ### Component-Specific Rules
 
@@ -192,10 +192,18 @@ All SQL generated or modified must comply with these rules without exception.
 
 ### Live Schema Reference — READ THIS FIRST
 
-**`supabase_ai_context.sql`** (repo root) is a full `pg_dump` of the live database (PostgreSQL 17.6) and is the **source of truth for the schema**. Before writing any migration, RPC, service call, or type, grep this file for the real table columns, enum values, and existing function signatures instead of guessing or inventing names.
+**`docs/sql/*.sql` is the source of truth for the database.** Every schema change and every RPC is authored as a script in that directory and applied manually to Supabase. The directory is cumulative — where the same `fn_*` is defined in more than one file, the newest definition is the live one.
 
-- It is a **generated dump, not a migration** — never hand-edit it and never run it as a migration. Regenerate it via `pg_dump` when the DB changes. Real schema changes go through Supabase migrations.
-- The frontend already binds to ~153 of these RPCs by name; adding a new RPC in a service means the corresponding `fn_*` must exist in the database.
+**`supabase_ai_context.sql`** (repo root) is a point-in-time `pg_dump` (PostgreSQL 17.6) kept as a broad structural reference for tables, columns, and enums. It is **deliberately frozen and is never regenerated.** It is known to lag the live database — over 100 of the `fn_*` names the frontend calls do not appear in it at all. Never hand-edit it and never run it as a migration.
+
+**Lookup order when checking whether an RPC, column, or enum value exists:**
+1. `docs/sql/*.sql` — authoritative for everything, and the only reliable source for function signatures.
+2. `supabase_ai_context.sql` — older baseline; useful for tables, columns, and enums, unreliable for functions.
+3. If the two disagree, `docs/sql/` is correct.
+
+Checking only the dump will produce wrong conclusions — it will tell you a function is missing a parameter, or missing entirely, when `docs/sql/` already defines it.
+
+The frontend binds to these RPCs by name; adding a new RPC in a service means the corresponding `fn_*` must exist in the database, authored as a new `docs/sql/` script.
 
 **Public schema surface (~55 tables, ~200 `fn_*` RPCs, 20 enums).** Tables grouped by owning role (§10):
 - **Admin/system:** `users`, `user_roles`, `roles`, `school_years`, `terms`, `term_types`, `system_settings`, `notifications`
@@ -212,7 +220,7 @@ All SQL generated or modified must comply with these rules without exception.
 - `fn_bulk_create_<entity>` / `fn_bulk_delete_<entity>` / `fn_bulk_provision_users` — array-payload transactional writes (§11)
 - `fn_set_updated_audit()` — the shared audit trigger function attached to every table
 
-**Enums (`CREATE TYPE public.*_type AS ENUM`):** `announcement_audience_type`, `assessment_type`, `attendance_status_type`, `audit_action_type`, `civil_status_type`, `clearance_status_type`, `day_of_week_type`, `enrollment_status_type`, `evaluation_question_type`, `faculty_status_type`, `gender_type`, `grade_status_type`, `material_type`, `prerequisite_type`, `question_type`, `section_status_type`, `student_status_type`, `submission_status_type`, `submission_timer_status`, `term_status_type`. Grep the dump for the exact allowed values before using one in a type or form.
+**Enums (`CREATE TYPE public.*_type AS ENUM`):** `announcement_audience_type`, `assessment_type`, `attendance_status_type`, `audit_action_type`, `civil_status_type`, `clearance_status_type`, `day_of_week_type`, `enrollment_status_type`, `evaluation_question_type`, `faculty_status_type`, `gender_type`, `grade_status_type`, `material_type`, `prerequisite_type`, `question_type`, `section_status_type`, `student_status_type`, `submission_status_type`, `submission_timer_status`, `term_status_type`. Grep `docs/sql/` first, then the dump, for the exact allowed values before using one in a type or form — a value added after the snapshot was taken will only appear in `docs/sql/`.
 
 ### Primary Keys
 Every table uses UUID: `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`.

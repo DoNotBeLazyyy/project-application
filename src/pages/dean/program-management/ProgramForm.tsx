@@ -29,7 +29,7 @@ export default function ProgramForm({
             rules: disabled || isCodeDisabled
                 ? undefined
                 : { required: 'Program code is required' },
-            type: 'number',
+            type: 'text',
             gridCols: 1
         },
         {

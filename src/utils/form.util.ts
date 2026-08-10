@@ -10,6 +10,33 @@ interface ErrorCheckResult<T> {
     firstError: ErrorMessageProps<T> | null;
 }
 
+export const FORM_ERROR_EVENT = 'app:form-error';
+
+export interface FormErrorEventDetail {
+    count: number;
+    message: string;
+}
+
+function scrollFieldIntoView(name: string): void {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const field = document.querySelector(`[name="${name}"]`);
+
+    if (field instanceof HTMLElement) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function announceFormError(detail: FormErrorEventDetail): void {
+    if (typeof window === 'undefined' || typeof window.CustomEvent !== 'function') {
+        return;
+    }
+
+    window.dispatchEvent(new CustomEvent<FormErrorEventDetail>(FORM_ERROR_EVENT, { detail }));
+}
+
 export function formErrors<T extends FieldValues>(
     errors: FieldErrors<T>,
     methods: UseFormReturn<T>
@@ -19,6 +46,11 @@ export function formErrors<T extends FieldValues>(
         const { firstError } = error;
 
         methods.setFocus(firstError.key);
+        scrollFieldIntoView(firstError.key);
+        announceFormError({
+            count: error.count,
+            message: firstError.message ?? 'Please complete the required fields before saving.'
+        });
     }
 }
 

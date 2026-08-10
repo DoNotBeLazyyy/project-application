@@ -33,7 +33,7 @@ const defaultFormValues: ProgramFormValues = {
     program_level_id: '',
     total_units: '',
     years_duration: '',
-    is_active: false
+    is_active: true
 };
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [

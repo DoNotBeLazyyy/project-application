@@ -29,17 +29,20 @@ export const useLoadingStore = create<LoadingStoreProps>((set, get) => ({
 
             hideTimeout = null;
         }
-        else {
-            const nextCount = get().loadingCount + 1;
 
-            set({
-                loadingCount: nextCount,
-                isLoading: true
-            });
-        }
+        set({
+            loadingCount: get().loadingCount + 1,
+            isLoading: true
+        });
     },
     hide: () => {
         const nextCount = Math.max(get().loadingCount - 1, 0);
+
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+
+            hideTimeout = null;
+        }
 
         if (nextCount === 0) {
             hideTimeout = setTimeout(() => {

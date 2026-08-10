@@ -3,7 +3,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
+    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
 } from '@type/student-portal.type';
 import { parseServiceError } from '@utils/error.util';
 
@@ -179,4 +179,8 @@ export async function upsertSectionColor(
         p_section_id: sectionId,
         p_color: color
     });
+}
+
+export async function listMySectionColors(): Promise<ServiceResult<StudentSectionColor[]>> {
+    return callRpc<StudentSectionColor[]>('fn_list_my_section_colors');
 }

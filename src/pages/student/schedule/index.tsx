@@ -4,7 +4,7 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import Tooltip from '@mui/material/Tooltip';
 import { ShieldCheck } from '@phosphor-icons/react';
-import { getStudentSchedule, upsertSectionColor } from '@services/student-portal.service';
+import { getStudentSchedule, listMySectionColors, upsertSectionColor } from '@services/student-portal.service';
 import { DayOfWeek, SectionScheduleSlot, StudentScheduleSection } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -164,12 +164,19 @@ export default function StudentSchedule() {
 
     useEffect(function() {
         async function fetchSchedule() {
-            const result = await getStudentSchedule();
+            const [result, colorResult] = await Promise.all([
+                getStudentSchedule(),
+                listMySectionColors()
+            ]);
 
             if (result.data) {
+                const savedColors = new Map(
+                    (colorResult.data ?? []).map((entry) => [entry.section_id, entry.color])
+                );
                 const colored = result.data.map((section, index) => ({
                     ...section,
-                    color: FALLBACK_COLORS[index % FALLBACK_COLORS.length]
+                    color: savedColors.get(section.section_id)
+                        ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length]
                 }));
                 setSections(colored);
             }

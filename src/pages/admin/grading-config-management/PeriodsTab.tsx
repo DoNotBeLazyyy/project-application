@@ -168,9 +168,10 @@ export default function PeriodsTab() {
         if (!selectedId) {
             return;
         }
+        const selectedPeriod = periods.find((p) => p.id === selectedId);
         const result = await updateGradingPeriodTemplate(selectedId, {
             name: values.name,
-            sequence: 1,
+            sequence: selectedPeriod?.sequence ?? 1,
             weight: values.weight,
             components: values.components
         });

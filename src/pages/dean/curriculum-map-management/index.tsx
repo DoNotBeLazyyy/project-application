@@ -260,8 +260,8 @@ export default function CurriculumMapManagement() {
                                 </div>
                             )
                             : (
-                                <div className="curriculum-print-area flex flex-col gap-6 overflow-auto pb-8">
-                                    <div className="flex flex-col gap-1 hidden print-only">
+                                <div className="flex flex-col gap-6 overflow-auto pb-8 print-area">
+                                    <div className="flex flex-col gap-1 print-only">
                                         <p className="font-bold text-center text-sm">
                                         Arellano University
                                         </p>

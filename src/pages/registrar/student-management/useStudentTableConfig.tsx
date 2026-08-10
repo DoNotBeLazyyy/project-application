@@ -33,42 +33,49 @@ export function useStudentTableConfig({
                 field: 'student_number',
                 flex: 1,
                 headerName: 'Student No.',
+                minWidth: 150,
                 sortable: true
             },
             {
                 field: 'last_name',
                 flex: 2,
                 headerName: 'Last Name',
+                minWidth: 140,
                 sortable: true
             },
             {
                 field: 'first_name',
                 flex: 2,
                 headerName: 'First Name',
+                minWidth: 140,
                 sortable: true
             },
             {
                 field: 'email',
                 flex: 3,
                 headerName: 'Email',
+                minWidth: 200,
                 sortable: true
             },
             {
                 field: 'program_code',
                 flex: 1,
                 headerName: 'Program',
+                minWidth: 120,
                 sortable: true
             },
             {
                 field: 'year_level',
                 flex: 1,
                 headerName: 'Year Level',
+                minWidth: 130,
                 sortable: true
             },
             {
                 field: 'status',
                 flex: 1,
                 headerName: 'Status',
+                minWidth: 120,
                 sortable: false,
                 cellRenderer: (params: { data: StudentListRow }) => (
                     <div className="flex h-full items-center">

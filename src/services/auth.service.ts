@@ -15,6 +15,18 @@ export async function login(email: string, password: string): Promise<ServiceRes
     return { data: data.session, error: null };
 }
 
+export async function requestPasswordReset(email: string): Promise<ServiceResult<null>> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/set-password`
+    });
+
+    if (error) {
+        return { data: null, error: parseServiceError(error) };
+    }
+
+    return { data: null, error: null };
+}
+
 export async function logout(): Promise<void> {
     await supabase.auth.signOut();
     useAppStore.getState()

@@ -24,10 +24,10 @@ const SORT_COLUMNS: SortColumn[] = [
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness' },
     { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)' },
-    { key: 'section_description', label: 'Section Description', hint: 'optional, no commas' },
+    { key: 'section_description', label: 'Section Description', hint: 'optional' },
     { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
     { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)' },
-    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly (no commas)' },
+    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly' },
     { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended' },
     { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
     { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only)' },

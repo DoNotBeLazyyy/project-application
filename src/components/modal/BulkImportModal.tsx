@@ -13,6 +13,92 @@ type BulkImportStep = 'upload' | 'preview' | 'results';
 
 type ParsedRow = Record<string, string>;
 
+interface CsvParseResult {
+    rows: ParsedRow[];
+    missingHeaders: string[];
+    unknownHeaders: string[];
+}
+
+function splitCsvRecords(text: string): string[][] {
+    const records: string[][] = [];
+    let currentRecord: string[] = [];
+    let currentValue = '';
+    let isQuoted = false;
+    let index = 0;
+
+    function pushValue() {
+        currentRecord.push(currentValue);
+        currentValue = '';
+    }
+
+    function pushRecord() {
+        pushValue();
+        records.push(currentRecord);
+        currentRecord = [];
+    }
+
+    while (index < text.length) {
+        const char = text[index];
+
+        if (isQuoted) {
+            if (char === '"') {
+                if (text[index + 1] === '"') {
+                    currentValue += '"';
+                    index += 2;
+                    continue;
+                }
+                isQuoted = false;
+                index += 1;
+                continue;
+            }
+            currentValue += char;
+            index += 1;
+            continue;
+        }
+
+        if (char === '"' && currentValue.trim() === '') {
+            currentValue = '';
+            isQuoted = true;
+            index += 1;
+            continue;
+        }
+
+        if (char === ',') {
+            pushValue();
+            index += 1;
+            continue;
+        }
+
+        if (char === '\n') {
+            pushRecord();
+            index += 1;
+            continue;
+        }
+
+        if (char === '\r') {
+            index += 1;
+            continue;
+        }
+
+        currentValue += char;
+        index += 1;
+    }
+
+    if (currentValue !== '' || currentRecord.length) {
+        pushRecord();
+    }
+
+    return records.map((record) => record.map((value) => value.trim()))
+        .filter((record) => record.some((value) => value !== ''));
+}
+
+function escapeCsvValue(value: string): string {
+    if (/[",\r\n]/.test(value)) {
+        return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+}
+
 interface BulkImportModalProps<TPayload> {
     open: boolean;
     templateColumns: CsvTemplateColumn[];
@@ -37,6 +123,7 @@ export default function BulkImportModal<TPayload>({
     const [result, setResult] = useState<DetailedBulkImportResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [parseError, setParseError] = useState<string | null>(null);
+    const [parseWarning, setParseWarning] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const previewColumnDefs = useMemo<ColDef<ParsedRow>[]>(function() {
@@ -84,12 +171,13 @@ export default function BulkImportModal<TPayload>({
         setParsedRows([]);
         setResult(null);
         setParseError(null);
+        setParseWarning(null);
         onClose();
     }
 
     function downloadTemplate() {
-        const headers = templateColumns.map((col) => col.label);
-        const hints = templateColumns.map((col) => col.hint ?? '');
+        const headers = templateColumns.map((col) => escapeCsvValue(col.label));
+        const hints = templateColumns.map((col) => escapeCsvValue(col.hint ?? ''));
         const csvContent = [headers.join(','), hints.join(',')].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -100,47 +188,88 @@ export default function BulkImportModal<TPayload>({
         URL.revokeObjectURL(url);
     }
 
-    function parseCsv(text: string): ParsedRow[] {
-        const lines = text.trim()
-            .split('\n');
-        if (lines.length < 2) return [];
+    function parseCsv(text: string): CsvParseResult {
+        const records = splitCsvRecords(text);
+        if (!records.length) {
+            return { missingHeaders: [], rows: [], unknownHeaders: [] };
+        }
 
-        const headers = lines[0].split(',')
-            .map((h) => h.trim());
-        return lines.slice(1)
-            .map((line) => {
-                const values = line.split(',')
-                    .map((v) => v.trim());
-                const row: ParsedRow = {};
-                headers.forEach((header, index) => {
-                    const matchedCol = templateColumns.find((col) => col.label === header);
-                    if (matchedCol) {
-                        row[matchedCol.key] = values[index] ?? '';
-                    }
-                });
-                return row;
+        const headers = records[0];
+        const matchedColumns = headers.map((header) => templateColumns.find(
+            (col) => col.label.trim()
+                .toLowerCase() === header.toLowerCase()
+        ) ?? null);
+
+        const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
+        const missingHeaders = templateColumns.filter(
+            (col) => !matchedColumns.some((matched) => matched?.key === col.key)
+        )
+            .map((col) => col.label);
+
+        const dataRecords = records.slice(1)
+            .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
+
+        const rows = dataRecords.map((values) => {
+            const row: ParsedRow = {};
+            matchedColumns.forEach((matchedCol, index) => {
+                if (matchedCol) {
+                    row[matchedCol.key] = values[index] ?? '';
+                }
             });
+            return row;
+        });
+
+        return { missingHeaders, rows, unknownHeaders };
+    }
+
+    function isHintRecord(values: string[], matchedColumns: (CsvTemplateColumn | null)[]): boolean {
+        const comparableHints = matchedColumns.filter((col, index) => col?.hint && values[index] !== undefined);
+        if (!comparableHints.length) return false;
+
+        return matchedColumns.every((col, index) => {
+            if (!col?.hint) return true;
+            return (values[index] ?? '') === col.hint.trim();
+        });
     }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         setParseError(null);
+        setParseWarning(null);
 
         if (!file) return;
 
-        if (!file.name.endsWith('.csv')) {
+        if (!file.name.toLowerCase()
+            .endsWith('.csv')) {
             setParseError('Only CSV files are accepted.');
             return;
         }
 
         const reader = new FileReader();
+        reader.onerror = function() {
+            setParseError(`"${file.name}" could not be read. Check that the file is not open in another program, then try again.`);
+        };
+        reader.onabort = function() {
+            setParseError(`Reading "${file.name}" was interrupted. Select the file again.`);
+        };
         reader.onload = function(event) {
-            const text = event.target?.result as string;
-            const rows = parseCsv(text);
+            const text = typeof event.target?.result === 'string'
+                ? event.target.result
+                : '';
+            const { missingHeaders, rows, unknownHeaders } = parseCsv(text);
+
+            if (missingHeaders.length) {
+                setParseError(`These required columns are missing from the file header: ${missingHeaders.join(', ')}. Download the CSV template and keep its header row unchanged.`);
+                return;
+            }
 
             if (!rows.length) {
                 setParseError('The CSV file appears to be empty or has no data rows.');
                 return;
+            }
+
+            if (unknownHeaders.length) {
+                setParseWarning(`These columns were not recognized and will be ignored: ${unknownHeaders.join(', ')}.`);
             }
 
             setParsedRows(rows);
@@ -172,6 +301,7 @@ export default function BulkImportModal<TPayload>({
     function handleReupload() {
         setParsedRows([]);
         setParseError(null);
+        setParseWarning(null);
         setStep('upload');
     }
 
@@ -240,6 +370,12 @@ export default function BulkImportModal<TPayload>({
                         Re-upload
                     </CommonButton>
                 </div>
+                {parseWarning && (
+                    <div className="flex gap-2 items-start text-(--mui-palette-warning-main)">
+                        <WarningCircleIcon className="mt-0.5 shrink-0" size={16} weight="bold" />
+                        <span className="text-xs">{parseWarning}</span>
+                    </div>
+                )}
                 <div className="h-64">
                     <CommonTable<ParsedRow>
                         leadingColumnDefs={previewColumnDefs}

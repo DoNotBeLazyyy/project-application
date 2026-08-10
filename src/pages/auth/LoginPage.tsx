@@ -60,6 +60,10 @@ export default function LoginPage() {
         formErrors(errors, methods);
     }
 
+    function handleForgotPassword() {
+        navigate('/forgot-password');
+    }
+
     return (
         <div className="flex h-full items-center justify-center w-full">
             <CommonCard
@@ -128,6 +132,14 @@ export default function LoginPage() {
                             : 'Sign In'
                         }
                     </CommonButton>
+
+                    <button
+                        className="cursor-pointer text-(--mui-palette-primary-main) text-sm"
+                        type="button"
+                        onClick={handleForgotPassword}
+                    >
+                        Forgot password?
+                    </button>
                 </form>
             </CommonCard>
         </div>

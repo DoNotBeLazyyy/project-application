@@ -52,7 +52,8 @@ export default function TermTypeManagement() {
             updateMethods.reset({
                 code: result.data.code,
                 description: result.data.description ?? '',
-                label: result.data.label
+                label: result.data.label,
+                sequence: result.data.sequence
             });
         }
     }

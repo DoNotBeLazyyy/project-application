@@ -5,6 +5,7 @@ import {
     ProgramBulkImportResult, ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow, ProgramOption
 } from '@type/program/program.type';
 import { ServiceResult } from '@type/service.type';
+import { nullIfBlank } from '@utils/uuid.util';
 
 export async function listPrograms(
     page: number,
@@ -51,11 +52,11 @@ export async function createProgram(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_program', {
         p_code: params.code,
-        p_department_id: params.department_id,
+        p_department_id: nullIfBlank(params.department_id),
         p_description: params.description || null,
         p_is_active: params.is_active,
         p_name: params.name,
-        p_program_level_id: params.program_level_id,
+        p_program_level_id: nullIfBlank(params.program_level_id),
         p_total_units: params.total_units
             ? Number(params.total_units)
             : null,
@@ -69,12 +70,12 @@ export async function updateProgram(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_program', {
         p_code: params.code,
-        p_department_id: params.department_id,
+        p_department_id: nullIfBlank(params.department_id),
         p_description: params.description || null,
         p_is_active: params.is_active,
         p_name: params.name,
         p_program_id: programId,
-        p_program_level_id: params.program_level_id,
+        p_program_level_id: nullIfBlank(params.program_level_id),
         p_total_units: params.total_units
             ? Number(params.total_units)
             : null,

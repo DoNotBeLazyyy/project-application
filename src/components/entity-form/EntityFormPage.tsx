@@ -6,7 +6,7 @@ import { EntityFormMode, EntityFormModeText, EntityFormPageProps } from '@type/e
 import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 function resolveModeText(text: EntityFormModeText | undefined, mode: EntityFormMode): string {
     if (!text) {
@@ -35,7 +35,9 @@ export default function EntityFormPage<TValues extends FieldValues>({
     const { id = '' } = useParams<{ id: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const isCreate = id === 'new';
+    const { pathname } = useLocation();
+    const normalizedPath = pathname.replace(/\/+$/, '');
+    const isCreate = id === 'new' || !id || normalizedPath.endsWith('/new');
 
     const [isEditing, setIsEditing] = useState(isCreate || searchParams.get('edit') === '1');
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);

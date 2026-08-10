@@ -42,6 +42,7 @@ const EMPTY_PASSWORD: ChangePasswordFormValues = {
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('details');
     const [profile, setProfile] = useState<MyProfile | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const profileMethods = useForm<ProfileFormValues>({ defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
@@ -73,7 +74,7 @@ export default function ProfilePage() {
         }
 
         loadProfile();
-    }, []);
+    }, [refreshKey]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as ProfileTab);
@@ -85,6 +86,9 @@ export default function ProfilePage() {
         if (!result.error) {
             profileMethods.reset(values);
             await initAuthSession();
+            setRefreshKey(function(previous) {
+                return previous + 1;
+            });
         }
     }
 

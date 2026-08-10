@@ -21,7 +21,7 @@ export async function listAnnouncements(
     return callRpc<CommonListResDto<AnnouncementListRow>>('fn_list_announcements_json', {
         p_audience: audience || null,
         p_is_pinned: isPinned,
-        p_mine_only: true,
+        p_mine_only: false,
         p_page: page,
         p_search: search || null,
         p_size: size,

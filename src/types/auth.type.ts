@@ -3,4 +3,8 @@ export interface LoginFormValues {
     password: string;
 }
 
+export interface ForgotPasswordFormValues {
+    email: string;
+}
+
 export type RoleDashboardPath = '/admin' | '/faculty' | '/student' | '/registrar' | '/dean';

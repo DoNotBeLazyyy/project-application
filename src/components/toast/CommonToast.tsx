@@ -1,9 +1,28 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { XIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
+import { FORM_ERROR_EVENT, FormErrorEventDetail } from '@utils/form.util';
+import { useEffect } from 'react';
 
 export default function CommonToast() {
     const { toasts, removeToast } = useToastStore();
+    const showToast = useToastStore((s) => s.showToast);
+
+    useEffect(function() {
+        function handleFormError(event: Event) {
+            const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
+
+            if (detail?.message) {
+                showToast(detail.message, 'warning');
+            }
+        }
+
+        window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+
+        return function() {
+            window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+        };
+    }, [showToast]);
 
     if (!toasts.length) {
         return null;
