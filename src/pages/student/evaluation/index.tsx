@@ -1,10 +1,9 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import CommonPagination from '@components/pagination/CommonPagination';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
-import { QUESTIONS_PER_PAGE } from '@constants/evaluation.constant';
-import { useFormPagination } from '@hooks/useFormPagination';
+import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
+import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import EvaluationQuestionField from '@pages/student/evaluation/EvaluationQuestionField';
 import EvaluationRatingMatrix, { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
 import { toTargetKey, toTargetPath, useEvaluationTargets } from '@pages/student/evaluation/useEvaluationTargets';
@@ -29,8 +28,7 @@ interface RenderedSection extends EvaluationSection {
     startIndex: number;
 }
 
-interface PagedSection {
-    isContinued: boolean;
+interface ScrolledSection {
     openRows: EvaluationRatingRow[];
     ratingRows: EvaluationRatingRow[];
     section: RenderedSection;
@@ -166,13 +164,13 @@ export default function StudentEvaluations() {
         return toRenderedSections(form);
     }, [form]);
 
-    const { endIndex, goToIndex, pagination, setPagination, startIndex } = useFormPagination(
+    const { hasMore, reset, revealThrough, sentinelRef, visibleCount } = useInfiniteScroll(
         fields.length,
-        QUESTIONS_PER_PAGE
+        QUESTIONS_SCROLL_STEP
     );
 
     useEffect(function() {
-        goToIndex(0);
+        reset();
     }, [enrollmentId, gradingPeriodId]);
 
     const isReadOnly = form?.is_completed === true;
@@ -182,7 +180,7 @@ export default function StudentEvaluations() {
         return [PLACEHOLDER_OPTION, ...targetOptions];
     }, [targetOptions]);
 
-    const pagedSections = useMemo<PagedSection[]>(function() {
+    const scrolledSections = useMemo<ScrolledSection[]>(function() {
         return sections
             .map(function(section) {
                 const ratingRows: EvaluationRatingRow[] = [];
@@ -191,7 +189,7 @@ export default function StudentEvaluations() {
                 section.questions.forEach(function(_, offset) {
                     const index = section.startIndex + offset;
 
-                    if (index < startIndex || index >= endIndex) {
+                    if (index >= visibleCount) {
                         return;
                     }
 
@@ -210,16 +208,15 @@ export default function StudentEvaluations() {
                 });
 
                 return {
-                    isContinued: section.startIndex < startIndex,
                     openRows,
                     ratingRows,
                     section
                 };
             })
-            .filter(function(paged) {
-                return paged.ratingRows.length > 0 || paged.openRows.length > 0;
+            .filter(function(scrolled) {
+                return scrolled.ratingRows.length > 0 || scrolled.openRows.length > 0;
             });
-    }, [endIndex, fields, sections, startIndex]);
+    }, [fields, sections, visibleCount]);
 
     function handleTargetChange(event: ChangeEventInputTextarea) {
         const [nextEnrollmentId, nextGradingPeriodId] = String(event.target.value)
@@ -265,7 +262,7 @@ export default function StudentEvaluations() {
         const firstMissingIndex = flagMissingAnswers(answers);
 
         if (firstMissingIndex >= 0) {
-            goToIndex(firstMissingIndex);
+            revealThrough(firstMissingIndex);
             useToastStore.getState()
                 .showToast('Please answer all required questions.', 'warning');
 
@@ -361,7 +358,7 @@ export default function StudentEvaluations() {
                             </p>
                         </div>
                     )}
-                    {pagedSections.map(function({ isContinued, openRows, ratingRows, section }) {
+                    {scrolledSections.map(function({ openRows, ratingRows, section }) {
                         return (
                             <section
                                 className="flex flex-col gap-4"
@@ -369,11 +366,9 @@ export default function StudentEvaluations() {
                             >
                                 <div className="flex flex-col gap-1">
                                     <h3 className="bg-(--mui-palette-primary-main)/10 font-semibold px-2 py-1 rounded self-start text-(--mui-palette-primary-main) text-sm">
-                                        {isContinued
-                                            ? `${section.title} (continued)`
-                                            : section.title}
+                                        {section.title}
                                     </h3>
-                                    {section.description && !isContinued && (
+                                    {section.description && (
                                         <p className="text-(--mui-palette-text-secondary) text-sm">
                                             {section.description}
                                         </p>
@@ -398,12 +393,14 @@ export default function StudentEvaluations() {
                             </section>
                         );
                     })}
-                    <CommonPagination
-                        className="flex h-14 items-center"
-                        hasPaginationSelect={false}
-                        pagination={pagination}
-                        onSetPagination={setPagination}
-                    />
+                    <div
+                        className="flex items-center justify-center text-(--mui-palette-text-secondary) text-sm"
+                        ref={sentinelRef}
+                    >
+                        {hasMore
+                            ? `Loading more questions... (${Math.min(visibleCount, fields.length)} of ${fields.length})`
+                            : ''}
+                    </div>
                     {!isReadOnly && (
                         <div className="flex gap-2 justify-end">
                             <CommonButton

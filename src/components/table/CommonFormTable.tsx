@@ -30,6 +30,7 @@ export interface CommonFormTableProps<TRow, TForm extends FieldValues> {
     disabled?: boolean;
     hideAddRow?: boolean;
     hideRowActions?: boolean;
+    listFooter?: ReactNode;
     minRows?: number;
     startIndex?: number;
     tableProps?: CommonTableProps;
@@ -46,6 +47,7 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     fieldArrayName,
     hideAddRow,
     hideRowActions,
+    listFooter,
     minRows = 0,
     rows,
     startIndex = 0,
@@ -170,6 +172,7 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
                         </div>
                     ))
                 }
+                {listFooter}
             </div>
         </div>
     );

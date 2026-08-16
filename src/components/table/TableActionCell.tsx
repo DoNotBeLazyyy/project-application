@@ -45,7 +45,7 @@ export default function TableActionCell<TData>({
     menuOptions,
     onEditClick
 }: TableActionCellRendererParams<TData>) {
-    const { isLoading } = useLoadingStore();
+    const isLoading = useLoadingStore((state) => state.isLoading);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const isMenuOpen = Boolean(anchorEl);
     const baseIconClassName = 'cursor-pointer h-[2.25rem] w-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-palette-grey-500)';

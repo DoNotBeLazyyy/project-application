@@ -1,9 +1,8 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import CommonPagination from '@components/pagination/CommonPagination';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
-import { QUESTIONS_PER_PAGE } from '@constants/evaluation.constant';
-import { useFormPagination } from '@hooks/useFormPagination';
+import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
+import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
@@ -107,11 +106,19 @@ export default function EvaluationTemplateFormPanel({
         control,
         name: 'questions'
     });
-    const { endIndex, goToIndex, pagination, setPagination, startIndex } = useFormPagination(
+    const { hasMore, revealThrough, sentinelRef, visibleCount } = useInfiniteScroll(
         fields.length,
-        QUESTIONS_PER_PAGE
+        QUESTIONS_SCROLL_STEP
     );
     const { programOptions } = useProgramOptions();
+
+    function handleAddRow() {
+        append(DEFAULT_QUESTION);
+        revealThrough(fields.length);
+        requestAnimationFrame(function() {
+            sentinelRef.current?.scrollIntoView({ block: 'nearest' });
+        });
+    }
 
     const templateFields: FormFieldConfig<EvaluationTemplateForm>[] = [
         {
@@ -187,25 +194,25 @@ export default function EvaluationTemplateFormPanel({
                         disabled={disabled}
                         emptyDataMessage="No questions yet. Click + to add one."
                         fieldArrayName="questions"
+                        listFooter={
+                            <div
+                                className="flex items-center justify-center py-2 text-(--mui-palette-text-secondary) text-xs"
+                                ref={sentinelRef}
+                            >
+                                {hasMore
+                                    ? 'Loading more questions...'
+                                    : ''}
+                            </div>
+                        }
                         minRows={1}
-                        rows={(fields as (EvaluationQuestionForm & { id: string })[]).slice(startIndex, endIndex)}
-                        startIndex={startIndex}
+                        rows={(fields as (EvaluationQuestionForm & { id: string })[]).slice(0, visibleCount)}
                         tableProps={{ containerClassName: 'min-h-0 h-full' }}
                         totalRows={fields.length}
-                        onAddRow={function() {
-                            append(DEFAULT_QUESTION);
-                            goToIndex(fields.length);
-                        }}
+                        onAddRow={handleAddRow}
                         onRemoveRow={remove}
                     />
                 </div>
             </div>
-            <CommonPagination
-                className="flex h-14 items-center"
-                hasPaginationSelect={false}
-                pagination={pagination}
-                onSetPagination={setPagination}
-            />
         </div>
     );
 }

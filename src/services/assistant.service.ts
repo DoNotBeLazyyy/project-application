@@ -15,5 +15,5 @@ export async function askAssistant(
         activeRole,
         sectionId,
         termId
-    });
+    }, { silent: true });
 }

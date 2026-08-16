@@ -30,28 +30,36 @@ function mapPeriodTemplates(periods: GradingPeriodTemplate[]): GradingPeriodTemp
     }));
 }
 
-function buildPeriodListDto(content: GradingPeriodTemplate[]): CommonListResDto<GradingPeriodTemplate> {
-    const size = content.length || 1;
+function buildPeriodListDto(
+    rows: GradingPeriodTemplate[],
+    page: number,
+    size: number
+): CommonListResDto<GradingPeriodTemplate> {
+    const totalElements = rows.length;
+    const totalPages = Math.max(1, Math.ceil(totalElements / size));
+    const pageNumber = Math.min(Math.max(page, 1), totalPages) - 1;
+    const offset = pageNumber * size;
+    const content = rows.slice(offset, offset + size);
 
     return {
         content,
-        empty: content.length === 0,
-        first: true,
-        last: true,
-        number: 0,
+        empty: totalElements === 0,
+        first: pageNumber === 0,
+        last: pageNumber === totalPages - 1,
+        number: pageNumber,
         numberOfElements: content.length,
         pageable: {
-            offset: 0,
+            offset,
             paged: true,
-            pageNumber: 0,
+            pageNumber,
             pageSize: size,
             sort: { empty: true, sorted: false, unsorted: true },
             unpaged: false
         },
         size,
         sort: { empty: true, sorted: false, unsorted: true },
-        totalElements: content.length,
-        totalPages: 1
+        totalElements,
+        totalPages
     };
 }
 
@@ -96,7 +104,7 @@ export default function PeriodsTab() {
         setIsCreateOpen(true);
     }
 
-    async function fetchPeriods() {
+    async function fetchPeriods(page: number, size: number) {
         const result = await getGradingPeriodTemplates();
         if (!result.data) {
             return { data: null, error: result.error };
@@ -104,7 +112,7 @@ export default function PeriodsTab() {
         const mapped = mapPeriodTemplates(result.data);
         setPeriods(mapped);
 
-        return { data: buildPeriodListDto(mapped), error: null };
+        return { data: buildPeriodListDto(mapped, page, size), error: null };
     }
 
     function loadIntoForm(id: string) {

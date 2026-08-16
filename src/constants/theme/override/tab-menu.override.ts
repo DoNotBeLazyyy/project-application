@@ -9,18 +9,8 @@ export const tabMenuOverrides: ComponentTheme = {
                 width: 'fit-content',
                 '& .MuiTabs-indicator': {
                     display: 'none'
-                }
-            },
-            flexContainer: {
-                gap: 'var(--mui-tokens-spacing-3)'
-            }
-        },
-        variants: [
-            {
-                props: {
-                    menuStyle: 'outline'
                 },
-                style: {
+                '&[data-menu-style="outline"]': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
                     '& .MuiTabs-indicator': {
                         backgroundColor: 'var(--mui-tokens-color-brand-900)',
@@ -28,28 +18,21 @@ export const tabMenuOverrides: ComponentTheme = {
                         display: 'block',
                         height: 'var(--mui-tokens-stroke-1)'
                     }
-                }
-            },
-            {
-                props: {
-                    menuStyle: 'pill'
                 },
-                style: {
+                '&[data-menu-style="pill"]': {
                     backgroundColor: 'var(--mui-tokens-color-neutral-100)',
                     borderRadius: 'var(--mui-tokens-radius-lg)'
-                }
-            },
-            {
-                props: {
-                    menuStyle: 'vertical'
                 },
-                style: {
+                '&[data-menu-style="vertical"]': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     padding: 'var(--mui-tokens-spacing-3)'
                 }
+            },
+            flexContainer: {
+                gap: 'var(--mui-tokens-spacing-3)'
             }
-        ]
+        }
     },
     MuiTab: {
         styleOverrides: {
@@ -83,15 +66,8 @@ export const tabMenuOverrides: ComponentTheme = {
                 },
                 '& > .MuiTab-iconWrapper': {
                     marginRight: 0
-                }
-            }
-        },
-        variants: [
-            {
-                props: {
-                    menuStyle: 'pill'
                 },
-                style: {
+                '&[data-menu-style="pill"]': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&:hover': {
                         backgroundColor: 'var(--mui-tokens-color-common-white)'
@@ -106,25 +82,15 @@ export const tabMenuOverrides: ComponentTheme = {
                     '&.Mui-selected .tab-icon': {
                         color: 'inherit'
                     }
-                }
-            },
-            {
-                props: {
-                    menuStyle: 'vertical'
                 },
-                style: {
+                '&[data-menu-style="vertical"]': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&.Mui-selected': {
                         backgroundColor: 'var(--mui-tokens-color-neutral-100)',
                         color: 'var(--mui-tokens-color-neutral-700)'
                     }
-                }
-            },
-            {
-                props: {
-                    size: 'small'
                 },
-                style: {
+                '&[data-size="small"]': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     fontSize: 'var(--mui-tokens-fontSize-sm)',
                     gap: 'var(--mui-tokens-spacing-3)',
@@ -135,6 +101,6 @@ export const tabMenuOverrides: ComponentTheme = {
                     paddingTop: 'var(--mui-tokens-spacing-2)'
                 }
             }
-        ]
+        }
     }
 };

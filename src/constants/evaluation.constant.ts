@@ -1,4 +1,4 @@
-export const QUESTIONS_PER_PAGE = 10;
+export const QUESTIONS_SCROLL_STEP = 10;
 
 export const EVALUATION_SCOPE_OPTIONS = [
     { label: 'Per Grading Period', value: 'Period' },

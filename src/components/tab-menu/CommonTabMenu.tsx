@@ -35,13 +35,13 @@ export default function CommonTabMenu({
 
     return (
         <Tabs
-            menuStyle={menuStyle}
+            data-menu-style={menuStyle}
+            data-size={size}
             orientation={
                 menuStyle === 'vertical'
                     ? 'vertical'
                     : 'horizontal'
             }
-            size={size}
             {...props}
         >
             {tabs.map(({
@@ -52,6 +52,8 @@ export default function CommonTabMenu({
                 value
             }) => (
                 <Tab
+                    data-menu-style={menuStyle}
+                    data-size={size}
                     icon={icon
                         ? <TabMenuIcon
                             icon={icon}
@@ -77,8 +79,6 @@ export default function CommonTabMenu({
                             label={label}
                         />
                     }
-                    menuStyle={menuStyle}
-                    size={size}
                     value={value}
                 />
             ))}

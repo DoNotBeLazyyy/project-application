@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
+import Tooltip from '@mui/material/Tooltip';
 import { PrinterIcon } from '@phosphor-icons/react';
 import { getCurriculumAudit } from '@services/records.service';
 import { CurriculumAudit, CurriculumCourse, CurriculumCourseStatus, CurriculumYearLevel } from '@type/records.type';
@@ -77,7 +78,15 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                 {term.term_type_label}
                             </span>
                         </div>
-                        <table className="text-sm w-full">
+                        <table className="table-fixed text-sm w-full">
+                            <colgroup>
+                                <col className="w-28" />
+                                <col />
+                                <col className="w-20" />
+                                <col className="w-40" />
+                                <col className="w-24" />
+                                <col className="w-36" />
+                            </colgroup>
                             <thead>
                                 <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
                                     <th className="font-medium px-3 py-2 text-left">Code</th>
@@ -95,21 +104,30 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                             className="border-b border-(--mui-palette-divider) last:border-b-0"
                                             key={course.curriculum_map_id}
                                         >
-                                            <td className="px-3 py-2 text-(--mui-palette-text-primary)">
+                                            <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-primary) text-ellipsis whitespace-nowrap">
                                                 {course.course_code}
                                             </td>
                                             <td className="px-3 py-2 text-(--mui-palette-text-primary)">
-                                                {course.course_title}
-                                                {course.is_elective && (
-                                                    <span className="ml-2 text-(--mui-palette-text-secondary) text-xs">
-                                                        Elective
-                                                    </span>
-                                                )}
+                                                <div className="flex gap-2 items-center min-w-0">
+                                                    <Tooltip
+                                                        arrow
+                                                        title={course.course_title}
+                                                    >
+                                                        <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                                                            {course.course_title}
+                                                        </span>
+                                                    </Tooltip>
+                                                    {course.is_elective && (
+                                                        <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                                            Elective
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
                                                 {formatUnits(course.units)}
                                             </td>
-                                            <td className="px-3 py-2 text-(--mui-palette-text-secondary)">
+                                            <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-secondary) text-ellipsis whitespace-nowrap">
                                                 {course.taken_label ?? '—'}
                                             </td>
                                             <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">

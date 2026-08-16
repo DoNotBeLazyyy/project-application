@@ -38,7 +38,7 @@ export function useTableConfigs<TData = unknown>({
     tableActionConfig,
     trailingColumnDefs = []
 }: UseTableConfigsProps<TData>) {
-    const { isLoading } = useLoadingStore();
+    const isLoading = useLoadingStore((state) => state.isLoading);
     const resolvedColumnDefs = useMemo<ColDef[]>(function() {
         const { actionColDef, actionContainerClassName, actionIconClassName, menuOptions, onEditClick } = tableActionConfig ?? {};
 

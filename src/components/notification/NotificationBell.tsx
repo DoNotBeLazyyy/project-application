@@ -1,8 +1,10 @@
 import { Badge, Divider, IconButton, Menu } from '@mui/material';
 import { BellIcon } from '@phosphor-icons/react';
 import { getUnreadNotificationCount, listMyNotifications, markMyNotificationsRead } from '@services/notification.service';
+import { useAppStore } from '@stores/app.store';
 import { NotificationRow } from '@type/notification.type';
 import { formatDate } from '@utils/date.util';
+import { resolveNotificationPath } from '@utils/notification.util';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +12,7 @@ const POLL_INTERVAL_MS = 60000;
 
 export default function NotificationBell() {
     const navigate = useNavigate();
+    const activeRole = useAppStore((state) => state.activeRole);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [count, setCount] = useState(0);
     const [items, setItems] = useState<NotificationRow[]>([]);
@@ -63,8 +66,10 @@ export default function NotificationBell() {
 
         handleClose();
 
-        if (item.action_url) {
-            navigate(item.action_url);
+        const target = resolveNotificationPath(item.action_url, activeRole);
+
+        if (target) {
+            navigate(target);
         }
     }
 

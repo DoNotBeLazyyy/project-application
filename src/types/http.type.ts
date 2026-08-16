@@ -28,7 +28,7 @@ export interface CommonListResDto<T> {
     empty: boolean;
 
     // Whether first page or not
-    first: true;
+    first: boolean;
 
     // Whether last page or not
     last: boolean;

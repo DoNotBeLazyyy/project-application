@@ -19,7 +19,7 @@ export function useTableLogic({
     onRowClicked,
     onSetSort
 }: UseTableLogicProps) {
-    const { isLoading } = useLoadingStore();
+    const isLoading = useLoadingStore((state) => state.isLoading);
     const containerRef = useRef<HtmlDivElementNull>(null);
     const prevSortModelRef = useRef<ColumnState[]>([]);
     const isRestoringSortRef = useRef(false);

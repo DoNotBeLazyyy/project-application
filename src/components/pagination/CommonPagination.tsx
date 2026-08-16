@@ -73,7 +73,7 @@ export default function CommonPagination({
     onSetPagination,
     ...props
 }: CommonPaginationProps) {
-    const { isLoading } = useLoadingStore();
+    const isLoading = useLoadingStore((state) => state.isLoading);
     const [pageInput, setPageInput] = useState<StringNum>(1); // Local input state
     const {
         currentPage = 1,
@@ -81,6 +81,9 @@ export default function CommonPagination({
         totalElements = 0,
         totalPages = 0
     } = pagination; // Destructured pagination data
+    const resolvedRowsPerPageOptions = rowsPerPageOptions.includes(rowsPerPage)
+        ? rowsPerPageOptions
+        : [...rowsPerPageOptions, rowsPerPage].sort((a, b) => a - b); // Keeps the select value in range
     const { end, start } = calculateRowRange(currentPage, rowsPerPage, totalElements); // JIT range calculation
     const isFirstPage = currentPage <= 1; // JIT logic for boundary check
     const isLastPage = currentPage >= totalPages; // JIT logic for boundary check
@@ -286,7 +289,7 @@ export default function CommonPagination({
                 />
                 {hasPaginationSelect && <PaginationSelect
                     disabled={isLoading}
-                    options={rowsPerPageOptions}
+                    options={resolvedRowsPerPageOptions}
                     value={rowsPerPage}
                     onChange={handleRowsPerPageChange}
                 />}

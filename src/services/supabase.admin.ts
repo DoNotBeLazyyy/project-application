@@ -11,6 +11,8 @@ if (!supabaseUrl || !serviceRoleKey) {
 export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
         autoRefreshToken: false,
-        persistSession: false
+        detectSessionInUrl: false,
+        persistSession: false,
+        storageKey: 'sb-admin-no-persist'
     }
 });
