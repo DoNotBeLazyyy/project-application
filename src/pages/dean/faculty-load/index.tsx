@@ -7,9 +7,7 @@ import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFac
 import { useScheduleConflictTableConfig } from '@pages/dean/faculty-load/hooks/useScheduleConflictTableConfig';
 import ScheduleConflictFilterForm from '@pages/dean/faculty-load/ScheduleConflictFilterForm';
 import { listFacultyLoad, listScheduleConflicts } from '@services/faculty-load.service';
-import {
-    FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow
-} from '@type/faculty-load.type';
+import { FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow } from '@type/faculty-load.type';
 import { SortStringDto } from '@type/http.type';
 import { SyntheticEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';

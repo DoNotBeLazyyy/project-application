@@ -1,5 +1,6 @@
 import Checkbox, { CheckboxProps } from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { normalizeSx } from '@utils/theme.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonCheckboxProps<T extends FieldValues = FieldValues> =
@@ -17,6 +18,7 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
     hasHelper = true,
     helperText,
     label,
+    sx,
     ...props
 }: ValidCommonCheckboxProps<T>) {
     const { field: { value, onChange, ref }, fieldState } = useController({ control, name, rules });
@@ -31,12 +33,14 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                         checked={!!value}
                         disabled={disabled}
                         inputRef={ref}
+                        sx={[{ paddingLeft: 0 }, ...normalizeSx(sx)]}
                         onChange={function(e) {
                             onChange(e.target.checked);
                         }}
                     />
                 }
                 label={label ?? ''}
+                sx={{ marginLeft: 0, marginRight: 0 }}
             />
             {hasHelper && helperMessage && (
                 <span

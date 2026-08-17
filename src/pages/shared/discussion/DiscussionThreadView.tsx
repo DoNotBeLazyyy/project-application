@@ -1,14 +1,31 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTextarea from '@components/textarea/CommonTextarea';
+import DiscussionAttachmentList from '@pages/shared/discussion/DiscussionAttachmentList';
+import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import { ArrowLeftIcon, CheckCircleIcon, PushPinIcon, TrashIcon } from '@phosphor-icons/react';
 import {
     deletePost, deleteThread, getDiscussionThread, replyToThread, setPostAnswer,
-    setThreadPinned, setThreadResolved
+    setThreadPinned, setThreadResolved, uploadDiscussionFile
 } from '@services/discussion.service';
 import { useAppStore } from '@stores/app.store';
-import { DiscussionThreadDetail } from '@type/discussion.type';
+import { useToastStore } from '@stores/toast.store';
+import { DiscussionAttachmentPayload, DiscussionThreadDetail } from '@type/discussion.type';
 import { formatDate } from '@utils/date.util';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { extractClipboardFiles } from '@utils/file.util';
+import {
+    ChangeEvent, ClipboardEvent, KeyboardEvent, useEffect, useState
+} from 'react';
+
+const REPLY_MAX_LENGTH = 2000;
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+const REPLY_TEXTAREA_SX = {
+    '& .common_textarea_html_input': {
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        resize: 'none'
+    }
+};
 
 interface DiscussionThreadViewProps {
     threadId: string;
@@ -22,8 +39,11 @@ export default function DiscussionThreadView({
     onDeleted
 }: DiscussionThreadViewProps) {
     const myId = useAppStore((s) => s.userProfile?.id);
+    const showToast = useToastStore((s) => s.showToast);
     const [thread, setThread] = useState<DiscussionThreadDetail | null>(null);
     const [replyBody, setReplyBody] = useState('');
+    const [replyFiles, setReplyFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     async function loadThread() {
         const result = await getDiscussionThread(threadId);
@@ -37,17 +57,108 @@ export default function DiscussionThreadView({
         loadThread();
     }, [threadId]);
 
-    async function handleReply() {
-        if (!replyBody.trim()) {
+    function handleAddFiles(files: File[]) {
+        const accepted = files.filter(function(file) {
+            if (file.size > MAX_ATTACHMENT_BYTES) {
+                showToast(`${file.name} is larger than 25 MB and was skipped.`, 'warning');
+
+                return false;
+            }
+
+            return true;
+        });
+
+        if (accepted.length > 0) {
+            setReplyFiles(function(prev) {
+                return [...prev, ...accepted];
+            });
+        }
+    }
+
+    function handleRemoveFile(index: number) {
+        setReplyFiles(function(prev) {
+            return prev.filter(function(_file, i) {
+                return i !== index;
+            });
+        });
+    }
+
+    function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+        const pasted = extractClipboardFiles(event.clipboardData);
+
+        if (pasted.length === 0) {
             return;
         }
 
-        const result = await replyToThread(threadId, replyBody.trim());
+        event.preventDefault();
+        handleAddFiles(pasted);
+    }
+
+    async function handleReply() {
+        if (!replyBody.trim() || !thread || isUploading) {
+            return;
+        }
+
+        setIsUploading(true);
+
+        const uploaded: DiscussionAttachmentPayload[] = [];
+
+        for (const file of replyFiles) {
+            const upload = await uploadDiscussionFile(thread.section_id, file);
+
+            if (upload.error || !upload.data) {
+                setIsUploading(false);
+                showToast(`Failed to upload ${file.name}.`, 'error');
+
+                return;
+            }
+
+            uploaded.push(upload.data);
+        }
+
+        const result = await replyToThread(threadId, replyBody.trim(), uploaded);
+
+        setIsUploading(false);
 
         if (!result.error) {
             setReplyBody('');
+            setReplyFiles([]);
             await loadThread();
         }
+    }
+
+    function handleReplyKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+        if (event.key !== 'Enter') {
+            return;
+        }
+
+        const target = event.target as HTMLTextAreaElement;
+
+        if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+
+            const start = target.selectionStart ?? replyBody.length;
+            const end = target.selectionEnd ?? start;
+            const nextBody = `${replyBody.slice(0, start)}\n${replyBody.slice(end)}`;
+
+            if (nextBody.length > REPLY_MAX_LENGTH) {
+                return;
+            }
+
+            setReplyBody(nextBody);
+            requestAnimationFrame(() => {
+                target.setSelectionRange(start + 1, start + 1);
+            });
+
+            return;
+        }
+
+        if (event.shiftKey || event.altKey) {
+            return;
+        }
+
+        event.preventDefault();
+        handleReply();
     }
 
     async function handleDeleteThread() {
@@ -98,7 +209,7 @@ export default function DiscussionThreadView({
     const canManageThread = thread.can_moderate || isThreadOwner;
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
             <div className="flex items-center justify-between">
                 <CommonButton
                     color="inherit"
@@ -175,6 +286,7 @@ export default function DiscussionThreadView({
                 <p className="text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
                     {thread.body}
                 </p>
+                <DiscussionAttachmentList attachments={thread.attachments ?? []} />
                 <span className="text-(--mui-palette-text-disabled) text-xs">
                     {thread.author_name} · {formatDate(new Date(thread.created_at))}
                 </span>
@@ -205,15 +317,18 @@ export default function DiscussionThreadView({
                             <p className="text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
                                 {post.body}
                             </p>
+                            <DiscussionAttachmentList attachments={post.attachments ?? []} />
                             <div className="flex items-center justify-between">
                                 <span className="text-(--mui-palette-text-disabled) text-xs">
                                     {post.author_name} · {formatDate(new Date(post.created_at))}
                                 </span>
                                 <div className="flex gap-2 items-center">
                                     {canManageThread && (
-                                        <button
-                                            className="text-(--mui-palette-success-main) text-xs"
-                                            type="button"
+                                        <CommonButton
+                                            color="success"
+                                            size="small"
+                                            startIcon={<CheckCircleIcon size={16} />}
+                                            variant="outlined"
                                             onClick={function() {
                                                 handleToggleAnswer(post.id, post.is_answer);
                                             }}
@@ -221,18 +336,20 @@ export default function DiscussionThreadView({
                                             {post.is_answer
                                                 ? 'Unmark answer'
                                                 : 'Mark as answer'}
-                                        </button>
+                                        </CommonButton>
                                     )}
                                     {(thread.can_moderate || isPostOwner) && (
-                                        <button
-                                            className="text-(--mui-palette-error-main) text-xs"
-                                            type="button"
+                                        <CommonButton
+                                            color="error"
+                                            size="small"
+                                            startIcon={<TrashIcon size={16} />}
+                                            variant="outlined"
                                             onClick={function() {
                                                 handleDeletePost(post.id);
                                             }}
                                         >
                                             Delete
-                                        </button>
+                                        </CommonButton>
                                     )}
                                 </div>
                             </div>
@@ -240,18 +357,27 @@ export default function DiscussionThreadView({
                     );
                 })}
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 shrink-0">
                 <CommonTextarea
-                    maxLength={2000}
-                    placeholder="Write a reply..."
+                    maxLength={REPLY_MAX_LENGTH}
+                    placeholder="Write a reply... (Enter to post, Ctrl+Enter for a new line)"
+                    sx={REPLY_TEXTAREA_SX}
                     value={replyBody}
                     onChange={function(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
                         setReplyBody(e.target.value);
                     }}
+                    onKeyDown={handleReplyKeyDown}
+                    onPaste={handlePaste}
+                />
+                <DiscussionAttachmentPicker
+                    files={replyFiles}
+                    isDisabled={isUploading}
+                    onAdd={handleAddFiles}
+                    onRemove={handleRemoveFile}
                 />
                 <div className="flex justify-end">
                     <CommonButton
-                        disabled={!replyBody.trim()}
+                        disabled={!replyBody.trim() || isUploading}
                         size="small"
                         variant="contained"
                         onClick={handleReply}

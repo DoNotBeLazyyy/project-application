@@ -1,12 +1,25 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonTextarea from '@components/textarea/CommonTextarea';
+import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import DiscussionThreadView from '@pages/shared/discussion/DiscussionThreadView';
 import { CheckCircleIcon, ChatCircleTextIcon, PlusIcon, PushPinIcon } from '@phosphor-icons/react';
-import { createThread, listSectionThreads } from '@services/discussion.service';
-import { DiscussionThreadRow } from '@type/discussion.type';
+import { createThread, listSectionThreads, uploadDiscussionFile } from '@services/discussion.service';
+import { useToastStore } from '@stores/toast.store';
+import { DiscussionAttachmentPayload, DiscussionThreadRow } from '@type/discussion.type';
 import { formatDate } from '@utils/date.util';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { extractClipboardFiles } from '@utils/file.util';
+import { ChangeEvent, ClipboardEvent, useEffect, useState } from 'react';
+
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+const COMPOSE_TEXTAREA_SX = {
+    '& .common_textarea_html_input': {
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        resize: 'none'
+    }
+};
 
 interface SectionDiscussionPanelProps {
     sectionId: string;
@@ -18,6 +31,9 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     const [isComposing, setIsComposing] = useState(false);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
+    const [files, setFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const showToast = useToastStore((s) => s.showToast);
 
     async function loadThreads() {
         const result = await listSectionThreads(sectionId, 1, 50, '', []);
@@ -31,16 +47,73 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         loadThreads();
     }, [sectionId]);
 
-    async function handleCreate() {
-        if (!title.trim() || !body.trim()) {
+    function handleAddFiles(added: File[]) {
+        const accepted = added.filter(function(file) {
+            if (file.size > MAX_ATTACHMENT_BYTES) {
+                showToast(`${file.name} is larger than 25 MB and was skipped.`, 'warning');
+
+                return false;
+            }
+
+            return true;
+        });
+
+        if (accepted.length > 0) {
+            setFiles(function(prev) {
+                return [...prev, ...accepted];
+            });
+        }
+    }
+
+    function handleRemoveFile(index: number) {
+        setFiles(function(prev) {
+            return prev.filter(function(_file, i) {
+                return i !== index;
+            });
+        });
+    }
+
+    function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+        const pasted = extractClipboardFiles(event.clipboardData);
+
+        if (pasted.length === 0) {
             return;
         }
 
-        const result = await createThread(sectionId, title.trim(), body.trim());
+        event.preventDefault();
+        handleAddFiles(pasted);
+    }
+
+    async function handleCreate() {
+        if (!title.trim() || !body.trim() || isUploading) {
+            return;
+        }
+
+        setIsUploading(true);
+
+        const uploaded: DiscussionAttachmentPayload[] = [];
+
+        for (const file of files) {
+            const upload = await uploadDiscussionFile(sectionId, file);
+
+            if (upload.error || !upload.data) {
+                setIsUploading(false);
+                showToast(`Failed to upload ${file.name}.`, 'error');
+
+                return;
+            }
+
+            uploaded.push(upload.data);
+        }
+
+        const result = await createThread(sectionId, title.trim(), body.trim(), uploaded);
+
+        setIsUploading(false);
 
         if (!result.error) {
             setTitle('');
             setBody('');
+            setFiles([]);
             setIsComposing(false);
             await loadThreads();
         }
@@ -63,8 +136,8 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
+            <div className="flex items-center justify-between shrink-0">
                 <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
                     {threads.length} Discussion{threads.length === 1
                         ? ''
@@ -82,7 +155,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                 </CommonButton>
             </div>
             {isComposing && (
-                <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4">
+                <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4 shrink-0">
                     <CommonInput
                         fullWidth
                         placeholder="Discussion title"
@@ -95,10 +168,18 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     <CommonTextarea
                         maxLength={2000}
                         placeholder="What would you like to ask or share?"
+                        sx={COMPOSE_TEXTAREA_SX}
                         value={body}
                         onChange={function(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
                             setBody(e.target.value);
                         }}
+                        onPaste={handlePaste}
+                    />
+                    <DiscussionAttachmentPicker
+                        files={files}
+                        isDisabled={isUploading}
+                        onAdd={handleAddFiles}
+                        onRemove={handleRemoveFile}
                     />
                     <div className="flex gap-2 justify-end">
                         <CommonButton
@@ -112,7 +193,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!title.trim() || !body.trim()}
+                            disabled={!title.trim() || !body.trim() || isUploading}
                             size="small"
                             variant="contained"
                             onClick={handleCreate}

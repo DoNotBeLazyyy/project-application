@@ -82,7 +82,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                         return (
                             <div className="flex gap-2 h-full items-center">
                                 <CommonButton
-                                    color="warning"
+                                    color="primary"
                                     size="small"
                                     variant="contained"
                                     onClick={function() {

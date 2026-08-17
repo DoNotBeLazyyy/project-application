@@ -1,7 +1,11 @@
+import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
-import { DiscussionThreadDetail, DiscussionThreadRow } from '@type/discussion.type';
+import { DiscussionAttachmentPayload, DiscussionThreadDetail, DiscussionThreadRow } from '@type/discussion.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { parseServiceError } from '@utils/error.util';
+
+const DISCUSSION_BUCKET = 'discussions';
 
 export async function listSectionThreads(
     sectionId: string,
@@ -29,12 +33,55 @@ export async function getDiscussionThread(
     });
 }
 
+export async function uploadDiscussionFile(
+    sectionId: string,
+    file: File
+): Promise<ServiceResult<DiscussionAttachmentPayload>> {
+    const safeName = file.name.replace(/[^\w.-]+/g, '_');
+    const path = `${sectionId}/${crypto.randomUUID()}/${safeName}`;
+
+    const { error } = await supabase.storage
+        .from(DISCUSSION_BUCKET)
+        .upload(path, file, { upsert: false });
+
+    if (error) {
+        return { data: null, error: parseServiceError(error) };
+    }
+
+    return {
+        data: {
+            file_name: file.name,
+            file_path: path,
+            file_size: file.size,
+            mime_type: file.type || null
+        },
+        error: null
+    };
+}
+
+export async function getDiscussionFileUrl(
+    path: string,
+    expiresIn = 3600
+): Promise<ServiceResult<string>> {
+    const { data, error } = await supabase.storage
+        .from(DISCUSSION_BUCKET)
+        .createSignedUrl(path, expiresIn);
+
+    if (error) {
+        return { data: null, error: parseServiceError(error) };
+    }
+
+    return { data: data.signedUrl, error: null };
+}
+
 export async function createThread(
     sectionId: string,
     title: string,
-    body: string
+    body: string,
+    attachments: DiscussionAttachmentPayload[] = []
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_thread', {
+        p_attachments: attachments,
         p_body: body,
         p_section_id: sectionId,
         p_title: title
@@ -43,9 +90,11 @@ export async function createThread(
 
 export async function replyToThread(
     threadId: string,
-    body: string
+    body: string,
+    attachments: DiscussionAttachmentPayload[] = []
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_reply_to_thread', {
+        p_attachments: attachments,
         p_body: body,
         p_thread_id: threadId
     });

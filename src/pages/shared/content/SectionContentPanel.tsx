@@ -127,26 +127,31 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
-                    {modules.length} Module{modules.length === 1
-                        ? ''
-                        : 's'}
-                </span>
-                {canManage && (
-                    <CommonButton
-                        size="small"
-                        startIcon={<PlusIcon size={16} weight="bold" />}
-                        variant="contained"
-                        onClick={function() {
-                            resetComposer();
-                            setIsComposing(true);
-                        }}
-                    >
-                        Add Module
-                    </CommonButton>
-                )}
-            </div>
+            {(modules.length > 0 || canManage) && (
+                <div className="flex items-center justify-between">
+                    {modules.length > 0 && (
+                        <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
+                            {modules.length} Module{modules.length === 1
+                                ? ''
+                                : 's'}
+                        </span>
+                    )}
+                    {canManage && (
+                        <CommonButton
+                            className="ml-auto"
+                            size="small"
+                            startIcon={<PlusIcon size={16} weight="bold" />}
+                            variant="contained"
+                            onClick={function() {
+                                resetComposer();
+                                setIsComposing(true);
+                            }}
+                        >
+                            Add Module
+                        </CommonButton>
+                    )}
+                </div>
+            )}
             {canManage && isComposing && (
                 <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4">
                     <CommonInput
