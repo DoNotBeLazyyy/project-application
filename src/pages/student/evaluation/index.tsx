@@ -293,8 +293,8 @@ export default function StudentEvaluations() {
     }
 
     return (
-        <div className="flex flex-col gap-4 w-full">
-            <CommonCard className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col h-full w-full">
+            <CommonCard className="flex flex-col gap-4 h-full min-h-0 overflow-hidden p-4">
                 <div className="flex flex-wrap gap-4 items-start justify-between">
                     <div className="flex flex-col gap-1">
                         <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
@@ -329,36 +329,30 @@ export default function StudentEvaluations() {
                         </p>
                     )}
                 </div>
-            </CommonCard>
-            {!hasTarget && (
-                <CommonCard className="p-6">
-                    <p className="text-(--mui-palette-text-secondary) text-center text-sm">
-                        {targetOptions.length
-                            ? 'Select a faculty above to load the evaluation form.'
-                            : 'No faculty evaluations are available for you right now.'}
-                    </p>
-                </CommonCard>
-            )}
-            {hasTarget && !form && (
-                <CommonCard className="p-6">
-                    <p className="text-(--mui-palette-text-secondary) text-center text-sm">
-                        Loading evaluation form...
-                    </p>
-                </CommonCard>
-            )}
-            {form && (
-                <CommonCard className="flex flex-col gap-8 p-4">
-                    {showLegend && (
-                        <div className="border-(--mui-palette-divider) border rounded-lg flex flex-col gap-1 p-4">
-                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                                Rating Legend
-                            </h2>
-                            <p className="text-(--mui-palette-text-secondary) text-sm">
-                                {RATING_LEGEND}
-                            </p>
-                        </div>
+                {form && showLegend && (
+                    <div className="border-(--mui-palette-divider) border rounded-lg flex flex-col gap-1 p-4">
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
+                            Rating Legend
+                        </h2>
+                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                            {RATING_LEGEND}
+                        </p>
+                    </div>
+                )}
+                <div className="flex flex-1 flex-col gap-8 min-h-0 overflow-y-auto pr-1">
+                    {!hasTarget && (
+                        <p className="text-(--mui-palette-text-secondary) text-center text-sm">
+                            {targetOptions.length
+                                ? 'Select a faculty above to load the evaluation form.'
+                                : 'No faculty evaluations are available for you right now.'}
+                        </p>
                     )}
-                    {scrolledSections.map(function({ openRows, ratingRows, section }) {
+                    {hasTarget && !form && (
+                        <p className="text-(--mui-palette-text-secondary) text-center text-sm">
+                            Loading evaluation form...
+                        </p>
+                    )}
+                    {form && scrolledSections.map(function({ openRows, ratingRows, section }) {
                         return (
                             <section
                                 className="flex flex-col gap-4"
@@ -393,29 +387,31 @@ export default function StudentEvaluations() {
                             </section>
                         );
                     })}
-                    <div
-                        className="flex items-center justify-center text-(--mui-palette-text-secondary) text-sm"
-                        ref={sentinelRef}
-                    >
-                        {hasMore
-                            ? `Loading more questions... (${Math.min(visibleCount, fields.length)} of ${fields.length})`
-                            : ''}
-                    </div>
-                    {!isReadOnly && (
-                        <div className="flex gap-2 justify-end">
-                            <CommonButton
-                                disabled={isSubmitting}
-                                variant="contained"
-                                onClick={handleSubmit}
-                            >
-                                {isSubmitting
-                                    ? 'Submitting...'
-                                    : 'Submit Evaluation'}
-                            </CommonButton>
+                    {form && (
+                        <div
+                            className="flex items-center justify-center text-(--mui-palette-text-secondary) text-sm"
+                            ref={sentinelRef}
+                        >
+                            {hasMore
+                                ? `Loading more questions... (${Math.min(visibleCount, fields.length)} of ${fields.length})`
+                                : ''}
                         </div>
                     )}
-                </CommonCard>
-            )}
+                </div>
+                {form && !isReadOnly && (
+                    <div className="border-(--mui-palette-divider) border-t flex gap-2 justify-end pt-4">
+                        <CommonButton
+                            disabled={isSubmitting}
+                            variant="contained"
+                            onClick={handleSubmit}
+                        >
+                            {isSubmitting
+                                ? 'Submitting...'
+                                : 'Submit Evaluation'}
+                        </CommonButton>
+                    </div>
+                )}
+            </CommonCard>
         </div>
     );
 }

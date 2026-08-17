@@ -243,13 +243,26 @@
 }
 
 @media print {
+    html,
+    body,
+    #root {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
     body:has(.print-area) * {
         visibility: hidden;
     }
 
-    .print-area,
-    .print-area * {
-        visibility: visible;
+    body :has(.print-area) {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    body .print-area,
+    body .print-area * {
+        visibility: visible !important;
     }
 
     .print-area {
@@ -258,11 +271,13 @@
         position: absolute;
         top: 0;
         width: 100%;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .print-only {
         display: block;
-        visibility: visible;
+        visibility: visible !important;
     }
 
     .no-print {

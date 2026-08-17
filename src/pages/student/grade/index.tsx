@@ -136,7 +136,7 @@ export default function StudentGrades() {
                             )
                             : (
                                 <CommonButton
-                                    color="warning"
+                                    color="primary"
                                     size="small"
                                     variant="contained"
                                     onClick={function() {

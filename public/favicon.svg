@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+    <defs>
+        <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#123F8A" />
+            <stop offset="1" stop-color="#011554" />
+        </linearGradient>
+    </defs>
+    <path d="M32 2 L60 11 V32 C60 47 47 57.5 32 62 C17 57.5 4 47 4 32 V11 Z" fill="url(#shield)" />
+    <path d="M32 2 L60 11 V32 C60 47 47 57.5 32 62 C17 57.5 4 47 4 32 V11 Z" fill="none" stroke="#E8B21F" stroke-width="3" />
+    <text x="32" y="35" fill="#E8B21F" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-weight="700" letter-spacing="-1" text-anchor="middle">AU</text>
+    <rect x="16" y="41" width="32" height="2.5" rx="1.25" fill="#E8B21F" />
+    <text x="32" y="54" fill="#FFFFFF" font-family="Georgia, 'Times New Roman', serif" font-size="11" font-weight="700" letter-spacing="1" text-anchor="middle">JAS</text>
+</svg>

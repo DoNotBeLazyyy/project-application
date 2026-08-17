@@ -1,4 +1,6 @@
-import { buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE } from '@constants/theme/input-state.constant';
+import {
+    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE
+} from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 
 export const inputOverrides: ComponentTheme = {
