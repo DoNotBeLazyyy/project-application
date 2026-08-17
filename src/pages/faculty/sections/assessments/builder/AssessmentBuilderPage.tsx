@@ -70,8 +70,7 @@ export default function AssessmentBuilderPage() {
                 (componentResults[index].data ?? []).map((c) => ({
                     label: `${period.name} — ${c.name} (${c.weight}%)`,
                     value: c.id
-                }))
-            );
+                })));
 
             setComponentOptions(options);
         }

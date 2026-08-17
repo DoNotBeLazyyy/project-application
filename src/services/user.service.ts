@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@services/supabase.admin';
 import { callRpc } from '@services/supabase.wrapper';
 import { useLoadingStore } from '@stores/loading.store';
-import { BulkImportResult } from '@type/bulk-import.type';
+import { BulkImportResult, BulkProvisionResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
@@ -30,9 +30,29 @@ export async function listUsers(
     });
 }
 
+const ORPHAN_CLEANUP_NOTICE = 'The invited account could not be removed automatically and must be deleted manually.';
+
+async function rollbackInvitedAuthUser(authId: string): Promise<boolean> {
+    try {
+        const { error } = await supabaseAdmin.auth.admin.deleteUser(authId);
+
+        return !error;
+    }
+    catch {
+        return false;
+    }
+}
+
+async function rollbackInvitedAuthUsers(authIds: string[]): Promise<void> {
+    for (const authId of authIds) {
+        await rollbackInvitedAuthUser(authId);
+    }
+}
+
 export async function inviteSingleUser(params: InviteUserParams): Promise<ServiceResult<null>> {
     useLoadingStore.getState()
         .show();
+    let invitedAuthId: string | null = null;
     try {
         const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(params.email, {
             data: {
@@ -45,8 +65,10 @@ export async function inviteSingleUser(params: InviteUserParams): Promise<Servic
             return { data: null, error: parseServiceError(error) };
         }
 
+        invitedAuthId = data.user.id;
+
         const provisionResult = await callRpc('fn_provision_single_user', {
-            p_auth_id: data.user.id,
+            p_auth_id: invitedAuthId,
             p_email: params.email,
             p_first_name: params.first_name,
             p_last_name: params.last_name,
@@ -54,12 +76,26 @@ export async function inviteSingleUser(params: InviteUserParams): Promise<Servic
         });
 
         if (provisionResult.error) {
-            return { data: null, error: provisionResult.error };
+            const isRolledBack = await rollbackInvitedAuthUser(invitedAuthId);
+
+            return {
+                data: null,
+                error: isRolledBack
+                    ? provisionResult.error
+                    : {
+                        ...provisionResult.error,
+                        message: `${provisionResult.error.message} ${ORPHAN_CLEANUP_NOTICE}`
+                    }
+            };
         }
 
         return { data: null, error: null };
     }
     catch (err) {
+        if (invitedAuthId) {
+            await rollbackInvitedAuthUser(invitedAuthId);
+        }
+
         return { data: null, error: parseServiceError(err) };
     }
     finally {
@@ -171,12 +207,22 @@ export async function bulkProvisionUsers(
         return { provisioned_count: 0, errors };
     }
 
-    const result = await callRpc<BulkImportResult>('fn_bulk_provision_users', {
+    const result = await callRpc<BulkProvisionResult>('fn_bulk_provision_users', {
         p_users: provisionedUsers
     });
 
     if (result.error) {
+        await rollbackInvitedAuthUsers(provisionedUsers.map(function(user) {
+            return user.auth_id;
+        }));
+
         return { provisioned_count: 0, errors: [...errors, result.error.message] };
+    }
+
+    const orphanedAuthIds = result.data?.failed_auth_ids ?? [];
+
+    if (orphanedAuthIds.length > 0) {
+        await rollbackInvitedAuthUsers(orphanedAuthIds);
     }
 
     return {

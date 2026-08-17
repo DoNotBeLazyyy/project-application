@@ -19,6 +19,8 @@ export interface RoleItem {
     label: string;
 }
 
+export type AuthSessionStatus = 'authenticated' | 'unauthenticated' | 'incomplete';
+
 export interface AuthContext {
     user_id: string;
     profile: UserProfile;

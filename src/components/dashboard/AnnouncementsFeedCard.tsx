@@ -1,10 +1,18 @@
+import { CommonChip } from '@components/badge/CommonChip';
 import CommonCard from '@components/card/CommonCard';
 import { MegaphoneIcon, PushPinIcon } from '@phosphor-icons/react';
-import { AnnouncementFeedRow } from '@type/announcement.type';
+import { AnnouncementAudience, AnnouncementFeedRow } from '@type/announcement.type';
 
 interface AnnouncementsFeedCardProps {
     announcements: AnnouncementFeedRow[];
 }
+
+const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
+    Faculty: 'Faculty only',
+    Global: 'Everyone',
+    Section: 'Section only',
+    Student: 'Students only'
+};
 
 function formatPublishedAt(announcement: AnnouncementFeedRow): string {
     const stamp = announcement.published_at ?? announcement.created_at;
@@ -54,6 +62,12 @@ export default function AnnouncementsFeedCard({ announcements }: AnnouncementsFe
                             <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
                                 {announcement.title}
                             </span>
+                            <div className="ml-auto shrink-0">
+                                <CommonChip
+                                    label={AUDIENCE_LABELS[announcement.target_audience]}
+                                    variant="light"
+                                />
+                            </div>
                         </div>
                         <p className="line-clamp-2 m-0 text-(--mui-palette-text-secondary) text-xs">
                             {announcement.content}

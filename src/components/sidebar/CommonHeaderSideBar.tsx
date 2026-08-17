@@ -1,45 +1,47 @@
 import ArrowIconDown from '@components/icons/ArrowIconDown';
 import CommonHeaderSubtitle from '@components/sidebar/CommonHeaderSubtitle';
 import { CommonHeaderTitle } from '@components/sidebar/CommonHeaderTitle';
-import { IconButtonProps } from '@mui/material/IconButton';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { PushPinIcon, PushPinSlashIcon } from '@phosphor-icons/react';
 import { HTMLAttributesDivElement } from '@type/common.type';
 import { SideBarVariant } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
 export interface CommonHeaderSideBarProps extends HTMLAttributesDivElement {
-    // Props spread onto the arrow IconButton
     buttonProps?: IconButtonProps;
 
-    // Whether to show the dropdown arrow icon
     hasArrow?: boolean;
 
-    // Whether the arrow is in expanded (down) state
     isExpanded?: boolean;
 
-    // Logo element displayed in the header
+    isLocked?: boolean;
+
     logo?: ReactNode;
 
-    // Subtitle text displayed below the title
     subtitle?: string;
 
-    // Visual variant (controls text colors)
     variant?: SideBarVariant;
+
+    onToggleLock?: VoidFunction;
 }
 
 /**
  * CommonHeaderSideBar
  *
- * A reusable sidebar header with logo, title, subtitle, and optional dropdown arrow.
- * Supports dark and light variants.
+ * A reusable sidebar header with logo, title, subtitle, and a lock button that
+ * pins the sidebar open. Collapses to a centred logo mark when the sidebar is
+ * rendered as an icon rail. Supports dark and light variants.
  *
  * @example
  * <CommonHeaderSideBar
- *   logo={<img src={logo} alt="logo" />}
+ *   isExpanded
+ *   isLocked={false}
  *   subtitle="Super User Access"
+ *   title="AU-JAS LMS"
  *   variant="dark"
- *   hasArrow
- *   onArrowClick={() => {}}
+ *   onToggleLock={() => {}}
  * />
  */
 export default function CommonHeaderSideBar({
@@ -47,45 +49,103 @@ export default function CommonHeaderSideBar({
     className,
     hasArrow,
     isExpanded = true,
+    isLocked = false,
     logo,
     subtitle,
     title,
     variant = 'dark',
+    onToggleLock,
     ...props
 }: CommonHeaderSideBarProps) {
     const headerVariantStyles = {
         dark: {
             titleColor: 'text-[var(--mui-tokens-color-common-white)]',
-            subtitleColor: 'text-[var(--mui-tokens-color-common-white)]'
+            subtitleColor: 'text-[var(--mui-tokens-color-common-white)]',
+            markColor: 'bg-white/10 text-[var(--mui-tokens-color-common-white)]',
+            lockColor: 'text-[var(--mui-tokens-color-common-white)] hover:bg-white/10'
         },
         light: {
             titleColor: 'text-[var(--mui-tokens-color-neutral-900)]',
-            subtitleColor: 'text-[var(--mui-tokens-color-neutral-500)]'
+            subtitleColor: 'text-[var(--mui-tokens-color-neutral-500)]',
+            markColor: 'bg-[var(--mui-tokens-color-neutral-100)] text-[var(--mui-tokens-color-neutral-900)]',
+            lockColor: 'text-[var(--mui-tokens-color-neutral-600)] hover:bg-[var(--mui-tokens-color-neutral-100)]'
         }
-    }; // Predefined styles for dark and light variants
-    const { titleColor, subtitleColor } = headerVariantStyles[variant]; // Destructure styles based on the current variant
+    };
+    const {
+        lockColor,
+        markColor,
+        subtitleColor,
+        titleColor
+    } = headerVariantStyles[variant];
+
+    const logoMark = logo ?? (
+        <span
+            className={
+                classMerge(
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-(--mui-tokens-radius-md) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold)',
+                    markColor
+                )
+            }
+        >
+            {title?.trim()
+                .charAt(0) ?? 'A'}
+        </span>
+    );
 
     return (
         <div
             className={
                 classMerge(
-                    'flex items-center gap-(--mui-tokens-spacing-4) whitespace-nowrap px-(--mui-tokens-spacing-6) py-(--mui-tokens-spacing-7)',
+                    'flex shrink-0 items-center gap-(--mui-tokens-spacing-4) whitespace-nowrap py-(--mui-tokens-spacing-7)',
+                    isExpanded
+                        ? 'px-(--mui-tokens-spacing-6)'
+                        : 'justify-center px-(--mui-tokens-spacing-2)',
                     className
                 )
             }
             {...props}
         >
-            {logo}
-            <div className="flex-1 min-w-0">
-                <CommonHeaderTitle
-                    colorClassName={titleColor}
-                    text={title}
-                />
-                {subtitle && <CommonHeaderSubtitle
-                    colorClassName={subtitleColor}
-                    text={subtitle}
-                />}
-            </div>
+            {logoMark}
+            {isExpanded && (
+                <div className="flex-1 min-w-0">
+                    <CommonHeaderTitle
+                        colorClassName={titleColor}
+                        text={title}
+                    />
+                    {subtitle && <CommonHeaderSubtitle
+                        colorClassName={subtitleColor}
+                        text={subtitle}
+                    />}
+                </div>
+            )}
+            {isExpanded && onToggleLock && (
+                <Tooltip
+                    placement="right"
+                    title={
+                        isLocked
+                            ? 'Unpin sidebar'
+                            : 'Pin sidebar open'
+                    }
+                >
+                    <IconButton
+                        className={
+                            classMerge(
+                                'shrink-0',
+                                lockColor
+                            )
+                        }
+                        size="small"
+                        onClick={onToggleLock}
+                    >
+                        {isLocked
+                            ? <PushPinIcon
+                                size={18}
+                                weight="fill"
+                            />
+                            : <PushPinSlashIcon size={18} />}
+                    </IconButton>
+                </Tooltip>
+            )}
             {hasArrow && <ArrowIconDown
                 buttonProps={buttonProps}
                 isExpanded={isExpanded}

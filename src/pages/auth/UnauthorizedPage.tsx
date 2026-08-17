@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +18,11 @@ export default function UnauthorizedPage() {
         else {
             navigate('/login');
         }
+    }
+
+    async function handleSignOut() {
+        await logout();
+        navigate('/login', { replace: true });
     }
 
     return (
@@ -44,6 +50,13 @@ export default function UnauthorizedPage() {
                     Go to My Dashboard
                 </CommonButton>
             </div>
+            <button
+                className="cursor-pointer text-(--mui-palette-primary-main) text-sm"
+                type="button"
+                onClick={handleSignOut}
+            >
+                Sign out
+            </button>
         </div>
     );
 }

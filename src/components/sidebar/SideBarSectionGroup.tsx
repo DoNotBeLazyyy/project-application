@@ -1,5 +1,6 @@
 import SideBarAccordionGroup from '@components/sidebar/SideBarAccordionGroup';
 import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
+import { useSideBarContext } from '@contexts/SideBarContext';
 import { SideBarSection, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 import { isSideBarGroup } from '@utils/sidebar.util';
@@ -39,9 +40,23 @@ export default function SideBarSectionGroup({
     styles,
     variant
 }: SideBarSectionGroupProps) {
+    const { isExpanded } = useSideBarContext();
+
     return (
         <div className="flex flex-col gap-(--mui-tokens-spacing-1)">
-            {section.sectionLabel && (
+            {section.sectionLabel && !isExpanded && (
+                <div
+                    className={
+                        classMerge(
+                            'mb-(--mui-tokens-spacing-2) h-px w-full',
+                            variant === 'dark'
+                                ? 'bg-white/15'
+                                : 'bg-black/10'
+                        )
+                    }
+                />
+            )}
+            {section.sectionLabel && isExpanded && (
                 <p
                     className={
                         classMerge(

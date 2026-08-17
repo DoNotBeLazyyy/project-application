@@ -4,6 +4,7 @@ import NotificationBell from '@components/notification/NotificationBell';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
+import SideBarExpandedOnly from '@components/sidebar/SideBarExpandedOnly';
 import { ROLE_HOME, resolvePanelLabel } from '@constants/role.constant';
 import {
     ChartLineUpIcon, ClipboardTextIcon, ListChecksIcon, ListIcon, SignOutIcon, SquaresFourIcon
@@ -19,7 +20,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 export default function StudentLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarLocked, setIsSidebarLocked] = useState(false);
     const userProfile = useAppStore((s) => s.userProfile);
     const activeRole = useAppStore((s) => s.activeRole);
     const availableRoles = useAppStore((s) => s.availableRoles);
@@ -78,7 +79,7 @@ export default function StudentLayout() {
     ], [pathname, navigate]);
 
     function handleToggleSidebar() {
-        setIsSidebarOpen((prev) => !prev);
+        setIsSidebarLocked((prev) => !prev);
     }
 
     function handleRoleChange(event: ChangeEventInputTextarea) {
@@ -108,24 +109,27 @@ export default function StudentLayout() {
                     subtitle: resolvePanelLabel(activeRole, 'Student'),
                     title: 'AU-JAS LMS'
                 }}
-                isOpen={isSidebarOpen}
+                isOpen={isSidebarLocked}
                 variant="dark"
+                onToggleLock={handleToggleSidebar}
             >
-                {availableRoles.length > 1 && (
-                    <div className="flex flex-col gap-1 mb-4">
-                        <span className="text-white/60 text-xs">
-                            Switch Role
-                        </span>
-                        <CommonSelect
-                            fullWidth
-                            options={roleOptions}
-                            size="small"
-                            value={activeRole ?? ''}
-                            variant="outlined"
-                            onChange={handleRoleChange}
-                        />
-                    </div>
-                )}
+                <SideBarExpandedOnly>
+                    {availableRoles.length > 1 && (
+                        <div className="flex flex-col gap-1 mb-4">
+                            <span className="text-white/60 text-xs">
+                                Switch Role
+                            </span>
+                            <CommonSelect
+                                fullWidth
+                                options={roleOptions}
+                                size="small"
+                                value={activeRole ?? ''}
+                                variant="outlined"
+                                onChange={handleRoleChange}
+                            />
+                        </div>
+                    )}
+                </SideBarExpandedOnly>
                 <CommonSideBarList
                     sections={navSections}
                     variant="dark"

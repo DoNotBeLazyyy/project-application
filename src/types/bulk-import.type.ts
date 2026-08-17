@@ -3,6 +3,10 @@ export interface BulkImportResult {
     errors: string[];
 }
 
+export interface BulkProvisionResult extends BulkImportResult {
+    failed_auth_ids: string[] | null;
+}
+
 export interface BulkImportError {
     row: number;
     code: string;

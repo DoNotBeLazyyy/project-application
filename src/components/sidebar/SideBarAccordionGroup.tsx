@@ -1,8 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import SubItemBorderLine from '@components/sidebar/SubItemBorderLine';
+import { useSideBarContext } from '@contexts/SideBarContext';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Accordion, AccordionSummary } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import Tooltip from '@mui/material/Tooltip';
 import { SideBarGroup, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
 
@@ -36,6 +38,7 @@ export default function SideBarAccordionGroup({
     styles,
     variant
 }: SideBarAccordionGroupProps) {
+    const { isExpanded } = useSideBarContext();
     const {
         defaultExpanded,
         icon,
@@ -53,6 +56,54 @@ export default function SideBarAccordionGroup({
         subItemHover,
         subItemText
     } = styles; // Destructure styles for easier access.
+    const activeSubItem = items.find((subItem) => subItem.isActive); // The highlighted sub-item, used as the rail click target.
+
+    if (!isExpanded) {
+        return (
+            <Tooltip
+                placement="right"
+                title={label}
+            >
+                <CommonButton
+                    className={
+                        classMerge(
+                            'flex w-full items-center justify-center rounded-(--mui-tokens-radius-md) transition-colors',
+                            activeSubItem
+                                ? subItemActive
+                                : classMerge(
+                                    subItemText,
+                                    subItemHover
+                                )
+                        )
+                    }
+                    sx={{
+                        minWidth: 0,
+                        backgroundColor: 'transparent',
+                        px: 'var(--mui-tokens-spacing-2)',
+                        py: 'var(--mui-tokens-spacing-3)',
+                        color: 'inherit',
+                        '&:hover': {
+                            backgroundColor: 'transparent'
+                        }
+                    }}
+                    onClick={
+                        activeSubItem?.onClick ?? items[0]?.onClick
+                    }
+                >
+                    <span
+                        className={
+                            classMerge(
+                                'flex shrink-0 [&>svg]:h-6 [&>svg]:w-6',
+                                groupIcon
+                            )
+                        }
+                    >
+                        {icon}
+                    </span>
+                </CommonButton>
+            </Tooltip>
+        );
+    }
 
     return (
         <Accordion

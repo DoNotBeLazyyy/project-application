@@ -1,12 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
-import {
-    getAcademicThresholds, updateAcademicThresholds
-} from '@services/academic-threshold.service';
-import {
-    AcademicThreshold, AcademicThresholdCategory, AcademicThresholdsFormValues
-} from '@type/academic-threshold.type';
+import { getAcademicThresholds, updateAcademicThresholds } from '@services/academic-threshold.service';
+import { AcademicThreshold, AcademicThresholdCategory, AcademicThresholdsFormValues } from '@type/academic-threshold.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, FieldErrors, useForm } from 'react-hook-form';

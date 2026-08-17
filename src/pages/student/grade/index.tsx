@@ -1,10 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonCard from '@components/card/CommonCard';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
+import MyGradesFilterForm from '@pages/student/grade/MyGradesFilterForm';
 import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';
 import { SortStringDto } from '@type/http.type';
@@ -17,9 +16,13 @@ import { useNavigate } from 'react-router-dom';
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'course_code', label: 'Course Code' },
     { field: 'course_title', label: 'Course Title' },
+    { field: 'section_code', label: 'Section' },
     { field: 'term_label', label: 'Term' },
+    { field: 'faculty_name', label: 'Faculty' },
     { field: 'grading_period_sequence', label: 'Grading Period' }
 ];
+
+const FILTER_FORM_ID = 'filter-my-grades-form';
 
 function formatGrade(value: number | null, isEvaluated: boolean, fallback: string | null = null): string {
     if (!isEvaluated) {
@@ -36,35 +39,24 @@ function formatGrade(value: number | null, isEvaluated: boolean, fallback: strin
 export default function StudentGrades() {
     const navigate = useNavigate();
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
-    const [activeTermId, setActiveTermId] = useState('');
+    const [activeFilters, setActiveFilters] = useState<MyGradesFilterValues | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const filterMethods = useForm<MyGradesFilterValues>({
         defaultValues: { term_id: '' }
     });
-
-    const watchedTermId = filterMethods.watch('term_id');
 
     useEffect(function() {
         async function fetchTerms() {
             const result = await getTerms();
 
             if (result.data) {
-                const options = result.data.map((t) => ({ label: t.label, value: t.id }));
-                setTermOptions(options);
-
-                if (options.length > 0) {
-                    filterMethods.setValue('term_id', options[0].value);
-                    setActiveTermId(options[0].value);
-                }
+                setTermOptions(result.data.map((t) => ({ label: t.label, value: t.id })));
             }
         }
 
         fetchTerms();
     }, []);
-
-    useEffect(function() {
-        setActiveTermId(watchedTermId);
-    }, [watchedTermId]);
 
     const columnDefs = useMemo<ColDef<MyGradeListRow>[]>(function() {
         return [
@@ -84,15 +76,22 @@ export default function StudentGrades() {
                 field: 'section_code',
                 flex: 1,
                 headerName: 'Section',
-                sortable: false
+                sortable: true
+            },
+            {
+                field: 'term_label',
+                flex: 2,
+                headerName: 'Term',
+                sortable: true
             },
             {
                 field: 'faculty_name',
                 flex: 2,
                 headerName: 'Faculty',
-                sortable: false
+                sortable: true
             },
             {
+                colId: 'grading_period_sequence',
                 field: 'grading_period_name',
                 flex: 1,
                 headerName: 'Period',
@@ -159,7 +158,7 @@ export default function StudentGrades() {
         _search: string,
         sort: SortStringDto[]
     ) {
-        const result = await listStudentGrades(page, size, sort, activeTermId);
+        const result = await listStudentGrades(page, size, sort, activeFilters?.term_id ?? '');
 
         if (!result.data) {
             return result;
@@ -179,35 +178,57 @@ export default function StudentGrades() {
         };
     }
 
+    function handleFilterSubmit(values: MyGradesFilterValues) {
+        setActiveFilters(values);
+        setIsFilterOpen(false);
+    }
+
+    function handleFilterReset() {
+        filterMethods.reset({ term_id: '' });
+        setActiveFilters(null);
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
-            <CommonCard className="flex gap-3 items-center p-3">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm whitespace-nowrap">
-                    Term
-                </span>
-                <div className="w-72">
-                    <ValidCommonSelect
-                        control={filterMethods.control}
-                        fullWidth
-                        name="term_id"
-                        options={termOptions}
-                        size="small"
-                    />
-                </div>
-            </CommonCard>
             <div className="flex-1 min-h-0">
                 <CommonTableCard<MyGradeListRow>
                     cardHeaderProps={{
                         subheader: 'Released grades. Complete the faculty evaluation to unlock a locked row.',
                         title: 'My Grades'
                     }}
-                    dependencies={[activeTermId]}
+                    dependencies={[activeFilters]}
+                    filterModalProps={{
+                        cardProps: {
+                            cardHeaderProps: {
+                                subheader: 'Filter your grades by term.',
+                                title: 'Filter Grades'
+                            }
+                        },
+                        confirmText: 'Apply Filters',
+                        formId: FILTER_FORM_ID,
+                        formContent: (
+                            <MyGradesFilterForm
+                                control={filterMethods.control}
+                                id={FILTER_FORM_ID}
+                                termOptions={termOptions}
+                                onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
+                            />
+                        ),
+                        onReset: handleFilterReset,
+                        open: isFilterOpen,
+                        onClose: function() {
+                            setIsFilterOpen(false);
+                        }
+                    }}
                     sortColumns={SORT_COLUMNS}
                     tableProps={{
                         leadingColumnDefs: columnDefs
                     }}
                     uniqueIdKey="row_id"
                     onFetch={fetchGrades}
+                    onFilter={function() {
+                        setIsFilterOpen(true);
+                    }}
                 />
             </div>
         </div>

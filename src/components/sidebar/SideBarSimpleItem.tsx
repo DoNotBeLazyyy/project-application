@@ -1,4 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
+import { useSideBarContext } from '@contexts/SideBarContext';
+import Tooltip from '@mui/material/Tooltip';
 import { SideBarItem } from '@type/sidebar.types';
 import { VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
@@ -15,7 +17,8 @@ interface SideBarSimpleItemProps {
  * SideBarSimpleItem
  *
  * Renders a single clickable sidebar item with an optional icon and label.
- * Applies active and hover styles based on the current sidebar variant.
+ * Collapses to an icon-only button with a tooltip when the sidebar is rendered
+ * as a rail. Applies active and hover styles based on the current sidebar variant.
  *
  * @example
  * <SideBarSimpleItem
@@ -23,7 +26,7 @@ interface SideBarSimpleItemProps {
  *         label: "Dashboard",
  *         icon: <DashboardIcon />,
  *         isActive: true,
- *         onClick: () => console.log("Dashboard clicked")
+ *         onClick: () => {}
  *     }}
  *     styles={variantStyles}
  * />
@@ -32,6 +35,7 @@ export default function SideBarSimpleItem({
     item,
     styles
 }: SideBarSimpleItemProps) {
+    const { isExpanded } = useSideBarContext();
     const {
         icon,
         isActive,
@@ -46,49 +50,67 @@ export default function SideBarSimpleItem({
     } = styles; // Destructure styles for easier access.
 
     return (
-        <CommonButton
-            className={
-                classMerge(
-                    'flex w-fit items-center rounded-(--mui-tokens-radius-md) text-left transition-colors',
-                    isActive
-                        ? itemActive
-                        : classMerge(
-                            itemText,
-                            itemHover
-                        )
-                )
+        <Tooltip
+            placement="right"
+            title={
+                isExpanded
+                    ? ''
+                    : label
             }
-            sx={{
-                gap: '10px',
-                backgroundColor: 'transparent',
-                px: 'var(--mui-tokens-spacing-4)',
-                py: 'var(--mui-tokens-spacing-3)',
-                fontSize: 'var(--mui-tokens-fontSize-sm)',
-                fontWeight: 'var(--mui-tokens-fontWeight-normal)',
-                color: 'inherit',
-                '&:hover': {
-                    backgroundColor: 'transparent'
-                },
-                '& .sidebar-icon svg': {
-                    height: 'var(--mui-tokens-spacing-6)',
-                    width: 'var(--mui-tokens-spacing-6)'
-                }
-            }}
-            onClick={onClick}
         >
-            {icon && (
-                <span
-                    className={
-                        classMerge(
-                            'sidebar-icon flex shrink-0',
-                            isActive && itemIcon
-                        )
+            <CommonButton
+                className={
+                    classMerge(
+                        'flex items-center rounded-(--mui-tokens-radius-md) text-left transition-colors',
+                        isExpanded
+                            ? 'w-fit'
+                            : 'w-full justify-center',
+                        isActive
+                            ? itemActive
+                            : classMerge(
+                                itemText,
+                                itemHover
+                            )
+                    )
+                }
+                sx={{
+                    gap: isExpanded
+                        ? '10px'
+                        : 0,
+                    minWidth: 0,
+                    backgroundColor: 'transparent',
+                    px: isExpanded
+                        ? 'var(--mui-tokens-spacing-4)'
+                        : 'var(--mui-tokens-spacing-2)',
+                    py: 'var(--mui-tokens-spacing-3)',
+                    fontSize: 'var(--mui-tokens-fontSize-sm)',
+                    fontWeight: 'var(--mui-tokens-fontWeight-normal)',
+                    color: 'inherit',
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                        backgroundColor: 'transparent'
+                    },
+                    '& .sidebar-icon svg': {
+                        height: 'var(--mui-tokens-spacing-6)',
+                        width: 'var(--mui-tokens-spacing-6)'
                     }
-                >
-                    {icon}
-                </span>
-            )}
-            {label}
-        </CommonButton>
+                }}
+                onClick={onClick}
+            >
+                {icon && (
+                    <span
+                        className={
+                            classMerge(
+                                'sidebar-icon flex shrink-0',
+                                isActive && itemIcon
+                            )
+                        }
+                    >
+                        {icon}
+                    </span>
+                )}
+                {isExpanded && label}
+            </CommonButton>
+        </Tooltip>
     );
 }
