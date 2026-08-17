@@ -3,6 +3,7 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
+import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
@@ -103,6 +104,11 @@ export default function SystemSettings() {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    }
+
+    function handleLogoRemove() {
+        methods.setValue('institution_logo_url', '', { shouldDirty: true });
+        setLogoPreview(null);
     }
 
     async function handleSubmit(values: SystemSettingsFormValues) {
@@ -215,46 +221,63 @@ export default function SystemSettings() {
                     Configure institution-wide settings for the system.
                     </p>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Institution Logo
-                    </span>
-                    <div className="flex gap-4 items-center">
-                        {logoPreview
-                            ? (
-                                <img
-                                    alt="Institution logo"
-                                    className="border border-(--mui-palette-divider) h-16 object-contain rounded-lg w-16"
-                                    src={logoPreview}
-                                />
-                            )
-                            : (
-                                <div className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) flex h-16 items-center justify-center rounded-lg w-16">
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    No logo
-                                    </span>
-                                </div>
-                            )
-                        }
-                        <input
-                            accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                            className="hidden"
-                            ref={fileInputRef}
-                            type="file"
-                            onChange={handleLogoChange}
-                        />
-                        <CommonButton
-                            disabled={isUploadingLogo}
-                            size="small"
-                            variant="outlined"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            {isUploadingLogo
-                                ? 'Uploading...'
-                                : 'Upload Logo'
-                            }
-                        </CommonButton>
+                <div className="flex flex-col gap-4 items-center sm:flex-row sm:items-center">
+                    {logoPreview
+                        ? (
+                            <img
+                                alt="Institution logo"
+                                className="bg-white border border-(--mui-palette-divider) h-24 object-contain p-2 rounded-full shrink-0 w-24"
+                                src={logoPreview}
+                            />
+                        )
+                        : (
+                            <span className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) flex h-24 items-center justify-center rounded-full shrink-0 text-(--mui-palette-text-secondary) text-xs w-24">
+                                No logo
+                            </span>
+                        )
+                    }
+                    <div className="flex flex-col gap-2 items-center sm:items-start">
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                            Institution Logo
+                        </h2>
+                        <p className="max-w-xs text-(--mui-palette-text-secondary) text-center text-xs sm:text-left">
+                            JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed
+                            documents.
+                        </p>
+                        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                            <CommonButton
+                                loading={isUploadingLogo}
+                                size="small"
+                                startIcon={<CameraIcon />}
+                                variant="contained"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {logoPreview
+                                    ? 'Change Logo'
+                                    : 'Upload Logo'
+                                }
+                            </CommonButton>
+                            {logoPreview && (
+                                <CommonButton
+                                    color="error"
+                                    disabled={isUploadingLogo}
+                                    size="small"
+                                    startIcon={<TrashIcon />}
+                                    variant="outlined"
+                                    onClick={handleLogoRemove}
+                                >
+                                    Remove
+                                </CommonButton>
+                            )}
+                        </div>
                     </div>
+                    <input
+                        accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                        className="hidden"
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleLogoChange}
+                    />
                 </div>
                 <form
                     id={SETTINGS_FORM_ID}

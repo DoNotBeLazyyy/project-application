@@ -32,10 +32,10 @@ async function openSubmissionFile(path: string) {
 }
 
 async function downloadAttachment(fileUrl: string, fileName: string) {
-    const url = await getAttachmentSignedUrl(fileUrl);
-    if (!url) return;
+    const result = await getAttachmentSignedUrl(fileUrl);
+    if (!result.data) return;
     const anchor = document.createElement('a');
-    anchor.href = url;
+    anchor.href = result.data;
     anchor.download = fileName;
     anchor.target = '_blank';
     anchor.click();

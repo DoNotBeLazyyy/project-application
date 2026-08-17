@@ -1,3 +1,5 @@
+import { ChangeEventInputTextarea } from '@type/common.type';
+
 type ClearableElement = HTMLInputElement | HTMLTextAreaElement;
 
 export function clearInputElement(element: ClearableElement | null | undefined) {
@@ -13,6 +15,13 @@ export function clearInputElement(element: ClearableElement | null | undefined) 
     valueSetter?.call(element, '');
     element.dispatchEvent(new Event('input', { bubbles: true }));
     element.focus();
+}
+
+export function buildElementChangeEvent(element: ClearableElement) {
+    return {
+        currentTarget: element,
+        target: element
+    } as unknown as ChangeEventInputTextarea;
 }
 
 export function hasClearableValue(value: unknown) {

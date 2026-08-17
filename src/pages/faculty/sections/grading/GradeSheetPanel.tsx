@@ -1,20 +1,24 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
-import { CalculatorIcon } from '@phosphor-icons/react';
-import { GradeSheetRow, GradingComponent } from '@type/faculty.type';
+import { CalculatorIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
+import { GradeCalculationFailure, GradeSheetRow, GradingComponent } from '@type/faculty.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface GradeSheetPanelProps {
     components: GradingComponent[];
     gradeSheet: GradeSheetRow[];
+    calculationFailures?: GradeCalculationFailure[];
     onCalculate: () => Promise<void>;
+    onDismissFailures?: () => void;
 }
 
 export default function GradeSheetPanel({
     components,
     gradeSheet,
-    onCalculate
+    calculationFailures,
+    onCalculate,
+    onDismissFailures
 }: GradeSheetPanelProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
@@ -85,6 +89,42 @@ export default function GradeSheetPanel({
                     Calculate Grades
                 </CommonButton>
             </div>
+            {calculationFailures && calculationFailures.length > 0 && (
+                <div className="bg-(--mui-palette-error-main)/10 border border-(--mui-palette-error-main) flex flex-col gap-2 max-h-40 overflow-y-auto p-3 rounded-lg">
+                    <div className="flex gap-2 items-center text-(--mui-palette-error-main)">
+                        <WarningCircleIcon size={16} weight="fill" />
+                        <p className="font-semibold text-sm">
+                            {calculationFailures.length} student(s) could not be calculated
+                        </p>
+                        {onDismissFailures && (
+                            <button
+                                className="cursor-pointer ml-auto shrink-0"
+                                title="Dismiss"
+                                type="button"
+                                onClick={onDismissFailures}
+                            >
+                                <XIcon size={14} weight="bold" />
+                            </button>
+                        )}
+                    </div>
+                    <ul className="flex flex-col gap-1">
+                        {calculationFailures.map(function(failure) {
+                            return (
+                                <li
+                                    className="text-(--mui-palette-text-secondary) text-xs"
+                                    key={failure.enrollment_id}
+                                >
+                                    <span className="font-medium text-(--mui-palette-text-primary)">
+                                        {failure.full_name ?? failure.student_number ?? failure.enrollment_id}
+                                    </span>
+                                    {' — '}
+                                    {failure.reason ?? 'No reason was returned.'}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
             <div className="flex-1 min-h-0">
                 <CommonTable<GradeSheetRow>
                     leadingColumnDefs={columnDefs}

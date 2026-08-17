@@ -3,6 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import StatCard from '@components/card/StatCard';
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
@@ -13,6 +14,7 @@ import { getStudentDashboard } from '@services/student-portal.service';
 import { StudentInsight } from '@type/analytics.type';
 import { AssessmentType } from '@type/assessment.type';
 import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
+import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,7 +27,7 @@ const ASSESSMENT_TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'war
     'Lab Report': 'warning'
 };
 
-type StudentStatKey = 'enrolled' | 'upcoming' | 'pending';
+type StudentStatKey = 'enrolled' | 'upcoming' | 'released';
 
 interface StudentStatCard {
     icon: ReactNode;
@@ -58,30 +60,35 @@ const STAT_CARDS: StudentStatCard[] = [
         iconBg: 'bg-(--mui-palette-info-light)',
         iconColor: 'text-(--mui-palette-info-main)',
         label: 'Grades to View',
-        statKey: 'pending',
+        statKey: 'released',
         to: '/student/grade'
     }
 ];
 
-function resolveStatValue(dashboard: StudentDashboardData | null, statKey: StudentStatKey): number | string {
+function resolveStudentStatValue(dashboard: StudentDashboardData | null, statKey: StudentStatKey): number | string {
     if (!dashboard) {
         return '—';
     }
 
     if (statKey === 'enrolled') {
-        return dashboard.enrolled_count ?? '—';
+        return resolveStatValue(dashboard.enrolled_count);
     }
 
     if (statKey === 'upcoming') {
-        return dashboard.upcoming_assessments?.length ?? '—';
+        return resolveStatValue(dashboard.upcoming_count);
     }
 
-    return dashboard.pending_grades_count ?? '—';
+    return resolveStatValue(dashboard.released_grades_count);
 }
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
-    const { announcements, events } = useDashboardFeeds();
+    const {
+        announcements,
+        announcementsError,
+        events,
+        eventsError
+    } = useDashboardFeeds();
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
     const [insight, setInsight] = useState<StudentInsight | null>(null);
 
@@ -106,6 +113,11 @@ export default function StudentDashboard() {
 
     return (
         <div className="flex flex-col gap-4">
+            <DashboardHeader
+                subtitle="Your classes, assessments, and grades at a glance."
+                title="Dashboard"
+            />
+
             <div className="gap-4 grid grid-cols-1 md:grid-cols-3">
                 {STAT_CARDS.map((card) => (
                     <StatCard
@@ -115,7 +127,7 @@ export default function StudentDashboard() {
                         key={card.label}
                         label={card.label}
                         to={card.to}
-                        value={resolveStatValue(dashboard, card.statKey)}
+                        value={resolveStudentStatValue(dashboard, card.statKey)}
                     />
                 ))}
             </div>
@@ -176,8 +188,14 @@ export default function StudentDashboard() {
             </CommonCard>
 
             <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
-                <AnnouncementsFeedCard announcements={announcements} />
-                <EventsFeedCard events={events} />
+                <AnnouncementsFeedCard
+                    announcements={announcements}
+                    error={announcementsError}
+                />
+                <EventsFeedCard
+                    error={eventsError}
+                    events={events}
+                />
             </div>
 
             <InstitutionalIdentityCard />

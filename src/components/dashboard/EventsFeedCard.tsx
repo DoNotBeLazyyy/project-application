@@ -6,6 +6,7 @@ import {
     ClockIcon,
     MapPinIcon,
     UsersThreeIcon,
+    WarningCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { EventFeedRow } from '@type/event.type';
@@ -13,6 +14,7 @@ import { ReactNode, useState } from 'react';
 
 interface EventsFeedCardProps {
     events: EventFeedRow[];
+    error?: string | null;
 }
 
 interface EventDetailModalProps {
@@ -182,7 +184,7 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
     );
 }
 
-export default function EventsFeedCard({ events }: EventsFeedCardProps) {
+export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
     const [detailEvent, setDetailEvent] = useState<EventFeedRow | null>(null);
 
     function handleClose() {
@@ -198,7 +200,22 @@ export default function EventsFeedCard({ events }: EventsFeedCardProps) {
             className="flex flex-1 flex-col"
         >
             <div className="flex flex-col gap-2 p-4 pt-0">
-                {events.length === 0 && (
+                {error && (
+                    <div className="flex flex-col gap-2 items-center py-6">
+                        <WarningCircleIcon
+                            className="text-(--mui-palette-error-main)"
+                            size={28}
+                            weight="fill"
+                        />
+                        <p className="m-0 text-(--mui-palette-error-main) text-sm">
+                            Upcoming events could not be loaded.
+                        </p>
+                        <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
+                            {error}
+                        </p>
+                    </div>
+                )}
+                {!error && events.length === 0 && (
                     <div className="flex flex-col gap-2 items-center py-6">
                         <CalendarBlankIcon
                             className="text-(--mui-palette-text-disabled)"

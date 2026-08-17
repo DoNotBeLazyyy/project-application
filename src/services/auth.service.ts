@@ -45,6 +45,25 @@ export async function logout(): Promise<void> {
         .clearSession();
 }
 
+export async function refreshSession(): Promise<ServiceResult<Session>> {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error || !data.session) {
+        return {
+            data: null,
+            error: error
+                ? parseServiceError(error)
+                : {
+                    code: null,
+                    message: 'Your session could not be renewed. Please sign in again.',
+                    status: null
+                }
+        };
+    }
+
+    return { data: data.session, error: null };
+}
+
 export async function getAuthContext(): Promise<ServiceResult<AuthContext>> {
     return callRpc<AuthContext>('fn_get_auth_context');
 }

@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
+    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -181,8 +181,8 @@ export async function listGradeSheet(
 export async function calculateAllGradesForPeriod(
     sectionId: string,
     gradingPeriodId: string
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_calculate_all_grades_for_period', {
+): Promise<ServiceResult<GradeCalculationResult>> {
+    return callRpc<GradeCalculationResult>('fn_calculate_all_grades_for_period', {
         p_section_id: sectionId,
         p_grading_period_id: gradingPeriodId
     });

@@ -1,5 +1,5 @@
 import { supabase } from '@services/supabase.client';
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, callStorage } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
@@ -116,15 +116,17 @@ export async function uploadSubmissionFile(
 ): Promise<ServiceResult<SubmissionFileAttachment>> {
     const path = `${submissionId}/${questionId}/${Date.now()}_${file.name}`;
 
-    const { error } = await supabase.storage
-        .from('submissions')
-        .upload(path, file, { upsert: false });
+    return callStorage(async function() {
+        const { error } = await supabase.storage
+            .from('submissions')
+            .upload(path, file, { upsert: false });
 
-    if (error) {
-        return { data: null, error: parseServiceError(error) };
-    }
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
 
-    return { data: { name: file.name, path }, error: null };
+        return { data: { name: file.name, path }, error: null };
+    });
 }
 
 export async function saveStudentAnswerFiles(
@@ -136,7 +138,7 @@ export async function saveStudentAnswerFiles(
         p_files: files,
         p_question_id: questionId,
         p_submission_id: submissionId
-    }, { silent: true });
+    }, { background: true });
 }
 
 export async function submitAssessment(
@@ -162,7 +164,7 @@ export async function recordFocusEvent(
     return callRpc<null>('fn_record_focus_event', {
         p_event_type: eventType,
         p_submission_id: submissionId
-    }, { silent: true });
+    }, { background: true, silent: true });
 }
 
 export async function listStudentGrades(

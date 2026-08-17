@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { login } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
@@ -119,6 +120,8 @@ export default function LoginPage() {
                         type="password"
                         variant="outlined"
                     />
+
+                    <FormErrorSummary control={methods.control} />
 
                     <CommonButton
                         disabled={isSubmitting}

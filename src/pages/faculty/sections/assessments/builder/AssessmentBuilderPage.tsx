@@ -1,22 +1,28 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import BulkImportModal from '@components/modal/BulkImportModal';
+import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
+import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
+import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
 import AssessmentSettingsForm from '@pages/faculty/sections/assessments/builder/AssessmentSettingsForm';
 import QuestionList from '@pages/faculty/sections/assessments/builder/QuestionList';
 import QuestionModal from '@pages/faculty/sections/assessments/builder/QuestionModal';
 import RubricAttachPanel from '@pages/faculty/sections/assessments/builder/RubricAttachPanel';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
-    bulkImportQuestions, createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, updateAssessment, upsertQuestion
+    bulkImportQuestions, createAssessment, deleteQuestion, getAssessmentById, getAssessmentQuestions, listAssessments, updateAssessment, upsertQuestion
 } from '@services/assessment.service';
 import { listGradingComponents, listGradingPeriodsBySection } from '@services/faculty.service';
-import { AssessmentFormValues, AssessmentQuestion, QuestionBulkRow, QuestionFormValues } from '@type/assessment.type';
+import {
+    AssessmentAttachment, AssessmentFormValues, AssessmentQuestion, QuestionBulkRow, QuestionFormValues
+} from '@type/assessment.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { isPastDateTime } from '@utils/date.util';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { formErrors } from '@utils/form.util';
+import { useEffect, useRef, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
@@ -37,12 +43,14 @@ export default function AssessmentBuilderPage() {
         ? ''
         : assessmentId);
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
+    const [attachments, setAttachments] = useState<AssessmentAttachment[]>([]);
     const [componentOptions, setComponentOptions] = useState<CommonSelectOption[]>([]);
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<AssessmentQuestion | null>(null);
     const [expandedQuestionId, setExpandedQuestionId] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isImportOpen, setIsImportOpen] = useState(false);
+    const shouldExitAfterSave = useRef(false);
 
     const settingsMethods = useForm<AssessmentFormValues>({ defaultValues: DEFAULT_ASSSESSMENT_VALUES });
     const questionMethods = useForm<QuestionFormValues>({ defaultValues: DEFAULT_QUESTION_VALUES });
@@ -125,9 +133,29 @@ export default function AssessmentBuilderPage() {
         }
 
         fetchAssessment();
+        refreshAttachments();
     }, [assessmentDbId, isNew]);
 
+    async function refreshAttachments() {
+        if (!sectionId || !assessmentDbId) {
+            return;
+        }
+
+        const result = await listAssessments(sectionId);
+
+        if (result.data) {
+            const match = result.data.find((item) => item.id === assessmentDbId);
+            setAttachments(match?.attachments ?? []);
+        }
+    }
+
+    function navigateToAssessments() {
+        navigate(`/faculty/sections/${sectionId}?tab=assessments`);
+    }
+
     async function handleSettingsSubmit(values: AssessmentFormValues) {
+        const exitAfterSave = shouldExitAfterSave.current;
+        shouldExitAfterSave.current = false;
         setIsSaving(true);
 
         try {
@@ -135,6 +163,11 @@ export default function AssessmentBuilderPage() {
                 const result = await createAssessment(sectionId, values);
 
                 if (!result.error && result.data?.id) {
+                    if (exitAfterSave) {
+                        navigateToAssessments();
+                        return;
+                    }
+
                     setAssessmentDbId(result.data.id);
                     navigate(`/faculty/sections/${sectionId}/assessments/${result.data.id}/builder`, { replace: true });
                 }
@@ -144,6 +177,10 @@ export default function AssessmentBuilderPage() {
 
                 if (!result.error) {
                     settingsMethods.reset(values);
+
+                    if (exitAfterSave) {
+                        navigateToAssessments();
+                    }
                 }
             }
         }
@@ -151,6 +188,22 @@ export default function AssessmentBuilderPage() {
             setIsSaving(false);
         }
     }
+
+    function handleSettingsError(errors: FieldErrors<AssessmentFormValues>) {
+        shouldExitAfterSave.current = false;
+        formErrors(errors, settingsMethods);
+    }
+
+    function saveSettingsThenExit() {
+        shouldExitAfterSave.current = true;
+        settingsMethods.handleSubmit(handleSettingsSubmit, handleSettingsError)();
+    }
+
+    const backGuard = useUnsavedChangesGuard({
+        isDirty: settingsMethods.formState.isDirty,
+        onDiscard: navigateToAssessments,
+        onSave: saveSettingsThenExit
+    });
 
     async function refreshQuestions() {
         const result = await getAssessmentQuestions(assessmentDbId);
@@ -221,9 +274,7 @@ export default function AssessmentBuilderPage() {
                         size="small"
                         startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                         variant="outlined"
-                        onClick={function() {
-                            navigate(`/faculty/sections/${sectionId}?tab=assessments`);
-                        }}
+                        onClick={backGuard.requestExit}
                     >
                     Back
                     </CommonButton>
@@ -244,6 +295,11 @@ export default function AssessmentBuilderPage() {
                         sectionId={sectionId}
                     />
                 )}
+                <AssessmentAttachmentPanel
+                    assessmentDbId={assessmentDbId}
+                    attachments={attachments}
+                    onAttachmentsChange={refreshAttachments}
+                />
                 <div className="flex flex-1 gap-4 min-h-0">
                     <AssessmentSettingsForm
                         componentOptions={componentOptions}
@@ -296,6 +352,14 @@ export default function AssessmentBuilderPage() {
                     watchedQuestionType={watchedQuestionType}
                     onClose={handleCloseQuestionModal}
                     onSubmit={handleQuestionSubmit}
+                />
+                <UnsavedChangesPrompt
+                    open={backGuard.isPromptOpen}
+                    saveLabel="Save and leave"
+                    subtitle="Save the assessment settings before leaving, or discard your changes."
+                    onClose={backGuard.closePrompt}
+                    onDiscard={backGuard.confirmDiscard}
+                    onSave={backGuard.confirmSave}
                 />
             </div>
         </CommonCard>

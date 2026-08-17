@@ -198,3 +198,19 @@ export interface GradeSheetRow {
     status: GradeStatus | null;
     special_grade: string | null;
 }
+
+export interface GradeCalculationFailure {
+    enrollment_id: string;
+    student_number: string | null;
+    full_name: string | null;
+    reason: string | null;
+}
+
+export interface GradeCalculationResult {
+    success: boolean;
+    message: string;
+    processed: number;
+    succeeded: number;
+    failed: number;
+    failures: GradeCalculationFailure[];
+}

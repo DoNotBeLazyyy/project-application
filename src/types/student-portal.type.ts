@@ -3,9 +3,12 @@ import { EnrollmentStatus } from '@type/enrollment.type';
 import { GradeStatus } from '@type/faculty.type';
 
 export interface StudentDashboard {
+    success: boolean;
+    message?: string;
     enrolled_count: number;
+    upcoming_count: number;
     upcoming_assessments: UpcomingAssessment[];
-    pending_grades_count: number;
+    released_grades_count: number;
 }
 
 export interface UpcomingAssessment {

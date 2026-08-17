@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import { GradeReleaseSchedule, ReleaseScheduleFormValues } from '@type/grade-release.type';
 import { formErrors } from '@utils/form.util';
@@ -76,6 +77,7 @@ export default function ReleaseScheduleForm({
             onClose={onClose}
         >
             <div className="flex flex-col gap-4">
+                <FormErrorSummary control={control} />
                 <ValidCommonDateTimePicker<ReleaseScheduleFormValues>
                     control={control}
                     disabled={isSaving}

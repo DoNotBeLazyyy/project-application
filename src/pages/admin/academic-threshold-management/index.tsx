@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { getAcademicThresholds, updateAcademicThresholds } from '@services/academic-threshold.service';
 import { AcademicThreshold, AcademicThresholdCategory, AcademicThresholdsFormValues } from '@type/academic-threshold.type';
@@ -114,7 +115,7 @@ export default function AcademicThresholdManagement() {
 
     return (
         <CommonCard className="h-full">
-            <div className="flex flex-col gap-6 h-full max-w-4xl overflow-y-auto">
+            <div className="flex flex-col gap-6 h-full w-full overflow-y-auto">
                 <div className="flex flex-col gap-1">
                     <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
                         Academic Thresholds
@@ -178,7 +179,7 @@ export default function AcademicThresholdManagement() {
                                                     />
                                                 </div>
 
-                                                <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
+                                                <div className="gap-4 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 xl:grid-cols-4">
                                                     <ValidCommonInput
                                                         control={control}
                                                         hasHelper
@@ -242,6 +243,8 @@ export default function AcademicThresholdManagement() {
                         );
                     })}
                 </form>
+
+                <FormErrorSummary control={control} />
 
                 <div className="flex gap-2 justify-start">
                     <CommonButton

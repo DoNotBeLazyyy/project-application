@@ -40,7 +40,7 @@ export async function listMyAnnouncementsFeed(
         p_page: page,
         p_search: search || null,
         p_size: size
-    }, { silent: true });
+    }, { background: true, silent: true });
 }
 
 export async function getAnnouncementById(

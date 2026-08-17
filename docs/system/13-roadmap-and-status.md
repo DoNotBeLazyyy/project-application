@@ -262,10 +262,10 @@ This was hit in real life — transferring in with a 2-unit course against AU's 
 
 ### Surviving gaps in the two-course model
 
-- **`is_split` has no backing column**, so `fn_get_course_by_id` cannot return it — the edit form reads `undefined`. Create works; only round-tripping is broken
+- ~~**`is_split` has no backing column**, so `fn_get_course_by_id` cannot return it — the edit form reads `undefined`~~ — ✅ **fixed in the frontend, no schema change.** The form now derives `is_split: Number(laboratory_units) > 0` on load. A course with lab units *is* a split course, so the derivation is exact
 - **Nothing records that `_LEC` and `_LAB` came from the same parent.** Pairing is by code convention only
 - **No auto-pairing at enrolment.** If that becomes tedious, the increment is a shared `section_group_id` driving **defaults only** — never mandatory co-enrolment, which would break the component-only flow above
-- Separately: **`updateCourse` wipes laboratory units** on every edit — see [05 §7](05-role-dean.md)
+- Separately: ~~**`updateCourse` wipes laboratory units** on every edit~~ — ✅ **fixed.** It sent `p_laboratory_units: null` hardcoded; it now sends the real value, matching `createCourse`. See [05 §7](05-role-dean.md)
 
 ---
 
@@ -283,11 +283,11 @@ This was hit in real life — transferring in with a 2-unit course against AU's 
 | SF1b | `text-area` / `checkbox` had **no** error surface at all | ✅ |
 | SF2 | Disabled controls with no stated reason | ✅ 5 controls, **4 of them faculty screens** |
 | SF3 | CSV bulk import silently mangled data | ✅ **14 parser cases pass — not runtime-tested against a live upload** |
-| **SF4** | `formErrors` lost the `window.alert` `CLAUDE.md` still documents | ⬜ **not started — blocked on a user decision** |
-| **SF5** | Errors on inactive tabs/steps are invisible | ⬜ **not started — needs a repro pass** |
-| **SF6** | `{ silent: true }` reads fail as "empty data" | ⬜ **not started** |
-| **SF7** | Write RPCs returning no `{success, message}` confirm nothing | ⬜ **not started — needs an RPC audit** |
-| **SF8** | Flows bypassing the service wrapper entirely | ⬜ **not started** |
+| **SF4** | `formErrors` lost the `window.alert` `CLAUDE.md` still documents | ✅ option (a) chosen — `FormErrorSummary` wired into `CommonForm` (**~42 forms**) plus 7 hand-rolled forms |
+| **SF5** | Errors on inactive tabs/steps are invisible | ✅ repro **ruled out** — tab boundary = form boundary; `CommonStepper` does not exist |
+| **SF6** | `{ silent: true }` reads fail as "empty data" | ✅ `silent` split into `background` + `silent`; feeds report inline |
+| **SF7** | Write RPCs returning no `{success, message}` confirm nothing | ✅ 98 audited, 6 correct-as-is, 1 real defect fixed (SQL awaiting apply) |
+| **SF8** | Flows bypassing the service wrapper entirely | ✅ new `callStorage` wrapper; `refreshSession` now logs out on failure |
 
 ### SF3 is worth calling out
 
@@ -295,11 +295,12 @@ The CSV parser had four defects, one of them delicious: **`downloadTemplate` did
 
 ### The five open items, with what this review adds
 
-- **SF4** — `CLAUDE.md` §4 claims `formErrors` "handles `window.alert` and automatic focus"; `src/utils/form.util.ts` only calls `methods.setFocus`, **a no-op on an unmounted or hidden field.** Options: restore an inline form-level summary (recommended, since `checkForMessage` already computes `{count, firstError}`), or keep focus-only and fix the doc.
-- **SF5** — named at-risk files include `SectionDetailPage.tsx`, `StudentRecordsPage.tsx`, the profile page, and the grading-config page. **Note: the student evaluation page already solves this correctly** — `flagMissingAnswers` sets errors on every missing field then `goToIndex(firstMissingIndex)` jumps the pagination to it. That is the pattern to copy.
-- **SF6** — call sites: notifications (×3), `markMaterialComplete`, `faculty-load.service.ts` (the schedule-conflict panel), `student-portal.service.ts` (file answers). **Silence is defensible for the unread-count poll and nothing else.** The [05 §10](05-role-dean.md) case is the worst: on a screen whose purpose is surfacing scheduling conflicts, **a failed query is indistinguishable from "no conflicts found."**
-- **SF7** — confirmed instance found in this review: **`fn_calculate_all_grades_for_period`** returns `{success, processed, succeeded, failed, failures}` with **no `message` key**, so the faculty "Calculate Grades" button gives no confirmation and its per-student `failures[]` is discarded. See [11 §5](11-grading-engine.md).
-- **SF8** — `ProtectedLayout` ignores the `refreshSession()` result; storage uploads bypass the wrapper entirely. **Note the tracker lists `AssessmentAttachmentPanel.tsx` as an outstanding audit target — that file is dead code and has no importer**, so faculty cannot attach files at all. The tracker is unaware of this.
+- **SF4** — ✅ **resolved.** The user chose the inline form-level summary. `checkForMessage` now returns a full `list` of errors; the new `FormErrorSummary` renders them after a failed submit and is injected by `CommonForm` for ~42 forms, with 7 hand-rolled forms wired manually. `CLAUDE.md` §4 now documents the summary as mandatory. See [silent-failure-remediation.md](../silent-failure-remediation.md) SF4.
+- **SF5** — ✅ **ruled out, not fixed** — there was nothing to fix. Every named file (`SectionDetailPage`, `StudentRecordsPage`, profile, grading-config) puts an independent form behind each tab, each with its own submit button, so a form's fields are never hidden from its own submit. The profile page uses two separate `useForm` instances. The "steps" half is moot: **`CommonStepper` does not exist** — there is no `src/components/stepper/`, only an orphaned `stepper.type.ts`, and CLAUDE.md §4 lists a component path that points at nothing. The one genuine variant, conditionally-rendered validated fields, was already handled by `shouldUnregister: true` in `EnrollmentWorkspaceModal`.
+- **SF6** — ✅ **the filed premise was wrong.** `{ silent: true }` never suppressed the toast in `callRpc`/`callFunction` — `notify()` was unconditional there; it only suppressed the loading overlay. `callQuery`/`callSingle` *did* gate the toast. One flag, two meanings. The live damage ran the *other* way: the 60s notification poll and the per-blur exam proctor event **toasted on every failure**. Now split into `background` (no overlay) and `silent` (no toast, implies background), honoured identically by all four wrappers, with every call site re-declared by intent. The dashboard feeds additionally gained a real inline error state, replacing the "No announcements right now." that a failed fetch used to render.
+- **SF7** — ✅ **98 write RPCs audited** by parsing balanced `jsonb_build_object` blocks for `'success', true` without `'message'`. 8 hits, 6 correct as-is (telemetry, per-click toggles, and a bulk import that already renders structured errors). The one real defect was the confirmed instance: **`fn_calculate_all_grades_for_period`**. Fixed in `docs/sql/sf7-grade-calculation-feedback.sql` (**awaiting apply**) — adds a `message` and enriches `failures[]` with student names — plus a frontend panel that lists the failed students, which works before the SQL lands. See [11 §5](11-grading-engine.md). **22 further write RPCs are absent from `docs/sql/` entirely and could not be audited from the repo.**
+- **SF8** — ✅ **fixed, and a fourth bypass found.** `ProtectedLayout` now logs out and states the reason instead of silently keeping a dead session after "Stay logged in". A new `callStorage` wrapper gives every storage path the same loading/toast/401 contract as `callRpc`, covering `storage.service` plus the three services that inlined their own `supabase.storage` calls. The extra find: `getAttachmentSignedUrl` returned a bare `''` on error and both callers did `if (!url) return`, making Download a permanent silent no-op.
+- **`AssessmentAttachmentPanel.tsx`** — ✅ **now mounted.** The tracker listed it as an audit target without noticing it **had no importer at all**, so faculty could not attach files to an assessment. `AssessmentBuilderPage` now renders it, sourcing attachments from `listAssessments` (the only RPC that returns them) so no new SQL is needed.
 
 > **One documentation correction:** the tracker states that `callQuery` / `callSingle` return errors with no toast at all. Reading the current wrapper, **they do notify when `!isSilent`.** The doc is stale on this point. Moot in practice — neither has any call site.
 
@@ -356,11 +357,11 @@ Everything the project intended and did not finish, in one place.
 
 | Item | Effort |
 |---|---|
-| ⬜ SF4 — decide and implement the form-error summary | Small |
-| ⬜ SF5 — repro pass, then apply the evaluation-page pattern | Medium |
-| ⬜ SF6 — remove `{ silent: true }` from everything except the notification poll | Small |
-| ⬜ SF7 — audit ~200 RPCs for missing `message` keys | Medium |
-| ⬜ SF8 — route storage and `refreshSession` through the wrapper | Small |
+| ✅ SF4 — form-error summary implemented (`FormErrorSummary`) | Done |
+| ✅ SF5 — repro ruled out; no change needed | Done |
+| ✅ SF6 — `background` vs `silent` split; dashboard feeds report inline | Done |
+| ✅ SF7 — 98 write RPCs audited; grade-calculation defect fixed | Done (SQL awaiting apply) |
+| ✅ SF8 — `callStorage` wrapper; `refreshSession` logs out on failure | Done |
 
 ### From the AI capstone spec
 

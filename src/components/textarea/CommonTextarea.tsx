@@ -4,7 +4,7 @@ import { InputBaseProps, TextField } from '@mui/material';
 import { NotchesIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, ThemeSx } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { clearInputElement } from '@utils/input.util';
+import { buildElementChangeEvent, clearInputElement } from '@utils/input.util';
 import { normalizeSx } from '@utils/theme.util';
 import {
     CSSProperties, forwardRef, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState
@@ -259,7 +259,14 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
      * @returns
      */
     function handleClear() {
-        clearInputElement(textareaElementRef.current);
+        const element = textareaElementRef.current;
+
+        clearInputElement(element);
+
+        if (element) {
+            handleChange(buildElementChangeEvent(element));
+        }
+
         onClear?.();
     }
 

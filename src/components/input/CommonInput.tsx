@@ -5,7 +5,7 @@ import {
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { clearInputElement, hasClearableValue } from '@utils/input.util';
+import { buildElementChangeEvent, clearInputElement, hasClearableValue } from '@utils/input.util';
 import {
     forwardRef, InputHTMLAttributes, MouseEvent, MutableRefObject, useCallback, useEffect, useRef, useState
 } from 'react';
@@ -98,7 +98,14 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     }
 
     function handleClear() {
-        clearInputElement(inputElementRef.current);
+        const element = inputElementRef.current;
+
+        clearInputElement(element);
+
+        if (element) {
+            handleChange(buildElementChangeEvent(element));
+        }
+
         onClear?.();
     }
 

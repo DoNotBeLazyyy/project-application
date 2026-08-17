@@ -1,5 +1,6 @@
 import StatCard from '@components/card/StatCard';
 import AnnouncementsFeedCard from '@components/dashboard/AnnouncementsFeedCard';
+import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
@@ -7,6 +8,7 @@ import {
 } from '@phosphor-icons/react';
 import { getAdminDashboardStats } from '@services/admin.service';
 import { AdminDashboardStats } from '@type/admin.type';
+import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
 
 interface DashboardCard {
@@ -67,7 +69,12 @@ const DASHBOARD_CARDS: DashboardCard[] = [
 ];
 
 export default function AdminDashboard() {
-    const { announcements, events } = useDashboardFeeds();
+    const {
+        announcements,
+        announcementsError,
+        events,
+        eventsError
+    } = useDashboardFeeds();
     const [stats, setStats] = useState<AdminDashboardStats | null>(null);
 
     useEffect(() => {
@@ -82,14 +89,10 @@ export default function AdminDashboard() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-1">
-                <h1 className="font-semibold m-0 text-(--mui-palette-text-primary) text-2xl">
-                    Dashboard
-                </h1>
-                <p className="m-0 text-(--mui-palette-text-secondary) text-sm">
-                    Welcome to the AU-JAS LMS Admin Panel
-                </p>
-            </div>
+            <DashboardHeader
+                subtitle="Welcome to the AU-JAS LMS Admin Panel"
+                title="Dashboard"
+            />
 
             <div className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                 {DASHBOARD_CARDS.map((card) => (
@@ -100,17 +103,20 @@ export default function AdminDashboard() {
                         key={card.label}
                         label={card.label}
                         to={card.to}
-                        value={stats
-                            ? stats[card.statKey]
-                            : '—'
-                        }
+                        value={resolveStatValue(stats?.[card.statKey])}
                     />
                 ))}
             </div>
 
             <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
-                <AnnouncementsFeedCard announcements={announcements} />
-                <EventsFeedCard events={events} />
+                <AnnouncementsFeedCard
+                    announcements={announcements}
+                    error={announcementsError}
+                />
+                <EventsFeedCard
+                    error={eventsError}
+                    events={events}
+                />
             </div>
         </div>
     );

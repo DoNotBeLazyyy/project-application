@@ -1,10 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
+import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, FloppyDiskIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { EntityFormMode, EntityFormModeText, EntityFormPageProps } from '@type/entity-form.type';
 import { formErrors } from '@utils/form.util';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -40,7 +41,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
     const isCreate = id === 'new' || !id || normalizedPath.endsWith('/new');
 
     const [isEditing, setIsEditing] = useState(isCreate || searchParams.get('edit') === '1');
-    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+    const shouldExitAfterSave = useRef(false);
 
     const methods = useForm<TValues>({ defaultValues });
     const { control, formState, handleSubmit, reset } = methods;
@@ -76,6 +77,9 @@ export default function EntityFormPage<TValues extends FieldValues>({
     }, [id, isCreate, fetchById, reset]);
 
     async function handleValid(values: TValues) {
+        const exitAfterSave = shouldExitAfterSave.current;
+        shouldExitAfterSave.current = false;
+
         if (isCreate) {
             const result = await onCreate?.(values);
 
@@ -91,26 +95,27 @@ export default function EntityFormPage<TValues extends FieldValues>({
         if (result && !result.error) {
             reset(values);
             setIsEditing(false);
+
+            if (exitAfterSave) {
+                navigate(backTo);
+            }
         }
     }
 
-    function requestExit() {
-        if (formState.isDirty) {
-            setIsDiscardOpen(true);
-            return;
-        }
+    const submitHandler = handleSubmit(handleValid, function(errors) {
+        shouldExitAfterSave.current = false;
+        formErrors(errors, methods);
+    });
 
-        exitEditing();
+    function navigateBack() {
+        reset();
+        navigate(backTo);
     }
 
     function exitEditing() {
-        setIsDiscardOpen(false);
+        reset();
 
-        if (isCreate || isEditing) {
-            reset();
-        }
-
-        if (isCreate || !fetchById || !isEditing) {
+        if (isCreate || !fetchById) {
             navigate(backTo);
             return;
         }
@@ -118,8 +123,21 @@ export default function EntityFormPage<TValues extends FieldValues>({
         setIsEditing(false);
     }
 
-    const submitHandler = handleSubmit(handleValid, function(errors) {
-        formErrors(errors, methods);
+    function saveThenNavigateBack() {
+        shouldExitAfterSave.current = true;
+        submitHandler();
+    }
+
+    const backGuard = useUnsavedChangesGuard({
+        isDirty: formState.isDirty,
+        onDiscard: navigateBack,
+        onSave: saveThenNavigateBack
+    });
+
+    const cancelGuard = useUnsavedChangesGuard({
+        isDirty: formState.isDirty,
+        onDiscard: exitEditing,
+        onSave: submitHandler
     });
 
     return (
@@ -131,7 +149,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
                         size="small"
                         startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                         variant="outlined"
-                        onClick={requestExit}
+                        onClick={backGuard.requestExit}
                     >
                         Back
                     </CommonButton>
@@ -165,7 +183,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
                                 color="inherit"
                                 size="small"
                                 variant="outlined"
-                                onClick={requestExit}
+                                onClick={cancelGuard.requestExit}
                             >
                                 Cancel
                             </CommonButton>
@@ -194,25 +212,22 @@ export default function EntityFormPage<TValues extends FieldValues>({
                     onSubmit: submitHandler
                 })}
             </div>
-            <ConfirmPromptModal
-                formButtonsProps={{
-                    cancelProps: {
-                        onClick: function() {
-                            setIsDiscardOpen(false);
-                        }
-                    },
-                    confirmProps: {
-                        children: 'Discard',
-                        color: 'error',
-                        onClick: exitEditing
-                    }
-                }}
-                mainContent={{ title: 'Discard unsaved changes?' }}
-                open={isDiscardOpen}
-                subContent={{ title: 'Your changes will be lost. This cannot be undone.' }}
-                onClose={function() {
-                    setIsDiscardOpen(false);
-                }}
+            <UnsavedChangesPrompt
+                open={backGuard.isPromptOpen}
+                saveLabel={isCreate
+                    ? 'Save and leave'
+                    : 'Save changes'}
+                subtitle="Save them before leaving this page, or discard them to leave without saving."
+                onClose={backGuard.closePrompt}
+                onDiscard={backGuard.confirmDiscard}
+                onSave={backGuard.confirmSave}
+            />
+            <UnsavedChangesPrompt
+                open={cancelGuard.isPromptOpen}
+                subtitle="Save them, or discard them to revert this form."
+                onClose={cancelGuard.closePrompt}
+                onDiscard={cancelGuard.confirmDiscard}
+                onSave={cancelGuard.confirmSave}
             />
         </CommonCard>
     );

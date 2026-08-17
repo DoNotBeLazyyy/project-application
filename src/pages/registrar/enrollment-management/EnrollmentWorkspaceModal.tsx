@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import CommonInput from '@components/input/CommonInput';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
@@ -408,6 +409,8 @@ export default function EnrollmentWorkspaceModal({
                             )}
                         </div>
                     )}
+
+                    <FormErrorSummary control={overrideMethods.control} />
                 </div>
             </CommonActionModal>
             <ConfirmPromptModal

@@ -207,9 +207,9 @@ The `is_split` checkbox renders **only on create**. With `p_is_split = true`, `f
 
 That is exactly the "enrolled separately, printed as separate report-card lines" requirement, achieved with **no extra schema**. An alternative `sections.delivery_mode` model was built and then **rejected and reverted** — see [13 §QA F1](13-roadmap-and-status.md) for the full reasoning, which is worth reading before touching this area.
 
-> **Gaps — one of these is a real data-loss bug**
-> - 🔴 **`updateCourse` sends `p_laboratory_units: null` unconditionally and omits `p_is_split` entirely.** Editing *any* split course — even to fix a typo in the title — **silently wipes its laboratory units**. The form loads `laboratory_units` into state and then never sends it back.
-> - **`is_split` has no backing column**, so `fn_get_course_by_id` cannot return it. The edit form reads `result.data.is_split` and gets `undefined`. The create path works; only round-tripping is broken.
+> **Gaps**
+> - ✅ **FIXED** — ~~🔴 `updateCourse` sends `p_laboratory_units: null` unconditionally.~~ Editing *any* split course — even to fix a typo in the title — **silently wiped its laboratory units**, and since `total_units` is a generated column the credit value changed with it. `updateCourse` now sends `params.is_split ? Number(params.laboratory_units) || null : null`, matching what `createCourse` already did.
+> - ✅ **FIXED** — ~~`is_split` has no backing column, so the edit form reads `undefined`.~~ Still true of the schema, and **intentionally so** (it is a create-time flag, not a column). The form now derives `is_split: Number(laboratory_units) > 0` on load, which is exact: a course with lab units is a split course. Round-tripping works without any schema change.
 > - **Nothing records that `<CODE>_LEC` and `<CODE>_LAB` came from the same parent.** Pairing is by code convention only.
 > - **No auto-pairing at enrolment** — the registrar enrols into each separately. (This is arguably correct: component-only enrolment is a real flow for transfer credit and single-component retakes.)
 
@@ -353,8 +353,8 @@ Assigned Sections list: per card, `section_code — course_code course_title`, t
 
 | # | Gap | Impact |
 |---|---|---|
-| 1 | **Editing any split course silently wipes its laboratory units** | 🔴 Data loss on a routine action |
-| 2 | **Schedule-conflict failures are indistinguishable from "no conflicts"** | 🔴 Silent failure on a safety-critical screen |
+| 1 | ~~Editing any split course silently wipes its laboratory units~~ | ✅ **FIXED** — `updateCourse` sends the real value; `is_split` derived on load |
+| 2 | ~~Schedule-conflict failures are indistinguishable from "no conflicts"~~ | ✅ **FIXED** — `{ silent: true }` was removed from `listScheduleConflicts` in an earlier round; errors now toast |
 | 3 | **Curriculum map entries delete with no confirmation** | 🔴 Irreversible, unprompted |
 | 4 | **Section course filter fully implemented but unreachable from the UI** | 🟠 Dead feature on the highest-volume screen |
 | 5 | **Dashboard's primary CTA doesn't deep-link to the section it names** | 🟠 The main workflow dead-ends |

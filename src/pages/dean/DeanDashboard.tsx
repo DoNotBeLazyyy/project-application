@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react';
 import { getDeanDashboard } from '@services/dashboard.service';
 import { DeanDashboard as DeanDashboardData, DeanDashboardStats } from '@type/dashboard.type';
+import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -92,7 +93,7 @@ const STAT_CARDS: DeanStatCard[] = [
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Schedule Conflicts',
         statKey: 'schedule_conflicts',
-        to: '/dean/faculty-load'
+        to: '/dean/faculty-load?tab=conflicts'
     },
     {
         icon: <WarningCircleIcon size={24} />,
@@ -106,7 +107,12 @@ const STAT_CARDS: DeanStatCard[] = [
 
 export default function DeanDashboard() {
     const navigate = useNavigate();
-    const { announcements, events } = useDashboardFeeds();
+    const {
+        announcements,
+        announcementsError,
+        events,
+        eventsError
+    } = useDashboardFeeds();
     const [dashboard, setDashboard] = useState<DeanDashboardData | null>(null);
 
     useEffect(function() {
@@ -135,10 +141,7 @@ export default function DeanDashboard() {
                         key={card.label}
                         label={card.label}
                         to={card.to}
-                        value={dashboard
-                            ? dashboard.stats[card.statKey]
-                            : '—'
-                        }
+                        value={resolveStatValue(dashboard?.stats?.[card.statKey])}
                     />
                 ))}
             </div>
@@ -221,8 +224,14 @@ export default function DeanDashboard() {
             </div>
 
             <div className="gap-4 grid grid-cols-1 xl:grid-cols-2">
-                <AnnouncementsFeedCard announcements={announcements} />
-                <EventsFeedCard events={events} />
+                <AnnouncementsFeedCard
+                    announcements={announcements}
+                    error={announcementsError}
+                />
+                <EventsFeedCard
+                    error={eventsError}
+                    events={events}
+                />
             </div>
         </div>
     );

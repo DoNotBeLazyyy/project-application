@@ -301,6 +301,7 @@ export default function CurriculumMapManagement() {
                             title: 'Add Curriculum Entry'
                         }
                     }}
+                    maxWidth="md"
                     open={isCreateOpen}
                     onClose={function() {
                         setIsCreateOpen(false);
@@ -345,6 +346,7 @@ export default function CurriculumMapManagement() {
                             title: 'Edit Curriculum Entry'
                         }
                     }}
+                    maxWidth="md"
                     open={isUpdateOpen}
                     onClose={handleCloseUpdate}
                 >
@@ -385,10 +387,11 @@ export default function CurriculumMapManagement() {
                             title: 'View Curriculum Entry'
                         }
                     }}
+                    maxWidth="md"
                     open={isViewOpen}
                     onClose={handleCloseView}
                 >
-                    <div className="flex flex-col gap-4 w-200">
+                    <div className="flex flex-col gap-4">
                         <CurriculumMapForm
                             control={updateMethods.control}
                             disabled

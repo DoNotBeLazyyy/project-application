@@ -1,7 +1,7 @@
 import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
-import { TermFilterValues, TermFormValues, TermListRow } from '@type/term/term.type';
+import { ActiveTerm, TermFilterValues, TermFormValues, TermListRow } from '@type/term/term.type';
 import { nullIfBlank } from '@utils/uuid.util';
 
 export async function listTerms(
@@ -71,4 +71,8 @@ export async function deleteTerm(termId: string): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_term', {
         p_term_id: termId
     });
+}
+
+export async function getActiveTerm(): Promise<ServiceResult<ActiveTerm>> {
+    return callRpc<ActiveTerm>('fn_get_active_term');
 }

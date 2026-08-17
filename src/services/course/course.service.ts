@@ -100,7 +100,9 @@ export async function updateCourse(
         p_department_id: nullIfBlank(params.department_id),
         p_course_type_id: nullIfBlank(params.course_type_id),
         p_lecture_units: Number(params.lecture_units) || null,
-        p_laboratory_units: null,
+        p_laboratory_units: params.is_split
+            ? Number(params.laboratory_units) || null
+            : null,
         p_credit_hours: params.credit_hours
             ? Number(params.credit_hours)
             : null,

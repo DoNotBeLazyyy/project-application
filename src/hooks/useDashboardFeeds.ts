@@ -9,13 +9,17 @@ const EVENT_WINDOW_DAYS = 30;
 
 interface UseDashboardFeedsResult {
     announcements: AnnouncementFeedRow[];
+    announcementsError: string | null;
     events: EventFeedRow[];
+    eventsError: string | null;
     refresh: () => Promise<void>;
 }
 
 export default function useDashboardFeeds(): UseDashboardFeedsResult {
     const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
+    const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventFeedRow[]>([]);
+    const [eventsError, setEventsError] = useState<string | null>(null);
 
     const refresh = useCallback(async function() {
         const from = new Date();
@@ -27,11 +31,20 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
             listMyEventsFeed(from.toISOString(), to.toISOString())
         ]);
 
-        if (announcementResult.data) {
-            setAnnouncements(announcementResult.data.content ?? []);
+        if (announcementResult.error) {
+            setAnnouncementsError(announcementResult.error.message);
         }
-        if (eventResult.data) {
-            setEvents(eventResult.data);
+        else {
+            setAnnouncementsError(null);
+            setAnnouncements(announcementResult.data?.content ?? []);
+        }
+
+        if (eventResult.error) {
+            setEventsError(eventResult.error.message);
+        }
+        else {
+            setEventsError(null);
+            setEvents(eventResult.data ?? []);
         }
     }, []);
 
@@ -55,5 +68,11 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
         };
     }, [refresh]);
 
-    return { announcements, events, refresh };
+    return {
+        announcements,
+        announcementsError,
+        events,
+        eventsError,
+        refresh
+    };
 }

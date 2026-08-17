@@ -125,6 +125,7 @@ Always use the pre-built component library. Raw MUI primitives are forbidden whe
 | Use Case | Component | Import Path |
 |---|---|---|
 | **Form Input** | `ValidCommonInput` | `@components/input/ValidCommonInput`
+| Form Error Summary | `FormErrorSummary` | `@components/form/FormErrorSummary` |
 | Button | `CommonButton` | `@components/button/CommonButton` |
 | Text Input | `CommonInput` | `@components/input/CommonInput` |
 | Dropdown / Select | `CommonSelect` | `@components/input/CommonSelect` |
@@ -151,6 +152,7 @@ Always use the pre-built component library. Raw MUI primitives are forbidden whe
 - **Standard:** Use `ValidCommonInput` for all form fields. It handles `useController` internally.
 - **No Wrappers:** Do not manually wrap components in `<Controller>` or use `register`.
 - **Error Handling:** Use the `formErrors` utility in the `onError` callback of `handleSubmit`. It focuses and scrolls to the first invalid field and dispatches the `FORM_ERROR_EVENT` DOM event, which `CommonToast` turns into a warning toast. It does not use `window.alert`.
+- **Form-level summary:** Every form must render a `FormErrorSummary` (`@components/form/FormErrorSummary`), which lists every invalid field after a failed submit. `CommonForm` renders it automatically (`hasErrorSummary`, default `true`) — a form built on `CommonForm` needs nothing. A form that composes fields directly must place `<FormErrorSummary control={control} />` near its submit button. Focus alone is not feedback: `setFocus` is a no-op on a field that is unmounted or on an inactive tab.
 
 ### Component-Specific Rules
 

@@ -28,11 +28,11 @@ The rule this workstream enforces: **every path that can fail, or that blocks th
 | SF1b | `text-area` / `checkbox` had no error surface at all | 1 | ✅ done (build + lint pass) |
 | SF2 | Disabled controls with no stated reason | 2 | ✅ done (build + lint pass) |
 | SF3 | CSV bulk import silently mangles / drops data | 3 | ✅ done (build + lint pass, 14 parser cases pass) |
-| SF4 | `formErrors` lost the `window.alert` CLAUDE.md still documents | 4 | ⬜ not started — needs a user decision, see item |
-| SF5 | Errors on inactive tabs/steps are invisible | 4 | ⬜ not started — unverified, needs a repro pass first |
-| SF6 | `{ silent: true }` reads fail as "empty data" | 5 | ⬜ not started |
-| SF7 | Write RPCs that return no `{success, message}` confirm nothing | 5 | ⬜ not started — needs an RPC audit |
-| SF8 | Flows that bypass the service wrapper entirely | 5 | ⬜ not started |
+| SF4 | `formErrors` lost the `window.alert` CLAUDE.md still documents | 4 | ✅ done — option (a) form-level summary (build + lint pass) |
+| SF5 | Errors on inactive tabs/steps are invisible | 4 | ✅ closed — repro ruled out; tab boundary = form boundary |
+| SF6 | `{ silent: true }` reads fail as "empty data" | 5 | ✅ done — `silent` split into `background` + `silent` (build + lint pass) |
+| SF7 | Write RPCs that return no `{success, message}` confirm nothing | 5 | ✅ done — 98 write RPCs audited; 1 real defect fixed (SQL awaiting apply) |
+| SF8 | Flows that bypass the service wrapper entirely | 5 | ✅ done — new `callStorage` wrapper + `refreshSession` (build + lint pass) |
 
 Legend: ✅ done · 🟡 partial / needs runtime repro · ⬜ not started · ❌ rejected
 
@@ -119,26 +119,45 @@ All four defects fixed in `src/components/modal/BulkImportModal.tsx`. The previe
 
 ### SF4 — `formErrors` lost its alert
 
-**Status:** blocked on a user decision.
+**Status:** ✅ done. The user chose **(a) — the form-level summary**.
 
-`CLAUDE.md` §4 states the `formErrors` utility "handles `window.alert` and automatic focus." `src/utils/form.util.ts:13-23` only calls `methods.setFocus`. The alert was the safety net for exactly the QA bug that started this workstream, and `setFocus` is a no-op on an unmounted or hidden field.
+`setFocus` is a no-op on an unmounted or hidden field, so a form whose only invalid field sat off-screen produced no visible feedback. `formErrors` had since gained a `FORM_ERROR_EVENT` → `CommonToast` warning toast, but a transient toast still does not point at *which* fields are wrong.
 
-**Two valid resolutions — ask the user which:**
+**What was built.**
 
-- (a) Restore a form-level summary (not `window.alert` — that is hostile UI and contradicts the move to inline helpers). A short error line or count near the submit button, reading from `checkForMessage`'s `count` and `firstError`, which already exist and are already computed.
-- (b) Keep focus-only and update CLAUDE.md §4 to match the code.
+- `checkForMessage` now also returns `list: ErrorMessageProps<T>[]` — every error, not just the first. `count` and `firstError` are unchanged, so existing callers are unaffected.
+- `formatFieldLabel(key)` was extracted into `src/utils/form.util.ts` (it was a local `formatLabel` inside `CommonForm`). It strips numeric path segments, so `components.2.weight` renders as "Weight".
+- **New component `src/components/form/FormErrorSummary.tsx`.** Takes `control`, subscribes via `useFormState`, and renders nothing until `submitCount > 0` — so it never fires on a pristine form. On a failed submit it renders a bordered `error-main` block: a headline count plus a bulleted `<label> — <message>` line per invalid field.
+- Entries are deliberately **not** clickable. A hidden-tab field is not in the DOM, so a click handler would be a silent no-op — the exact bug class this workstream exists to remove.
 
-Recommendation: (a) with an inline summary, since it also resolves SF5. `checkForMessage` already returns `{ count, firstError }` and is currently only half-used.
+**Wiring.** `CommonForm` renders it at the foot of the `<form>` behind a `hasErrorSummary` prop (default `true`), which covers **~42 forms at once**. The seven forms that compose fields directly rather than through `CommonForm` got it added by hand: all three auth pages (`SetPasswordPage` — the origin bug — `LoginPage`, `ForgotPasswordPage`), `academic-threshold-management/index.tsx`, `TransmutationTab.tsx`, `EnrollmentWorkspaceModal.tsx`, `ReleaseScheduleForm.tsx`. `PeriodModalForm` needed no change: its `PeriodForm` child uses `CommonForm`, and the summary walks the whole error tree, so the `components` field-array rows surface there too.
+
+**Zero-distortion.** The component returns `null` when the form is clean or unsubmitted, so idle layout is pixel-identical.
+
+**Verified.** `npm run build-dev` (tsc + vite) and `npx eslint` on all ten touched paths pass. **Not runtime-tested** — no test runner exists; a QA pass on `/set-password` with a 5-character password is the direct repro.
+
+**Note on `CLAUDE.md`.** §4 already describes the current behaviour accurately (focus, scroll, `FORM_ERROR_EVENT` toast, explicitly *not* `window.alert`). The "handles `window.alert`" claim this item was filed against is gone. §4 should now also mention the summary.
 
 ### SF5 — Errors on inactive tabs/steps are invisible
 
-**Status:** not started, and **unverified** — inferred from tabs and forms coexisting. Confirm with a real repro before building anything.
+**Status:** ✅ closed — **repro ruled out** for every named file. No code change was needed beyond SF4.
 
-Inline errors only help if the field is on screen. These files combine `CommonTabMenu`/`CommonStepper` with forms: `src/pages/faculty/sections/SectionDetailPage.tsx`, `src/pages/registrar/student-records/StudentRecordsPage.tsx`, `src/pages/shared/profile/index.tsx`, `src/pages/admin/grading-config-management/index.tsx`.
+The item was filed as "unverified, inferred from tabs and forms coexisting". The repro pass found the inference does not hold. **A tab boundary is also a form boundary in this codebase**, so a form's fields can never be hidden from its own submit button:
 
-If a required field sits on an inactive tab, Save produces the exact original symptom: nothing visible happens. The fix is the SF4(a) summary plus, ideally, an error marker on the offending tab.
+| File | Finding |
+|---|---|
+| `SectionDetailPage.tsx` | Tabs render independent panels (students / attendance / grading / assessments / rubrics / content / discussion / insight). No form spans them. |
+| `StudentRecordsPage.tsx` | Tabs render independent read views (transcript / checklist / insight / lifecycle). |
+| `shared/profile/index.tsx` | **Two separate `useForm` instances** — `profileMethods` on the details tab, `passwordMethods` on the security tab. Each submit button sits on the same tab as its own fields. |
+| `admin/grading-config-management/index.tsx` | Three tabs, each owning its own form and Save button. |
 
-**Done when:** a repro is confirmed or ruled out for each file, and confirmed cases surface a form-level message.
+**The "steps" half is moot: `CommonStepper` does not exist.** There is no `src/components/stepper/` directory — only an orphaned `src/types/stepper.type.ts`. CLAUDE.md §4 lists `@components/stepper/CommonStepper` in its component table; that row points at nothing.
+
+**The one real variant of this bug — conditionally rendered fields — is already handled.** A field rendered behind a condition (`{allowConflict && <ValidCommonInput rules={{required}} />}`) unmounts while its error persists in `formState.errors`, blocking submit invisibly. React Hook Form's `shouldUnregister` defaults to `false`, which would preserve exactly that stale error. `EnrollmentWorkspaceModal.tsx:91` — the only place in the codebase nesting validated fields behind a runtime condition — already sets `shouldUnregister: true`, so those fields deregister and their errors clear.
+
+Belt-and-braces, the SF4 `FormErrorSummary` would surface any such stale error by name rather than leaving Save inert.
+
+**Done:** repro ruled out for all four files; steppers confirmed non-existent; conditional-field case confirmed already correct.
 
 ---
 
@@ -146,26 +165,120 @@ If a required field sits on an inactive tab, Save produces the exact original sy
 
 ### SF6 — `{ silent: true }` reads fail as "empty data"
 
-`callRpc(..., { silent: true })` suppresses the error toast. A failed fetch then renders as `0` / empty, which reads as *correct data* rather than an error. Call sites: `src/services/notification.service.ts` (3), `src/services/content.service.ts:128`, `src/services/faculty-load.service.ts:29`, `src/services/student-portal.service.ts:139`.
+**Status:** ✅ done.
 
-Silence is defensible for a background poll like the unread count; it is not defensible for content progress or faculty load, where the number is the whole point. Decide per call site: keep silent, or surface an inline error state in the consuming component.
+**The filed premise was wrong, and the real bug was worse.** This item assumed `{ silent: true }` suppresses the error toast. It did not — in `callRpc` and `callFunction`, `notify(...)` was called **unconditionally** on every error path. `silent` only suppressed the **loading overlay** there. But `callQuery` and `callSingle` *did* gate the toast on it.
 
-**Latent trap, no live instances:** `callQuery` and `callSingle` return errors with **no toast at all**, unlike `callRpc`/`callFunction` (`src/services/supabase.wrapper.ts`). No service currently uses them, so nothing is broken today — but the next read written with them will fail invisibly. Consider aligning them with `callRpc` now, while there are zero call sites to migrate.
+So `silent` meant two different things depending on which wrapper you called, and the flag's name is what misled this very audit. Two live consequences ran in opposite directions:
+
+- The 60-second unread-notification **poll toasted on every failed tick** — a permanently offline backend would stack a toast a minute.
+- `recordFocusEvent`, which fires on **every window blur during a proctored exam**, toasted the student mid-exam.
+- `askAssistant` renders its own in-chat error bubble *and* toasted — double-reporting the same failure.
+
+**The fix: one flag became two, honoured identically by all four wrappers.**
+
+| Option | Meaning |
+|---|---|
+| `background: true` | Suppress the global loading overlay. **Errors still toast.** |
+| `silent: true` | Suppress the toast. Implies `background` — a silent call is by definition a background one, so old `{ silent: true }` call sites keep their previous no-overlay behaviour. |
+
+Every call site was then re-declared by intent:
+
+| Call site | Now | Why |
+|---|---|---|
+| `getUnreadNotificationCount` | `background + silent` | 60s poll — the only genuinely defensible silence |
+| `recordFocusEvent` | `background + silent` | fires on every blur during an exam |
+| `askAssistant` | `background + silent` | renders its own error bubble in the chat |
+| `listMyAnnouncementsFeed`, `listMyEventsFeed` | `background + silent` | **refresh on every window focus** — a toast would fire on every refocus; these report inline instead (below) |
+| `listMyNotifications` | `background` | panel has its own spinner; failures must be visible |
+| `markMyNotificationsRead` / `Unread` | `background` | writes |
+| `markMaterialComplete` | `background` | write |
+| `saveStudentAnswerFiles` | `background` | **a student's exam file answers** |
+
+**The dashboard feeds got a real inline error state.** They were the clearest instance of the original complaint: a failed fetch rendered "No announcements right now." / "No upcoming events." — indistinguishable from genuine emptiness. `useDashboardFeeds` now returns `announcementsError` / `eventsError`; `AnnouncementsFeedCard` and `EventsFeedCard` take an `error` prop and render a red warning block with the reason **instead of** the empty state (`{!error && items.length === 0}`). Wired through all five dashboards (admin, dean, faculty, registrar, student).
+
+**Two doc corrections.** `faculty-load.service.ts:29` no longer passes `silent` — the schedule-conflict panel was fixed in an earlier round, so the "only silent RPC in the codebase" note in [05 §10](system/05-role-dean.md) is stale. And the "latent trap" note below was already false: `callQuery`/`callSingle` **do** notify when `!isSilent`.
+
+**Verified.** `npm run build-dev` and `npx eslint` on all 15 touched files pass.
 
 ### SF7 — Writes that confirm nothing
 
-`callRpc` only toasts on success when the payload matches `{ success: true, message }` (`isRpcSuccessPayload`). Any write RPC returning a bare row or void completes with zero feedback — the user cannot tell it worked. With ~200 `fn_*` functions, some certainly do not return the message shape.
+**Status:** ✅ audit done, one real defect found and fixed (SQL awaiting apply).
 
-**This is an audit, not a code change yet.** Grep the services for write-path `callRpc` names, check each against `supabase_ai_context.sql` (noting the schema snapshot is stale — the live DB has more functions than the dump), and list the ones returning no message. Fixing them is SQL, so it lands in `docs/sql/` and awaits manual apply.
+**Method.** Extracted every `fn_*` name reached through `callRpc`/`callFunction` in `src/services/` (217 total, **98 on write paths**), matched each against its newest definition in `docs/sql/` (cumulative — last file wins), then parsed **balanced `jsonb_build_object(...)` blocks** and flagged any block containing `'success', true` but no `'message'`.
+
+> **Method note for future audits.** A naive "does the body contain `'message'`" grep reports **zero** hits, because almost every function carries `'message', SQLERRM` in its `EXCEPTION` handler. The success path must be tested separately or the audit silently passes everything.
+
+**Result: 8 write RPCs return a success payload with no `message`, so `isRpcSuccessPayload` never matches and no toast fires.** Six are correct as they stand:
+
+| RPC | Verdict |
+|---|---|
+| `fn_record_focus_event`, `fn_record_heartbeat` | ✅ correct — proctoring telemetry, fires constantly |
+| `fn_mark_my_notifications_read` / `_unread` | ✅ correct — per-click toggles; the row state is the confirmation |
+| `fn_mark_material_complete` | ✅ correct — the checkbox itself is the confirmation |
+| `fn_start_assessment_timer` | ✅ correct — the UI transitions into the exam |
+| `fn_bulk_import_questions` | ✅ correct — returns `provisioned_count` + structured per-row `errors`, which the import modal already renders in full |
+| **`fn_calculate_all_grades_for_period`** | 🔴 **real defect** |
+
+**The one real defect.** Faculty press "Calculate Grades" and get **nothing** — no toast, no confirmation. Worse, the RPC returns a `failures[]` array naming each student whose grade could not be computed, and the frontend **discarded it entirely** (`ServiceResult<null>`, and `GradingTab` only checked `result.error`). Grades silently failed to compute for individual students with no indication which, or why.
+
+**Fixed on both sides:**
+
+- **SQL** — `docs/sql/sf7-grade-calculation-feedback.sql` (**awaiting manual apply**). Adds a `message` summarising the outcome in four cases (nothing enrolled / all succeeded / all failed / partial), and enriches each failure with `student_number` and `full_name` by joining `students` and `users` — the old payload returned a bare `enrollment_id`, which is useless in a UI. Loop order is now by student name.
+- **Frontend** (works today, before the SQL is applied) — new `GradeCalculationResult` / `GradeCalculationFailure` types; `calculateAllGradesForPeriod` returns the real shape; `GradingTab` holds the failures in state; `GradeSheetPanel` renders a dismissible red panel listing every student who failed and the reason.
+
+**Verified.** `npm run build-dev` and `npx eslint` pass. The message toast will not appear until the SQL is applied; the failure panel works regardless.
+
+**22 write RPCs could not be audited** — they have no definition anywhere in `docs/sql/` (live-only, per the known `docs/sql` ⟷ live drift): `fn_bulk_create_curriculum_map`, `fn_bulk_create_students`, `fn_bulk_delete_departments`, `fn_bulk_delete_sections`, `fn_bulk_delete_students`, `fn_bulk_delete_users`, `fn_create_assessment_attachment`, `fn_create_curriculum_map_entry`, `fn_create_department`, `fn_create_student`, `fn_delete_assessment`, `fn_delete_assessment_attachment`, `fn_delete_curriculum_map_entry`, `fn_delete_department`, `fn_delete_question`, `fn_delete_role`, `fn_delete_school_year`, `fn_delete_section`, `fn_delete_special_grade_config`, `fn_delete_student`, `fn_publish_assessment`, `fn_save_student_answer`. Checking these needs a live introspection query, not a repo grep.
 
 ### SF8 — Flows that bypass the wrapper
 
-`SetPasswordPage` was one — raw `supabase.auth.updateUser`, which is *why* it hand-rolled a `submitError` and got no toast. Remaining:
+**Status:** ✅ done.
 
-- `src/components/layout/ProtectedLayout.tsx:22` — `await supabase.auth.refreshSession()` with the result ignored. A failed refresh leaves a stale session and no signal.
-- File uploads: `src/pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel.tsx` and the system-settings logo upload — check the storage error paths.
+**`refreshSession` — the worst of the three.** `ProtectedLayout` called `await supabase.auth.refreshSession()` and threw the result away. The user clicks **"Stay logged in"** on the timeout modal, the refresh fails, the modal closes, the idle timer resets — and they carry on working against a **dead session**, discovering it only when the next action 401s. Now: a `refreshSession()` in `@services/auth.service` returns a proper `ServiceResult<Session>` (treating a missing session as an error, not just a thrown one), and `ProtectedLayout` toasts the reason and logs out rather than pretending the renewal worked. This also removes a direct `supabase` import from a component, which §7 forbids.
 
-**Done when:** each bypass either routes through the wrapper or renders its own error, and `ProtectedLayout` reacts to a failed refresh.
+**Storage had no wrapper at all.** `storage.service.ts` returned well-formed `ServiceResult`s, but **nothing showed loading and nothing toasted** — so any caller that ignored the result failed completely silently, and every caller had to remember to render the error itself. Three more services bypassed `storage.service` entirely with their own inline `supabase.storage` calls.
+
+**New `callStorage` wrapper** in `supabase.wrapper.ts`, matching the existing contract exactly — loading overlay, error toast, 401/403 redirect, and the same `background` / `silent` options from SF6. Every storage path now routes through it:
+
+| File | Operation | Options |
+|---|---|---|
+| `storage.service.ts` | `uploadFile`, `deleteFile` | default (overlay + toast) |
+| `storage.service.ts` | `getFileUrl`, `listFiles` | `background` — URL resolution shouldn't flash a spinner |
+| `student-portal.service.ts` | `uploadSubmissionFile` | default |
+| `assessment.service.ts` | attachment upload | default |
+| `discussion.service.ts` | `uploadDiscussionFile` | default |
+| `discussion.service.ts` | `getDiscussionFileUrl` | `background` |
+
+**A fourth bypass found during the pass.** `getAttachmentSignedUrl` returned a bare `string` and swallowed its error, returning `''`. Both callers did `if (!url) return;` — a **completely silent no-op**: the student or faculty clicks Download and nothing happens, forever, with no way to tell why. It now returns `ServiceResult<string>` through `callStorage`; both call sites updated.
+
+**Verified.** `npm run build-dev` and `npx eslint` pass.
+
+> The tracker listed `AssessmentAttachmentPanel.tsx` as an audit target without noticing it **had no importer at all**. That is tracked separately — see "Assessment attachments were unreachable" below.
+
+---
+
+## Phase 6 — Adjacent defects found during Phase 5
+
+These were not SF items. They surfaced while auditing, and are the same failure class.
+
+### Assessment attachments were unreachable
+
+`AssessmentAttachmentPanel.tsx` is a complete, working component — upload, download, delete, empty states, a disabled-reason line — that **nothing imported**. Faculty could not attach a file to an assessment at all. There was no error to report because the feature never rendered.
+
+`AssessmentBuilderPage` now mounts it. Attachments are sourced from `listAssessments(sectionId)` and matched by id, because `attachments` lives on `AssessmentListRow` and **not** on the `fn_get_assessment_by_id` payload the builder otherwise uses. That avoids inventing a new RPC, so the fix works against the live DB today with no SQL to apply. If an `fn_get_assessment_attachments` is ever added, `refreshAttachments()` is the single place to swap.
+
+### Editing any split course silently wiped its laboratory units
+
+Tracked in [05 §7](system/05-role-dean.md) as 🔴 data loss on a routine action. `updateCourse` sent `p_laboratory_units: null` **hardcoded**, so editing a split course to fix a typo in its title erased the lab units. `courses.total_units` is a generated column (`lecture_units + laboratory_units`), so the credit value silently changed too.
+
+Now sends `params.is_split ? Number(params.laboratory_units) || null : null` — matching what `createCourse` already did correctly.
+
+### `is_split` did not round-trip into the edit form
+
+`is_split` is a **create-time flag on `fn_create_course`, not a column** (see [13 §6](system/13-roadmap-and-status.md) — do not rebuild this as schema). So `fn_get_course_by_id` cannot return it, and the edit form read `undefined`, collapsing the laboratory-units field.
+
+Fixed in the frontend without touching the schema: the form now derives `is_split: Number(result.data.laboratory_units) > 0` on load. A course with lab units *is* a split course, so the derivation is exact. Combined with the fix above, editing a split course now round-trips correctly.
 
 ---
 

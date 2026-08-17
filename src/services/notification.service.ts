@@ -12,11 +12,14 @@ export async function listMyNotifications(
         p_page: page,
         p_size: size,
         p_unread_only: unreadOnly
-    }, { silent: true });
+    }, { background: true });
 }
 
 export async function getUnreadNotificationCount(): Promise<ServiceResult<number>> {
-    return callRpc<number>('fn_get_unread_notification_count', undefined, { silent: true });
+    return callRpc<number>('fn_get_unread_notification_count', undefined, {
+        background: true,
+        silent: true
+    });
 }
 
 export async function markMyNotificationsRead(
@@ -24,7 +27,7 @@ export async function markMyNotificationsRead(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_mark_my_notifications_read', {
         p_notification_ids: notificationIds
-    }, { silent: true });
+    }, { background: true });
 }
 
 export async function markMyNotificationsUnread(
@@ -32,5 +35,5 @@ export async function markMyNotificationsUnread(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_mark_my_notifications_unread', {
         p_notification_ids: notificationIds
-    }, { silent: true });
+    }, { background: true });
 }

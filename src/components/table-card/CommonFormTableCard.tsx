@@ -16,7 +16,7 @@ export default function CommonFormTableCard<TRow, TForm extends FieldValues>({
 }: CommonFormTableCardProps<TRow, TForm>) {
     return (
         <CommonCard
-            className="h-full w-full"
+            className="flex flex-1 flex-col h-full min-h-0 w-full"
             {...cardProps}
             cardHeaderProps={{
                 action: (
@@ -25,6 +25,7 @@ export default function CommonFormTableCard<TRow, TForm extends FieldValues>({
                         hasInput={false}
                     />
                 ),
+                className: 'shrink-0',
                 ...cardProps.cardHeaderProps
             }}
         >

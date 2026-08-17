@@ -13,6 +13,7 @@ import {
     updateGradingComponent
 } from '@services/faculty.service';
 import {
+    GradeCalculationFailure,
     GradeSheetRow,
     GradingComponent,
     GradingComponentFormValues,
@@ -28,6 +29,7 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     const [periods, setPeriods] = useState<GradingPeriod[]>([]);
     const [activePeriodId, setActivePeriodId] = useState('');
     const [components, setComponents] = useState<GradingComponent[]>([]);
+    const [calculationFailures, setCalculationFailures] = useState<GradeCalculationFailure[]>([]);
     const [gradeSheet, setGradeSheet] = useState<GradeSheetRow[]>([]);
     const [isLocked, setIsLocked] = useState(false);
 
@@ -82,7 +84,17 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
 
     async function handleCalculate() {
         const result = await calculateAllGradesForPeriod(sectionId, activePeriodId);
-        if (!result.error) await fetchPeriodData();
+
+        if (result.error) {
+            return;
+        }
+
+        setCalculationFailures(result.data?.failures ?? []);
+        await fetchPeriodData();
+    }
+
+    function handleDismissFailures() {
+        setCalculationFailures([]);
     }
 
     async function handleReseed() {
@@ -119,9 +131,11 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
                     onUpdate={handleUpdate}
                 />
                 <GradeSheetPanel
+                    calculationFailures={calculationFailures}
                     components={components}
                     gradeSheet={gradeSheet}
                     onCalculate={handleCalculate}
+                    onDismissFailures={handleDismissFailures}
                 />
             </div>
         </div>

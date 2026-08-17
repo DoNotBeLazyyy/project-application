@@ -69,7 +69,16 @@ function notify(message: string, variant: 'error' | 'success'): void {
 }
 
 interface CallRpcOptions {
+    background?: boolean;
     silent?: boolean;
+}
+
+function isBackgroundCall(options?: CallRpcOptions): boolean {
+    return options?.background === true || options?.silent === true;
+}
+
+function isSilentCall(options?: CallRpcOptions): boolean {
+    return options?.silent === true;
 }
 
 export async function callRpc<T>(
@@ -77,9 +86,10 @@ export async function callRpc<T>(
     params?: Record<string, unknown>,
     options?: CallRpcOptions
 ): Promise<ServiceResult<T>> {
-    const isSilent = options?.silent === true;
+    const isSilent = isSilentCall(options);
+    const isBackground = isBackgroundCall(options);
 
-    if (!isSilent) {
+    if (!isBackground) {
         useLoadingStore.getState()
             .show();
     }
@@ -91,19 +101,23 @@ export async function callRpc<T>(
                 handleAuthFailure();
             }
             const parsed = parseServiceError(error);
-            notify(parsed.message, 'error');
+            if (!isSilent) {
+                notify(parsed.message, 'error');
+            }
             return { data: null, error: parsed };
         }
 
         if (isRpcFailurePayload(data)) {
-            notify(data.message, 'error');
+            if (!isSilent) {
+                notify(data.message, 'error');
+            }
             return {
                 data: null,
                 error: { code: null, message: data.message, status: null }
             };
         }
 
-        if (isRpcSuccessPayload(data)) {
+        if (isRpcSuccessPayload(data) && !isSilent) {
             notify(data.message, 'success');
         }
 
@@ -111,11 +125,13 @@ export async function callRpc<T>(
     }
     catch (err) {
         const parsed = parseServiceError(err);
-        notify(parsed.message, 'error');
+        if (!isSilent) {
+            notify(parsed.message, 'error');
+        }
         return { data: null, error: parsed };
     }
     finally {
-        if (!isSilent) {
+        if (!isBackground) {
             useLoadingStore.getState()
                 .hide();
         }
@@ -126,9 +142,10 @@ export async function callQuery<T>(
     queryFn: QueryBuilderFn,
     options?: CallRpcOptions
 ): Promise<ServiceResult<T[]>> {
-    const isSilent = options?.silent === true;
+    const isSilent = isSilentCall(options);
+    const isBackground = isBackgroundCall(options);
 
-    if (!isSilent) {
+    if (!isBackground) {
         useLoadingStore.getState()
             .show();
     }
@@ -154,7 +171,47 @@ export async function callQuery<T>(
         return { data: null, error: parsed };
     }
     finally {
+        if (!isBackground) {
+            useLoadingStore.getState()
+                .hide();
+        }
+    }
+}
+
+export async function callStorage<T>(
+    operation: () => Promise<ServiceResult<T>>,
+    options?: CallRpcOptions
+): Promise<ServiceResult<T>> {
+    const isSilent = isSilentCall(options);
+    const isBackground = isBackgroundCall(options);
+
+    if (!isBackground) {
+        useLoadingStore.getState()
+            .show();
+    }
+    try {
+        const result = await operation();
+
+        if (result.error) {
+            if (shouldRedirectToLogin(result.error.status ?? undefined, result.error)) {
+                handleAuthFailure();
+            }
+            if (!isSilent) {
+                notify(result.error.message, 'error');
+            }
+        }
+
+        return result;
+    }
+    catch (err) {
+        const parsed = parseServiceError(err);
         if (!isSilent) {
+            notify(parsed.message, 'error');
+        }
+        return { data: null, error: parsed };
+    }
+    finally {
+        if (!isBackground) {
             useLoadingStore.getState()
                 .hide();
         }
@@ -191,9 +248,10 @@ export async function callFunction<T>(
     body?: Record<string, unknown>,
     options?: CallRpcOptions
 ): Promise<ServiceResult<T>> {
-    const isSilent = options?.silent === true;
+    const isSilent = isSilentCall(options);
+    const isBackground = isBackgroundCall(options);
 
-    if (!isSilent) {
+    if (!isBackground) {
         useLoadingStore.getState()
             .show();
     }
@@ -205,12 +263,16 @@ export async function callFunction<T>(
             if (shouldRedirectToLogin(parsed.status ?? undefined, parsed)) {
                 handleAuthFailure();
             }
-            notify(parsed.message, 'error');
+            if (!isSilent) {
+                notify(parsed.message, 'error');
+            }
             return { data: null, error: parsed };
         }
 
         if (isRpcFailurePayload(data)) {
-            notify(data.message, 'error');
+            if (!isSilent) {
+                notify(data.message, 'error');
+            }
             return {
                 data: null,
                 error: { code: null, message: data.message, status: null }
@@ -221,11 +283,13 @@ export async function callFunction<T>(
     }
     catch (err) {
         const parsed = parseServiceError(err);
-        notify(parsed.message, 'error');
+        if (!isSilent) {
+            notify(parsed.message, 'error');
+        }
         return { data: null, error: parsed };
     }
     finally {
-        if (!isSilent) {
+        if (!isBackground) {
             useLoadingStore.getState()
                 .hide();
         }
@@ -236,9 +300,10 @@ export async function callSingle<T>(
     queryFn: QueryBuilderFn,
     options?: CallRpcOptions
 ): Promise<ServiceResult<T>> {
-    const isSilent = options?.silent === true;
+    const isSilent = isSilentCall(options);
+    const isBackground = isBackgroundCall(options);
 
-    if (!isSilent) {
+    if (!isBackground) {
         useLoadingStore.getState()
             .show();
     }
@@ -264,7 +329,7 @@ export async function callSingle<T>(
         return { data: null, error: parsed };
     }
     finally {
-        if (!isSilent) {
+        if (!isBackground) {
             useLoadingStore.getState()
                 .hide();
         }

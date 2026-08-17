@@ -44,11 +44,14 @@ export default function AssessmentAttachmentPanel({
     }
 
     async function handleDownload(attachment: AssessmentAttachment) {
-        const url = await getAttachmentSignedUrl(attachment.file_url);
-        if (!url) return;
+        const result = await getAttachmentSignedUrl(attachment.file_url);
+
+        if (!result.data) {
+            return;
+        }
 
         const a = document.createElement('a');
-        a.href = url;
+        a.href = result.data;
         a.download = attachment.file_name;
         a.target = '_blank';
         a.click();

@@ -30,7 +30,7 @@ export default function CurriculumTermTable({
     }];
 
     return (
-        <div className="flex flex-1 flex-col gap-1 min-w-0">
+        <div className="border-(--mui-palette-divider) border-r flex flex-1 flex-col gap-1 min-w-0">
             <div className="border border-(--mui-palette-divider) font-semibold px-2 py-1 rounded-t text-(--mui-palette-text-primary) text-center text-xs uppercase">
                 {termTypeLabel}
             </div>

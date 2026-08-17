@@ -1,4 +1,5 @@
 import { supabase } from '@services/supabase.client';
+import { callStorage } from '@services/supabase.wrapper';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
@@ -27,7 +28,7 @@ export async function uploadFile({
     file,
     upsert = false
 }: UploadFileParams): Promise<ServiceResult<StorageFileUrl>> {
-    try {
+    return callStorage(async function() {
         const { error } = await supabase.storage
             .from(bucket)
             .upload(path, file, { upsert });
@@ -53,10 +54,7 @@ export async function uploadFile({
         }
 
         return { data: { url: data.signedUrl }, error: null };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
+    });
 }
 
 export async function getFileUrl(
@@ -64,7 +62,7 @@ export async function getFileUrl(
     path: string,
     expiresIn = 3600
 ): Promise<ServiceResult<StorageFileUrl>> {
-    try {
+    return callStorage(async function() {
         if (isPublicBucket(bucket)) {
             const { data } = supabase.storage
                 .from(bucket)
@@ -82,17 +80,14 @@ export async function getFileUrl(
         }
 
         return { data: { url: data.signedUrl }, error: null };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
+    }, { background: true });
 }
 
 export async function deleteFile(
     bucket: StorageBucket,
     path: string
 ): Promise<ServiceResult<null>> {
-    try {
+    return callStorage(async function() {
         const { error } = await supabase.storage
             .from(bucket)
             .remove([path]);
@@ -102,17 +97,14 @@ export async function deleteFile(
         }
 
         return { data: null, error: null };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
+    });
 }
 
 export async function listFiles(
     bucket: StorageBucket,
     folder: string
 ): Promise<ServiceResult<string[]>> {
-    try {
+    return callStorage(async function() {
         const { data, error } = await supabase.storage
             .from(bucket)
             .list(folder);
@@ -125,8 +117,5 @@ export async function listFiles(
             data: data.map((file) => `${folder}/${file.name}`),
             error: null
         };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
+    }, { background: true });
 }

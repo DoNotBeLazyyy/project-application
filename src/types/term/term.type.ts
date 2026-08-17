@@ -36,3 +36,10 @@ export interface TermFilterValues {
     school_year_id: string;
     status: TermStatus | 'All';
 }
+
+export interface ActiveTerm {
+    success: boolean;
+    term_id: string | null;
+    term_label: string | null;
+    status: TermStatus | null;
+}

@@ -8,11 +8,12 @@ import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFac
 import { useScheduleConflictTableConfig } from '@pages/dean/faculty-load/hooks/useScheduleConflictTableConfig';
 import ScheduleConflictFilterForm from '@pages/dean/faculty-load/ScheduleConflictFilterForm';
 import { listFacultyLoad, listScheduleConflicts } from '@services/faculty-load.service';
+import { getActiveTerm } from '@services/term/term.service';
 import { FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow } from '@type/faculty-load.type';
 import { SortStringDto } from '@type/http.type';
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 type FacultyLoadTab = 'load' | 'conflicts';
 
@@ -42,9 +43,18 @@ const defaultConflictFilters: ScheduleConflictFilterValues = {
     conflict_types: []
 };
 
+function resolveInitialTab(tab: string | null): FacultyLoadTab {
+    return tab === 'conflicts'
+        ? 'conflicts'
+        : 'load';
+}
+
 export default function FacultyLoadManagement() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<FacultyLoadTab>('load');
+    const [searchParams] = useSearchParams();
+    const [activeTab, setActiveTab] = useState<FacultyLoadTab>(resolveInitialTab(searchParams.get('tab')));
+    const [activeTermId, setActiveTermId] = useState('');
+    const [isTermResolved, setIsTermResolved] = useState(false);
     const [loadFilters, setLoadFilters] = useState<FacultyLoadFilterValues>(defaultLoadFilters);
     const [conflictFilters, setConflictFilters] = useState<ScheduleConflictFilterValues>(defaultConflictFilters);
     const [isLoadFilterOpen, setIsLoadFilterOpen] = useState(false);
@@ -61,6 +71,25 @@ export default function FacultyLoadManagement() {
     const { columnDefs: loadColumnDefs } = useFacultyLoadTableConfig();
     const { columnDefs: conflictColumnDefs } = useScheduleConflictTableConfig();
 
+    const { reset: resetLoadFilterForm } = loadFilterMethods;
+    const { reset: resetConflictFilterForm } = conflictFilterMethods;
+
+    useEffect(function() {
+        async function fetchActiveTerm() {
+            const result = await getActiveTerm();
+            const termId = result.data?.term_id ?? '';
+
+            setActiveTermId(termId);
+            setLoadFilters({ term_id: termId });
+            setConflictFilters({ conflict_types: [], term_id: termId });
+            resetLoadFilterForm({ term_id: termId });
+            resetConflictFilterForm({ conflict_types: [], term_id: termId });
+            setIsTermResolved(true);
+        }
+
+        fetchActiveTerm();
+    }, [resetConflictFilterForm, resetLoadFilterForm]);
+
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as FacultyLoadTab);
     }
@@ -71,8 +100,10 @@ export default function FacultyLoadManagement() {
     }
 
     function handleLoadFilterReset() {
-        loadFilterMethods.reset(defaultLoadFilters);
-        setLoadFilters(defaultLoadFilters);
+        const resetValues: FacultyLoadFilterValues = { term_id: activeTermId };
+
+        loadFilterMethods.reset(resetValues);
+        setLoadFilters(resetValues);
     }
 
     function handleConflictFilterSubmit(values: ScheduleConflictFilterValues) {
@@ -81,8 +112,13 @@ export default function FacultyLoadManagement() {
     }
 
     function handleConflictFilterReset() {
-        conflictFilterMethods.reset(defaultConflictFilters);
-        setConflictFilters(defaultConflictFilters);
+        const resetValues: ScheduleConflictFilterValues = {
+            conflict_types: [],
+            term_id: activeTermId
+        };
+
+        conflictFilterMethods.reset(resetValues);
+        setConflictFilters(resetValues);
     }
 
     async function fetchFacultyLoad(
@@ -132,7 +168,7 @@ export default function FacultyLoadManagement() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {activeTab === 'load' && (
+            {isTermResolved && activeTab === 'load' && (
                 <CommonTableCard<FacultyLoadRow>
                     cardHeaderProps={{
                         subheader: 'Select a faculty member to see their sections and meeting times.',
@@ -179,7 +215,7 @@ export default function FacultyLoadManagement() {
                 />
             )}
 
-            {activeTab === 'conflicts' && (
+            {isTermResolved && activeTab === 'conflicts' && (
                 <CommonTableCard<ScheduleConflictRow>
                     cardHeaderProps={{
                         subheader: 'Overlapping meeting times detected across sections.',

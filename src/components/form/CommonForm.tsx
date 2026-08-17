@@ -1,6 +1,8 @@
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
+import { formatFieldLabel } from '@utils/form.util';
 import { Control, FieldValues } from 'react-hook-form';
 
 const COL_SPAN_CLASSES: Record<number, string> = {
@@ -23,6 +25,7 @@ export interface CommonFormProps<T extends FieldValues> {
     fields: FormFieldConfig<T>[];
     containerClassName?: string;
     formProps?: ComponentPropsForm;
+    hasErrorSummary?: boolean;
     hasHelper?: boolean;
 }
 
@@ -31,18 +34,9 @@ export default function CommonForm<T extends FieldValues>({
     fields,
     containerClassName = 'flex flex-col gap-4',
     formProps,
+    hasErrorSummary = true,
     hasHelper = true
 }: CommonFormProps<T>) {
-    function formatLabel(name: string) {
-        return name
-            .replace(/_/g, ' ')
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, function(str) {
-                return str.toUpperCase();
-            })
-            .trim();
-    }
-
     return (
         <form {...formProps}>
             <div className={containerClassName}>
@@ -64,7 +58,7 @@ export default function CommonForm<T extends FieldValues>({
                         >
                             {field.type !== 'checkbox' && (
                                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                    {field.label ?? formatLabel(field.name as string)}
+                                    {field.label ?? formatFieldLabel(field.name as string)}
                                 </span>
                             )}
                             <FormField
@@ -76,6 +70,12 @@ export default function CommonForm<T extends FieldValues>({
                     );
                 })}
             </div>
+            {hasErrorSummary && (
+                <FormErrorSummary
+                    className="mt-4"
+                    control={control}
+                />
+            )}
         </form>
     );
 }

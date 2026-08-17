@@ -1,10 +1,11 @@
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonCard from '@components/card/CommonCard';
-import { MegaphoneIcon, PushPinIcon } from '@phosphor-icons/react';
+import { MegaphoneIcon, PushPinIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, AnnouncementFeedRow } from '@type/announcement.type';
 
 interface AnnouncementsFeedCardProps {
     announcements: AnnouncementFeedRow[];
+    error?: string | null;
 }
 
 const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
@@ -25,7 +26,7 @@ function formatPublishedAt(announcement: AnnouncementFeedRow): string {
         });
 }
 
-export default function AnnouncementsFeedCard({ announcements }: AnnouncementsFeedCardProps) {
+export default function AnnouncementsFeedCard({ announcements, error }: AnnouncementsFeedCardProps) {
     return (
         <CommonCard
             cardHeaderProps={{
@@ -35,7 +36,22 @@ export default function AnnouncementsFeedCard({ announcements }: AnnouncementsFe
             className="flex flex-1 flex-col"
         >
             <div className="flex flex-col gap-2 p-4 pt-0">
-                {announcements.length === 0 && (
+                {error && (
+                    <div className="flex flex-col gap-2 items-center py-6">
+                        <WarningCircleIcon
+                            className="text-(--mui-palette-error-main)"
+                            size={28}
+                            weight="fill"
+                        />
+                        <p className="m-0 text-(--mui-palette-error-main) text-sm">
+                            Announcements could not be loaded.
+                        </p>
+                        <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
+                            {error}
+                        </p>
+                    </div>
+                )}
+                {!error && announcements.length === 0 && (
                     <div className="flex flex-col gap-2 items-center py-6">
                         <MegaphoneIcon
                             className="text-(--mui-palette-text-disabled)"

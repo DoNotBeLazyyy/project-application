@@ -1,9 +1,9 @@
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
 import useIdleTimeout from '@hooks/useIdleTimeout';
 import AiAssistant from '@pages/shared/assistant/AiAssistant';
-import { logout } from '@services/auth.service';
-import { supabase } from '@services/supabase.client';
+import { logout, refreshSession } from '@services/auth.service';
 import { useLoadingStore } from '@stores/loading.store';
+import { useToastStore } from '@stores/toast.store';
 import { useEffect } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 
@@ -29,7 +29,15 @@ export default function ProtectedLayout() {
     }
 
     async function handleStayLoggedIn() {
-        await supabase.auth.refreshSession();
+        const result = await refreshSession();
+
+        if (result.error) {
+            useToastStore.getState()
+                .showToast(result.error.message, 'error');
+            await handleLogout();
+            return;
+        }
+
         resetTimer();
     }
 

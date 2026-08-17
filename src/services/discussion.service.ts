@@ -1,5 +1,5 @@
 import { supabase } from '@services/supabase.client';
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, callStorage } from '@services/supabase.wrapper';
 import { DiscussionAttachmentPayload, DiscussionThreadDetail, DiscussionThreadRow } from '@type/discussion.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -40,38 +40,42 @@ export async function uploadDiscussionFile(
     const safeName = file.name.replace(/[^\w.-]+/g, '_');
     const path = `${sectionId}/${crypto.randomUUID()}/${safeName}`;
 
-    const { error } = await supabase.storage
-        .from(DISCUSSION_BUCKET)
-        .upload(path, file, { upsert: false });
+    return callStorage(async function() {
+        const { error } = await supabase.storage
+            .from(DISCUSSION_BUCKET)
+            .upload(path, file, { upsert: false });
 
-    if (error) {
-        return { data: null, error: parseServiceError(error) };
-    }
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
 
-    return {
-        data: {
-            file_name: file.name,
-            file_path: path,
-            file_size: file.size,
-            mime_type: file.type || null
-        },
-        error: null
-    };
+        return {
+            data: {
+                file_name: file.name,
+                file_path: path,
+                file_size: file.size,
+                mime_type: file.type || null
+            },
+            error: null
+        };
+    });
 }
 
 export async function getDiscussionFileUrl(
     path: string,
     expiresIn = 3600
 ): Promise<ServiceResult<string>> {
-    const { data, error } = await supabase.storage
-        .from(DISCUSSION_BUCKET)
-        .createSignedUrl(path, expiresIn);
+    return callStorage(async function() {
+        const { data, error } = await supabase.storage
+            .from(DISCUSSION_BUCKET)
+            .createSignedUrl(path, expiresIn);
 
-    if (error) {
-        return { data: null, error: parseServiceError(error) };
-    }
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
 
-    return { data: data.signedUrl, error: null };
+        return { data: data.signedUrl, error: null };
+    }, { background: true });
 }
 
 export async function createThread(

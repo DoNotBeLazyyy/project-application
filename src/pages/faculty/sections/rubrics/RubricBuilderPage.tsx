@@ -1,11 +1,14 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
+import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createRubric, getRubric, updateRubric } from '@services/rubric.service';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
+import { formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { FieldErrors, useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const EMPTY_CRITERION = { id: null, title: '', description: '', max_points: '' };
@@ -23,11 +26,13 @@ export default function RubricBuilderPage() {
 
     const [isSaving, setIsSaving] = useState(false);
 
-    const {
-        control, formState, handleSubmit, reset, watch
-    } = useForm<RubricFormValues>({
+    const methods = useForm<RubricFormValues>({
         defaultValues: DEFAULT_VALUES
     });
+
+    const {
+        control, formState, handleSubmit, reset, watch
+    } = methods;
 
     const { fields, append, remove } = useFieldArray({ control, name: 'criteria' });
 
@@ -67,6 +72,10 @@ export default function RubricBuilderPage() {
         fetchRubric();
     }, [rubricId, isNew]);
 
+    function navigateToRubrics() {
+        navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
+    }
+
     async function onSubmit(values: RubricFormValues) {
         setIsSaving(true);
 
@@ -98,9 +107,21 @@ export default function RubricBuilderPage() {
         }
     }
 
+    function handleFormError(errors: FieldErrors<RubricFormValues>) {
+        formErrors(errors, methods);
+    }
+
+    const submitHandler = handleSubmit(onSubmit, handleFormError);
+
+    const backGuard = useUnsavedChangesGuard({
+        isDirty: formState.isDirty,
+        onDiscard: navigateToRubrics,
+        onSave: submitHandler
+    });
+
     return (
         <CommonCard className="h-full w-full">
-            <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(onSubmit)}>
+            <form className="flex flex-col gap-4 h-full" onSubmit={submitHandler}>
                 <div className="flex gap-3 items-center justify-between">
                     <div className="flex gap-3 items-center">
                         <CommonButton
@@ -109,9 +130,7 @@ export default function RubricBuilderPage() {
                             startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                             type="button"
                             variant="outlined"
-                            onClick={function() {
-                                navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
-                            }}
+                            onClick={backGuard.requestExit}
                         >
                             Back
                         </CommonButton>
@@ -227,6 +246,14 @@ export default function RubricBuilderPage() {
                     </div>
                 </div>
             </form>
+            <UnsavedChangesPrompt
+                open={backGuard.isPromptOpen}
+                saveLabel="Save and leave"
+                subtitle="Save this rubric before leaving, or discard your changes."
+                onClose={backGuard.closePrompt}
+                onDiscard={backGuard.confirmDiscard}
+                onSave={backGuard.confirmSave}
+            />
         </CommonCard>
     );
 }

@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import FormErrorSummary from '@components/form/FormErrorSummary';
 import { FormField } from '@components/form/FormField';
 import CommonFormTableCard from '@components/table-card/CommonFormTableCard';
 import { CommonFormTableCellParams, CommonFormTableColumn } from '@components/table/CommonFormTable';
@@ -285,40 +286,46 @@ export default function TransmutationTab({
     }
 
     return (
-        <CommonFormTableCard<TransmutationRow, TransmutationFormValues>
-            cardProps={{
-                cardHeaderProps: {
-                    subheader: 'Enter the minimum % for each grade. The max is derived automatically so ranges never overlap or leave gaps.',
-                    title: 'Transmutation Table'
-                }
-            }}
-            controlProps={{
-                tableButtonsProps: {
-                    extraButtons: (
-                        <CommonButton
-                            disabled={isSaving || (hasStoredTable && !methods.formState.isDirty)}
-                            size="small"
-                            variant="contained"
-                            onClick={handleSave}
-                        >
-                            {isSaving
-                                ? 'Saving...'
-                                : 'Save'}
-                        </CommonButton>
-                    )
-                }
-            }}
-            formTableProps={{
-                columns: COLUMNS,
-                control: methods.control,
-                emptyDataMessage: 'No transmutation rows.',
-                fieldArrayName: 'rows',
-                hideRowActions: true,
-                tableProps: {
-                    containerClassName: 'h-full w-full'
-                },
-                rows: fields as unknown as (TransmutationRow & { id: string })[]
-            }}
-        />
+        <div className="flex flex-col gap-3 h-full min-h-0">
+            <FormErrorSummary
+                className="shrink-0"
+                control={methods.control}
+            />
+            <CommonFormTableCard<TransmutationRow, TransmutationFormValues>
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Enter the minimum % for each grade. The max is derived automatically so ranges never overlap or leave gaps.',
+                        title: 'Transmutation Table'
+                    }
+                }}
+                controlProps={{
+                    tableButtonsProps: {
+                        extraButtons: (
+                            <CommonButton
+                                disabled={isSaving || (hasStoredTable && !methods.formState.isDirty)}
+                                size="small"
+                                variant="contained"
+                                onClick={handleSave}
+                            >
+                                {isSaving
+                                    ? 'Saving...'
+                                    : 'Save'}
+                            </CommonButton>
+                        )
+                    }
+                }}
+                formTableProps={{
+                    columns: COLUMNS,
+                    control: methods.control,
+                    emptyDataMessage: 'No transmutation rows.',
+                    fieldArrayName: 'rows',
+                    hideRowActions: true,
+                    tableProps: {
+                        containerClassName: 'w-full'
+                    },
+                    rows: fields as unknown as (TransmutationRow & { id: string })[]
+                }}
+            />
+        </div>
     );
 }

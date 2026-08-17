@@ -125,7 +125,7 @@ export async function markMaterialComplete(
     return callRpc<null>('fn_mark_material_complete', {
         p_is_complete: isComplete,
         p_material_id: materialId
-    }, { silent: true });
+    }, { background: true });
 }
 
 export const MATERIAL_TYPE_OPTIONS: { label: string; value: MaterialType }[] = [

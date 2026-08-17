@@ -68,7 +68,7 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
     }
 
     return (
-        <div className="flex flex-col gap-2 h-full w-full">
+        <div className="flex flex-col flex-1 gap-2 min-h-0 w-full">
             {title && (
                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                     {title}

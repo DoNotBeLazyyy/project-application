@@ -8,6 +8,23 @@ interface ErrorMessageProps<T> {
 interface ErrorCheckResult<T> {
     count: number;
     firstError: ErrorMessageProps<T> | null;
+    list: ErrorMessageProps<T>[];
+}
+
+export function formatFieldLabel(key: string): string {
+    const segments = key.split('.')
+        .filter(function(segment) {
+            return segment !== '' && !/^\d+$/.test(segment);
+        });
+    const leaf = segments[segments.length - 1] ?? key;
+
+    return leaf
+        .replace(/_/g, ' ')
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, function(str) {
+            return str.toUpperCase();
+        })
+        .trim();
 }
 
 export const FORM_ERROR_EVENT = 'app:form-error';
@@ -60,6 +77,7 @@ export function checkForMessage<T extends FieldValues>(
 ): ErrorCheckResult<T> {
     let count = 0;
     let firstError: ErrorMessageProps<T> | null = null;
+    const list: ErrorMessageProps<T>[] = [];
 
     function walk(err: FieldErrors, currentPath = ''): void {
         if (Array.isArray(err)) {
@@ -82,12 +100,15 @@ export function checkForMessage<T extends FieldValues>(
                     const value = err[key];
 
                     if (value && typeof value === 'object' && 'message' in value) {
+                        const entry: ErrorMessageProps<T> = {
+                            key: newPath as Path<T>,
+                            message: value.message as string
+                        };
+
                         count++;
+                        list.push(entry);
                         if (!firstError) {
-                            firstError = {
-                                key: newPath as Path<T>,
-                                message: value.message as string
-                            };
+                            firstError = entry;
                         }
                     }
                     walk(value as FieldErrors, newPath);
@@ -97,5 +118,5 @@ export function checkForMessage<T extends FieldValues>(
     }
 
     walk(errors, path);
-    return { firstError, count };
+    return { firstError, count, list };
 }

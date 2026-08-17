@@ -1,5 +1,5 @@
 import { supabase } from '@services/supabase.client';
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, callStorage } from '@services/supabase.wrapper';
 import {
     AssessmentFormValues, AssessmentListRow, AssessmentQuestion, GradeAnswerUpdate, QuestionBulkRow, QuestionFormValues, SubmissionForGrading, SubmissionListRow
 } from '@type/assessment.type';
@@ -137,12 +137,20 @@ export async function uploadAssessmentAttachment(
 ): Promise<ServiceResult<null>> {
     const path = `assessments/${assessmentId}/${Date.now()}_${file.name}`;
 
-    const { error: uploadError } = await supabase.storage
-        .from('materials')
-        .upload(path, file, { upsert: false });
+    const uploadResult = await callStorage(async function() {
+        const { error } = await supabase.storage
+            .from('materials')
+            .upload(path, file, { upsert: false });
 
-    if (uploadError) {
-        return { data: null, error: parseServiceError(uploadError) };
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
+
+        return { data: null, error: null };
+    });
+
+    if (uploadResult.error) {
+        return uploadResult;
     }
 
     return callRpc<null>('fn_create_assessment_attachment', {
@@ -157,12 +165,18 @@ export async function uploadAssessmentAttachment(
 
 export async function getAttachmentSignedUrl(
     filePath: string
-): Promise<string> {
-    const { data } = await supabase.storage
-        .from('materials')
-        .createSignedUrl(filePath, 3600);
+): Promise<ServiceResult<string>> {
+    return callStorage(async function() {
+        const { data, error } = await supabase.storage
+            .from('materials')
+            .createSignedUrl(filePath, 3600);
 
-    return data?.signedUrl ?? '';
+        if (error) {
+            return { data: null, error: parseServiceError(error) };
+        }
+
+        return { data: data.signedUrl, error: null };
+    }, { background: true });
 }
 
 export async function deleteAssessmentAttachment(

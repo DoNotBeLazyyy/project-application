@@ -34,7 +34,7 @@ export async function listMyEventsFeed(
     return callRpc<EventFeedRow[]>('fn_list_my_events_feed', {
         p_from: from,
         p_to: to
-    }, { silent: true });
+    }, { background: true, silent: true });
 }
 
 export async function getEventById(
