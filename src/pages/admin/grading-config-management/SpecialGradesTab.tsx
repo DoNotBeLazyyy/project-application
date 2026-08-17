@@ -6,6 +6,7 @@ import { SpecialGradeConfig } from '@type/grading-config.type';
 
 interface SpecialGradesTabProps {
     grades: SpecialGradeConfig[];
+    isDirty: boolean;
     isSaving: boolean;
     onAddGrade: () => void;
     onRemoveGrade: (index: number) => Promise<void>;
@@ -15,6 +16,7 @@ interface SpecialGradesTabProps {
 
 export default function SpecialGradesTab({
     grades,
+    isDirty,
     isSaving,
     onAddGrade,
     onRemoveGrade,
@@ -55,7 +57,7 @@ export default function SpecialGradesTab({
                     children: isSaving
                         ? 'Saving...'
                         : 'Save',
-                    disabled: isSaving,
+                    disabled: isSaving || !isDirty,
                     variant: 'contained',
                     onClick: onSave
                 }}

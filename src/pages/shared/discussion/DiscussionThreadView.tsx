@@ -209,7 +209,7 @@ export default function DiscussionThreadView({
     const canManageThread = thread.can_moderate || isThreadOwner;
 
     return (
-        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto">
             <div className="flex items-center justify-between">
                 <CommonButton
                     color="inherit"

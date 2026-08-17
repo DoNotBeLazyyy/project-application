@@ -1,4 +1,5 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
+import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import EventForm from '@pages/shared/event-management/EventForm';
 import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import { createEvent, getEventById, updateEvent } from '@services/event.service';
@@ -13,7 +14,6 @@ const DEFAULT_VALUES: EventFormValues = {
     location: '',
     section_ids: [],
     start_at: '',
-    target_audience: 'Global',
     title: ''
 };
 
@@ -37,9 +37,10 @@ async function fetchEvent(id: string): Promise<ServiceResult<EventFormValues>> {
             description: result.data.description ?? '',
             end_at: toDateInput(result.data.end_at),
             location: result.data.location ?? '',
-            section_ids: result.data.section_ids,
+            section_ids: result.data.target_audience === 'Section'
+                ? result.data.section_ids
+                : [ALL_SECTIONS_VALUE],
             start_at: toDateInput(result.data.start_at),
-            target_audience: result.data.target_audience,
             title: result.data.title
         },
         error: null

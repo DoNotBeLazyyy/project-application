@@ -339,7 +339,7 @@ export default function StudentEvaluations() {
                         </p>
                     </div>
                 )}
-                <div className="flex flex-1 flex-col gap-8 min-h-0 overflow-y-auto pr-1">
+                <div className="flex flex-1 flex-col gap-8 min-h-0 overflow-y-auto">
                     {!hasTarget && (
                         <p className="text-(--mui-palette-text-secondary) text-center text-sm">
                             {targetOptions.length

@@ -14,6 +14,7 @@ export interface CommonMultiSelectProps {
     helperText?: string;
     fullWidth?: boolean;
     size?: 'small' | 'medium' | 'large';
+    exclusiveValue?: string;
     onChange: (value: string[]) => void;
 }
 
@@ -27,13 +28,28 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
     helperText,
     fullWidth = true,
     size = 'large',
+    exclusiveValue,
     onChange
 }, ref) => {
     const selectedOptions = options.filter((option) =>
         value.includes(String(option.value)));
 
     function handleChange(_event: SyntheticEvent, newValue: CommonSelectOption[]) {
-        onChange(newValue.map((option) => String(option.value)));
+        const next = newValue.map((option) => String(option.value));
+
+        if (!exclusiveValue) {
+            onChange(next);
+
+            return;
+        }
+
+        if (next.includes(exclusiveValue) && !value.includes(exclusiveValue)) {
+            onChange([exclusiveValue]);
+
+            return;
+        }
+
+        onChange(next.filter((item) => item !== exclusiveValue));
     }
 
     return (

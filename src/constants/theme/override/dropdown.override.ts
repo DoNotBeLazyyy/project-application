@@ -5,7 +5,8 @@ export const dropdownOverrides: ComponentTheme = {
         styleOverrides: {
             paper: {
                 width: '21.375rem',
-                maxHeight: '18.75rem',
+                maxWidth: 'calc(100vw - var(--mui-tokens-spacing-8))',
+                maxHeight: 'min(18.75rem, calc(100dvh - var(--mui-tokens-spacing-8)))',
                 backgroundColor: 'var(--mui-tokens-color-common-white)',
                 border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-neutral-300)',
                 borderRadius: 'var(--mui-tokens-radius-md)',

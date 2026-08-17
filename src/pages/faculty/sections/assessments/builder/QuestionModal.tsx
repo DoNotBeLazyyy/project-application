@@ -22,6 +22,7 @@ const QUESTION_TYPE_OPTIONS: { label: string; value: QuestionType }[] = [
 
 interface QuestionModalProps {
     editingQuestion: AssessmentQuestion | null;
+    isDirty: boolean;
     isOpen: boolean;
     methods: UseFormReturn<QuestionFormValues>;
     watchedChoices: QuestionFormValues['choices'];
@@ -32,6 +33,7 @@ interface QuestionModalProps {
 
 export default function QuestionModal({
     editingQuestion,
+    isDirty,
     isOpen,
     methods,
     watchedChoices,
@@ -45,12 +47,12 @@ export default function QuestionModal({
 
     function addChoice() {
         const current = methods.getValues('choices');
-        methods.setValue('choices', [...current, { choice_text: '', is_correct: false }]);
+        methods.setValue('choices', [...current, { choice_text: '', is_correct: false }], { shouldDirty: true });
     }
 
     function removeChoice(index: number) {
         const current = methods.getValues('choices');
-        methods.setValue('choices', current.filter((_, i) => i !== index));
+        methods.setValue('choices', current.filter((_, i) => i !== index), { shouldDirty: true });
     }
 
     function toggleCorrect(index: number) {
@@ -64,7 +66,7 @@ export default function QuestionModal({
                     : c.is_correct
                 : i === index
         }));
-        methods.setValue('choices', updated);
+        methods.setValue('choices', updated, { shouldDirty: true });
     }
 
     function handleTextChange(index: number, text: string) {
@@ -72,7 +74,7 @@ export default function QuestionModal({
         const updated = current.map((c, i) => i === index
             ? { ...c, choice_text: text }
             : c);
-        methods.setValue('choices', updated);
+        methods.setValue('choices', updated, { shouldDirty: true });
     }
 
     const baseFields: FormFieldConfig<QuestionFormValues>[] = [
@@ -158,6 +160,7 @@ export default function QuestionModal({
                         Cancel
                     </CommonButton>
                     <CommonButton
+                        disabled={editingQuestion !== null && !isDirty}
                         form={QUESTION_FORM_ID}
                         size="small"
                         type="submit"

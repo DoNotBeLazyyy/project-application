@@ -22,6 +22,7 @@ export default function GradingConfiguration() {
     const [tabLoading, setTabLoading] = useState(true);
     const [initialTransmutationRows, setInitialTransmutationRows] = useState<TransmutationRow[]>([]);
     const [specialGrades, setSpecialGrades] = useState<SpecialGradeConfig[]>([]);
+    const [savedSpecialGrades, setSavedSpecialGrades] = useState('[]');
     const [isSavingTransmutation, setIsSavingTransmutation] = useState(false);
     const [isSavingSpecial, setIsSavingSpecial] = useState(false);
 
@@ -46,11 +47,14 @@ export default function GradingConfiguration() {
         async function loadSpecial() {
             const result = await getSpecialGradeConfigs();
             if (isActive) {
-                setSpecialGrades((result.data ?? []).map((sg) => ({
+                const loaded = (result.data ?? []).map((sg) => ({
                     ...sg,
                     min_absence_percentage: String(sg.min_absence_percentage ?? ''),
                     completion_deadline_days: String(sg.completion_deadline_days ?? '')
-                })));
+                }));
+
+                setSpecialGrades(loaded);
+                setSavedSpecialGrades(JSON.stringify(loaded));
             }
         }
 
@@ -88,8 +92,12 @@ export default function GradingConfiguration() {
 
     async function handleSaveSpecial() {
         setIsSavingSpecial(true);
-        await saveSpecialGradeConfigs(specialGrades);
+        const result = await saveSpecialGradeConfigs(specialGrades);
         setIsSavingSpecial(false);
+
+        if (!result.error) {
+            setSavedSpecialGrades(JSON.stringify(specialGrades));
+        }
     }
 
     function addSpecialGrade() {
@@ -110,7 +118,14 @@ export default function GradingConfiguration() {
 
     async function removeSpecialGrade(index: number) {
         const grade = specialGrades[index];
-        if (grade.id) await deleteSpecialGradeConfig(grade.id);
+        if (grade.id) {
+            await deleteSpecialGradeConfig(grade.id);
+
+            const snapshot = JSON.parse(savedSpecialGrades) as SpecialGradeConfig[];
+
+            setSavedSpecialGrades(JSON.stringify(snapshot.filter((sg) => sg.id !== grade.id)));
+        }
+
         setSpecialGrades((prev) => prev.filter((_, i) => i !== index));
     }
 
@@ -156,6 +171,7 @@ export default function GradingConfiguration() {
                 {!tabLoading && activeTab === 'special' && (
                     <SpecialGradesTab
                         grades={specialGrades}
+                        isDirty={JSON.stringify(specialGrades) !== savedSpecialGrades}
                         isSaving={isSavingSpecial}
                         onAddGrade={addSpecialGrade}
                         onRemoveGrade={removeSpecialGrade}

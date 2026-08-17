@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { listStudentSubjects } from '@services/student-portal.service';
 import { EnrollmentStatus } from '@type/enrollment.type';
 import { SortStringDto } from '@type/http.type';
@@ -105,6 +106,11 @@ export default function StudentSubjects() {
             cardHeaderProps={{
                 subheader: 'All your enrolled subjects.',
                 title: 'My Subjects'
+            }}
+            controls={{
+                tableInputProps: {
+                    searchHints: SEARCH_HINTS.mySubjects
+                }
             }}
             sortColumns={SORT_COLUMNS}
             tableProps={{

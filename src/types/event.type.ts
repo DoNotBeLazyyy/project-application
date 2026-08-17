@@ -34,7 +34,6 @@ export interface EventDetail {
 
 export interface EventFormValues {
     title: string;
-    target_audience: AnnouncementAudience;
     section_ids: string[];
     location: string;
     start_at: string;

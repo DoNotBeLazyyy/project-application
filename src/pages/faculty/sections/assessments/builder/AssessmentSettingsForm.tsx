@@ -23,6 +23,7 @@ const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
 
 interface AssessmentSettingsFormProps {
     componentOptions: CommonSelectOption[];
+    isDirty: boolean;
     isNew: boolean;
     isSaving: boolean;
     methods: UseFormReturn<AssessmentFormValues>;
@@ -31,6 +32,7 @@ interface AssessmentSettingsFormProps {
 
 export default function AssessmentSettingsForm({
     componentOptions,
+    isDirty,
     isNew,
     isSaving,
     methods,
@@ -204,7 +206,7 @@ export default function AssessmentSettingsForm({
                 </p>
             </div>
             <CommonButton
-                disabled={isSaving}
+                disabled={isSaving || (!isNew && !isDirty)}
                 form={SETTINGS_FORM_ID}
                 size="small"
                 type="submit"

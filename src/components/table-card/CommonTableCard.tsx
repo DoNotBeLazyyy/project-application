@@ -42,6 +42,7 @@ export default function CommonTableCard<T extends FieldValues>({
         loadData,
         handleSetPagination,
         handleSearchSubmit,
+        handleSearchClear,
         handleApplySort,
         handleGridSort,
         activeSearch
@@ -195,6 +196,7 @@ export default function CommonTableCard<T extends FieldValues>({
                         tableInputProps={{
                             ...controls?.tableInputProps,
                             onChange: handleSearchChange,
+                            onClear: handleSearchClear,
                             onKeyDown: handleOnKeyDown,
                             value: searchQuery
                         }}

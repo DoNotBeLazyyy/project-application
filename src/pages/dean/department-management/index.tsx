@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import DepartmentFilterForm from '@pages/dean/department-management/DepartmentFilterForm';
 import { useDepartmentTableConfig } from '@pages/dean/department-management/useDepartmentTableConfig';
 import { bulkDeleteDepartments, deleteDepartment, listDepartments } from '@services/department.service';
@@ -66,6 +67,9 @@ export default function DepartmentManagement() {
                     title: 'Department Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.departments
+                    },
                     tableButtonsProps: {
                         createButtonProps: {
                             onClick: function() {

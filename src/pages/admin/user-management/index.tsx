@@ -1,5 +1,6 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
 import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
@@ -165,6 +166,9 @@ export default function UserManagement() {
                     title: 'User Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.users
+                    },
                     tableButtonsProps: {
                         uploadCsvButtonProps: {
                             onClick: function() {
@@ -242,6 +246,7 @@ export default function UserManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit)}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

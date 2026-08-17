@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EventFilterForm from '@pages/shared/event-management/EventFilterForm';
 import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import { useEventTableConfig } from '@pages/shared/event-management/useEventTableConfig';
@@ -72,6 +73,9 @@ export default function EventManagement() {
                     title: 'Events'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.events
+                    },
                     tableButtonsProps: {
                         createButtonProps: {
                             onClick: function() {

@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelForm';
 import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/useProgramLevelTableConfig';
 import {
@@ -147,6 +148,11 @@ export default function ProgramLevelManagement() {
                     subheader: 'Manage academic program levels used across the system.',
                     title: 'Program Level Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.programLevels
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -197,6 +203,7 @@ export default function ProgramLevelManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

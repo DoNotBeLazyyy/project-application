@@ -29,7 +29,9 @@ export default function AcademicThresholdManagement() {
     const methods = useForm<AcademicThresholdsFormValues>({
         defaultValues: { thresholds: [] }
     });
-    const { control, handleSubmit, reset, getValues } = methods;
+    const {
+        control, formState, handleSubmit, reset, getValues
+    } = methods;
 
     useEffect(function() {
         async function loadThresholds() {
@@ -243,6 +245,7 @@ export default function AcademicThresholdManagement() {
 
                 <div className="flex gap-2 justify-start">
                     <CommonButton
+                        disabled={!formState.isDirty}
                         size="small"
                         variant="outlined"
                         onClick={() => reset()}
@@ -250,6 +253,7 @@ export default function AcademicThresholdManagement() {
                         Reset
                     </CommonButton>
                     <CommonButton
+                        disabled={!formState.isDirty}
                         form={THRESHOLDS_FORM_ID}
                         size="small"
                         type="submit"

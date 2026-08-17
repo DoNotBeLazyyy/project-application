@@ -2,6 +2,7 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
@@ -127,6 +128,9 @@ export default function EnrollmentManagement() {
                     title: 'Enrollment Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.enrollmentStudents
+                    },
                     tableButtonsProps: {
                         downloadCsvButtonProps: {
                             onClick: function() {

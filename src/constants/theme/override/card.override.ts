@@ -7,15 +7,19 @@ export const cardOverrides: ComponentTheme = {
             variant: 'medium'
         },
         styleOverrides: {
-            root: {
+            root: ({ theme }) => ({
                 backgroundColor: 'var(--mui-palette-common-white)',
                 borderRadius: 'var(--mui-tokens-radius-lg)',
                 boxShadow: '0px 0px 20px 0px #00000026',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 'var(--mui-tokens-spacing-6)',
-                padding: 'var(--mui-tokens-spacing-6)'
-            }
+                padding: 'var(--mui-tokens-spacing-6)',
+                [theme.breakpoints.down('md')]: {
+                    gap: 'var(--mui-tokens-spacing-4)',
+                    padding: 'var(--mui-tokens-spacing-4)'
+                }
+            })
         },
         variants: [
             {
@@ -47,9 +51,12 @@ export const cardOverrides: ComponentTheme = {
                 props: {
                     variant: 'large'
                 },
-                style: {
-                    gap: '6.25rem'
-                }
+                style: ({ theme }) => ({
+                    gap: '6.25rem',
+                    [theme.breakpoints.down('md')]: {
+                        gap: 'var(--mui-tokens-spacing-6)'
+                    }
+                })
             }
         ]
     },

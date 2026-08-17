@@ -6,6 +6,7 @@ import { GradeAnswerUpdate, SubmissionForGrading } from '@type/assessment.type';
 interface GradingPanelProps {
     draftAnswers: GradeAnswerUpdate[];
     draftFeedback: string;
+    isDirty: boolean;
     isSaving: boolean;
     submission: SubmissionForGrading;
     onFeedbackChange: (value: string) => void;
@@ -17,6 +18,7 @@ interface GradingPanelProps {
 export default function GradingPanel({
     draftAnswers,
     draftFeedback,
+    isDirty,
     isSaving,
     submission,
     onFeedbackChange,
@@ -36,7 +38,7 @@ export default function GradingPanel({
                     </span>
                 </div>
                 <CommonButton
-                    disabled={isSaving}
+                    disabled={isSaving || !isDirty}
                     size="small"
                     startIcon={<CheckCircleIcon size={14} weight="bold" />}
                     variant="contained"

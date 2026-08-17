@@ -1,6 +1,7 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { ChalkboardTeacherIcon, WarningIcon } from '@phosphor-icons/react';
 import FacultyLoadFilterForm from '@pages/dean/faculty-load/FacultyLoadFilterForm';
 import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFacultyLoadTableConfig';
@@ -137,6 +138,11 @@ export default function FacultyLoadManagement() {
                         subheader: 'Select a faculty member to see their sections and meeting times.',
                         title: tabMenu
                     }}
+                    controls={{
+                        tableInputProps: {
+                            searchHints: SEARCH_HINTS.facultyLoad
+                        }
+                    }}
                     dependencies={[loadFilters]}
                     filterModalProps={{
                         cardProps: {
@@ -178,6 +184,11 @@ export default function FacultyLoadManagement() {
                     cardHeaderProps={{
                         subheader: 'Overlapping meeting times detected across sections.',
                         title: tabMenu
+                    }}
+                    controls={{
+                        tableInputProps: {
+                            searchHints: SEARCH_HINTS.scheduleConflicts
+                        }
                     }}
                     dependencies={[conflictFilters]}
                     filterModalProps={{

@@ -324,7 +324,7 @@ export default function StudentSchedule() {
     }
 
     function handleSelectSwatch(swatch: string) {
-        colorMethods.setValue('color', swatch, { shouldValidate: true });
+        colorMethods.setValue('color', swatch, { shouldDirty: true, shouldValidate: true });
     }
 
     async function handleSaveColor(values: ColorFormValues) {
@@ -690,6 +690,7 @@ export default function StudentSchedule() {
                             Cancel
                         </CommonButton>
                         <CommonButton
+                            disabled={!colorMethods.formState.isDirty}
                             size="small"
                             variant="contained"
                             onClick={colorMethods.handleSubmit(handleSaveColor)}

@@ -162,6 +162,7 @@ export default function ProfilePage() {
                         />
                         <div className="flex gap-2">
                             <CommonButton
+                                disabled={!profileMethods.formState.isDirty}
                                 size="small"
                                 variant="outlined"
                                 onClick={() => profileMethods.reset()}
@@ -169,6 +170,7 @@ export default function ProfilePage() {
                                 Reset
                             </CommonButton>
                             <CommonButton
+                                disabled={!profileMethods.formState.isDirty}
                                 form={PROFILE_FORM_ID}
                                 size="small"
                                 type="submit"

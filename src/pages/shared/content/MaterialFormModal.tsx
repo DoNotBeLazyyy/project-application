@@ -37,6 +37,11 @@ export default function MaterialFormModal({
 
     const isEdit = material !== null;
 
+    const isUnchanged = isEdit
+        && title.trim() === (material?.title ?? '')
+        && (description.trim() || null) === (material?.description ?? null)
+        && (materialType !== 'Link' || (externalUrl.trim() || null) === (material?.external_url ?? null));
+
     useEffect(function() {
         if (!open) return;
 
@@ -242,7 +247,7 @@ export default function MaterialFormModal({
                     Cancel
                 </CommonButton>
                 <CommonButton
-                    disabled={isSaving || !title.trim()}
+                    disabled={isSaving || !title.trim() || isUnchanged}
                     size="small"
                     variant="contained"
                     onClick={handleSave}

@@ -57,6 +57,17 @@ export function useTableData<T extends FieldValues>({ onFetch, dependencies }: U
         loadData(1, pagination.rowsPerPage, searchQuery, internalSort);
     }
 
+    function handleSearchClear() {
+        const hadActiveSearch = activeSearchRef.current.length > 0;
+
+        activeSearchRef.current = '';
+        setSearchQuery('');
+
+        if (hadActiveSearch) {
+            loadData(1, pagination.rowsPerPage, '', internalSort);
+        }
+    }
+
     function handleApplySort(sort: SortStringDto[], source: 'modal' | 'grid' = 'modal') {
         setInternalSort(sort);
         sortSourceRef.current = source;
@@ -92,6 +103,7 @@ export function useTableData<T extends FieldValues>({ onFetch, dependencies }: U
         loadData,
         handleSetPagination,
         handleSearchSubmit,
+        handleSearchClear,
         handleApplySort,
         handleGridSort,
         activeSearch: activeSearchRef.current

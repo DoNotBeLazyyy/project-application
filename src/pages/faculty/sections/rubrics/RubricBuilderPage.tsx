@@ -23,7 +23,9 @@ export default function RubricBuilderPage() {
 
     const [isSaving, setIsSaving] = useState(false);
 
-    const { control, handleSubmit, reset, watch } = useForm<RubricFormValues>({
+    const {
+        control, formState, handleSubmit, reset, watch
+    } = useForm<RubricFormValues>({
         defaultValues: DEFAULT_VALUES
     });
 
@@ -125,7 +127,7 @@ export default function RubricBuilderPage() {
                         </div>
                     </div>
                     <CommonButton
-                        disabled={isSaving}
+                        disabled={isSaving || (!isNew && !formState.isDirty)}
                         size="small"
                         type="submit"
                         variant="contained"

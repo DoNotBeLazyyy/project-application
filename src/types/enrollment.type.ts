@@ -84,6 +84,24 @@ export interface EligibleSectionRow {
     schedule_label: string;
 }
 
+export type EligibleSectionScope = 'recommended' | 'all';
+
+export interface EligibleSectionFilterValues {
+    scope: EligibleSectionScope;
+    year_levels: string[];
+    include_full: boolean;
+    include_prerequisite_gaps: boolean;
+    include_conflicts: boolean;
+}
+
+export interface EligibleSectionResult {
+    scope: EligibleSectionScope;
+    recommended_count: number;
+    available_count: number;
+    total_count: number;
+    rows: EligibleSectionRow[];
+}
+
 export interface BulkEnrollStudentParams {
     student_id: string;
     section_ids: string[];

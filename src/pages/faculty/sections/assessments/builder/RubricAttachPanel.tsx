@@ -15,6 +15,9 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
     const [rubricId, setRubricId] = useState('');
     const [useScoring, setUseScoring] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [savedAttachment, setSavedAttachment] = useState('|false');
+
+    const currentAttachment = `${rubricId}|${useScoring}`;
 
     useEffect(function() {
         if (!assessmentId) return;
@@ -36,8 +39,11 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
             }
 
             if (attachedResult.data) {
-                setRubricId(attachedResult.data.rubric_id ?? '');
+                const attachedRubricId = attachedResult.data.rubric_id ?? '';
+
+                setRubricId(attachedRubricId);
                 setUseScoring(attachedResult.data.use_rubric_scoring);
+                setSavedAttachment(`${attachedRubricId}|${attachedResult.data.use_rubric_scoring}`);
             }
         }
 
@@ -57,7 +63,11 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
         setIsSaving(true);
 
         try {
-            await setAssessmentRubric(assessmentId, rubricId || null, useScoring);
+            const result = await setAssessmentRubric(assessmentId, rubricId || null, useScoring);
+
+            if (!result.error) {
+                setSavedAttachment(currentAttachment);
+            }
         }
         finally {
             setIsSaving(false);
@@ -112,7 +122,7 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
                         : null}
                 </div>
                 <CommonButton
-                    disabled={isSaving}
+                    disabled={isSaving || currentAttachment === savedAttachment}
                     size="small"
                     variant="contained"
                     onClick={handleSave}

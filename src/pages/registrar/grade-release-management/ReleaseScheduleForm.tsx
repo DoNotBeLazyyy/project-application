@@ -26,7 +26,9 @@ export default function ReleaseScheduleForm({
     const methods = useForm<ReleaseScheduleFormValues>({
         defaultValues: { release_at: '' }
     });
-    const { control, handleSubmit, reset } = methods;
+    const {
+        control, formState, handleSubmit, reset
+    } = methods;
 
     useEffect(function() {
         reset({ release_at: period?.release_at ?? '' });
@@ -66,7 +68,7 @@ export default function ReleaseScheduleForm({
                     children: isSaving
                         ? 'Saving...'
                         : 'Save Schedule',
-                    disabled: isSaving,
+                    disabled: isSaving || !formState.isDirty,
                     onClick: handleConfirm
                 }
             }}

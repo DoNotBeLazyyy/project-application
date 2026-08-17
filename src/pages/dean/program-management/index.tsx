@@ -1,6 +1,7 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramFilterForm from '@pages/dean/program-management/ProgramFilterForm';
 import ProgramForm from '@pages/dean/program-management/ProgramForm';
 import { useProgramTableConfig } from '@pages/dean/program-management/useProgramTableConfig';
@@ -182,6 +183,9 @@ export default function ProgramManagement() {
                     title: 'Program Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.programs
+                    },
                     tableButtonsProps: {
                         downloadCsvButtonProps: {
                             onClick: function() {
@@ -269,6 +273,7 @@ export default function ProgramManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

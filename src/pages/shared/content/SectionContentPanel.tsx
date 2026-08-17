@@ -44,6 +44,11 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
 
     const canManage = content?.can_manage ?? false;
     const modules = content?.modules ?? [];
+    const editingModule = modules.find((mod) => mod.id === editingModuleId);
+    const isModuleUnchanged = editingModule
+        ? moduleTitle.trim() === editingModule.title
+            && (moduleDescription.trim() || null) === (editingModule.description ?? null)
+        : false;
 
     async function loadContent() {
         const result = await getSectionContent(sectionId);
@@ -181,7 +186,7 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!moduleTitle.trim()}
+                            disabled={!moduleTitle.trim() || isModuleUnchanged}
                             size="small"
                             variant="contained"
                             onClick={handleSaveModule}

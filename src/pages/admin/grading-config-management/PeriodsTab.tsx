@@ -256,6 +256,7 @@ export default function PeriodsTab() {
                     : ' (should equal 100%)'}`,
                 title: 'Grading Periods'
             }}
+            controls={{ hasInput: false }}
             createModalProps={{
                 cardProps: {
                     cardHeaderProps: {
@@ -301,6 +302,7 @@ export default function PeriodsTab() {
                         onSubmit={handleUpdate}
                     />
                 ),
+                isDirty: updateMethods.formState.isDirty,
                 onConfirmClose: function() {
                     const current = updateMethods.getValues();
                     const snapshot = updateMethods.formState.defaultValues;

@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import SchoolYearFilterForm from '@pages/admin/school-year-management/SchoolYearFilterForm';
 import SchoolYearForm from '@pages/admin/school-year-management/SchoolYearForm';
 import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/useSchoolYearTableConfig';
@@ -167,6 +168,11 @@ export default function SchoolYearManagement() {
                     subheader: 'Manage academic school years.',
                     title: 'School Year Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.schoolYears
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -238,6 +244,7 @@ export default function SchoolYearManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

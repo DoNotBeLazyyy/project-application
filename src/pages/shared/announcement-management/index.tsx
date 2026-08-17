@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
@@ -76,6 +77,9 @@ export default function AnnouncementManagement() {
                     title: 'Announcements'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.announcements
+                    },
                     tableButtonsProps: {
                         createButtonProps: {
                             onClick: function() {

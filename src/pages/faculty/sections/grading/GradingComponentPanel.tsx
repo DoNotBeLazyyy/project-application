@@ -280,7 +280,13 @@ export default function GradingComponentPanel({
                         >
                             Cancel
                         </CommonButton>
-                        <CommonButton form={UPDATE_FORM_ID} size="small" type="submit" variant="contained">
+                        <CommonButton
+                            disabled={!updateMethods.formState.isDirty}
+                            form={UPDATE_FORM_ID}
+                            size="small"
+                            type="submit"
+                            variant="contained"
+                        >
                             Save
                         </CommonButton>
                     </div>

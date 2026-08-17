@@ -7,10 +7,11 @@ import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTable from '@components/table/CommonTable';
 import { MenuOption } from '@components/table/TableActionCell';
+import EligibleSectionFilterBar from '@pages/registrar/enrollment-management/EligibleSectionFilterBar';
 import { useEligibleSectionColumns } from '@pages/registrar/enrollment-management/useEligibleSectionColumns';
 import { MagnifyingGlassIcon, XCircleIcon } from '@phosphor-icons/react';
 import { bulkEnrollStudent, dropEnrollment, getEnrollmentStudentDetail, listEligibleSections } from '@services/enrollment.service';
-import { CurrentLoadRow, EligibleSectionRow, EnrollmentStudentDetail } from '@type/enrollment.type';
+import { CurrentLoadRow, EligibleSectionFilterValues, EligibleSectionRow, EnrollmentStudentDetail } from '@type/enrollment.type';
 import { formErrors } from '@utils/form.util';
 import { ColDef, SelectionChangedEvent } from 'ag-grid-community';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -35,6 +36,14 @@ const defaultOverrideValues: EnrollmentOverrideValues = {
     allow_conflict: false,
     override_prerequisites: false,
     conflict_reason: ''
+};
+
+const defaultSectionFilters: EligibleSectionFilterValues = {
+    scope: 'recommended',
+    year_levels: [],
+    include_full: true,
+    include_prerequisite_gaps: true,
+    include_conflicts: true
 };
 
 const CURRENT_LOAD_COLUMNS: ColDef<CurrentLoadRow>[] = [
@@ -70,6 +79,9 @@ export default function EnrollmentWorkspaceModal({
     const [activeSearch, setActiveSearch] = useState('');
     const [selectedSections, setSelectedSections] = useState<EligibleSectionRow[]>([]);
     const [pendingDropId, setPendingDropId] = useState<string | null>(null);
+    const [recommendedCount, setRecommendedCount] = useState(0);
+    const [recommendedAvailableCount, setRecommendedAvailableCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
 
     const eligibleColumns = useEligibleSectionColumns();
 
@@ -78,7 +90,31 @@ export default function EnrollmentWorkspaceModal({
         shouldUnregister: true
     });
 
+    const filterMethods = useForm<EligibleSectionFilterValues>({
+        defaultValues: defaultSectionFilters
+    });
+
     const allowConflict = useWatch({ control: overrideMethods.control, name: 'allow_conflict' });
+    const scope = useWatch({ control: filterMethods.control, name: 'scope' });
+    const yearLevels = useWatch({ control: filterMethods.control, name: 'year_levels' });
+    const includeFull = useWatch({ control: filterMethods.control, name: 'include_full' });
+    const includePrerequisiteGaps = useWatch({
+        control: filterMethods.control,
+        name: 'include_prerequisite_gaps'
+    });
+    const includeConflicts = useWatch({ control: filterMethods.control, name: 'include_conflicts' });
+
+    const sectionFilters = useMemo<EligibleSectionFilterValues>(function() {
+        return {
+            scope: scope ?? defaultSectionFilters.scope,
+            year_levels: scope === 'all'
+                ? yearLevels ?? []
+                : [],
+            include_full: Boolean(includeFull),
+            include_prerequisite_gaps: Boolean(includePrerequisiteGaps),
+            include_conflicts: Boolean(includeConflicts)
+        };
+    }, [scope, yearLevels, includeFull, includePrerequisiteGaps, includeConflicts]);
 
     const loadWorkspace = useCallback(async function() {
         if (!studentId) return;
@@ -89,11 +125,14 @@ export default function EnrollmentWorkspaceModal({
             setDetail(detailResult.data);
         }
 
-        const sectionsResult = await listEligibleSections(studentId, termId, activeSearch);
+        const sectionsResult = await listEligibleSections(studentId, termId, activeSearch, sectionFilters);
 
-        setSections(sectionsResult.data ?? []);
+        setSections(sectionsResult.data?.rows ?? []);
+        setRecommendedCount(sectionsResult.data?.recommended_count ?? 0);
+        setRecommendedAvailableCount(sectionsResult.data?.available_count ?? 0);
+        setTotalCount(sectionsResult.data?.total_count ?? 0);
         setSelectedSections([]);
-    }, [studentId, termId, activeSearch]);
+    }, [studentId, termId, activeSearch, sectionFilters]);
 
     useEffect(function() {
         if (open) {
@@ -104,8 +143,9 @@ export default function EnrollmentWorkspaceModal({
     useEffect(function() {
         if (open) {
             setTermId(defaultTermId);
+            filterMethods.reset(defaultSectionFilters);
         }
-    }, [open, defaultTermId]);
+    }, [open, defaultTermId, filterMethods]);
 
     const selectedUnits = useMemo(function() {
         return selectedSections.reduce((total, section) => total + Number(section.units), 0);
@@ -125,7 +165,11 @@ export default function EnrollmentWorkspaceModal({
         setSelectedSections([]);
         setSearchInput('');
         setActiveSearch('');
+        setRecommendedCount(0);
+        setRecommendedAvailableCount(0);
+        setTotalCount(0);
         overrideMethods.reset(defaultOverrideValues);
+        filterMethods.reset(defaultSectionFilters);
         onClose();
     }
 
@@ -273,7 +317,9 @@ export default function EnrollmentWorkspaceModal({
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-3 items-center justify-between">
                             <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                Eligible Sections ({sections.length})
+                                {sectionFilters.scope === 'recommended'
+                                    ? `Recommended Sections (${sections.length})`
+                                    : `All Eligible Sections (${sections.length} of ${totalCount})`}
                             </span>
                             <div className="flex gap-2 items-center">
                                 <CommonInput
@@ -299,10 +345,27 @@ export default function EnrollmentWorkspaceModal({
                                 </CommonButton>
                             </div>
                         </div>
+                        <EligibleSectionFilterBar
+                            control={filterMethods.control}
+                            isScopeLocked={sectionFilters.scope === 'recommended'}
+                        />
                         <p className="text-(--mui-palette-text-secondary) text-xs">
-                            Only sections whose course exists in the student&apos;s program curriculum are listed,
-                            regardless of which program opened the section.
+                            {sectionFilters.scope === 'recommended'
+                                ? `Showing the courses prescribed by the curriculum for Year ${detail?.year_level ?? '—'} this term. Switch the scope to all curriculum courses when a recommended class is full or unavailable.`
+                                : 'Showing every section whose course exists in the student\'s program curriculum, regardless of which program opened the section. Recommended courses stay at the top.'}
                         </p>
+                        {sectionFilters.scope === 'recommended' && recommendedCount > 0 && recommendedAvailableCount === 0 && (
+                            <p className="text-(--mui-palette-warning-main) text-xs">
+                                Every recommended section for this student is already full — switch the scope to all
+                                curriculum courses to pick an alternative.
+                            </p>
+                        )}
+                        {sectionFilters.scope === 'recommended' && recommendedCount === 0 && totalCount > 0 && (
+                            <p className="text-(--mui-palette-warning-main) text-xs">
+                                No recommended sections are open for this term. {totalCount} other curriculum
+                                section(s) are available under the all curriculum courses scope.
+                            </p>
+                        )}
                         <div className="h-[min(24rem,34vh)] min-h-48">
                             <CommonTable<EligibleSectionRow>
                                 getRowId={(params) => params.data.section_id}

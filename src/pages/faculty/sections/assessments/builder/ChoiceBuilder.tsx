@@ -36,7 +36,7 @@ export default function ChoiceBuilder({
                     </CommonButton>
                 )}
             </div>
-            <div className="flex flex-col gap-2 max-h-41 overflow-y-auto pr-4">
+            <div className="flex flex-col gap-2 max-h-41 overflow-y-auto">
                 {choices.map((choice, index) => (
                     <div
                         className="flex gap-2 items-center"

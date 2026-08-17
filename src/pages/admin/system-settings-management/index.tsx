@@ -94,7 +94,7 @@ export default function SystemSettings() {
         const result = await uploadFile({ bucket: 'logos', file, path, upsert: true });
 
         if (result.data) {
-            methods.setValue('institution_logo_url', result.data.url);
+            methods.setValue('institution_logo_url', result.data.url, { shouldDirty: true });
             setLogoPreview(result.data.url);
         }
 
@@ -206,7 +206,7 @@ export default function SystemSettings() {
 
     return (
         <CommonCard className="h-full">
-            <div className="flex flex-col gap-6 h-full max-w-4xl overflow-y-auto">
+            <div className="flex flex-col gap-6 h-full overflow-y-auto w-full">
                 <div className="flex flex-col gap-1">
                     <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
                     System Settings
@@ -269,6 +269,7 @@ export default function SystemSettings() {
                 </form>
                 <div className="flex gap-2 justify-start">
                     <CommonButton
+                        disabled={!methods.formState.isDirty}
                         size="small"
                         variant="outlined"
                         onClick={() => methods.reset()}
@@ -276,6 +277,7 @@ export default function SystemSettings() {
                     Reset
                     </CommonButton>
                     <CommonButton
+                        disabled={!methods.formState.isDirty}
                         form={SETTINGS_FORM_ID}
                         size="small"
                         type="submit"

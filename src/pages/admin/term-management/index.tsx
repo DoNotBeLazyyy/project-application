@@ -1,6 +1,7 @@
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { NEXT_STATUS_MAP } from '@constants/term.constant';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import TermFilterForm from '@pages/admin/term-management/TermFilterForm';
@@ -195,6 +196,11 @@ export default function TermManagement() {
                     subheader: 'Manage academic terms within school years.',
                     title: 'Term Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.terms
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -266,6 +272,7 @@ export default function TermManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

@@ -1,8 +1,9 @@
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
-    BulkEnrollStudentParams, BulkEnrollStudentResult, EligibleSectionRow, EnrollmentBulkRow,
-    EnrollmentStudentDetail, EnrollmentStudentFilterValues, EnrollmentStudentRow, EnrollmentTargetTerm
+    BulkEnrollStudentParams, BulkEnrollStudentResult, EligibleSectionFilterValues, EligibleSectionResult,
+    EnrollmentBulkRow, EnrollmentStudentDetail, EnrollmentStudentFilterValues, EnrollmentStudentRow,
+    EnrollmentTargetTerm
 } from '@type/enrollment.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -55,12 +56,20 @@ export async function getEnrollmentStudentDetail(
 export async function listEligibleSections(
     studentId: string,
     termId: string | null,
-    search: string
-): Promise<ServiceResult<EligibleSectionRow[]>> {
-    return callRpc<EligibleSectionRow[]>('fn_list_eligible_sections', {
+    search: string,
+    filters: EligibleSectionFilterValues
+): Promise<ServiceResult<EligibleSectionResult>> {
+    return callRpc<EligibleSectionResult>('fn_list_eligible_sections', {
         p_student_id: studentId,
         p_term_id: termId,
-        p_search: search || null
+        p_search: search || null,
+        p_scope: filters.scope,
+        p_year_levels: filters.year_levels.length
+            ? filters.year_levels.map(Number)
+            : null,
+        p_include_full: filters.include_full,
+        p_include_prerequisite_gaps: filters.include_prerequisite_gaps,
+        p_include_conflicts: filters.include_conflicts
     });
 }
 

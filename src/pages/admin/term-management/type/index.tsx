@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import TermTypeForm from '@pages/admin/term-management/type/TermTypeForm';
 import { useTermTypeTableConfig } from '@pages/admin/term-management/type/useTermTypeTableConfig';
 import {
@@ -141,6 +142,11 @@ export default function TermTypeManagement() {
                     subheader: 'Manage academic term types used across the system.',
                     title: 'Term Type Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.termTypes
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -185,6 +191,7 @@ export default function TermTypeManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

@@ -1,11 +1,13 @@
 import { CommonInputProps } from '@components/input/CommonInput';
-import { TextField } from '@mui/material';
+import InputClearAdornment from '@components/input/InputClearAdornment';
+import { InputBaseProps, TextField } from '@mui/material';
 import { NotchesIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, ThemeSx } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
+import { clearInputElement } from '@utils/input.util';
 import { normalizeSx } from '@utils/theme.util';
 import {
-    CSSProperties, forwardRef, useEffect, useMemo, useRef, useState
+    CSSProperties, forwardRef, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState
 } from 'react';
 
 type ResizeMode = 'none' | 'horizontal' | 'vertical' | 'both';
@@ -77,7 +79,9 @@ const TEXTAREA_MIN_SIZE = {
  * />
  */
 const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
+    hasClearButton = true,
     hasTextCount = false,
+    inputRef,
     size = 'large',
     variant = 'outlined',
     maxLength,
@@ -86,9 +90,11 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     sx,
     value,
     onChange,
+    onClear,
     ...props
 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const textareaElementRef = useRef<HTMLTextAreaElement | null>(null);
     const dragDataRef = useRef({
         startHeight: 0,
         startWidth: 0,
@@ -100,6 +106,8 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     useEffect(() => {
         setCharCount(String(value ?? '').length);
     }, [value]);
+
+    const inputSlotProps = slotProps?.input as InputBaseProps | undefined;
 
     const resizeMeta = useMemo<ResizeMetadata>(() => {
         switch (resize) {
@@ -224,6 +232,41 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
         onChange?.(event);
     }
 
+    /**
+     * Forwards the textarea element to consumers while keeping a local handle
+     * for the clear action.
+     *
+     * @param element - The rendered textarea element.
+     * @returns
+     */
+    const handleAssignInputRef = useCallback(function(element: HTMLTextAreaElement | null) {
+        textareaElementRef.current = element;
+
+        if (typeof inputRef === 'function') {
+            inputRef(element);
+            return;
+        }
+
+        if (inputRef) {
+            (inputRef as MutableRefObject<HTMLTextAreaElement | null>).current = element;
+        }
+    }, [inputRef]);
+
+    /**
+     * Empties the textarea and restores focus to it.
+     *
+     * @returns
+     */
+    function handleClear() {
+        clearInputElement(textareaElementRef.current);
+        onClear?.();
+    }
+
+    const isClearVisible = hasClearButton
+        && !props.disabled
+        && !inputSlotProps?.readOnly
+        && charCount > 0;
+
     const baseStyle: ThemeSx = {
         height: '100%',
         minHeight: `${resolvedMinSize.minHeight}px`,
@@ -271,15 +314,28 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
             >
                 <TextField
                     fullWidth
+                    inputRef={handleAssignInputRef}
                     multiline
                     ref={ref}
                     size={size}
                     slotProps={{
                         ...slotProps,
                         input: {
-                            ...slotProps?.input,
+                            ...inputSlotProps,
                             className: classMerge(
                                 'common_textarea_input'
+                            ),
+                            endAdornment: (
+                                <>
+                                    {isClearVisible && (
+                                        <InputClearAdornment
+                                            alignSelf="flex-start"
+                                            iconSize={iconSize + 2}
+                                            onClear={handleClear}
+                                        />
+                                    )}
+                                    {inputSlotProps?.endAdornment}
+                                </>
                             ),
                             inputComponent: 'textarea'
                         },

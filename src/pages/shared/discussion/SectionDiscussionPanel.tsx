@@ -136,7 +136,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto">
             <div className="flex items-center justify-between shrink-0">
                 <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
                     {threads.length} Discussion{threads.length === 1

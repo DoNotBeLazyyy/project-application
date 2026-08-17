@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { useRoleTableConfig } from '@pages/admin/role-management/hooks/useRoleTableConfig';
 import RoleForm from '@pages/admin/role-management/RoleForm';
 import {
@@ -148,6 +149,11 @@ export default function RoleManagement() {
                     subheader: 'Manage system roles and their descriptions.',
                     title: 'Role Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.roles
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -192,6 +198,7 @@ export default function RoleManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

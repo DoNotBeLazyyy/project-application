@@ -255,6 +255,7 @@ export default function LifecyclePanel({ studentId }: LifecyclePanelProps) {
                     },
                     confirmProps: {
                         children: 'Save',
+                        disabled: !statusMethods.formState.isDirty,
                         form: STATUS_FORM_ID,
                         type: 'submit'
                     }
@@ -291,6 +292,7 @@ export default function LifecyclePanel({ studentId }: LifecyclePanelProps) {
                     },
                     confirmProps: {
                         children: 'Save',
+                        disabled: !shiftMethods.formState.isDirty,
                         form: SHIFT_FORM_ID,
                         type: 'submit'
                     }

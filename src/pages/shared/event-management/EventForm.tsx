@@ -1,29 +1,24 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { ALL_SECTIONS_OPTION, ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import { getAnnouncementSectionOptions } from '@services/announcement.service';
 import { useAppStore } from '@stores/app.store';
-import { AnnouncementAudience } from '@type/announcement.type';
 import { ComponentPropsForm } from '@type/common.type';
 import { EventFormValues } from '@type/event.type';
 import { useEffect, useState } from 'react';
-import { Control, useWatch } from 'react-hook-form';
+import { Control } from 'react-hook-form';
 
 interface EventFormProps extends ComponentPropsForm {
     control: Control<EventFormValues>;
     disabled?: boolean;
 }
 
-const STAFF_AUDIENCE_OPTIONS: CommonSelectOption[] = [
-    { label: 'Everyone (Global)', value: 'Global' },
-    { label: 'All Faculty', value: 'Faculty' },
-    { label: 'All Students', value: 'Student' },
-    { label: 'Specific Sections', value: 'Section' }
-];
-
-const FACULTY_AUDIENCE_OPTIONS: CommonSelectOption[] = [
-    { label: 'Specific Sections', value: 'Section' }
-];
+function validateSections(value: string | string[]): string | true {
+    return Array.isArray(value) && value.length > 0
+        ? true
+        : 'Select at least one section';
+}
 
 export default function EventForm({
     control,
@@ -33,11 +28,6 @@ export default function EventForm({
     const activeRole = useAppStore((s) => s.activeRole);
     const isFacultyOnly = activeRole === 'Faculty';
     const [sectionOptions, setSectionOptions] = useState<CommonSelectOption[]>([]);
-
-    const audience = useWatch({
-        control,
-        name: 'target_audience'
-    }) as AnnouncementAudience | undefined;
 
     useEffect(function() {
         let active = true;
@@ -60,6 +50,10 @@ export default function EventForm({
         };
     }, []);
 
+    const audienceOptions = isFacultyOnly
+        ? sectionOptions
+        : [ALL_SECTIONS_OPTION, ...sectionOptions];
+
     const fields: FormFieldConfig<EventFormValues>[] = [
         {
             disabled,
@@ -73,34 +67,23 @@ export default function EventForm({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Who should see this event' },
-            label: 'Audience',
-            name: 'target_audience',
-            options: isFacultyOnly
-                ? FACULTY_AUDIENCE_OPTIONS
-                : STAFF_AUDIENCE_OPTIONS,
-            rules: disabled
-                ? undefined
-                : { required: 'Audience is required' },
-            type: 'select'
-        }
-    ];
-
-    if (audience === 'Section') {
-        fields.push({
-            disabled,
-            fieldProps: { helperText: 'Show this event to one or more sections' },
+            fieldProps: {
+                exclusiveValue: isFacultyOnly
+                    ? undefined
+                    : ALL_SECTIONS_VALUE,
+                helperText: isFacultyOnly
+                    ? 'Show this event to one or more sections'
+                    : 'Pick "All (Everyone)" or one or more specific sections',
+                placeholder: 'Select sections'
+            },
             label: 'Sections',
             name: 'section_ids',
-            options: sectionOptions,
+            options: audienceOptions,
             rules: disabled
                 ? undefined
-                : { required: 'Select at least one section' },
+                : { validate: validateSections },
             type: 'multi-select'
-        });
-    }
-
-    fields.push(
+        },
         {
             disabled,
             fieldProps: { helperText: 'When the event starts' },
@@ -132,7 +115,7 @@ export default function EventForm({
             placeholder: 'Add event details...',
             type: 'text-area'
         }
-    );
+    ];
 
     return (
         <CommonForm

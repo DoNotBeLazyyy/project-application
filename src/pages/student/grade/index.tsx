@@ -196,6 +196,7 @@ export default function StudentGrades() {
                         subheader: 'Released grades. Complete the faculty evaluation to unlock a locked row.',
                         title: 'My Grades'
                     }}
+                    controls={{ hasInput: false }}
                     dependencies={[activeFilters]}
                     filterModalProps={{
                         cardProps: {

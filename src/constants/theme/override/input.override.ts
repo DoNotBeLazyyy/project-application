@@ -1,5 +1,5 @@
 import {
-    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE
+    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE, SURFACE_DISABLED
 } from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 
@@ -45,13 +45,14 @@ export const inputOverrides: ComponentTheme = {
                     '&.MuiInputBase-multiline': {
                         alignItems: 'flex-start',
                         height: 'auto',
+                        maxHeight: 'none',
                         minHeight: '8.375rem',
-                        minWidth: '17rem',
+                        minWidth: 'min(17rem, 100%)',
                         width: 'auto'
                     },
                     '&.common_textarea_input.MuiInputBase-multiline': {
                         minHeight: '8.375rem',
-                        minWidth: '17rem',
+                        minWidth: 'min(17rem, 100%)',
                         width: '100%',
                         padding: 'var(--mui-tokens-spacing-3) var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-8) var(--mui-tokens-spacing-3)'
                     },
@@ -89,13 +90,14 @@ export const inputOverrides: ComponentTheme = {
                     '&.MuiInputBase-multiline': {
                         alignItems: 'flex-start',
                         height: 'auto',
+                        maxHeight: 'none',
                         minHeight: '10.625rem',
-                        minWidth: '16.5rem',
+                        minWidth: 'min(16.5rem, 100%)',
                         width: 'auto'
                     },
                     '&.common_textarea_input.MuiInputBase-multiline': {
                         minHeight: '10.625rem',
-                        minWidth: '16.5rem',
+                        minWidth: 'min(16.5rem, 100%)',
                         width: '100%',
                         padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-8) var(--mui-tokens-spacing-5)'
                     },
@@ -134,9 +136,12 @@ export const inputOverrides: ComponentTheme = {
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
+                '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline': {
+                    backgroundColor: SURFACE_DISABLED
+                },
                 [`
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline,
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):hover .MuiOutlinedInput-notchedOutline
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline,
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):hover .MuiOutlinedInput-notchedOutline
                 `]: {
                     border: BORDER_NEUTRAL
                 },

@@ -1,6 +1,7 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseForm from '@pages/dean/course-management/CourseForm';
 import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
@@ -199,6 +200,9 @@ export default function CourseManagement() {
                     title: 'Course Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.courses
+                    },
                     tableButtonsProps: {
                         downloadCsvButtonProps: {
                             onClick: function() {
@@ -290,6 +294,7 @@ export default function CourseManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

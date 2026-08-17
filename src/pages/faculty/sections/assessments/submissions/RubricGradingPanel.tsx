@@ -5,6 +5,7 @@ import { RubricEvaluationInput, SubmissionRubric } from '@type/rubric.type';
 interface RubricGradingPanelProps {
     draftEvaluations: RubricEvaluationInput[];
     draftFeedback: string;
+    isDirty: boolean;
     isSaving: boolean;
     rubric: SubmissionRubric;
     onEvaluationFeedbackChange: (criteriaId: string, value: string) => void;
@@ -16,6 +17,7 @@ interface RubricGradingPanelProps {
 export default function RubricGradingPanel({
     draftEvaluations,
     draftFeedback,
+    isDirty,
     isSaving,
     rubric,
     onEvaluationFeedbackChange,
@@ -41,7 +43,7 @@ export default function RubricGradingPanel({
                     </span>
                 </div>
                 <CommonButton
-                    disabled={isSaving}
+                    disabled={isSaving || !isDirty}
                     size="small"
                     startIcon={<CheckCircleIcon size={14} weight="bold" />}
                     variant="contained"

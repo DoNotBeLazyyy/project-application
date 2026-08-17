@@ -139,7 +139,11 @@ export default function AssessmentBuilderPage() {
                 }
             }
             else {
-                await updateAssessment(assessmentDbId, values);
+                const result = await updateAssessment(assessmentDbId, values);
+
+                if (!result.error) {
+                    settingsMethods.reset(values);
+                }
             }
         }
         finally {
@@ -242,6 +246,7 @@ export default function AssessmentBuilderPage() {
                 <div className="flex flex-1 gap-4 min-h-0">
                     <AssessmentSettingsForm
                         componentOptions={componentOptions}
+                        isDirty={settingsMethods.formState.isDirty}
                         isNew={isNew}
                         isSaving={isSaving}
                         methods={settingsMethods}
@@ -283,6 +288,7 @@ export default function AssessmentBuilderPage() {
                 />
                 <QuestionModal
                     editingQuestion={editingQuestion}
+                    isDirty={questionMethods.formState.isDirty}
                     isOpen={isQuestionModalOpen}
                     methods={questionMethods}
                     watchedChoices={watchedChoices}

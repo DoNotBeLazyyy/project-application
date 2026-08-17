@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
 import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/useCourseTypeTableConfig';
 import {
@@ -137,6 +138,11 @@ export default function CourseTypeManagement() {
                     subheader: 'Manage academic course types used across the system.',
                     title: 'Course Type Management'
                 }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.courseTypes
+                    }
+                }}
                 createModalProps={{
                     cardProps: {
                         cardHeaderProps: {
@@ -187,6 +193,7 @@ export default function CourseTypeManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

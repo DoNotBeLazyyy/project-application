@@ -5,6 +5,7 @@ import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { bulkCreateEvaluationTemplates, deleteEvaluationTemplate, listEvaluationTemplates } from '@services/evaluation.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
@@ -149,6 +150,9 @@ export default function EvaluationManagement() {
                     title: 'Faculty Evaluations'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.evaluationTemplates
+                    },
                     tableButtonsProps: {
                         createButtonProps: {
                             onClick: function() {

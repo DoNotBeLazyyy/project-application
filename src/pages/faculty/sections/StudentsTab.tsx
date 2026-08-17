@@ -1,5 +1,6 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import StudentEvaluationModal from '@pages/faculty/sections/StudentEvaluationModal';
 import { listSectionStudents } from '@services/faculty.service';
 import { SectionStudent } from '@type/faculty.type';
@@ -82,6 +83,11 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                 cardHeaderProps={{
                     subheader: 'Select a student to view their attendance, assessments, and grades.',
                     title: 'Roster'
+                }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.sectionStudents
+                    }
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableProps={{

@@ -27,6 +27,10 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
     const [remarks, setRemarks] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    const isUnchanged = Boolean(record)
+        && status === record?.status
+        && remarks === (record?.remarks ?? '');
+
     useEffect(function() {
         if (record) {
             setStatus(record.status);
@@ -138,7 +142,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                     Cancel
                 </CommonButton>
                 <CommonButton
-                    disabled={isSaving}
+                    disabled={isSaving || isUnchanged}
                     size="small"
                     variant="contained"
                     onClick={handleSave}

@@ -170,6 +170,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
                                 Cancel
                             </CommonButton>
                             <CommonButton
+                                disabled={!isCreate && !formState.isDirty}
                                 form={formId}
                                 size="small"
                                 startIcon={<FloppyDiskIcon size={16} weight="bold" />}

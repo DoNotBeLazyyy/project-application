@@ -28,31 +28,58 @@ const ROLE_GREETING: Record<string, string> = {
     Student: 'Ask me about your grades, your honors trajectory, or how anything here works.'
 };
 
+const SUGGESTION_VISIBLE_COUNT = 3;
+
 const ROLE_SUGGESTIONS: Record<string, string[]> = {
     Admin: [
         'How do I invite a new user?',
         'How do I open a new term?',
-        'What do academic thresholds change?'
+        'What do academic thresholds change?',
+        'How do I resend an invitation?',
+        'How do I give a user a second role?',
+        'How do I upload users in bulk?',
+        'How do I close the current term?',
+        'What happens when I archive a school year?'
     ],
     Dean: [
         'How do I assign an instructor to a section?',
         'How do I add a prerequisite to a course?',
-        'Where do I check for schedule conflicts?'
+        'Where do I check for schedule conflicts?',
+        'How do I build a curriculum map?',
+        'How do I create a new program level?',
+        'How do I open a new section?',
+        'How do I change a course type?',
+        'Where do I review faculty loading?'
     ],
     Faculty: [
         'Which of my students are at risk right now?',
         'What are my classes struggling with the most?',
-        'How do I grade with a rubric?'
+        'How do I grade with a rubric?',
+        'How do I set up my grading components?',
+        'How do I build an assessment?',
+        'How do I take attendance for today?',
+        'How do I post an announcement to my section?',
+        'How do I release grades to my students?'
     ],
     Registrar: [
         'How do I release grades for a section?',
         'How do I enrol a student in bulk?',
-        'Where do I print a transcript?'
+        'Where do I print a transcript?',
+        'How do I clear a student for enrolment?',
+        'How do I fix a wrong final grade?',
+        'How do I move a student to another section?',
+        'Where do I see the grade audit log?',
+        'How do I set clearance requirements?'
     ],
     Student: [
         'Am I on track for Latin honors?',
         'Which subject is hurting my GWA the most?',
-        'What should I focus on for the rest of this term?'
+        'What should I focus on for the rest of this term?',
+        'What assessments are due soon?',
+        'How is my attendance so far?',
+        'Where do I check my clearance status?',
+        'How is my final grade computed?',
+        'Where do I see my class schedule?'
     ]
 };
 
@@ -68,6 +95,30 @@ function extractSectionId(pathname: string): string | null {
         : null;
 }
 
+interface SuggestionListProps {
+    items: string[];
+    onSelect: (suggestion: string) => void;
+}
+
+function SuggestionList({ items, onSelect }: SuggestionListProps) {
+    return (
+        <div className="flex flex-col gap-2">
+            {items.map((suggestion) => (
+                <button
+                    className="border border-(--mui-palette-divider) hover:bg-black/5 px-3 py-2 rounded-lg text-(--mui-palette-text-primary) text-left text-xs"
+                    key={suggestion}
+                    type="button"
+                    onClick={function() {
+                        onSelect(suggestion);
+                    }}
+                >
+                    {suggestion}
+                </button>
+            ))}
+        </div>
+    );
+}
+
 export default function AiAssistant() {
     const { pathname } = useLocation();
     const activeRole = useAppStore((s) => s.activeRole);
@@ -75,15 +126,34 @@ export default function AiAssistant() {
     const [isSending, setIsSending] = useState(false);
     const [draft, setDraft] = useState('');
     const [messages, setMessages] = useState<AssistantMessage[]>([]);
+    const [usedSuggestions, setUsedSuggestions] = useState<string[]>([]);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const role = activeRole ?? '';
-    const suggestions = ROLE_SUGGESTIONS[role] ?? [];
+    const suggestions = (ROLE_SUGGESTIONS[role] ?? [])
+        .filter((item) => !usedSuggestions.includes(item))
+        .slice(0, SUGGESTION_VISIBLE_COUNT);
+    const lastMessage = messages[messages.length - 1];
+    const canShowFollowUps = !isSending
+        && suggestions.length > 0
+        && lastMessage?.role === 'assistant'
+        && !lastMessage.isFailed;
 
     useEffect(function() {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages, isSending, isOpen]);
+
+    useEffect(function() {
+        setUsedSuggestions([]);
+    }, [activeRole]);
+
+    function handleSuggestionSelect(suggestion: string) {
+        setUsedSuggestions((prev) => prev.includes(suggestion)
+            ? prev
+            : [...prev, suggestion]);
+        handleSend(suggestion);
+    }
 
     async function handleSend(text: string) {
         const trimmed = text.trim();
@@ -193,20 +263,10 @@ export default function AiAssistant() {
                                 <p className="text-(--mui-palette-text-secondary) text-sm">
                                     {ROLE_GREETING[role] ?? 'Ask me how anything here works.'}
                                 </p>
-                                <div className="flex flex-col gap-2">
-                                    {suggestions.map((suggestion) => (
-                                        <button
-                                            className="border border-(--mui-palette-divider) hover:bg-black/5 px-3 py-2 rounded-lg text-(--mui-palette-text-primary) text-left text-xs"
-                                            key={suggestion}
-                                            type="button"
-                                            onClick={function() {
-                                                handleSend(suggestion);
-                                            }}
-                                        >
-                                            {suggestion}
-                                        </button>
-                                    ))}
-                                </div>
+                                <SuggestionList
+                                    items={suggestions}
+                                    onSelect={handleSuggestionSelect}
+                                />
                             </>
                         )}
                         {messages.map((item) => (
@@ -236,10 +296,22 @@ export default function AiAssistant() {
                                 Thinking...
                             </span>
                         )}
+                        {canShowFollowUps && (
+                            <div className="flex flex-col gap-2 pt-1">
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                    You can also ask
+                                </span>
+                                <SuggestionList
+                                    items={suggestions}
+                                    onSelect={handleSuggestionSelect}
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className="flex gap-2 items-end px-4 py-3">
                         <CommonInput
                             fullWidth
+                            hasClearButton={false}
                             maxRows={4}
                             multiline
                             placeholder="Ask a question..."

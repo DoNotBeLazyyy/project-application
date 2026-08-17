@@ -367,6 +367,7 @@ export default function CurriculumMapManagement() {
                             Cancel
                             </CommonButton>
                             <CommonButton
+                                disabled={!updateMethods.formState.isDirty}
                                 form={UPDATE_FORM_ID}
                                 size="small"
                                 type="submit"

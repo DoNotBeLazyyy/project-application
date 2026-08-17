@@ -244,6 +244,8 @@ export default function TransmutationTab({
     isSaving,
     onSave
 }: TransmutationTabProps) {
+    const hasStoredTable = initialRows.length === DEFAULT_LADDER.length;
+
     const methods = useForm<TransmutationFormValues>({
         defaultValues: {
             rows: buildInitialRows(initialRows)
@@ -274,6 +276,7 @@ export default function TransmutationTab({
                 }
 
                 await onSave(values.rows);
+                methods.reset(values);
             },
             function(errors) {
                 formErrors(errors, methods);
@@ -293,7 +296,7 @@ export default function TransmutationTab({
                 tableButtonsProps: {
                     extraButtons: (
                         <CommonButton
-                            disabled={isSaving}
+                            disabled={isSaving || (hasStoredTable && !methods.formState.isDirty)}
                             size="small"
                             variant="contained"
                             onClick={handleSave}

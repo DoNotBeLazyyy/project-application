@@ -1,3 +1,4 @@
+import { BREAKPOINT_VALUES } from '@constants/breakpoint.constant';
 import { COMPONENTS } from '@constants/theme/components.constant';
 import { PALETTE } from '@constants/theme/palette.constant';
 import { SHAPE } from '@constants/theme/shape.constant';
@@ -8,6 +9,9 @@ import { createTheme } from '@mui/material/styles';
 import { FontFamilyKey, ThemeSx } from '@type/common/theme.type';
 
 export const theme = createTheme({
+    breakpoints: {
+        values: BREAKPOINT_VALUES
+    },
     cssVariables: {
         nativeColor: true
     },

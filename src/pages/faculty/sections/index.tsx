@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { listMySections } from '@services/faculty.service';
 import { MySectionListRow } from '@type/faculty.type';
 import { SortStringDto } from '@type/http.type';
@@ -92,6 +93,11 @@ export default function FacultySectionManagement() {
                 cardHeaderProps={{
                     subheader: 'View and manage your assigned sections.',
                     title: 'My Sections'
+                }}
+                controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.mySections
+                    }
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableProps={{

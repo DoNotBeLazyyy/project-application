@@ -6,7 +6,7 @@ export const INPUT_PADDING_LARGE = 'var(--mui-tokens-spacing-4) var(--mui-tokens
 
 const SURFACE_DEFAULT = 'var(--mui-tokens-color-neutral-100)';
 const SURFACE_FOCUSED = 'var(--mui-tokens-color-brand-100)';
-const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-200)';
+export const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-200)';
 const SURFACE_ERROR = 'var(--mui-tokens-color-red-100)';
 const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-400)';
 const BORDER_TRANSPARENT = 'var(--mui-tokens-stroke-1) solid transparent';

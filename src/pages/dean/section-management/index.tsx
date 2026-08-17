@@ -1,6 +1,7 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CopySectionSetupModal from '@pages/dean/section-management/CopySectionSetupModal';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionForm from '@pages/dean/section-management/SectionForm';
@@ -185,6 +186,9 @@ export default function SectionManagement() {
                     title: 'Section Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.sections
+                    },
                     tableButtonsProps: {
                         downloadCsvButtonProps: {
                             onClick: function() {
@@ -273,6 +277,7 @@ export default function SectionManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

@@ -1,6 +1,7 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import StudentFilterForm from '@pages/registrar/student-management/StudentFilterForm';
 import StudentForm from '@pages/registrar/student-management/StudentForm';
 import { useStudentTableConfig } from '@pages/registrar/student-management/useStudentTableConfig';
@@ -189,6 +190,9 @@ export default function StudentManagement() {
                     title: 'Student Management'
                 }}
                 controls={{
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.students
+                    },
                     tableButtonsProps: {
                         downloadCsvButtonProps: {
                             onClick: function() {
@@ -277,6 +281,7 @@ export default function StudentManagement() {
                             )}
                         />
                     ),
+                    isDirty: updateMethods.formState.isDirty,
                     onConfirmClose: function() {
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;

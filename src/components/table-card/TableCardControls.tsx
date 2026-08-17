@@ -1,13 +1,12 @@
-import { CommonInputProps } from '@components/input/CommonInput';
 import TableCardActionMenu, { TableCardActionMenuProps } from '@components/table-card/TableCardActionMenu';
-import TableCardInput from '@components/table-card/TableCardInput';
+import TableCardInput, { TableCardInputProps } from '@components/table-card/TableCardInput';
 
 export interface TableCardControlsProps {
     // Table action menu props
     tableButtonsProps?: TableCardActionMenuProps;
 
     // Table input props
-    tableInputProps?: CommonInputProps;
+    tableInputProps?: TableCardInputProps;
 
     hasInput?: boolean;
 }

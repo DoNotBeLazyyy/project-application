@@ -19,6 +19,7 @@ export default function PaginationInput({
 
     return (
         <CommonInput
+            hasClearButton={false}
             sx={{
                 height: '1.75rem',
                 width: `max(1.75rem, calc(${inputLength}ch + 1rem))`,

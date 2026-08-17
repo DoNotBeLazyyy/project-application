@@ -11,6 +11,14 @@ import { RubricEvaluationInput, SubmissionRubric } from '@type/rubric.type';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+function buildGradeDraftKey(
+    feedback: string,
+    answers: GradeAnswerUpdate[],
+    evaluations: RubricEvaluationInput[]
+): string {
+    return JSON.stringify({ answers, evaluations, feedback });
+}
+
 export default function SubmissionsPage() {
     const { sectionId = '', assessmentId = '' } = useParams<{ sectionId: string; assessmentId: string }>();
     const navigate = useNavigate();
@@ -21,7 +29,11 @@ export default function SubmissionsPage() {
     const [rubric, setRubric] = useState<SubmissionRubric | null>(null);
     const [draftEvaluations, setDraftEvaluations] = useState<RubricEvaluationInput[]>([]);
     const [draftFeedback, setDraftFeedback] = useState('');
+    const [savedGradeDraft, setSavedGradeDraft] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    const isGradeDirty = buildGradeDraftKey(draftFeedback, draftAnswers, draftEvaluations)
+        !== savedGradeDraft;
 
     useEffect(function() {
         if (!assessmentId) return;
@@ -38,34 +50,40 @@ export default function SubmissionsPage() {
 
         if (!result.data) return;
 
+        const feedback = result.data.feedback ?? '';
+        const answers = result.data.answers.map((a) => ({
+            id: a.id,
+            points_earned: a.points_earned ?? 0,
+            grader_notes: a.grader_notes ?? ''
+        }));
+
         setSelectedSubmission(result.data);
-        setDraftFeedback(result.data.feedback ?? '');
-        setDraftAnswers(
-            result.data.answers.map((a) => ({
-                id: a.id,
-                points_earned: a.points_earned ?? 0,
-                grader_notes: a.grader_notes ?? ''
-            }))
-        );
+        setDraftFeedback(feedback);
+        setDraftAnswers(answers);
 
-        if (result.data.use_rubric_scoring) {
-            const rubricResult = await getSubmissionRubric(submissionId);
-
-            if (rubricResult.data) {
-                setRubric(rubricResult.data);
-                setDraftEvaluations(
-                    rubricResult.data.criteria.map((c) => ({
-                        criteria_id: c.id,
-                        points_earned: c.points_earned ?? 0,
-                        feedback: c.feedback ?? ''
-                    }))
-                );
-            }
-        }
-        else {
+        if (!result.data.use_rubric_scoring) {
             setRubric(null);
             setDraftEvaluations([]);
+            setSavedGradeDraft(buildGradeDraftKey(feedback, answers, []));
+
+            return;
         }
+
+        const rubricResult = await getSubmissionRubric(submissionId);
+        const evaluations = rubricResult.data
+            ? rubricResult.data.criteria.map((c) => ({
+                criteria_id: c.id,
+                points_earned: c.points_earned ?? 0,
+                feedback: c.feedback ?? ''
+            }))
+            : [];
+
+        if (rubricResult.data) {
+            setRubric(rubricResult.data);
+        }
+
+        setDraftEvaluations(evaluations);
+        setSavedGradeDraft(buildGradeDraftKey(feedback, answers, evaluations));
     }
 
     async function handleSaveGrade() {
@@ -151,6 +169,7 @@ export default function SubmissionsPage() {
                             <RubricGradingPanel
                                 draftEvaluations={draftEvaluations}
                                 draftFeedback={draftFeedback}
+                                isDirty={isGradeDirty}
                                 isSaving={isSaving}
                                 rubric={rubric}
                                 onEvaluationFeedbackChange={handleRubricFeedbackChange}
@@ -164,6 +183,7 @@ export default function SubmissionsPage() {
                                 <GradingPanel
                                     draftAnswers={draftAnswers}
                                     draftFeedback={draftFeedback}
+                                    isDirty={isGradeDirty}
                                     isSaving={isSaving}
                                     submission={selectedSubmission}
                                     onFeedbackChange={setDraftFeedback}
