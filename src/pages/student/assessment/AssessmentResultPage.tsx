@@ -1,7 +1,10 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from '@phosphor-icons/react';
+import {
+    ArrowLeftIcon, ArrowLineDownIcon, CheckCircleIcon, ClockIcon, LockIcon, XCircleIcon
+} from '@phosphor-icons/react';
+import { getAttachmentSignedUrl } from '@services/assessment.service';
 import { getMyAssessmentResult } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
 import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
@@ -28,6 +31,16 @@ async function openSubmissionFile(path: string) {
     if (result.data) window.open(result.data.url, '_blank', 'noopener');
 }
 
+async function downloadAttachment(fileUrl: string, fileName: string) {
+    const url = await getAttachmentSignedUrl(fileUrl);
+    if (!url) return;
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.target = '_blank';
+    anchor.click();
+}
+
 interface DetailFieldProps {
     label: string;
     value: string;
@@ -42,6 +55,36 @@ function DetailField({ label, value }: DetailFieldProps) {
             <span className="font-medium text-(--mui-palette-text-primary) text-sm wrap-break-word">
                 {value}
             </span>
+        </div>
+    );
+}
+
+interface NoticeBannerProps {
+    icon: 'clock' | 'lock';
+    message: string;
+}
+
+function NoticeBanner({ icon, message }: NoticeBannerProps) {
+    return (
+        <div className="border border-(--mui-palette-divider) flex gap-2 items-center p-3 rounded-lg">
+            {icon === 'lock'
+                ? (
+                    <LockIcon
+                        className="text-(--mui-palette-text-secondary) shrink-0"
+                        size={18}
+                        weight="fill"
+                    />
+                )
+                : (
+                    <ClockIcon
+                        className="text-(--mui-palette-warning-main) shrink-0"
+                        size={18}
+                        weight="fill"
+                    />
+                )}
+            <p className="text-(--mui-palette-text-secondary) text-sm">
+                {message}
+            </p>
         </div>
     );
 }
@@ -64,7 +107,7 @@ function RubricBreakdown({ resultsAvailable, rubric }: RubricBreakdownProps) {
                         key={criterion.id}
                     >
                         <div className="flex gap-2 items-start justify-between">
-                            <div className="flex flex-col gap-0.5">
+                            <div className="flex flex-col gap-0.5 min-w-0">
                                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                                     {criterion.title}
                                 </span>
@@ -94,11 +137,12 @@ function RubricBreakdown({ resultsAvailable, rubric }: RubricBreakdownProps) {
 
 interface ResultAnswerCardProps {
     answer: StudentResultAnswer;
+    hasSubmission: boolean;
     index: number;
     resultsAvailable: boolean;
 }
 
-function ResultAnswerCard({ answer, index, resultsAvailable }: ResultAnswerCardProps) {
+function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: ResultAnswerCardProps) {
     const isChoiceBased = CHOICE_TYPES.includes(answer.question_type);
 
     return (
@@ -108,100 +152,100 @@ function ResultAnswerCard({ answer, index, resultsAvailable }: ResultAnswerCardP
                     {index + 1}. {answer.question_text}
                 </p>
                 <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                    {resultsAvailable
+                    {resultsAvailable && hasSubmission
                         ? `${formatScore(answer.points_earned)} / ${answer.points}`
                         : answer.points} pts
                 </span>
             </div>
 
-            {isChoiceBased
-                ? (
-                    <div className="flex flex-col gap-1.5">
-                        {answer.choices.map(function(choice) {
-                            const isSelected = choice.id === answer.choice_id;
-                            const showCorrect = resultsAvailable && choice.is_correct === true;
-                            const showWrongSelected = resultsAvailable && isSelected && choice.is_correct === false;
+            {isChoiceBased && (
+                <div className="flex flex-col gap-1.5">
+                    {answer.choices.map(function(choice) {
+                        const isSelected = choice.id === answer.choice_id;
+                        const showCorrect = resultsAvailable && choice.is_correct === true;
+                        const showWrongSelected = resultsAvailable && isSelected && choice.is_correct === false;
 
-                            return (
-                                <div
-                                    className="border flex flex-wrap gap-2 items-center px-3 py-2 rounded text-sm"
-                                    key={choice.id}
-                                    style={{
-                                        borderColor: showCorrect
-                                            ? 'var(--mui-palette-success-main)'
-                                            : showWrongSelected
-                                                ? 'var(--mui-palette-error-main)'
-                                                : isSelected
-                                                    ? 'var(--mui-palette-primary-main)'
-                                                    : 'var(--mui-palette-divider)'
-                                    }}
-                                >
-                                    {showCorrect && (
-                                        <CheckCircleIcon
-                                            className="text-(--mui-palette-success-main) shrink-0"
-                                            size={16}
-                                            weight="fill"
-                                        />
-                                    )}
-                                    {showWrongSelected && (
-                                        <XCircleIcon
-                                            className="text-(--mui-palette-error-main) shrink-0"
-                                            size={16}
-                                            weight="fill"
-                                        />
-                                    )}
-                                    <span className="text-(--mui-palette-text-primary)">
-                                        {choice.choice_text}
-                                    </span>
-                                    {isSelected && (
-                                        <span className="ml-auto text-(--mui-palette-text-secondary) text-xs">
-                                            Your answer
-                                        </span>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )
-                : (
-                    <div className="flex flex-col gap-1">
-                        <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
-                            Your Answer
-                        </span>
-                        {answer.answer_text
-                            ? (
-                                <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                                    {answer.answer_text}
-                                </p>
-                            )
-                            : answer.file_attachments.length > 0
-                                ? (
-                                    <div className="flex flex-col gap-1 items-start">
-                                        {answer.file_attachments.map(function(file) {
-                                            return (
-                                                <button
-                                                    className="text-(--mui-palette-primary-main) text-left text-sm underline"
-                                                    key={file.path}
-                                                    type="button"
-                                                    onClick={function() {
-                                                        openSubmissionFile(file.path);
-                                                    }}
-                                                >
-                                                    {file.name}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )
-                                : (
-                                    <p className="italic text-(--mui-palette-text-disabled) text-sm">
-                                        No answer provided
-                                    </p>
+                        return (
+                            <div
+                                className="border flex flex-wrap gap-2 items-center px-3 py-2 rounded text-sm"
+                                key={choice.id}
+                                style={{
+                                    borderColor: showCorrect
+                                        ? 'var(--mui-palette-success-main)'
+                                        : showWrongSelected
+                                            ? 'var(--mui-palette-error-main)'
+                                            : isSelected
+                                                ? 'var(--mui-palette-primary-main)'
+                                                : 'var(--mui-palette-divider)'
+                                }}
+                            >
+                                {showCorrect && (
+                                    <CheckCircleIcon
+                                        className="text-(--mui-palette-success-main) shrink-0"
+                                        size={16}
+                                        weight="fill"
+                                    />
                                 )}
-                    </div>
-                )}
+                                {showWrongSelected && (
+                                    <XCircleIcon
+                                        className="text-(--mui-palette-error-main) shrink-0"
+                                        size={16}
+                                        weight="fill"
+                                    />
+                                )}
+                                <span className="min-w-0 text-(--mui-palette-text-primary) wrap-break-word">
+                                    {choice.choice_text}
+                                </span>
+                                {isSelected && (
+                                    <span className="ml-auto shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                        Your answer
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
 
-            {resultsAvailable && answer.is_correct !== null && (
+            {!isChoiceBased && hasSubmission && (
+                <div className="flex flex-col gap-1">
+                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
+                        Your Answer
+                    </span>
+                    {answer.answer_text
+                        ? (
+                            <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                                {answer.answer_text}
+                            </p>
+                        )
+                        : answer.file_attachments.length > 0
+                            ? (
+                                <div className="flex flex-col gap-1 items-start">
+                                    {answer.file_attachments.map(function(file) {
+                                        return (
+                                            <button
+                                                className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word"
+                                                key={file.path}
+                                                type="button"
+                                                onClick={function() {
+                                                    openSubmissionFile(file.path);
+                                                }}
+                                            >
+                                                {file.name}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )
+                            : (
+                                <p className="italic text-(--mui-palette-text-disabled) text-sm">
+                                    No answer provided
+                                </p>
+                            )}
+                </div>
+            )}
+
+            {resultsAvailable && hasSubmission && answer.is_correct !== null && (
                 <span
                     className="font-medium text-xs"
                     style={{
@@ -215,7 +259,7 @@ function ResultAnswerCard({ answer, index, resultsAvailable }: ResultAnswerCardP
                         : '✗ Incorrect'}
                 </span>
             )}
-            {resultsAvailable && answer.grader_notes && (
+            {resultsAvailable && hasSubmission && answer.grader_notes && (
                 <p className="text-(--mui-palette-text-secondary) text-xs">
                     Note: {answer.grader_notes}
                 </p>
@@ -254,7 +298,8 @@ export default function AssessmentResultPage() {
         fetchResult();
     }, [assessmentId, enrollmentId]);
 
-    const passed = result && result.results_available && result.passing_points !== null && result.final_score !== null
+    const passed = result && result.has_submission && result.results_available
+        && result.passing_points !== null && result.final_score !== null
         ? result.final_score >= result.passing_points
         : null;
 
@@ -277,7 +322,7 @@ export default function AssessmentResultPage() {
             {!result && isLoaded && (
                 <div className="flex flex-1 items-center justify-center">
                     <p className="text-(--mui-palette-text-secondary) text-sm">
-                        Result not available.
+                        Assessment not available.
                     </p>
                 </div>
             )}
@@ -291,7 +336,13 @@ export default function AssessmentResultPage() {
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap gap-2 items-center">
                             <CommonBadgeStatus label={result.assessment_type} variant="info" />
-                            <CommonBadgeStatus label={result.status} variant="info" />
+                            {result.grading_period_name && (
+                                <CommonBadgeStatus label={result.grading_period_name} variant="info" />
+                            )}
+                            <CommonBadgeStatus
+                                label={result.status ?? 'Not Started'}
+                                variant="info"
+                            />
                             {passed !== null && (
                                 <CommonBadgeStatus
                                     label={passed
@@ -306,7 +357,7 @@ export default function AssessmentResultPage() {
                                 <CommonBadgeStatus label="Late" variant="warning" />
                             )}
                         </div>
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
+                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-lg md:text-xl">
                             {result.title}
                         </h1>
                         {result.description && (
@@ -316,12 +367,14 @@ export default function AssessmentResultPage() {
                         )}
                     </div>
 
-                    <div className="gap-4 grid grid-cols-2 sm:grid-cols-4">
+                    <div className="gap-4 grid grid-cols-2 md:grid-cols-4">
                         <DetailField
                             label="Score"
-                            value={result.results_available
-                                ? `${formatScore(result.final_score)} / ${result.total_points}`
-                                : 'Pending'}
+                            value={!result.has_submission
+                                ? 'Not attempted'
+                                : result.results_available
+                                    ? `${formatScore(result.final_score)} / ${result.total_points}`
+                                    : 'Pending'}
                         />
                         <DetailField
                             label="Passing"
@@ -331,7 +384,23 @@ export default function AssessmentResultPage() {
                         />
                         <DetailField
                             label="Attempt"
-                            value={`${result.attempt_number} / ${result.max_attempts}`}
+                            value={`${result.attempt_number ?? 0} / ${result.max_attempts}`}
+                        />
+                        <DetailField
+                            label="Questions"
+                            value={String(result.question_count)}
+                        />
+                        <DetailField
+                            label="Opens"
+                            value={formatDateTime(result.opens_at)}
+                        />
+                        <DetailField
+                            label="Due"
+                            value={formatDateTime(result.due_at)}
+                        />
+                        <DetailField
+                            label="Closes"
+                            value={formatDateTime(result.closes_at)}
                         />
                         <DetailField
                             label="Submitted"
@@ -339,7 +408,32 @@ export default function AssessmentResultPage() {
                         />
                     </div>
 
-                    {result.results_available && result.feedback && (
+                    {result.attachments.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
+                                Attachments
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                                {result.attachments.map(function(file) {
+                                    return (
+                                        <CommonButton
+                                            key={file.id}
+                                            size="small"
+                                            startIcon={<ArrowLineDownIcon size={14} weight="bold" />}
+                                            variant="outlined"
+                                            onClick={function() {
+                                                downloadAttachment(file.file_url, file.file_name);
+                                            }}
+                                        >
+                                            {file.file_name}
+                                        </CommonButton>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {result.has_submission && result.results_available && result.feedback && (
                         <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-3 rounded-lg">
                             <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
                                 Instructor Feedback
@@ -350,19 +444,26 @@ export default function AssessmentResultPage() {
                         </div>
                     )}
 
-                    {!result.results_available && (
-                        <div className="border border-(--mui-palette-divider) flex gap-2 items-center p-3 rounded-lg">
-                            <ClockIcon
-                                className="text-(--mui-palette-warning-main) shrink-0"
-                                size={18}
-                                weight="fill"
-                            />
-                            <p className="text-(--mui-palette-text-secondary) text-sm">
-                                {result.show_results_at
-                                    ? `Results will be available on ${formatDateTime(result.show_results_at)}.`
-                                    : 'Your submission is awaiting grading. Detailed results will appear here once released.'}
-                            </p>
-                        </div>
+                    {result.has_submission && !result.results_available && (
+                        <NoticeBanner
+                            icon="clock"
+                            message={result.show_results_at
+                                ? `Results will be available on ${formatDateTime(result.show_results_at)}.`
+                                : 'Your submission is awaiting grading. Detailed results will appear here once released.'}
+                        />
+                    )}
+
+                    {!result.review_available && result.review_blocked_reason && (
+                        <NoticeBanner icon="lock" message={result.review_blocked_reason} />
+                    )}
+
+                    {result.review_available && !result.has_submission && (
+                        <NoticeBanner
+                            icon="clock"
+                            message={result.results_available
+                                ? 'You did not submit this assessment. The questions below are shown for review only.'
+                                : 'You did not submit this assessment. Correct answers stay hidden until your instructor releases results.'}
+                        />
                     )}
 
                     {result.rubric && (
@@ -375,12 +476,15 @@ export default function AssessmentResultPage() {
                     {result.answers.length > 0 && (
                         <div className="flex flex-col gap-3">
                             <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Your Answers
+                                {result.has_submission
+                                    ? 'Your Answers'
+                                    : 'Questions'}
                             </span>
                             {result.answers.map(function(answer, index) {
                                 return (
                                     <ResultAnswerCard
                                         answer={answer}
+                                        hasSubmission={result.has_submission}
                                         index={index}
                                         key={answer.id}
                                         resultsAvailable={result.results_available}

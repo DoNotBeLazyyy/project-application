@@ -18,6 +18,7 @@ export const DEFAULT_ASSSESSMENT_VALUES: AssessmentFormValues = {
     shuffle_choices: false,
     show_all_questions: true,
     questions_per_page: '',
+    allow_student_review: true,
     allow_past_dates: false
 };
 

@@ -78,8 +78,18 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
                     if (isReleased(grade)) {
                         return (
-                            <div className="flex h-full items-center">
+                            <div className="flex gap-2 h-full items-center">
                                 <CommonBadgeStatus label="Released" variant="success" />
+                                <CommonButton
+                                    color="inherit"
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={function() {
+                                        navigate(`/student/grade/${enrollmentId}/${grade.grading_period_id}`);
+                                    }}
+                                >
+                                    View breakdown
+                                </CommonButton>
                             </div>
                         );
                     }

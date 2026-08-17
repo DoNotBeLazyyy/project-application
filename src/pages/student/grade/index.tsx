@@ -41,6 +41,7 @@ export default function StudentGrades() {
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [activeFilters, setActiveFilters] = useState<MyGradesFilterValues | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [rows, setRows] = useState<MyGradeListRow[]>([]);
 
     const filterMethods = useForm<MyGradesFilterValues>({
         defaultValues: { term_id: '' }
@@ -169,18 +170,41 @@ export default function StudentGrades() {
             return result;
         }
 
+        const content = result.data.content.map(function(row) {
+            return {
+                ...row,
+                row_id: `${row.enrollment_id}:${row.grading_period_id}`
+            };
+        });
+
+        setRows(content);
+
         return {
             data: {
                 ...result.data,
-                content: result.data.content.map(function(row) {
-                    return {
-                        ...row,
-                        row_id: `${row.enrollment_id}:${row.grading_period_id}`
-                    };
-                })
+                content
             },
             error: null
         };
+    }
+
+    function handleRowClick(rowId: string) {
+        const [enrollmentId, gradingPeriodId] = rowId.split(':');
+
+        if (!enrollmentId || !gradingPeriodId) {
+            return;
+        }
+
+        const row = rows.find(function(item) {
+            return item.row_id === rowId;
+        });
+
+        if (row && !row.evaluation_completed) {
+            navigate(toTargetPath(enrollmentId, gradingPeriodId));
+            return;
+        }
+
+        navigate(`/student/grade/${enrollmentId}/${gradingPeriodId}`);
     }
 
     function handleFilterSubmit(values: MyGradesFilterValues) {
@@ -198,7 +222,7 @@ export default function StudentGrades() {
             <div className="flex-1 min-h-0">
                 <CommonTableCard<MyGradeListRow>
                     cardHeaderProps={{
-                        subheader: 'Released grades. Complete the faculty evaluation to unlock a locked row.',
+                        subheader: 'Released grades. Select a row to see its breakdown, or complete the faculty evaluation to unlock a locked row.',
                         title: 'My Grades'
                     }}
                     controls={{ hasInput: false }}
@@ -235,6 +259,7 @@ export default function StudentGrades() {
                     onFilter={function() {
                         setIsFilterOpen(true);
                     }}
+                    onRowClick={handleRowClick}
                 />
             </div>
         </div>

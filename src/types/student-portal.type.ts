@@ -177,6 +177,8 @@ export interface DraftAnswer {
     choice_id: string;
 }
 
+export type ProctorEventType = 'Focus Lost' | 'Focus Restored';
+
 export interface StudentResultChoice {
     id: string;
     choice_text: string;
@@ -201,25 +203,34 @@ export interface StudentResultAnswer {
 }
 
 export interface StudentAssessmentResult {
-    submission_id: string;
+    submission_id: string | null;
     assessment_id: string;
     title: string;
     description: string | null;
     assessment_type: AssessmentType;
-    status: SubmissionStatus;
-    attempt_number: number;
+    grading_period_name: string | null;
+    has_submission: boolean;
+    status: SubmissionStatus | null;
+    attempt_number: number | null;
     max_attempts: number;
     submitted_at: string | null;
     graded_at: string | null;
     is_late: boolean;
     total_points: number;
     passing_points: number | null;
+    question_count: number;
+    opens_at: string | null;
+    due_at: string | null;
+    closes_at: string | null;
     show_results_at: string | null;
     results_available: boolean;
+    review_available: boolean;
+    review_blocked_reason: string | null;
     raw_score: number | null;
     final_score: number | null;
     feedback: string | null;
     use_rubric_scoring: boolean;
+    attachments: AssessmentAttachment[];
     rubric: StudentResultRubric | null;
     answers: StudentResultAnswer[];
 }
@@ -257,6 +268,54 @@ export interface MyGradeListRow {
     transmuted_grade: number | null;
     special_grade: string | null;
     total_count: number;
+}
+
+export interface MyGradeBreakdownItem {
+    id: string;
+    title: string;
+    assessment_type: string;
+    earned_points: number | null;
+    max_points: number;
+    submission_status: string | null;
+    is_late: boolean | null;
+    is_counted: boolean;
+    due_at: string | null;
+    graded_at: string | null;
+}
+
+export interface MyGradeBreakdownComponent {
+    id: string;
+    name: string;
+    weight: number;
+    earned_points: number;
+    max_points: number;
+    percentage: number | null;
+    weighted_score: number;
+    graded_count: number;
+    pending_count: number;
+    items: MyGradeBreakdownItem[];
+}
+
+export interface MyGradeBreakdown {
+    enrollment_id: string;
+    section_id: string;
+    section_code: string;
+    course_code: string;
+    course_title: string;
+    term_label: string;
+    faculty_name: string;
+    grading_period_id: string;
+    grading_period_name: string;
+    sequence: number;
+    weight: number;
+    raw_grade: number | null;
+    final_grade: number | null;
+    transmuted_grade: number | null;
+    special_grade: string | null;
+    status: string | null;
+    total_component_weight: number;
+    passing_grade: number | null;
+    components: MyGradeBreakdownComponent[];
 }
 
 export interface MyGradesFilterValues {

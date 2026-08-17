@@ -198,6 +198,14 @@ export default function AssessmentSettingsForm({
                 />
                 <ValidCommonCheckbox
                     control={methods.control}
+                    label="Let students review questions after closing"
+                    name="allow_student_review"
+                />
+                <p className="-mt-3 text-(--mui-palette-text-secondary) text-xs">
+                    On by default: students can open the full question list as a reviewer once they submit, or once the assessment closes. Untick to keep the questions private — students still see their score.
+                </p>
+                <ValidCommonCheckbox
+                    control={methods.control}
                     label="Allow past dates for due, closing and results"
                     name="allow_past_dates"
                 />

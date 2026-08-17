@@ -3,7 +3,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeListRow, MySubjectListRow, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
+    DraftAnswer, MyGradeBreakdown, MyGradeListRow, MySubjectListRow, ProctorEventType, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
 } from '@type/student-portal.type';
 import { parseServiceError } from '@utils/error.util';
 
@@ -155,6 +155,16 @@ export async function recordHeartbeat(
     });
 }
 
+export async function recordFocusEvent(
+    submissionId: string,
+    eventType: ProctorEventType
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_record_focus_event', {
+        p_event_type: eventType,
+        p_submission_id: submissionId
+    }, { silent: true });
+}
+
 export async function listStudentGrades(
     page: number,
     size: number,
@@ -168,6 +178,16 @@ export async function listStudentGrades(
             ? sort
             : null,
         p_term_id: termId || null
+    });
+}
+
+export async function getMyGradeBreakdown(
+    enrollmentId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<MyGradeBreakdown>> {
+    return callRpc<MyGradeBreakdown>('fn_get_my_grade_breakdown', {
+        p_enrollment_id: enrollmentId,
+        p_grading_period_id: gradingPeriodId
     });
 }
 

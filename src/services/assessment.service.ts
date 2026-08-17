@@ -55,7 +55,8 @@ export async function createAssessment(
             ? null
             : params.questions_per_page
                 ? Number(params.questions_per_page)
-                : null
+                : null,
+        p_allow_student_review:   params.allow_student_review
     });
 }
 
@@ -91,7 +92,8 @@ export async function updateAssessment(
             ? null
             : params.questions_per_page
                 ? Number(params.questions_per_page)
-                : null
+                : null,
+        p_allow_student_review:   params.allow_student_review
     });
 }
 

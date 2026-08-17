@@ -4,7 +4,7 @@ import AssessmentQuestionCard from '@pages/student/assessment/AssessmentQuestion
 import AssessmentTimer from '@pages/student/assessment/AssessmentTimer';
 import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import {
-    getAssessmentForStudent, getAssessmentQuestionsForStudent, recordHeartbeat, saveStudentAnswer, startAssessmentTimer, submitAssessment
+    getAssessmentForStudent, getAssessmentQuestionsForStudent, recordFocusEvent, recordHeartbeat, saveStudentAnswer, startAssessmentTimer, submitAssessment
 } from '@services/student-portal.service';
 import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -43,6 +43,43 @@ export default function TakeAssessmentPage() {
             if (heartbeatRef.current) clearInterval(heartbeatRef.current);
         };
     }, []);
+
+    useEffect(function() {
+        if (!isStarted || !submissionId) return;
+
+        let isAway = false;
+
+        function reportAway() {
+            if (isAway) return;
+            isAway = true;
+            recordFocusEvent(submissionId, 'Focus Lost');
+        }
+
+        function reportBack() {
+            if (!isAway) return;
+            isAway = false;
+            recordFocusEvent(submissionId, 'Focus Restored');
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                reportAway();
+            }
+            else {
+                reportBack();
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('blur', reportAway);
+        window.addEventListener('focus', reportBack);
+
+        return function() {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('blur', reportAway);
+            window.removeEventListener('focus', reportBack);
+        };
+    }, [isStarted, submissionId]);
 
     async function handleStart() {
         const result = await startAssessmentTimer(enrollmentId, assessmentId);
@@ -206,6 +243,10 @@ export default function TakeAssessmentPage() {
                             )}
                         </div>
                     </div>
+                    <p className="max-w-md text-(--mui-palette-text-secondary) text-center text-xs">
+                        While this assessment is open, the time you spend away from this tab
+                        is recorded and visible to your instructor.
+                    </p>
                     <CommonButton
                         size="small"
                         variant="contained"

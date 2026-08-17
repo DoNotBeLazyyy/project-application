@@ -1,10 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
-import CommonModal from '@components/modal/CommonModal';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTable from '@components/table/CommonTable';
-import { ArrowLineDownIcon, XIcon } from '@phosphor-icons/react';
-import { getAttachmentSignedUrl } from '@services/assessment.service';
 import { AssessmentType } from '@type/assessment.type';
 import { SubjectAssessmentItem } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -22,6 +19,8 @@ const TYPE_VARIANT: Record<AssessmentType, 'success' | 'error' | 'warning' | 'in
 };
 
 const ALL_VALUE = 'all';
+
+const SUBMITTED_STATUSES = ['Submitted', 'Late', 'Graded', 'Returned'];
 
 function formatDateTime(value: string | null): string {
     return value
@@ -62,195 +61,6 @@ function getAssessmentState(item: SubjectAssessmentItem): {
     return { canTake: true, label: 'Take' };
 }
 
-async function handleDownloadAttachment(fileUrl: string, fileName: string) {
-    const url = await getAttachmentSignedUrl(fileUrl);
-    if (!url) return;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.target = '_blank';
-    a.click();
-}
-
-interface DetailFieldProps {
-    label: string;
-    value: string;
-}
-
-function DetailField({ label, value }: DetailFieldProps) {
-    return (
-        <div className="flex flex-col gap-0.5">
-            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                {label}
-            </span>
-            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                {value}
-            </span>
-        </div>
-    );
-}
-
-interface AssessmentDetailModalProps {
-    assessment: SubjectAssessmentItem | null;
-    onClose: () => void;
-    onViewResults: (assessment: SubjectAssessmentItem) => void;
-}
-
-function AssessmentDetailModal({ assessment, onClose, onViewResults }: AssessmentDetailModalProps) {
-    if (!assessment) return null;
-
-    const state = getAssessmentState(assessment);
-    const attachments = assessment.attachments ?? [];
-    const hasSubmission = ['Submitted', 'Late', 'Graded', 'Returned'].includes(
-        assessment.submission_status ?? ''
-    );
-
-    return (
-        <CommonModal
-            cardProps={{ className: 'flex flex-col gap-5 max-h-[85dvh] overflow-y-auto p-6' }}
-            fullWidth
-            maxWidth="sm"
-            open={Boolean(assessment)}
-            onClose={onClose}
-        >
-            <div className="flex items-start justify-between">
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap gap-2 items-center">
-                        <CommonBadgeStatus
-                            label={assessment.assessment_type}
-                            variant={TYPE_VARIANT[assessment.assessment_type]}
-                        />
-                        {assessment.grading_period_name && (
-                            <CommonBadgeStatus
-                                label={assessment.grading_period_name}
-                                variant="info"
-                            />
-                        )}
-                        <CommonBadgeStatus
-                            label={state.canTake
-                                ? 'Available'
-                                : state.label}
-                            variant={state.canTake
-                                ? 'success'
-                                : 'warning'}
-                        />
-                    </div>
-                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                        {assessment.title}
-                    </h2>
-                </div>
-                <button
-                    className="hover:bg-(--mui-palette-action-hover) p-1 rounded text-(--mui-palette-text-secondary) transition-colors"
-                    title="Close"
-                    onClick={onClose}
-                >
-                    <XIcon size={18} weight="bold" />
-                </button>
-            </div>
-
-            {assessment.description && (
-                <div className="flex flex-col gap-1">
-                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                        Description
-                    </span>
-                    <p className="text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                        {assessment.description}
-                    </p>
-                </div>
-            )}
-
-            <div className="gap-4 grid grid-cols-2 sm:grid-cols-3">
-                <DetailField
-                    label="Total Points"
-                    value={`${assessment.total_points} pts`}
-                />
-                <DetailField
-                    label="Passing"
-                    value={assessment.passing_points !== null
-                        ? `${assessment.passing_points} pts`
-                        : '—'}
-                />
-                <DetailField
-                    label="Questions"
-                    value={String(assessment.question_count)}
-                />
-                <DetailField
-                    label="Time Limit"
-                    value={assessment.time_limit_minutes !== null
-                        ? `${assessment.time_limit_minutes} min`
-                        : 'None'}
-                />
-                <DetailField
-                    label="Attempts"
-                    value={`${assessment.attempts_used} / ${assessment.max_attempts}`}
-                />
-                <DetailField
-                    label="Submission"
-                    value={assessment.submission_status ?? 'Not Started'}
-                />
-            </div>
-
-            <div className="gap-4 grid grid-cols-1 sm:grid-cols-3">
-                <DetailField
-                    label="Opens"
-                    value={formatDateTime(assessment.opens_at)}
-                />
-                <DetailField
-                    label="Due"
-                    value={formatDateTime(assessment.due_at)}
-                />
-                <DetailField
-                    label="Closes"
-                    value={formatDateTime(assessment.closes_at)}
-                />
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                    Attachments
-                </span>
-                {attachments.length
-                    ? (
-                        <div className="flex flex-wrap gap-2">
-                            {attachments.map((file) => (
-                                <CommonButton
-                                    key={file.id}
-                                    size="small"
-                                    startIcon={<ArrowLineDownIcon size={14} weight="bold" />}
-                                    variant="outlined"
-                                    onClick={function() {
-                                        handleDownloadAttachment(file.file_url, file.file_name);
-                                    }}
-                                >
-                                    {file.file_name}
-                                </CommonButton>
-                            ))}
-                        </div>
-                    )
-                    : (
-                        <span className="text-(--mui-palette-text-disabled) text-sm">
-                            No attachments
-                        </span>
-                    )}
-            </div>
-
-            {hasSubmission && (
-                <div className="flex justify-end">
-                    <CommonButton
-                        size="small"
-                        variant="contained"
-                        onClick={function() {
-                            onViewResults(assessment);
-                        }}
-                    >
-                        View Results
-                    </CommonButton>
-                </div>
-            )}
-        </CommonModal>
-    );
-}
-
 interface SubjectAssessmentListProps {
     assessments: SubjectAssessmentItem[];
     enrollmentId: string;
@@ -263,7 +73,6 @@ export default function SubjectAssessmentList({
     const navigate = useNavigate();
     const [typeFilter, setTypeFilter] = useState<string>(ALL_VALUE);
     const [periodFilter, setPeriodFilter] = useState<string>(ALL_VALUE);
-    const [detailItem, setDetailItem] = useState<SubjectAssessmentItem | null>(null);
 
     const typeOptions = useMemo(function() {
         const present = Array.from(new Set(assessments.map((item) => item.assessment_type)));
@@ -304,7 +113,7 @@ export default function SubjectAssessmentList({
 
     function handleRowClicked(event: RowClickedEvent<SubjectAssessmentItem>) {
         if (event.data) {
-            setDetailItem(event.data);
+            navigate(`/student/subjects/${enrollmentId}/assessments/${event.data.id}/result`);
         }
     }
 
@@ -374,7 +183,7 @@ export default function SubjectAssessmentList({
                 sortable: false,
                 cellRenderer: (params: { data: SubjectAssessmentItem }) => {
                     const { canTake, label } = getAssessmentState(params.data);
-                    const hasSubmission = ['Submitted', 'Late', 'Graded', 'Returned'].includes(
+                    const hasSubmission = SUBMITTED_STATUSES.includes(
                         params.data.submission_status ?? ''
                     );
 
@@ -447,15 +256,6 @@ export default function SubjectAssessmentList({
                     onRowClicked={handleRowClicked}
                 />
             </div>
-            <AssessmentDetailModal
-                assessment={detailItem}
-                onClose={function() {
-                    setDetailItem(null);
-                }}
-                onViewResults={function(assessment) {
-                    navigate(`/student/subjects/${enrollmentId}/assessments/${assessment.id}/result`);
-                }}
-            />
         </div>
     );
 }

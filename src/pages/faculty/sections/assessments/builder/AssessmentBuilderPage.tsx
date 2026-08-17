@@ -113,6 +113,7 @@ export default function AssessmentBuilderPage() {
                     questions_per_page:   d.questions_per_page
                         ? String(d.questions_per_page)
                         : '',
+                    allow_student_review: d.allow_student_review ?? true,
                     allow_past_dates:     [d.due_at, d.closes_at, d.show_results_at]
                         .some((date) => isPastDateTime(date ?? ''))
                 });

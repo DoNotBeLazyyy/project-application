@@ -4,7 +4,7 @@ import CommonTable from '@components/table/CommonTable';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import {
     BookOpenIcon, ChartBarIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon,
-    TrashIcon
+    ShieldCheckIcon, TrashIcon
 } from '@phosphor-icons/react';
 import {
     deleteAssessment, duplicateAssessmentToSections, listAssessments, publishAssessment,
@@ -187,6 +187,15 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                             }}
                         >
                             <ChartBarIcon size={14} weight="bold" />
+                        </button>
+                        <button
+                            className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
+                            title="Integrity report"
+                            onClick={function() {
+                                navigate(`/faculty/sections/${sectionId}/assessments/${params.data.id}/integrity`);
+                            }}
+                        >
+                            <ShieldCheckIcon size={14} weight="bold" />
                         </button>
                         <button
                             className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"

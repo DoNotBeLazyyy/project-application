@@ -1,5 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { AssessmentItemAnalysis, SectionInsight, StudentInsight } from '@type/analytics.type';
+import { AssessmentIntegrityReport, AssessmentItemAnalysis, SectionInsight, StudentInsight } from '@type/analytics.type';
 import { ServiceResult } from '@type/service.type';
 
 export async function getStudentInsight(
@@ -24,6 +24,14 @@ export async function getAssessmentItemAnalysis(
     assessmentId: string
 ): Promise<ServiceResult<AssessmentItemAnalysis>> {
     return callRpc<AssessmentItemAnalysis>('fn_get_assessment_item_analysis', {
+        p_assessment_id: assessmentId
+    });
+}
+
+export async function getAssessmentIntegrityReport(
+    assessmentId: string
+): Promise<ServiceResult<AssessmentIntegrityReport>> {
+    return callRpc<AssessmentIntegrityReport>('fn_get_assessment_integrity_report', {
         p_assessment_id: assessmentId
     });
 }

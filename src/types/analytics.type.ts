@@ -248,3 +248,48 @@ export interface AssessmentItemAnalysis {
     summary: ItemAnalysisSummary;
     questions: ItemAnalysisQuestion[];
 }
+
+export interface IntegrityAssessment {
+    assessment_id: string;
+    title: string;
+    section_id: string;
+    section_code: string;
+    course_code: string;
+}
+
+export interface IntegritySummary {
+    submission_count: number;
+    focus_flagged_count: number;
+    shared_ip_count: number;
+    roaming_ip_count: number;
+}
+
+export interface IntegritySharedIp {
+    ip_address: string;
+    student_number: string;
+    full_name: string;
+}
+
+export interface IntegritySubmission {
+    submission_id: string;
+    student_number: string;
+    full_name: string;
+    attempt_number: number;
+    status: string;
+    started_at: string | null;
+    submitted_at: string | null;
+    focus_lost_count: number;
+    total_away_seconds: number;
+    longest_away_seconds: number;
+    distinct_ip_count: number;
+    ip_addresses: string[];
+    shared_with: IntegritySharedIp[];
+}
+
+export interface AssessmentIntegrityReport {
+    success: boolean;
+    message?: string;
+    assessment: IntegrityAssessment;
+    summary: IntegritySummary;
+    submissions: IntegritySubmission[];
+}
