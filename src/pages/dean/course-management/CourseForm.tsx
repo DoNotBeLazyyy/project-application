@@ -265,19 +265,13 @@ export default function CourseForm({
             type: 'number',
             gridCols: 2
         },
-        {
-            disabled,
-            name: 'description',
-            type: 'text-area',
-            gridCols: 6
-        },
         ...(isCreate
             ? [{
                 disabled,
                 name: 'is_split' as const,
                 fieldProps: { label: 'Split into LEC and LAB' },
                 type: 'checkbox' as const,
-                gridCols: 2
+                gridCols: 3
             }]
             : []
         ),
@@ -286,7 +280,19 @@ export default function CourseForm({
             name: 'is_active',
             fieldProps: { label: 'Active' },
             type: 'checkbox',
-            gridCols: 2
+            gridCols: isCreate
+                ? 3
+                : 6
+        },
+        {
+            disabled,
+            fieldProps: {
+                helperText: 'Optional course description',
+                placeholder: 'Enter a short description of this course'
+            },
+            name: 'description',
+            type: 'text-area',
+            gridCols: 6
         }
     ];
     const prerequisiteColumns: CommonFormTableColumn<PrerequisiteRow, CourseFormValues>[] = [

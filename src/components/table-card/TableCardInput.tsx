@@ -16,7 +16,6 @@ export default function TableCardInput({
 
     return (
         <CommonInput
-            className="bg-white border-2"
             isRoundedFull
             placeholder="Search"
             size="small"
@@ -31,16 +30,7 @@ export default function TableCardInput({
                                 size={20}
                             />
                         </InputAdornment>
-                    ),
-                    sx: {
-                        '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'var(--mui-palette-grey-300)',
-                            borderWidth: 2
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderWidth: 2
-                        }
-                    }
+                    )
                 }
             }}
             onKeyDown={handleKeyDown}

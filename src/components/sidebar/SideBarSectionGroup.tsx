@@ -3,7 +3,7 @@ import SideBarSimpleItem from '@components/sidebar/SideBarSimpleItem';
 import { useSideBarContext } from '@contexts/SideBarContext';
 import { SideBarSection, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
-import { isSideBarGroup } from '@utils/sidebar.util';
+import { getSectionInitials, isSideBarGroup } from '@utils/sidebar.util';
 
 interface SideBarSectionGroupProps {
     // The section data to render.
@@ -44,28 +44,19 @@ export default function SideBarSectionGroup({
 
     return (
         <div className="flex flex-col gap-(--mui-tokens-spacing-1)">
-            {section.sectionLabel && !isExpanded && (
-                <div
-                    className={
-                        classMerge(
-                            'mb-(--mui-tokens-spacing-2) h-px w-full',
-                            variant === 'dark'
-                                ? 'bg-white/15'
-                                : 'bg-black/10'
-                        )
-                    }
-                />
-            )}
-            {section.sectionLabel && isExpanded && (
+            {section.sectionLabel && (
                 <p
                     className={
                         classMerge(
-                            'px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-2) text-(length:--mui-tokens-fontSize-sm) font-semibold uppercase tracking-wider',
+                            'overflow-hidden whitespace-nowrap px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-2) text-(length:--mui-tokens-fontSize-sm) font-semibold uppercase tracking-wider',
                             sectionLabelStyle
                         )
                     }
                 >
-                    {section.sectionLabel}
+                    {isExpanded
+                        ? section.sectionLabel
+                        : getSectionInitials(section.sectionLabel)
+                    }
                 </p>
             )}
             {section.items.map((item) => (

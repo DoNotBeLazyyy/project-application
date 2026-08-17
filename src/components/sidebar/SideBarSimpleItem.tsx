@@ -61,10 +61,7 @@ export default function SideBarSimpleItem({
             <CommonButton
                 className={
                     classMerge(
-                        'flex items-center rounded-(--mui-tokens-radius-md) text-left transition-colors',
-                        isExpanded
-                            ? 'w-fit'
-                            : 'w-full justify-center',
+                        'flex w-full items-center overflow-hidden rounded-(--mui-tokens-radius-md) text-left transition-colors',
                         isActive
                             ? itemActive
                             : classMerge(
@@ -74,14 +71,11 @@ export default function SideBarSimpleItem({
                     )
                 }
                 sx={{
-                    gap: isExpanded
-                        ? '10px'
-                        : 0,
+                    justifyContent: 'flex-start',
+                    gap: '10px',
                     minWidth: 0,
                     backgroundColor: 'transparent',
-                    px: isExpanded
-                        ? 'var(--mui-tokens-spacing-4)'
-                        : 'var(--mui-tokens-spacing-2)',
+                    px: 'var(--mui-tokens-spacing-4)',
                     py: 'var(--mui-tokens-spacing-3)',
                     fontSize: 'var(--mui-tokens-fontSize-sm)',
                     fontWeight: 'var(--mui-tokens-fontWeight-normal)',
@@ -109,7 +103,18 @@ export default function SideBarSimpleItem({
                         {icon}
                     </span>
                 )}
-                {isExpanded && label}
+                <span
+                    className={
+                        classMerge(
+                            'shrink-0 whitespace-nowrap transition-opacity duration-200 ease-in-out',
+                            isExpanded
+                                ? 'opacity-100'
+                                : 'opacity-0'
+                        )
+                    }
+                >
+                    {label}
+                </span>
             </CommonButton>
         </Tooltip>
     );

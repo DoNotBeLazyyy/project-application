@@ -62,13 +62,13 @@ export default function CommonHeaderSideBar({
             titleColor: 'text-[var(--mui-tokens-color-common-white)]',
             subtitleColor: 'text-[var(--mui-tokens-color-common-white)]',
             markColor: 'bg-white/10 text-[var(--mui-tokens-color-common-white)]',
-            lockColor: 'text-[var(--mui-tokens-color-common-white)] hover:bg-white/10'
+            lockColor: '!text-[var(--mui-tokens-color-common-white)] hover:bg-white/10'
         },
         light: {
             titleColor: 'text-[var(--mui-tokens-color-neutral-900)]',
             subtitleColor: 'text-[var(--mui-tokens-color-neutral-500)]',
             markColor: 'bg-[var(--mui-tokens-color-neutral-100)] text-[var(--mui-tokens-color-neutral-900)]',
-            lockColor: 'text-[var(--mui-tokens-color-neutral-600)] hover:bg-[var(--mui-tokens-color-neutral-100)]'
+            lockColor: '!text-[var(--mui-tokens-color-neutral-600)] hover:bg-[var(--mui-tokens-color-neutral-100)]'
         }
     };
     const {
@@ -96,28 +96,32 @@ export default function CommonHeaderSideBar({
         <div
             className={
                 classMerge(
-                    'flex shrink-0 items-center gap-(--mui-tokens-spacing-4) whitespace-nowrap py-(--mui-tokens-spacing-7)',
-                    isExpanded
-                        ? 'px-(--mui-tokens-spacing-6)'
-                        : 'justify-center px-(--mui-tokens-spacing-2)',
+                    'flex shrink-0 items-center gap-(--mui-tokens-spacing-4) overflow-hidden whitespace-nowrap px-6.5 py-(--mui-tokens-spacing-7)',
                     className
                 )
             }
             {...props}
         >
             {logoMark}
-            {isExpanded && (
-                <div className="flex-1 min-w-0">
-                    <CommonHeaderTitle
-                        colorClassName={titleColor}
-                        text={title}
-                    />
-                    {subtitle && <CommonHeaderSubtitle
-                        colorClassName={subtitleColor}
-                        text={subtitle}
-                    />}
-                </div>
-            )}
+            <div
+                className={
+                    classMerge(
+                        'min-w-0 flex-1 transition-opacity duration-200 ease-in-out',
+                        isExpanded
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                    )
+                }
+            >
+                <CommonHeaderTitle
+                    colorClassName={titleColor}
+                    text={title}
+                />
+                {subtitle && <CommonHeaderSubtitle
+                    colorClassName={subtitleColor}
+                    text={subtitle}
+                />}
+            </div>
             {isExpanded && onToggleLock && (
                 <Tooltip
                     placement="right"

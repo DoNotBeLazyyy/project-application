@@ -7,6 +7,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Tooltip from '@mui/material/Tooltip';
 import { SideBarGroup, SideBarVariant, VariantStyle } from '@type/sidebar.types';
 import { classMerge } from '@utils/css.util';
+import { useState } from 'react';
 
 interface SideBarAccordionGroupProps {
     // The accordion group data to render
@@ -57,99 +58,81 @@ export default function SideBarAccordionGroup({
         subItemText
     } = styles; // Destructure styles for easier access.
     const activeSubItem = items.find((subItem) => subItem.isActive); // The highlighted sub-item, used as the rail click target.
+    const [isGroupOpen, setIsGroupOpen] = useState(defaultExpanded ?? false);
+    const variantClass = variant === 'dark'
+        ? 'sidebar_dark'
+        : 'sidebar_light';
 
-    if (!isExpanded) {
-        return (
-            <Tooltip
-                placement="right"
-                title={label}
-            >
-                <CommonButton
-                    className={
-                        classMerge(
-                            'flex w-full items-center justify-center rounded-(--mui-tokens-radius-md) transition-colors',
-                            activeSubItem
-                                ? subItemActive
-                                : classMerge(
-                                    subItemText,
-                                    subItemHover
-                                )
-                        )
-                    }
-                    sx={{
-                        minWidth: 0,
-                        backgroundColor: 'transparent',
-                        px: 'var(--mui-tokens-spacing-2)',
-                        py: 'var(--mui-tokens-spacing-3)',
-                        color: 'inherit',
-                        '&:hover': {
-                            backgroundColor: 'transparent'
-                        }
-                    }}
-                    onClick={
-                        activeSubItem?.onClick ?? items[0]?.onClick
-                    }
-                >
-                    <span
-                        className={
-                            classMerge(
-                                'flex shrink-0 [&>svg]:h-6 [&>svg]:w-6',
-                                groupIcon
-                            )
-                        }
-                    >
-                        {icon}
-                    </span>
-                </CommonButton>
-            </Tooltip>
-        );
+    function handleSummaryClick() {
+        if (!isExpanded) {
+            const railTarget = activeSubItem?.onClick ?? items[0]?.onClick;
+
+            railTarget?.();
+
+            return;
+        }
+
+        setIsGroupOpen((previous) => !previous);
     }
 
     return (
         <Accordion
-            className={
-                variant === 'dark'
-                    ? 'sidebar_dark'
-                    : 'sidebar_light'
-            }
-            defaultExpanded={defaultExpanded}
+            className={variantClass}
+            expanded={isExpanded && isGroupOpen}
         >
-            <AccordionSummary
-                className={
-                    variant === 'dark'
-                        ? 'sidebar_dark'
-                        : 'sidebar_light'
-                }
-                expandIcon={
-                    <KeyboardArrowDownRoundedIcon
-                        className={expandIcon}
-                        fontSize="small"
-                    />
+            <Tooltip
+                placement="right"
+                title={
+                    isExpanded
+                        ? ''
+                        : label
                 }
             >
-                {icon && (
+                <AccordionSummary
+                    className={
+                        classMerge(
+                            variantClass,
+                            'overflow-hidden',
+                            !isExpanded && activeSubItem
+                                ? subItemActive
+                                : ''
+                        )
+                    }
+                    expandIcon={
+                        <KeyboardArrowDownRoundedIcon
+                            className={expandIcon}
+                            fontSize="small"
+                        />
+                    }
+                    onClick={handleSummaryClick}
+                >
+                    {icon && (
+                        <span
+                            className={
+                                classMerge(
+                                    'flex shrink-0 [&>svg]:h-6 [&>svg]:w-6',
+                                    groupIcon
+                                )
+                            }
+                        >
+                            {icon}
+                        </span>
+                    )}
                     <span
                         className={
                             classMerge(
-                                'flex shrink-0 [&>svg]:h-5 [&>svg]:w-5',
-                                groupIcon
+                                'shrink-0 whitespace-nowrap text-sm transition-opacity duration-200 ease-in-out',
+                                isExpanded
+                                    ? 'opacity-100'
+                                    : 'opacity-0',
+                                groupText
                             )
                         }
                     >
-                        {icon}
+                        {label}
                     </span>
-                )}
-                <span
-                    className={
-                        classMerge(
-                            'text-sm',
-                            groupText
-                        )
-                    }
-                >
-                    {label}
-                </span>
-            </AccordionSummary>
+                </AccordionSummary>
+            </Tooltip>
             <AccordionDetails>
                 <div className="relative ml-[1.450rem] flex flex-col gap-0.5">
                     {subItemBorder && <SubItemBorderLine

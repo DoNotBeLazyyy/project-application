@@ -1,5 +1,7 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { FacultyLoadDetail, FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictReport } from '@type/faculty-load.type';
+import {
+    FacultyLoadDetail, FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow
+} from '@type/faculty-load.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -22,11 +24,24 @@ export async function listFacultyLoad(
 }
 
 export async function listScheduleConflicts(
-    termId: string | null
-): Promise<ServiceResult<ScheduleConflictReport>> {
-    return callRpc<ScheduleConflictReport>('fn_list_schedule_conflicts', {
-        p_term_id: termId || null
-    }, { silent: true });
+    page: number,
+    size: number,
+    search: string,
+    sort: SortStringDto[],
+    filters: ScheduleConflictFilterValues | null
+): Promise<ServiceResult<CommonListResDto<ScheduleConflictRow>>> {
+    return callRpc<CommonListResDto<ScheduleConflictRow>>('fn_list_schedule_conflicts_json', {
+        p_conflict_types: filters?.conflict_types?.length
+            ? filters.conflict_types
+            : null,
+        p_page: page,
+        p_search: search || null,
+        p_size: size,
+        p_sort: sort.length > 0
+            ? sort
+            : null,
+        p_term_id: filters?.term_id || null
+    });
 }
 
 export async function getFacultyLoadDetail(

@@ -2,6 +2,7 @@ import { buttonOverrides } from '@constants/theme/override/button.override';
 import { cardOverrides } from '@constants/theme/override/card.override';
 import { checkboxOverrides } from '@constants/theme/override/checkbox.override';
 import { chipOverrides } from '@constants/theme/override/chip.override';
+import { datePickerOverrides } from '@constants/theme/override/date-picker.override';
 import { dialogOverrides } from '@constants/theme/override/dialog.override';
 import { dropdownOverrides } from '@constants/theme/override/dropdown.override';
 import { formControlOverrides } from '@constants/theme/override/form-control.override';
@@ -18,6 +19,7 @@ export const COMPONENTS: ComponentTheme = {
     ...buttonOverrides,
     ...cardOverrides,
     ...checkboxOverrides,
+    ...datePickerOverrides,
     ...dialogOverrides,
     ...dropdownOverrides,
     ...formControlOverrides,

@@ -1,18 +1,13 @@
-import CommonButton from '@components/button/CommonButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
+import UserAccountMenu from '@components/navbar/UserAccountMenu';
 import NotificationBell from '@components/notification/NotificationBell';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
 import CommonSideBarList from '@components/sidebar/CommonSideBarList';
-import SideBarExpandedOnly from '@components/sidebar/SideBarExpandedOnly';
-import { ROLE_HOME, resolvePanelLabel } from '@constants/role.constant';
+import { resolvePanelLabel } from '@constants/role.constant';
 import {
-    ArrowsClockwiseIcon, CalendarIcon, ListIcon, MegaphoneIcon, SignOutIcon, SquaresFourIcon
+    ArrowsClockwiseIcon, CalendarIcon, MegaphoneIcon, SealCheckIcon, SquaresFourIcon, StudentIcon, UserPlusIcon
 } from '@phosphor-icons/react';
-import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
-import { UserRole } from '@type/app.type';
-import { ChangeEventInputTextarea } from '@type/common.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -21,13 +16,7 @@ export default function RegistrarLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const [isSidebarLocked, setIsSidebarLocked] = useState(false);
-    const userProfile = useAppStore((s) => s.userProfile);
     const activeRole = useAppStore((s) => s.activeRole);
-    const availableRoles = useAppStore((s) => s.availableRoles);
-    const roleOptions: CommonSelectOption[] = availableRoles.map((r) => ({
-        label: r.label,
-        value: r.code
-    }));
     const navSections = useMemo((): SideBarSection[] => [
         {
             sectionLabel: 'OVERVIEW',
@@ -39,13 +28,13 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar')
                 },
                 {
-                    icon: <SquaresFourIcon size={18} />,
+                    icon: <StudentIcon size={18} />,
                     isActive: pathname === '/registrar/student-management',
                     label: 'Student',
                     onClick: () => navigate('/registrar/student-management')
                 },
                 {
-                    icon: <SquaresFourIcon size={18} />,
+                    icon: <UserPlusIcon size={18} />,
                     isActive: pathname === '/registrar/enrollment-management',
                     label: 'Enrollment',
                     onClick: () => navigate('/registrar/enrollment-management')
@@ -57,7 +46,7 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar/batch-progression')
                 },
                 {
-                    icon: <SquaresFourIcon size={18} />,
+                    icon: <SealCheckIcon size={18} />,
                     isActive: pathname === '/registrar/grade-release',
                     label: 'Grade Release',
                     onClick: () => navigate('/registrar/grade-release')
@@ -82,22 +71,6 @@ export default function RegistrarLayout() {
         setIsSidebarLocked((prev) => !prev);
     }
 
-    function handleRoleChange(event: ChangeEventInputTextarea) {
-        const role = event.target.value as UserRole;
-        useAppStore.getState()
-            .setActiveRole(role);
-        navigate(ROLE_HOME[role], { replace: true });
-    }
-
-    async function handleLogout() {
-        await logout();
-        navigate('/login');
-    }
-
-    const displayName = userProfile
-        ? `${userProfile.first_name} ${userProfile.last_name}`
-        : 'Dean';
-
     return (
         <div className="flex h-screen overflow-hidden w-full">
             <CommonSideBar
@@ -113,23 +86,6 @@ export default function RegistrarLayout() {
                 variant="dark"
                 onToggleLock={handleToggleSidebar}
             >
-                <SideBarExpandedOnly>
-                    {availableRoles.length > 1 && (
-                        <div className="flex flex-col gap-1 mb-4">
-                            <span className="text-white/60 text-xs">
-                                Switch Role
-                            </span>
-                            <CommonSelect
-                                fullWidth
-                                options={roleOptions}
-                                size="small"
-                                value={activeRole ?? ''}
-                                variant="outlined"
-                                onChange={handleRoleChange}
-                            />
-                        </div>
-                    )}
-                </SideBarExpandedOnly>
                 <CommonSideBarList
                     sections={navSections}
                     variant="dark"
@@ -137,30 +93,10 @@ export default function RegistrarLayout() {
             </CommonSideBar>
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
                 <CommonNavbar
-                    leftContent={
-                        <CommonButton
-                            size="small"
-                            startIcon={<ListIcon size={20} />}
-                            sx={{ color: 'var(--mui-tokens-color-common-white)', minWidth: 0 }}
-                            variant="text"
-                            onClick={handleToggleSidebar}
-                        />
-                    }
                     rightContent={
                         <div className="flex gap-3 items-center">
                             <NotificationBell />
-                            <span className="text-sm text-white/80">
-                                {displayName}
-                            </span>
-                            <CommonButton
-                                size="small"
-                                startIcon={<SignOutIcon size={18} />}
-                                sx={{ color: 'var(--mui-tokens-color-common-white)' }}
-                                variant="text"
-                                onClick={handleLogout}
-                            >
-                                Sign Out
-                            </CommonButton>
+                            <UserAccountMenu />
                         </div>
                     }
                 />

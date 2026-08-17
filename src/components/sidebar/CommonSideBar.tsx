@@ -75,8 +75,8 @@ export default function CommonSideBar({
             <div
                 className={
                     classMerge(
-                        'relative h-screen shrink-0 transition-[width] duration-300',
-                        isOpen
+                        'relative h-screen shrink-0 transition-[width,min-width] duration-300 ease-in-out',
+                        isExpanded
                             ? SIDEBAR_WIDTH_EXPANDED
                             : SIDEBAR_WIDTH_COLLAPSED
                     )
@@ -85,11 +85,10 @@ export default function CommonSideBar({
                 <div
                     className={
                         classMerge(
-                            'absolute inset-y-0 left-0 z-40 flex h-screen flex-col overflow-hidden transition-[width] duration-300',
+                            'absolute inset-y-0 left-0 z-40 flex h-screen flex-col overflow-hidden transition-[width,min-width] duration-300 ease-in-out',
                             isExpanded
                                 ? SIDEBAR_WIDTH_EXPANDED
                                 : SIDEBAR_WIDTH_COLLAPSED,
-                            isExpanded && !isOpen && 'shadow-2xl',
                             className
                         )
                     }
@@ -111,10 +110,7 @@ export default function CommonSideBar({
                     <div
                         className={
                             classMerge(
-                                'flex-1 overflow-x-hidden overflow-y-auto pb-(--mui-tokens-spacing-4) [&::-webkit-scrollbar-thumb]:rounded-(--mui-tokens-radius-sm) [&::-webkit-scrollbar]:w-(--mui-tokens-spacing-2)',
-                                isExpanded
-                                    ? 'px-(--mui-tokens-spacing-4)'
-                                    : 'px-(--mui-tokens-spacing-2)',
+                                'flex-1 overflow-x-hidden overflow-y-auto px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4) [&::-webkit-scrollbar-thumb]:rounded-(--mui-tokens-radius-sm) [&::-webkit-scrollbar]:w-(--mui-tokens-spacing-2)',
                                 variant === 'dark'
                                     ? '[&::-webkit-scrollbar-thumb]:bg-white/20'
                                     : '[&::-webkit-scrollbar-thumb]:bg-gray-300'
@@ -125,14 +121,7 @@ export default function CommonSideBar({
                     </div>
                     {footerProps && (
                         <div
-                            className={
-                                classMerge(
-                                    'pb-(--mui-tokens-spacing-4) shrink-0',
-                                    isExpanded
-                                        ? 'px-(--mui-tokens-spacing-4)'
-                                        : 'px-(--mui-tokens-spacing-2)'
-                                )
-                            }
+                            className="shrink-0 px-(--mui-tokens-spacing-4) pb-(--mui-tokens-spacing-4)"
                         >
                             <Tooltip
                                 placement="right"
@@ -143,22 +132,17 @@ export default function CommonSideBar({
                                 }
                             >
                                 <CommonButton
-                                    startIcon={<UserCircleIcon size={20} />}
+                                    startIcon={<UserCircleIcon size={24} />}
                                     sx={{
                                         width: '100%',
                                         minWidth: 0,
-                                        justifyContent: isExpanded
-                                            ? 'flex-start'
-                                            : 'center',
-                                        gap: isExpanded
-                                            ? 'var(--mui-tokens-spacing-3)'
-                                            : 0,
+                                        overflow: 'hidden',
+                                        justifyContent: 'flex-start',
+                                        gap: '10px',
                                         borderRadius: 'var(--mui-tokens-radius-md)',
                                         border: '2px solid var(--mui-tokens-color-neutral-300)',
                                         backgroundColor: 'transparent',
-                                        paddingInline: isExpanded
-                                            ? 'var(--mui-tokens-spacing-4)'
-                                            : 0,
+                                        paddingInline: 'calc(var(--mui-tokens-spacing-4) - 2px)',
                                         paddingBlock: '0.375rem',
                                         fontSize: 'var(--mui-tokens-fontSize-sm)',
                                         fontWeight: 'var(--mui-tokens-fontWeight-normal)',
@@ -173,9 +157,8 @@ export default function CommonSideBar({
                                             border: '2px solid var(--mui-tokens-color-neutral-300)'
                                         },
                                         '& .MuiButton-startIcon': {
-                                            marginInline: isExpanded
-                                                ? undefined
-                                                : 0,
+                                            marginInline: 0,
+                                            flexShrink: 0,
                                             color: variant === 'dark'
                                                 ? 'var(--mui-tokens-color-neutral-300)'
                                                 : 'var(--mui-tokens-color-neutral-400)'
@@ -183,7 +166,18 @@ export default function CommonSideBar({
                                     }}
                                     {...footerProps}
                                 >
-                                    {isExpanded && footerProps.label}
+                                    <span
+                                        className={
+                                            classMerge(
+                                                'shrink-0 whitespace-nowrap transition-opacity duration-200 ease-in-out',
+                                                isExpanded
+                                                    ? 'opacity-100'
+                                                    : 'opacity-0'
+                                            )
+                                        }
+                                    >
+                                        {footerProps.label}
+                                    </span>
                                 </CommonButton>
                             </Tooltip>
                         </div>

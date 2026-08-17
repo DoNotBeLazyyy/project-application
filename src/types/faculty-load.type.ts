@@ -14,8 +14,11 @@ export interface FacultyLoadFilterValues {
     term_id: string;
 }
 
-export interface ScheduleConflict {
-    conflict_type: 'Faculty' | 'Room';
+export type ScheduleConflictType = 'Faculty' | 'Room';
+
+export interface ScheduleConflictRow {
+    id: string;
+    conflict_type: ScheduleConflictType;
     faculty_name: string;
     subject_label: string;
     day_of_week: string;
@@ -25,13 +28,12 @@ export interface ScheduleConflict {
     section_b: string;
     overlap_start: string;
     overlap_end: string;
+    total_count: number;
 }
 
-export interface ScheduleConflictReport {
-    faculty_conflicts: ScheduleConflict[];
-    room_conflicts: ScheduleConflict[];
-    faculty_conflict_count: number;
-    room_conflict_count: number;
+export interface ScheduleConflictFilterValues {
+    term_id: string;
+    conflict_types: ScheduleConflictType[];
 }
 
 export interface FacultyScheduleSlot {

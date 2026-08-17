@@ -2,7 +2,7 @@
 export const SIDEBAR_WIDTH_EXPANDED = 'w-62.5 min-w-62.5';
 
 // Width utility applied when the sidebar is collapsed to the icon rail
-export const SIDEBAR_WIDTH_COLLAPSED = 'w-[4.5rem] min-w-[4.5rem]';
+export const SIDEBAR_WIDTH_COLLAPSED = 'w-[5.5rem] min-w-[5.5rem]';
 
 // Sidebar variant style configuration (dark and light)
 export const VARIANT_STYLES = {

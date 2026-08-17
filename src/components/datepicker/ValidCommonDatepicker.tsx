@@ -77,7 +77,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             ? fieldState.error?.message ?? helperTextProp
                             : undefined,
                         fullWidth,
-                        size: 'medium',
                         variant: 'outlined',
                         onFocus: handleFocus
                     }

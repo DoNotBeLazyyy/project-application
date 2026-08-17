@@ -1,33 +1,89 @@
-import CommonSelect from '@components/select/CommonSelect';
+import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { ChalkboardTeacherIcon, WarningIcon } from '@phosphor-icons/react';
+import FacultyLoadFilterForm from '@pages/dean/faculty-load/FacultyLoadFilterForm';
 import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFacultyLoadTableConfig';
-import { useTermOptions } from '@pages/dean/faculty-load/hooks/useTermOptions';
-import ScheduleConflictsPanel from '@pages/dean/faculty-load/ScheduleConflictsPanel';
-import { listFacultyLoad } from '@services/faculty-load.service';
-import { ChangeEventInputTextarea } from '@type/common.type';
-import { FacultyLoadRow } from '@type/faculty-load.type';
+import { useScheduleConflictTableConfig } from '@pages/dean/faculty-load/hooks/useScheduleConflictTableConfig';
+import ScheduleConflictFilterForm from '@pages/dean/faculty-load/ScheduleConflictFilterForm';
+import { listFacultyLoad, listScheduleConflicts } from '@services/faculty-load.service';
+import {
+    FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow
+} from '@type/faculty-load.type';
 import { SortStringDto } from '@type/http.type';
 import { SyntheticEvent, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 type FacultyLoadTab = 'load' | 'conflicts';
 
+const LOAD_FILTER_FORM_ID = 'filter-faculty-load-form';
+const CONFLICT_FILTER_FORM_ID = 'filter-schedule-conflict-form';
+
+const LOAD_SORT_COLUMNS: SortColumn[] = [
+    { field: 'faculty_name', label: 'Faculty' },
+    { field: 'section_count', label: 'Sections' },
+    { field: 'total_units', label: 'Units' },
+    { field: 'weekly_hours', label: 'Hrs / Week' },
+    { field: 'student_count', label: 'Students' }
+];
+
+const CONFLICT_SORT_COLUMNS: SortColumn[] = [
+    { field: 'conflict_type', label: 'Type' },
+    { field: 'subject_label', label: 'Faculty / Room' },
+    { field: 'day_of_week', label: 'Day' },
+    { field: 'section_a', label: 'Section A' },
+    { field: 'section_b', label: 'Section B' }
+];
+
+const defaultLoadFilters: FacultyLoadFilterValues = { term_id: '' };
+
+const defaultConflictFilters: ScheduleConflictFilterValues = {
+    term_id: '',
+    conflict_types: []
+};
+
 export default function FacultyLoadManagement() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<FacultyLoadTab>('load');
-    const [termId, setTermId] = useState('');
+    const [loadFilters, setLoadFilters] = useState<FacultyLoadFilterValues>(defaultLoadFilters);
+    const [conflictFilters, setConflictFilters] = useState<ScheduleConflictFilterValues>(defaultConflictFilters);
+    const [isLoadFilterOpen, setIsLoadFilterOpen] = useState(false);
+    const [isConflictFilterOpen, setIsConflictFilterOpen] = useState(false);
 
-    const { termOptions } = useTermOptions();
-    const { columnDefs } = useFacultyLoadTableConfig();
+    const loadFilterMethods = useForm<FacultyLoadFilterValues>({
+        defaultValues: defaultLoadFilters
+    });
+
+    const conflictFilterMethods = useForm<ScheduleConflictFilterValues>({
+        defaultValues: defaultConflictFilters
+    });
+
+    const { columnDefs: loadColumnDefs } = useFacultyLoadTableConfig();
+    const { columnDefs: conflictColumnDefs } = useScheduleConflictTableConfig();
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as FacultyLoadTab);
     }
 
-    function handleTermChange(event: ChangeEventInputTextarea) {
-        setTermId(event.target.value);
+    function handleLoadFilterSubmit(values: FacultyLoadFilterValues) {
+        setLoadFilters(values);
+        setIsLoadFilterOpen(false);
+    }
+
+    function handleLoadFilterReset() {
+        loadFilterMethods.reset(defaultLoadFilters);
+        setLoadFilters(defaultLoadFilters);
+    }
+
+    function handleConflictFilterSubmit(values: ScheduleConflictFilterValues) {
+        setConflictFilters(values);
+        setIsConflictFilterOpen(false);
+    }
+
+    function handleConflictFilterReset() {
+        conflictFilterMethods.reset(defaultConflictFilters);
+        setConflictFilters(defaultConflictFilters);
     }
 
     async function fetchFacultyLoad(
@@ -36,79 +92,129 @@ export default function FacultyLoadManagement() {
         search: string,
         sort: SortStringDto[]
     ) {
-        return listFacultyLoad(page, size, search, sort, { term_id: termId });
+        return listFacultyLoad(page, size, search, sort, loadFilters);
+    }
+
+    async function fetchScheduleConflicts(
+        page: number,
+        size: number,
+        search: string,
+        sort: SortStringDto[]
+    ) {
+        return listScheduleConflicts(page, size, search, sort, conflictFilters);
     }
 
     function handleRowClick(facultyId: string) {
-        navigate(`/dean/faculty-load/${facultyId}${termId
-            ? `?termId=${termId}`
+        navigate(`/dean/faculty-load/${facultyId}${loadFilters.term_id
+            ? `?termId=${loadFilters.term_id}`
             : ''}`);
     }
 
+    const tabMenu = (
+        <CommonTabMenu
+            menuStyle="outline"
+            size="small"
+            tabs={[
+                {
+                    icon: <ChalkboardTeacherIcon />,
+                    label: 'Load',
+                    value: 'load'
+                },
+                {
+                    icon: <WarningIcon />,
+                    label: 'Conflicts',
+                    value: 'conflicts'
+                }
+            ]}
+            value={activeTab}
+            onChange={handleTabChange}
+        />
+    );
+
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                    <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                        Faculty Load
-                    </h1>
-                    <p className="text-(--mui-palette-text-secondary) text-sm">
-                        Teaching load per faculty member and any schedule conflicts across sections.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-1 max-w-xs">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Term
-                    </span>
-                    <CommonSelect
-                        fullWidth
-                        options={termOptions}
-                        size="small"
-                        value={termId}
-                        variant="outlined"
-                        onChange={handleTermChange}
-                    />
-                </div>
-                <CommonTabMenu
-                    menuStyle="outline"
-                    tabs={[
-                        {
-                            icon: <ChalkboardTeacherIcon />,
-                            label: 'Load',
-                            value: 'load'
+            {activeTab === 'load' && (
+                <CommonTableCard<FacultyLoadRow>
+                    cardHeaderProps={{
+                        subheader: 'Select a faculty member to see their sections and meeting times.',
+                        title: tabMenu
+                    }}
+                    dependencies={[loadFilters]}
+                    filterModalProps={{
+                        cardProps: {
+                            cardHeaderProps: {
+                                subheader: 'Filter teaching load by term.',
+                                title: 'Filter Teaching Load'
+                            }
                         },
-                        {
-                            icon: <WarningIcon />,
-                            label: 'Conflicts',
-                            value: 'conflicts'
+                        confirmText: 'Apply Filters',
+                        formId: LOAD_FILTER_FORM_ID,
+                        formContent: (
+                            <FacultyLoadFilterForm
+                                control={loadFilterMethods.control}
+                                id={LOAD_FILTER_FORM_ID}
+                                onSubmit={loadFilterMethods.handleSubmit(handleLoadFilterSubmit)}
+                            />
+                        ),
+                        onReset: handleLoadFilterReset,
+                        open: isLoadFilterOpen,
+                        onClose: function() {
+                            setIsLoadFilterOpen(false);
                         }
-                    ]}
-                    value={activeTab}
-                    onChange={handleTabChange}
+                    }}
+                    sortColumns={LOAD_SORT_COLUMNS}
+                    tableProps={{
+                        leadingColumnDefs: loadColumnDefs
+                    }}
+                    uniqueIdKey="id"
+                    onFetch={fetchFacultyLoad}
+                    onFilter={function() {
+                        setIsLoadFilterOpen(true);
+                    }}
+                    onRowClick={handleRowClick}
                 />
-            </div>
+            )}
 
-            <div className="flex-1 min-h-0">
-                {activeTab === 'load' && (
-                    <CommonTableCard<FacultyLoadRow>
-                        cardHeaderProps={{
-                            subheader: 'Select a faculty member to see their sections and meeting times.',
-                            title: 'Teaching Load'
-                        }}
-                        dependencies={[termId]}
-                        tableProps={{
-                            leadingColumnDefs: columnDefs
-                        }}
-                        uniqueIdKey="id"
-                        onFetch={fetchFacultyLoad}
-                        onRowClick={handleRowClick}
-                    />
-                )}
-
-                {activeTab === 'conflicts' && (
-                    <ScheduleConflictsPanel termId={termId} />
-                )}
-            </div>
+            {activeTab === 'conflicts' && (
+                <CommonTableCard<ScheduleConflictRow>
+                    cardHeaderProps={{
+                        subheader: 'Overlapping meeting times detected across sections.',
+                        title: tabMenu
+                    }}
+                    dependencies={[conflictFilters]}
+                    filterModalProps={{
+                        cardProps: {
+                            cardHeaderProps: {
+                                subheader: 'Filter conflicts by term and conflict type.',
+                                title: 'Filter Conflicts'
+                            }
+                        },
+                        confirmText: 'Apply Filters',
+                        formId: CONFLICT_FILTER_FORM_ID,
+                        formContent: (
+                            <ScheduleConflictFilterForm
+                                control={conflictFilterMethods.control}
+                                id={CONFLICT_FILTER_FORM_ID}
+                                onSubmit={conflictFilterMethods.handleSubmit(handleConflictFilterSubmit)}
+                            />
+                        ),
+                        onReset: handleConflictFilterReset,
+                        open: isConflictFilterOpen,
+                        onClose: function() {
+                            setIsConflictFilterOpen(false);
+                        }
+                    }}
+                    sortColumns={CONFLICT_SORT_COLUMNS}
+                    tableProps={{
+                        leadingColumnDefs: conflictColumnDefs
+                    }}
+                    uniqueIdKey="id"
+                    onFetch={fetchScheduleConflicts}
+                    onFilter={function() {
+                        setIsConflictFilterOpen(true);
+                    }}
+                />
+            )}
         </div>
     );
 }

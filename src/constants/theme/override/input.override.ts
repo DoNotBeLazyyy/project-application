@@ -1,3 +1,4 @@
+import { buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE } from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 
 export const inputOverrides: ComponentTheme = {
@@ -33,8 +34,8 @@ export const inputOverrides: ComponentTheme = {
                     size: 'small'
                 },
                 style: ({ theme }) => ({
-                    height: '100%',
-                    maxHeight: '2.25rem',
+                    height: INPUT_HEIGHT_SMALL,
+                    maxHeight: INPUT_HEIGHT_SMALL,
                     padding: 'var(--mui-tokens-spacing-3)',
                     ...theme.typography.bodySmall,
                     '&.MuiSelect-root': { padding: 0 },
@@ -77,9 +78,9 @@ export const inputOverrides: ComponentTheme = {
                     size: 'large'
                 },
                 style: ({ theme }) => ({
-                    height: '100%',
-                    maxHeight: '3rem',
-                    padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)',
+                    height: INPUT_HEIGHT_LARGE,
+                    maxHeight: INPUT_HEIGHT_LARGE,
+                    padding: INPUT_PADDING_LARGE,
                     ...theme.typography.bodyNormal,
                     '&.MuiSelect-root': { padding: 0 },
                     '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)' },
@@ -121,31 +122,21 @@ export const inputOverrides: ComponentTheme = {
     MuiOutlinedInput: {
         styleOverrides: {
             root: {
-                backgroundColor: 'var(--mui-tokens-color-neutral-50)',
-                '&.Mui-disabled': {
-                    backgroundColor: 'var(--mui-tokens-color-neutral-200)'
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline, &.Mui-focused:hover .MuiOutlinedInput-notchedOutline': {
-                    border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-brand-900)'
-                },
-                '& .MuiOutlinedInput-notchedOutline, &:hover .MuiOutlinedInput-notchedOutline, &.Mui-disabled .MuiOutlinedInput-notchedOutline': {
-                    border: 'var(--mui-tokens-stroke-0) solid var(--mui-tokens-color-neutral-300)'
-                },
+                ...buildInputStateStyles('MuiOutlinedInput-notchedOutline'),
                 '& .MuiInputAdornment-positionStart svg, & .MuiInputAdornment-positionEnd svg': {
                     color: 'var(--mui-tokens-color-neutral-700)'
                 },
-                '&.Mui-error, &.Mui-error.common_textarea_input.MuiInputBase-multiline': {
+                '&.Mui-error.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-red-100)'
-                },
-                [`
-                    &.Mui-error .MuiOutlinedInput-notchedOutline,
-                    &.Mui-error:hover .MuiOutlinedInput-notchedOutline,
-                    &.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline
-                `]: {
-                    border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-red-500)'
                 },
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
+                },
+                [`
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline,
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):hover .MuiOutlinedInput-notchedOutline
+                `]: {
+                    border: BORDER_NEUTRAL
                 },
                 '& .MuiInputAdornment-root.MuiInputAdornment-positionStart:not(.MuiInputAdornment-hiddenLabel)': {
                     marginTop: 'var(--mui-tokens-spacing-0)'
@@ -165,19 +156,8 @@ export const inputOverrides: ComponentTheme = {
         },
         styleOverrides: {
             root: {
-                backgroundColor: 'var(--mui-tokens-color-neutral-100)',
+                ...buildInputStateStyles(),
                 borderRadius: 'var(--mui-tokens-radius-md)',
-                border: 'var(--mui-tokens-stroke-1) solid transparent',
-                '&.Mui-focused': {
-                    backgroundColor: 'var(--mui-tokens-color-brand-100)'
-                },
-                '&.Mui-disabled': {
-                    backgroundColor: 'var(--mui-tokens-color-neutral-200)'
-                },
-                '&.Mui-error, &.Mui-error.Mui-focused': {
-                    backgroundColor: 'var(--mui-tokens-color-red-100)',
-                    borderColor: 'var(--mui-tokens-color-red-500)'
-                },
                 '& .MuiInputAdornment-positionStart svg': {
                     color: 'var(--mui-tokens-color-brand-950)'
                 },
@@ -191,7 +171,7 @@ export const inputOverrides: ComponentTheme = {
             input: {
                 padding: 0,
                 '&::placeholder': {
-                    color: 'var(--mui-tokens-color-neutral-600)'
+                    color: 'var(--mui-tokens-color-neutral-700)'
                 }
             }
         }

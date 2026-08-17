@@ -26,3 +26,11 @@ export async function markMyNotificationsRead(
         p_notification_ids: notificationIds
     }, { silent: true });
 }
+
+export async function markMyNotificationsUnread(
+    notificationIds: string[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_mark_my_notifications_unread', {
+        p_notification_ids: notificationIds
+    }, { silent: true });
+}
