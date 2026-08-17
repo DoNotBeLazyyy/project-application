@@ -8,7 +8,7 @@ import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';
 import { SortStringDto } from '@type/http.type';
 import { MyGradeListRow, MyGradesFilterValues } from '@type/student-portal.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -58,36 +58,41 @@ export default function StudentGrades() {
         fetchTerms();
     }, []);
 
-    const columnDefs = useMemo<ColDef<MyGradeListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'course_code',
                 flex: 1,
                 headerName: 'Course Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'course_title',
                 flex: 3,
                 headerName: 'Course Title',
+                mobileCard: 'title',
                 sortable: true
             },
             {
                 field: 'section_code',
                 flex: 1,
                 headerName: 'Section',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {
                 field: 'term_label',
                 flex: 2,
                 headerName: 'Term',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {
                 field: 'faculty_name',
                 flex: 2,
                 headerName: 'Faculty',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {

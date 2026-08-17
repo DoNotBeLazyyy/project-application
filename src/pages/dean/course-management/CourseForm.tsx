@@ -367,7 +367,7 @@ export default function CourseForm({
     return (
         <div className="flex flex-col gap-4">
             <CommonForm
-                containerClassName="gap-4 grid grid-cols-6"
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
                 control={control}
                 fields={fields_config}
                 formProps={formProps}

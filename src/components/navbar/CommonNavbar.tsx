@@ -38,10 +38,10 @@ export default function CommonNavbar({
             }
             {...props}
         >
-            <div className="flex gap-(--mui-tokens-spacing-4) items-center">
+            <div className="flex gap-(--mui-tokens-spacing-4) items-center min-w-0">
                 {leftContent}
             </div>
-            <div className="flex gap-(--mui-tokens-spacing-4) items-center">
+            <div className="flex gap-(--mui-tokens-spacing-4) items-center min-w-0 shrink-0">
                 {rightContent}
             </div>
         </div>

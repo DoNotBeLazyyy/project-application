@@ -21,15 +21,28 @@ export interface PaginationData {
 
 type HeaderTextTransform = 'uppercase' | 'lowercase' | 'capitalize';
 
+export type MobileCardRole = 'title' | 'subtitle' | 'meta' | 'hidden';
+
+export interface MobileCardColDef extends ColDef {
+    mobileCard?: MobileCardRole;
+}
+
+export interface MobileCardPlan {
+    meta: MobileCardColDef[];
+    subtitle?: MobileCardColDef;
+    title?: MobileCardColDef;
+}
+
 export interface CommonTableProps<TData = unknown> extends Omit<AgGridReactProps, 'columnDefs'> {
     containerClassName?: string;
     hasAction?: boolean;
     hasCheckbox?: boolean;
     headerTextTransform?: HeaderTextTransform;
     isDeselectedOnBlur?: boolean;
-    leadingColumnDefs?: ColDef[];
+    isMobileCardDisabled?: boolean;
+    leadingColumnDefs?: MobileCardColDef[];
     tableActionConfig?: TableActionConfig<TData>;
-    trailingColumnDefs?: ColDef[];
+    trailingColumnDefs?: MobileCardColDef[];
     onConfirmSort?: BooleanFunction;
     onSetSort?: (sort: SortStringDto[]) => void;
 }

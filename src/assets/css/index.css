@@ -191,6 +191,12 @@
     --ag-row-height: 4.8125rem;
 }
 
+@media (pointer: coarse) {
+    .ag-theme-quartz {
+        --ag-header-height: 2.75rem;
+    }
+}
+
 .ag-root-wrapper.ag-ltr.ag-layout-normal {
     background-color: transparent;
     border-radius: 0;
@@ -271,6 +277,25 @@
     pointer-events: none;
     position: absolute;
     right: var(--mui-tokens-spacing-4);
+}
+
+.common_table_cards .ag-header {
+    display: none;
+}
+
+.ag-row.ag-full-width-row {
+    pointer-events: auto;
+}
+
+.ag-row.ag-full-width-row::before,
+.ag-row.ag-full-width-row::after {
+    display: none;
+    content: none;
+}
+
+.ag-full-width-row > .ag-react-container {
+    height: 100%;
+    width: 100%;
 }
 
 .ag-floating-bottom,

@@ -1,7 +1,7 @@
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { MobileCardColDef } from '@type/table.type';
 import { TermTypeListRow } from '@type/term/term-type.type';
-import { ColDef } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface UseTermTypeTableConfigProps {
@@ -14,18 +14,20 @@ export function useTermTypeTableConfig({
     onEdit,
     onView
 }: UseTermTypeTableConfigProps) {
-    const columnDefs = useMemo<ColDef<TermTypeListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
                 flex: 2,
                 headerName: 'Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'label',
                 flex: 3,
                 headerName: 'Label',
+                mobileCard: 'title',
                 sortable: true
             },
             {

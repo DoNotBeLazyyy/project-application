@@ -158,7 +158,7 @@ export default function TakeAssessmentPage() {
                 </CommonButton>
                 <div className="flex flex-1 flex-col gap-4 items-center justify-center">
                     <div className="flex flex-col gap-2 items-center max-w-md text-center">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-2xl">
+                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl md:text-2xl">
                             {assessment.title}
                         </h1>
                         {assessment.description && (
@@ -220,11 +220,11 @@ export default function TakeAssessmentPage() {
 
     return (
         <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-            <div className="flex items-center justify-between">
-                <h1 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+            <div className="flex flex-wrap gap-2 items-center justify-between shrink-0">
+                <h1 className="font-semibold min-w-0 text-(--mui-palette-text-primary) text-lg">
                     {assessment.title}
                 </h1>
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-3 items-center shrink-0">
                     {!assessment.show_all_questions && (
                         <span className="text-(--mui-palette-text-secondary) text-sm">
                             Page {currentPage + 1} of {totalPages}
@@ -236,7 +236,7 @@ export default function TakeAssessmentPage() {
                     />
                 </div>
             </div>
-            <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+            <div className="flex flex-1 flex-col gap-3 min-h-0 overflow-y-auto">
                 {visibleQuestions.map((question, index) => (
                     <AssessmentQuestionCard
                         control={methods.control}
@@ -249,7 +249,7 @@ export default function TakeAssessmentPage() {
                     />
                 ))}
             </div>
-            <div className="flex gap-2 justify-between">
+            <div className="flex flex-col gap-2 justify-between shrink-0 sm:flex-row">
                 {!assessment.show_all_questions && (
                     <CommonButton
                         color="inherit"
@@ -269,7 +269,7 @@ export default function TakeAssessmentPage() {
                         Previous
                     </CommonButton>
                 )}
-                <div className="flex gap-2 ml-auto">
+                <div className="flex flex-col gap-2 sm:flex-row sm:ml-auto">
                     {!assessment.show_all_questions && !isLastPage && (
                         <CommonButton
                             endIcon={<ArrowRightIcon size={14} weight="bold" />}

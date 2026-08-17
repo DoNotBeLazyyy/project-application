@@ -2,7 +2,10 @@ import CaretDownStringIcon from '@components/icons/CaretDownStringIcon';
 import CaretUpDownStringIcon from '@components/icons/CaretUpDownStringIcon';
 import CaretUpStringIcon from '@components/icons/CaretUpStringIcon';
 import TableActionCell, { TableActionCellBaseProps, TableActionCellRendererParams } from '@components/table/TableActionCell';
+import { TABLE_ACTION_COL_ID, TABLE_ACTION_COL_WIDTH, TABLE_ACTION_COL_WIDTH_MOBILE } from '@constants/table.constant';
+import useBreakpoint from '@hooks/useBreakpoint';
 import { useLoadingStore } from '@stores/loading.store';
+import { MobileCardColDef } from '@type/table.type';
 import { ColDef } from 'ag-grid-community';
 import { useMemo } from 'react';
 
@@ -13,12 +16,12 @@ export interface TableActionConfig<TData = unknown> extends TableActionCellBaseP
 interface UseTableConfigsProps<TData = unknown> {
     defaultColDef?: ColDef;
     hasCheckbox?: boolean;
-    leadingColumnDefs?: ColDef[];
+    leadingColumnDefs?: MobileCardColDef[];
     tableActionConfig?: TableActionConfig<TData>;
-    trailingColumnDefs?: ColDef[];
+    trailingColumnDefs?: MobileCardColDef[];
 }
 
-function withHeaderTooltip(columnDefs: ColDef[]): ColDef[] {
+function withHeaderTooltip(columnDefs: MobileCardColDef[]): MobileCardColDef[] {
     return columnDefs.map((columnDef) => {
         if (columnDef.headerTooltip !== undefined || typeof columnDef.headerName !== 'string' || !columnDef.headerName.trim()) {
             return columnDef;
@@ -39,7 +42,11 @@ export function useTableConfigs<TData = unknown>({
     trailingColumnDefs = []
 }: UseTableConfigsProps<TData>) {
     const isLoading = useLoadingStore((state) => state.isLoading);
-    const resolvedColumnDefs = useMemo<ColDef[]>(function() {
+    const { isMobile } = useBreakpoint();
+    const actionColumnWidth = isMobile
+        ? TABLE_ACTION_COL_WIDTH_MOBILE
+        : TABLE_ACTION_COL_WIDTH;
+    const resolvedColumnDefs = useMemo<MobileCardColDef[]>(function() {
         const { actionColDef, actionContainerClassName, actionIconClassName, menuOptions, onEditClick } = tableActionConfig ?? {};
 
         return [
@@ -55,9 +62,10 @@ export function useTableConfigs<TData = unknown>({
                             menuOptions: menuOptions,
                             onEditClick: onEditClick
                         } satisfies Partial<TableActionCellRendererParams<TData>>,
+                        colId: TABLE_ACTION_COL_ID,
                         headerName: '',
-                        maxWidth: 104,
-                        minWidth: 104,
+                        maxWidth: actionColumnWidth,
+                        minWidth: actionColumnWidth,
                         ...actionColDef
                     }
                 ]
@@ -66,13 +74,14 @@ export function useTableConfigs<TData = unknown>({
             ...withHeaderTooltip(trailingColumnDefs)
         ];
     }, [
+        actionColumnWidth,
         leadingColumnDefs,
         tableActionConfig,
         trailingColumnDefs
     ]);
     const resolvedColDefs = useMemo<ColDef>(function() {
         const commonSortIconProps = {
-            className: 'cursor-pointer font-[700] h-[0.875rem] text-current w-[0.875rem]'
+            className: 'cursor-pointer font-[700] h-[1.125rem] text-current w-[1.125rem]'
         };
 
         return {

@@ -1,7 +1,11 @@
-import { DESKTOP_MEDIA_QUERY, MOBILE_MEDIA_QUERY, TABLET_MEDIA_QUERY } from '@constants/breakpoint.constant';
+import {
+    COMPACT_MEDIA_QUERY, DESKTOP_MEDIA_QUERY, HOVER_MEDIA_QUERY, MOBILE_MEDIA_QUERY, TABLET_MEDIA_QUERY
+} from '@constants/breakpoint.constant';
 import { useCallback, useSyncExternalStore } from 'react';
 
 interface UseBreakpointResult {
+    hasHover: boolean;
+    isCompact: boolean;
     isDesktop: boolean;
     isMobile: boolean;
     isTablet: boolean;
@@ -29,9 +33,13 @@ function useMediaQueryMatch(query: string): boolean {
 }
 
 export default function useBreakpoint(): UseBreakpointResult {
+    const isCompact = useMediaQueryMatch(COMPACT_MEDIA_QUERY);
     const isMobile = useMediaQueryMatch(MOBILE_MEDIA_QUERY);
     const isTablet = useMediaQueryMatch(TABLET_MEDIA_QUERY);
     const isDesktop = useMediaQueryMatch(DESKTOP_MEDIA_QUERY);
+    const hasHover = useMediaQueryMatch(HOVER_MEDIA_QUERY);
 
-    return { isDesktop, isMobile, isTablet };
+    return {
+        hasHover, isCompact, isDesktop, isMobile, isTablet
+    };
 }

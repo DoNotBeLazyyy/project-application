@@ -11,7 +11,7 @@ import { bulkCreateEvaluationTemplates, deleteEvaluationTemplate, listEvaluation
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { EvaluationTemplateBulkRow, EvaluationTemplateListRow } from '@type/evaluation.type';
 import { SortStringDto } from '@type/http.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -71,22 +71,25 @@ export default function EvaluationManagement() {
         return deleteEvaluationTemplate(id);
     }
 
-    const columnDefs = useMemo<ColDef<EvaluationTemplateListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'sequence',
                 flex: 1,
                 headerName: 'Order',
                 maxWidth: 100,
+                mobileCard: 'meta',
                 sortable: true
             },
             {
                 field: 'title',
                 flex: 3,
                 headerName: 'Section',
+                mobileCard: 'title',
                 sortable: true
             },
             {
+                colId: 'programs',
                 flex: 3,
                 headerName: 'Programs',
                 sortable: false,

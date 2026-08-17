@@ -6,7 +6,7 @@ import { listStudentSubjects } from '@services/student-portal.service';
 import { EnrollmentStatus } from '@type/enrollment.type';
 import { SortStringDto } from '@type/http.type';
 import { MySubjectListRow } from '@type/student-portal.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,18 +29,20 @@ const STATUS_VARIANT_MAP: Record<EnrollmentStatus, 'success' | 'error' | 'warnin
 export default function StudentSubjects() {
     const navigate = useNavigate();
 
-    const columnDefs = useMemo<ColDef<MySubjectListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'course_code',
                 flex: 1,
                 headerName: 'Course Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'course_title',
                 flex: 3,
                 headerName: 'Course Title',
+                mobileCard: 'title',
                 sortable: true
             },
             {

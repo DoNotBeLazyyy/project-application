@@ -3,7 +3,7 @@ import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CopyIcon } from '@phosphor-icons/react';
 import { SectionListRow, SectionStatus } from '@type/section.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseSectionTableConfigProps {
@@ -26,12 +26,13 @@ export function useSectionTableConfig({
     onEdit,
     onView
 }: UseSectionTableConfigProps) {
-    const columnDefs = useMemo<ColDef<SectionListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'section_code',
                 flex: 1,
                 headerName: 'Section Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
@@ -44,12 +45,14 @@ export function useSectionTableConfig({
                 field: 'course_code',
                 flex: 1,
                 headerName: 'Course Code',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {
                 field: 'course_title',
                 flex: 3,
                 headerName: 'Course Title',
+                mobileCard: 'title',
                 sortable: true
             },
             {

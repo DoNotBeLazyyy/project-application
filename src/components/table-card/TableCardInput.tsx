@@ -31,6 +31,8 @@ export default function TableCardInput({
 
     return (
         <CommonInput
+            className="min-w-0"
+            fullWidth
             isRoundedFull
             placeholder="Search"
             size="small"

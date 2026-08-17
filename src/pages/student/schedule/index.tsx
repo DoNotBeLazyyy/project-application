@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import useBreakpoint from '@hooks/useBreakpoint';
 import Tooltip from '@mui/material/Tooltip';
 import {
     CalendarBlank, Check, Clock, MapPin, ShieldCheck, User
@@ -207,6 +208,25 @@ function buildDayLayout(day: DayOfWeek, sections: ScheduleSection[], startHour: 
     return blocks;
 }
 
+function buildDayAgenda(day: DayOfWeek, sections: ScheduleSection[]): DayEntry[] {
+    const entries: DayEntry[] = [];
+
+    for (const section of sections) {
+        for (const schedule of section.schedules) {
+            if (schedule.day_of_week !== day) continue;
+
+            entries.push({
+                section,
+                schedule,
+                start: timeToMinutes(schedule.time_start),
+                end: timeToMinutes(schedule.time_end)
+            });
+        }
+    }
+
+    return entries.sort((a, b) => a.start - b.start || a.end - b.end);
+}
+
 function renderBlockTooltip(block: PositionedBlock): ReactNode {
     return (
         <div className="flex flex-col gap-1 py-1">
@@ -241,11 +261,134 @@ function renderBlockTooltip(block: PositionedBlock): ReactNode {
     );
 }
 
+interface ScheduleAgendaProps {
+    activeDays: DayOfWeek[];
+    entries: DayEntry[];
+    selectedDay: DayOfWeek;
+    todayName: DayOfWeek;
+    visibleSections: ScheduleSection[];
+    onSelectDay: (day: DayOfWeek) => void;
+    onSelectSection: (section: ScheduleSection) => void;
+}
+
+function ScheduleAgenda({
+    activeDays,
+    entries,
+    selectedDay,
+    todayName,
+    visibleSections,
+    onSelectDay,
+    onSelectSection
+}: ScheduleAgendaProps) {
+    return (
+        <div className="flex flex-1 flex-col min-h-0">
+            <div className="border-(--mui-palette-divider) border-b flex gap-2 overflow-x-auto px-4 py-2">
+                {activeDays.map((day) => {
+                    const isSelected = day === selectedDay;
+                    const dayCount = buildDayAgenda(day, visibleSections).length;
+
+                    return (
+                        <button
+                            className={`flex flex-col gap-0.5 items-center justify-center min-h-11 px-3 rounded-lg shrink-0 ${isSelected
+                                ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                : 'text-(--mui-palette-text-secondary)'}`}
+                            key={day}
+                            type="button"
+                            onClick={function() {
+                                onSelectDay(day);
+                            }}
+                        >
+                            <span className="font-semibold text-xs tracking-wide uppercase">
+                                {DAY_SHORT[day]}
+                                {day === todayName
+                                    ? ' •'
+                                    : ''}
+                            </span>
+                            <span className="text-[11px] leading-none opacity-80">
+                                {dayCount}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+            <div className="flex flex-1 flex-col gap-3 min-h-0 overflow-y-auto p-4">
+                {entries.length === 0
+                    ? (
+                        <div className="flex flex-1 flex-col gap-2 items-center justify-center text-center">
+                            <CalendarBlank
+                                className="text-(--mui-palette-text-disabled)"
+                                size={40}
+                            />
+                            <span className="text-(--mui-palette-text-secondary) text-sm">
+                                {`No classes on ${selectedDay}.`}
+                            </span>
+                        </div>
+                    )
+                    : entries.map((entry) => {
+                        const textColor = getContrastTextColor(entry.section.color);
+
+                        return (
+                            <button
+                                className="flex flex-col gap-1 px-3 py-3 rounded-lg text-left w-full"
+                                key={entry.schedule.id}
+                                style={{
+                                    backgroundColor: entry.section.color,
+                                    borderLeft: `3px solid ${shadeColor(entry.section.color, -0.3)}`,
+                                    boxShadow: `0 1px 3px ${withAlpha(shadeColor(entry.section.color, -0.5), 0.35)}`,
+                                    color: textColor,
+                                    outline: entry.section.is_conflict_authorized
+                                        ? '2px solid var(--mui-palette-warning-main)'
+                                        : 'none'
+                                }}
+                                type="button"
+                                onClick={function() {
+                                    onSelectSection(entry.section);
+                                }}
+                            >
+                                <div className="flex gap-2 items-start justify-between w-full">
+                                    <span className="font-semibold min-w-0 text-sm">
+                                        {entry.section.course_code}
+                                        {' · '}
+                                        {entry.section.section_code}
+                                    </span>
+                                    {entry.section.is_conflict_authorized && (
+                                        <ShieldCheck
+                                            className="shrink-0"
+                                            size={14}
+                                            weight="fill"
+                                        />
+                                    )}
+                                </div>
+                                <span className="opacity-90 text-xs">
+                                    {entry.section.course_title}
+                                </span>
+                                <span className="flex gap-1 items-center text-xs">
+                                    <Clock className="shrink-0" size={12} weight="bold" />
+                                    {formatRange(entry.start, entry.end)}
+                                </span>
+                                <span className="flex gap-1 items-center text-xs">
+                                    <MapPin className="shrink-0" size={12} weight="bold" />
+                                    {entry.schedule.room ?? 'No room assigned'}
+                                </span>
+                                <span className="flex gap-1 items-center text-xs">
+                                    <User className="shrink-0" size={12} weight="bold" />
+                                    {entry.section.faculty_name}
+                                </span>
+                            </button>
+                        );
+                    })}
+            </div>
+        </div>
+    );
+}
+
 export default function StudentSchedule() {
+    const { isMobile } = useBreakpoint();
     const [sections, setSections] = useState<ScheduleSection[]>([]);
     const [hiddenSectionIds, setHiddenSectionIds] = useState<string[]>([]);
     const [colorTarget, setColorTarget] = useState<ScheduleSection | null>(null);
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [agendaDay, setAgendaDay] = useState<DayOfWeek>(getTodayName);
     const [nowMinutes, setNowMinutes] = useState(() => {
         const now = new Date();
 
@@ -311,6 +454,10 @@ export default function StudentSchedule() {
         ),
         0
     ) / 60;
+    const selectedDay = activeDays.includes(agendaDay)
+        ? agendaDay
+        : activeDays[0] ?? todayName;
+    const agendaEntries = buildDayAgenda(selectedDay, visibleSections);
 
     function handleToggleSection(sectionId: string) {
         setHiddenSectionIds((prev) => prev.includes(sectionId)
@@ -478,133 +625,145 @@ export default function StudentSchedule() {
                         </span>
                     </div>
                 )
-                : (
-                    <div className="flex-1 min-h-0 overflow-auto">
-                        <div className="min-w-3xl">
-                            <div className="bg-(--mui-palette-background-paper) flex sticky top-0 z-30">
-                                <div className="bg-(--mui-palette-background-paper) shrink-0 sticky left-0 w-16 z-40" />
-                                {activeDays.map((day) => (
-                                    <div
-                                        className={`border-(--mui-palette-divider) border-b border-l flex-1 py-2 text-center ${day === todayName
-                                            ? 'text-(--mui-palette-primary-main) font-semibold'
-                                            : 'text-(--mui-palette-text-secondary) font-medium'}`}
-                                        key={day}
-                                    >
-                                        <span className="text-xs uppercase tracking-wide">{DAY_SHORT[day]}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex">
-                                <div
-                                    className="bg-(--mui-palette-background-paper) shrink-0 sticky left-0 w-16 z-20"
-                                    style={{ height: `${gridHeight}px` }}
-                                >
-                                    {hours.map((hour) => (
+                : isMobile
+                    ? (
+                        <ScheduleAgenda
+                            activeDays={activeDays}
+                            entries={agendaEntries}
+                            selectedDay={selectedDay}
+                            todayName={todayName}
+                            visibleSections={visibleSections}
+                            onSelectDay={setAgendaDay}
+                            onSelectSection={handleOpenColorPicker}
+                        />
+                    )
+                    : (
+                        <div className="flex-1 min-h-0 overflow-auto">
+                            <div className="min-w-3xl">
+                                <div className="bg-(--mui-palette-background-paper) flex sticky top-0 z-30">
+                                    <div className="bg-(--mui-palette-background-paper) shrink-0 sticky left-0 w-16 z-40" />
+                                    {activeDays.map((day) => (
                                         <div
-                                            className="flex justify-end pr-2 pt-1"
-                                            key={hour}
-                                            style={{ height: `${HOUR_HEIGHT}px` }}
+                                            className={`border-(--mui-palette-divider) border-b border-l flex-1 py-2 text-center ${day === todayName
+                                                ? 'text-(--mui-palette-primary-main) font-semibold'
+                                                : 'text-(--mui-palette-text-secondary) font-medium'}`}
+                                            key={day}
                                         >
-                                            <span className="text-(--mui-palette-text-disabled) text-[11px] leading-none">
-                                                {formatTimeLabel(hour * 60)}
-                                            </span>
+                                            <span className="text-xs uppercase tracking-wide">{DAY_SHORT[day]}</span>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="flex flex-1">
-                                    {activeDays.map((day) => (
-                                        <div
-                                            className={`border-(--mui-palette-divider) border-l flex-1 relative ${day === todayName
-                                                ? 'bg-(--mui-palette-action-hover)'
-                                                : ''}`}
-                                            key={day}
-                                            style={{ height: `${gridHeight}px` }}
-                                        >
-                                            {hours.map((hour) => (
-                                                <div
-                                                    className="border-(--mui-palette-divider) border-b"
-                                                    key={hour}
-                                                    style={{ height: `${HOUR_HEIGHT}px` }}
-                                                >
+                                <div className="flex">
+                                    <div
+                                        className="bg-(--mui-palette-background-paper) shrink-0 sticky left-0 w-16 z-20"
+                                        style={{ height: `${gridHeight}px` }}
+                                    >
+                                        {hours.map((hour) => (
+                                            <div
+                                                className="flex justify-end pr-2 pt-1"
+                                                key={hour}
+                                                style={{ height: `${HOUR_HEIGHT}px` }}
+                                            >
+                                                <span className="text-(--mui-palette-text-disabled) text-[11px] leading-none">
+                                                    {formatTimeLabel(hour * 60)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex flex-1">
+                                        {activeDays.map((day) => (
+                                            <div
+                                                className={`border-(--mui-palette-divider) border-l flex-1 relative ${day === todayName
+                                                    ? 'bg-(--mui-palette-action-hover)'
+                                                    : ''}`}
+                                                key={day}
+                                                style={{ height: `${gridHeight}px` }}
+                                            >
+                                                {hours.map((hour) => (
                                                     <div
-                                                        className="border-(--mui-palette-divider) border-b border-dashed opacity-50"
-                                                        style={{ height: `${HOUR_HEIGHT / 2}px` }}
-                                                    />
-                                                </div>
-                                            ))}
-                                            {day === todayName && isNowVisible && (
-                                                <div
-                                                    className="absolute bg-(--mui-palette-error-main) h-0.5 left-0 right-0 z-20"
-                                                    style={{ top: `${nowOffset}px` }}
-                                                >
-                                                    <span className="-left-1 -top-1 absolute bg-(--mui-palette-error-main) rounded-full size-2" />
-                                                </div>
-                                            )}
-                                            {buildDayLayout(day, visibleSections, startHour)
-                                                .map((block) => {
-                                                    const textColor = getContrastTextColor(block.section.color);
+                                                        className="border-(--mui-palette-divider) border-b"
+                                                        key={hour}
+                                                        style={{ height: `${HOUR_HEIGHT}px` }}
+                                                    >
+                                                        <div
+                                                            className="border-(--mui-palette-divider) border-b border-dashed opacity-50"
+                                                            style={{ height: `${HOUR_HEIGHT / 2}px` }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                                {day === todayName && isNowVisible && (
+                                                    <div
+                                                        className="absolute bg-(--mui-palette-error-main) h-0.5 left-0 right-0 z-20"
+                                                        style={{ top: `${nowOffset}px` }}
+                                                    >
+                                                        <span className="-left-1 -top-1 absolute bg-(--mui-palette-error-main) rounded-full size-2" />
+                                                    </div>
+                                                )}
+                                                {buildDayLayout(day, visibleSections, startHour)
+                                                    .map((block) => {
+                                                        const textColor = getContrastTextColor(block.section.color);
 
-                                                    return (
-                                                        <Tooltip
-                                                            arrow
-                                                            key={block.schedule.id}
-                                                            placement="top"
-                                                            title={renderBlockTooltip(block)}
-                                                        >
-                                                            <div
-                                                                className="absolute cursor-pointer duration-150 flex flex-col gap-0.5 justify-start overflow-hidden px-2 py-1 rounded-md transition-transform hover:z-20 hover:scale-[1.02] z-10"
-                                                                role="button"
-                                                                style={{
-                                                                    backgroundColor: block.section.color,
-                                                                    borderLeft: `3px solid ${shadeColor(block.section.color, -0.3)}`,
-                                                                    boxShadow: `0 1px 3px ${withAlpha(shadeColor(block.section.color, -0.5), 0.35)}`,
-                                                                    color: textColor,
-                                                                    height: `${block.height}px`,
-                                                                    left: `calc(${block.left}% + 2px)`,
-                                                                    outline: block.section.is_conflict_authorized
-                                                                        ? '2px solid var(--mui-palette-warning-main)'
-                                                                        : 'none',
-                                                                    top: `${block.top}px`,
-                                                                    width: `calc(${block.width}% - 4px)`
-                                                                }}
-                                                                tabIndex={0}
-                                                                onClick={function() {
-                                                                    handleOpenColorPicker(block.section);
-                                                                }}
+                                                        return (
+                                                            <Tooltip
+                                                                arrow
+                                                                key={block.schedule.id}
+                                                                placement="top"
+                                                                title={renderBlockTooltip(block)}
                                                             >
-                                                                <div className="flex gap-1 items-center">
-                                                                    {block.section.is_conflict_authorized && (
-                                                                        <ShieldCheck
-                                                                            className="shrink-0"
-                                                                            size={12}
-                                                                            weight="fill"
-                                                                        />
+                                                                <div
+                                                                    className="absolute cursor-pointer duration-150 flex flex-col gap-0.5 justify-start overflow-hidden px-2 py-1 rounded-md transition-transform hover:z-20 hover:scale-[1.02] z-10"
+                                                                    role="button"
+                                                                    style={{
+                                                                        backgroundColor: block.section.color,
+                                                                        borderLeft: `3px solid ${shadeColor(block.section.color, -0.3)}`,
+                                                                        boxShadow: `0 1px 3px ${withAlpha(shadeColor(block.section.color, -0.5), 0.35)}`,
+                                                                        color: textColor,
+                                                                        height: `${block.height}px`,
+                                                                        left: `calc(${block.left}% + 2px)`,
+                                                                        outline: block.section.is_conflict_authorized
+                                                                            ? '2px solid var(--mui-palette-warning-main)'
+                                                                            : 'none',
+                                                                        top: `${block.top}px`,
+                                                                        width: `calc(${block.width}% - 4px)`
+                                                                    }}
+                                                                    tabIndex={0}
+                                                                    onClick={function() {
+                                                                        handleOpenColorPicker(block.section);
+                                                                    }}
+                                                                >
+                                                                    <div className="flex gap-1 items-center">
+                                                                        {block.section.is_conflict_authorized && (
+                                                                            <ShieldCheck
+                                                                                className="shrink-0"
+                                                                                size={12}
+                                                                                weight="fill"
+                                                                            />
+                                                                        )}
+                                                                        <span className="font-semibold text-xs truncate">
+                                                                            {block.section.course_code}
+                                                                        </span>
+                                                                    </div>
+                                                                    {block.height >= COMPACT_BLOCK_HEIGHT && (
+                                                                        <span className="opacity-90 text-[11px] truncate">
+                                                                            {block.schedule.room ?? block.section.section_code}
+                                                                        </span>
                                                                     )}
-                                                                    <span className="font-semibold text-xs truncate">
-                                                                        {block.section.course_code}
-                                                                    </span>
+                                                                    {block.height >= DETAILED_BLOCK_HEIGHT && (
+                                                                        <span className="opacity-80 text-[11px] truncate">
+                                                                            {formatRange(block.start, block.end)}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
-                                                                {block.height >= COMPACT_BLOCK_HEIGHT && (
-                                                                    <span className="opacity-90 text-[11px] truncate">
-                                                                        {block.schedule.room ?? block.section.section_code}
-                                                                    </span>
-                                                                )}
-                                                                {block.height >= DETAILED_BLOCK_HEIGHT && (
-                                                                    <span className="opacity-80 text-[11px] truncate">
-                                                                        {formatRange(block.start, block.end)}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </Tooltip>
-                                                    );
-                                                })}
-                                        </div>
-                                    ))}
+                                                            </Tooltip>
+                                                        );
+                                                    })}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
             <CommonModal
                 cardProps={{
                     cardHeaderProps: {
@@ -619,7 +778,7 @@ export default function StudentSchedule() {
                     setColorTarget(null);
                 }}
             >
-                <div className="flex flex-col gap-4 w-80">
+                <div className="flex flex-col gap-4 max-w-80 w-full">
                     <div
                         className="flex flex-col gap-0.5 px-3 py-2 rounded-md"
                         style={{
@@ -642,7 +801,7 @@ export default function StudentSchedule() {
                         <div className="flex flex-wrap gap-2">
                             {SCHEDULE_COLOR_PALETTE.map((swatch) => (
                                 <button
-                                    className="flex items-center justify-center rounded-full size-8"
+                                    className="flex items-center justify-center rounded-full size-11"
                                     key={swatch}
                                     style={{
                                         backgroundColor: swatch,

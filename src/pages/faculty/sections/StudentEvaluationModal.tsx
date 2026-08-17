@@ -59,7 +59,7 @@ export default function StudentEvaluationModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'flex flex-col gap-4 h-[85vh] w-[min(94vw,860px)]'
+                className: 'flex flex-col gap-4 h-[85dvh] w-[min(94vw,860px)]'
             }}
             open={open}
             onClose={onClose}

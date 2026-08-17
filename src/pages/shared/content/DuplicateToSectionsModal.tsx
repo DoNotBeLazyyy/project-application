@@ -67,7 +67,7 @@ export default function DuplicateToSectionsModal({
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-4 p-6 w-[34rem]' }}
+            cardProps={{ className: 'flex flex-col gap-4 max-w-full p-6 w-[34rem]' }}
             open={open}
             onClose={onClose}
         >

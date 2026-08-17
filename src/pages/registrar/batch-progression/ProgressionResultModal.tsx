@@ -48,7 +48,7 @@ export default function ProgressionResultModal({
                     title: 'Progression Result'
                 }
             }}
-            containerClassName="w-[66rem]"
+            containerClassName="max-w-full w-[66rem]"
             formButtonsProps={{
                 cancelProps: {
                     children: 'Close',

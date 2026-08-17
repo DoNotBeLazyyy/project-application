@@ -3,7 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
 import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
 import { SubjectGradeItem } from '@type/student-portal.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,7 +21,7 @@ function formatGrade(value: number | null): string {
 export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeListProps) {
     const navigate = useNavigate();
 
-    const columnDefs = useMemo<ColDef<SubjectGradeItem>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         function isReleased(item: SubjectGradeItem): boolean {
             return item.is_visible && item.evaluation_completed;
         }
@@ -31,12 +31,14 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 field: 'grading_period_name',
                 flex: 2,
                 headerName: 'Grading Period',
+                mobileCard: 'title',
                 sortable: false
             },
             {
                 field: 'raw_grade',
                 flex: 1,
                 headerName: 'Raw',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
                     ? formatGrade(params.value)
@@ -46,6 +48,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 field: 'final_grade',
                 flex: 1,
                 headerName: 'Final',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
                     ? formatGrade(params.value)
@@ -55,6 +58,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 field: 'transmuted_grade',
                 flex: 1,
                 headerName: 'Transmuted',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
                     ? (params.value != null
@@ -63,8 +67,10 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                     : '—'
             },
             {
+                colId: 'status',
                 headerName: 'Status',
                 flex: 2,
+                mobileCard: 'meta',
                 sortable: false,
                 cellRenderer: (params: { data: SubjectGradeItem }) => {
                     const grade = params.data;

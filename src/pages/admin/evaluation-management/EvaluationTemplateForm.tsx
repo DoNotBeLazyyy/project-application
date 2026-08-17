@@ -177,7 +177,7 @@ export default function EvaluationTemplateFormPanel({
     return (
         <div className="flex flex-col gap-4">
             <CommonForm
-                containerClassName="gap-4 grid grid-cols-2"
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                 control={control}
                 fields={templateFields}
                 formProps={formProps}

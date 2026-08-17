@@ -4,6 +4,12 @@ import { parseServiceError } from '@utils/error.util';
 
 export type StorageBucket = 'logos' | 'avatars' | 'materials' | 'submissions';
 
+const PUBLIC_BUCKETS: StorageBucket[] = ['logos', 'avatars'];
+
+function isPublicBucket(bucket: StorageBucket): boolean {
+    return PUBLIC_BUCKETS.includes(bucket);
+}
+
 export interface UploadFileParams {
     bucket: StorageBucket;
     path: string;
@@ -30,7 +36,7 @@ export async function uploadFile({
             return { data: null, error: parseServiceError(error) };
         }
 
-        if (bucket === 'logos') {
+        if (isPublicBucket(bucket)) {
             const { data } = supabase.storage
                 .from(bucket)
                 .getPublicUrl(path);
@@ -59,7 +65,7 @@ export async function getFileUrl(
     expiresIn = 3600
 ): Promise<ServiceResult<StorageFileUrl>> {
     try {
-        if (bucket === 'logos') {
+        if (isPublicBucket(bucket)) {
             const { data } = supabase.storage
                 .from(bucket)
                 .getPublicUrl(path);

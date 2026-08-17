@@ -5,7 +5,7 @@ import StudentEvaluationModal from '@pages/faculty/sections/StudentEvaluationMod
 import { listSectionStudents } from '@services/faculty.service';
 import { SectionStudent } from '@type/faculty.type';
 import { SortStringDto } from '@type/http.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
 
 const SORT_COLUMNS: SortColumn[] = [
@@ -23,24 +23,27 @@ interface StudentsTabProps {
 export default function StudentsTab({ sectionId }: StudentsTabProps) {
     const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(null);
 
-    const columnDefs = useMemo<ColDef<SectionStudent>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'student_number',
                 flex: 1,
                 headerName: 'Student No.',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'full_name',
                 flex: 2,
                 headerName: 'Full Name',
+                mobileCard: 'title',
                 sortable: true
             },
             {
                 field: 'email',
                 flex: 3,
                 headerName: 'Email',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {

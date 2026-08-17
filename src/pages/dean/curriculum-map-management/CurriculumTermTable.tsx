@@ -34,18 +34,23 @@ export default function CurriculumTermTable({
             <div className="border border-(--mui-palette-divider) font-semibold px-2 py-1 rounded-t text-(--mui-palette-text-primary) text-center text-xs uppercase">
                 {termTypeLabel}
             </div>
-            <CommonTable
-                domLayout="autoHeight"
-                leadingColumnDefs={columnDefs}
-                pinnedBottomRowData={pinnedBottomRow}
-                rowData={entries}
-                suppressRowVirtualisation
-                onRowClicked={(params) => {
-                    if (params.data.id !== '__total__') {
-                        onView(params.data);
-                    }
-                }}
-            />
+            <div className="min-w-0 overflow-x-auto print:overflow-visible">
+                <div className="min-w-160 print:min-w-0">
+                    <CommonTable
+                        domLayout="autoHeight"
+                        isMobileCardDisabled
+                        leadingColumnDefs={columnDefs}
+                        pinnedBottomRowData={pinnedBottomRow}
+                        rowData={entries}
+                        suppressRowVirtualisation
+                        onRowClicked={(params) => {
+                            if (params.data.id !== '__total__') {
+                                onView(params.data);
+                            }
+                        }}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

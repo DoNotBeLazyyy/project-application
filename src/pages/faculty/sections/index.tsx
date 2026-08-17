@@ -6,7 +6,7 @@ import { listMySections } from '@services/faculty.service';
 import { MySectionListRow } from '@type/faculty.type';
 import { SortStringDto } from '@type/http.type';
 import { SectionStatus } from '@type/section.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,24 +28,27 @@ const STATUS_VARIANT_MAP: Record<SectionStatus, 'success' | 'error' | 'warning' 
 export default function FacultySectionManagement() {
     const navigate = useNavigate();
 
-    const columnDefs = useMemo<ColDef<MySectionListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'section_code',
                 flex: 1,
                 headerName: 'Section Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'course_code',
                 flex: 1,
                 headerName: 'Course Code',
+                mobileCard: 'hidden',
                 sortable: true
             },
             {
                 field: 'course_title',
                 flex: 3,
                 headerName: 'Course Title',
+                mobileCard: 'title',
                 sortable: true
             },
             {

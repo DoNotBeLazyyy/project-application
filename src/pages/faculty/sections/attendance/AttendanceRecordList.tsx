@@ -3,7 +3,7 @@ import CommonSelect from '@components/select/CommonSelect';
 import CommonTable from '@components/table/CommonTable';
 import { AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceStatus } from '@type/faculty.type';
 import { ChangeEventInputTextarea } from '@type/common.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 const STATUS_OPTIONS: { label: string; value: AttendanceStatus }[] = [
@@ -30,11 +30,13 @@ export default function AttendanceRecordList({
     onSave,
     onStatusChange
 }: AttendanceRecordListProps) {
-    const columnDefs = useMemo<ColDef<AttendanceRecordUpdate>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
+                colId: 'student_number',
                 flex: 2,
                 headerName: 'Student No.',
+                mobileCard: 'subtitle',
                 sortable: false,
                 valueGetter: (params) => {
                     const record = records.find((r) => r.id === params.data?.id);
@@ -42,8 +44,10 @@ export default function AttendanceRecordList({
                 }
             },
             {
+                colId: 'full_name',
                 flex: 3,
                 headerName: 'Full Name',
+                mobileCard: 'title',
                 sortable: false,
                 valueGetter: (params) => {
                     const record = records.find((r) => r.id === params.data?.id);

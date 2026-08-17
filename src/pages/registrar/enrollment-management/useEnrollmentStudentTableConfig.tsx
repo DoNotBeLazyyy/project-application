@@ -2,7 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseEnrollmentStudentTableConfigProps {
@@ -20,18 +20,20 @@ const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'w
 export function useEnrollmentStudentTableConfig({
     onManage
 }: UseEnrollmentStudentTableConfigProps) {
-    const columnDefs = useMemo<ColDef<EnrollmentStudentRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'student_number',
                 flex: 1,
                 headerName: 'Student No.',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'student_name',
                 flex: 2,
                 headerName: 'Student Name',
+                mobileCard: 'title',
                 sortable: true
             },
             {
@@ -81,6 +83,7 @@ export function useEnrollmentStudentTableConfig({
                 field: 'status',
                 flex: 1,
                 headerName: 'Student Status',
+                mobileCard: 'hidden',
                 sortable: true,
                 cellRenderer: (params: { data: EnrollmentStudentRow }) => (
                     <div className="flex h-full items-center">

@@ -35,11 +35,11 @@ interface DetailFieldProps {
 
 function DetailField({ label, value }: DetailFieldProps) {
     return (
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 min-w-0">
             <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
                 {label}
             </span>
-            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+            <span className="font-medium text-(--mui-palette-text-primary) text-sm wrap-break-word">
                 {value}
             </span>
         </div>
@@ -104,10 +104,10 @@ function ResultAnswerCard({ answer, index, resultsAvailable }: ResultAnswerCardP
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
             <div className="flex gap-2 items-start justify-between">
-                <p className="font-medium text-(--mui-palette-text-primary) text-sm">
+                <p className="font-medium min-w-0 text-(--mui-palette-text-primary) text-sm wrap-break-word">
                     {index + 1}. {answer.question_text}
                 </p>
-                <span className="flex-shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
                     {resultsAvailable
                         ? `${formatScore(answer.points_earned)} / ${answer.points}`
                         : answer.points} pts
@@ -124,7 +124,7 @@ function ResultAnswerCard({ answer, index, resultsAvailable }: ResultAnswerCardP
 
                             return (
                                 <div
-                                    className="border flex gap-2 items-center px-3 py-2 rounded text-sm"
+                                    className="border flex flex-wrap gap-2 items-center px-3 py-2 rounded text-sm"
                                     key={choice.id}
                                     style={{
                                         borderColor: showCorrect

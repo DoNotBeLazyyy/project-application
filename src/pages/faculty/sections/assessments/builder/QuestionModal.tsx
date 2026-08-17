@@ -132,7 +132,7 @@ export default function QuestionModal({
         >
             <div className="flex flex-col gap-4 w-200">
                 <CommonForm
-                    containerClassName="flex flex-col gap-4 grid-cols-2 grid"
+                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                     control={methods.control}
                     fields={baseFields}
                     formProps={{

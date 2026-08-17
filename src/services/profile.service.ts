@@ -32,6 +32,12 @@ export async function updateMyProfile(
     });
 }
 
+export async function updateMyAvatar(
+    avatarUrl: string | null
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_update_my_avatar', { p_avatar_url: avatarUrl });
+}
+
 export async function changeMyPassword(
     email: string,
     values: ChangePasswordFormValues

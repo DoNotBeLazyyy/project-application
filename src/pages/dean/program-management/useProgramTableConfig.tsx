@@ -2,7 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { ProgramListRow } from '@type/program/program.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface useProgramTableConfigProps {
@@ -15,18 +15,20 @@ export function useProgramTableConfig({
     onEdit,
     onView
 }: useProgramTableConfigProps) {
-    const columnDefs = useMemo<ColDef<ProgramListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
                 flex: 1.5,
                 headerName: 'Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'name',
                 flex: 3,
                 headerName: 'Name',
+                mobileCard: 'title',
                 sortable: true
             },
             {

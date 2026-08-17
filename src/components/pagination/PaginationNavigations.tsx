@@ -63,7 +63,7 @@ export default function PaginationNavigations({
     } = navigationButtonProps; // Navigation destructuring
 
     return (
-        <div className="flex h-7 items-center">
+        <div className="flex items-center min-h-7">
             {firstButtonProps && <CaretDoubleLeftIcon {...firstButtonProps} />}
             <CaretLeftIcon {...prevButtonProps} />
             {inputProps && <PaginationInputInfo {...inputProps} />}

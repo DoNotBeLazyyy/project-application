@@ -24,7 +24,7 @@ export default function CalendarCell({ day }: CalendarCellProps) {
         <div
             className={
                 classMerge(
-                    'bg-(--mui-tokens-color-neutral-100) duration-200 flex flex-col min-h-30 min-w-40 p-(--mui-tokens-spacing-3) rounded-(--mui-tokens-radius-md) transition-colors',
+                    'bg-(--mui-tokens-color-neutral-100) duration-200 flex flex-col min-h-30 min-w-0 p-(--mui-tokens-spacing-3) rounded-(--mui-tokens-radius-md) transition-colors',
                     day.isCurrentMonth
                         ? 'cursor-pointer hover:bg-(--mui-tokens-color-secondary-light) hover:outline hover:outline-(--mui-tokens-color-secondary-main)'
                         : 'opacity-40'

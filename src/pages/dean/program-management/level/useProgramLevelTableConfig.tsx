@@ -1,7 +1,7 @@
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { ProgramLevelListRow } from '@type/program/program-level.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseProgramLevelTableConfigProps {
@@ -14,18 +14,20 @@ export function useProgramLevelTableConfig({
     onEdit,
     onView
 }: UseProgramLevelTableConfigProps) {
-    const columnDefs = useMemo<ColDef<ProgramLevelListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
                 flex: 2,
                 headerName: 'Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'label',
                 flex: 3,
                 headerName: 'Label',
+                mobileCard: 'title',
                 sortable: true
             },
             {

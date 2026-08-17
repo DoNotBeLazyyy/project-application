@@ -221,7 +221,7 @@ export default function CommonTableCard<T extends FieldValues>({
                 onSetSort={handleGridSort}
             />
             <CommonPagination
-                className="flex h-18 items-center"
+                className="flex items-center min-h-18 py-2"
                 pagination={pagination}
                 onSetPagination={handleSetPagination}
             />

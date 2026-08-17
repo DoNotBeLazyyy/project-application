@@ -43,14 +43,14 @@ export default function CommonPromptModal({
             {...props}
             containerClassName={
                 classMerge(
-                    'items-center min-h-[14.5625rem] w-[30.1875rem] pt-(--mui-tokens-spacing-5)',
+                    'items-center max-w-full min-h-[14.5625rem] w-[30.1875rem] pt-(--mui-tokens-spacing-5)',
                     containerClassName
                 )
             }
             formButtonsProps={{
                 ...formButtonsProps,
                 className: classMerge(
-                    'flex-row-reverse',
+                    'flex-col-reverse sm:flex-row-reverse',
                     className
                 ),
                 isButtonsFullWidth,

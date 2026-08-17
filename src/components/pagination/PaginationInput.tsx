@@ -23,6 +23,10 @@ export default function PaginationInput({
             sx={{
                 height: '1.75rem',
                 width: `max(1.75rem, calc(${inputLength}ch + 1rem))`,
+                '@media (pointer: coarse)': {
+                    height: '2.75rem',
+                    width: `max(2.75rem, calc(${inputLength}ch + 1rem))`
+                },
                 '& .MuiOutlinedInput-root': {
                     fontSize: 'var(--mui-tokens-fontSize-sm)',
                     backgroundColor: 'var(--mui-tokens-color-common-white)',

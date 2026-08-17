@@ -2,8 +2,8 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { NEXT_STATUS_MAP, TERM_STATUS_VARIANT_MAP } from '@constants/term.constant';
+import { MobileCardColDef } from '@type/table.type';
 import { TermListRow, TermStatus } from '@type/term/term.type';
-import { ColDef } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface UseTermTableConfigProps {
@@ -18,17 +18,19 @@ export function useTermTableConfig({
     onEdit,
     onView
 }: UseTermTableConfigProps) {
-    const columnDefs = useMemo<ColDef<TermListRow>[]>(() => [
+    const columnDefs = useMemo<MobileCardColDef[]>(() => [
         {
             field: 'school_year_label',
             flex: 2,
             headerName: 'School Year',
+            mobileCard: 'subtitle',
             sortable: true
         },
         {
             field: 'term_type_label',
             flex: 2,
             headerName: 'Term Type',
+            mobileCard: 'title',
             sortable: true
         },
         {

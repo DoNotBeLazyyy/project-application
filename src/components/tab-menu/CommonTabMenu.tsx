@@ -32,15 +32,22 @@ export default function CommonTabMenu({
     ...props
 }: CommonTabMenuProps) {
     const isSmall = size === 'small'; // Small size flag
+    const isVertical = menuStyle === 'vertical';
 
     return (
         <Tabs
             data-menu-style={menuStyle}
             data-size={size}
             orientation={
-                menuStyle === 'vertical'
+                isVertical
                     ? 'vertical'
                     : 'horizontal'
+            }
+            scrollButtons="auto"
+            variant={
+                isVertical
+                    ? 'standard'
+                    : 'scrollable'
             }
             {...props}
         >
@@ -72,8 +79,8 @@ export default function CommonTabMenu({
                             badge={badge}
                             badgeSize={
                                 isSmall
-                                    ? 'leading-[9.6px] min-w-[var(--mui-tokens-spacing-5)] p-[3.2px] text-[8px] w-[var(--mui-tokens-spacing-5)]'
-                                    : 'leading-[12px] min-w-[var(--mui-tokens-spacing-6)] p-[var(--mui-tokens-spacing-2)] text-[10px] w-[var(--mui-tokens-spacing-6)]'
+                                    ? 'leading-[12px] min-w-[var(--mui-tokens-spacing-6)] p-[3.2px] text-[10px] w-[var(--mui-tokens-spacing-6)]'
+                                    : 'leading-[14px] min-w-[var(--mui-tokens-spacing-7)] p-[var(--mui-tokens-spacing-2)] text-xs w-[var(--mui-tokens-spacing-7)]'
                             }
                             hasArrow={hasArrow}
                             label={label}

@@ -17,7 +17,7 @@ export default function PaginationInfo({
         <div
             className={
                 classMerge(
-                    'absolute min-w-max right-4 text-(--mui-tokens-color-neutral-600) top-[50%] translate-y-[-50%] tw_body_small',
+                    'min-w-max order-last text-(--mui-tokens-color-neutral-600) text-center tw_body_small w-full lg:absolute lg:right-4 lg:text-right lg:top-[50%] lg:translate-y-[-50%] lg:w-auto',
                     className
                 )
             }

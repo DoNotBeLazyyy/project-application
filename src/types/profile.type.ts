@@ -16,6 +16,7 @@ export interface MyProfile {
     gender: string;
     civil_status: string;
     nationality: string;
+    avatar_url: string | null;
     status: string;
     role_labels: string[];
 }

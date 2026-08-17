@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonCard from '@components/card/CommonCard';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
 import { CalendarBlankIcon, CheckCircleIcon, ClockIcon, WarningCircleIcon } from '@phosphor-icons/react';
@@ -144,7 +145,7 @@ export default function GradeRelease() {
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
+        <CommonCard className="flex flex-col gap-4 h-full min-h-0 p-4 w-full">
             <div className="flex flex-col gap-1">
                 <h1 className="font-semibold text-[var(--mui-palette-text-primary)] text-xl">
                     Grade Release
@@ -154,11 +155,11 @@ export default function GradeRelease() {
                     automatically once the scheduled time passes.
                 </p>
             </div>
-            <div className="flex gap-3 items-center">
+            <div className="flex flex-col gap-3 items-start sm:flex-row sm:items-center">
                 <span className="font-medium text-[var(--mui-palette-text-primary)] text-sm whitespace-nowrap">
                     Select Term
                 </span>
-                <div className="w-80">
+                <div className="w-full sm:w-80">
                     <CommonSelect
                         fullWidth
                         options={termOptions}
@@ -168,96 +169,98 @@ export default function GradeRelease() {
                     />
                 </div>
             </div>
-            {periods.length === 0
-                ? (
-                    <p className="text-[var(--mui-palette-text-disabled)] text-sm">
-                        This term has no grading periods configured.
-                    </p>
-                )
-                : (
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 md:grid-cols-2">
-                        {periods.map(function(period) {
-                            const isFullyReleased = period.total_grades > 0
-                                && period.released_count === period.total_grades;
-                            const hasBlocked = period.blocked_count > 0;
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                {periods.length === 0
+                    ? (
+                        <p className="text-[var(--mui-palette-text-disabled)] text-sm">
+                            This term has no grading periods configured.
+                        </p>
+                    )
+                    : (
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 md:grid-cols-2">
+                            {periods.map(function(period) {
+                                const isFullyReleased = period.total_grades > 0
+                                    && period.released_count === period.total_grades;
+                                const hasBlocked = period.blocked_count > 0;
 
-                            return (
-                                <div
-                                    className="border border-[var(--mui-palette-divider)] flex flex-col gap-3 p-4 rounded-xl"
-                                    key={period.grading_period_id}
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <h2 className="font-semibold text-[var(--mui-palette-text-primary)] text-base">
-                                            {period.grading_period_name}
-                                        </h2>
-                                        {isFullyReleased
-                                            ? (
-                                                <CheckCircleIcon
-                                                    className="text-[var(--mui-palette-success-main)]"
-                                                    size={20}
-                                                    weight="fill"
-                                                />
-                                            )
-                                            : (
-                                                <ClockIcon
-                                                    className="text-[var(--mui-palette-text-disabled)]"
-                                                    size={20}
-                                                />
-                                            )
-                                        }
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[var(--mui-palette-text-secondary)] text-sm">
-                                            {period.released_count}/{period.total_grades} grades released
-                                        </span>
-                                        <span className="text-[var(--mui-palette-text-secondary)] text-xs">
-                                            {resolveStatusLabel(period)}
-                                        </span>
-                                    </div>
-                                    {hasBlocked
-                                        ? (
-                                            <div className="flex gap-1 items-center text-[var(--mui-palette-warning-main)]">
-                                                <WarningCircleIcon size={14} weight="fill" />
-                                                <span className="text-xs">
-                                                    {period.blocked_count} student(s) have not submitted their evaluation
-                                                </span>
-                                            </div>
-                                        )
-                                        : null
-                                    }
-                                    <div className="flex gap-2 mt-auto pt-2">
-                                        <CommonButton
-                                            fullWidth
-                                            size="small"
-                                            startIcon={<CalendarBlankIcon size={14} />}
-                                            variant="contained"
-                                            onClick={function() {
-                                                handleOpenSchedule(period);
-                                            }}
-                                        >
-                                            {period.release_at
-                                                ? 'Edit Schedule'
-                                                : 'Schedule'
+                                return (
+                                    <div
+                                        className="border border-[var(--mui-palette-divider)] flex flex-col gap-3 p-4 rounded-xl"
+                                        key={period.grading_period_id}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <h2 className="font-semibold text-[var(--mui-palette-text-primary)] text-base">
+                                                {period.grading_period_name}
+                                            </h2>
+                                            {isFullyReleased
+                                                ? (
+                                                    <CheckCircleIcon
+                                                        className="text-[var(--mui-palette-success-main)]"
+                                                        size={20}
+                                                        weight="fill"
+                                                    />
+                                                )
+                                                : (
+                                                    <ClockIcon
+                                                        className="text-[var(--mui-palette-text-disabled)]"
+                                                        size={20}
+                                                    />
+                                                )
                                             }
-                                        </CommonButton>
-                                        <CommonButton
-                                            disabled={isFullyReleased || period.total_grades === 0}
-                                            fullWidth
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={function() {
-                                                setReleaseTarget(period);
-                                            }}
-                                        >
-                                            Release Now
-                                        </CommonButton>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[var(--mui-palette-text-secondary)] text-sm">
+                                                {period.released_count}/{period.total_grades} grades released
+                                            </span>
+                                            <span className="text-[var(--mui-palette-text-secondary)] text-xs">
+                                                {resolveStatusLabel(period)}
+                                            </span>
+                                        </div>
+                                        {hasBlocked
+                                            ? (
+                                                <div className="flex gap-1 items-center text-[var(--mui-palette-warning-main)]">
+                                                    <WarningCircleIcon size={14} weight="fill" />
+                                                    <span className="text-xs">
+                                                        {period.blocked_count} student(s) have not submitted their evaluation
+                                                    </span>
+                                                </div>
+                                            )
+                                            : null
+                                        }
+                                        <div className="flex gap-2 mt-auto pt-2">
+                                            <CommonButton
+                                                fullWidth
+                                                size="small"
+                                                startIcon={<CalendarBlankIcon size={14} />}
+                                                variant="contained"
+                                                onClick={function() {
+                                                    handleOpenSchedule(period);
+                                                }}
+                                            >
+                                                {period.release_at
+                                                    ? 'Edit Schedule'
+                                                    : 'Schedule'
+                                                }
+                                            </CommonButton>
+                                            <CommonButton
+                                                disabled={isFullyReleased || period.total_grades === 0}
+                                                fullWidth
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={function() {
+                                                    setReleaseTarget(period);
+                                                }}
+                                            >
+                                                Release Now
+                                            </CommonButton>
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )
-            }
+                                );
+                            })}
+                        </div>
+                    )
+                }
+            </div>
             <ReleaseScheduleForm
                 isSaving={isSaving}
                 open={isScheduleOpen}
@@ -290,6 +293,6 @@ export default function GradeRelease() {
                     setReleaseTarget(null);
                 }}
             />
-        </div>
+        </CommonCard>
     );
 }

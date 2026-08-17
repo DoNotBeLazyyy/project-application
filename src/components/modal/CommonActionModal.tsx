@@ -26,7 +26,10 @@ export default function CommonActionModal({
                     {
                         display: 'flex',
                         flexDirection: 'column',
-                        maxHeight: 'calc(100dvh - 4rem)',
+                        maxHeight: {
+                            xs: '100dvh',
+                            sm: 'calc(100dvh - 4rem)'
+                        },
                         overflow: 'hidden',
                         '& > .MuiCardHeader-root': {
                             flexShrink: 0

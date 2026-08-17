@@ -219,7 +219,7 @@ export default function CommonPagination({
      */
     function handleButtonNavigationProps(condition: boolean, onClick: VoidFunction) {
         return {
-            className: 'h-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-500) w-[2.25rem]',
+            className: 'h-11 p-(--mui-tokens-spacing-3) text-(--mui-tokens-color-neutral-500) w-11',
             style: {
                 cursor: isLoading || condition
                     ? 'default'
@@ -243,7 +243,7 @@ export default function CommonPagination({
         <div
             className={
                 classMerge(
-                    'flex justify-center relative w-full',
+                    'flex flex-wrap gap-x-4 gap-y-2 items-center justify-center relative w-full',
                     className
                 )
             }
@@ -252,7 +252,7 @@ export default function CommonPagination({
             <div
                 className={
                     classMerge(
-                        'flex gap-(--mui-tokens-spacing-5)',
+                        'flex flex-wrap gap-(--mui-tokens-spacing-5) items-center justify-center',
                         navigationContainerClassName
                     )
                 }

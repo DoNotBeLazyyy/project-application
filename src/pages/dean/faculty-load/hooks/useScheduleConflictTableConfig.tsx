@@ -1,15 +1,16 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { ScheduleConflictRow } from '@type/faculty-load.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 export function useScheduleConflictTableConfig() {
-    const columnDefs = useMemo<ColDef<ScheduleConflictRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'conflict_type',
                 flex: 2,
                 headerName: 'Type',
+                mobileCard: 'subtitle',
                 cellRenderer: (params: { data: ScheduleConflictRow }) => (
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
@@ -25,6 +26,7 @@ export function useScheduleConflictTableConfig() {
                 field: 'subject_label',
                 flex: 2,
                 headerName: 'Faculty / Room',
+                mobileCard: 'title',
                 sortable: true
             },
             {
@@ -57,6 +59,7 @@ export function useScheduleConflictTableConfig() {
                 field: 'faculty_name',
                 flex: 2,
                 headerName: 'Faculty',
+                mobileCard: 'hidden',
                 sortable: true
             }
         ];

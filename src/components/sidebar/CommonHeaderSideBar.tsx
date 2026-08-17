@@ -24,6 +24,8 @@ export interface CommonHeaderSideBarProps extends HTMLAttributesDivElement {
 
     variant?: SideBarVariant;
 
+    onLogoClick?: VoidFunction;
+
     onToggleLock?: VoidFunction;
 }
 
@@ -54,6 +56,7 @@ export default function CommonHeaderSideBar({
     subtitle,
     title,
     variant = 'dark',
+    onLogoClick,
     onToggleLock,
     ...props
 }: CommonHeaderSideBarProps) {
@@ -78,19 +81,33 @@ export default function CommonHeaderSideBar({
         titleColor
     } = headerVariantStyles[variant];
 
-    const logoMark = logo ?? (
-        <span
-            className={
-                classMerge(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-(--mui-tokens-radius-md) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold)',
-                    markColor
-                )
-            }
-        >
+    const logoMarkClassName = classMerge(
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-(--mui-tokens-radius-md) text-(length:--mui-tokens-fontSize-sm) font-(--mui-tokens-fontWeight-bold)',
+        markColor
+    );
+    const defaultLogoMark = logo ?? (
+        <span className={logoMarkClassName}>
             {title?.trim()
                 .charAt(0) ?? 'A'}
         </span>
     );
+    const logoMark = onLogoClick
+        ? (
+            <button
+                aria-expanded={isExpanded}
+                aria-label={
+                    isExpanded
+                        ? 'Collapse sidebar'
+                        : 'Expand sidebar'
+                }
+                className="shrink-0 cursor-pointer"
+                type="button"
+                onClick={onLogoClick}
+            >
+                {defaultLogoMark}
+            </button>
+        )
+        : defaultLogoMark;
 
     return (
         <div

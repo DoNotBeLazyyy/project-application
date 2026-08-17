@@ -146,7 +146,7 @@ export default function AssessmentSettingsForm({
                 Settings
             </span>
             <CommonForm
-                containerClassName="gap-4 grid grid-cols-2"
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                 control={methods.control}
                 fields={baseFields}
                 formProps={{

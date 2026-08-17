@@ -2,7 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { SchoolYearListRow } from '@type/school-year.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseSchoolYearTableConfigProps {
@@ -15,18 +15,20 @@ export function useSchoolYearTableConfig({
     onEdit,
     onView
 }: UseSchoolYearTableConfigProps) {
-    const columnDefs = useMemo<ColDef<SchoolYearListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
                 flex: 2,
                 headerName: 'Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'label',
                 flex: 3,
                 headerName: 'Label',
+                mobileCard: 'title',
                 sortable: true
             },
             {

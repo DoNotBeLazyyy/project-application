@@ -17,8 +17,12 @@ export default function TableCardControls({
     tableInputProps
 }: TableCardControlsProps) {
     return (
-        <div className="flex gap-2 items-center">
-            {hasInput && <TableCardInput {...tableInputProps} />}
+        <div className="flex flex-wrap gap-2 items-center justify-end min-w-0 w-full">
+            {hasInput && (
+                <div className="flex-1 min-w-0 sm:max-w-64">
+                    <TableCardInput {...tableInputProps} />
+                </div>
+            )}
             <TableCardActionMenu {...tableButtonsProps} />
         </div>
     );

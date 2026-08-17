@@ -1,23 +1,14 @@
-import CommonNavbar from '@components/navbar/CommonNavbar';
-import UserAccountMenu from '@components/navbar/UserAccountMenu';
-import NotificationBell from '@components/notification/NotificationBell';
-import CommonSideBar from '@components/sidebar/CommonSideBar';
-import CommonSideBarList from '@components/sidebar/CommonSideBarList';
-import { resolvePanelLabel } from '@constants/role.constant';
+import RoleShell from '@components/layout/RoleShell';
 import {
     CalendarDotsIcon, CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, MegaphoneIcon, ShieldCheckIcon, SquaresFourIcon, StackIcon, UsersIcon
 } from '@phosphor-icons/react';
-import { useAppStore } from '@stores/app.store';
 import { SideBarSection } from '@type/sidebar.types';
-import { useMemo, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function AdminLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const [isSidebarLocked, setIsSidebarLocked] = useState(false);
-
-    const activeRole = useAppStore((s) => s.activeRole);
 
     const navSections = useMemo((): SideBarSection[] => (
         [
@@ -117,45 +108,11 @@ export default function AdminLayout() {
         ]
     ), [pathname, navigate]);
 
-    function handleToggleSidebar() {
-        setIsSidebarLocked((prev) => !prev);
-    }
-
     return (
-        <div className="flex h-screen overflow-hidden w-full">
-            <CommonSideBar
-                footerProps={{
-                    label: 'My Profile',
-                    onClick: () => navigate('/admin/profile')
-                }}
-                headerProps={{
-                    subtitle: resolvePanelLabel(activeRole, 'Admin'),
-                    title: 'AU-JAS LMS'
-                }}
-                isOpen={isSidebarLocked}
-                variant="dark"
-                onToggleLock={handleToggleSidebar}
-            >
-                <CommonSideBarList
-                    sections={navSections}
-                    variant="dark"
-                />
-            </CommonSideBar>
-
-            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-                <CommonNavbar
-                    rightContent={
-                        <div className="flex gap-3 items-center">
-                            <NotificationBell />
-                            <UserAccountMenu />
-                        </div>
-                    }
-                />
-
-                <main className="flex-1 overflow-y-auto p-6">
-                    <Outlet />
-                </main>
-            </div>
-        </div>
+        <RoleShell
+            fallbackRoleLabel="Admin"
+            navSections={navSections}
+            profilePath="/admin/profile"
+        />
     );
 }

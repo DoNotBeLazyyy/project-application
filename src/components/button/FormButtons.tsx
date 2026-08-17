@@ -46,7 +46,7 @@ export default function FormButtons({
         <div
             className={
                 classMerge(
-                    'flex gap-(--mui-tokens-spacing-5) justify-center',
+                    'flex flex-wrap gap-(--mui-tokens-spacing-5) justify-center',
                     className
                 )
             }

@@ -1,5 +1,6 @@
 import {
-    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_PADDING_LARGE, SURFACE_DISABLED
+    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_HEIGHT_TOUCH, INPUT_PADDING_LARGE,
+    SURFACE_DISABLED
 } from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 
@@ -40,6 +41,10 @@ export const inputOverrides: ComponentTheme = {
                     maxHeight: INPUT_HEIGHT_SMALL,
                     padding: 'var(--mui-tokens-spacing-3)',
                     ...theme.typography.bodySmall,
+                    '@media (pointer: coarse)': {
+                        height: INPUT_HEIGHT_TOUCH,
+                        maxHeight: INPUT_HEIGHT_TOUCH
+                    },
                     '&.MuiSelect-root': { padding: 0 },
                     '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-3)' },
                     '&.MuiInputBase-multiline': {

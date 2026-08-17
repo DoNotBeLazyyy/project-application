@@ -138,7 +138,15 @@ export default function NotificationBell() {
                 anchorEl={anchorEl}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 open={isOpen}
-                slotProps={{ paper: { sx: { maxHeight: 420, width: 360 } } }}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            maxHeight: 'min(26.25rem, calc(100dvh - 6rem))',
+                            maxWidth: 'calc(100vw - 2rem)',
+                            width: 360
+                        }
+                    }
+                }}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 onClose={handleClose}
             >

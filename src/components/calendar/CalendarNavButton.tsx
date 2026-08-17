@@ -30,6 +30,10 @@ export default function CalendarNavButton({
                 backgroundColor: 'transparent',
                 minWidth: '1.25rem',
                 padding: 0,
+                '@media (pointer: coarse)': {
+                    minHeight: '2.75rem',
+                    minWidth: '2.75rem'
+                },
                 '&:hover': {
                     backgroundColor: 'transparent',
                     boxShadow: 'none'

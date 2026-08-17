@@ -48,7 +48,7 @@ export default function TableActionCell<TData>({
     const isLoading = useLoadingStore((state) => state.isLoading);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const isMenuOpen = Boolean(anchorEl);
-    const baseIconClassName = 'cursor-pointer h-[2.25rem] w-[2.25rem] p-(--mui-tokens-spacing-3) text-(--mui-palette-grey-500)';
+    const baseIconClassName = 'cursor-pointer h-11 w-11 p-(--mui-tokens-spacing-3) text-(--mui-palette-grey-500)';
     const resolvedIconClassName = classMerge(baseIconClassName, actionIconClassName);
     const resolvedMenuOptions = data && menuOptions
         ? menuOptions(data)

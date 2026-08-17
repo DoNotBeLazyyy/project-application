@@ -7,7 +7,8 @@ import { ArrowLineDownIcon, XIcon } from '@phosphor-icons/react';
 import { getAttachmentSignedUrl } from '@services/assessment.service';
 import { AssessmentType } from '@type/assessment.type';
 import { SubjectAssessmentItem } from '@type/student-portal.type';
-import { ColDef, RowClickedEvent } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
+import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,7 +107,7 @@ function AssessmentDetailModal({ assessment, onClose, onViewResults }: Assessmen
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-5 max-h-[85vh] overflow-y-auto p-6' }}
+            cardProps={{ className: 'flex flex-col gap-5 max-h-[85dvh] overflow-y-auto p-6' }}
             fullWidth
             maxWidth="sm"
             open={Boolean(assessment)}
@@ -307,7 +308,7 @@ export default function SubjectAssessmentList({
         }
     }
 
-    const columnDefs = useMemo<ColDef<SubjectAssessmentItem>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'title',
@@ -347,6 +348,7 @@ export default function SubjectAssessmentList({
                 field: 'opens_at',
                 flex: 2,
                 headerName: 'Opens',
+                mobileCard: 'hidden',
                 sortable: false,
                 valueFormatter: (params) => formatDateTime(params.value)
             },
@@ -361,6 +363,7 @@ export default function SubjectAssessmentList({
                 field: 'closes_at',
                 flex: 2,
                 headerName: 'Closes',
+                mobileCard: 'hidden',
                 sortable: false,
                 valueFormatter: (params) => formatDateTime(params.value)
             },

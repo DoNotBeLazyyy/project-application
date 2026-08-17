@@ -24,7 +24,7 @@ export default function TypedDeletePromptModal({
             {...props}
             containerClassName={
                 classMerge(
-                    'flex flex-col gap-(--mui-tokens-spacing-8) pt-(--mui-tokens-spacing-6) w-92',
+                    'flex flex-col gap-(--mui-tokens-spacing-8) max-w-full pt-(--mui-tokens-spacing-6) w-92',
                     containerClassName
                 )
             }

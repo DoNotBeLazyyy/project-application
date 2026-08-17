@@ -11,7 +11,7 @@ import {
     unpublishAssessment
 } from '@services/assessment.service';
 import { AssessmentListRow, AssessmentType } from '@type/assessment.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,7 +63,7 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
         }
     }
 
-    const columnDefs = useMemo<ColDef<AssessmentListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'title',
@@ -96,6 +96,7 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                 field: 'question_count',
                 flex: 1,
                 headerName: 'Questions',
+                mobileCard: 'hidden',
                 sortable: false
             },
             {

@@ -124,103 +124,106 @@ export default function BatchProgression() {
     const hasWork = preview !== null && (preview.promote_count > 0 || preview.enrollable_count > 0);
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-col gap-1">
-                <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                    Batch Progression
-                </h1>
-                <p className="text-(--mui-palette-text-secondary) text-sm">
-                    Advance a cohort into the next year level and enroll them into their curriculum subjects for
-                    the target term. Always preview before running — nothing is written until you confirm.
-                </p>
-            </div>
+        <div className="flex flex-col h-full min-h-0">
             <CommonCard
                 cardHeaderProps={{
-                    subheader: 'Choose the term and narrow the cohort, then preview the proposed changes.',
-                    title: 'Cohort'
+                    subheader: 'Advance a cohort into the next year level and enroll them into their curriculum subjects for the target term. Always preview before running — nothing is written until you confirm.',
+                    title: 'Batch Progression'
                 }}
+                className="flex flex-col min-h-0 overflow-hidden"
                 variant="outlined"
             >
-                <div className="flex flex-col gap-4 p-4 pt-0">
-                    <ProgressionCohortForm
-                        control={cohortMethods.control}
-                        id={COHORT_FORM_ID}
-                        programOptions={programOptions}
-                        termOptions={termOptions}
-                        onSubmit={cohortMethods.handleSubmit(handlePreview, handlePreviewError)}
-                    />
-                    <div className="flex flex-wrap gap-3 items-center justify-end">
-                        {!hasWork
-                            ? (
-                                <span className="mr-auto text-(--mui-palette-text-secondary) text-xs">
-                                    {preview === null
-                                        ? 'Preview the cohort first — Run Progression stays disabled until there are proposed changes.'
-                                        : 'This cohort has nothing to promote or enroll for the selected term. Adjust the programs, year levels, or term and preview again.'}
-                                </span>
-                            )
-                            : null}
-                        <CommonButton
-                            form={COHORT_FORM_ID}
-                            size="small"
-                            startIcon={<MagnifyingGlassIcon size={16} />}
-                            type="submit"
-                            variant="outlined"
-                        >
-                            Preview
-                        </CommonButton>
-                        <CommonButton
-                            disabled={!hasWork}
-                            size="small"
-                            startIcon={<ArrowsClockwiseIcon size={16} />}
-                            onClick={function() {
-                                setIsConfirmOpen(true);
-                            }}
-                        >
-                            Run Progression
-                        </CommonButton>
+                <div className="flex flex-col gap-6 min-h-0 overflow-y-auto p-4 pt-0">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
+                                Cohort
+                            </h2>
+                            <p className="text-(--mui-palette-text-secondary) text-sm">
+                                Choose the term and narrow the cohort, then preview the proposed changes.
+                            </p>
+                        </div>
+                        <ProgressionCohortForm
+                            control={cohortMethods.control}
+                            id={COHORT_FORM_ID}
+                            programOptions={programOptions}
+                            termOptions={termOptions}
+                            onSubmit={cohortMethods.handleSubmit(handlePreview, handlePreviewError)}
+                        />
+                        <div className="flex flex-wrap gap-3 items-center justify-end">
+                            {!hasWork
+                                ? (
+                                    <span className="mr-auto text-(--mui-palette-text-secondary) text-xs">
+                                        {preview === null
+                                            ? 'Preview the cohort first — Run Progression stays disabled until there are proposed changes.'
+                                            : 'This cohort has nothing to promote or enroll for the selected term. Adjust the programs, year levels, or term and preview again.'}
+                                    </span>
+                                )
+                                : null}
+                            <CommonButton
+                                form={COHORT_FORM_ID}
+                                size="small"
+                                startIcon={<MagnifyingGlassIcon size={16} />}
+                                type="submit"
+                                variant="outlined"
+                            >
+                                Preview
+                            </CommonButton>
+                            <CommonButton
+                                disabled={!hasWork}
+                                size="small"
+                                startIcon={<ArrowsClockwiseIcon size={16} />}
+                                onClick={function() {
+                                    setIsConfirmOpen(true);
+                                }}
+                            >
+                                Run Progression
+                            </CommonButton>
+                        </div>
                     </div>
+                    {preview && (
+                        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                            {SUMMARY_TILES.map(function(tile) {
+                                return (
+                                    <div
+                                        className="bg-(--mui-palette-action-hover) flex flex-col p-4 rounded-lg"
+                                        key={tile.label}
+                                    >
+                                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                                            {tile.label}
+                                        </span>
+                                        <span className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                                            {tile.resolveValue(preview)}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                    {preview && (
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
+                                    Preview
+                                </h2>
+                                <p className="text-(--mui-palette-text-secondary) text-sm">
+                                    {`Proposed changes for ${preview.term_label}. Select a row to review the subject plan.`}
+                                </p>
+                            </div>
+                            <div className="h-96 md:h-112 shrink-0">
+                                <CommonTable<ProgressionPreviewRow>
+                                    getRowId={(params) => params.data.student_id}
+                                    leadingColumnDefs={columnDefs}
+                                    rowData={preview.rows}
+                                    onRowClicked={function(event) {
+                                        setSelectedRow(event.data ?? null);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </CommonCard>
-            {preview && (
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    {SUMMARY_TILES.map(function(tile) {
-                        return (
-                            <div
-                                className="bg-(--mui-palette-action-hover) flex flex-col p-4 rounded-lg"
-                                key={tile.label}
-                            >
-                                <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    {tile.label}
-                                </span>
-                                <span className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                                    {tile.resolveValue(preview)}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-            {preview && (
-                <CommonCard
-                    cardHeaderProps={{
-                        subheader: `Proposed changes for ${preview.term_label}. Select a row to review the subject plan.`,
-                        title: 'Preview'
-                    }}
-                    className="flex flex-1 flex-col min-h-0"
-                    variant="outlined"
-                >
-                    <div className="flex-1 min-h-0 p-4 pt-0">
-                        <CommonTable<ProgressionPreviewRow>
-                            getRowId={(params) => params.data.student_id}
-                            leadingColumnDefs={columnDefs}
-                            rowData={preview.rows}
-                            onRowClicked={function(event) {
-                                setSelectedRow(event.data ?? null);
-                            }}
-                        />
-                    </div>
-                </CommonCard>
-            )}
             <ConfirmPromptModal
                 cardProps={{
                     cardHeaderProps: {

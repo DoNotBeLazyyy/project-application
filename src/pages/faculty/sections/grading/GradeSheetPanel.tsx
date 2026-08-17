@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
 import { CalculatorIcon } from '@phosphor-icons/react';
 import { GradeSheetRow, GradingComponent } from '@type/faculty.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface GradeSheetPanelProps {
@@ -16,18 +16,20 @@ export default function GradeSheetPanel({
     gradeSheet,
     onCalculate
 }: GradeSheetPanelProps) {
-    const columnDefs = useMemo<ColDef<GradeSheetRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'student_number',
                 flex: 1,
                 headerName: 'Student No.',
+                mobileCard: 'subtitle',
                 sortable: false
             },
             {
                 field: 'full_name',
                 flex: 2,
                 headerName: 'Full Name',
+                mobileCard: 'title',
                 sortable: false
             },
             {

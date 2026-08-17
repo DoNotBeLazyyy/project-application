@@ -88,7 +88,7 @@ export default function SetPasswordPage() {
 
     if (!sessionReady) {
         return (
-            <div className="flex flex-col gap-4 h-screen items-center justify-center w-full">
+            <div className="flex flex-col gap-4 h-full items-center justify-center w-full">
                 <p className="text-(--mui-palette-text-secondary) text-sm">
                     Verifying invite link…
                 </p>
@@ -110,7 +110,7 @@ export default function SetPasswordPage() {
     }
 
     return (
-        <div className="flex h-screen items-center justify-center w-full">
+        <div className="flex h-full items-center justify-center w-full">
             <CommonCard className="flex flex-col gap-6 max-w-sm p-8 w-full">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-bold text-(--mui-palette-text-primary) text-xl">

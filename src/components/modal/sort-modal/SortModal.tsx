@@ -101,7 +101,7 @@ export default function SortModal({
                 ...rest.cardProps
             }}
             confirmText={rest.confirmText ?? 'Apply Sort'}
-            containerClassName={rest.containerClassName ?? 'w-[28rem]'}
+            containerClassName={rest.containerClassName ?? 'max-w-full w-[28rem]'}
             formButtonsProps={{
                 ...rest.formButtonsProps,
                 cancelProps: {

@@ -38,7 +38,7 @@ export default function FilterUserForm({
 
     return (
         <CommonForm
-            containerClassName="gap-4 grid grid-cols-2"
+            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
             control={control}
             fields={fields}
             formProps={formProps}

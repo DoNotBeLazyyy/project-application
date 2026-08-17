@@ -33,7 +33,10 @@ export default function CalendarSearchInput({
                 border: '1px solid #d1d5db',
                 borderRadius: '999px',
                 height: '36px',
-                padding: '0 20px'
+                padding: '0 20px',
+                '@media (pointer: coarse)': {
+                    height: '44px'
+                }
             }}
             value={value}
             onChange={onChange}

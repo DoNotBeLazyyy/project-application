@@ -63,8 +63,21 @@ export const cardOverrides: ComponentTheme = {
     MuiCardHeader: {
         styleOverrides: {
             root: {
+                flexWrap: 'wrap',
+                gap: 'var(--mui-tokens-spacing-3)',
                 padding: 0
             },
+            content: {
+                minWidth: 0
+            },
+            action: ({ theme }) => ({
+                alignSelf: 'center',
+                margin: 0,
+                minWidth: 0,
+                [theme.breakpoints.down('md')]: {
+                    flexBasis: '100%'
+                }
+            }),
             title: ({ theme }) => ({
                 color: 'var(--mui-tokens-color-neutral-900)',
                 ...theme.typography.h6

@@ -33,7 +33,7 @@ export default function CommonFormModal({
             {...props}
             containerClassName={
                 classMerge(
-                    'w-[40rem]',
+                    'max-w-full w-[40rem]',
                     containerClassName
                 )
             }

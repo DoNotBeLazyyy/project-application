@@ -83,15 +83,15 @@ export default function Calendar({
     }
 
     return (
-        <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-(--mui-tokens-spacing-5) h-full min-w-270 mx-auto p-(--mui-tokens-spacing-6) rounded-(--mui-tokens-radius-lg) shadow">
-            <div className="grid grid-cols-6 items-center mx-(--mui-tokens-spacing-6) my-(--mui-tokens-spacing-5)">
-                <div className="col-span-2">
+        <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-(--mui-tokens-spacing-5) h-full min-w-0 mx-auto p-(--mui-tokens-spacing-4) rounded-(--mui-tokens-radius-lg) shadow md:p-(--mui-tokens-spacing-6) w-full">
+            <div className="gap-(--mui-tokens-spacing-4) grid grid-cols-1 items-center md:grid-cols-6 md:mx-(--mui-tokens-spacing-6) md:my-(--mui-tokens-spacing-5)">
+                <div className="md:col-span-2">
                     <CalendarTitle
                         subtitle={subtitle}
                         title={title}
                     />
                 </div>
-                <div className="col-span-2 flex items-center justify-center">
+                <div className="flex items-center justify-center md:col-span-2">
                     <CalendarPicker
                         calendarPickerAlign={calendarPickerAlign}
                         date={date}
@@ -100,7 +100,7 @@ export default function Calendar({
                     />
                 </div>
                 {/* TODO: when the search component is ready and make it props */}
-                <div className="col-span-2 flex gap-(--mui-tokens-spacing-4) relative">
+                <div className="flex gap-(--mui-tokens-spacing-4) relative md:col-span-2">
                     <CalendarSearchInput
                         value={searchValue}
                         onChange={handleInputChange}
@@ -108,23 +108,27 @@ export default function Calendar({
                     />
                 </div>
             </div>
-            <CalendarWeekDays />
-            <div
-                className={
-                    classMerge(
-                        'gap-(--mui-tokens-spacing-3) grid grid-cols-7',
-                        needsSixRows
-                            ? 'grid-rows-6'
-                            : 'grid-rows-5'
-                    )
-                }
-            >
-                {days.map((day, index) => (
-                    <CalendarCell
-                        day={day}
-                        key={index}
-                    />
-                ))}
+            <div className="min-w-0 overflow-x-auto">
+                <div className="min-w-2xl">
+                    <CalendarWeekDays />
+                    <div
+                        className={
+                            classMerge(
+                                'gap-(--mui-tokens-spacing-3) grid grid-cols-7',
+                                needsSixRows
+                                    ? 'grid-rows-6'
+                                    : 'grid-rows-5'
+                            )
+                        }
+                    >
+                        {days.map((day, index) => (
+                            <CalendarCell
+                                day={day}
+                                key={index}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

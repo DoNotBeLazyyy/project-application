@@ -52,7 +52,7 @@ export default function ProgressionDetailModal({
                     title: 'Progression Detail'
                 }
             }}
-            containerClassName="w-[60rem]"
+            containerClassName="max-w-full w-[60rem]"
             formButtonsProps={{
                 cancelProps: {
                     children: 'Close',

@@ -28,7 +28,7 @@ export default function AssessmentQuestionCard({
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
             <div className="flex gap-2 items-start justify-between">
-                <p className="font-medium text-(--mui-palette-text-primary) text-sm">
+                <p className="font-medium min-w-0 text-(--mui-palette-text-primary) text-sm wrap-break-word">
                     {index + 1}. {question.question_text}
                     {question.is_required && (
                         <span className="ml-1 text-(--mui-palette-error-main)">*</span>

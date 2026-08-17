@@ -5,7 +5,7 @@ import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsM
 import { CopySimpleIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { copyRubricToSections, deleteRubric, listRubrics } from '@services/rubric.service';
 import { RubricListRow } from '@type/rubric.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,7 +42,7 @@ export default function RubricsTab({ sectionId }: RubricsTabProps) {
         }
     }
 
-    const columnDefs = useMemo<ColDef<RubricListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'title',

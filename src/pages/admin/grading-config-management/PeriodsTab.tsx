@@ -5,8 +5,8 @@ import PeriodModalForm, { PeriodFormValues } from '@pages/admin/grading-config-m
 import { createGradingPeriodTemplate, deleteGradingPeriodTemplate, getGradingPeriodTemplates, updateGradingPeriodTemplate } from '@services/grading-config.service';
 import { useToastStore } from '@stores/toast.store';
 import { CommonListResDto } from '@type/http.type';
-import { GradingPeriodTemplate } from '@type/grading-config.type';
-import { ColDef } from 'ag-grid-community';
+import { GradingComponentTemplate, GradingPeriodTemplate } from '@type/grading-config.type';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -193,7 +193,7 @@ export default function PeriodsTab() {
         return deleteGradingPeriodTemplate(id);
     }
 
-    const columnDefs = useMemo<ColDef<GradingPeriodTemplate>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'name',
@@ -202,6 +202,7 @@ export default function PeriodsTab() {
                 sortable: false
             },
             {
+                colId: 'weight',
                 flex: 1,
                 headerName: 'Weight (%)',
                 sortable: false,
@@ -210,12 +211,13 @@ export default function PeriodsTab() {
                     : '—'
             },
             {
+                colId: 'components',
                 flex: 3,
                 headerName: 'Components',
                 sortable: false,
                 valueGetter: (params) => params.data?.components?.length
                     ? params.data.components
-                        .map((c) => `${c.name} (${c.weight}%)`)
+                        .map((c: GradingComponentTemplate) => `${c.name} (${c.weight}%)`)
                         .join(' · ')
                     : '—'
             }

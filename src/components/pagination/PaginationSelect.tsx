@@ -17,6 +17,9 @@ export default function PaginationSelect({
                 borderRadius: 'var(--mui-tokens-radius-sm)',
                 fontSize: 'var(--mui-tokens-fontSize-sm)',
                 height: '1.75rem',
+                '@media (pointer: coarse)': {
+                    height: '2.75rem'
+                },
                 '.MuiSelect-select': {
                     alignItems: 'center',
                     display: 'flex',
@@ -30,7 +33,7 @@ export default function PaginationSelect({
                     borderColor: 'var(--mui-tokens-color-neutral-300)'
                 },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderWidth: 'var(--mui-tokens-stroke-1)'
+                    borderWidth: 'var(--mui-tokens-stroke-0)'
                 },
                 '.MuiSelect-icon': {
                     color: 'var(--mui-tokens-color-neutral-700)',

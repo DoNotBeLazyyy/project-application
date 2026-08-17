@@ -1,7 +1,8 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonTable from '@components/table/CommonTable';
 import { SubmissionListRow, SubmissionStatus } from '@type/assessment.type';
-import { ColDef, RowClickedEvent } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
+import { RowClickedEvent } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 const STATUS_VARIANT_MAP: Record<SubmissionStatus, 'success' | 'error' | 'warning' | 'info'> = {
@@ -19,18 +20,20 @@ interface SubmissionListProps {
 }
 
 export default function SubmissionList({ submissions, onSelect }: SubmissionListProps) {
-    const columnDefs = useMemo<ColDef<SubmissionListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'student_number',
                 flex: 1,
                 headerName: 'Student No.',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'full_name',
                 flex: 2,
                 headerName: 'Student Name',
+                mobileCard: 'title',
                 sortable: true
             },
             {
@@ -76,6 +79,7 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
                 field: 'is_late',
                 flex: 1,
                 headerName: 'Late',
+                mobileCard: 'hidden',
                 sortable: false,
                 valueFormatter: (params) => params.value
                     ? 'Yes'

@@ -2,7 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CourseListRow } from '@type/course/course.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseCourseTableConfigProps {
@@ -15,18 +15,20 @@ export function useCourseTableConfig({
     onEdit,
     onView
 }: UseCourseTableConfigProps) {
-    const columnDefs = useMemo<ColDef<CourseListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'code',
                 flex: 1,
                 headerName: 'Code',
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
                 field: 'title',
                 flex: 3,
                 headerName: 'Title',
+                mobileCard: 'title',
                 sortable: true
             },
             {

@@ -242,7 +242,7 @@ export default function EnrollmentWorkspaceModal({
                         title: 'Manage Student Enrollment'
                     }
                 }}
-                containerClassName="w-[76rem]"
+                containerClassName="max-w-full w-[76rem]"
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Close',

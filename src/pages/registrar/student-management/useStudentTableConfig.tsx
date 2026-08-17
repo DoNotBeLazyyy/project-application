@@ -2,7 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { StudentListRow, StudentStatus } from '@type/student.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
 interface UseStudentTableConfigProps {
@@ -27,7 +27,7 @@ export function useStudentTableConfig({
     onEvaluate,
     onViewRecords
 }: UseStudentTableConfigProps) {
-    const columnDefs = useMemo<ColDef<StudentListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'student_number',
@@ -41,6 +41,7 @@ export function useStudentTableConfig({
                 flex: 2,
                 headerName: 'Last Name',
                 minWidth: 140,
+                mobileCard: 'title',
                 sortable: true
             },
             {
@@ -48,6 +49,7 @@ export function useStudentTableConfig({
                 flex: 2,
                 headerName: 'First Name',
                 minWidth: 140,
+                mobileCard: 'subtitle',
                 sortable: true
             },
             {
@@ -55,6 +57,7 @@ export function useStudentTableConfig({
                 flex: 3,
                 headerName: 'Email',
                 minWidth: 200,
+                mobileCard: 'hidden',
                 sortable: true
             },
             {

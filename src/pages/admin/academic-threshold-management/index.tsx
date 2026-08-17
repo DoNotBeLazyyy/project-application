@@ -178,7 +178,7 @@ export default function AcademicThresholdManagement() {
                                                     />
                                                 </div>
 
-                                                <div className="gap-4 grid grid-cols-2">
+                                                <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
                                                     <ValidCommonInput
                                                         control={control}
                                                         hasHelper

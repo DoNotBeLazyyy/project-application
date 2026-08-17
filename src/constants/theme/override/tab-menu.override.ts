@@ -4,12 +4,17 @@ export const tabMenuOverrides: ComponentTheme = {
     MuiTabs: {
         styleOverrides: {
             root: {
+                maxWidth: '100%',
                 minHeight: 'unset',
                 padding: 'var(--mui-tokens-spacing-2)',
                 width: 'fit-content',
                 '& .MuiTabs-indicator': {
                     display: 'none'
                 },
+                '& .MuiTabs-scrollButtons.Mui-disabled': {
+                    opacity: 0.3
+                },
+                flexShrink: 0,
                 '&[data-menu-style="outline"]': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
                     '& .MuiTabs-indicator': {

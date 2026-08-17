@@ -203,7 +203,8 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
 
         if (resizeMeta.allowWidthResize) {
             const maxWidth = parent?.getBoundingClientRect().width ?? nextWidth;
-            containerRef.current.style.width = `${Math.min(Math.max(resolvedMinSize.minWidth, nextWidth), maxWidth)}px`;
+            const minWidth = Math.min(resolvedMinSize.minWidth, maxWidth);
+            containerRef.current.style.width = `${Math.min(Math.max(minWidth, nextWidth), maxWidth)}px`;
         }
         if (resizeMeta.allowHeightResize) {
             const maxHeight = parent?.getBoundingClientRect().height ?? nextHeight;
@@ -267,10 +268,11 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
         && !inputSlotProps?.readOnly
         && charCount > 0;
 
+    const resolvedMinWidth = `min(${resolvedMinSize.minWidth}px, 100%)`;
     const baseStyle: ThemeSx = {
         height: '100%',
         minHeight: `${resolvedMinSize.minHeight}px`,
-        minWidth: `${resolvedMinSize.minWidth}px`,
+        minWidth: resolvedMinWidth,
         width: '100%',
         '& .MuiFormHelperText-root': {
             marginLeft: 0,
@@ -279,7 +281,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
         '& .MuiInputBase-root': {
             height: '100%',
             minHeight: `${resolvedMinSize.minHeight}px`,
-            minWidth: `${resolvedMinSize.minWidth}px`,
+            minWidth: resolvedMinWidth,
             width: '100%'
         },
         '& .common_textarea_html_input': {
@@ -298,11 +300,11 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                 maxHeight: '100%',
                 maxWidth: '100%',
                 minHeight: `${resolvedMinSize.minHeight}px`,
-                minWidth: `${resolvedMinSize.minWidth}px`,
+                minWidth: resolvedMinWidth,
                 position: 'relative',
                 width: isFullWidth
                     ? '100%'
-                    : `${resolvedMinSize.minWidth}px`
+                    : resolvedMinWidth
             }}
         >
             <div

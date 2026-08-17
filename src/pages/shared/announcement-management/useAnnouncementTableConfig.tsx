@@ -4,8 +4,8 @@ import { TableActionConfig } from '@components/table/useTableConfigs';
 import { PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, AnnouncementListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';
+import { MobileCardColDef } from '@type/table.type';
 import { formatDate } from '@utils/date.util';
-import { ColDef } from 'ag-grid-community';
 import { useMemo } from 'react';
 
 interface UseAnnouncementTableConfigProps {
@@ -24,12 +24,13 @@ export function useAnnouncementTableConfig({
     onEdit,
     onView
 }: UseAnnouncementTableConfigProps) {
-    const columnDefs = useMemo<ColDef<AnnouncementListRow>[]>(function() {
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'title',
                 flex: 3,
                 headerName: 'Title',
+                mobileCard: 'title',
                 sortable: true,
                 cellRenderer: (params: { data: AnnouncementListRow }) => (
                     <div className="flex h-full items-center gap-2">
@@ -68,6 +69,7 @@ export function useAnnouncementTableConfig({
                 field: 'author_name',
                 flex: 2,
                 headerName: 'Posted By',
+                mobileCard: 'subtitle',
                 sortable: false
             },
             {

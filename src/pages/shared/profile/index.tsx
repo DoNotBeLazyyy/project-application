@@ -5,6 +5,7 @@ import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
+import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
 import ProfileDetailsForm from '@pages/shared/profile/ProfileDetailsForm';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
 import { initAuthSession } from '@services/auth.service';
@@ -38,6 +39,19 @@ const EMPTY_PASSWORD: ChangePasswordFormValues = {
     new_password: '',
     confirm_password: ''
 };
+
+function resolveInitials(profile: MyProfile | null): string {
+    if (!profile) {
+        return 'U';
+    }
+
+    const first = profile.first_name.trim()
+        .charAt(0);
+    const last = profile.last_name.trim()
+        .charAt(0);
+
+    return `${first}${last}`.toUpperCase() || 'U';
+}
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('details');
@@ -75,6 +89,12 @@ export default function ProfilePage() {
 
         loadProfile();
     }, [refreshKey]);
+
+    function handleAvatarChanged() {
+        setRefreshKey(function(previous) {
+            return previous + 1;
+        });
+    }
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setActiveTab(value as ProfileTab);
@@ -155,6 +175,14 @@ export default function ProfilePage() {
 
                 {activeTab === 'details' && (
                     <div className="flex flex-col gap-6 max-w-4xl">
+                        {profile && (
+                            <ProfileAvatarCard
+                                avatarUrl={profile.avatar_url}
+                                initials={resolveInitials(profile)}
+                                userId={profile.id}
+                                onChanged={handleAvatarChanged}
+                            />
+                        )}
                         <ProfileDetailsForm
                             control={profileMethods.control}
                             id={PROFILE_FORM_ID}
