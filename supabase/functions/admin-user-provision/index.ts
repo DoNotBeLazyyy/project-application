@@ -231,3 +231,4 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     return failure(`Unknown action: ${action}`, 400);
 });
+
