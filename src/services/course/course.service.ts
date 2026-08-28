@@ -62,9 +62,11 @@ export async function createCourse(
         p_department_id: nullIfBlank(params.department_id),
         p_course_type_id: nullIfBlank(params.course_type_id),
         p_is_split: params.is_split,
-        p_lecture_units: Number(params.lecture_units) || null,
-        p_laboratory_units: params.is_split
-            ? Number(params.laboratory_units) || null
+        p_lecture_units: params.lecture_units !== ''
+            ? Number(params.lecture_units)
+            : null,
+        p_laboratory_units: params.is_split && params.laboratory_units !== ''
+            ? Number(params.laboratory_units)
             : null,
         p_credit_hours: params.credit_hours
             ? Number(params.credit_hours)
@@ -99,9 +101,11 @@ export async function updateCourse(
         p_title: params.title,
         p_department_id: nullIfBlank(params.department_id),
         p_course_type_id: nullIfBlank(params.course_type_id),
-        p_lecture_units: Number(params.lecture_units) || null,
-        p_laboratory_units: params.is_split
-            ? Number(params.laboratory_units) || null
+        p_lecture_units: params.lecture_units !== ''
+            ? Number(params.lecture_units)
+            : null,
+        p_laboratory_units: params.is_split && params.laboratory_units !== ''
+            ? Number(params.laboratory_units)
             : null,
         p_credit_hours: params.credit_hours
             ? Number(params.credit_hours)

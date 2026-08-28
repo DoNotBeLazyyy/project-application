@@ -1,13 +1,10 @@
-import { supabaseAdmin } from '@services/supabase.admin';
-import { callRpc } from '@services/supabase.wrapper';
-import { useLoadingStore } from '@stores/loading.store';
-import { BulkImportResult, BulkProvisionResult } from '@type/bulk-import.type';
+import { callFunction, callRpc } from '@services/supabase.wrapper';
+import { BulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
     InviteUserParams, UpdateUserFormValues, UpdateUserParams, UserFilterValues, UserListRow, UserOption
 } from '@type/user.type';
-import { parseServiceError } from '@utils/error.util';
 
 export async function listUsers(
     page: number,
@@ -30,124 +27,31 @@ export async function listUsers(
     });
 }
 
-const ORPHAN_CLEANUP_NOTICE = 'The invited account could not be removed automatically and must be deleted manually.';
-
-async function rollbackInvitedAuthUser(authId: string): Promise<boolean> {
-    try {
-        const { error } = await supabaseAdmin.auth.admin.deleteUser(authId);
-
-        return !error;
-    }
-    catch {
-        return false;
-    }
-}
-
-async function rollbackInvitedAuthUsers(authIds: string[]): Promise<void> {
-    for (const authId of authIds) {
-        await rollbackInvitedAuthUser(authId);
-    }
-}
-
 export async function inviteSingleUser(params: InviteUserParams): Promise<ServiceResult<null>> {
-    useLoadingStore.getState()
-        .show();
-    let invitedAuthId: string | null = null;
-    try {
-        const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(params.email, {
-            data: {
-                first_name: params.first_name,
-                last_name: params.last_name
-            },
-            redirectTo: `${window.location.origin}/set-password`
-        });
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        invitedAuthId = data.user.id;
-
-        const provisionResult = await callRpc('fn_provision_single_user', {
-            p_auth_id: invitedAuthId,
-            p_email: params.email,
-            p_first_name: params.first_name,
-            p_last_name: params.last_name,
-            p_role_code: params.role_code
-        });
-
-        if (provisionResult.error) {
-            const isRolledBack = await rollbackInvitedAuthUser(invitedAuthId);
-
-            return {
-                data: null,
-                error: isRolledBack
-                    ? provisionResult.error
-                    : {
-                        ...provisionResult.error,
-                        message: `${provisionResult.error.message} ${ORPHAN_CLEANUP_NOTICE}`
-                    }
-            };
-        }
-
-        return { data: null, error: null };
-    }
-    catch (err) {
-        if (invitedAuthId) {
-            await rollbackInvitedAuthUser(invitedAuthId);
-        }
-
-        return { data: null, error: parseServiceError(err) };
-    }
-    finally {
-        useLoadingStore.getState()
-            .hide();
-    }
+    return callFunction<null>('admin-user-provision', {
+        action: 'invite_single_user',
+        email: params.email,
+        first_name: params.first_name,
+        last_name: params.last_name,
+        role_code: params.role_code,
+        redirect_to: `${window.location.origin}/set-password`
+    });
 }
 
 export async function resendInvite(email: string): Promise<ServiceResult<null>> {
-    useLoadingStore.getState()
-        .show();
-    try {
-        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/set-password`
-        });
-
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        return { data: null, error: null };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
-    finally {
-        useLoadingStore.getState()
-            .hide();
-    }
+    return callFunction<null>('admin-user-provision', {
+        action: 'resend_invite',
+        email,
+        redirect_to: `${window.location.origin}/set-password`
+    });
 }
 
 export async function resetUserPassword(email: string): Promise<ServiceResult<null>> {
-    useLoadingStore.getState()
-        .show();
-    try {
-        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/set-password`
-        });
-
-        if (error) {
-            return { data: null, error: parseServiceError(error) };
-        }
-
-        return { data: null, error: null };
-    }
-    catch (err) {
-        return { data: null, error: parseServiceError(err) };
-    }
-    finally {
-        useLoadingStore.getState()
-            .hide();
-    }
+    return callFunction<null>('admin-user-provision', {
+        action: 'reset_password',
+        email,
+        redirect_to: `${window.location.origin}/set-password`
+    });
 }
 
 export async function deleteUsers(userIds: string[]): Promise<ServiceResult<null>> {
@@ -169,65 +73,22 @@ export async function updateUser(
 export async function bulkProvisionUsers(
     users: InviteUserParams[]
 ): Promise<BulkImportResult> {
-    const provisionedUsers = [];
-    const errors: string[] = [];
-
-    for (const user of users) {
-        try {
-            const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-                user.email,
-                {
-                    data: {
-                        first_name: user.first_name,
-                        last_name: user.last_name
-                    },
-                    redirectTo: `${window.location.origin}/set-password`
-                }
-            );
-
-            if (error) {
-                errors.push(`${user.email}: ${error.message}`);
-                continue;
-            }
-
-            provisionedUsers.push({
-                auth_id: data.user.id,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                role_code: user.role_code
-            });
-        }
-        catch (err) {
-            errors.push(`${user.email}: ${parseServiceError(err).message}`);
-        }
-    }
-
-    if (!provisionedUsers.length) {
-        return { provisioned_count: 0, errors };
-    }
-
-    const result = await callRpc<BulkProvisionResult>('fn_bulk_provision_users', {
-        p_users: provisionedUsers
+    const result = await callFunction<{ provisioned_count: number; errors: string[] }>('admin-user-provision', {
+        action: 'bulk_provision_users',
+        users,
+        redirect_to: `${window.location.origin}/set-password`
     });
 
-    if (result.error) {
-        await rollbackInvitedAuthUsers(provisionedUsers.map(function(user) {
-            return user.auth_id;
-        }));
-
-        return { provisioned_count: 0, errors: [...errors, result.error.message] };
-    }
-
-    const orphanedAuthIds = result.data?.failed_auth_ids ?? [];
-
-    if (orphanedAuthIds.length > 0) {
-        await rollbackInvitedAuthUsers(orphanedAuthIds);
+    if (result.error || !result.data) {
+        return {
+            provisioned_count: 0,
+            errors: [result.error?.message ?? 'Bulk user provisioning failed.']
+        };
     }
 
     return {
-        provisioned_count: (result.data?.provisioned_count ?? 0),
-        errors: [...errors, ...(result.data?.errors ?? [])]
+        provisioned_count: result.data.provisioned_count ?? 0,
+        errors: result.data.errors ?? []
     };
 }
 

@@ -5,6 +5,7 @@ import SchoolYearFilterForm from '@pages/admin/school-year-management/SchoolYear
 import SchoolYearForm from '@pages/admin/school-year-management/SchoolYearForm';
 import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/useSchoolYearTableConfig';
 import {
+    bulkDeleteSchoolYears,
     createSchoolYear, deleteSchoolYear, getSchoolYearById, listSchoolYears, updateSchoolYear
 } from '@services/school-year.service';
 import { useToastStore } from '@stores/toast.store';
@@ -165,107 +166,112 @@ export default function SchoolYearManagement() {
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<SchoolYearListRow>
                 cardHeaderProps={{
-                    subheader: 'Manage academic school years.',
-                    title: 'School Year Management'
+                    subheader: 'Manage academic years for curriculum and enrollment planning.',
+                    title: 'Academic Years'
                 }}
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.schoolYears
-                    }
-                }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Fill in the details to create a new school year.',
-                            title: 'Create School Year'
-                        }
                     },
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <SchoolYearForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            isNew
-                            setValue={createMethods.setValue}
-                            onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateFormError)}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
-                    }
-                }}
-                dependencies={[activeFilters, refreshKey]}
-                filterModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Filter school years by status.',
-                            title: 'Filter School Years'
+                    tableModalsProps: {
+                        createModalProps: {
+                            content: (
+                                <SchoolYearForm
+                                    control={createMethods.control}
+                                    id={CREATE_FORM_ID}
+                                    onSubmit={createMethods.handleSubmit(
+                                        handleCreateSubmit,
+                                        handleCreateFormError
+                                    )}
+                                />
+                            ),
+                            formButtonsProps: {
+                                confirmProps: {
+                                    form: CREATE_FORM_ID,
+                                    type: 'submit'
+                                }
+                            },
+                            id: CREATE_FORM_ID,
+                            isOpen: isCreateOpen,
+                            onClose: function() {
+                                setIsCreateOpen(false);
+                                createMethods.reset(defaultFormValues);
+                            },
+                            title: 'Create Academic Year'
+                        },
+                        filterModalProps: {
+                            content: (
+                                <SchoolYearFilterForm
+                                    control={filterMethods.control}
+                                    id={FILTER_FORM_ID}
+                                    onReset={handleFilterReset}
+                                    onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
+                                />
+                            ),
+                            formButtonsProps: {
+                                confirmProps: {
+                                    form: FILTER_FORM_ID,
+                                    type: 'submit'
+                                },
+                                cancelProps: {
+                                    onClick: handleFilterReset,
+                                    text: 'Reset'
+                                }
+                            },
+                            id: FILTER_FORM_ID,
+                            isOpen: isFilterOpen,
+                            onClose: function() {
+                                setIsFilterOpen(false);
+                            },
+                            title: 'Filter Academic Years'
+                        },
+                        sortModalProps: {
+                            columns: SORT_COLUMNS
                         }
-                    },
-                    confirmText: 'Apply Filters',
-                    formId: FILTER_FORM_ID,
-                    formContent: (
-                        <SchoolYearFilterForm
-                            control={filterMethods.control}
-                            id={FILTER_FORM_ID}
-                            onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
-                        />
-                    ),
-                    onReset: handleFilterReset,
-                    open: isFilterOpen,
-                    onClose: function() {
-                        filterMethods.reset();
-                        setIsFilterOpen(false);
                     }
                 }}
-                sortColumns={SORT_COLUMNS}
+                gridProps={{
+                    columnDefs,
+                    defaultColDef: {
+                        filter: false,
+                        floatingFilter: false,
+                        resizable: true,
+                        sortable: true
+                    },
+                    rowSelection: {
+                        mode: 'multiRow'
+                    }
+                }}
+                key={refreshKey}
                 tableActionConfig={tableActionConfig}
-                tableProps={{
-                    hasCheckbox: true,
-                    leadingColumnDefs: columnDefs
-                }}
-                uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update the details of this school year.',
-                            title: 'Edit School Year'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
+                updateActionModalProps={{
+                    content: (
                         <SchoolYearForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
-                            setValue={updateMethods.setValue}
-                            onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
+                            isCodeDisabled
+                            onSubmit={updateMethods.handleSubmit(
+                                handleUpdateSubmit,
+                                handleUpdateFormError
+                            )}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
-                }}
-                viewModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Viewing school year details.',
-                            title: 'View School Year'
+                    formButtonsProps: {
+                        confirmProps: {
+                            form: UPDATE_FORM_ID,
+                            type: 'submit'
                         }
                     },
-                    confirmText: 'Edit',
-                    formContent: (
+                    id: UPDATE_FORM_ID,
+                    open: isUpdateOpen,
+                    onClose: handleCloseUpdate,
+                    title: 'Update Academic Year'
+                }}
+                viewActionModalProps={{
+                    content: (
                         <SchoolYearForm
                             control={viewMethods.control}
                             disabled
-                            setValue={viewMethods.setValue}
                         />
                     ),
                     formButtonsProps: {
@@ -283,9 +289,7 @@ export default function SchoolYearManagement() {
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
-                onDelete={function(ids) {
-                    return deleteSchoolYear(ids[0]);
-                }}
+                onDelete={bulkDeleteSchoolYears}
                 onDeleteRow={deleteSchoolYear}
                 onFetch={fetchSchoolYears}
                 onFilter={() => setIsFilterOpen(true)}

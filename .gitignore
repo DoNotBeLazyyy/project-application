@@ -13,7 +13,6 @@ dist
 dist-ssr
 coverage
 *.local
-.antigravity/
 
 # Environment files
 .env
@@ -25,7 +24,11 @@ TEST*.xml
 
 # Documentation exceptions from global ignore
 !*.md
+!/docs
+!/docs/**
 !docs/**
+.antigravity/
+
 
 
 # Editor directories and files

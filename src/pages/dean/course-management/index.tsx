@@ -89,9 +89,11 @@ export default function CourseManagement() {
                 description: result.data.description ?? '',
                 department_id: result.data.department_id,
                 course_type_id: result.data.course_type_id,
-                is_split: Number(result.data.laboratory_units) > 0,
-                lecture_units: String(result.data.lecture_units),
-                laboratory_units: String(result.data.laboratory_units),
+                is_split: Number(result.data.laboratory_units) > 0 || (result.data as { is_split?: boolean }).is_split === true,
+                lecture_units: String(result.data.lecture_units ?? '0'),
+                laboratory_units: result.data.laboratory_units != null
+                    ? String(result.data.laboratory_units)
+                    : '',
                 credit_hours: result.data.credit_hours
                     ? String(result.data.credit_hours)
                     : '',

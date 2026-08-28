@@ -265,24 +265,19 @@ export default function CourseForm({
             type: 'number',
             gridCols: 2
         },
-        ...(isCreate
-            ? [{
-                disabled,
-                name: 'is_split' as const,
-                fieldProps: { label: 'Split into LEC and LAB' },
-                type: 'checkbox' as const,
-                gridCols: 3
-            }]
-            : []
-        ),
+        {
+            disabled,
+            name: 'is_split' as const,
+            fieldProps: { label: 'Split into LEC and LAB' },
+            type: 'checkbox' as const,
+            gridCols: 3
+        },
         {
             disabled,
             name: 'is_active',
             fieldProps: { label: 'Active' },
             type: 'checkbox',
-            gridCols: isCreate
-                ? 3
-                : 6
+            gridCols: 3
         },
         {
             disabled,

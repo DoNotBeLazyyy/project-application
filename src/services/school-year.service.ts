@@ -70,6 +70,14 @@ export async function deleteSchoolYear(
     });
 }
 
+export async function bulkDeleteSchoolYears(
+    schoolYearIds: string[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_bulk_delete_school_years', {
+        p_school_year_ids: schoolYearIds
+    });
+}
+
 export async function getSchoolYears(): Promise<ServiceResult<SchoolYearOption[]>> {
     return callRpc<SchoolYearOption[]>('fn_get_school_years');
-}
+}
