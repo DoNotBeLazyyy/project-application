@@ -129,14 +129,15 @@ export default function AiAssistant() {
     const [usedSuggestions, setUsedSuggestions] = useState<string[]>([]);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const role = activeRole ?? '';
-    const suggestions = (ROLE_SUGGESTIONS[role] ?? [])
-        .filter((item) => !usedSuggestions.includes(item))
-        .slice(0, SUGGESTION_VISIBLE_COUNT);
+    const allRoleSuggestions = ROLE_SUGGESTIONS[role] ?? [];
+    const unusedSuggestions = allRoleSuggestions.filter((item) => !usedSuggestions.includes(item));
+    const suggestions = unusedSuggestions.length > 0
+        ? unusedSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT)
+        : allRoleSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT);
     const lastMessage = messages[messages.length - 1];
     const canShowFollowUps = !isSending
         && suggestions.length > 0
-        && lastMessage?.role === 'assistant'
-        && !lastMessage.isFailed;
+        && (!lastMessage || (lastMessage.role === 'assistant' && !lastMessage.isFailed));
 
     useEffect(function() {
         if (scrollRef.current) {

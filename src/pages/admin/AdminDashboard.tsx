@@ -42,7 +42,8 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',
         iconColor: 'text-[var(--mui-palette-secondary-main)]',
         label: 'Total Programs',
-        statKey: 'total_programs'
+        statKey: 'total_programs',
+        to: '/admin/school-years'
     },
     {
         icon: <CalendarCheckIcon size={24} />,
@@ -57,14 +58,16 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
         label: 'Active Enrollments',
-        statKey: 'active_enrollments'
+        statKey: 'active_enrollments',
+        to: '/admin/school-years'
     },
     {
         icon: <SealCheckIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-error-50)]',
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Pending Clearances',
-        statKey: 'pending_clearances'
+        statKey: 'pending_clearances',
+        to: '/admin/terms'
     }
 ];
 
