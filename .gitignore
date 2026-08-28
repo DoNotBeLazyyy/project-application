@@ -24,11 +24,7 @@ TEST*.xml
 
 # Documentation exceptions from global ignore
 !*.md
-!/docs
-!/docs/**
 !docs/**
-.antigravity/
-
 
 
 # Editor directories and files
