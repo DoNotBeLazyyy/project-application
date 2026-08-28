@@ -93,6 +93,7 @@ export default function LoginPage() {
                     )}
 
                     <ValidCommonInput
+                        autoComplete="email"
                         control={methods.control}
                         fullWidth
                         hasHelper
@@ -107,6 +108,7 @@ export default function LoginPage() {
                     />
 
                     <ValidCommonInput
+                        autoComplete="current-password"
                         control={methods.control}
                         fullWidth
                         hasHelper
