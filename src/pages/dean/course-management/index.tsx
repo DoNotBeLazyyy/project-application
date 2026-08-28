@@ -231,7 +231,6 @@ export default function CourseManagement() {
                         <CourseForm
                             control={createMethods.control}
                             id={CREATE_FORM_ID}
-                            isCreate
                             onSubmit={createMethods.handleSubmit(
                                 handleCreateSubmit,
                                 handleCreateFormError

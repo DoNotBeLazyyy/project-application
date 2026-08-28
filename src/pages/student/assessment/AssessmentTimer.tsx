@@ -13,15 +13,17 @@ export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimer
     useEffect(function() {
         if (!expiresAt) return;
 
-        const interval = setInterval(function() {
-            const diff = new Date(expiresAt)
-                .getTime() - Date.now();
+        const expiryTime = new Date(expiresAt)
+            .getTime();
+
+        function updateTimer(): boolean {
+            const diff = expiryTime - Date.now();
 
             if (diff <= 0) {
-                clearInterval(interval);
                 setRemaining('00:00');
+                setIsWarning(true);
                 onExpire();
-                return;
+                return false;
             }
 
             const minutes = Math.floor(diff / 60000);
@@ -30,6 +32,17 @@ export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimer
                 .padStart(2, '0')}:${String(seconds)
                 .padStart(2, '0')}`);
             setIsWarning(diff < 5 * 60 * 1000);
+            return true;
+        }
+
+        const isRunning = updateTimer();
+        if (!isRunning) return;
+
+        const interval = setInterval(function() {
+            const running = updateTimer();
+            if (!running) {
+                clearInterval(interval);
+            }
         }, 1000);
 
         return function() {

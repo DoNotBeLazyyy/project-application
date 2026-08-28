@@ -11,7 +11,7 @@ interface SpecialGradesTabProps {
     onAddGrade: () => void;
     onRemoveGrade: (index: number) => Promise<void>;
     onSave: () => Promise<void>;
-    onUpdateGrade: (index: number, field: keyof SpecialGradeConfig, value: string | boolean) => void;
+    onUpdateGrade: (index: number, field: keyof SpecialGradeConfig, value: string | boolean | number | null) => void;
 }
 
 export default function SpecialGradesTab({

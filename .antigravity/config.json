@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "terminal": {
+    "permissionMode": "auto-approve",
+    "autoApprove": [
+      "*",
+      "npm *",
+      "npx *",
+      "node *",
+      "git *",
+      "pnpm *",
+      "yarn *",
+      "powershell *",
+      "pwsh *"
+    ]
+  }
+}

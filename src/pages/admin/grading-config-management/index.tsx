@@ -129,7 +129,7 @@ export default function GradingConfiguration() {
         setSpecialGrades((prev) => prev.filter((_, i) => i !== index));
     }
 
-    function updateSpecialGrade(index: number, field: keyof SpecialGradeConfig, value: string | boolean) {
+    function updateSpecialGrade(index: number, field: keyof SpecialGradeConfig, value: string | boolean | number | null) {
         setSpecialGrades((prev) => prev.map((grade, i) =>
             i === index
                 ? { ...grade, [field]: value }

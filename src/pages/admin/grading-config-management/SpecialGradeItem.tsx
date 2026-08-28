@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import CommonInput from '@components/input/CommonInput';
 import { MinusCircleIcon } from '@phosphor-icons/react';
 import { SpecialGradeConfig } from '@type/grading-config.type';
 import { useForm } from 'react-hook-form';
@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 interface SpecialGradeItemProps {
     grade: SpecialGradeConfig;
     onRemove: () => void;
-    onUpdate: (field: keyof SpecialGradeConfig, value: string | boolean) => void;
+    onUpdate: (field: keyof SpecialGradeConfig, value: string | boolean | number | null) => void;
 }
 
 export default function SpecialGradeItem({

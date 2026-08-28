@@ -39,11 +39,11 @@ interface LadderError {
     message: string;
 }
 
-function toGradeLabel(value: string): string {
+function toGradeLabel(value: string | number): string {
     const grade = Number(value);
 
     return Number.isNaN(grade)
-        ? value
+        ? String(value)
         : grade.toFixed(2);
 }
 
@@ -120,7 +120,7 @@ function buildInitialRows(initialRows: TransmutationRow[]): TransmutationRow[] {
     }));
 }
 
-function GradeCell({ value }: { value: string }) {
+function GradeCell({ value }: { value: string | number }) {
     return (
         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
             {toGradeLabel(value)}

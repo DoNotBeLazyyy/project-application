@@ -1,11 +1,11 @@
-import { MenuOption } from '@components/table/TableActionCell';
 import CommonTableCard from '@components/table-card/CommonTableCard';
+import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import PeriodModalForm, { PeriodFormValues } from '@pages/admin/grading-config-management/PeriodModalForm';
 import { createGradingPeriodTemplate, deleteGradingPeriodTemplate, getGradingPeriodTemplates, updateGradingPeriodTemplate } from '@services/grading-config.service';
 import { useToastStore } from '@stores/toast.store';
-import { CommonListResDto } from '@type/http.type';
 import { GradingComponentTemplate, GradingPeriodTemplate } from '@type/grading-config.type';
+import { CommonListResDto } from '@type/http.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -122,7 +122,7 @@ export default function PeriodsTab() {
         }
         updateMethods.reset({
             name: period.name,
-            weight: period.weight,
+            weight: String(period.weight),
             components: period.components.length
                 ? period.components
                 : [{ name: '', weight: '' }]

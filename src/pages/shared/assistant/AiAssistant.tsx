@@ -256,7 +256,7 @@ export default function AiAssistant() {
                         </IconButton>
                     </div>
                     <div
-                        className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-3"
+                        className="flex flex-1 flex-col gap-3 overflow-y-auto pb-3 px-4"
                         ref={scrollRef}
                     >
                         {messages.length === 0 && (

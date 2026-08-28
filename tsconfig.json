@@ -34,7 +34,8 @@
             "@utils/*": ["./src/utils/*"],
             "App": ["./src/App"],
             "Main": ["./src/Main"]
-        }
+        },
+        "types": ["vitest/globals", "node"]
     },
-    "include": ["vite.config.ts", "src", "src/**/*"]
+    "include": ["vite.config.ts", "vitest.config.ts", "src", "src/**/*"]
 }

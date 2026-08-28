@@ -154,7 +154,6 @@ interface CourseFormProps extends ComponentPropsForm {
     disabled?: boolean;
     excludeCourseId?: string;
     isCodeDisabled?: boolean;
-    isCreate?: boolean;
 }
 
 export default function CourseForm({
@@ -162,7 +161,6 @@ export default function CourseForm({
     disabled,
     excludeCourseId,
     isCodeDisabled,
-    isCreate,
     ...formProps
 }: CourseFormProps) {
     const prerequisites = useWatch({ control, name: 'prerequisites' });

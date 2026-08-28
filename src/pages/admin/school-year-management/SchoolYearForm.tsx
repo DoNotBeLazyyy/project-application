@@ -3,18 +3,20 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { SchoolYearFormValues } from '@type/school-year.type';
 import { useEffect } from 'react';
-import { Control, useFormState, useWatch } from 'react-hook-form';
+import { Control, UseFormSetValue, useFormState, useWatch } from 'react-hook-form';
 
 interface SchoolYearFormProps extends ComponentPropsForm {
     control: Control<SchoolYearFormValues>;
     disabled?: boolean;
+    isCodeDisabled?: boolean;
     isNew?: boolean;
-    setValue: (field: keyof SchoolYearFormValues, value: string | boolean) => void;
+    setValue?: UseFormSetValue<SchoolYearFormValues>;
 }
 
 export default function SchoolYearForm({
     control,
     disabled,
+    isCodeDisabled,
     isNew,
     setValue,
     ...formProps
@@ -55,10 +57,10 @@ export default function SchoolYearForm({
             }
         },
         {
-            disabled,
+            disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Auto-filled from the dates. Must be unique — edit it if this pair of years already exists.' },
             name: 'code',
-            rules: disabled
+            rules: (disabled || isCodeDisabled)
                 ? undefined
                 : { required: 'Required' },
             type: 'text'
@@ -83,7 +85,7 @@ export default function SchoolYearForm({
     ];
 
     useEffect(() => {
-        if (!isNew || !startDate || !endDate) {
+        if (!isNew || !startDate || !endDate || !setValue) {
             return;
         }
 
@@ -103,7 +105,7 @@ export default function SchoolYearForm({
         if (!dirtyFields.label) {
             setValue('label', `School Year ${startYear}-${endYear}`);
         }
-    }, [startDate, endDate, isNew]);
+    }, [startDate, endDate, isNew, setValue]);
 
     return (
         <CommonForm
