@@ -217,7 +217,9 @@ export default function AiAssistant() {
         <>
             {!isOpen && (
                 <Fab
+                    aria-label="Open AI Assistant"
                     color="primary"
+                    data-testid="ai-assistant-fab"
                     size="medium"
                     sx={{ bottom: 24, position: 'fixed', right: 24, zIndex: 1200 }}
                     onClick={handleToggle}
@@ -227,6 +229,7 @@ export default function AiAssistant() {
             )}
             {isOpen && (
                 <CommonCard
+                    data-testid="ai-assistant-card"
                     sx={{
                         bottom: 24,
                         display: 'flex',

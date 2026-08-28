@@ -11,14 +11,14 @@ import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 interface RoleShellProps {
     fallbackRoleLabel: UserRole;
 
     navSections: SideBarSection[];
 
-    profilePath: string;
+    profilePath?: string;
 }
 
 /**
@@ -33,15 +33,12 @@ interface RoleShellProps {
  * <RoleShell
  *     fallbackRoleLabel="Admin"
  *     navSections={navSections}
- *     profilePath="/admin/profile"
  * />
  */
 export default function RoleShell({
     fallbackRoleLabel,
-    navSections,
-    profilePath
+    navSections
 }: RoleShellProps) {
-    const navigate = useNavigate();
     const { pathname } = useLocation();
     const { isMobile } = useBreakpoint();
     const [isSidebarLocked, setIsSidebarLocked] = useState(false);
@@ -65,17 +62,9 @@ export default function RoleShell({
         setIsDrawerOpen(false);
     }
 
-    function handleNavigateToProfile() {
-        navigate(profilePath);
-    }
-
     return (
         <div className="flex h-full overflow-hidden w-full">
             <CommonSideBar
-                footerProps={{
-                    label: 'My Profile',
-                    onClick: handleNavigateToProfile
-                }}
                 headerProps={{
                     subtitle: resolvePanelLabel(activeRole, fallbackRoleLabel),
                     title: 'AU-JAS LMS'
@@ -115,7 +104,7 @@ export default function RoleShell({
                     }
                 />
 
-                <main className="flex-1 overflow-y-auto p-4 md:p-6">
+                <main className="flex-1 md:p-6 overflow-y-auto p-4">
                     <Outlet />
                 </main>
             </div>

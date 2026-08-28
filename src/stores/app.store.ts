@@ -1,5 +1,6 @@
 import { Session } from '@supabase/supabase-js';
 import { RoleItem, UserProfile, UserRole } from '@type/app.type';
+import { cookieStorage } from '@utils/cookie.util';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -53,7 +54,7 @@ export const useAppStore = create<AppStore>()(
         }),
         {
             name: 'au-jas-app',
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => cookieStorage),
             partialize: (state) => ({
                 session: state.session,
                 activeRole: state.activeRole

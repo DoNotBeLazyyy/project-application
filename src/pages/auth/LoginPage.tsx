@@ -35,6 +35,11 @@ export default function LoginPage() {
     const { handleSubmit, formState: { isSubmitting } } = methods;
 
     useEffect(() => {
+        const profile = useAppStore.getState().userProfile;
+        if (profile?.status === 'Invited') {
+            navigate('/set-password', { replace: true });
+            return;
+        }
         if (activeRole) {
             navigate(ROLE_PATHS[activeRole], { replace: true });
         }
@@ -50,7 +55,13 @@ export default function LoginPage() {
         }
 
         // Fetch fresh state to avoid stale closures during the async login
-        const currentRole = useAppStore.getState().activeRole;
+        const state = useAppStore.getState();
+        if (state.userProfile?.status === 'Invited') {
+            navigate('/set-password', { replace: true });
+            return;
+        }
+
+        const currentRole = state.activeRole;
 
         navigate(currentRole
             ? ROLE_PATHS[currentRole]

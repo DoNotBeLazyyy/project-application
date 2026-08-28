@@ -43,6 +43,15 @@ export async function logout(): Promise<void> {
     await supabase.auth.signOut();
     useAppStore.getState()
         .clearSession();
+
+    try {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('au-jas-app');
+        }
+    }
+    catch {
+        // Safe ignore for environments without localStorage access
+    }
 }
 
 export async function refreshSession(): Promise<ServiceResult<Session>> {

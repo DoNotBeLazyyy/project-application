@@ -9,9 +9,8 @@ import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation
 import { Control, FieldValues, useFieldArray } from 'react-hook-form';
 
 const QUESTION_TYPE_OPTIONS = [
-    { label: 'Rating', value: 'Rating' },
-    { label: 'Multiple Choice', value: 'Multiple Choice' },
-    { label: 'Open Ended', value: 'Open Ended' }
+    { label: 'Rating (1-5 Matrix)', value: 'Rating' },
+    { label: 'Open Ended (Comments / Feedback)', value: 'Open Ended' }
 ];
 
 const DEFAULT_QUESTION: EvaluationQuestionForm = {

@@ -210,10 +210,31 @@ export default function AssessmentBuilderPage() {
         if (result.data) setQuestions(result.data);
     }
 
+    const configuredTotalPoints = Number(settingsMethods.watch('total_points') || '0');
+    const questionSumPoints = questions.reduce((sum, q) => sum + q.points, 0);
+
     function handleOpenAddQuestion() {
         setEditingQuestion(null);
-        questionMethods.reset(DEFAULT_QUESTION_VALUES);
+        const remaining = configuredTotalPoints - questionSumPoints;
+        const suggestedPoints = remaining > 0
+            ? remaining
+            : questions.length === 0 && configuredTotalPoints > 0
+                ? configuredTotalPoints
+                : 1;
+
+        questionMethods.reset({
+            ...DEFAULT_QUESTION_VALUES,
+            points: String(suggestedPoints)
+        });
         setIsQuestionModalOpen(true);
+    }
+
+    async function handleSyncTotalPoints(newTotal: number) {
+        settingsMethods.setValue('total_points', String(newTotal), { shouldDirty: true });
+        if (assessmentDbId) {
+            const currentValues = settingsMethods.getValues();
+            await handleSettingsSubmit({ ...currentValues, total_points: String(newTotal) });
+        }
     }
 
     function handleOpenEditQuestion(question: AssessmentQuestion) {
@@ -311,6 +332,7 @@ export default function AssessmentBuilderPage() {
                     />
                     <QuestionList
                         assessmentDbId={assessmentDbId}
+                        configuredTotalPoints={configuredTotalPoints}
                         expandedQuestionId={expandedQuestionId}
                         questions={questions}
                         onAddQuestion={handleOpenAddQuestion}
@@ -319,6 +341,7 @@ export default function AssessmentBuilderPage() {
                         onImportQuestions={function() {
                             setIsImportOpen(true);
                         }}
+                        onSyncTotalPoints={handleSyncTotalPoints}
                         onToggleExpand={handleToggleExpand}
                     />
                 </div>
