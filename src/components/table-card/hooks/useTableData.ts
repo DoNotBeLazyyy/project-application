@@ -7,11 +7,14 @@ import { SetStateAction, useEffect, useRef, useState } from 'react';
 import { FieldValues } from 'react-hook-form';
 
 interface UseTableDataProps<T extends FieldValues> {
-    onFetch?: (page: number, size: number, search: string, sort: SortStringDto[]) => Promise<ServiceResult<CommonListResDto<T>>>;
     dependencies: unknown[];
+    onFetch?: (page: number, size: number, search: string, sort: SortStringDto[]) => Promise<ServiceResult<CommonListResDto<T>>>;
 }
 
-export function useTableData<T extends FieldValues>({ onFetch, dependencies }: UseTableDataProps<T>) {
+export function useTableData<T extends FieldValues>({
+    dependencies,
+    onFetch
+}: UseTableDataProps<T>) {
     const onFetchRef = useRef(onFetch);
     const activeSearchRef = useRef('');
     const gridApiRef = useRef<GridApi | null>(null);
@@ -20,13 +23,27 @@ export function useTableData<T extends FieldValues>({ onFetch, dependencies }: U
     const [internalSort, setInternalSort] = useState<SortStringDto[]>([]);
     const [pagination, setPagination] = useState<PaginationData>(DEFAULT_PAGINATION);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     onFetchRef.current = onFetch;
 
-    async function loadData(page: number, size: number, search: string, sort: SortStringDto[]) {
+    async function loadData(
+        page: number,
+        size: number,
+        search: string,
+        sort: SortStringDto[],
+        isAppending = false
+    ) {
         const result = await onFetchRef.current?.(page, size, search, sort);
         if (result?.data) {
-            setInternalRowData(result.data.content as T[]);
+            const incomingRows = (result.data.content ?? []) as T[];
+            if (isAppending) {
+                setInternalRowData((prev) => [...prev, ...incomingRows]);
+            }
+            else {
+                setInternalRowData(incomingRows);
+            }
+
             setPagination({
                 currentPage: result.data.number + 1,
                 rowsPerPage: result.data.size,
@@ -42,6 +59,26 @@ export function useTableData<T extends FieldValues>({ onFetch, dependencies }: U
 
     function setGridApi(api: GridApi | null) {
         gridApiRef.current = api;
+    }
+
+    async function loadNextPage() {
+        if (isLoadingMore || pagination.currentPage >= pagination.totalPages) {
+            return;
+        }
+
+        setIsLoadingMore(true);
+        try {
+            await loadData(
+                pagination.currentPage + 1,
+                pagination.rowsPerPage,
+                activeSearchRef.current,
+                internalSort,
+                true
+            );
+        }
+        finally {
+            setIsLoadingMore(false);
+        }
     }
 
     function handleSetPagination(updater: SetStateAction<PaginationData>) {
@@ -94,18 +131,22 @@ export function useTableData<T extends FieldValues>({ onFetch, dependencies }: U
     }
 
     return {
+        activeSearch: activeSearchRef.current,
+        hasMore: pagination.currentPage < pagination.totalPages,
         internalRowData,
         internalSort,
+        isLoadingMore,
+        loadData,
+        loadNextPage,
         pagination,
         searchQuery,
-        setSearchQuery,
         setGridApi,
-        loadData,
-        handleSetPagination,
-        handleSearchSubmit,
-        handleSearchClear,
+        setInternalRowData,
+        setSearchQuery,
         handleApplySort,
         handleGridSort,
-        activeSearch: activeSearchRef.current
+        handleSearchClear,
+        handleSearchSubmit,
+        handleSetPagination
     };
 }
