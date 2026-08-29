@@ -13,53 +13,54 @@ import { useLocation } from 'react-router-dom';
 const SECTION_PATH_PATTERN = /\/sections\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 
 const ROLE_SUBTITLE: Record<string, string> = {
-    Admin: 'How-to guide',
-    Dean: 'How-to guide',
+    Admin: 'Operations overview and how-to guide',
+    Dean: 'Academic management and how-to guide',
     Faculty: 'Teaching insight and how-to guide',
-    Registrar: 'How-to guide',
+    Registrar: 'Records management and how-to guide',
     Student: 'Academic advising and how-to guide'
 };
 
 const ROLE_GREETING: Record<string, string> = {
-    Admin: 'Ask me how anything in the Administrator panel works.',
-    Dean: 'Ask me how anything in the Dean panel works.',
-    Faculty: 'Ask me about your sections, who needs attention, or how anything here works.',
-    Registrar: 'Ask me how anything in the Registrar panel works.',
-    Student: 'Ask me about your grades, your honors trajectory, or how anything here works.'
+    Admin: 'Ask me about term transitions, active enrollment health, or how anything here works.',
+    Dean: 'Ask me about faculty loading, curriculum maps, schedule conflicts, or how anything here works.',
+    Faculty: 'Ask me about pending grading, section attendance, students at risk, or how anything here works.',
+    Registrar: 'Ask me about pending grade releases, student clearances, or how anything here works.',
+    Student: 'Ask me about upcoming assignments, prerequisite eligibility, DRP risk, or your grades.'
 };
 
 const SUGGESTION_VISIBLE_COUNT = 3;
 
 const ROLE_SUGGESTIONS: Record<string, string[]> = {
     Admin: [
+        'Check term transition status',
+        'How many clearances are pending?',
         'How do I invite a new user?',
         'How do I open a new term?',
         'What do academic thresholds change?',
         'How do I resend an invitation?',
         'How do I give a user a second role?',
         'How do I upload users in bulk?',
-        'How do I close the current term?',
-        'What happens when I archive a school year?'
+        'How do I close the current term?'
     ],
     Dean: [
+        'Where do I review faculty loading?',
         'How do I assign an instructor to a section?',
         'How do I add a prerequisite to a course?',
         'Where do I check for schedule conflicts?',
         'How do I build a curriculum map?',
         'How do I create a new program level?',
         'How do I open a new section?',
-        'How do I change a course type?',
-        'Where do I review faculty loading?'
+        'How do I change a course type?'
     ],
     Faculty: [
+        'Show pending submissions to grade',
+        'Section attendance summary',
         'Which of my students are at risk right now?',
         'What are my classes struggling with the most?',
         'How do I grade with a rubric?',
         'How do I set up my grading components?',
         'How do I build an assessment?',
-        'How do I take attendance for today?',
-        'How do I post an announcement to my section?',
-        'How do I release grades to my students?'
+        'How do I take attendance for today?'
     ],
     Registrar: [
         'How do I release grades for a section?',
@@ -72,14 +73,14 @@ const ROLE_SUGGESTIONS: Record<string, string[]> = {
         'How do I set clearance requirements?'
     ],
     Student: [
+        'What assignments are due this week?',
+        'Check prerequisite eligibility',
+        'Am I at risk of DRP?',
         'Am I on track for Latin honors?',
         'Which subject is hurting my GWA the most?',
         'What should I focus on for the rest of this term?',
-        'What assessments are due soon?',
         'How is my attendance so far?',
-        'Where do I check my clearance status?',
-        'How is my final grade computed?',
-        'Where do I see my class schedule?'
+        'Where do I check my clearance status?'
     ]
 };
 

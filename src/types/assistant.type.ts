@@ -1,4 +1,4 @@
-export type AssistantMode = 'student_advising' | 'faculty_advising' | 'howto';
+export type AssistantMode = 'student_advising' | 'faculty_advising' | 'admin_overview' | 'dean_overview' | 'registrar_overview' | 'howto';
 
 export type AssistantTurnRole = 'user' | 'assistant';
 

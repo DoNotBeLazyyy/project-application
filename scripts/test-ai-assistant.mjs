@@ -5,89 +5,75 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+async function invokeAssistant(role, message, token, sectionId = null) {
+  console.log(`\n--- [${role}] Asking: "${message}" ---`);
+  const { data, error } = await supabase.functions.invoke('ai-assistant', {
+    body: {
+      message,
+      history: [],
+      activeRole: role,
+      sectionId,
+      termId: null
+    },
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (error) {
+    console.error('Function error:', error);
+  } else {
+    console.log('Mode:', data?.mode);
+    console.log('Reply:\n' + data?.reply);
+  }
+}
+
 async function testAssistant() {
-  console.log('--- Testing AI Assistant Edge Function ---');
+  console.log('=== Testing AI Assistant Capabilities & Grounding ===');
 
   // 1. Authenticate as Student
-  const { data: studentAuth, error: authError } = await supabase.auth.signInWithPassword({
+  const { data: studentAuth, error: studentAuthErr } = await supabase.auth.signInWithPassword({
     email: 'crowsnight379@gmail.com',
     password: 'Password123!'
   });
 
-  if (authError) {
-    console.error('Student auth failed:', authError.message);
-    return;
+  if (studentAuthErr) {
+    console.error('Student auth failed:', studentAuthErr.message);
+  } else {
+    const token = studentAuth.session.access_token;
+    await invokeAssistant('Student', 'What assignments are due this week?', token);
+    await invokeAssistant('Student', 'Can I enroll in CS301 next term?', token);
+    await invokeAssistant('Student', 'Am I at risk of DRP?', token);
   }
 
-  console.log('Student authenticated, token acquired.');
-
-  // 2. Call Edge Function with Student role
-  console.log('Invoking ai-assistant for Student...');
-  const { data: studentReply, error: funcError } = await supabase.functions.invoke('ai-assistant', {
-    body: {
-      message: 'Am I on track for Latin honors?',
-      history: [],
-      activeRole: 'Student',
-      sectionId: null,
-      termId: null
-    },
-    headers: {
-      Authorization: `Bearer ${studentAuth.session.access_token}`
-    }
-  });
-
-  console.log('Student AI Response:');
-  console.log('Error:', funcError);
-  console.log('Data:', JSON.stringify(studentReply, null, 2));
-
-  // 3. Authenticate as Faculty
-  const { data: facultyAuth } = await supabase.auth.signInWithPassword({
+  // 2. Authenticate as Faculty
+  const { data: facultyAuth, error: facultyAuthErr } = await supabase.auth.signInWithPassword({
     email: 'luna.akirapogi@gmail.com',
     password: 'Password123!'
   });
 
-  console.log('\nInvoking ai-assistant for Faculty...');
-  const { data: facultyReply, error: facFuncError } = await supabase.functions.invoke('ai-assistant', {
-    body: {
-      message: 'How do I take attendance for today?',
-      history: [],
-      activeRole: 'Faculty',
-      sectionId: null,
-      termId: null
-    },
-    headers: {
-      Authorization: `Bearer ${facultyAuth.session.access_token}`
-    }
-  });
+  if (facultyAuthErr) {
+    console.error('Faculty auth failed:', facultyAuthErr.message);
+  } else {
+    const token = facultyAuth.session.access_token;
+    await invokeAssistant('Faculty', 'Show pending submissions to grade', token);
+    await invokeAssistant('Faculty', 'Section attendance summary', token);
+  }
 
-  console.log('Faculty AI Response:');
-  console.log('Error:', facFuncError);
-  console.log('Data:', JSON.stringify(facultyReply, null, 2));
-
-  // 4. Authenticate as Admin
-  const { data: adminAuth } = await supabase.auth.signInWithPassword({
+  // 3. Authenticate as Admin
+  const { data: adminAuth, error: adminAuthErr } = await supabase.auth.signInWithPassword({
     email: 'juliustolentino.diamond@gmail.com',
     password: 'Password123!'
   });
 
-  console.log('\nInvoking ai-assistant for Admin...');
-  const { data: adminReply, error: adminFuncError } = await supabase.functions.invoke('ai-assistant', {
-    body: {
-      message: 'How do I invite a new user?',
-      history: [],
-      activeRole: 'Admin',
-      sectionId: null,
-      termId: null
-    },
-    headers: {
-      Authorization: `Bearer ${adminAuth.session.access_token}`
-    }
-  });
-
-  console.log('Admin AI Response:');
-  console.log('Error:', adminFuncError);
-  console.log('Data:', JSON.stringify(adminReply, null, 2));
+  if (adminAuthErr) {
+    console.error('Admin auth failed:', adminAuthErr.message);
+  } else {
+    const token = adminAuth.session.access_token;
+    await invokeAssistant('Admin', 'Check term transition status', token);
+  }
 }
 
 testAssistant().catch(console.error);
+
 

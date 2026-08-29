@@ -1,4 +1,4 @@
-export type AssistantMode = 'student_advising' | 'faculty_advising' | 'howto';
+export type AssistantMode = 'student_advising' | 'faculty_advising' | 'admin_overview' | 'dean_overview' | 'registrar_overview' | 'howto';
 
 export type AssistantTurnRole = 'user' | 'assistant';
 
@@ -22,8 +22,14 @@ export interface AssistantContext {
     active_role?: string;
     profile?: Record<string, unknown> | null;
     insight?: Record<string, unknown> | null;
+    prerequisite_eligibility?: Record<string, unknown>[] | null;
+    upcoming_deadlines?: Record<string, unknown>[] | null;
+    attendance_drp_status?: Record<string, unknown>[] | null;
     dashboard?: Record<string, unknown> | null;
     section?: Record<string, unknown> | null;
+    grading_queue_summary?: Record<string, unknown> | null;
+    section_attendance_summary?: Record<string, unknown>[] | null;
+    term_checkpoints?: Record<string, unknown> | null;
 }
 
 export interface GeminiPart {
