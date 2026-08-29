@@ -17,7 +17,7 @@ export default function TableCardSelectionBar({
     }
 
     return (
-        <div className="bg-(--mui-palette-brand-50) border border-(--mui-palette-brand-200) flex flex-wrap gap-3 items-center justify-between p-3 rounded-xl transition-all">
+        <div className="bg-(--mui-palette-brand-50) border border-(--mui-palette-brand-200) flex flex-wrap gap-3 items-center justify-between px-3 py-2.5 rounded-xl transition-all">
             <div className="flex gap-3 items-center">
                 <span className="bg-(--mui-palette-brand-600) flex font-bold h-7 items-center justify-center rounded-lg shadow-xs text-white text-xs w-7">
                     {selectedCount}
@@ -28,15 +28,21 @@ export default function TableCardSelectionBar({
                             ? 's'
                             : ''} Selected
                     </span>
+                    <span className="block text-(--mui-palette-brand-700) text-[11px] opacity-80">
+                        Bulk actions active
+                    </span>
                 </div>
                 {onSelectAll && selectedCount < totalCount && (
-                    <button
-                        className="cursor-pointer font-bold hover:underline ml-2 text-(--mui-palette-brand-700) text-xs"
-                        type="button"
-                        onClick={onSelectAll}
-                    >
-                        Select All ({totalCount})
-                    </button>
+                    <>
+                        <span className="bg-(--mui-palette-brand-200) h-5 hidden sm:block w-px" />
+                        <button
+                            className="cursor-pointer font-bold hover:underline text-(--mui-palette-brand-700) text-xs underline-offset-2"
+                            type="button"
+                            onClick={onSelectAll}
+                        >
+                            Select All ({totalCount})
+                        </button>
+                    </>
                 )}
             </div>
 

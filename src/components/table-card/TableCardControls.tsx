@@ -1,7 +1,5 @@
-import CommonButton from '@components/button/CommonButton';
 import TableCardActionMenu, { TableCardActionMenuProps } from '@components/table-card/TableCardActionMenu';
 import TableCardInput, { TableCardInputProps } from '@components/table-card/TableCardInput';
-import { ListIcon, SquaresFourIcon } from '@phosphor-icons/react';
 
 export interface TableCardControlsProps {
     hasInput?: boolean;
@@ -12,6 +10,14 @@ export interface TableCardControlsProps {
     onToggleViewMode?: (mode: 'table' | 'grid') => void;
 }
 
+/**
+ * TableCardControls
+ *
+ * The standard (non-selection) table card header controls: a right-aligned
+ * search field followed by a single action affordance. The grid/list toggle is
+ * not rendered here - it is handed to TableCardActionMenu, which surfaces it
+ * inside the three-dots menu to keep the toolbar to one control.
+ */
 export default function TableCardControls({
     hasInput = true,
     showViewToggle = true,
@@ -27,51 +33,12 @@ export default function TableCardControls({
                     <TableCardInput {...tableInputProps} />
                 </div>
             )}
-            {showViewToggle && onToggleViewMode && (
-                <div className="bg-(--mui-palette-grey-100) flex gap-0.5 items-center p-0.5 rounded-lg">
-                    <CommonButton
-                        aria-label="Grid View"
-                        className="min-w-0 px-2 py-1"
-                        color={viewMode === 'grid'
-                            ? 'primary'
-                            : 'inherit'}
-                        size="small"
-                        variant={viewMode === 'grid'
-                            ? 'contained'
-                            : 'text'}
-                        onClick={function() {
-                            onToggleViewMode('grid');
-                        }}
-                    >
-                        <SquaresFourIcon
-                            size={16}
-                            weight={viewMode === 'grid'
-                                ? 'bold'
-                                : 'regular'} />
-                    </CommonButton>
-                    <CommonButton
-                        aria-label="Table View"
-                        className="min-w-0 px-2 py-1"
-                        color={viewMode === 'table'
-                            ? 'primary'
-                            : 'inherit'}
-                        size="small"
-                        variant={viewMode === 'table'
-                            ? 'contained'
-                            : 'text'}
-                        onClick={function() {
-                            onToggleViewMode('table');
-                        }}
-                    >
-                        <ListIcon
-                            size={16}
-                            weight={viewMode === 'table'
-                                ? 'bold'
-                                : 'regular'} />
-                    </CommonButton>
-                </div>
-            )}
-            <TableCardActionMenu {...tableButtonsProps} />
+            <TableCardActionMenu
+                {...tableButtonsProps}
+                showViewToggle={showViewToggle}
+                viewMode={viewMode}
+                onToggleViewMode={onToggleViewMode}
+            />
         </div>
     );
 }

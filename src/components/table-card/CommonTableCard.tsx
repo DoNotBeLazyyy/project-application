@@ -385,60 +385,59 @@ export default function CommonTableCard<T extends FieldValues>({
                 ...cardHeaderProps,
                 action: (
                     <div className="flex flex-col gap-2 w-full">
-                        {effectiveSelectedCount > 0 && (
-                            <TableCardSelectionBar
-                                selectedCount={effectiveSelectedCount}
-                                totalCount={pagination.totalElements}
-                                onClearSelection={function() {
-                                    if (activeViewMode === 'grid') {
-                                        handleClearGridSelection();
-                                    }
-                                    else {
-                                        gridApi?.deselectAll();
-                                    }
-                                }}
-                                onDeleteSelected={onDelete
-                                    ? handleBulkDelete
-                                    : undefined}
-                                onSelectAll={activeViewMode === 'grid'
-                                    ? handleSelectAllGrid
-                                    : undefined}
-                            />
-                        )}
-                        <TableCardControls
-                            showViewToggle={showViewToggle}
-                            tableButtonsProps={{
-                                ...controls?.tableButtonsProps,
-                                createButtonProps: createModalProps
-                                    ? {
-                                        onClick: function() {
-                                            onCreate?.();
+                        {/* Selecting any row swaps the standard controller out for bulk mode */}
+                        {effectiveSelectedCount > 0
+                            ? (
+                                <TableCardSelectionBar
+                                    selectedCount={effectiveSelectedCount}
+                                    totalCount={pagination.totalElements}
+                                    onClearSelection={function() {
+                                        if (activeViewMode === 'grid') {
+                                            handleClearGridSelection();
                                         }
-                                    }
-                                    : controls?.tableButtonsProps?.createButtonProps,
-                                deleteButtonProps: onDelete && effectiveSelectedCount > 0
-                                    ? {
-                                        ...controls?.tableButtonsProps?.deleteButtonProps,
-                                        onClick: handleBulkDelete
-                                    }
-                                    : undefined,
-                                filterButtonProps: filterModalProps
-                                    ? { onClick: onFilter }
-                                    : controls?.tableButtonsProps?.filterButtonProps,
-                                sortButtonProps: sortColumns
-                                    ? { onClick: handleOpenSortModal }
-                                    : undefined
-                            }}
-                            tableInputProps={{
-                                ...controls?.tableInputProps,
-                                onChange: handleSearchChange,
-                                onClear: handleSearchClear,
-                                onKeyDown: handleOnKeyDown,
-                                value: searchQuery
-                            }}
-                            viewMode={activeViewMode}
-                            onToggleViewMode={setActiveViewMode}
-                        />
+                                        else {
+                                            gridApi?.deselectAll();
+                                        }
+                                    }}
+                                    onDeleteSelected={onDelete
+                                        ? handleBulkDelete
+                                        : undefined}
+                                    onSelectAll={activeViewMode === 'grid'
+                                        ? handleSelectAllGrid
+                                        : undefined}
+                                />
+                            )
+                            : (
+                                <TableCardControls
+                                    showViewToggle={showViewToggle}
+                                    tableButtonsProps={{
+                                        ...controls?.tableButtonsProps,
+                                        createButtonProps: createModalProps
+                                            ? {
+                                                onClick: function() {
+                                                    onCreate?.();
+                                                }
+                                            }
+                                            : controls?.tableButtonsProps?.createButtonProps,
+                                        deleteButtonProps: undefined,
+                                        filterButtonProps: filterModalProps
+                                            ? { onClick: onFilter }
+                                            : controls?.tableButtonsProps?.filterButtonProps,
+                                        sortButtonProps: sortColumns
+                                            ? { onClick: handleOpenSortModal }
+                                            : undefined
+                                    }}
+                                    tableInputProps={{
+                                        ...controls?.tableInputProps,
+                                        onChange: handleSearchChange,
+                                        onClear: handleSearchClear,
+                                        onKeyDown: handleOnKeyDown,
+                                        value: searchQuery
+                                    }}
+                                    viewMode={activeViewMode}
+                                    onToggleViewMode={setActiveViewMode}
+                                />
+                            )}
                     </div>
                 )
             }}

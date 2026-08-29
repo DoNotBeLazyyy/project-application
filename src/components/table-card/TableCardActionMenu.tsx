@@ -4,7 +4,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
     ArrowLineDownIcon, ArrowLineUpIcon, DotsThreeVerticalIcon, FunnelIcon, FunnelSimpleIcon,
-    IconProps, PlusIcon, TrashIcon
+    IconProps, ListIcon, PlusIcon, SquaresFourIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
 import { ReactNode, useState } from 'react';
@@ -26,9 +26,12 @@ export interface TableCardActionMenuProps {
     downloadCsvButtonProps?: TableCardActionOption;
     extraOptions?: TableCardExtraOption[];
     filterButtonProps?: TableCardActionOption;
+    showViewToggle?: boolean;
     sortButtonProps?: TableCardActionOption;
     uploadCsvButtonProps?: TableCardActionOption;
+    viewMode?: 'table' | 'grid';
     extraButtons?: ReactNode;
+    onToggleViewMode?: (mode: 'table' | 'grid') => void;
 }
 
 interface ResolvedAction extends TableCardActionOption {
@@ -38,6 +41,18 @@ interface ResolvedAction extends TableCardActionOption {
     label: string;
 }
 
+/**
+ * TableCardActionMenu
+ *
+ * The right-aligned action affordance for every table card header.
+ *
+ * Two rules drive what it renders:
+ * - The grid/list view toggle lives inside this menu rather than on the toolbar,
+ *   so the header keeps a single control instead of two.
+ * - When exactly one action is available and the view toggle is hidden, that
+ *   action renders as a direct labelled button; anything more collapses into
+ *   the three-dots kebab menu.
+ */
 export default function TableCardActionMenu({
     createButtonProps,
     deleteButtonProps,
@@ -45,8 +60,11 @@ export default function TableCardActionMenu({
     extraButtons,
     extraOptions,
     filterButtonProps,
+    showViewToggle = false,
     sortButtonProps,
-    uploadCsvButtonProps
+    uploadCsvButtonProps,
+    viewMode = 'grid',
+    onToggleViewMode
 }: TableCardActionMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const isMenuOpen = Boolean(anchorEl);
@@ -92,6 +110,9 @@ export default function TableCardActionMenu({
         ...buildAction('delete', 'Delete Selected', <TrashIcon {...iconProps} />, deleteButtonProps, true)
     ];
 
+    // The toggle occupies its own menu section, so it counts toward the kebab rule
+    const hasViewToggle = showViewToggle && Boolean(onToggleViewMode);
+
     function handleOpenMenu(event: MouseEventButtonElement) {
         setAnchorEl(event.currentTarget);
     }
@@ -107,8 +128,40 @@ export default function TableCardActionMenu({
         };
     }
 
-    if (!actions.length) {
+    function createHandleViewModeClick(mode: 'table' | 'grid') {
+        return function() {
+            setAnchorEl(null);
+            onToggleViewMode?.(mode);
+        };
+    }
+
+    if (!actions.length && !hasViewToggle) {
         return <>{extraButtons}</>;
+    }
+
+    // Single action with no view toggle renders directly instead of behind a kebab
+    if (actions.length === 1 && !hasViewToggle) {
+        const [action] = actions;
+
+        return (
+            <>
+                {extraButtons}
+                <CommonButton
+                    color={action.isDestructive
+                        ? 'error'
+                        : 'primary'}
+                    disabled={action.disabled}
+                    size="small"
+                    startIcon={action.icon}
+                    variant={action.isDestructive
+                        ? 'outlined'
+                        : 'contained'}
+                    onClick={createHandleActionClick(action.onClick)}
+                >
+                    {action.children ?? action.label}
+                </CommonButton>
+            </>
+        );
     }
 
     return (
@@ -149,6 +202,60 @@ export default function TableCardActionMenu({
                 }}
                 onClose={handleCloseMenu}
             >
+                {hasViewToggle && (
+                    <div className="px-2 py-1.5">
+                        <span className="block font-bold px-1.5 text-(--mui-palette-grey-500) text-[10px] tracking-wider uppercase">
+                            Layout View
+                        </span>
+                        <div className="bg-(--mui-palette-grey-100) gap-1 grid grid-cols-2 mt-1.5 p-1 rounded-xl">
+                            <CommonButton
+                                aria-label="Grid View"
+                                className="min-w-0 px-2 py-1"
+                                color={viewMode === 'grid'
+                                    ? 'primary'
+                                    : 'inherit'}
+                                size="small"
+                                startIcon={
+                                    <SquaresFourIcon
+                                        size={16}
+                                        weight={viewMode === 'grid'
+                                            ? 'bold'
+                                            : 'regular'}
+                                    />
+                                }
+                                variant={viewMode === 'grid'
+                                    ? 'contained'
+                                    : 'text'}
+                                onClick={createHandleViewModeClick('grid')}
+                            >
+                                Grid
+                            </CommonButton>
+                            <CommonButton
+                                aria-label="Table View"
+                                className="min-w-0 px-2 py-1"
+                                color={viewMode === 'table'
+                                    ? 'primary'
+                                    : 'inherit'}
+                                size="small"
+                                startIcon={
+                                    <ListIcon
+                                        size={16}
+                                        weight={viewMode === 'table'
+                                            ? 'bold'
+                                            : 'regular'}
+                                    />
+                                }
+                                variant={viewMode === 'table'
+                                    ? 'contained'
+                                    : 'text'}
+                                onClick={createHandleViewModeClick('table')}
+                            >
+                                List
+                            </CommonButton>
+                        </div>
+                    </div>
+                )}
+                {hasViewToggle && actions.length > 0 && <Divider key="view-toggle-divider" />}
                 {actions.map(function(action, index) {
                     const isDividerNeeded = action.isDestructive && index > 0;
 
