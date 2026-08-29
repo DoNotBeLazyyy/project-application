@@ -230,5 +230,7 @@ When resolving database schemas, functions, triggers, and types, adhere strictly
 2. **Proactive Remote Status Polling**: When launching cloud deployments or async tasks, immediately inspect log output or poll the target endpoint/API.
 3. **Immediate Task Termination**: The exact instant a deployment or operation is verified as `READY`, `DONE`, or `SUCCESS`, immediately call `manage_task` with action `kill` to terminate the process, clean up open handles, and avoid blocking user workflows.
 4. **Transparent Communication**: Never leave the user waiting indefinitely on passive background tasks without providing immediate real-time progress and closing finished tasks promptly.
+5. **Real-Time 2-Minute Progress Updates**: During multi-step workflows or long-running tasks, continuously update the user on: (a) what is actively executing, (b) what specific command/action was attempted, and (c) the exact result or output of that attempt.
+
 
 
