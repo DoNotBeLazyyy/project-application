@@ -223,14 +223,12 @@ export default function CommonTableCard<T extends FieldValues>({
         const plan = resolveMobileCardPlan(columnDefs);
         const id = String(item[uniqueIdKey]);
 
+        // 1. Title
         const titleVal = plan.title?.field
             ? formatMobileCardValue(item[plan.title.field as keyof T])
             : 'Record Details';
 
-        const subtitleVal = plan.subtitle?.field
-            ? formatMobileCardValue(item[plan.subtitle.field as keyof T])
-            : undefined;
-
+        // 2. Code Tag
         const codeCol = columnDefs.find(function(c) {
             const f = String(c.field ?? '')
                 .toLowerCase();
@@ -240,70 +238,136 @@ export default function CommonTableCard<T extends FieldValues>({
             ? String(item[codeCol.field as keyof T] ?? '')
             : undefined;
 
+        // 3. Status
         const statusCol = columnDefs.find(function(c) {
             const f = String(c.field ?? '')
                 .toLowerCase();
-            return f === 'status' || f === 'state';
+            return f === 'status' || f === 'state' || f === 'is_active';
         });
-        const statusVal = statusCol?.field
+        let statusVal = statusCol?.field
             ? String(item[statusCol.field as keyof T] ?? '')
-            : undefined;
+            : 'Active';
+        if (statusVal === 'true') statusVal = 'Active';
+        if (statusVal === 'false') statusVal = 'Inactive';
 
+        // 4. Faculty In-Charge
+        let faculty;
+        const facultyCol = columnDefs.find(function(c) {
+            const f = String(c.field ?? '')
+                .toLowerCase();
+            return f.includes('faculty') || f.includes('instructor') || f.includes('teacher');
+        });
+        const rawFaculty = facultyCol?.field
+            ? item[facultyCol.field as keyof T]
+            : (item['faculty_name' as keyof T] || item['instructor_name' as keyof T] || item['instructor' as keyof T] || item['faculty' as keyof T]);
+
+        if (rawFaculty && String(rawFaculty)
+            .trim().length > 0) {
+            faculty = {
+                avatarUrl: (item['faculty_avatar' as keyof T] || item['avatar_url' as keyof T] || item['avatar' as keyof T]) as string | undefined,
+                name: String(rawFaculty),
+                role: 'FACULTY IN-CHARGE'
+            };
+        }
+
+        // 5. Capacity / Progress Bar
         let progress;
-        if ('enrolled_count' in item && 'max_slots' in item) {
-            const enrolled = Number(item['enrolled_count' as keyof T] ?? 0);
-            const maxSlots = Number(item['max_slots' as keyof T] ?? 0);
-            if (maxSlots > 0) {
-                progress = {
-                    current: enrolled,
-                    label: 'Enrolled Capacity',
-                    total: maxSlots
-                };
+        const maxSlots = Number(item['max_slots' as keyof T] || item['slots' as keyof T] || item['capacity' as keyof T] || 0);
+        if (maxSlots > 0) {
+            const enrolled = Number(item['enrolled_count' as keyof T] || item['enrolled' as keyof T] || 0);
+            progress = {
+                current: enrolled,
+                formatPercent: true,
+                label: 'Capacity',
+                total: maxSlots
+            };
+        }
+
+        // 6. 2-Column Metrics (Schedule + Room & Units or Top Meta Columns)
+        const metrics: { label: string; value: string }[] = [];
+
+        // Check if schedule / time exists
+        const schedVal = item['schedule' as keyof T] || item['schedule_desc' as keyof T] || item['days' as keyof T];
+        if (schedVal) {
+            metrics.push({
+                label: 'Schedule',
+                value: String(schedVal)
+            });
+        }
+
+        // Check if room and/or units exist
+        const roomVal = item['room' as keyof T] || item['room_name' as keyof T];
+        const unitsVal = item['units' as keyof T] || item['lecture_units' as keyof T] || item['credit_hours' as keyof T];
+        if (roomVal || unitsVal) {
+            const combinedRoomUnits = [
+                roomVal
+                    ? String(roomVal)
+                    : null,
+                unitsVal
+                    ? `${unitsVal} Units`
+                    : null
+            ].filter(Boolean)
+                .join(' • ');
+
+            metrics.push({
+                label: 'Room & Units',
+                value: combinedRoomUnits
+            });
+        }
+
+        // Fill remaining slots up to 2 from meta columns
+        if (metrics.length < 2) {
+            const excludedCols = [plan.title, codeCol, statusCol, facultyCol];
+            const remainingMeta = plan.meta.filter(function(col) {
+                return !excludedCols.includes(col) && col.field !== 'max_slots' && col.field !== 'enrolled_count';
+            });
+
+            for (const col of remainingMeta) {
+                if (metrics.length >= 2) break;
+                const rawVal = item[col.field as keyof T];
+                if (rawVal != null && String(rawVal)
+                    .trim().length > 0) {
+                    metrics.push({
+                        label: col.headerName ?? String(col.field),
+                        value: formatMobileCardValue(rawVal)
+                    });
+                }
             }
         }
 
-        const metrics = plan.meta
-            .filter(function(col) {
-                return col !== statusCol && col !== codeCol;
-            })
-            .slice(0, 4)
-            .map(function(col) {
-                const rawVal = item[col.field as keyof T];
-                const formattedVal = typeof col.valueFormatter === 'function'
-                    ? col.valueFormatter({
-                        api: gridApi as never,
-                        colDef: col,
-                        column: null as never,
-                        context: null,
-                        data: item,
-                        node: null as never,
-                        value: rawVal
-                    })
-                    : formatMobileCardValue(rawVal);
-
-                return {
-                    label: col.headerName ?? String(col.field),
-                    value: formattedVal
-                };
-            });
+        // 7. Footer Meta (Term / AY / Dept)
+        const footerMeta = item['term_label' as keyof T]
+            || item['term_name' as keyof T]
+            || item['academic_year' as keyof T]
+            || item['department_name' as keyof T]
+            || '1st Sem AY 25-26';
 
         return (
             <CommonBentoCard
                 code={codeVal}
+                faculty={faculty}
+                footerMeta={String(footerMeta)}
                 hasCheckbox={Boolean(tableProps.hasCheckbox || onDelete)}
                 isSelected={isSelected}
                 metrics={metrics}
                 primaryAction={onRowClick
                     ? {
-                        label: 'View Details',
+                        label: 'Edit',
                         onClick: function() {
                             onRowClick(id);
                         }
                     }
                     : undefined}
                 progress={progress}
+                secondaryAction={onRowClick
+                    ? {
+                        label: 'Full Page',
+                        onClick: function() {
+                            onRowClick(id);
+                        }
+                    }
+                    : undefined}
                 status={statusVal}
-                subtitle={subtitleVal}
                 title={titleVal}
                 onClick={onRowClick
                     ? function() {

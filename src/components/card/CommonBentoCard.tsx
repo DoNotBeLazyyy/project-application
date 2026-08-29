@@ -1,8 +1,5 @@
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import CommonButton from '@components/button/CommonButton';
-import Checkbox from '@mui/material/Checkbox';
+import { DotsThreeVerticalIcon } from '@phosphor-icons/react';
 import { ChangeEventInput, MouseEventButtonElement } from '@type/common.type';
-import { BadgeStatusVariant } from '@type/common/badge.type';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
@@ -45,7 +42,6 @@ export interface CommonBentoCardProps {
     progress?: BentoCardProgress;
     secondaryAction?: BentoCardAction;
     status?: string;
-    statusVariant?: BadgeStatusVariant;
     subtitle?: string;
     title: string;
     onClick?: () => void;
@@ -59,14 +55,13 @@ export default function CommonBentoCard({
     extraContent,
     faculty,
     footerMeta,
-    hasCheckbox = false,
+    hasCheckbox = true,
     isSelected = false,
     metrics = [],
     primaryAction,
     progress,
     secondaryAction,
-    status,
-    statusVariant = 'info',
+    status = 'Active',
     subtitle,
     title,
     onClick,
@@ -85,155 +80,172 @@ export default function CommonBentoCard({
         ? Math.min(100, Math.max(0, Math.round((progress.current / progress.total) * 100)))
         : 0;
 
+    const isHighCapacity = progressPercentage >= 90;
+
     return (
         <div
             className={classMerge(
-                'bg-white border rounded-xl shadow-xs transition-all duration-200 flex flex-col justify-between overflow-hidden',
+                'bg-white border rounded-2xl p-5 shadow-xs transition-all duration-200 flex flex-col justify-between select-none relative group',
                 isSelected
-                    ? 'border-(--mui-palette-primary-main) ring-2 ring-(--mui-palette-primary-main)/20'
-                    : 'border-(--mui-palette-grey-200) hover:border-(--mui-palette-grey-300)',
+                    ? 'border-blue-600 ring-2 ring-blue-600/20'
+                    : 'border-slate-200/90 hover:border-slate-300 hover:shadow-md',
                 onClick
-                    ? 'cursor-pointer hover:shadow-md'
+                    ? 'cursor-pointer'
                     : '',
                 className
             )}
             onClick={handleCardClick}
         >
-            {/* Card Header */}
-            <div className="border-(--mui-palette-grey-100) border-b flex gap-2.5 items-start justify-between p-4 pb-3">
-                <div className="flex gap-2 items-center min-w-0">
-                    {hasCheckbox && (
-                        <div
-                            className="shrink-0"
-                            onClick={function(e) {
-                                e.stopPropagation();
-                            }}
-                        >
-                            <Checkbox
-                                checked={isSelected}
-                                className="h-5 p-0 w-5"
-                                size="small"
-                                onChange={handleCheckboxChange}
-                            />
-                        </div>
-                    )}
-                    {code && (
-                        <span className="bg-(--mui-palette-brand-50) border border-(--mui-palette-brand-200)/70 font-bold font-mono px-2 py-0.5 rounded-md shrink-0 text-(--mui-palette-brand-700) text-xs">
-                            {code}
-                        </span>
-                    )}
-                    {status && (
-                        <div className="shrink-0">
-                            <CommonBadgeStatus
-                                label={status}
-                                size="small"
-                                variant={statusVariant}
-                            />
-                        </div>
-                    )}
-                </div>
-                {actionMenu && (
+            <div>
+                {/* 1. Header: Checkbox + Code Pill + Status Pill + Three Dots */}
+                <div className="flex items-center justify-between mb-3.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                        {hasCheckbox && (
+                            <div
+                                className="shrink-0 flex items-center"
+                                onClick={function(e) {
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <input
+                                    checked={isSelected}
+                                    className="h-4.5 w-4.5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-colors"
+                                    type="checkbox"
+                                    onChange={handleCheckboxChange}
+                                />
+                            </div>
+                        )}
+
+                        {code && (
+                            <span className="bg-blue-50/90 text-blue-700 font-bold px-2.5 py-0.5 rounded-full text-xs border border-blue-200/70 shrink-0 font-mono tracking-tight">
+                                {code}
+                            </span>
+                        )}
+
+                        {status && (
+                            <span
+                                className={classMerge(
+                                    'px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 border',
+                                    status.toLowerCase() === 'active' || status.toLowerCase() === 'open'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70'
+                                        : status.toLowerCase() === 'ongoing' || status.toLowerCase() === 'full'
+                                            ? 'bg-amber-50 text-amber-700 border-amber-200/70'
+                                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                                )}>
+                                {status}
+                            </span>
+                        )}
+                    </div>
+
                     <div
-                        className="shrink-0"
+                        className="shrink-0 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
                         onClick={function(e) {
                             e.stopPropagation();
                         }}
                     >
-                        {actionMenu}
+                        {actionMenu ?? (
+                            <button
+                                aria-label="Card actions"
+                                className="cursor-pointer flex items-center justify-center"
+                                type="button"
+                            >
+                                <DotsThreeVerticalIcon size={18} weight="bold" />
+                            </button>
+                        )}
                     </div>
-                )}
-            </div>
+                </div>
 
-            {/* Title & Subtitle */}
-            <div className="pt-3 px-4 space-y-0.5">
-                <h3
-                    className="font-bold font-heading line-clamp-1 text-(--mui-palette-text-primary) text-sm"
-                    title={title}
-                >
-                    {title}
-                </h3>
-                {subtitle && (
-                    <p className="line-clamp-1 text-(--mui-palette-text-secondary) text-xs">
-                        {subtitle}
-                    </p>
-                )}
-            </div>
+                {/* 2. Hero Title & Optional Subtitle */}
+                <div className="mb-3.5">
+                    <h3
+                        className="font-bold text-base text-slate-900 tracking-tight line-clamp-1 leading-snug"
+                        title={title}
+                    >
+                        {title}
+                    </h3>
+                    {subtitle && subtitle !== title && subtitle !== code && (
+                        <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                            {subtitle}
+                        </p>
+                    )}
+                </div>
 
-            {/* Card Body */}
-            <div className="flex-1 p-4 space-y-3">
-                {/* Faculty Row */}
+                {/* 3. Faculty In-Charge Card */}
                 {faculty && (
-                    <div className="bg-(--mui-palette-grey-50) border border-(--mui-palette-grey-100) flex gap-2.5 items-center p-2 rounded-lg">
+                    <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-2.5 flex items-center gap-3 mb-3">
                         {faculty.avatarUrl
                             ? (
                                 <img
                                     alt={faculty.name}
-                                    className="h-7 object-cover ring-(--mui-palette-grey-200) ring-1 rounded-full w-7"
+                                    className="h-9 w-9 rounded-full object-cover border border-white shadow-2xs shrink-0"
                                     src={faculty.avatarUrl}
                                 />
                             )
                             : (
-                                <div className="bg-(--mui-palette-brand-100) flex font-bold h-7 items-center justify-center rounded-full text-(--mui-palette-brand-700) text-xs w-7">
-                                    {faculty.name.charAt(0)}
+                                <div className="h-9 w-9 rounded-full bg-slate-200 border border-white shadow-2xs shrink-0 flex items-center justify-center font-bold text-xs text-slate-700">
+                                    {faculty.name.split(' ')
+                                        .map((n) => n[0])
+                                        .slice(0, 2)
+                                        .join('')}
                                 </div>
                             )
                         }
                         <div className="min-w-0">
-                            <p className="font-semibold text-(--mui-palette-grey-500) text-[10px] uppercase">
-                                {faculty.role ?? 'Faculty In-Charge'}
+                            <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase leading-none">
+                                {faculty.role ?? 'FACULTY IN-CHARGE'}
                             </p>
-                            <p className="font-semibold text-(--mui-palette-text-primary) text-xs truncate">
+                            <p className="text-xs font-bold text-slate-800 leading-tight mt-1 truncate">
                                 {faculty.name}
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* Metrics 2x2 Matrix */}
+                {/* 4. 2-Column Metrics Grid */}
                 {metrics.length > 0 && (
-                    <div className="gap-2 grid grid-cols-2 text-xs">
-                        {metrics.map(function(metric, index) {
-                            return (
-                                <div
-                                    className="bg-(--mui-palette-grey-50) border border-(--mui-palette-grey-100) p-2 rounded-lg"
-                                    key={index}
-                                >
-                                    <span className="block font-medium text-(--mui-palette-grey-500) text-[10px]">
-                                        {metric.label}
-                                    </span>
-                                    <div className="flex font-medium gap-1 items-center line-clamp-1 text-(--mui-palette-text-primary) text-[11px]">
-                                        {metric.icon}
-                                        <span>{metric.value}</span>
+                    <div className="grid grid-cols-2 gap-2 mb-3.5">
+                        {metrics.slice(0, 2)
+                            .map(function(metric, index) {
+                                return (
+                                    <div
+                                        className="bg-slate-50/90 border border-slate-100 rounded-xl p-2.5"
+                                        key={index}
+                                    >
+                                        <span className="block text-[10px] font-medium text-slate-400 leading-none">
+                                            {metric.label}
+                                        </span>
+                                        <div className="text-xs font-semibold text-slate-800 leading-tight mt-1 line-clamp-1">
+                                            {metric.value}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
                 )}
 
-                {/* Progress / Capacity Bar */}
+                {/* 5. Capacity / Progress Bar */}
                 {progress && (
-                    <div className="pt-1 space-y-1">
-                        <div className="flex justify-between text-[11px]">
-                            <span className="font-medium text-(--mui-palette-text-secondary)">
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between text-xs leading-none">
+                            <span className="font-medium text-slate-500">
                                 {progress.label ?? 'Capacity'}
                             </span>
-                            <span className="font-bold text-(--mui-palette-text-primary)">
+                            <span className="font-bold text-slate-800">
                                 {progress.current} / {progress.total}
-                                {progress.formatPercent && (
-                                    <span className="font-normal ml-1 text-(--mui-palette-text-secondary)">
+                                {progress.formatPercent !== false && (
+                                    <span className="font-normal text-slate-400 text-xs ml-1">
                                         ({progressPercentage}%)
                                     </span>
                                 )}
                             </span>
                         </div>
-                        <div className="bg-(--mui-palette-grey-100) h-1.5 overflow-hidden rounded-full w-full">
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full mt-1.5 overflow-hidden">
                             <div
                                 className={classMerge(
                                     'h-full rounded-full transition-all duration-300',
-                                    progressPercentage >= 90
-                                        ? 'bg-(--mui-palette-warning-main)'
-                                        : 'bg-(--mui-palette-primary-main)'
+                                    isHighCapacity
+                                        ? 'bg-amber-500'
+                                        : 'bg-blue-600'
                                 )}
                                 style={{ width: `${progressPercentage}%` }}
                             />
@@ -244,43 +256,41 @@ export default function CommonBentoCard({
                 {extraContent}
             </div>
 
-            {/* Card Footer Actions */}
-            {(footerMeta || primaryAction || secondaryAction) && (
-                <div className="bg-(--mui-palette-grey-50) border-(--mui-palette-grey-100) border-t flex gap-2 items-center justify-between p-3">
-                    <div className="min-w-0 text-(--mui-palette-text-secondary) text-[10px] truncate">
-                        {footerMeta}
-                    </div>
-                    <div
-                        className="flex gap-1.5 items-center shrink-0"
-                        onClick={function(e) {
-                            e.stopPropagation();
-                        }}
-                    >
-                        {secondaryAction && (
-                            <CommonButton
-                                color="lightGrey"
-                                disabled={secondaryAction.disabled}
-                                size="small"
-                                variant="outlined"
-                                onClick={secondaryAction.onClick}
-                            >
-                                {secondaryAction.label}
-                            </CommonButton>
-                        )}
-                        {primaryAction && (
-                            <CommonButton
-                                color="primary"
-                                disabled={primaryAction.disabled}
-                                size="small"
-                                variant="contained"
-                                onClick={primaryAction.onClick}
-                            >
-                                {primaryAction.label}
-                            </CommonButton>
-                        )}
-                    </div>
+            {/* 6. Footer Row: Left Meta + Right Action Buttons */}
+            <div className="border-t border-slate-100 pt-3.5 flex items-center justify-between gap-2 mt-auto">
+                <div className="text-xs text-slate-400 font-medium truncate min-w-0">
+                    {footerMeta ?? '1st Sem AY 25-26'}
                 </div>
-            )}
+
+                <div
+                    className="flex items-center gap-2 shrink-0"
+                    onClick={function(e) {
+                        e.stopPropagation();
+                    }}
+                >
+                    {secondaryAction && (
+                        <button
+                            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-1 rounded-lg shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                            disabled={secondaryAction.disabled}
+                            type="button"
+                            onClick={secondaryAction.onClick}
+                        >
+                            {secondaryAction.label}
+                        </button>
+                    )}
+
+                    {primaryAction && (
+                        <button
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1 rounded-lg shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                            disabled={primaryAction.disabled}
+                            type="button"
+                            onClick={primaryAction.onClick}
+                        >
+                            {primaryAction.label}
+                        </button>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
