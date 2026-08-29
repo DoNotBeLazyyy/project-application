@@ -222,3 +222,13 @@ When resolving database schemas, functions, triggers, and types, adhere strictly
 4. **Form Standards**: Form inputs must use `ValidCommonInput` or `Controller` with `CommonSelect`/`CommonTextarea`. Never use raw `register`. Every form must include `<FormErrorSummary />`.
 5. **Database Idempotency**: All SQL scripts in `docs/sql/` must use idempotent DDL (`CREATE TABLE IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, `DROP POLICY IF EXISTS`, etc.) with zero inline comments (`--` or `/* */`).
 
+---
+
+## 11. Proactive Background Task Management & Termination Protocol
+
+1. **No Hanging Background Streams**: Long-running CLI tools (e.g. `vercel deploy`, `vercel env`, streaming logs, dev runners) that maintain open stdin/stdout listeners MUST NOT be left running in the background once the underlying job has finished.
+2. **Proactive Remote Status Polling**: When launching cloud deployments or async tasks, immediately inspect log output or poll the target endpoint/API.
+3. **Immediate Task Termination**: The exact instant a deployment or operation is verified as `READY`, `DONE`, or `SUCCESS`, immediately call `manage_task` with action `kill` to terminate the process, clean up open handles, and avoid blocking user workflows.
+4. **Transparent Communication**: Never leave the user waiting indefinitely on passive background tasks without providing immediate real-time progress and closing finished tasks promptly.
+
+
