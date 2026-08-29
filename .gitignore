@@ -87,4 +87,5 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+*.pdf
 .vercel
