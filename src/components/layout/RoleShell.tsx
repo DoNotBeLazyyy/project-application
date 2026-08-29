@@ -1,3 +1,4 @@
+import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonNavbar from '@components/navbar/CommonNavbar';
 import UserAccountMenu from '@components/navbar/UserAccountMenu';
 import NotificationBell from '@components/notification/NotificationBell';
@@ -10,7 +11,7 @@ import { ListIcon } from '@phosphor-icons/react';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { SideBarSection } from '@type/sidebar.types';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 interface RoleShellProps {
@@ -105,7 +106,9 @@ export default function RoleShell({
                 />
 
                 <main className="flex-1 md:p-6 overflow-y-auto p-4">
-                    <Outlet />
+                    <Suspense fallback={<PageLoadingFallback />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
         </div>

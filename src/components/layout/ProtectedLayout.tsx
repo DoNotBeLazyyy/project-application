@@ -1,10 +1,11 @@
+import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
 import useIdleTimeout from '@hooks/useIdleTimeout';
 import AiAssistant from '@pages/shared/assistant/AiAssistant';
 import { logout, refreshSession } from '@services/auth.service';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 
 export default function ProtectedLayout() {
@@ -43,7 +44,9 @@ export default function ProtectedLayout() {
 
     return (
         <>
-            <Outlet />
+            <Suspense fallback={<PageLoadingFallback />}>
+                <Outlet />
+            </Suspense>
             <AiAssistant />
             <SessionTimeoutModal
                 open={isIdle}

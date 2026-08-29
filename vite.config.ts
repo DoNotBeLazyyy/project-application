@@ -36,6 +36,28 @@ export default defineConfig(({ mode }) => {
                     secure: false,
                 },
             },
+        },
+        build: {
+            chunkSizeWarningLimit: 1000,
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        'vendor-react': ['react', 'react-dom', 'react-router-dom', 'zustand'],
+                        'vendor-mui': [
+                            '@mui/material',
+                            '@mui/system',
+                            '@mui/icons-material',
+                            '@mui/x-date-pickers',
+                            '@mui/x-tree-view',
+                            '@emotion/react',
+                            '@emotion/styled'
+                        ],
+                        'vendor-aggrid': ['ag-grid-community', 'ag-grid-react'],
+                        'vendor-supabase': ['@supabase/supabase-js'],
+                        'vendor-icons': ['@phosphor-icons/react', 'react-icons']
+                    }
+                }
+            }
         }
     }
 })

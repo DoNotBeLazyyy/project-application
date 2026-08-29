@@ -1,8 +1,4 @@
 import ProtectedLayout from '@components/layout/ProtectedLayout';
-import ForgotPasswordPage from '@pages/auth/ForgotPasswordPage';
-import LoginPage from '@pages/auth/LoginPage';
-import SetPasswordPage from '@pages/auth/SetPasswordPage';
-import UnauthorizedPage from '@pages/auth/UnauthorizedPage';
 import BasePage from '@pages/BasePage';
 import ErrorPage from '@pages/error/ErrorPage';
 import { adminRoutes } from '@routes/admin/admin.route';
@@ -13,6 +9,7 @@ import RoleGate from '@routes/guards/RoleGate';
 import RoleRedirect from '@routes/guards/RoleRedirect';
 import { registrarRoutes } from '@routes/registrar/registrar.route';
 import { studentRoutes } from '@routes/student/student.route';
+import { lazyElement } from '@utils/lazy.util';
 import { createBrowserRouter } from 'react-router-dom';
 
 const appRouter = createBrowserRouter([
@@ -21,13 +18,33 @@ const appRouter = createBrowserRouter([
         errorElement: <ErrorPage />,
         path: '/',
         children: [
-            { element: <LoginPage />, path: 'login' },
-            { element: <ForgotPasswordPage />, path: 'forgot-password' },
-            { element: <SetPasswordPage />, path: 'set-password' },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/auth/LoginPage');
+                }),
+                path: 'login'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/auth/ForgotPasswordPage');
+                }),
+                path: 'forgot-password'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/auth/SetPasswordPage');
+                }),
+                path: 'set-password'
+            },
             {
                 element: <AuthGuard />,
                 children: [
-                    { element: <UnauthorizedPage />, path: 'unauthorized' },
+                    {
+                        element: lazyElement(function() {
+                            return import('@pages/auth/UnauthorizedPage');
+                        }),
+                        path: 'unauthorized'
+                    },
                     {
                         element: <ProtectedLayout />,
                         errorElement: <ErrorPage />,

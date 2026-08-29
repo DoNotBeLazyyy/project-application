@@ -3,14 +3,14 @@ name: AU-JAS LMS CI/CD
 on:
   push:
     branches:
-      - main
       - master
+      - main
       - develop
       - develop_auth
   pull_request:
     branches:
-      - main
       - master
+      - main
       - develop
       - develop_auth
 
@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   validate-and-build:
-    name: Lint, Test & Production Build
+    name: Lint, Typecheck, Test & Production Build
     runs-on: ubuntu-latest
 
     steps:
@@ -39,15 +39,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Strict TypeScript type check
+        run: npx tsc -b
+
       - name: Run ESLint
         run: npm run lint
 
       - name: Run automated unit tests
-        run: npm test
+        run: npm run test
 
-      - name: Run strict TypeScript check and production build
+      - name: Run production build verification
         run: npm run build-prd
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://ysitzlbjoueorndmnmdf.supabase.co' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzaXR6bGJqb3Vlb3JuZG1ubWRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNjc4MTksImV4cCI6MjA4OTY0MzgxOX0.vtHOKmVjCvIZ1uav2kjWl7NPWTQvJhKqzkbx27HJzk8' }}
-

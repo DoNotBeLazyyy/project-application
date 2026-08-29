@@ -1,48 +1,133 @@
-import AcademicThresholdManagement from '@pages/admin/academic-threshold-management';
-import AdminDashboard from '@pages/admin/AdminDashboard';
-import AdminLayout from '@pages/admin/AdminLayout';
-import AuditLogManagement from '@pages/admin/audit-log-management';
-import EvaluationManagement from '@pages/admin/evaluation-management';
-import EvaluationTemplateDetailPage from '@pages/admin/evaluation-management/EvaluationTemplateDetailPage';
-import GradingConfiguration from '@pages/admin/grading-config-management';
-import RoleManagement from '@pages/admin/role-management';
-import AnnouncementDetailPage from '@pages/shared/announcement-management/AnnouncementDetailPage';
-import AnnouncementManagement from '@pages/shared/announcement-management';
-import EventDetailPage from '@pages/shared/event-management/EventDetailPage';
-import EventManagement from '@pages/shared/event-management';
-import ProfilePage from '@pages/shared/profile';
-import SchoolYearManagement from '@pages/admin/school-year-management';
-import SystemSettings from '@pages/admin/system-settings-management';
-import TermManagement from '@pages/admin/term-management';
-import TermTypeManagement from '@pages/admin/term-management/type';
-import UserManagement from '@pages/admin/user-management';
+import { lazyElement } from '@utils/lazy.util';
 import { RouteObject } from 'react-router-dom';
 
 export const adminRoutes: RouteObject[] = [
     {
-        element: <AdminLayout />,
+        element: lazyElement(function() {
+            return import('@pages/admin/AdminLayout');
+        }),
         path: 'admin',
         children: [
-            { element: <AdminDashboard />, index: true },
-            { element: <UserManagement />, path: 'users' },
-            { element: <SchoolYearManagement />, path: 'school-years' },
-            { element: <GradingConfiguration />, path: 'grade-configurations' },
-            { element: <EvaluationManagement />, path: 'evaluations' },
-            { element: <EvaluationTemplateDetailPage />, path: 'evaluations/new' },
-            { element: <EvaluationTemplateDetailPage />, path: 'evaluations/:id' },
-            { element: <RoleManagement />, path: 'roles' },
-            { element: <TermManagement />, path: 'terms' },
-            { element: <TermTypeManagement />, path: 'term-types' },
-            { element: <AcademicThresholdManagement />, path: 'academic-thresholds' },
-            { element: <AnnouncementManagement />, path: 'announcement-management' },
-            { element: <AnnouncementDetailPage />, path: 'announcement-management/new' },
-            { element: <AnnouncementDetailPage />, path: 'announcement-management/:id' },
-            { element: <EventManagement />, path: 'event-management' },
-            { element: <EventDetailPage />, path: 'event-management/new' },
-            { element: <EventDetailPage />, path: 'event-management/:id' },
-            { element: <AuditLogManagement />, path: 'audit-logs' },
-            { element: <ProfilePage />, path: 'profile' },
-            { element: <SystemSettings />, path: 'system-settings' }
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/AdminDashboard');
+                }),
+                index: true
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/user-management');
+                }),
+                path: 'users'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/school-year-management');
+                }),
+                path: 'school-years'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/grading-config-management');
+                }),
+                path: 'grade-configurations'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/evaluation-management');
+                }),
+                path: 'evaluations'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/evaluation-management/EvaluationTemplateDetailPage');
+                }),
+                path: 'evaluations/new'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/evaluation-management/EvaluationTemplateDetailPage');
+                }),
+                path: 'evaluations/:id'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/role-management');
+                }),
+                path: 'roles'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/term-management');
+                }),
+                path: 'terms'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/term-management/type');
+                }),
+                path: 'term-types'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/academic-threshold-management');
+                }),
+                path: 'academic-thresholds'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management');
+                }),
+                path: 'announcement-management'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
+                }),
+                path: 'announcement-management/new'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
+                }),
+                path: 'announcement-management/:id'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/event-management');
+                }),
+                path: 'event-management'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/event-management/EventDetailPage');
+                }),
+                path: 'event-management/new'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/event-management/EventDetailPage');
+                }),
+                path: 'event-management/:id'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/audit-log-management');
+                }),
+                path: 'audit-logs'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/profile');
+                }),
+                path: 'profile'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/system-settings-management');
+                }),
+                path: 'system-settings'
+            }
         ]
     }
 ];
