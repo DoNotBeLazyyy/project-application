@@ -57,7 +57,9 @@ export const useAppStore = create<AppStore>()(
             storage: createJSONStorage(() => cookieStorage),
             partialize: (state) => ({
                 session: state.session,
-                activeRole: state.activeRole
+                activeRole: state.activeRole,
+                availableRoles: state.availableRoles,
+                userProfile: state.userProfile
             })
         }
     )
