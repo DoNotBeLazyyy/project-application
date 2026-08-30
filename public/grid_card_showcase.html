@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AU-JAS LMS — Final Bento Grid & Dual-State Toolbar Showcase</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .au-brand-gradient { background: linear-gradient(135deg, #022179 0%, #225DB4 100%); }
+    .card-transition { transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-5">
+
+    <!-- Top Master Control Bar -->
+    <header class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl au-brand-gradient flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-900/20">
+          AU
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">AU Brand Blue Theme</span>
+            <span class="text-xs text-slate-500 font-medium">AU-JAS LMS</span>
+          </div>
+          <h1 class="text-xl font-bold text-slate-900 font-heading">Bento Grid & Brand Blue Selection Bar</h1>
+        </div>
+      </div>
+
+      <!-- Responsive Grid Column Tester (1 to 4 columns) -->
+      <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+        <span class="text-xs font-semibold text-slate-600 px-2">Columns:</span>
+        <button id="col-1" onclick="setGridColumns(1)" class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">
+          1 Col (Mobile)
+        </button>
+        <button id="col-2" onclick="setGridColumns(2)" class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">
+          2 Cols (Tablet)
+        </button>
+        <button id="col-3" onclick="setGridColumns(3)" class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition">
+          3 Cols (Desktop)
+        </button>
+        <button id="col-4" onclick="setGridColumns(4)" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-xs text-blue-700 transition">
+          4 Cols (Ultrawide)
+        </button>
+      </div>
+    </header>
+
+    <!-- Main LMS Card Section Container -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+
+      <!-- Dynamic Dual-State Toolbar (Blue Brand Theme) -->
+      <div id="dynamic-toolbar" class="p-4 border-b border-slate-200 bg-white">
+        <!-- Rendered by JavaScript -->
+      </div>
+
+      <!-- Infinite Scroll Page Progress Header -->
+      <div class="px-5 py-2.5 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-md font-bold bg-blue-50 text-blue-700 border border-blue-200/70 text-[11px]">
+            Showing <span id="stat-showing-count" class="mx-1">12</span> of <span id="stat-total-count" class="mx-1">48</span> records
+          </span>
+          <span class="text-slate-500 font-medium">
+            • Page <span id="stat-current-page" class="font-bold text-slate-800">1</span> of <span id="stat-total-pages" class="font-bold text-slate-800">4</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-[11px] text-slate-400 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            Select cards below to preview the AU Blue selection toolbar
+          </span>
+        </div>
+      </div>
+
+      <!-- Bento Cards Grid Container -->
+      <div id="grid-container" class="p-4 md:p-5 bg-slate-100/60 grid gap-4 transition-all grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <!-- Cards injected here -->
+      </div>
+
+      <!-- Infinite Scroll Loading Sentinel & Trigger -->
+      <div id="scroll-sentinel" class="p-6 bg-slate-50/80 border-t border-slate-200 flex flex-col items-center justify-center gap-3 text-center">
+        <div id="infinite-loader" class="hidden items-center gap-2 text-xs font-bold text-blue-600">
+          <svg class="w-5 h-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Loading Page <span id="loading-page-num">2</span> from Supabase RPC...
+        </div>
+        
+        <div id="infinite-controls" class="flex flex-col sm:flex-row items-center gap-3">
+          <button id="btn-load-more" onclick="loadNextPage()" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            Scroll Down to Stream Next 12 Cards
+          </button>
+        </div>
+
+        <p id="end-of-records-msg" class="text-xs text-slate-500 font-semibold hidden">
+          🎉 All 48 records have been loaded. No more pages.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- UPLOAD CSV MODAL -->
+  <div id="upload-csv-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 font-heading">Upload Sections via CSV</h3>
+            <p class="text-xs text-slate-500">Bulk import class section allocations</p>
+          </div>
+        </div>
+        <button onclick="closeUploadCsvModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- IN-MODAL CSV TEMPLATE DOWNLOAD CALLOUT -->
+      <div class="p-3.5 bg-blue-50/80 rounded-xl border border-blue-100 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <span class="text-xs font-bold text-blue-900 block">Download Sample Template</span>
+          <span class="text-[11px] text-blue-700">Pre-formatted columns (.csv) for error-free import.</span>
+        </div>
+        <button onclick="alert('Downloading AU_JAS_Sections_Template.csv...')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-xs transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Download Template
+        </button>
+      </div>
+
+      <!-- Drag & Drop Zone -->
+      <div class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-6 text-center bg-slate-50/50 cursor-pointer space-y-2 card-transition">
+        <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-800">Drag & drop your CSV file here, or browse</p>
+          <p class="text-[11px] text-slate-400">Only .csv files accepted (Max 10MB)</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="closeUploadCsvModal()" class="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-xl">Cancel</button>
+        <button onclick="closeUploadCsvModal(); alert('CSV Processed successfully!');" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-xl shadow-xs">Process & Validate</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_ITEMS = [
+      { id: '1', code: 'BSIT-4A', title: 'Advanced Database Systems', instructor: 'Dr. Angela R. Lee', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'MWF 10:00 - 11:30 AM', room: 'Lab 402, CLAB', enrolled: 38, capacity: 45, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '2', code: 'BSCS-3B', title: 'Design & Analysis of Algorithms', instructor: 'Prof. David M. Santos', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'TTH 01:00 - 02:30 PM', room: 'Room 305, Main', enrolled: 42, capacity: 45, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '3', code: 'BSEMC-2A', title: '3D Modeling & Rigging', instructor: 'Ms. Katherine Tan', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face', units: '4.0 Units', schedule: 'Wed 08:00 AM - 12:00 PM', room: 'Mac Lab 201', enrolled: 28, capacity: 30, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '4', code: 'BSIT-1C', title: 'Introduction to Computing', instructor: 'Engr. Roberto Cruz', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'Sat 08:00 AM - 01:00 PM', room: 'Room 108, Bldg C', enrolled: 45, capacity: 45, term: '1st Sem AY 25-26', status: 'Full' },
+      { id: '5', code: 'BSIS-3A', title: 'Enterprise Architecture', instructor: 'Dr. Maria Ramos', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'TTH 04:00 - 05:30 PM', room: 'Online / Zoom', enrolled: 18, capacity: 40, term: '1st Sem AY 25-26', status: 'Pending' },
+      { id: '6', code: 'ACT-2A', title: 'Object-Oriented Programming', instructor: 'Prof. Jason Villar', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'MWF 03:00 - 04:30 PM', room: 'Lab 401, CLAB', enrolled: 31, capacity: 40, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '7', code: 'BSCS-4A', title: 'Compiler Design', instructor: 'Dr. Angela R. Lee', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'MWF 01:00 - 02:30 PM', room: 'Lab 303', enrolled: 22, capacity: 35, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '8', code: 'BSIT-2B', title: 'Data Structures', instructor: 'Prof. David M. Santos', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'TTH 09:00 - 10:30 AM', room: 'Room 204', enrolled: 40, capacity: 40, term: '1st Sem AY 25-26', status: 'Full' },
+      { id: '9', code: 'BSIT-3A', title: 'Web Systems & Technologies', instructor: 'Engr. Roberto Cruz', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'Fri 08:00 AM - 01:00 PM', room: 'Lab 402', enrolled: 36, capacity: 45, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '10', code: 'BSEMC-3A', title: 'Game Engine Systems', instructor: 'Ms. Katherine Tan', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face', units: '4.0 Units', schedule: 'Mon 08:00 AM - 12:00 PM', room: 'Mac Lab 201', enrolled: 25, capacity: 30, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '11', code: 'BSIS-4A', title: 'IT Audit & Security', instructor: 'Dr. Maria Ramos', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'Wed 05:00 - 08:00 PM', room: 'Room 401', enrolled: 19, capacity: 35, term: '1st Sem AY 25-26', status: 'Active' },
+      { id: '12', code: 'ACT-1A', title: 'Hardware Fundamentals', instructor: 'Prof. Jason Villar', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face', units: '3.0 Units', schedule: 'Sat 01:00 - 06:00 PM', room: 'Hardware Lab', enrolled: 34, capacity: 40, term: '1st Sem AY 25-26', status: 'Active' }
+    ];
+
+    let items = [...INITIAL_ITEMS];
+    let selectedIds = new Set();
+    let currentGridCols = 4;
+    let loadedCount = 12;
+    const totalCount = 48;
+    const pageSize = 12;
+
+    function setGridColumns(cols) {
+      currentGridCols = cols;
+      [1, 2, 3, 4].forEach(n => {
+        const btn = document.getElementById('col-' + n);
+        if (n === cols) {
+          btn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-xs text-blue-700 transition';
+        } else {
+          btn.className = 'px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+
+      const container = document.getElementById('grid-container');
+      const colMap = {
+        1: 'grid-cols-1',
+        2: 'grid-cols-1 sm:grid-cols-2',
+        3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+        4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+      };
+      container.className = `p-4 md:p-5 bg-slate-100/60 grid gap-4 transition-all ${colMap[cols]}`;
+    }
+
+    function toggleSelectCard(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else {
+        selectedIds.add(id);
+      }
+      renderToolbar();
+      renderCards();
+    }
+
+    function selectAllVisible() {
+      items.slice(0, loadedCount).forEach(item => selectedIds.add(item.id));
+      renderToolbar();
+      renderCards();
+    }
+
+    function clearSelection() {
+      selectedIds.clear();
+      renderToolbar();
+      renderCards();
+    }
+
+    function deleteSelected() {
+      if (!selectedIds.size) return;
+      if (confirm(`Delete ${selectedIds.size} selected section(s)?`)) {
+        items = items.filter(item => !selectedIds.has(item.id));
+        selectedIds.clear();
+        renderToolbar();
+        renderCards();
+      }
+    }
+
+    function renderToolbar() {
+      const container = document.getElementById('dynamic-toolbar');
+      const isSelectionActive = selectedIds.size > 0;
+
+      if (isSelectionActive) {
+        // STATE 2: Selection Mode — AU BRAND BLUE STYLED BANNER
+        container.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-blue-50/90 p-3 rounded-xl border border-blue-200 animate-in fade-in duration-200">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">${selectedIds.size}</span>
+              <div>
+                <span class="text-xs font-bold text-blue-950 block">${selectedIds.size} Section(s) Selected</span>
+              </div>
+              <button onclick="selectAllVisible()" class="text-xs font-bold text-blue-700 hover:underline ml-2">Select All (${loadedCount})</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="alert('Batch status updated on ' + ${selectedIds.size} + ' items')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-2xs">
+                Batch Status
+              </button>
+              <button onclick="deleteSelected()" class="px-3.5 py-1.5 text-xs font-bold text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 flex items-center gap-1.5 shadow-2xs transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Delete Selected (${selectedIds.size})
+              </button>
+              <button onclick="clearSelection()" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        // STATE 1: Default Mode
+        container.innerHTML = `
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-sm">
+              <input type="text" placeholder="Search section code, course title, faculty..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <svg class="w-4 h-4 absolute left-2.5 top-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg> Filter
+              </button>
+              <button class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg> Sort
+              </button>
+              <button onclick="openUploadCsvModal()" class="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Upload CSV
+              </button>
+              <button class="px-3.5 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 flex items-center gap-1.5 shadow-xs transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Create Section
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderCards() {
+      const container = document.getElementById('grid-container');
+      const visibleItems = items.slice(0, loadedCount);
+
+      document.getElementById('stat-showing-count').textContent = visibleItems.length;
+      document.getElementById('stat-current-page').textContent = Math.ceil(visibleItems.length / pageSize);
+
+      let html = '';
+      visibleItems.forEach(item => {
+        const isSelected = selectedIds.has(item.id);
+        const fillPct = Math.round((item.enrolled / item.capacity) * 100);
+
+        html += `
+          <div class="bg-white rounded-xl border ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200/90'} shadow-xs hover:shadow-md card-transition flex flex-col justify-between overflow-hidden group">
+            
+            <!-- Card Header -->
+            <div class="p-4 pb-3 border-b border-slate-100 flex items-start justify-between gap-2.5">
+              <div class="flex items-center gap-2 min-w-0">
+                <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectCard('${item.id}')" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0">
+                <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200/60 shrink-0">${item.code}</span>
+                <span class="px-2 py-0.5 rounded-md ${item.status === 'Full' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'} font-semibold text-[11px] shrink-0">${item.status}</span>
+              </div>
+              <button class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 shrink-0">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+              </button>
+            </div>
+
+            <!-- Title -->
+            <div class="px-4 pt-3">
+              <h3 class="font-bold text-slate-900 text-sm font-heading line-clamp-1 group-hover:text-blue-600 transition" title="${item.title}">${item.title}</h3>
+            </div>
+
+            <!-- Body: Instructor + 2x2 Matrix + Capacity -->
+            <div class="p-4 space-y-3 flex-1">
+              <div class="flex items-center gap-2.5 bg-slate-50/80 p-2 rounded-lg border border-slate-100">
+                <img src="${item.avatar}" alt="${item.instructor}" class="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200">
+                <div class="min-w-0">
+                  <p class="text-[10px] text-slate-400 uppercase font-semibold">Faculty In-Charge</p>
+                  <p class="text-xs font-semibold text-slate-800 truncate">${item.instructor}</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-slate-50/60 p-2 rounded-lg border border-slate-100">
+                  <span class="text-[10px] text-slate-400 block font-medium">Schedule</span>
+                  <span class="font-medium text-slate-700 text-[11px] line-clamp-1">${item.schedule}</span>
+                </div>
+                <div class="bg-slate-50/60 p-2 rounded-lg border border-slate-100">
+                  <span class="text-[10px] text-slate-400 block font-medium">Room & Units</span>
+                  <span class="font-medium text-slate-700 text-[11px] truncate">${item.room} • ${item.units}</span>
+                </div>
+              </div>
+
+              <div class="space-y-1 pt-1">
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-500 font-medium">Capacity</span>
+                  <span class="font-bold text-slate-800">${item.enrolled} / ${item.capacity} <span class="text-slate-400 font-normal">(${fillPct}%)</span></span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full ${fillPct > 90 ? 'bg-amber-500' : 'bg-blue-600'} rounded-full" style="width: ${fillPct}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div class="p-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-2">
+              <span class="text-[10px] text-slate-400 font-medium">${item.term}</span>
+              <div class="flex items-center gap-1.5">
+                <button onclick="alert('Tier 1: Navigating to Full Section Workspace (/faculty/sections/${item.id}) with all 8 tabs!')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs">
+                  Full Page
+                </button>
+                <button onclick="alert('Tier 2: Quick Edit Modal opened for ' + '${item.code}')" class="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 rounded-lg">
+                  Edit
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function loadNextPage() {
+      if (loadedCount >= totalCount) return;
+
+      const loader = document.getElementById('infinite-loader');
+      const controls = document.getElementById('infinite-controls');
+      const nextPgNum = Math.ceil((loadedCount + pageSize) / pageSize);
+      document.getElementById('loading-page-num').textContent = nextPgNum;
+
+      loader.classList.remove('hidden');
+      loader.classList.add('flex');
+      controls.classList.add('hidden');
+
+      setTimeout(() => {
+        const newBatch = INITIAL_ITEMS.map((item, idx) => ({
+          ...item,
+          id: (loadedCount + idx + 1).toString(),
+          title: item.title + ` (Sec ${nextPgNum})`
+        }));
+        
+        items.push(...newBatch);
+        loadedCount += pageSize;
+
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+        controls.classList.remove('hidden');
+
+        if (loadedCount >= totalCount) {
+          controls.classList.add('hidden');
+          document.getElementById('end-of-records-msg').classList.remove('hidden');
+        }
+
+        renderCards();
+      }, 600);
+    }
+
+    function openUploadCsvModal() {
+      document.getElementById('upload-csv-modal').classList.remove('hidden');
+    }
+
+    function closeUploadCsvModal() {
+      document.getElementById('upload-csv-modal').classList.add('hidden');
+    }
+
+    // Initial render
+    renderToolbar();
+    renderCards();
+  </script>
+</body>
+</html>

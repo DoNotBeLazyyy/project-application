@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AU-JAS LMS — List Controller Showcase</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .au-brand-gradient { background: linear-gradient(135deg, #022179 0%, #225DB4 100%); }
+    .au-blue-bg { background-color: #022179; }
+    .text-au-blue { color: #022179; }
+    .border-au-blue { border-color: #022179; }
+    .anim-fade { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .pop-menu { transition: opacity 0.15s ease, transform 0.15s ease; transform-origin: top right; }
+    .pop-menu[hidden] { opacity: 0; pointer-events: none; transform: scale(0.95); display: none; }
+    .modal-backdrop[hidden] { display: none; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen p-3 md:p-6 antialiased">
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- ================= TOP HEADER & SPEC HIGHLIGHTS ================= -->
+  <header class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+    <div class="flex items-start md:items-center gap-4">
+      <div class="w-13 h-13 rounded-2xl au-brand-gradient flex items-center justify-center text-white font-bold text-xl shadow-md shadow-blue-900/25 shrink-0">
+        AU
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+            UI/UX Interactive Showcase
+          </span>
+          <span class="text-xs font-semibold text-slate-500">List Controller Specification</span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900 font-heading">
+          Unified Right-Aligned Controller & Delete Selection Mode
+        </h1>
+        <p class="text-xs md:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+          Demonstrating right-aligned search & menu, view toggle inside kebab menu, adaptive single-action vs multi-action (three dots) rule, combined filter & sort modal, and automatic switch to bulk delete mode upon item selection.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Scenario Presets / Controls -->
+    <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+      <span class="text-[11px] font-bold text-slate-500 uppercase px-2">Presets:</span>
+      <button onclick="setMenuCount(3)" id="btn-preset-multi" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-blue-700 shadow-xs border border-slate-200 transition hover:bg-slate-100">
+        Multi-Action (3 Dots ⋮)
+      </button>
+      <button onclick="setMenuCount(1)" id="btn-preset-single" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900">
+        Single Action (Direct Btn)
+      </button>
+      <button onclick="quickSelectItems(3)" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-rose-700 bg-rose-50 border border-rose-200 transition hover:bg-rose-100">
+        Simulate Selection (3 Items)
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= RULE SPECIFICATION CARDS ================= -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs mb-2">1</div>
+      <h3 class="text-xs font-bold text-slate-900 font-heading uppercase tracking-wider mb-1">Right-Aligned Controls</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">Search bar and menu/actions are placed on the right side of the list header, keeping titles prominent on the left.</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs mb-2">2</div>
+      <h3 class="text-xs font-bold text-slate-900 font-heading uppercase tracking-wider mb-1">View Toggle in Menu</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">List/Grid toggle is integrated directly inside the three-dots menu dropdown, reducing visual clutter on the toolbar.</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs mb-2">3</div>
+      <h3 class="text-xs font-bold text-slate-900 font-heading uppercase tracking-wider mb-1">Adaptive 3-Dots vs Single</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">If there is only 1 menu action, it renders as a direct button. If &gt;1 action, it collapses into the 3-dots kebab menu.</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center font-bold text-xs mb-2">4</div>
+      <h3 class="text-xs font-bold text-slate-900 font-heading uppercase tracking-wider mb-1">Delete / Bulk Mode</h3>
+      <p class="text-xs text-slate-600 leading-relaxed">Selecting any item instantly replaces the standard controller with Delete Mode (Select All, Delete, and Cancel buttons).</p>
+    </div>
+  </div>
+
+  <!-- ================= MAIN LMS CARD WITH CONTROLLER ================= -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden anim-fade">
+    
+    <!-- ================= CONTROLLER CONTAINER ================= -->
+    <div class="p-4 md:p-5 border-b border-slate-200 bg-white">
+      
+      <!-- STATE A: STANDARD CONTROLLER (Shown when selectedCount == 0) -->
+      <div id="controller-standard" class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Left Side: Title & Subtitle -->
+        <div class="flex items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg md:text-xl font-bold font-heading text-slate-900">Course Catalog & Sections</h2>
+              <span id="badge-total-records" class="px-2 py-0.5 text-xs font-bold bg-slate-100 text-slate-700 rounded-full border border-slate-200">
+                12 records
+              </span>
+              <span id="badge-active-filters" class="hidden px-2 py-0.5 text-[11px] font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                Filtered
+              </span>
+            </div>
+            <p class="text-xs md:text-sm text-slate-500 mt-0.5">Manage curriculum course offerings, assigned faculty, and enrolled section quotas.</p>
+          </div>
+        </div>
+
+        <!-- Right Side: Search Input + Menu / Action Controls -->
+        <div class="flex items-center gap-2 justify-end w-full md:w-auto">
+          
+          <!-- Search Input with Clear & Icon -->
+          <div class="relative w-full sm:w-64">
+            <input 
+              id="input-search" 
+              type="text" 
+              placeholder="Search code, title, instructor..." 
+              oninput="handleSearch(this.value)"
+              class="w-full h-9.5 pl-9 pr-8 text-xs md:text-sm rounded-xl border border-slate-300 bg-slate-50/70 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition"
+            />
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+            <button id="btn-clear-search" onclick="clearSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Dynamic Action / Menu Slot (Adaptive: Single button vs 3-dots menu) -->
+          <div id="action-menu-slot" class="relative">
+            <!-- Rendered by JavaScript based on action count -->
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- STATE B: DELETE / SELECTION MODE CONTROLLER (Shown when selectedCount > 0) -->
+      <div id="controller-delete-mode" class="hidden anim-fade bg-blue-50/80 border border-blue-200 rounded-xl px-3 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        
+        <!-- Left Side: Selection Count & Select All -->
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-700 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+            <span id="selected-count-badge">0</span>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-blue-950 font-heading">
+              <span id="selected-count-text">0</span> items selected
+            </span>
+            <span class="text-xs text-blue-700/80 block">Bulk actions active</span>
+          </div>
+          <div class="h-5 w-px bg-blue-200 mx-1 hidden sm:block"></div>
+          <button 
+            id="btn-select-all" 
+            onclick="toggleSelectAll()" 
+            class="text-xs font-bold text-blue-700 hover:text-blue-900 underline underline-offset-2 cursor-pointer transition">
+            Select All (12)
+          </button>
+        </div>
+
+        <!-- Right Side: Bulk Actions (Delete + Allowed Actions + Cancel) -->
+        <div class="flex items-center gap-2 justify-end flex-wrap">
+          
+          <!-- Allowed Bulk Action 1: Export Selected -->
+          <button 
+            onclick="handleBulkExport()" 
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100/60 shadow-2xs transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export Selected
+          </button>
+
+          <!-- Allowed Bulk Action 2: Change Status -->
+          <button 
+            onclick="handleBulkStatusChange()" 
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100/60 shadow-2xs transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Set Status
+          </button>
+
+          <!-- Primary Delete Action: Delete Selected -->
+          <button 
+            onclick="promptBulkDelete()" 
+            class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            Delete Selected (<span id="btn-delete-count">0</span>)
+          </button>
+
+          <!-- Cancel Button -->
+          <button 
+            onclick="clearSelection()" 
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition">
+            Cancel
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= APPLIED FILTER & SORT PILLS BAR ================= -->
+    <div id="applied-filters-bar" class="hidden px-4 md:px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-slate-500 font-semibold flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          Active View Filters:
+        </span>
+        <span id="pill-department" class="hidden px-2.5 py-1 rounded-md bg-blue-100/70 text-blue-800 font-medium flex items-center gap-1.5 border border-blue-200">
+          Dept: <strong id="val-dept">CCS</strong>
+          <button onclick="removeFilter('dept')" class="hover:text-rose-600">×</button>
+        </span>
+        <span id="pill-status" class="hidden px-2.5 py-1 rounded-md bg-blue-100/70 text-blue-800 font-medium flex items-center gap-1.5 border border-blue-200">
+          Status: <strong id="val-status">Active</strong>
+          <button onclick="removeFilter('status')" class="hover:text-rose-600">×</button>
+        </span>
+        <span id="pill-sort" class="px-2.5 py-1 rounded-md bg-amber-100/70 text-amber-900 font-medium flex items-center gap-1.5 border border-amber-200">
+          Sort: <strong id="val-sort">Code (Ascending)</strong>
+          <button onclick="resetSort()" class="hover:text-rose-600">×</button>
+        </span>
+      </div>
+      <button onclick="resetAllFiltersAndSort()" class="text-blue-700 hover:text-blue-900 font-bold hover:underline">
+        Reset All
+      </button>
+    </div>
+
+    <!-- ================= MAIN CONTENT VIEW: GRID OR TABLE ================= -->
+    <div class="p-4 md:p-5 bg-slate-100/50 min-h-[420px]">
+      
+      <!-- GRID VIEW -->
+      <div id="view-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Rendered by JavaScript -->
+      </div>
+
+      <!-- TABLE VIEW -->
+      <div id="view-table" class="hidden bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left text-xs md:text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="p-3.5 w-10 text-center">
+                  <input type="checkbox" id="th-checkbox-all" onchange="toggleSelectAll()" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                </th>
+                <th class="p-3.5">Code & Section</th>
+                <th class="p-3.5">Course Title</th>
+                <th class="p-3.5">Department</th>
+                <th class="p-3.5">Instructor</th>
+                <th class="p-3.5">Capacity</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-100 text-slate-800">
+              <!-- Rendered by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="view-empty" class="hidden p-12 text-center flex flex-col items-center justify-center">
+        <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-800 font-heading">No matching records found</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm">Try adjusting your search terms or clearing your applied filters.</p>
+        <button onclick="resetAllFiltersAndSort()" class="mt-3 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition">
+          Clear Search & Filters
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ================= FOOTER PAGINATION ================= -->
+    <div class="px-4 md:px-5 py-3 bg-white border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+      <div class="flex items-center gap-2">
+        <span>Showing <strong id="page-stat-showing" class="text-slate-900">12</strong> of <strong id="page-stat-total" class="text-slate-900">12</strong> courses</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-400" disabled>Previous</button>
+        <button class="px-2.5 py-1 rounded bg-blue-700 text-white font-bold">1</button>
+        <button class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-700">2</button>
+        <button class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-700">Next</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= THREE-DOTS DROPDOWN MENU TEMPLATE ================= -->
+  <!-- Floating popover attached to document -->
+  <div id="popover-menu" hidden class="pop-menu absolute z-50 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 text-xs md:text-sm text-slate-700 divide-y divide-slate-100">
+    
+    <!-- Section 1: View Toggle (Grid vs List inside Menu) -->
+    <div class="p-2">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1.5 block mb-1.5">Layout View</span>
+      <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
+        <button 
+          id="menu-btn-grid" 
+          onclick="setViewMode('grid')" 
+          class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 shadow-2xs">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
+          Grid
+        </button>
+        <button 
+          id="menu-btn-table" 
+          onclick="setViewMode('table')" 
+          class="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          List
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 2: Combined Filter & Sort Trigger -->
+    <div class="py-1">
+      <button 
+        onclick="openFilterSortModal()" 
+        class="w-full px-3.5 py-2 flex items-center justify-between hover:bg-slate-50 transition text-slate-800 font-medium">
+        <span class="flex items-center gap-2.5">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          Filter & Sort
+        </span>
+        <span id="menu-filter-sort-badge" class="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-blue-100 text-blue-800">
+          Active
+        </span>
+      </button>
+    </div>
+
+    <!-- Section 3: CSV & Secondary Actions -->
+    <div class="py-1">
+      <button 
+        onclick="showToast('CSV Template downloaded successfully')" 
+        class="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-50 transition text-slate-700">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Download CSV Template
+      </button>
+      <button 
+        onclick="showToast('Upload CSV modal opened')" 
+        class="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-50 transition text-slate-700">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Upload CSV Records
+      </button>
+    </div>
+
+    <!-- Section 4: Primary Create Action -->
+    <div class="py-1">
+      <button 
+        onclick="showToast('Create Course modal opened')" 
+        class="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-blue-50 text-blue-700 font-bold transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Create New Course
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ================= COMBINED FILTER & SORT MODAL ================= -->
+  <div id="modal-filter-sort" hidden class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden anim-fade">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 font-heading">Filter & Sort Records</h3>
+            <p class="text-xs text-slate-500">Configure parameters to customize list content</p>
+          </div>
+        </div>
+        <button onclick="closeFilterSortModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/50 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Combined Sections) -->
+      <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        
+        <!-- SECTION 1: FILTER OPTIONS -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span> Filter Options
+            </span>
+          </div>
+
+          <div class="space-y-3.5">
+            <!-- Filter: Department -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Academic Department</label>
+              <select id="select-filter-dept" class="w-full h-9.5 px-3 rounded-xl border border-slate-300 text-xs md:text-sm bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                <option value="ALL">All Departments</option>
+                <option value="CCS">College of Computer Studies (CCS)</option>
+                <option value="CBA">College of Business Administration (CBA)</option>
+                <option value="CAS">College of Arts & Sciences (CAS)</option>
+                <option value="CON">College of Nursing (CON)</option>
+              </select>
+            </div>
+
+            <!-- Filter: Status -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Status</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="setModalStatusFilter('ALL')" id="filter-btn-status-all" class="py-2 text-xs font-bold rounded-lg border border-blue-600 bg-blue-50 text-blue-700 transition">
+                  All
+                </button>
+                <button type="button" onclick="setModalStatusFilter('Active')" id="filter-btn-status-active" class="py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition">
+                  Active
+                </button>
+                <button type="button" onclick="setModalStatusFilter('Inactive')" id="filter-btn-status-inactive" class="py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition">
+                  Inactive
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-px bg-slate-200"></div>
+
+        <!-- SECTION 2: SORT OPTIONS -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-600"></span> Sort Configuration
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Sort Field</label>
+              <select id="select-sort-field" class="w-full h-9.5 px-3 rounded-xl border border-slate-300 text-xs md:text-sm bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                <option value="code">Course Code</option>
+                <option value="title">Course Title</option>
+                <option value="enrolled">Enrolled Capacity</option>
+                <option value="dept">Department</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Direction</label>
+              <select id="select-sort-dir" class="w-full h-9.5 px-3 rounded-xl border border-slate-300 text-xs md:text-sm bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                <option value="asc">Ascending (A → Z, 0 → 9)</option>
+                <option value="desc">Descending (Z → A, 9 → 0)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+        <button 
+          onclick="resetModalInputs()" 
+          class="text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Reset Filters
+        </button>
+        <div class="flex items-center gap-2">
+          <button 
+            onclick="closeFilterSortModal()" 
+            class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition">
+            Cancel
+          </button>
+          <button 
+            onclick="applyFilterSortFromModal()" 
+            class="px-5 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-xl shadow-xs transition">
+            Apply Changes
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= DELETE CONFIRMATION MODAL ================= -->
+  <div id="modal-delete-confirm" hidden class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden anim-fade p-6">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 font-heading text-center">Confirm Permanent Deletion</h3>
+      <p class="text-xs text-slate-600 text-center mt-2 leading-relaxed">
+        Are you sure you want to delete <strong id="modal-delete-count-text" class="text-rose-600">3 selected records</strong>? This action cannot be undone.
+      </p>
+      <div class="flex items-center gap-2.5 mt-6">
+        <button onclick="closeDeleteConfirmModal()" class="flex-1 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition">
+          Cancel
+        </button>
+        <button onclick="executeBulkDelete()" class="flex-1 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-xs transition">
+          Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+</div>
+
+<!-- ================= JAVASCRIPT LOGIC ================= -->
+<script>
+  // ================= DATASET =================
+  const INITIAL_DATA = [
+    { id: '1', code: 'CS 101', section: 'BSCS 1-A', title: 'Introduction to Computing', dept: 'CCS', instructor: 'Dr. Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=60', slots: 40, enrolled: 38, schedule: 'M/W 8:00 AM - 10:00 AM', room: 'Lab 301', status: 'Active' },
+    { id: '2', code: 'CS 102', section: 'BSCS 1-B', title: 'Data Structures & Algorithms', dept: 'CCS', instructor: 'Engr. Carlos Reyes', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=60', slots: 35, enrolled: 35, schedule: 'T/TH 10:00 AM - 12:00 PM', room: 'Lab 304', status: 'Active' },
+    { id: '3', code: 'IT 204', section: 'BSIT 2-A', title: 'Web Systems & Technologies', dept: 'CCS', instructor: 'Prof. Ana De Leon', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=60', slots: 40, enrolled: 28, schedule: 'M/W 1:00 PM - 3:00 PM', room: 'Lab 202', status: 'Active' },
+    { id: '4', code: 'BA 101', section: 'BSBA 1-A', title: 'Principles of Management', dept: 'CBA', instructor: 'Dean Roberto Gomez', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=60', slots: 45, enrolled: 44, schedule: 'T/TH 8:00 AM - 9:30 AM', room: 'Hall 105', status: 'Active' },
+    { id: '5', code: 'BA 205', section: 'BSBA 2-C', title: 'Financial Accounting I', dept: 'CBA', instructor: 'Prof. Elena Ramos', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=60', slots: 40, enrolled: 40, schedule: 'F 8:00 AM - 12:00 PM', room: 'Hall 201', status: 'Inactive' },
+    { id: '6', code: 'CAS 105', section: 'ABCOMM 1-A', title: 'Purposive Communication', dept: 'CAS', instructor: 'Prof. Michael Lim', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=120&auto=format&fit=crop&q=60', slots: 50, enrolled: 48, schedule: 'M/W 10:00 AM - 11:30 AM', room: 'Aud 2', status: 'Active' },
+    { id: '7', code: 'CAS 201', section: 'BSP 2-B', title: 'General Psychology', dept: 'CAS', instructor: 'Dr. Teresa Cruz', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=60', slots: 45, enrolled: 32, schedule: 'T/TH 1:00 PM - 2:30 PM', room: 'Hall 302', status: 'Active' },
+    { id: '8', code: 'NUR 101', section: 'BSN 1-A', title: 'Theoretical Foundations of Nursing', dept: 'CON', instructor: 'Prof. Patricia David', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=60', slots: 30, enrolled: 30, schedule: 'M/W 8:00 AM - 11:00 AM', room: 'Nurs Lab 1', status: 'Active' },
+    { id: '9', code: 'NUR 202', section: 'BSN 2-A', title: 'Health Assessment & Clinicals', dept: 'CON', instructor: 'Dr. Joseph Villanueva', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&auto=format&fit=crop&q=60', slots: 30, enrolled: 24, schedule: 'T/TH 8:00 AM - 12:00 PM', room: 'Clinic 1', status: 'Inactive' },
+    { id: '10', code: 'CS 305', section: 'BSCS 3-A', title: 'Database Management Systems', dept: 'CCS', instructor: 'Engr. Carlos Reyes', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=60', slots: 35, enrolled: 31, schedule: 'F 1:00 PM - 5:00 PM', room: 'Lab 305', status: 'Active' },
+    { id: '11', code: 'CS 401', section: 'BSCS 4-A', title: 'Software Engineering & Capstone', dept: 'CCS', instructor: 'Dr. Maria Santos', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=60', slots: 25, enrolled: 25, schedule: 'Sat 9:00 AM - 1:00 PM', room: 'Lab 301', status: 'Active' },
+    { id: '12', code: 'IT 310', section: 'BSIT 3-B', title: 'Information Assurance & Security', dept: 'CCS', instructor: 'Prof. Ana De Leon', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=60', slots: 35, enrolled: 19, schedule: 'M/W 3:30 PM - 5:30 PM', room: 'Lab 204', status: 'Active' }
+  ];
+
+  // ================= STATE =================
+  let currentData = [...INITIAL_DATA];
+  let selectedIds = new Set();
+  let viewMode = 'grid'; // 'grid' | 'table'
+  let searchQuery = '';
+  let filterDept = 'ALL';
+  let filterStatus = 'ALL';
+  let sortField = 'code';
+  let sortDir = 'asc';
+  let modalTempStatus = 'ALL';
+  let menuActionCount = 3; // 3 = multi (three dots), 1 = single action
+
+  // ================= INITIALIZATION =================
+  document.addEventListener('DOMContentLoaded', () => {
+    renderActionSlot();
+    applyDataTransform();
+    setupOutsideClicks();
+  });
+
+  // ================= ADAPTIVE MENU RENDERING =================
+  // Rule: If only 1 action -> render direct button. If >1 action -> 3 dots menu.
+  function renderActionSlot() {
+    const slot = document.getElementById('action-menu-slot');
+    if (!slot) return;
+
+    if (menuActionCount === 1) {
+      // SINGLE ACTION: Direct Create Button (No 3 dots)
+      slot.innerHTML = `
+        <button 
+          id="btn-single-action"
+          onclick="openFilterSortModal()" 
+          class="h-9.5 px-3.5 text-xs font-bold rounded-xl bg-blue-700 hover:bg-blue-800 text-white shadow-xs transition flex items-center gap-1.5 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          <span>Filter & Sort</span>
+        </button>
+      `;
+    } else {
+      // MULTI ACTION: Three Dots Kebab Button
+      const hasActiveFilters = (filterDept !== 'ALL' || filterStatus !== 'ALL' || sortField !== 'code' || sortDir !== 'asc');
+      slot.innerHTML = `
+        <button 
+          id="btn-kebab-menu"
+          onclick="toggleKebabMenu(event)" 
+          aria-label="More actions menu"
+          class="h-9.5 w-9.5 flex items-center justify-center rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 shadow-2xs transition shrink-0 relative">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="1.75"/>
+            <circle cx="12" cy="12" r="1.75"/>
+            <circle cx="12" cy="19" r="1.75"/>
+          </svg>
+          ${hasActiveFilters ? '<span class="w-2 h-2 rounded-full bg-blue-600 absolute top-1 right-1"></span>' : ''}
+        </button>
+      `;
+    }
+  }
+
+  function setMenuCount(count) {
+    menuActionCount = count;
+    const btnMulti = document.getElementById('btn-preset-multi');
+    const btnSingle = document.getElementById('btn-preset-single');
+    if (count === 3) {
+      btnMulti.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-blue-700 shadow-xs border border-slate-200 transition';
+      btnSingle.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900';
+      showToast('Switched to Multi-Action (Three-Dots ⋮ Menu)');
+    } else {
+      btnSingle.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-blue-700 shadow-xs border border-slate-200 transition';
+      btnMulti.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 transition hover:bg-white hover:text-slate-900';
+      showToast('Switched to Single Action (Direct Button without Three Dots)');
+    }
+    renderActionSlot();
+  }
+
+  // ================= KEBAB MENU POSITIONING & TOGGLE =================
+  function toggleKebabMenu(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('popover-menu');
+    const btn = document.getElementById('btn-kebab-menu');
+    if (!menu || !btn) return;
+
+    if (!menu.hidden) {
+      menu.hidden = true;
+      return;
+    }
+
+    const rect = btn.getBoundingClientRect();
+    menu.style.top = `${rect.bottom + window.scrollY + 6}px`;
+    menu.style.left = `${rect.right + window.scrollX - menu.offsetWidth}px`;
+    menu.hidden = false;
+    updateMenuViewToggleState();
+  }
+
+  function closeKebabMenu() {
+    const menu = document.getElementById('popover-menu');
+    if (menu) menu.hidden = true;
+  }
+
+  function setupOutsideClicks() {
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('popover-menu');
+      const btn = document.getElementById('btn-kebab-menu');
+      if (menu && !menu.hidden && !menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+        menu.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeKebabMenu();
+        closeFilterSortModal();
+        closeDeleteConfirmModal();
+        if (selectedIds.size > 0) {
+          clearSelection();
+          showToast('Selection cleared via Esc key');
+        }
+      }
+    });
+  }
+
+  // ================= VIEW MODE TOGGLE (INSIDE MENU) =================
+  function setViewMode(mode) {
+    viewMode = mode;
+    updateMenuViewToggleState();
+    closeKebabMenu();
+
+    const viewGrid = document.getElementById('view-grid');
+    const viewTable = document.getElementById('view-table');
+
+    if (mode === 'grid') {
+      viewGrid.classList.remove('hidden');
+      viewTable.classList.add('hidden');
+      showToast('Switched to Bento Grid View');
+    } else {
+      viewGrid.classList.add('hidden');
+      viewTable.classList.remove('hidden');
+      showToast('Switched to List / Table View');
+    }
+  }
+
+  function updateMenuViewToggleState() {
+    const btnGrid = document.getElementById('menu-btn-grid');
+    const btnTable = document.getElementById('menu-btn-table');
+    if (!btnGrid || !btnTable) return;
+
+    if (viewMode === 'grid') {
+      btnGrid.className = 'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 shadow-2xs';
+      btnTable.className = 'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition';
+    } else {
+      btnTable.className = 'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 shadow-2xs';
+      btnGrid.className = 'flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition';
+    }
+  }
+
+  // ================= SEARCH & DATA FILTERING =================
+  function handleSearch(val) {
+    searchQuery = val.trim().toLowerCase();
+    const btnClear = document.getElementById('btn-clear-search');
+    if (btnClear) {
+      btnClear.classList.toggle('hidden', searchQuery.length === 0);
+    }
+    applyDataTransform();
+  }
+
+  function clearSearch() {
+    const input = document.getElementById('input-search');
+    if (input) input.value = '';
+    handleSearch('');
+  }
+
+  function applyDataTransform() {
+    // 1. Filter
+    let filtered = INITIAL_DATA.filter(item => {
+      const matchSearch = !searchQuery || 
+        item.code.toLowerCase().includes(searchQuery) ||
+        item.title.toLowerCase().includes(searchQuery) ||
+        item.section.toLowerCase().includes(searchQuery) ||
+        item.instructor.toLowerCase().includes(searchQuery);
+
+      const matchDept = filterDept === 'ALL' || item.dept === filterDept;
+      const matchStatus = filterStatus === 'ALL' || item.status === filterStatus;
+
+      return matchSearch && matchDept && matchStatus;
+    });
+
+    // 2. Sort
+    filtered.sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    currentData = filtered;
+    renderContent();
+    updateControllerState();
+    updateAppliedFilterPills();
+  }
+
+  // ================= RENDER GRID & TABLE =================
+  function renderContent() {
+    const grid = document.getElementById('view-grid');
+    const tbody = document.getElementById('table-body');
+    const empty = document.getElementById('view-empty');
+
+    if (currentData.length === 0) {
+      grid.classList.add('hidden');
+      document.getElementById('view-table').classList.add('hidden');
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    empty.classList.add('hidden');
+    if (viewMode === 'grid') {
+      grid.classList.remove('hidden');
+      document.getElementById('view-table').classList.add('hidden');
+    } else {
+      grid.classList.add('hidden');
+      document.getElementById('view-table').classList.remove('hidden');
+    }
+
+    // 1. Render Grid Cards
+    grid.innerHTML = currentData.map(item => {
+      const isSelected = selectedIds.has(item.id);
+      const percent = Math.round((item.enrolled / item.slots) * 100);
+      const isFull = item.enrolled >= item.slots;
+
+      return `
+        <div class="bg-white rounded-2xl border ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-slate-200'} p-4 shadow-xs hover:shadow-md transition flex flex-col justify-between group">
+          <div>
+            <!-- Card Header: Code, Status & Checkbox -->
+            <div class="flex items-start justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  ${isSelected ? 'checked' : ''} 
+                  onchange="toggleItemSelection('${item.id}', this.checked)"
+                  class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                  ${item.code}
+                </span>
+                <span class="text-xs font-semibold text-slate-500">${item.section}</span>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${item.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                ${item.status}
+              </span>
+            </div>
+
+            <!-- Title -->
+            <h4 class="text-sm font-bold text-slate-900 font-heading line-clamp-1 group-hover:text-blue-700 transition">
+              ${item.title}
+            </h4>
+
+            <!-- Instructor with Avatar -->
+            <div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-slate-100">
+              <img src="${item.avatar}" alt="${item.instructor}" class="w-6 h-6 rounded-full object-cover border border-slate-200" />
+              <div class="min-w-0 flex-1">
+                <span class="text-xs font-semibold text-slate-800 truncate block">${item.instructor}</span>
+                <span class="text-[10px] text-slate-400 block">${item.dept}</span>
+              </div>
+            </div>
+
+            <!-- Schedule & Room -->
+            <div class="mt-2.5 grid grid-cols-2 gap-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100">
+              <div>
+                <span class="text-[10px] text-slate-400 block uppercase font-bold">Schedule</span>
+                <span class="font-medium truncate block">${item.schedule}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block uppercase font-bold">Room</span>
+                <span class="font-medium truncate block">${item.room}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Capacity Bar -->
+          <div class="mt-3.5 pt-2.5 border-t border-slate-100">
+            <div class="flex items-center justify-between text-[11px] mb-1">
+              <span class="font-semibold text-slate-600">Capacity</span>
+              <span class="font-bold ${isFull ? 'text-rose-600' : 'text-slate-800'}">${item.enrolled}/${item.slots} (${percent}%)</span>
+            </div>
+            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div class="h-full rounded-full ${isFull ? 'bg-rose-500' : percent > 80 ? 'bg-amber-500' : 'bg-blue-600'}" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 2. Render Table Rows
+    tbody.innerHTML = currentData.map(item => {
+      const isSelected = selectedIds.has(item.id);
+      const percent = Math.round((item.enrolled / item.slots) * 100);
+
+      return `
+        <tr class="hover:bg-slate-50/80 transition ${isSelected ? 'bg-blue-50/40' : ''}">
+          <td class="p-3.5 text-center">
+            <input 
+              type="checkbox" 
+              ${isSelected ? 'checked' : ''} 
+              onchange="toggleItemSelection('${item.id}', this.checked)"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+          </td>
+          <td class="p-3.5 font-bold text-slate-900">
+            <div class="flex items-center gap-1.5">
+              <span>${item.code}</span>
+              <span class="text-xs font-normal text-slate-500">(${item.section})</span>
+            </div>
+          </td>
+          <td class="p-3.5 font-medium text-slate-800">${item.title}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 text-xs font-bold rounded bg-slate-100 text-slate-700">${item.dept}</span></td>
+          <td class="p-3.5">
+            <div class="flex items-center gap-2">
+              <img src="${item.avatar}" class="w-5 h-5 rounded-full object-cover" />
+              <span>${item.instructor}</span>
+            </div>
+          </td>
+          <td class="p-3.5">
+            <span class="font-semibold text-xs">${item.enrolled}/${item.slots}</span>
+            <span class="text-[11px] text-slate-400 ml-1">(${percent}%)</span>
+          </td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${item.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+              ${item.status}
+            </span>
+          </td>
+          <td class="p-3.5 text-right">
+            <button onclick="showToast('Editing ${item.code}')" class="text-blue-700 hover:text-blue-900 font-bold text-xs mr-2">Edit</button>
+            <button onclick="deleteSingleItem('${item.id}')" class="text-rose-600 hover:text-rose-800 font-bold text-xs">Delete</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Update stats in pagination
+    document.getElementById('page-stat-showing').innerText = currentData.length;
+    document.getElementById('badge-total-records').innerText = `${currentData.length} records`;
+  }
+
+  // ================= SELECTION & DELETE CONTROLLER SWITCHING =================
+  function toggleItemSelection(id, isChecked) {
+    if (isChecked) {
+      selectedIds.add(id);
+    } else {
+      selectedIds.delete(id);
+    }
+    updateControllerState();
+  }
+
+  function updateControllerState() {
+    const stdController = document.getElementById('controller-standard');
+    const delController = document.getElementById('controller-delete-mode');
+    const selCount = selectedIds.size;
+
+    // Header checkbox on table
+    const thCheck = document.getElementById('th-checkbox-all');
+    if (thCheck) {
+      thCheck.checked = currentData.length > 0 && selCount === currentData.length;
+      thCheck.indeterminate = selCount > 0 && selCount < currentData.length;
+    }
+
+    if (selCount > 0) {
+      // Switch into DELETE / BULK SELECTION MODE
+      stdController.classList.add('hidden');
+      delController.classList.remove('hidden');
+
+      document.getElementById('selected-count-badge').innerText = selCount;
+      document.getElementById('selected-count-text').innerText = selCount;
+      document.getElementById('btn-delete-count').innerText = selCount;
+
+      const btnSelectAll = document.getElementById('btn-select-all');
+      if (selCount === currentData.length) {
+        btnSelectAll.innerText = 'Deselect All';
+      } else {
+        btnSelectAll.innerText = `Select All (${currentData.length})`;
+      }
+    } else {
+      // Standard Controller
+      delController.classList.add('hidden');
+      stdController.classList.remove('hidden');
+    }
+
+    // Refresh checkboxes visual
+    renderContent();
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === currentData.length) {
+      selectedIds.clear();
+      showToast('All selections cleared');
+    } else {
+      currentData.forEach(item => selectedIds.add(item.id));
+      showToast(`Selected all ${currentData.length} visible items`);
+    }
+    updateControllerState();
+  }
+
+  function clearSelection() {
+    selectedIds.clear();
+    updateControllerState();
+  }
+
+  function quickSelectItems(count) {
+    selectedIds.clear();
+    currentData.slice(0, count).forEach(item => selectedIds.add(item.id));
+    updateControllerState();
+    showToast(`Quick-selected ${count} items. Controller switched to Delete Mode.`);
+  }
+
+  // ================= BULK ACTIONS =================
+  function promptBulkDelete() {
+    const count = selectedIds.size;
+    if (count === 0) return;
+    document.getElementById('modal-delete-count-text').innerText = `${count} selected record${count > 1 ? 's' : ''}`;
+    document.getElementById('modal-delete-confirm').hidden = false;
+  }
+
+  function closeDeleteConfirmModal() {
+    document.getElementById('modal-delete-confirm').hidden = true;
+  }
+
+  function executeBulkDelete() {
+    const count = selectedIds.size;
+    currentData = currentData.filter(item => !selectedIds.has(item.id));
+    selectedIds.clear();
+    closeDeleteConfirmModal();
+    updateControllerState();
+    showToast(`Successfully deleted ${count} records!`, 'error');
+  }
+
+  function deleteSingleItem(id) {
+    currentData = currentData.filter(item => item.id !== id);
+    selectedIds.delete(id);
+    updateControllerState();
+    showToast(`Record deleted successfully.`, 'error');
+  }
+
+  function handleBulkExport() {
+    showToast(`Exported ${selectedIds.size} records to CSV format.`);
+  }
+
+  function handleBulkStatusChange() {
+    currentData.forEach(item => {
+      if (selectedIds.has(item.id)) {
+        item.status = item.status === 'Active' ? 'Inactive' : 'Active';
+      }
+    });
+    showToast(`Toggled status for ${selectedIds.size} records.`);
+    renderContent();
+  }
+
+  // ================= COMBINED FILTER & SORT MODAL =================
+  function openFilterSortModal() {
+    closeKebabMenu();
+    document.getElementById('modal-filter-sort').hidden = false;
+    
+    // Sync current values to modal inputs
+    document.getElementById('select-filter-dept').value = filterDept;
+    document.getElementById('select-sort-field').value = sortField;
+    document.getElementById('select-sort-dir').value = sortDir;
+    setModalStatusFilter(filterStatus);
+  }
+
+  function closeFilterSortModal() {
+    document.getElementById('modal-filter-sort').hidden = true;
+  }
+
+  function setModalStatusFilter(st) {
+    modalTempStatus = st;
+    const btnAll = document.getElementById('filter-btn-status-all');
+    const btnAct = document.getElementById('filter-btn-status-active');
+    const btnIna = document.getElementById('filter-btn-status-inactive');
+
+    [btnAll, btnAct, btnIna].forEach(b => {
+      b.className = 'py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition';
+    });
+
+    if (st === 'ALL') {
+      btnAll.className = 'py-2 text-xs font-bold rounded-lg border border-blue-600 bg-blue-50 text-blue-700 transition';
+    } else if (st === 'Active') {
+      btnAct.className = 'py-2 text-xs font-bold rounded-lg border border-emerald-600 bg-emerald-50 text-emerald-700 transition';
+    } else {
+      btnIna.className = 'py-2 text-xs font-bold rounded-lg border border-slate-600 bg-slate-100 text-slate-900 transition';
+    }
+  }
+
+  function resetModalInputs() {
+    document.getElementById('select-filter-dept').value = 'ALL';
+    document.getElementById('select-sort-field').value = 'code';
+    document.getElementById('select-sort-dir').value = 'asc';
+    setModalStatusFilter('ALL');
+  }
+
+  function applyFilterSortFromModal() {
+    filterDept = document.getElementById('select-filter-dept').value;
+    sortField = document.getElementById('select-sort-field').value;
+    sortDir = document.getElementById('select-sort-dir').value;
+    filterStatus = modalTempStatus;
+
+    closeFilterSortModal();
+    applyDataTransform();
+    renderActionSlot();
+    showToast('Applied Filter & Sort parameters');
+  }
+
+  function updateAppliedFilterPills() {
+    const bar = document.getElementById('applied-filters-bar');
+    const badgeFilters = document.getElementById('badge-active-filters');
+    const pillDept = document.getElementById('pill-department');
+    const pillStatus = document.getElementById('pill-status');
+    const pillSort = document.getElementById('pill-sort');
+    const valDept = document.getElementById('val-dept');
+    const valStatus = document.getElementById('val-status');
+    const valSort = document.getElementById('val-sort');
+
+    const hasDept = filterDept !== 'ALL';
+    const hasStatus = filterStatus !== 'ALL';
+    const isCustomSort = sortField !== 'code' || sortDir !== 'asc';
+
+    if (hasDept || hasStatus || isCustomSort) {
+      bar.classList.remove('hidden');
+      badgeFilters.classList.remove('hidden');
+    } else {
+      bar.classList.add('hidden');
+      badgeFilters.classList.add('hidden');
+    }
+
+    if (hasDept) {
+      pillDept.classList.remove('hidden');
+      valDept.innerText = filterDept;
+    } else {
+      pillDept.classList.add('hidden');
+    }
+
+    if (hasStatus) {
+      pillStatus.classList.remove('hidden');
+      valStatus.innerText = filterStatus;
+    } else {
+      pillStatus.classList.add('hidden');
+    }
+
+    const sortFieldNames = { code: 'Code', title: 'Title', enrolled: 'Capacity', dept: 'Department' };
+    valSort.innerText = `${sortFieldNames[sortField]} (${sortDir === 'asc' ? 'Ascending' : 'Descending'})`;
+  }
+
+  function removeFilter(type) {
+    if (type === 'dept') filterDept = 'ALL';
+    if (type === 'status') filterStatus = 'ALL';
+    applyDataTransform();
+    renderActionSlot();
+  }
+
+  function resetSort() {
+    sortField = 'code';
+    sortDir = 'asc';
+    applyDataTransform();
+  }
+
+  function resetAllFiltersAndSort() {
+    filterDept = 'ALL';
+    filterStatus = 'ALL';
+    sortField = 'code';
+    sortDir = 'asc';
+    searchQuery = '';
+    const input = document.getElementById('input-search');
+    if (input) input.value = '';
+    applyDataTransform();
+    renderActionSlot();
+    showToast('Reset all filters and sort to default');
+  }
+
+  // ================= TOAST NOTIFICATION UTILITY =================
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    const isError = type === 'error';
+
+    toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center gap-2.5 transform translate-y-4 opacity-0 transition duration-200 ${
+      isError 
+        ? 'bg-rose-900 text-white border-rose-800' 
+        : 'bg-slate-900 text-white border-slate-800'
+    }`;
+
+    toast.innerHTML = `
+      <svg class="w-4 h-4 ${isError ? 'text-rose-400' : 'text-blue-400'}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        ${isError 
+          ? '<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>' 
+          : '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>'
+        }
+      </svg>
+      <span>${msg}</span>
+    `;
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-4', 'opacity-0');
+    });
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => toast.remove(), 200);
+    }, 2800);
+  }
+</script>
+</body>
+</html>
