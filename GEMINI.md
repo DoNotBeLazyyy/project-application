@@ -1,5 +1,19 @@
 # GEMINI.md — Arellano University LMS (AU-JAS) Codebase Guide
 
+---
+
+## 0. How to Talk to the Developer (READ FIRST)
+
+**Explain like they're ten years old and a vibe coder.** Plain words first, the real
+technical term in parentheses right after. Lead with what happens to *them*, then the
+mechanism. Short paragraphs. Always end with the exact next action to take.
+
+The engineering stays strict — this section changes how you *explain*, never how you
+*build*. Full rules: [`docs/COMMUNICATION_STYLE.md`](docs/COMMUNICATION_STYLE.md).
+Read that file before writing any explanation, plan, or summary.
+
+---
+
 ## 1. Executive Overview & Paradigm
 
 This repository contains the complete frontend, database schema specifications, and Edge Function code for the **Arellano University (Jose Abad Santos Campus) Learning Management System (AU-JAS LMS)**.
@@ -231,6 +245,29 @@ When resolving database schemas, functions, triggers, and types, adhere strictly
 3. **Immediate Task Termination**: The exact instant a deployment or operation is verified as `READY`, `DONE`, or `SUCCESS`, immediately call `manage_task` with action `kill` to terminate the process, clean up open handles, and avoid blocking user workflows.
 4. **Transparent Communication**: Never leave the user waiting indefinitely on passive background tasks without providing immediate real-time progress and closing finished tasks promptly.
 5. **Real-Time 2-Minute Progress Updates**: During multi-step workflows or long-running tasks, continuously update the user on: (a) what is actively executing, (b) what specific command/action was attempted, and (c) the exact result or output of that attempt.
+
+---
+
+## 12. High-Fidelity UI Showcase & Design System Alignment Rule
+
+Whenever creating or presenting UI showcases, prototypes, interactive generative UI widgets, or design mockups:
+1. **Strict Design System Fidelity**: All visual showcases MUST 100% align with the AU-JAS LMS design system:
+   - **Colors & Tokens**: Exact brand tokens (`brand-950` `#011554` for header navbar & dark sidebars, `brand-900` `#022179` / `#193CB8` for primary buttons & active links, `brand-100` `#E0EDFD` and `brand-50` `#F2F7FE` for active item tints, `neutral-200` `#E4E4E7` borders).
+   - **Icons & Typography**: Plus Jakarta Sans / Inter typography styling, Phosphor Icon motifs (`CaretRight`, `House`, `Sparkle`, `Bell`, `DotsThreeVertical`).
+   - **Layout Elements**: Real app layout context: Header navbar (with AU brand title, AI assistant trigger, notification bell, user avatar badge) and collapsible sidebar (`CommonSideBar` aesthetics).
+2. **True Look-and-Feel**: Showcases must give the authentic feel of the actual application environment so new features and UX workflows can be experienced with real production fidelity.
+
+---
+
+## 13. Design Proposal Protocol (5–10% Minimal Evolution)
+
+When asked to propose a UI/UX design, redesign, or evaluate an existing screen (refer to `docs/DESIGN_PROPOSALS.md` for full specification):
+1. **Never Recreate from Scratch**: Do NOT reinvent or replace existing screens with foreign design paradigms. All proposals must be grounded **5–10% minimal evolutions** of the established AU-JAS LMS design system and existing components (`CommonCard`, `CommonBentoCard`, `CommonButton`, `ValidCommonInput`).
+2. **Mandatory 3-Step Proposal Format**:
+   - **Step 1: Numbered Diagnosis ("What the pattern gets wrong")**: Highlight 3–6 concrete domain contradictions or UX friction points in the current screen with numbered callout markers.
+   - **Step 2: Structured Concepts (Concept A vs. Concept B)**: Present 1–2 focused alternatives with standardized metadata (`BEST AT`, `COSTS`, `ORDER`, `VERDICT` with a clear recommendation).
+   - **Step 3: High-Fidelity AU-JAS LMS Visual Preview**: Use authentic AU brand tokens, standard card headers, action slots, and reactive state indicators.
+
 
 
 
