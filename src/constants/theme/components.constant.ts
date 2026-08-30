@@ -1,3 +1,4 @@
+import { autocompleteOverrides } from '@constants/theme/override/autocomplete.override';
 import { buttonOverrides } from '@constants/theme/override/button.override';
 import { cardOverrides } from '@constants/theme/override/card.override';
 import { checkboxOverrides } from '@constants/theme/override/checkbox.override';
@@ -15,6 +16,7 @@ import { toggleOverrides } from '@constants/theme/override/toggle.override';
 import { ComponentTheme } from '@type/common/theme.type';
 
 export const COMPONENTS: ComponentTheme = {
+    ...autocompleteOverrides,
     ...chipOverrides,
     ...buttonOverrides,
     ...cardOverrides,

@@ -11,7 +11,11 @@ export const dialogOverrides: ComponentTheme = {
                 width: '100%',
                 '&.MuiDialog-paperFullScreen': {
                     borderRadius: 0,
-                    maxHeight: '100%'
+                    height: '100%',
+                    margin: 0,
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    width: '100%'
                 }
             }
         }

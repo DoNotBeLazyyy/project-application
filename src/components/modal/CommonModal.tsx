@@ -44,7 +44,7 @@ export default function CommonModal({
     onClose,
     ...props
 }: CommonModalProps) {
-    const { isCompact } = useBreakpoint();
+    const { isMobile } = useBreakpoint();
     const originalPaperSlot = slotProps?.paper; // Capture original slot for evaluation
     const isPaperSlotFunction = typeof originalPaperSlot === 'function';
     const resolvedPaperSlot = isPaperSlotFunction
@@ -102,7 +102,9 @@ export default function CommonModal({
     }
 
     return <Dialog
-        fullScreen={isCompact}
+        fullScreen={props.fullScreen !== undefined
+            ? props.fullScreen
+            : isMobile}
         {...props}
         slotProps={{
             ...slotProps,

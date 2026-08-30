@@ -1,21 +1,25 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonBentoCard from '@components/card/CommonBentoCard';
 import CommonCard from '@components/card/CommonCard';
+import CommonEmptyState from '@components/empty/CommonEmptyState';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import TableModals from '@components/modal/TableModals';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
 import CommonPagination from '@components/pagination/CommonPagination';
+import { useInfiniteScrollSentinel } from '@components/table-card/hooks/useInfiniteScrollSentinel';
+import { useLastVisibleRow } from '@components/table-card/hooks/useLastVisibleRow';
 import { useTableData } from '@components/table-card/hooks/useTableData';
 import { useTableSelection } from '@components/table-card/hooks/useTableSelection';
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
 import CommonTable from '@components/table/CommonTable';
+import { ArrowUpIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
-import { classMerge } from '@utils/css.util';
 import { formatMobileCardValue, resolveMobileCardPlan } from '@utils/table.util';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FieldValues } from 'react-hook-form';
 
 export default function CommonTableCard<T extends FieldValues>({
@@ -25,7 +29,9 @@ export default function CommonTableCard<T extends FieldValues>({
     dependencies = [],
     enableInfiniteScroll = true,
     filterModalProps,
+    infoContent,
     renderGridCard,
+    showSubheader = false,
     showViewToggle = true,
     sortColumns,
     tableActionConfig,
@@ -47,6 +53,7 @@ export default function CommonTableCard<T extends FieldValues>({
         hasMore,
         internalRowData,
         internalSort,
+        isLoading,
         isLoadingMore,
         loadData,
         loadNextPage,
@@ -74,12 +81,40 @@ export default function CommonTableCard<T extends FieldValues>({
         onGridReady: tableProps.onGridReady
     });
 
+    const scrollRootRef = useRef<HTMLDivElement>(null);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useInfiniteScrollSentinel({
+        root: scrollRootRef,
+        target: sentinelRef,
+        hasMore,
+        isLoading: isLoadingMore,
+        onLoadMore: loadNextPage
+    });
+
     const [activeViewMode, setActiveViewMode] = useState<'table' | 'grid'>(viewMode);
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [isDeletePromptOpen, setIsDeletePromptOpen] = useState(false);
     const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
     const [gridSelectedIds, setGridSelectedIds] = useState<Set<string>>(new Set());
+
+    const [canScrollUp, setCanScrollUp] = useState(false);
+
+    const lastVisibleRow = useLastVisibleRow({
+        root: scrollRootRef,
+        rowCount: internalRowData.length,
+        enabled: enableInfiniteScroll && activeViewMode === 'grid'
+    });
+    const shownCount = lastVisibleRow || internalRowData.length;
+
+    function handleGridScroll() {
+        setCanScrollUp((scrollRootRef.current?.scrollTop ?? 0) > 0);
+    }
+
+    function scrollGridToTop() {
+        scrollRootRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function handleRequestDeleteRow(id: string) {
         triggerDeletePrompt([id]);
@@ -88,6 +123,11 @@ export default function CommonTableCard<T extends FieldValues>({
     const resolvedTableActionConfig = typeof tableActionConfig === 'function'
         ? tableActionConfig(handleRequestDeleteRow)
         : tableActionConfig;
+
+    const hasFilter = Boolean(filterModalProps);
+    const hasSort = Boolean(sortColumns?.length);
+    // Filter and Sort share one modal (and one menu entry) whenever both are configured
+    const showCombinedFilterSort = hasFilter && hasSort;
 
     function handleOpenSortModal() {
         setIsSortOpen(true);
@@ -217,6 +257,8 @@ export default function CommonTableCard<T extends FieldValues>({
     const effectiveSelectedCount = activeViewMode === 'grid'
         ? gridSelectedIds.size
         : selectedCount;
+
+    const isGridSelectionActive = activeViewMode === 'grid' && gridSelectedIds.size > 0;
 
     function renderDefaultBentoCard(item: T, isSelected: boolean, onToggleSelect: () => void) {
         const columnDefs = tableProps.leadingColumnDefs ?? [];
@@ -379,10 +421,38 @@ export default function CommonTableCard<T extends FieldValues>({
         );
     }
 
+    const hasNoData = !isLoading && internalRowData.length === 0;
+    const hasActiveSearchOrFilter = Boolean(activeSearch || (searchQuery && searchQuery.trim()));
+
+    // A static description of the page belongs behind the header's info icon
+    // rather than on a permanent second line, which costs vertical space on
+    // every list. `showSubheader` opts out for headers carrying live status.
+    const resolvedInfoContent = infoContent ?? (showSubheader
+        ? undefined
+        : cardHeaderProps?.subheader);
+
     return (
         <CommonCard
             cardHeaderProps={{
                 ...cardHeaderProps,
+                subheader: showSubheader
+                    ? cardHeaderProps?.subheader
+                    : undefined,
+                // Lift the header above the scrolling content so its shadow reads as a divider.
+                // Blur == |spread| keeps the shadow strictly below the header (no side bleed
+                // that would make it look like a floating boxed container).
+                sx: {
+                    position: 'relative',
+                    zIndex: 1,
+                    // Breathing room between the header content and the divider line/shadow
+                    pb: 2.5,
+                    borderBottom: '1px solid var(--mui-palette-grey-100)',
+                    // Negative spread == blur keeps the shadow strictly below the header
+                    // (square full-width ends, no side bleed); the larger blur/offset make
+                    // it soft. It falls directly onto the content — no white gap between.
+                    boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
+                    ...(cardHeaderProps?.sx as object)
+                },
                 action: (
                     <div className="flex flex-col gap-2 w-full">
                         {/* Selecting any row swaps the standard controller out for bulk mode */}
@@ -420,18 +490,23 @@ export default function CommonTableCard<T extends FieldValues>({
                                             }
                                             : controls?.tableButtonsProps?.createButtonProps,
                                         deleteButtonProps: undefined,
-                                        filterButtonProps: filterModalProps
-                                            ? { onClick: onFilter }
-                                            : controls?.tableButtonsProps?.filterButtonProps,
-                                        sortButtonProps: sortColumns
-                                            ? { onClick: handleOpenSortModal }
-                                            : undefined
+                                        filterSortButtonProps: hasFilter
+                                            ? {
+                                                children: hasSort
+                                                    ? 'Filter & Sort'
+                                                    : 'Filters',
+                                                onClick: onFilter
+                                            }
+                                            : hasSort
+                                                ? { children: 'Sort By', onClick: handleOpenSortModal }
+                                                : controls?.tableButtonsProps?.filterSortButtonProps
                                     }}
                                     tableInputProps={{
                                         ...controls?.tableInputProps,
                                         onChange: handleSearchChange,
                                         onClear: handleSearchClear,
                                         onKeyDown: handleOnKeyDown,
+                                        onSearch: handleSearchSubmit,
                                         value: searchQuery
                                     }}
                                     viewMode={activeViewMode}
@@ -442,80 +517,150 @@ export default function CommonTableCard<T extends FieldValues>({
                 )
             }}
             className="flex flex-col h-full"
+            infoContent={resolvedInfoContent}
         >
-            {activeViewMode === 'grid'
+            {hasNoData
                 ? (
-                    <div className="flex flex-col flex-1 min-h-0">
-                        <div className="gap-4 grid grid-cols-1 md:grid-cols-2 p-4 sm:grid-cols-2 xl:grid-cols-4">
-                            {internalRowData.map(function(item) {
-                                const id = String(item[uniqueIdKey]);
-                                const isSelected = gridSelectedIds.has(id);
-                                return (
-                                    <div key={id}>
-                                        {renderGridCard
-                                            ? renderGridCard(
-                                                item,
-                                                isSelected,
-                                                function() {
-                                                    handleToggleGridSelect(id);
-                                                }
-                                            )
-                                            : renderDefaultBentoCard(
-                                                item,
-                                                isSelected,
-                                                function() {
-                                                    handleToggleGridSelect(id);
-                                                }
-                                            )
-                                        }
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )
-                : (
-                    <CommonTable
-                        {...tableProps}
-                        alwaysMultiSort
-                        rowData={internalRowData}
-                        tableActionConfig={resolvedTableActionConfig}
-                        onGridReady={handleGridReady}
-                        onRowClicked={function(event) {
-                            if (event.data) {
-                                onRowClick?.((event.data as T)[uniqueIdKey] as string);
-                            }
-                            tableProps.onRowClicked?.(event);
-                        }}
-                        onSelectionChanged={handleSelectionChanged}
-                        onSetSort={handleGridSort}
+                    <CommonEmptyState
+                        action={hasActiveSearchOrFilter
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={handleSearchClear}
+                                >
+                                    Clear Search
+                                </CommonButton>
+                            )
+                            : (createModalProps || onCreate
+                                ? (
+                                    <CommonButton
+                                        color="primary"
+                                        size="small"
+                                        variant="contained"
+                                        onClick={function() {
+                                            onCreate?.();
+                                        }}
+                                    >
+                                        Add New Record
+                                    </CommonButton>
+                                )
+                                : undefined)}
+                        description={hasActiveSearchOrFilter
+                            ? `No records match "${activeSearch || searchQuery}". Try checking for spelling errors or adjusting filters.`
+                            : 'There are currently no records available to display in this list.'}
+                        isSearch={hasActiveSearchOrFilter}
+                        title={hasActiveSearchOrFilter
+                            ? 'No matching results found'
+                            : 'No data found'}
                     />
                 )
+                : activeViewMode === 'grid'
+                    ? (
+                        <div
+                            className="flex flex-1 flex-col min-h-0 overflow-y-auto"
+                            ref={scrollRootRef}
+                            onScroll={handleGridScroll}
+                        >
+                            {/* Container-relative columns: as many as fit, capped at 4, min 1,
+                            cards always stretch to fill the row. `auto-fit` + `1fr` fills the
+                            width; the `calc` floor caps the count at 4; the `280px` floor
+                            drops columns as the content area narrows (e.g. sidebar expanded). */}
+                            <div
+                                className="gap-4 grid px-4"
+                                style={{
+                                    gridTemplateColumns:
+                                        'repeat(auto-fit, minmax(max(280px, calc((100% - 3rem) / 4)), 1fr))'
+                                }}
+                            >
+                                {internalRowData.map(function(item, index) {
+                                    const id = String(item[uniqueIdKey]);
+                                    const isSelected = gridSelectedIds.has(id);
+                                    return (
+                                        <div
+                                            data-row-index={index}
+                                            key={id}
+                                            onClickCapture={isGridSelectionActive
+                                                ? function(event) {
+                                                    // In select mode a card only toggles its own
+                                                    // selection — view / edit / kebab are inert to
+                                                    // avoid acting on a row mid-bulk-operation.
+                                                    event.preventDefault();
+                                                    event.stopPropagation();
+                                                    handleToggleGridSelect(id);
+                                                }
+                                                : undefined}
+                                        >
+                                            {renderGridCard
+                                                ? renderGridCard(
+                                                    item,
+                                                    isSelected,
+                                                    function() {
+                                                        handleToggleGridSelect(id);
+                                                    },
+                                                    handleRequestDeleteRow
+                                                )
+                                                : renderDefaultBentoCard(
+                                                    item,
+                                                    isSelected,
+                                                    function() {
+                                                        handleToggleGridSelect(id);
+                                                    }
+                                                )
+                                            }
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {enableInfiniteScroll && (
+                                <div
+                                    className="flex font-medium items-center justify-center px-4 py-3 text-(--mui-palette-text-secondary) text-xs"
+                                    ref={sentinelRef}
+                                >
+                                    {isLoadingMore
+                                        ? 'Loading more…'
+                                        : null}
+                                </div>
+                            )}
+                        </div>
+                    )
+                    : (
+                        <CommonTable
+                            {...tableProps}
+                            alwaysMultiSort
+                            rowData={internalRowData}
+                            tableActionConfig={resolvedTableActionConfig}
+                            onGridReady={handleGridReady}
+                            onRowClicked={function(event) {
+                                if (event.data) {
+                                    onRowClick?.((event.data as T)[uniqueIdKey] as string);
+                                }
+                                tableProps.onRowClicked?.(event);
+                            }}
+                            onSelectionChanged={handleSelectionChanged}
+                            onSetSort={handleGridSort}
+                        />
+                    )
             }
 
-            {enableInfiniteScroll
+            {!hasNoData && (enableInfiniteScroll
                 ? (
-                    <div className="bg-(--mui-palette-grey-50) border-(--mui-palette-grey-100) border-t flex flex-wrap gap-3 items-center justify-between min-h-14 px-4 py-3">
-                        <div className="font-medium text-(--mui-palette-text-secondary) text-xs">
-                            Showing <span className="font-bold text-(--mui-palette-text-primary)">{internalRowData.length}</span> of <span className="font-bold text-(--mui-palette-text-primary)">{pagination.totalElements}</span> records • Page <span className="font-bold text-(--mui-palette-text-primary)">{pagination.currentPage}</span> of <span className="font-bold text-(--mui-palette-text-primary)">{pagination.totalPages}</span>
-                        </div>
-                        {hasMore && (
-                            <button
-                                className={classMerge(
-                                    'bg-(--mui-palette-primary-main) font-bold hover:bg-(--mui-palette-primary-dark) px-4 py-1.5 rounded-lg text-white text-xs transition-colors shadow-xs',
-                                    isLoadingMore
-                                        ? 'opacity-60 cursor-not-allowed'
-                                        : 'cursor-pointer'
-                                )}
-                                disabled={isLoadingMore}
-                                type="button"
-                                onClick={loadNextPage}
-                            >
-                                {isLoadingMore
-                                    ? 'Loading next batch...'
-                                    : 'Load More Records'}
-                            </button>
-                        )}
+                    <div className="border border-(--mui-palette-grey-100) flex gap-3 items-center justify-between mx-4 my-2 px-4 py-1.5 rounded-full">
+                        <button
+                            aria-label="Scroll to top"
+                            className="active:bg-(--mui-palette-primary-dark) bg-(--mui-palette-primary-main) cursor-pointer disabled:bg-(--mui-palette-grey-300) disabled:cursor-not-allowed duration-150 flex font-semibold gap-1.5 hover:bg-(--mui-palette-primary-dark) items-center px-3 py-1 rounded-full text-white text-xs transition-[background-color]"
+                            disabled={!canScrollUp}
+                            type="button"
+                            onClick={scrollGridToTop}
+                        >
+                            <ArrowUpIcon size={14} weight="bold" />
+                            Scroll to top
+                        </button>
+                        <span className="font-medium text-(--mui-palette-text-secondary) text-right text-xs">
+                            Showing <span className="font-bold text-(--mui-palette-text-primary)">{shownCount}</span> of <span className="font-bold text-(--mui-palette-text-primary)">{pagination.totalElements}</span> records
+                        </span>
                     </div>
                 )
                 : (
@@ -525,18 +670,30 @@ export default function CommonTableCard<T extends FieldValues>({
                         onSetPagination={handleSetPagination}
                     />
                 )
-            }
+            )}
 
             <TableModals
                 createModalProps={createModalProps}
-                filterModalProps={filterModalProps}
-                sortModalProps={{
-                    columns: sortColumns ?? [],
-                    currentSort: internalSort,
-                    onApply: handleApplyTableSort,
-                    onClose: handleCloseSortModal,
-                    open: isSortOpen
-                }}
+                filterModalProps={!showCombinedFilterSort
+                    ? filterModalProps
+                    : undefined}
+                filterSortModalProps={showCombinedFilterSort && filterModalProps
+                    ? {
+                        ...filterModalProps,
+                        currentSort: internalSort,
+                        sortColumns: sortColumns ?? [],
+                        onApplySort: handleApplyTableSort
+                    }
+                    : undefined}
+                sortModalProps={hasSort && !showCombinedFilterSort
+                    ? {
+                        columns: sortColumns ?? [],
+                        currentSort: internalSort,
+                        onApply: handleApplyTableSort,
+                        onClose: handleCloseSortModal,
+                        open: isSortOpen
+                    }
+                    : undefined}
                 updateModalProps={
                     updateModalProps
                         ? {

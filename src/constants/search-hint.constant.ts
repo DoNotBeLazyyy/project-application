@@ -1,4 +1,5 @@
 export const SEARCH_HINTS: Record<string, readonly string[]> = {
+    academicThresholds: ['Threshold code', 'Threshold label', 'Category'],
     announcements: ['Title', 'Content'],
     auditLogs: [
         'Changed by name',
@@ -40,6 +41,7 @@ export const SEARCH_HINTS: Record<string, readonly string[]> = {
         'Email'
     ],
     sections: ['Section code', 'Course code', 'Course title'],
+    specialGrades: ['Code', 'Label', 'Description'],
     students: [
         'Student number',
         'First name',

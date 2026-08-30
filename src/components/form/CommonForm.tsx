@@ -1,9 +1,10 @@
 import FormErrorSummary from '@components/form/FormErrorSummary';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
+import FormLabel from '@components/form/FormLabel';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { formatFieldLabel } from '@utils/form.util';
-import { Control, FieldValues } from 'react-hook-form';
+import { formatFieldLabel, getFieldErrorMessage } from '@utils/form.util';
+import { Control, FieldValues, useFormState } from 'react-hook-form';
 
 const COL_SPAN_CLASSES: Record<number, string> = {
     1: 'col-span-full md:col-span-1',
@@ -20,6 +21,13 @@ const COL_SPAN_CLASSES: Record<number, string> = {
     12: 'col-span-full md:col-span-12'
 };
 
+/**
+ * Where a field's guidance and validation message appear. `label` hangs both off
+ * the label as icons, keeping the form's height fixed; `below` keeps the older
+ * text under the control, which reflows the form as messages come and go.
+ */
+export type FormHelperPlacement = 'label' | 'below';
+
 export interface CommonFormProps<T extends FieldValues> {
     control: Control<T>;
     fields: FormFieldConfig<T>[];
@@ -27,6 +35,71 @@ export interface CommonFormProps<T extends FieldValues> {
     formProps?: ComponentPropsForm;
     hasErrorSummary?: boolean;
     hasHelper?: boolean;
+    helperPlacement?: FormHelperPlacement;
+}
+
+interface CommonFormRowProps<T extends FieldValues> {
+    control: Control<T>;
+    field: FormFieldConfig<T>;
+    hasHelper: boolean;
+    helperPlacement: FormHelperPlacement;
+}
+
+/**
+ * One labelled field. Split out because reading this field's error needs a hook,
+ * which cannot be called from inside the `fields.map` callback.
+ */
+function CommonFormRow<T extends FieldValues>({
+    control,
+    field,
+    hasHelper,
+    helperPlacement
+}: CommonFormRowProps<T>) {
+    const name = field.name as string;
+    const isOnLabel = helperPlacement === 'label';
+    const { errors } = useFormState({ control, name: field.name });
+    const errorMessage = hasHelper && isOnLabel
+        ? getFieldErrorMessage(errors, name)
+        : undefined;
+    // `helperText` on a field config is guidance, not a message about state.
+    const { helperText: description } = (field.fieldProps ?? {}) as { helperText?: string };
+
+    return (
+        <div
+            className={
+                classMerge(
+                    'flex flex-col gap-1 min-w-0',
+                    field.type === 'checkbox'
+                        ? 'justify-center'
+                        : '',
+                    field.gridCols
+                        ? COL_SPAN_CLASSES[field.gridCols] ?? ''
+                        : ''
+                )
+            }
+        >
+            {field.type !== 'checkbox' && (
+                <FormLabel
+                    description={hasHelper && isOnLabel
+                        ? description
+                        : undefined}
+                    errorMessage={errorMessage}
+                    isRequired={Boolean(field.rules?.required)}
+                    label={field.label ?? formatFieldLabel(name)}
+                />
+            )}
+            {/*
+              * When the label owns the messages the control renders none - text
+              * appearing under an input resizes it mid-typing and shifts every
+              * field below it.
+              */}
+            <FormField
+                control={control}
+                field={field}
+                hasHelper={hasHelper && !isOnLabel}
+            />
+        </div>
+    );
 }
 
 export default function CommonForm<T extends FieldValues>({
@@ -35,38 +108,21 @@ export default function CommonForm<T extends FieldValues>({
     containerClassName = 'flex flex-col gap-4',
     formProps,
     hasErrorSummary = true,
-    hasHelper = true
+    hasHelper = true,
+    helperPlacement = 'label'
 }: CommonFormProps<T>) {
     return (
         <form {...formProps}>
             <div className={containerClassName}>
                 {fields.map(function(field) {
                     return (
-                        <div
-                            className={
-                                classMerge(
-                                    'flex flex-col gap-1 min-w-0',
-                                    field.type === 'checkbox'
-                                        ? 'justify-center'
-                                        : '',
-                                    field.gridCols
-                                        ? COL_SPAN_CLASSES[field.gridCols] ?? ''
-                                        : ''
-                                )
-                            }
+                        <CommonFormRow
+                            control={control}
+                            field={field}
+                            hasHelper={hasHelper}
+                            helperPlacement={helperPlacement}
                             key={field.name as string}
-                        >
-                            {field.type !== 'checkbox' && (
-                                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                    {field.label ?? formatFieldLabel(field.name as string)}
-                                </span>
-                            )}
-                            <FormField
-                                control={control}
-                                field={field}
-                                hasHelper={hasHelper}
-                            />
-                        </div>
+                        />
                     );
                 })}
             </div>

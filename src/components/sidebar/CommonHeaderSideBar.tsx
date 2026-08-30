@@ -113,7 +113,7 @@ export default function CommonHeaderSideBar({
         <div
             className={
                 classMerge(
-                    'flex shrink-0 items-center gap-(--mui-tokens-spacing-4) overflow-hidden whitespace-nowrap px-6.5 py-(--mui-tokens-spacing-7)',
+                    'flex shrink-0 items-center gap-(--mui-tokens-spacing-4) overflow-hidden whitespace-nowrap px-6.5 pt-(--mui-tokens-spacing-6) pb-(--mui-tokens-spacing-4)',
                     className
                 )
             }

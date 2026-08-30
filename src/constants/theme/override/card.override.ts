@@ -18,6 +18,14 @@ export const cardOverrides: ComponentTheme = {
                 [theme.breakpoints.down('md')]: {
                     gap: 'var(--mui-tokens-spacing-4)',
                     padding: 'var(--mui-tokens-spacing-4)'
+                },
+                '&.MuiDialog-paperFullScreen': {
+                    borderRadius: 0,
+                    height: '100%',
+                    margin: 0,
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    width: '100%'
                 }
             })
         },
@@ -63,21 +71,22 @@ export const cardOverrides: ComponentTheme = {
     MuiCardHeader: {
         styleOverrides: {
             root: {
-                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+                display: 'flex',
                 gap: 'var(--mui-tokens-spacing-3)',
+                justifyContent: 'space-between',
                 padding: 0
             },
             content: {
+                flex: '1 1 auto',
                 minWidth: 0
             },
-            action: ({ theme }) => ({
-                alignSelf: 'center',
+            action: {
+                alignSelf: 'flex-start',
+                flexShrink: 0,
                 margin: 0,
-                minWidth: 0,
-                [theme.breakpoints.down('md')]: {
-                    flexBasis: '100%'
-                }
-            }),
+                minWidth: 0
+            },
             title: ({ theme }) => ({
                 color: 'var(--mui-tokens-color-neutral-900)',
                 ...theme.typography.h6

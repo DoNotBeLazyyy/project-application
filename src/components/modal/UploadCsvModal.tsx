@@ -483,7 +483,7 @@ export default function UploadCsvModal({
                 ? handleClose
                 : onClose}
         >
-            <div className="w-3xl">
+            <div className="max-w-full sm:w-3xl w-full">
                 {step === 'upload' && renderUploadStep()}
                 {step === 'preview' && renderPreviewStep()}
                 {step === 'results' && renderResultsStep()}

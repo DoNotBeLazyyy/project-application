@@ -40,6 +40,7 @@ export default function CommonPromptModal({
 
     return (
         <CommonActionModal
+            fullScreen={props.fullScreen ?? false}
             {...props}
             containerClassName={
                 classMerge(

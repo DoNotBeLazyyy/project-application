@@ -1,3 +1,4 @@
+import FormLabel from '@components/form/FormLabel';
 import InputClearAdornment from '@components/input/InputClearAdornment';
 import {
     IconButton, InputAdornment, InputBaseProps, TextField, TextFieldProps
@@ -49,9 +50,11 @@ export type CommonInputProps = TextFieldProps & {
 const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     className,
     containerClassName,
+    error,
     fullWidth,
     hasClearButton = true,
     hasPasswordToggle,
+    helperText,
     inputRef,
     isRequired,
     isRoundedFull,
@@ -72,6 +75,23 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     const htmlInputSlotProps = slotProps?.htmlInput as InputHTMLAttributes<HTMLInputElement> | undefined;
     const isReadOnly = Boolean(inputSlotProps?.readOnly) || Boolean(htmlInputSlotProps?.readOnly);
     const isControlled = value !== undefined;
+
+    /*
+     * `helperText` carries the validation message while `error` is set and the
+     * field's guidance otherwise - that is how the react-hook-form wrappers
+     * merge the two. A labelled field hands whichever it is to the label's
+     * icons, so nothing renders below the input to shift the layout. An
+     * unlabelled one has nowhere to put an icon and keeps the text underneath.
+     */
+    const labelErrorMessage = label && error
+        ? helperText
+        : undefined;
+    const labelDescription = label && !error
+        ? helperText
+        : undefined;
+    const inlineHelperText = label
+        ? undefined
+        : helperText;
 
     useEffect(function() {
         if (isControlled) {
@@ -174,21 +194,13 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
             }
         >
             {label && (
-                <span
-                    className={
-                        classMerge(
-                            'tw_body_small_bold flex gap-(--mui-tokens-spacing-2)',
-                            labelClassName
-                        )
-                    }
-                >
-                    {label}
-                    {isRequired && (
-                        <span className="text-(--mui-tokens-color-red-500) text-(length:--mui-tokens-fontSize-lg)">
-                            *
-                        </span>
-                    )}
-                </span>
+                <FormLabel
+                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
+                    isRequired={isRequired}
+                    label={label}
+                />
             )}
             <TextField
                 {...props}
@@ -198,7 +210,9 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                         isRoundedFull && 'common_input_rounded_full'
                     )
                 }
+                error={error}
                 fullWidth={fullWidth}
+                helperText={inlineHelperText}
                 inputRef={handleAssignInputRef}
                 ref={ref}
                 slotProps={resolvedSlotProps}

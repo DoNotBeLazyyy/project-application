@@ -1,4 +1,6 @@
+import CommonBreadcrumbs from '@components/breadcrumb/CommonBreadcrumbs';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
+import AiAssistantButton from '@components/navbar/AiAssistantButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
 import UserAccountMenu from '@components/navbar/UserAccountMenu';
 import NotificationBell from '@components/notification/NotificationBell';
@@ -7,6 +9,7 @@ import CommonSideBarList from '@components/sidebar/CommonSideBarList';
 import { resolvePanelLabel } from '@constants/role.constant';
 import useBreakpoint from '@hooks/useBreakpoint';
 import IconButton from '@mui/material/IconButton';
+import AiAssistant from '@pages/shared/assistant/AiAssistant';
 import { ListIcon } from '@phosphor-icons/react';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -99,17 +102,24 @@ export default function RoleShell({
                     }
                     rightContent={
                         <div className="flex gap-3 items-center">
+                            <AiAssistantButton />
                             <NotificationBell />
                             <UserAccountMenu />
                         </div>
                     }
                 />
 
-                <main className="flex-1 md:p-6 overflow-y-auto p-4">
-                    <Suspense fallback={<PageLoadingFallback />}>
-                        <Outlet />
-                    </Suspense>
-                </main>
+                <CommonBreadcrumbs />
+
+                <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden relative">
+                    <main className="flex-1 md:p-6 min-w-0 overflow-y-auto p-4">
+                        <Suspense fallback={<PageLoadingFallback />}>
+                            <Outlet />
+                        </Suspense>
+                    </main>
+
+                    <AiAssistant />
+                </div>
             </div>
         </div>
     );

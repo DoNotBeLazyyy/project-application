@@ -291,6 +291,47 @@
     display: none;
 }
 
+/* Pinned (frozen) columns. The `:has()` guards mean these apply only to grids
+   that actually pin a column - ag-grid renders the pinned containers either
+   way, so an unguarded rule would mark up every other table too. */
+.common_table .ag-pinned-left-header:has(.ag-header-cell),
+.common_table .ag-pinned-left-cols-container:has(.ag-row) {
+    border-right: 1px solid var(--mui-palette-grey-300);
+
+    /* The pinned section comes before the scrolling one in the DOM, so without
+       its own stacking position an input's background paints over this border
+       and the frozen edge breaks up row by row. */
+    position: relative;
+    z-index: 2;
+}
+
+/* `.ag-row` is transparent app-wide, so the frozen section needs its own opaque
+   ground - otherwise the columns scrolling past show through it. */
+.common_table .ag-pinned-left-cols-container:has(.ag-row) {
+    background-color: var(--mui-palette-background-paper);
+    box-shadow: 4px 0 8px -4px rgb(0 0 0 / 8%);
+}
+
+/* A pinned column splits each row across two containers; drop the inset at the
+   seam so the row divider still reads as one continuous line. */
+.common_table .ag-root:has(.ag-pinned-left-cols-container .ag-row) .ag-pinned-left-cols-container .ag-row::after {
+    right: 0;
+}
+
+.common_table .ag-root:has(.ag-pinned-left-cols-container .ag-row) .ag-center-cols-container .ag-row::after {
+    left: 0;
+}
+
+/* Grids whose cells hold form inputs: the fixed 4rem cell box clips an input
+   plus its validation text, so let the cell fill whatever row height is set. */
+.common_form_grid .ag-row:not(.ag-floating-bottom-container .ag-row) .ag-cell {
+    height: 100%;
+}
+
+.common_form_grid .ag-row:not(.ag-floating-bottom-container .ag-row)::before {
+    height: 100%;
+}
+
 .ag-row.ag-full-width-row {
     pointer-events: auto;
 }

@@ -20,6 +20,22 @@ export const inputOverrides: ComponentTheme = {
                     color: 'var(--mui-tokens-color-neutral-400)',
                     WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
                 },
+                '&.Mui-disabled .MuiChip-root': {
+                    backgroundColor: 'var(--mui-tokens-color-common-white) !important',
+                    borderColor: 'var(--mui-tokens-color-brand-500) !important',
+                    color: 'var(--mui-tokens-color-brand-950) !important',
+                    opacity: '1 !important',
+                    '& .MuiChip-label': {
+                        color: 'var(--mui-tokens-color-brand-950) !important',
+                        opacity: '1 !important',
+                        WebkitTextFillColor: 'var(--mui-tokens-color-brand-950) !important'
+                    },
+                    '& .MuiChip-deleteIcon': {
+                        color: 'var(--mui-tokens-color-brand-600) !important',
+                        opacity: '0.4 !important',
+                        pointerEvents: 'none'
+                    }
+                },
                 '&.MuiInputAdornment-positionStart': {
                     marginRight: 'var(--mui-tokens-spacing-4)'
                 },
@@ -47,6 +63,14 @@ export const inputOverrides: ComponentTheme = {
                     },
                     '&.MuiSelect-root': { padding: 0 },
                     '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-3)' },
+                    '&.MuiAutocomplete-inputRoot': {
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        height: 'auto',
+                        maxHeight: 'none',
+                        minHeight: INPUT_HEIGHT_SMALL,
+                        padding: 'var(--mui-tokens-spacing-1) var(--mui-tokens-spacing-2)'
+                    },
                     '&.MuiInputBase-multiline': {
                         alignItems: 'flex-start',
                         height: 'auto',
@@ -92,6 +116,14 @@ export const inputOverrides: ComponentTheme = {
                     ...theme.typography.bodyNormal,
                     '&.MuiSelect-root': { padding: 0 },
                     '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)' },
+                    '&.MuiAutocomplete-inputRoot': {
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        height: 'auto',
+                        maxHeight: 'none',
+                        minHeight: INPUT_HEIGHT_LARGE,
+                        padding: 'var(--mui-tokens-spacing-1) var(--mui-tokens-spacing-3)'
+                    },
                     '&.MuiInputBase-multiline': {
                         alignItems: 'flex-start',
                         height: 'auto',

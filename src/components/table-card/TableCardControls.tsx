@@ -14,9 +14,13 @@ export interface TableCardControlsProps {
  * TableCardControls
  *
  * The standard (non-selection) table card header controls: a right-aligned
- * search field followed by a single action affordance. The grid/list toggle is
+ * search field followed by the action affordance. The grid/list toggle is
  * not rendered here - it is handed to TableCardActionMenu, which surfaces it
  * inside the three-dots menu to keep the toolbar to one control.
+ *
+ * How many actions stay as plain buttons depends on the search field: it claims
+ * most of the toolbar, so beside it only a lone action fits before the rest
+ * collapse into the kebab. Without it there is room for two.
  */
 export default function TableCardControls({
     hasInput = true,
@@ -27,13 +31,16 @@ export default function TableCardControls({
     onToggleViewMode
 }: TableCardControlsProps) {
     return (
-        <div className="flex flex-wrap gap-2 items-center justify-end min-w-0 w-full">
+        <div className="flex flex-nowrap gap-2 items-center justify-end min-w-0 w-full">
             {hasInput && (
-                <div className="flex-1 min-w-0 sm:max-w-64">
+                <div className="flex-1 md:max-w-64 md:w-auto min-w-0 w-full">
                     <TableCardInput {...tableInputProps} />
                 </div>
             )}
             <TableCardActionMenu
+                inlineActionLimit={hasInput
+                    ? 1
+                    : 2}
                 {...tableButtonsProps}
                 showViewToggle={showViewToggle}
                 viewMode={viewMode}

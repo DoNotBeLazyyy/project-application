@@ -19,9 +19,6 @@ export default function TableCardSelectionBar({
     return (
         <div className="bg-(--mui-palette-brand-50) border border-(--mui-palette-brand-200) flex flex-wrap gap-3 items-center justify-between px-3 py-2.5 rounded-xl transition-all">
             <div className="flex gap-3 items-center">
-                <span className="bg-(--mui-palette-brand-600) flex font-bold h-7 items-center justify-center rounded-lg shadow-xs text-white text-xs w-7">
-                    {selectedCount}
-                </span>
                 <div>
                     <span className="block font-bold text-(--mui-palette-brand-900) text-xs">
                         {selectedCount} {entityName}{selectedCount > 1

@@ -54,16 +54,34 @@ export const chipOverrides: ComponentTheme = {
                 },
                 '&.MuiChip-colorOutline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)',
-                    borderColor: 'var(--mui-tokens-color-brand-900)',
+                    borderColor: 'var(--mui-tokens-color-brand-600)',
                     borderStyle: 'solid',
                     borderWidth: 'var(--mui-tokens-stroke-0)',
                     color: 'var(--mui-tokens-color-brand-900)'
+                },
+                '& .MuiChip-deleteIcon': {
+                    color: 'var(--mui-tokens-color-brand-700)',
+                    fontSize: '0.875rem',
+                    marginLeft: 'var(--mui-tokens-spacing-2)',
+                    marginRight: '2px',
+                    transition: 'color 0.15s ease',
+                    '&:hover': {
+                        color: 'var(--mui-tokens-color-brand-950)'
+                    }
+                },
+                '&.Mui-disabled': {
+                    opacity: 1,
+                    '& .MuiChip-label': {
+                        color: 'var(--mui-tokens-color-brand-950)',
+                        opacity: 1,
+                        WebkitTextFillColor: 'var(--mui-tokens-color-brand-950)'
+                    }
                 },
                 '&.MuiChip-sizeSmall': {
                     borderRadius: 'var(--mui-tokens-radius-sm)',
                     fontSize: 'var(--mui-tokens-fontSize-xs)',
                     gap: 0,
-                    height: '1.125rem',
+                    height: '1.5rem',
                     margin: 0,
                     padding: '0 var(--mui-tokens-spacing-2)',
                     '& .MuiChip-icon': {
@@ -71,13 +89,18 @@ export const chipOverrides: ComponentTheme = {
                         margin: 0
                     },
                     '& .MuiChip-label': {
-                        padding: '0 var(--mui-tokens-spacing-2)'
+                        padding: '0 var(--mui-tokens-spacing-1)'
+                    },
+                    '& .MuiChip-deleteIcon': {
+                        fontSize: '0.75rem',
+                        marginLeft: 'var(--mui-tokens-spacing-2)',
+                        marginRight: '2px'
                     }
                 },
                 '&.MuiChip-sizeMedium': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     fontSize: 'var(--mui-tokens-fontSize-sm)',
-                    height: '1.375rem',
+                    height: '1.75rem',
                     gap: 0,
                     margin: 0,
                     padding: '0 8px',
@@ -87,12 +110,17 @@ export const chipOverrides: ComponentTheme = {
                     },
                     '& .MuiChip-label': {
                         padding: '0 var(--mui-tokens-spacing-2)'
+                    },
+                    '& .MuiChip-deleteIcon': {
+                        fontSize: '0.875rem',
+                        marginLeft: 'var(--mui-tokens-spacing-2)',
+                        marginRight: '2px'
                     }
                 },
                 '&.MuiChip-sizeLarge': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     fontSize: 'var(--mui-tokens-fontSize-md)',
-                    height: '1.75rem',
+                    height: '2rem',
                     gap: 0,
                     margin: 0,
                     padding: '0 var(--mui-tokens-spacing-3)',
@@ -102,6 +130,11 @@ export const chipOverrides: ComponentTheme = {
                     },
                     '& .MuiChip-label': {
                         padding: '0 var(--mui-tokens-spacing-2)'
+                    },
+                    '& .MuiChip-deleteIcon': {
+                        fontSize: '1rem',
+                        marginLeft: 'var(--mui-tokens-spacing-2)',
+                        marginRight: '2px'
                     }
                 }
             }

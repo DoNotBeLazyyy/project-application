@@ -16,6 +16,7 @@ export default function SessionTimeoutModal({
         <CommonModal
             closeOnBackdropClick={false}
             closeOnEscape={false}
+            fullScreen={false}
             open={open}
         >
             <div className="flex flex-col gap-4 p-6">

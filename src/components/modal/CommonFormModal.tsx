@@ -1,5 +1,6 @@
 import CommonActionModal, { CommonActionModalProps } from '@components/modal/CommonActionModal';
 import { classMerge } from '@utils/css.util';
+import { normalizeSx } from '@utils/theme.util';
 import { ReactNode } from 'react';
 
 export interface CommonFormModalProps extends CommonActionModalProps {
@@ -12,12 +13,16 @@ export interface CommonFormModalProps extends CommonActionModalProps {
 }
 
 export default function CommonFormModal({
+    cardProps,
     confirmText = 'Save',
     containerClassName,
     formContent,
     formId,
     formButtonsProps,
+    fullScreen,
+    hideCancel = false,
     isDirty,
+    sx,
     onClose,
     onReset,
     ...props
@@ -31,19 +36,28 @@ export default function CommonFormModal({
     return (
         <CommonActionModal
             {...props}
+            cardProps={{
+                ...cardProps,
+                // Header close (X). A page-supplied header action still wins.
+                defaultActionProps: cardProps?.cardHeaderProps?.action
+                    ? undefined
+                    : { onClick: handleCloseModal, ...cardProps?.defaultActionProps }
+            }}
             containerClassName={
                 classMerge(
-                    'max-w-full w-[40rem]',
+                    'w-full',
                     containerClassName
                 )
             }
             formButtonsProps={{
                 ...formButtonsProps,
-                cancelProps: {
-                    color: 'secondary',
-                    onClick: handleCloseModal,
-                    ...cancelProps
-                },
+                cancelProps: hideCancel
+                    ? undefined
+                    : {
+                        color: 'secondary',
+                        onClick: handleCloseModal,
+                        ...cancelProps
+                    },
                 confirmProps: {
                     children: confirmText,
                     disabled: isDirty === false,
@@ -63,6 +77,21 @@ export default function CommonFormModal({
                     }
                     : resetProps
             }}
+            fullScreen={fullScreen}
+            hideCancel={hideCancel}
+            sx={[
+                {
+                    '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                        height: 'auto',
+                        margin: 'auto',
+                        maxHeight: { sm: '70%' },
+                        maxWidth: { sm: '60%' },
+                        overflow: 'hidden',
+                        width: { sm: '60%' }
+                    }
+                },
+                ...normalizeSx(sx)
+            ]}
         >
             {formContent}
         </CommonActionModal>

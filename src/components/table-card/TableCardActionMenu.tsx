@@ -3,7 +3,7 @@ import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
-    ArrowLineDownIcon, ArrowLineUpIcon, DotsThreeVerticalIcon, FunnelIcon, FunnelSimpleIcon,
+    ArrowLineUpIcon, DotsThreeVerticalIcon, FunnelIcon,
     IconProps, ListIcon, PlusIcon, SquaresFourIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
@@ -23,11 +23,14 @@ export interface TableCardExtraOption extends TableCardActionOption {
 export interface TableCardActionMenuProps {
     createButtonProps?: TableCardActionOption;
     deleteButtonProps?: TableCardActionOption;
-    downloadCsvButtonProps?: TableCardActionOption;
     extraOptions?: TableCardExtraOption[];
-    filterButtonProps?: TableCardActionOption;
+    filterSortButtonProps?: TableCardActionOption;
+    /**
+     * How many actions may render as direct buttons before the set collapses
+     * into the kebab menu. Set by the toolbar from how much room it has.
+     */
+    inlineActionLimit?: number;
     showViewToggle?: boolean;
-    sortButtonProps?: TableCardActionOption;
     uploadCsvButtonProps?: TableCardActionOption;
     viewMode?: 'table' | 'grid';
     extraButtons?: ReactNode;
@@ -46,22 +49,24 @@ interface ResolvedAction extends TableCardActionOption {
  *
  * The right-aligned action affordance for every table card header.
  *
- * Two rules drive what it renders:
+ * Rules driving what it renders:
+ * - Filter and Sort are exposed as a single "Filter & Sort" action rather than
+ *   two separate entries, since the underlying modal combines both concerns.
  * - The grid/list view toggle lives inside this menu rather than on the toolbar,
  *   so the header keeps a single control instead of two.
- * - When exactly one action is available and the view toggle is hidden, that
- *   action renders as a direct labelled button; anything more collapses into
- *   the three-dots kebab menu.
+ * - Actions render as direct labelled buttons while they fit within
+ *   `inlineActionLimit`; past that they collapse into the three-dots kebab menu.
+ *   The view toggle claims its own menu section, so its presence always forces
+ *   the menu.
  */
 export default function TableCardActionMenu({
     createButtonProps,
     deleteButtonProps,
-    downloadCsvButtonProps,
     extraButtons,
     extraOptions,
-    filterButtonProps,
+    filterSortButtonProps,
+    inlineActionLimit = 1,
     showViewToggle = false,
-    sortButtonProps,
     uploadCsvButtonProps,
     viewMode = 'grid',
     onToggleViewMode
@@ -95,9 +100,7 @@ export default function TableCardActionMenu({
 
     const actions: ResolvedAction[] = [
         ...buildAction('create', 'Create', <PlusIcon {...iconProps} />, createButtonProps),
-        ...buildAction('filter', 'Filters', <FunnelIcon {...iconProps} />, filterButtonProps),
-        ...buildAction('sort', 'Sort By', <FunnelSimpleIcon {...iconProps} />, sortButtonProps),
-        ...buildAction('downloadCsv', 'CSV Template', <ArrowLineDownIcon {...iconProps} />, downloadCsvButtonProps),
+        ...buildAction('filterSort', 'Filter & Sort', <FunnelIcon {...iconProps} />, filterSortButtonProps),
         ...buildAction('uploadCsv', 'Upload CSV', <ArrowLineUpIcon {...iconProps} />, uploadCsvButtonProps),
         ...(extraOptions ?? []).map(function(option) {
             return {
@@ -139,27 +142,30 @@ export default function TableCardActionMenu({
         return <>{extraButtons}</>;
     }
 
-    // Single action with no view toggle renders directly instead of behind a kebab
-    if (actions.length === 1 && !hasViewToggle) {
-        const [action] = actions;
-
+    // A small enough set with no view toggle renders directly instead of behind a kebab
+    if (actions.length <= inlineActionLimit && !hasViewToggle) {
         return (
             <>
                 {extraButtons}
-                <CommonButton
-                    color={action.isDestructive
-                        ? 'error'
-                        : 'primary'}
-                    disabled={action.disabled}
-                    size="small"
-                    startIcon={action.icon}
-                    variant={action.isDestructive
-                        ? 'outlined'
-                        : 'contained'}
-                    onClick={createHandleActionClick(action.onClick)}
-                >
-                    {action.children ?? action.label}
-                </CommonButton>
+                {actions.map(function(action) {
+                    return (
+                        <CommonButton
+                            color={action.isDestructive
+                                ? 'error'
+                                : 'primary'}
+                            disabled={action.disabled}
+                            key={action.key}
+                            size="small"
+                            startIcon={action.icon}
+                            variant={action.isDestructive
+                                ? 'outlined'
+                                : 'contained'}
+                            onClick={createHandleActionClick(action.onClick)}
+                        >
+                            {action.children ?? action.label}
+                        </CommonButton>
+                    );
+                })}
             </>
         );
     }
@@ -169,15 +175,39 @@ export default function TableCardActionMenu({
             {extraButtons}
             <CommonButton
                 aria-label="Table actions"
-                className="min-w-0 px-2"
-                color="lightGrey"
+                className="flex-shrink-0 min-w-9 p-0 w-9"
+                color="primary"
                 size="small"
+                sx={{
+                    backgroundColor: isMenuOpen
+                        ? 'var(--mui-tokens-color-brand-100)'
+                        : '#ffffff',
+                    borderColor: 'var(--mui-palette-primary-main)',
+                    borderWidth: '1px',
+                    boxShadow: 'none',
+                    boxSizing: 'border-box',
+                    color: 'var(--mui-palette-primary-main)',
+                    flexShrink: 0,
+                    height: '2.25rem',
+                    maxHeight: '2.25rem',
+                    minWidth: '2.25rem',
+                    width: '2.25rem',
+                    '&:hover': {
+                        backgroundColor: isMenuOpen
+                            ? 'var(--mui-tokens-color-brand-100)'
+                            : 'var(--mui-palette-grey-100)',
+                        borderColor: 'var(--mui-palette-primary-dark)',
+                        color: 'var(--mui-palette-primary-dark)'
+                    },
+                    '&:active': {
+                        backgroundColor: 'var(--mui-palette-grey-200)'
+                    }
+                }}
                 variant="outlined"
                 onClick={handleOpenMenu}
             >
                 <DotsThreeVerticalIcon
                     size={20}
-                    style={{ color: 'var(--mui-palette-grey-400)' }}
                     weight="bold"
                 />
             </CommonButton>

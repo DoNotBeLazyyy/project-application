@@ -23,6 +23,7 @@ export function useTableData<T extends FieldValues>({
     const [internalSort, setInternalSort] = useState<SortStringDto[]>([]);
     const [pagination, setPagination] = useState<PaginationData>(DEFAULT_PAGINATION);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     onFetchRef.current = onFetch;
@@ -34,22 +35,32 @@ export function useTableData<T extends FieldValues>({
         sort: SortStringDto[],
         isAppending = false
     ) {
-        const result = await onFetchRef.current?.(page, size, search, sort);
-        if (result?.data) {
-            const incomingRows = (result.data.content ?? []) as T[];
-            if (isAppending) {
-                setInternalRowData((prev) => [...prev, ...incomingRows]);
-            }
-            else {
-                setInternalRowData(incomingRows);
-            }
+        if (!isAppending) {
+            setIsLoading(true);
+        }
+        try {
+            const result = await onFetchRef.current?.(page, size, search, sort);
+            if (result?.data) {
+                const incomingRows = (result.data.content ?? []) as T[];
+                if (isAppending) {
+                    setInternalRowData((prev) => [...prev, ...incomingRows]);
+                }
+                else {
+                    setInternalRowData(incomingRows);
+                }
 
-            setPagination({
-                currentPage: result.data.number + 1,
-                rowsPerPage: result.data.size,
-                totalElements: result.data.totalElements,
-                totalPages: result.data.totalPages
-            });
+                setPagination({
+                    currentPage: result.data.number + 1,
+                    rowsPerPage: result.data.size,
+                    totalElements: result.data.totalElements,
+                    totalPages: result.data.totalPages
+                });
+            }
+        }
+        finally {
+            if (!isAppending) {
+                setIsLoading(false);
+            }
         }
     }
 
@@ -135,6 +146,7 @@ export function useTableData<T extends FieldValues>({
         hasMore: pagination.currentPage < pagination.totalPages,
         internalRowData,
         internalSort,
+        isLoading,
         isLoadingMore,
         loadData,
         loadNextPage,

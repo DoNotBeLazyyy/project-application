@@ -1,0 +1,57 @@
+@import '@toast-ui/editor/dist/toastui-editor.css';
+
+.toastui-editor-defaultUI {
+    border: 1px solid var(--mui-palette-divider, #e4e4e7) !important;
+    border-radius: 0.5rem !important;
+    font-family: inherit !important;
+    overflow: hidden !important;
+    background-color: var(--mui-palette-background-paper, #ffffff) !important;
+}
+
+.toastui-editor-defaultUI-toolbar {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid var(--mui-palette-divider, #e4e4e7) !important;
+    padding: 6px 10px !important;
+}
+
+.toastui-editor-toolbar-icons {
+    border-radius: 4px !important;
+}
+
+.toastui-editor-toolbar-icons:hover {
+    background-color: var(--mui-tokens-color-brand-50, #f0f4ff) !important;
+}
+
+.toastui-editor-toolbar-icons.active {
+    background-color: var(--mui-tokens-color-brand-100, #e0edfd) !important;
+    color: var(--mui-tokens-color-brand-900, #022179) !important;
+}
+
+.toastui-editor-mode-switch {
+    background-color: #f8fafc !important;
+    border-top: 1px solid var(--mui-palette-divider, #e4e4e7) !important;
+}
+
+.toastui-editor-mode-switch .tab-item {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--mui-palette-text-secondary, #64748b) !important;
+}
+
+.toastui-editor-mode-switch .tab-item.active {
+    color: var(--mui-tokens-color-brand-900, #022179) !important;
+    border-bottom: 2px solid var(--mui-tokens-color-brand-900, #022179) !important;
+    font-weight: 600 !important;
+}
+
+.toastui-editor-contents {
+    font-family: inherit !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: var(--mui-palette-text-primary, #0f172a) !important;
+}
+
+.toastui-editor-contents p {
+    margin: 0.5em 0 !important;
+}
+

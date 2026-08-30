@@ -125,6 +125,7 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
     return (
         <CommonModal
             cardProps={{ className: 'flex flex-col gap-5 max-h-[85dvh] max-w-full overflow-y-auto p-4 sm:p-6' }}
+            fullScreen={false}
             fullWidth
             maxWidth="sm"
             open={Boolean(event)}
