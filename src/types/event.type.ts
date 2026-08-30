@@ -1,4 +1,12 @@
-import { AnnouncementAudience, AnnouncementSectionRef } from '@type/announcement.type';
+import { AnnouncementAudience, AnnouncementSectionRef, AttachmentInputDto } from '@type/announcement.type';
+
+export interface EventAttachment {
+    id: string;
+    file_name: string;
+    file_path: string;
+    mime_type: string | null;
+    file_size: number | null;
+}
 
 export interface EventListRow {
     id: string;
@@ -30,6 +38,7 @@ export interface EventDetail {
     author_name: string | null;
     section_ids: string[];
     sections: AnnouncementSectionRef[];
+    attachments: EventAttachment[];
 }
 
 export interface EventFormValues {
@@ -39,6 +48,7 @@ export interface EventFormValues {
     start_at: string;
     end_at: string;
     description: string;
+    attachments?: AttachmentInputDto[];
 }
 
 export interface EventFeedRow {

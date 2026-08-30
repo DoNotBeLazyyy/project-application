@@ -65,6 +65,9 @@ export async function createEvent(
 
     return callRpc<null>('fn_create_event', {
         p_all_day: false,
+        p_attachments: params.attachments && params.attachments.length > 0
+            ? params.attachments
+            : null,
         p_audience: audienceParams.audience,
         p_description: params.description || null,
         p_end_at: params.end_at || null,
@@ -83,6 +86,9 @@ export async function updateEvent(
 
     return callRpc<null>('fn_update_event', {
         p_all_day: false,
+        p_attachments: params.attachments && params.attachments.length > 0
+            ? params.attachments
+            : null,
         p_audience: audienceParams.audience,
         p_description: params.description || null,
         p_end_at: params.end_at || null,

@@ -1,4 +1,4 @@
-import { SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
+import { SpecialGradeConditionNode, SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
 
 export const EXPECTED_GRADE_RUNGS: number[] = [1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 5.00];
 
@@ -239,33 +239,120 @@ export function calculateTermFinalGrade(
 }
 
 /**
- * Evaluates whether a special grade applies (e.g. DRP on excessive absences, INC on incomplete assessment).
+ * Evaluates one node of a special grade condition tree against a student's
+ * measured signals.
+ *
+ * This mirrors the SQL function `fn_eval_special_grade_condition`, which is the
+ * authority — detection runs in the database. This copy exists so the rule
+ * builder can show an admin what a rule does before it is saved, and the two
+ * must agree. Both fail closed: an unknown signal, a malformed node, or a value
+ * that will not parse is `false`, never `true`.
  */
+export function evaluateCondition(
+    node: SpecialGradeConditionNode | null | undefined,
+    signals: Record<string, number | null>
+): boolean {
+    if (!node || typeof node !== 'object') return false;
+
+    // An empty group never fires, so a rule with no conditions is manual-only.
+    if ('all' in node) {
+        if (!Array.isArray(node.all) || node.all.length === 0) return false;
+        return node.all.every((child) => evaluateCondition(child, signals));
+    }
+
+    if ('any' in node) {
+        if (!Array.isArray(node.any) || node.any.length === 0) return false;
+        return node.any.some((child) => evaluateCondition(child, signals));
+    }
+
+    if ('not' in node) {
+        return !evaluateCondition(node.not, signals);
+    }
+
+    const { signal, op, value } = node;
+    if (!signal || !op) return false;
+    if (!(signal in signals)) return false;
+
+    const actual = signals[signal];
+
+    if (op === 'is_null') return actual === null;
+    if (op === 'not_null') return actual !== null;
+    if (actual === null) return false;
+
+    if (op === 'between') {
+        if (!Array.isArray(value) || value.length !== 2) return false;
+        const [low, high] = value;
+        if (!Number.isFinite(low) || !Number.isFinite(high)) return false;
+        return actual >= low && actual <= high;
+    }
+
+    if (typeof value !== 'number' || !Number.isFinite(value)) return false;
+
+    switch (op) {
+    case '>=': return actual >= value;
+    case '>': return actual > value;
+    case '<=': return actual <= value;
+    case '<': return actual < value;
+    case '=': return actual === value;
+    case '!=': return actual !== value;
+    default: return false;
+    }
+}
+
+export interface SpecialGradeEvaluationResult {
+    specialGrade: SpecialGradeConfig | null;
+    reason?: string;
+}
+
 export function evaluateSpecialGradeStatus(
-    absenceCount: number,
+    absentSessions: number,
     totalSessions: number,
     hasIncompleteRequirements: boolean,
-    specialConfigs: SpecialGradeConfig[]
-): { specialGrade: SpecialGradeConfig | null; reason?: string } {
+    configs: SpecialGradeConfig[]
+): SpecialGradeEvaluationResult {
     const absencePercentage = totalSessions > 0
-        ? (absenceCount / totalSessions) * 100
+        ? (absentSessions / totalSessions) * 100
         : 0;
 
-    const drpConfig = specialConfigs.find((c) => c.code === 'DRP' && c.is_active);
-    if (drpConfig && drpConfig.min_absence_percentage !== null && drpConfig.min_absence_percentage !== undefined && absencePercentage >= Number(drpConfig.min_absence_percentage)) {
+    // Check DRP first (absence percentage exceeded)
+    const drpConfig = configs.find(
+        (c) => c.code === 'DRP' && c.is_active && c.min_absence_percentage && absencePercentage >= Number(c.min_absence_percentage)
+    );
+    if (drpConfig) {
         return {
             specialGrade: drpConfig,
-            reason: `Absence rate of ${absencePercentage.toFixed(1)}% exceeds the ${drpConfig.min_absence_percentage}% threshold.`
+            reason: `Absence rate of ${absencePercentage.toFixed(1)}% exceeds the ${drpConfig.min_absence_percentage}% threshold`
         };
     }
 
-    const incConfig = specialConfigs.find((c) => c.code === 'INC' && c.is_active);
-    if (incConfig && hasIncompleteRequirements) {
-        return {
-            specialGrade: incConfig,
-            reason: `Student has incomplete academic requirements. Must resolve within ${incConfig.completion_deadline_days ?? 365} days.`
-        };
+    // Check INC second (incomplete requirements)
+    if (hasIncompleteRequirements) {
+        const incConfig = configs.find((c) => c.code === 'INC' && c.is_active && c.requires_completion);
+        if (incConfig) {
+            return {
+                specialGrade: incConfig,
+                reason: `Incomplete requirements. Must resolve within ${incConfig.completion_deadline_days ?? 365} days.`
+            };
+        }
     }
 
-    return { specialGrade: null };
+    return {
+        specialGrade: null
+    };
+}
+
+/**
+ * Picks the rule that should win when several match the same student. Lower
+ * `priority` wins; `code` breaks ties so the outcome is stable rather than
+ * dependent on row order.
+ */
+export function resolveMatchingSpecialGrade(
+    configs: SpecialGradeConfig[],
+    signals: Record<string, number | null>
+): SpecialGradeConfig | null {
+    const matches = configs
+        .filter((config) => config.is_active && evaluateCondition(config.conditions, signals))
+        .sort((a, b) => ((a.priority ?? 0) - (b.priority ?? 0)) || a.code.localeCompare(b.code));
+
+    return matches[0] ?? null;
 }

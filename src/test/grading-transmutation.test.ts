@@ -3,7 +3,8 @@ import {
     calculatePeriodRawGrade,
     calculateTermFinalGrade,
     computeTransmutationRanges,
-    evaluateSpecialGradeStatus,
+    evaluateCondition,
+    resolveMatchingSpecialGrade,
     transmuteGrade,
     validateTransmutationRows
 } from '@utils/grading.util';
@@ -28,21 +29,27 @@ describe('Grading Transmutation Engine & Periodic Weighting Logic', () => {
             code: 'INC',
             label: 'Incomplete',
             description: 'Course requirements incomplete',
+            conditions: { all: [{ op: '>=', signal: 'missing_exam_count', value: 1 }] },
             min_absence_percentage: null,
             requires_completion: true,
             completion_deadline_days: 365,
             is_passing: false,
-            is_active: true
+            is_active: true,
+            is_auto_detected: true,
+            priority: 20
         },
         {
             code: 'DRP',
             label: 'Dropped',
             description: 'Excessive unexcused absences',
+            conditions: { all: [{ op: '>=', signal: 'absence_rate', value: 20 }] },
             min_absence_percentage: 20,
             requires_completion: false,
             completion_deadline_days: null,
             is_passing: false,
-            is_active: true
+            is_active: true,
+            is_auto_detected: true,
+            priority: 10
         }
     ];
 
@@ -269,30 +276,144 @@ describe('Grading Transmutation Engine & Periodic Weighting Logic', () => {
         });
     });
 
-    describe('5. Special Grade Status Evaluation (INC / DRP)', () => {
-        it('should apply DRP if absence percentage exceeds minimum absence threshold (20%)', () => {
+    describe('5. Special Grade Condition Evaluation', () => {
+        // Mirrors what fn_special_grade_signals returns for one enrollment.
+        function signals(overrides: Record<string, number | null> = {}): Record<string, number | null> {
+            return {
+                absence_rate: 0,
+                absent_count: 0,
+                attendance_rate: 100,
+                excused_count: 0,
+                excused_rate: 0,
+                late_count: 0,
+                missing_assessment_count: 0,
+                missing_exam_count: 0,
+                sessions_total: 20,
+                ...overrides
+            };
+        }
+
+        it('matches DRP when the absence rate reaches the threshold', () => {
             // 6 absences out of 20 sessions = 30% absence
-            const outcome = evaluateSpecialGradeStatus(6, 20, false, sampleSpecialConfigs);
-            expect(outcome.specialGrade?.code)
+            const matched = resolveMatchingSpecialGrade(
+                sampleSpecialConfigs,
+                signals({ absence_rate: 30, absent_count: 6 })
+            );
+
+            expect(matched?.code)
                 .toBe('DRP');
-            expect(outcome.reason)
-                .toContain('exceeds the 20% threshold');
         });
 
-        it('should apply INC if student has incomplete requirements within acceptable attendance', () => {
-            // 2 absences out of 20 sessions = 10% absence (below 20%)
-            const outcome = evaluateSpecialGradeStatus(2, 20, true, sampleSpecialConfigs);
-            expect(outcome.specialGrade?.code)
+        it('matches INC when a past-due exam has no submission', () => {
+            const matched = resolveMatchingSpecialGrade(
+                sampleSpecialConfigs,
+                signals({ absence_rate: 10, missing_exam_count: 1 })
+            );
+
+            expect(matched?.code)
                 .toBe('INC');
-            expect(outcome.specialGrade?.requires_completion)
+            expect(matched?.requires_completion)
                 .toBe(true);
-            expect(outcome.reason)
-                .toContain('Must resolve within 365 days');
         });
 
-        it('should return null special grade when student meets all requirements with good attendance', () => {
-            const outcome = evaluateSpecialGradeStatus(1, 20, false, sampleSpecialConfigs);
-            expect(outcome.specialGrade)
+        it('prefers the lower priority rule when several match', () => {
+            // Both DRP (priority 10) and INC (priority 20) fire here.
+            const matched = resolveMatchingSpecialGrade(
+                sampleSpecialConfigs,
+                signals({ absence_rate: 30, missing_exam_count: 2 })
+            );
+
+            expect(matched?.code)
+                .toBe('DRP');
+        });
+
+        it('matches nothing when the student is inside every threshold', () => {
+            const matched = resolveMatchingSpecialGrade(
+                sampleSpecialConfigs,
+                signals({ absence_rate: 5 })
+            );
+
+            expect(matched)
+                .toBeNull();
+        });
+
+        it('requires every leaf of an ALL group', () => {
+            const node = {
+                all: [
+                    { op: '>=' as const, signal: 'absence_rate', value: 20 },
+                    { op: '>=' as const, signal: 'missing_exam_count', value: 1 }
+                ]
+            };
+
+            expect(evaluateCondition(node, signals({ absence_rate: 30, missing_exam_count: 1 })))
+                .toBe(true);
+            expect(evaluateCondition(node, signals({ absence_rate: 30, missing_exam_count: 0 })))
+                .toBe(false);
+        });
+
+        it('needs only one leaf of an ANY group', () => {
+            const node = {
+                any: [
+                    { op: '>=' as const, signal: 'absence_rate', value: 20 },
+                    { op: '>=' as const, signal: 'missing_exam_count', value: 1 }
+                ]
+            };
+
+            expect(evaluateCondition(node, signals({ missing_exam_count: 1 })))
+                .toBe(true);
+            expect(evaluateCondition(node, signals()))
+                .toBe(false);
+        });
+
+        it('supports not, between and the null checks', () => {
+            expect(evaluateCondition(
+                { not: { op: '>=', signal: 'absence_rate', value: 20 } },
+                signals({ absence_rate: 5 })
+            ))
+                .toBe(true);
+
+            expect(evaluateCondition(
+                { op: 'between', signal: 'absence_rate', value: [10, 30] },
+                signals({ absence_rate: 15 })
+            ))
+                .toBe(true);
+
+            expect(evaluateCondition(
+                { op: 'between', signal: 'absence_rate', value: [10, 30] },
+                signals({ absence_rate: 45 })
+            ))
+                .toBe(false);
+
+            expect(evaluateCondition(
+                { op: 'is_null', signal: 'absence_rate' },
+                signals({ absence_rate: null })
+            ))
+                .toBe(true);
+        });
+
+        // Fail-closed is the whole safety story: a rule the system cannot fully
+        // evaluate must never flag a student.
+        it('fails closed on an empty group, an unknown signal, and a null reading', () => {
+            expect(evaluateCondition({ all: [] }, signals()))
+                .toBe(false);
+
+            expect(evaluateCondition(
+                { op: '>=', signal: 'not_a_real_signal', value: 1 },
+                signals()
+            ))
+                .toBe(false);
+
+            expect(evaluateCondition(
+                { op: '>=', signal: 'absence_rate', value: 20 },
+                signals({ absence_rate: null })
+            ))
+                .toBe(false);
+        });
+
+        it('ignores an inactive rule even when its conditions match', () => {
+            const inactive = sampleSpecialConfigs.map((config) => ({ ...config, is_active: false }));
+
+            expect(resolveMatchingSpecialGrade(inactive, signals({ absence_rate: 30 })))
                 .toBeNull();
         });
     });

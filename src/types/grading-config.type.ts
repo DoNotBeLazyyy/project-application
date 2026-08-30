@@ -20,6 +20,44 @@ export interface GradingPeriodTemplate {
     components: GradingComponentTemplate[];
 }
 
+export type SpecialGradeOperator =
+    | '>=' | '>' | '<=' | '<' | '=' | '!=' | 'between' | 'is_null' | 'not_null';
+
+/**
+ * One leaf of a rule: a single measurable fact compared against a threshold.
+ * `value` is a pair only for the `between` operator, and unused by the two
+ * null-checking operators.
+ */
+export interface SpecialGradeCondition {
+    signal: string;
+    op: SpecialGradeOperator;
+    value?: number | [number, number] | null;
+}
+
+/**
+ * A rule's condition tree. The grammar is recursive so nested groups can ship
+ * later without a data migration, but the builder only authors the flat
+ * single-group form today.
+ */
+export type SpecialGradeConditionNode =
+    | { all: SpecialGradeConditionNode[] }
+    | { any: SpecialGradeConditionNode[] }
+    | { not: SpecialGradeConditionNode }
+    | SpecialGradeCondition;
+
+export type SpecialGradeConditionGroup =
+    | { all: SpecialGradeConditionNode[] }
+    | { any: SpecialGradeConditionNode[] };
+
+/** An entry in the signal registry — what a rule is allowed to test. */
+export interface SignalDescriptor {
+    id: string;
+    group: string;
+    unit: string;
+    description: string;
+    operators: SpecialGradeOperator[];
+}
+
 export interface SpecialGradeConfig {
     id?: string;
     code: string;
@@ -30,4 +68,104 @@ export interface SpecialGradeConfig {
     completion_deadline_days: string | number | null;
     is_passing: boolean;
     is_active: boolean;
+    conditions?: SpecialGradeConditionGroup | null;
+    priority?: number;
+    is_auto_detected?: boolean;
+    rule_version?: number;
+    pending_flag_count?: number;
+}
+
+export interface SpecialGradeFormValues {
+    code: string;
+    label: string;
+    description: string;
+    min_absence_percentage: string;
+    requires_completion: boolean;
+    completion_deadline_days: string;
+    is_passing: boolean;
+    is_active: boolean;
+    conditions?: SpecialGradeConditionGroup | null;
+    priority?: string | number;
+    is_auto_detected?: boolean;
+}
+
+export interface SpecialGradeFilterValues {
+    is_active?: string;
+    is_passing?: string;
+    requires_completion?: string;
+    is_auto_detected?: string;
+}
+
+/** One evaluated leaf, kept on a flag so a decision can be explained later. */
+export interface SpecialGradeEvidenceItem {
+    signal: string;
+    op: SpecialGradeOperator;
+    value: number | [number, number] | null;
+    actual: number | null;
+    known: boolean;
+    matched: boolean;
+}
+
+export type SpecialGradeFlagStatus = 'Pending' | 'Applied' | 'Dismissed' | 'Superseded';
+
+export interface SpecialGradeFlag {
+    id: string;
+    enrollment_id: string;
+    grading_period_id: string;
+    status: SpecialGradeFlagStatus;
+    code: string;
+    label: string;
+    is_passing: boolean;
+    priority: number;
+    student_number: string;
+    full_name: string;
+    evidence: SpecialGradeEvidenceItem[];
+    detected_at: string;
+    resolved_at: string | null;
+    resolution_note: string | null;
+}
+
+export interface SpecialGradePreviewMatch {
+    enrollment_id: string;
+    student_number: string;
+    full_name: string;
+    section_code: string;
+    evidence: SpecialGradeEvidenceItem[];
+}
+
+export interface SpecialGradePreviewResult {
+    success: boolean;
+    message?: string;
+    term_id?: string;
+    total_students: number;
+    matched_count: number;
+    sample: SpecialGradePreviewMatch[];
+}
+
+/**
+ * Draft shapes used by the period composer. New rows have no database id yet,
+ * so `key` carries a stable client-side identity for list rendering and for the
+ * save diff to tell an unsaved row apart from a persisted one.
+ */
+export interface GradingComponentDraft extends GradingComponentTemplate {
+    key: string;
+}
+
+export interface GradingPeriodDraft extends Omit<GradingPeriodTemplate, 'components'> {
+    key: string;
+    components: GradingComponentDraft[];
+}
+
+export interface SpecialGradeDetectionResult {
+    success: boolean;
+    created: number;
+    refreshed: number;
+    superseded: number;
+}
+
+export interface SpecialGradeFlagResolution {
+    success: boolean;
+    message: string;
+    code?: string;
+    grade_id?: string;
 }

@@ -27,6 +27,38 @@ export function formatFieldLabel(key: string): string {
         .trim();
 }
 
+/**
+ * Reads one field's validation message out of the error tree.
+ *
+ * React Hook Form nests errors to mirror the form's shape, so a dotted or
+ * indexed field name (`address.city`, `rows.0.weight`) has to be walked rather
+ * than looked up directly.
+ *
+ * @param errors - The error tree from `formState`.
+ * @param name - The field's registered name.
+ * @returns
+ */
+export function getFieldErrorMessage(errors: FieldErrors, name: string): string | undefined {
+    const resolved = name.split('.')
+        .reduce<unknown>(function(current, segment) {
+            if (current && typeof current === 'object') {
+                return (current as Record<string, unknown>)[segment];
+            }
+
+            return undefined;
+        }, errors);
+
+    if (resolved && typeof resolved === 'object' && 'message' in resolved) {
+        const { message } = resolved as { message?: unknown };
+
+        return typeof message === 'string'
+            ? message
+            : undefined;
+    }
+
+    return undefined;
+}
+
 export const FORM_ERROR_EVENT = 'app:form-error';
 
 export interface FormErrorEventDetail {

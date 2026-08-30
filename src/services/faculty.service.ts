@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import {
     AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
+import { SpecialGradeDetectionResult, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -203,5 +204,44 @@ export async function reseedSectionGrading(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_reseed_section_grading', {
         p_section_id: sectionId
+    });
+}
+export async function listSpecialGradeFlags(
+    sectionId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<SpecialGradeFlag[]>> {
+    return callRpc<SpecialGradeFlag[]>('fn_list_special_grade_flags', {
+        p_section_id: sectionId,
+        p_grading_period_id: gradingPeriodId
+    });
+}
+
+export async function detectSpecialGradeFlags(
+    sectionId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<SpecialGradeDetectionResult>> {
+    return callRpc<SpecialGradeDetectionResult>('fn_detect_special_grade_flags', {
+        p_section_id: sectionId,
+        p_grading_period_id: gradingPeriodId
+    });
+}
+
+export async function applySpecialGradeFlag(
+    flagId: string,
+    note?: string
+): Promise<ServiceResult<SpecialGradeFlagResolution>> {
+    return callRpc<SpecialGradeFlagResolution>('fn_apply_special_grade_flag', {
+        p_flag_id: flagId,
+        p_note: note || null
+    });
+}
+
+export async function dismissSpecialGradeFlag(
+    flagId: string,
+    reason: string
+): Promise<ServiceResult<SpecialGradeFlagResolution>> {
+    return callRpc<SpecialGradeFlagResolution>('fn_dismiss_special_grade_flag', {
+        p_flag_id: flagId,
+        p_reason: reason
     });
 }

@@ -22,6 +22,16 @@ export interface AcademicThresholdUpdate {
     is_active: boolean;
 }
 
-export interface AcademicThresholdsFormValues {
-    thresholds: AcademicThresholdUpdate[];
+/** One row of the management list, edited through the update modal. */
+export interface AcademicThresholdFormValues {
+    is_active: boolean;
+    max_gwa: string;
+    min_gwa: string;
+    requires_no_failing: boolean;
+    scholarship_discount_pct: string;
+}
+
+export interface AcademicThresholdFilterValues {
+    category: 'All' | AcademicThresholdCategory;
+    is_active: 'All' | 'Active' | 'Inactive';
 }

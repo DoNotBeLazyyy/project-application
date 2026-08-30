@@ -12,6 +12,8 @@ export interface SectionListRow {
     faculty_name: string | null;
     room: string | null;
     max_slots: number;
+    /** Seats currently taken. Optional: only present when the list RPC aggregates it. */
+    enrolled_count?: number;
     status: SectionStatus;
     total_count: number;
 }

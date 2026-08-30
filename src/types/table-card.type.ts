@@ -41,6 +41,17 @@ export interface TableCardSelectionBarProps {
 
 export interface CommonTableCardProps<T extends FieldValues> {
     cardHeaderProps?: CardHeaderProps;
+    /**
+     * Header copy revealed by an info icon beside the title. Defaults to
+     * `cardHeaderProps.subheader`, which is then dropped as a visible line.
+     */
+    infoContent?: ReactNode;
+    /**
+     * Keeps `cardHeaderProps.subheader` on its own line instead of folding it
+     * into the info icon. For headers whose subheader carries live status
+     * rather than a static description of the page.
+     */
+    showSubheader?: boolean;
     controls?: TableCardControlsProps;
     createModalProps?: CommonFormModalProps;
     filterModalProps?: CommonFormModalProps;
@@ -56,7 +67,12 @@ export interface CommonTableCardProps<T extends FieldValues> {
     enableInfiniteScroll?: boolean;
     showViewToggle?: boolean;
     gridColumns?: BentoGridResponsiveCols;
-    renderGridCard?: (item: T, isSelected: boolean, onToggleSelect: () => void) => ReactNode;
+    renderGridCard?: (
+        item: T,
+        isSelected: boolean,
+        onToggleSelect: () => void,
+        onRequestDeleteRow: (id: string) => void
+    ) => ReactNode;
     onDelete?: (ids: string[]) => Promise<ServiceResult<unknown>>;
     onDeleteRow?: (id: string) => Promise<ServiceResult<unknown>>;
     onFetch?: (

@@ -1,5 +1,11 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { GradingPeriodTemplate, SpecialGradeConfig, TransmutationRow } from '@type/grading-config.type';
+import {
+    GradingPeriodTemplate,
+    SpecialGradeConditionGroup,
+    SpecialGradeConfig,
+    SpecialGradePreviewResult,
+    TransmutationRow
+} from '@type/grading-config.type';
 import { ServiceResult } from '@type/service.type';
 
 export async function getTransmutationTable(): Promise<ServiceResult<TransmutationRow[]>> {
@@ -77,11 +83,28 @@ export async function saveSpecialGradeConfigs(
                 ? Number(config.completion_deadline_days)
                 : null,
             is_passing: config.is_passing,
-            is_active: config.is_active
+            is_active: config.is_active,
+            conditions: config.conditions ?? { all: [] },
+            priority: Number(config.priority) || 100,
+            is_auto_detected: config.is_auto_detected ?? false
         }))
     });
 }
 
 export async function deleteSpecialGradeConfig(id: string): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_delete_special_grade_config', { p_id: id });
+}
+
+/**
+ * Dry run: how many currently enrolled students would this rule catch?
+ * Writes nothing, so it is safe to call on every edit of the condition builder.
+ */
+export async function previewSpecialGradeRule(
+    conditions: SpecialGradeConditionGroup,
+    termId?: string
+): Promise<ServiceResult<SpecialGradePreviewResult>> {
+    return callRpc<SpecialGradePreviewResult>('fn_preview_special_grade_rule', {
+        p_conditions: conditions,
+        p_term_id: termId ?? null
+    });
 }

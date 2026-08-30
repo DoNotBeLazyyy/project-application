@@ -21,6 +21,21 @@ export interface AnnouncementSectionRef {
     course_code: string | null;
 }
 
+export interface AnnouncementAttachment {
+    id: string;
+    file_name: string;
+    file_path: string;
+    mime_type: string | null;
+    file_size: number | null;
+}
+
+export interface AttachmentInputDto {
+    file_name: string;
+    file_path: string;
+    mime_type?: string | null;
+    file_size?: number | null;
+}
+
 export interface AnnouncementDetail {
     id: string;
     title: string;
@@ -34,15 +49,19 @@ export interface AnnouncementDetail {
     author_name: string | null;
     section_ids: string[];
     sections: AnnouncementSectionRef[];
+    attachments: AnnouncementAttachment[];
 }
 
 export interface AnnouncementFormValues {
-    title: string;
+    author_name?: string;
     content: string;
-    target_audience: AnnouncementAudience;
-    section_ids: string[];
-    is_pinned: boolean;
     expires_at: string;
+    is_pinned: boolean;
+    posted_on?: string;
+    section_ids: string[];
+    target_audience: AnnouncementAudience;
+    title: string;
+    attachments?: AttachmentInputDto[];
 }
 
 export interface AnnouncementFeedRow {

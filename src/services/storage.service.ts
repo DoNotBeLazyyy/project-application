@@ -3,7 +3,7 @@ import { callStorage } from '@services/supabase.wrapper';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
-export type StorageBucket = 'logos' | 'avatars' | 'materials' | 'submissions';
+export type StorageBucket = 'logos' | 'avatars' | 'materials' | 'submissions' | 'discussions' | 'announcements' | 'events';
 
 const PUBLIC_BUCKETS: StorageBucket[] = ['logos', 'avatars'];
 
