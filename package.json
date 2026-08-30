@@ -30,6 +30,7 @@
     "@mui/x-tree-view": "^8.27.2",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.112.3",
+    "@toast-ui/editor": "^3.2.2",
     "ag-grid-community": "^32.3.3",
     "ag-grid-react": "^32.3.3",
     "axios": "^1.13.6",
