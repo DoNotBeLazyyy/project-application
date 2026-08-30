@@ -24,7 +24,10 @@ TEST*.xml
 
 # Documentation exceptions from global ignore
 !*.md
-!docs/**
+# NOTE: ~/.gitignore_global ignores /docs, and git will not descend into an
+# excluded directory - so the directory itself must be re-included FIRST.
+!/docs/
+!/docs/**
 
 
 # Editor directories and files
