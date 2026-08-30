@@ -1,11 +1,14 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
-import { Fab, IconButton } from '@mui/material';
-import { PaperPlaneRightIcon, SparkleIcon, XIcon } from '@phosphor-icons/react';
+import useBreakpoint from '@hooks/useBreakpoint';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import { PaperPlaneRightIcon, XIcon } from '@phosphor-icons/react';
 import { askAssistant } from '@services/assistant.service';
 import { useAppStore } from '@stores/app.store';
+import { useAssistantStore } from '@stores/assistant.store';
 import { AssistantMessage, AssistantTurn } from '@type/assistant.type';
+import { classMerge } from '@utils/css.util';
 import { generateId } from '@utils/uuid.util';
 import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -122,8 +125,10 @@ function SuggestionList({ items, onSelect }: SuggestionListProps) {
 
 export default function AiAssistant() {
     const { pathname } = useLocation();
+    const { isMobile } = useBreakpoint();
     const activeRole = useAppStore((s) => s.activeRole);
-    const [isOpen, setIsOpen] = useState(false);
+    const isOpen = useAssistantStore((s) => s.isOpen);
+    const toggleOpen = useAssistantStore((s) => s.toggleOpen);
     const [isSending, setIsSending] = useState(false);
     const [draft, setDraft] = useState('');
     const [messages, setMessages] = useState<AssistantMessage[]>([]);
@@ -206,140 +211,142 @@ export default function AiAssistant() {
         handleSend(draft);
     }
 
-    function handleToggle() {
-        setIsOpen((prev) => !prev);
-    }
-
     if (!activeRole) {
         return null;
     }
 
-    return (
-        <>
-            {!isOpen && (
-                <Fab
-                    aria-label="Open AI Assistant"
-                    color="primary"
-                    data-testid="ai-assistant-fab"
-                    size="medium"
-                    sx={{ bottom: 24, position: 'fixed', right: 24, zIndex: 1200 }}
-                    onClick={handleToggle}
+    const panel = (
+        <div className="bg-white flex flex-col h-full overflow-hidden w-full">
+            <div className="border-b border-slate-100 flex items-center justify-between px-4 py-3 shrink-0">
+                <div className="flex flex-col">
+                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                        AU-JAS Assistant
+                    </span>
+                    <span className="text-(--mui-palette-text-secondary) text-xs">
+                        {ROLE_SUBTITLE[role] ?? 'How-to guide'}
+                    </span>
+                </div>
+                <IconButton
+                    aria-label="Close Assistant"
+                    size="small"
+                    onClick={toggleOpen}
                 >
-                    <SparkleIcon size={22} weight="fill" />
-                </Fab>
-            )}
-            {isOpen && (
-                <CommonCard
-                    data-testid="ai-assistant-card"
-                    sx={{
-                        bottom: 24,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        maxHeight: 'min(600px, calc(100vh - 48px))',
-                        position: 'fixed',
-                        right: 24,
-                        width: 'min(400px, calc(100vw - 32px))',
-                        zIndex: 1200
-                    }}
-                    variant="elevation"
-                >
-                    <div className="flex items-start justify-between px-4 py-3">
-                        <div className="flex flex-col">
-                            <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                                AU-JAS Assistant
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                {ROLE_SUBTITLE[role] ?? 'How-to guide'}
-                            </span>
-                        </div>
-                        <IconButton
-                            size="small"
-                            onClick={handleToggle}
-                        >
-                            <XIcon size={16} />
-                        </IconButton>
-                    </div>
+                    <XIcon size={18} />
+                </IconButton>
+            </div>
+            <div
+                className="flex flex-1 flex-col gap-3 overflow-y-auto pb-3 pt-3 px-4"
+                ref={scrollRef}
+            >
+                {messages.length === 0 && (
+                    <>
+                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                            {ROLE_GREETING[role] ?? 'Ask me how anything here works.'}
+                        </p>
+                        <SuggestionList
+                            items={suggestions}
+                            onSelect={handleSuggestionSelect}
+                        />
+                    </>
+                )}
+                {messages.map((item) => (
                     <div
-                        className="flex flex-1 flex-col gap-3 overflow-y-auto pb-3 px-4"
-                        ref={scrollRef}
+                        className={
+                            item.role === 'user'
+                                ? 'flex justify-end'
+                                : 'flex justify-start'
+                        }
+                        key={item.id}
                     >
-                        {messages.length === 0 && (
-                            <>
-                                <p className="text-(--mui-palette-text-secondary) text-sm">
-                                    {ROLE_GREETING[role] ?? 'Ask me how anything here works.'}
-                                </p>
-                                <SuggestionList
-                                    items={suggestions}
-                                    onSelect={handleSuggestionSelect}
-                                />
-                            </>
-                        )}
-                        {messages.map((item) => (
-                            <div
-                                className={
-                                    item.role === 'user'
-                                        ? 'flex justify-end'
-                                        : 'flex justify-start'
-                                }
-                                key={item.id}
-                            >
-                                <p
-                                    className={
-                                        item.role === 'user'
-                                            ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-sm text-white whitespace-pre-wrap'
-                                            : item.isFailed
-                                                ? 'bg-(--mui-palette-error-main)/10 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-error-main) text-sm whitespace-pre-wrap'
-                                                : 'bg-black/5 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
-                                    }
-                                >
-                                    {item.content}
-                                </p>
-                            </div>
-                        ))}
-                        {isSending && (
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                Thinking...
-                            </span>
-                        )}
-                        {canShowFollowUps && (
-                            <div className="flex flex-col gap-2 pt-1">
-                                <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    You can also ask
-                                </span>
-                                <SuggestionList
-                                    items={suggestions}
-                                    onSelect={handleSuggestionSelect}
-                                />
-                            </div>
-                        )}
+                        <p
+                            className={
+                                item.role === 'user'
+                                    ? 'bg-(--mui-palette-primary-main) max-w-[85%] px-3 py-2 rounded-xl text-sm text-white whitespace-pre-wrap'
+                                    : item.isFailed
+                                        ? 'bg-(--mui-palette-error-main)/10 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-error-main) text-sm whitespace-pre-wrap'
+                                        : 'bg-black/5 max-w-[85%] px-3 py-2 rounded-xl text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap'
+                            }
+                        >
+                            {item.content}
+                        </p>
                     </div>
-                    <div className="flex gap-2 items-end px-4 py-3">
-                        <CommonInput
-                            fullWidth
-                            hasClearButton={false}
-                            maxRows={4}
-                            multiline
-                            placeholder="Ask a question..."
-                            size="small"
-                            value={draft}
-                            variant="outlined"
-                            onChange={function(event) {
-                                setDraft(event.target.value);
-                            }}
-                            onKeyDown={handleComposerKeyDown}
-                        />
-                        <CommonButton
-                            disabled={isSending || draft.trim().length === 0}
-                            size="small"
-                            startIcon={<PaperPlaneRightIcon size={16} />}
-                            variant="contained"
-                            onClick={function() {
-                                handleSend(draft);
-                            }}
+                ))}
+                {isSending && (
+                    <span className="text-(--mui-palette-text-secondary) text-xs">
+                        Thinking...
+                    </span>
+                )}
+                {canShowFollowUps && (
+                    <div className="flex flex-col gap-2 pt-1">
+                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                            You can also ask
+                        </span>
+                        <SuggestionList
+                            items={suggestions}
+                            onSelect={handleSuggestionSelect}
                         />
                     </div>
-                </CommonCard>
-            )}
-        </>
+                )}
+            </div>
+            <div className="border-slate-100 border-t flex gap-2 items-end px-4 py-3 shrink-0">
+                <CommonInput
+                    fullWidth
+                    hasClearButton={false}
+                    maxRows={4}
+                    multiline
+                    placeholder="Ask a question..."
+                    size="small"
+                    value={draft}
+                    variant="outlined"
+                    onChange={function(event) {
+                        setDraft(event.target.value);
+                    }}
+                    onKeyDown={handleComposerKeyDown}
+                />
+                <CommonButton
+                    disabled={isSending || draft.trim().length === 0}
+                    size="small"
+                    startIcon={<PaperPlaneRightIcon size={16} />}
+                    variant="contained"
+                    onClick={function() {
+                        handleSend(draft);
+                    }}
+                />
+            </div>
+        </div>
+    );
+
+    if (isMobile) {
+        return (
+            <Drawer
+                anchor="right"
+                open={isOpen}
+                slotProps={{
+                    paper: {
+                        className: 'w-[85vw] max-w-[360px] h-full border-0 bg-white'
+                    }
+                }}
+                variant="temporary"
+                onClose={toggleOpen}
+            >
+                {panel}
+            </Drawer>
+        );
+    }
+
+    return (
+        <aside
+            aria-label="AU-JAS Assistant Panel"
+            className={
+                classMerge(
+                    'bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden shrink-0 transition-[width,min-width] duration-300 ease-in-out',
+                    isOpen
+                        ? 'min-w-96 w-96'
+                        : 'border-l-0 min-w-0 w-0'
+                )
+            }
+        >
+            {panel}
+        </aside>
     );
 }

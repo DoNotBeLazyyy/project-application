@@ -1,12 +1,12 @@
 import CommonModal from '@components/modal/CommonModal';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
+import { IconButton } from '@mui/material';
 import StudentAssessmentTab from '@pages/faculty/sections/student-detail/StudentAssessmentTab';
 import StudentAttendanceTab from '@pages/faculty/sections/student-detail/StudentAttendanceTab';
 import StudentGradeTab from '@pages/faculty/sections/student-detail/StudentGradeTab';
 import { CalendarCheckIcon, ClipboardTextIcon, GraduationCapIcon, XIcon } from '@phosphor-icons/react';
 import { getSectionStudentEvaluation } from '@services/faculty.service';
 import { StudentEvaluation } from '@type/faculty.type';
-import { IconButton } from '@mui/material';
 import { SyntheticEvent, useEffect, useState } from 'react';
 
 type EvaluationTab = 'attendance' | 'assessments' | 'grades';
@@ -59,7 +59,7 @@ export default function StudentEvaluationModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'flex flex-col gap-4 h-[85dvh] w-[min(94vw,860px)]'
+                className: 'flex flex-col gap-4 h-full sm:h-[85dvh] w-full sm:w-[min(94vw,860px)]'
             }}
             open={open}
             onClose={onClose}

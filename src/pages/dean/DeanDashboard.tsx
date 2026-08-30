@@ -93,7 +93,7 @@ const STAT_CARDS: DeanStatCard[] = [
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Schedule Conflicts',
         statKey: 'schedule_conflicts',
-        to: '/dean/faculty-load?tab=conflicts'
+        to: '/dean/schedule-conflicts'
     },
     {
         icon: <WarningCircleIcon size={24} />,

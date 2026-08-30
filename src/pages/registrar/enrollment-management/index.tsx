@@ -132,11 +132,6 @@ export default function EnrollmentManagement() {
                         searchHints: SEARCH_HINTS.enrollmentStudents
                     },
                     tableButtonsProps: {
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);

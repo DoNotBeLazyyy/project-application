@@ -2,6 +2,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
+import CourseTypeGridCard from '@pages/dean/course-management/type/CourseTypeGridCard';
 import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/useCourseTypeTableConfig';
 import {
     createCourseType, deleteCourseType, getCourseTypeById, listCourseTypes, updateCourseType
@@ -168,6 +169,18 @@ export default function CourseTypeManagement() {
                     }
                 }}
                 dependencies={[refreshKey]}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <CourseTypeGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
+                }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{

@@ -3,6 +3,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import SchoolYearFilterForm from '@pages/admin/school-year-management/SchoolYearFilterForm';
 import SchoolYearForm from '@pages/admin/school-year-management/SchoolYearForm';
+import SchoolYearGridCard from '@pages/admin/school-year-management/SchoolYearGridCard';
 import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/useSchoolYearTableConfig';
 import {
     bulkDeleteSchoolYears,
@@ -223,6 +224,18 @@ export default function SchoolYearManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <SchoolYearGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

@@ -6,6 +6,7 @@ import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import EvaluationTemplateGridCard from '@pages/admin/evaluation-management/EvaluationTemplateGridCard';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { bulkCreateEvaluationTemplates, deleteEvaluationTemplate, listEvaluationTemplates } from '@services/evaluation.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
@@ -162,11 +163,6 @@ export default function EvaluationManagement() {
                                 navigate(`${BASE_PATH}/new`);
                             }
                         },
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);
@@ -175,6 +171,23 @@ export default function EvaluationManagement() {
                     }
                 }}
                 dependencies={[refreshKey]}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <EvaluationTemplateGridCard
+                            isSelected={isSelected}
+                            programsLabel={formatPrograms(item.program_ids ?? [], programOptions)}
+                            row={item}
+                            onEdit={function(id) {
+                                navigate(`${BASE_PATH}/${id}?edit=1`);
+                            }}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={function(id) {
+                                navigate(`${BASE_PATH}/${id}`);
+                            }}
+                        />
+                    );
+                }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{

@@ -1,7 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
 import { CalculatorIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
+import SpecialGradeFlagBanner from '@pages/faculty/sections/grading/SpecialGradeFlagBanner';
 import { GradeCalculationFailure, GradeSheetRow, GradingComponent } from '@type/faculty.type';
+import { SpecialGradeFlag } from '@type/grading-config.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
@@ -9,16 +11,24 @@ interface GradeSheetPanelProps {
     components: GradingComponent[];
     gradeSheet: GradeSheetRow[];
     calculationFailures?: GradeCalculationFailure[];
+    specialGradeFlags?: SpecialGradeFlag[];
+    isFlagBusy?: boolean;
     onCalculate: () => Promise<void>;
     onDismissFailures?: () => void;
+    onApplyFlag?: (flag: SpecialGradeFlag) => void;
+    onDismissFlag?: (flag: SpecialGradeFlag) => void;
 }
 
 export default function GradeSheetPanel({
     components,
     gradeSheet,
     calculationFailures,
+    specialGradeFlags,
+    isFlagBusy,
     onCalculate,
-    onDismissFailures
+    onDismissFailures,
+    onApplyFlag,
+    onDismissFlag
 }: GradeSheetPanelProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
@@ -53,6 +63,13 @@ export default function GradeSheetPanel({
                 valueFormatter: (params) => params.value != null
                     ? String(params.value)
                     : '—'
+            },
+            {
+                field: 'special_grade',
+                flex: 1,
+                headerName: 'Special',
+                sortable: false,
+                valueFormatter: (params) => params.value ?? '—'
             },
             {
                 field: 'status',
@@ -125,6 +142,16 @@ export default function GradeSheetPanel({
                     </ul>
                 </div>
             )}
+            {specialGradeFlags && onApplyFlag && onDismissFlag
+                ? (
+                    <SpecialGradeFlagBanner
+                        flags={specialGradeFlags}
+                        isBusy={isFlagBusy}
+                        onApply={onApplyFlag}
+                        onDismiss={onDismissFlag}
+                    />
+                )
+                : null}
             <div className="flex-1 min-h-0">
                 <CommonTable<GradeSheetRow>
                     leadingColumnDefs={columnDefs}

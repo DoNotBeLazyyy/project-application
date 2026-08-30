@@ -1,6 +1,7 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    CalendarDotsIcon, CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, MegaphoneIcon, ShieldCheckIcon, SquaresFourIcon, StackIcon, UsersIcon
+    BookmarkSimpleIcon,
+    CalendarDotsIcon, CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, ShieldCheckIcon, StackIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -13,10 +14,10 @@ export default function AdminLayout() {
     const navSections = useMemo((): SideBarSection[] => (
         [
             {
-                sectionLabel: 'GENERAL',
+                sectionLabel: 'OVERVIEW',
                 items: [
                     {
-                        icon: <SquaresFourIcon size={18} />,
+                        icon: <HouseIcon size={18} />,
                         isActive: pathname === '/admin',
                         label: 'Dashboard',
                         onClick: () => navigate('/admin')
@@ -30,7 +31,7 @@ export default function AdminLayout() {
                 ]
             },
             {
-                sectionLabel: 'ACADEMICS',
+                sectionLabel: 'ACADEMIC STRUCTURE',
                 items: [
                     {
                         icon: <CalendarDotsIcon size={18} />,
@@ -49,36 +50,41 @@ export default function AdminLayout() {
                         isActive: pathname.startsWith('/admin/term-types'),
                         label: 'Term Types',
                         onClick: () => navigate('/admin/term-types')
-                    }
-                ]
-            },
-            {
-                sectionLabel: 'CONFIGURATION',
-                items: [
-                    {
-                        icon: <ChartBarIcon size={18} />,
-                        isActive: pathname === '/admin/grade-configurations',
-                        label: 'Grading',
-                        onClick: () => navigate('/admin/grade-configurations')
-                    },
-                    {
-                        icon: <ClipboardTextIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/evaluations'),
-                        label: 'Evaluations',
-                        onClick: () => navigate('/admin/evaluations')
-                    },
-                    {
-                        icon: <ShieldCheckIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/roles'),
-                        label: 'Permissions',
-                        onClick: () => navigate('/admin/roles')
                     },
                     {
                         icon: <GraduationCapIcon size={18} />,
                         isActive: pathname === '/admin/academic-thresholds',
                         label: 'Academic Thresholds',
                         onClick: () => navigate('/admin/academic-thresholds')
+                    }
+                ]
+            },
+            {
+                sectionLabel: 'GRADING RULES',
+                items: [
+                    {
+                        icon: <PercentIcon size={18} />,
+                        isActive: pathname === '/admin/transmutation' || pathname === '/admin/grade-configurations',
+                        label: 'Transmutation',
+                        onClick: () => navigate('/admin/transmutation')
                     },
+                    {
+                        icon: <ChartBarIcon size={18} />,
+                        isActive: pathname === '/admin/grading-periods',
+                        label: 'Grading Periods',
+                        onClick: () => navigate('/admin/grading-periods')
+                    },
+                    {
+                        icon: <BookmarkSimpleIcon size={18} />,
+                        isActive: pathname === '/admin/special-grades',
+                        label: 'Special Grades',
+                        onClick: () => navigate('/admin/special-grades')
+                    }
+                ]
+            },
+            {
+                sectionLabel: 'CAMPUS & COMMUNITY',
+                items: [
                     {
                         icon: <MegaphoneIcon size={18} />,
                         isActive: pathname.startsWith('/admin/announcement-management'),
@@ -90,6 +96,23 @@ export default function AdminLayout() {
                         isActive: pathname.startsWith('/admin/event-management'),
                         label: 'Events',
                         onClick: () => navigate('/admin/event-management')
+                    },
+                    {
+                        icon: <ClipboardTextIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/evaluations'),
+                        label: 'Evaluations',
+                        onClick: () => navigate('/admin/evaluations')
+                    }
+                ]
+            },
+            {
+                sectionLabel: 'SYSTEM & SECURITY',
+                items: [
+                    {
+                        icon: <ShieldCheckIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/roles'),
+                        label: 'Permissions',
+                        onClick: () => navigate('/admin/roles')
                     },
                     {
                         icon: <ClockCounterClockwiseIcon size={18} />,

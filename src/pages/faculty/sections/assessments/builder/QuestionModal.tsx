@@ -130,7 +130,7 @@ export default function QuestionModal({
             open={isOpen}
             onClose={onClose}
         >
-            <div className="flex flex-col gap-4 w-200">
+            <div className="flex flex-col gap-4 max-w-full sm:w-200 w-full">
                 <CommonForm
                     containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                     control={methods.control}

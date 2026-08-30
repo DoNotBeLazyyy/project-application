@@ -28,7 +28,25 @@ export const adminRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management');
+                    return import('@pages/admin/grading-config-management/TransmutationPage');
+                }),
+                path: 'transmutation'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/grading-config-management/PeriodsPage');
+                }),
+                path: 'grading-periods'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/grading-config-management/SpecialGradesPage');
+                }),
+                path: 'special-grades'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/grading-config-management/TransmutationPage');
                 }),
                 path: 'grade-configurations'
             },

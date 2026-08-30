@@ -5,10 +5,10 @@ import CommonModal from '@components/modal/CommonModal';
 import CommonTable from '@components/table/CommonTable';
 import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { AttendanceSession, AttendanceSessionFormValues } from '@type/faculty.type';
-import { ColDef, RowClickedEvent } from 'ag-grid-community';
-import { FieldErrors, useForm } from 'react-hook-form';
 import { formErrors } from '@utils/form.util';
+import { ColDef, RowClickedEvent } from 'ag-grid-community';
 import { useMemo } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-attendance-session-form';
 
@@ -109,7 +109,7 @@ export default function AttendanceSessionList({
     }, [onDelete]);
 
     return (
-        <div className="flex flex-col gap-3 w-80 flex-shrink-0">
+        <div className="flex flex-col flex-shrink-0 gap-3 w-80">
             <div className="flex items-center justify-between">
                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                     Sessions
@@ -123,7 +123,7 @@ export default function AttendanceSessionList({
                     New Session
                 </CommonButton>
             </div>
-            <div className="flex-1 min-h-0 h-full">
+            <div className="flex-1 h-full min-h-0">
                 <CommonTable<AttendanceSession>
                     leadingColumnDefs={columnDefs}
                     rowData={sessions}
@@ -144,7 +144,7 @@ export default function AttendanceSessionList({
                 open={isCreateOpen}
                 onClose={handleClose}
             >
-                <div className="flex flex-col gap-4 w-96">
+                <div className="flex flex-col gap-4 max-w-full sm:w-96 w-full">
                     <CommonForm
                         containerClassName="flex flex-col gap-4"
                         control={createMethods.control}

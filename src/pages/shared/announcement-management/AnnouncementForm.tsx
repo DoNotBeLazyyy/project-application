@@ -1,3 +1,5 @@
+import FileAttachmentUploader from '@components/attachment/FileAttachmentUploader';
+import ValidCommonToastEditor from '@components/editor/ValidCommonToastEditor';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
@@ -6,7 +8,7 @@ import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, AnnouncementFormValues } from '@type/announcement.type';
 import { ComponentPropsForm } from '@type/common.type';
 import { useEffect, useState } from 'react';
-import { Control, useWatch } from 'react-hook-form';
+import { Control, useController, useWatch } from 'react-hook-form';
 
 interface AnnouncementFormProps extends ComponentPropsForm {
     control: Control<AnnouncementFormValues>;
@@ -37,6 +39,21 @@ export default function AnnouncementForm({
         control,
         name: 'target_audience'
     }) as AnnouncementAudience | undefined;
+    const authorName = useWatch({
+        control,
+        name: 'author_name'
+    });
+    const postedOn = useWatch({
+        control,
+        name: 'posted_on'
+    });
+
+    const {
+        field: { value: attachments = [], onChange: setAttachments }
+    } = useController({
+        control,
+        name: 'attachments'
+    });
 
     useEffect(function() {
         let active = true;
@@ -60,6 +77,24 @@ export default function AnnouncementForm({
     }, []);
 
     const fields: FormFieldConfig<AnnouncementFormValues>[] = [
+        ...(authorName || postedOn
+            ? [
+                {
+                    disabled: true,
+                    fieldProps: { helperText: 'Author of the announcement' },
+                    label: 'Posted by',
+                    name: 'author_name' as const,
+                    type: 'text' as const
+                },
+                {
+                    disabled: true,
+                    fieldProps: { helperText: 'Publication timestamp' },
+                    label: 'Posted on',
+                    name: 'posted_on' as const,
+                    type: 'text' as const
+                }
+            ]
+            : []),
         {
             disabled,
             fieldProps: { helperText: 'A short, descriptive headline' },
@@ -69,16 +104,6 @@ export default function AnnouncementForm({
                 ? undefined
                 : { required: 'Title is required' },
             type: 'text'
-        },
-        {
-            disabled,
-            label: 'Content',
-            name: 'content',
-            placeholder: 'Write the announcement details here...',
-            rules: disabled
-                ? undefined
-                : { required: 'Content is required' },
-            type: 'text-area'
         },
         {
             disabled,
@@ -92,24 +117,23 @@ export default function AnnouncementForm({
                 ? undefined
                 : { required: 'Audience is required' },
             type: 'select'
-        }
-    ];
-
-    if (audience === 'Section') {
-        fields.push({
-            disabled,
-            fieldProps: { helperText: 'Post to one or more sections at once' },
-            label: 'Sections',
-            name: 'section_ids',
-            options: sectionOptions,
-            rules: disabled
-                ? undefined
-                : { required: 'Select at least one section' },
-            type: 'multi-select'
-        });
-    }
-
-    fields.push(
+        },
+        ...(audience === 'Section'
+            ? [
+                {
+                    disabled,
+                    fieldProps: { helperText: 'Post to one or more sections at once' },
+                    gridCols: 2,
+                    label: 'Sections',
+                    name: 'section_ids' as const,
+                    options: sectionOptions,
+                    rules: disabled
+                        ? undefined
+                        : { required: 'Select at least one section' },
+                    type: 'multi-select' as const
+                }
+            ]
+            : []),
         {
             disabled,
             fieldProps: { helperText: 'Leave empty to keep it visible indefinitely' },
@@ -124,14 +148,37 @@ export default function AnnouncementForm({
             name: 'is_pinned',
             type: 'checkbox'
         }
-    );
+    ];
 
     return (
-        <CommonForm
-            control={control}
-            fields={fields}
-            formProps={formProps}
-            hasHelper
-        />
+        <form {...formProps} className="flex flex-col gap-5 w-full">
+            <CommonForm
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                control={control}
+                fields={fields}
+                hasHelper
+            />
+
+            <ValidCommonToastEditor
+                control={control}
+                disabled={disabled}
+                height="320px"
+                helperText="Use the rich text toolbar to style headings, lists, bold/italic text, tables, and links."
+                isRequired={!disabled}
+                label="Content"
+                name="content"
+                placeholder="Write the announcement details here..."
+                rules={disabled
+                    ? undefined
+                    : { required: 'Content is required' }}
+            />
+
+            <FileAttachmentUploader
+                attachments={attachments ?? []}
+                disabled={disabled}
+                folderPrefix="announcements"
+                onChange={setAttachments}
+            />
+        </form>
     );
 }

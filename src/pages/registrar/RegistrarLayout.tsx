@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    ArrowsClockwiseIcon, CalendarIcon, MegaphoneIcon, SealCheckIcon, SquaresFourIcon, StudentIcon, UserPlusIcon
+    ArrowsClockwiseIcon, CalendarIcon, HouseIcon, MegaphoneIcon, SealCheckIcon, StudentIcon, UserPlusIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -14,21 +14,26 @@ export default function RegistrarLayout() {
             sectionLabel: 'OVERVIEW',
             items: [
                 {
-                    icon: <SquaresFourIcon size={18} />,
+                    icon: <HouseIcon size={18} />,
                     isActive: pathname === '/registrar',
                     label: 'Dashboard',
                     onClick: () => navigate('/registrar')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'STUDENT REGISTRY',
+            items: [
                 {
                     icon: <StudentIcon size={18} />,
                     isActive: pathname === '/registrar/student-management',
-                    label: 'Student',
+                    label: 'Student Records',
                     onClick: () => navigate('/registrar/student-management')
                 },
                 {
                     icon: <UserPlusIcon size={18} />,
                     isActive: pathname === '/registrar/enrollment-management',
-                    label: 'Enrollment',
+                    label: 'Enrollments',
                     onClick: () => navigate('/registrar/enrollment-management')
                 },
                 {
@@ -36,13 +41,23 @@ export default function RegistrarLayout() {
                     isActive: pathname === '/registrar/batch-progression',
                     label: 'Batch Progression',
                     onClick: () => navigate('/registrar/batch-progression')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'ACADEMIC CLEARANCE',
+            items: [
                 {
                     icon: <SealCheckIcon size={18} />,
                     isActive: pathname === '/registrar/grade-release',
                     label: 'Grade Release',
                     onClick: () => navigate('/registrar/grade-release')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'CAMPUS COMMUNICATION',
+            items: [
                 {
                     icon: <MegaphoneIcon size={18} />,
                     isActive: pathname.startsWith('/registrar/announcement-management'),

@@ -4,6 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseForm from '@pages/dean/course-management/CourseForm';
+import CourseGridCard from '@pages/dean/course-management/CourseGridCard';
 import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
 import {
     bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse
@@ -206,11 +207,6 @@ export default function CourseManagement() {
                         searchHints: SEARCH_HINTS.courses
                     },
                     tableButtonsProps: {
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);
@@ -224,8 +220,7 @@ export default function CourseManagement() {
                             subheader: 'Fill in the details to create a new course.',
                             title: 'Create Course'
                         }
-                    },
-                    containerClassName: 'w-250',
+                    },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <CourseForm
@@ -266,6 +261,18 @@ export default function CourseManagement() {
                         setIsFilterOpen(false);
                     }
                 }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <CourseGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
+                }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{
@@ -280,8 +287,7 @@ export default function CourseManagement() {
                             title: 'Edit Course'
                         }
                     },
-                    confirmText: 'Save',
-                    containerClassName: 'w-250',
+                    confirmText: 'Save',
                     formId: UPDATE_FORM_ID,
                     formContent: (
                         <CourseForm
@@ -310,8 +316,7 @@ export default function CourseManagement() {
                             subheader: 'Viewing course details.',
                             title: 'View Course'
                         }
-                    },
-                    containerClassName: 'w-250',
+                    },
                     confirmText: 'Edit',
                     formContent: (
                         <CourseForm

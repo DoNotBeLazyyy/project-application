@@ -6,6 +6,7 @@ import { NEXT_STATUS_MAP } from '@constants/term.constant';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import TermFilterForm from '@pages/admin/term-management/TermFilterForm';
 import TermForm from '@pages/admin/term-management/TermForm';
+import TermGridCard from '@pages/admin/term-management/TermGridCard';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { useTermTableConfig } from '@pages/admin/term-management/useTermTableConfig';
 import {
@@ -247,6 +248,19 @@ export default function TermManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <TermGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onAdvanceStatus={handleAdvanceStatus}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

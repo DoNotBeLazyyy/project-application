@@ -2,6 +2,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelForm';
+import ProgramLevelGridCard from '@pages/dean/program-management/level/ProgramLevelGridCard';
 import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/useProgramLevelTableConfig';
 import {
     createProgramLevel, deleteProgramLevel, getProgramLevelById, listProgramLevels, updateProgramLevel
@@ -178,6 +179,18 @@ export default function ProgramLevelManagement() {
                     }
                 }}
                 dependencies={[refreshKey]}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <ProgramLevelGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
+                }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{

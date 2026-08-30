@@ -246,7 +246,7 @@ export default function LifecyclePanel({ studentId }: LifecyclePanelProps) {
                         title: 'Change Student Status'
                     }
                 }}
-                containerClassName="w-140"
+                containerClassName="max-w-full w-full sm:w-140"
                 formButtonsProps={{
                     cancelProps: {
                         onClick: function() {
@@ -283,7 +283,7 @@ export default function LifecyclePanel({ studentId }: LifecyclePanelProps) {
                         title: 'Shift Program'
                     }
                 }}
-                containerClassName="w-140"
+                containerClassName="max-w-full w-full sm:w-140"
                 formButtonsProps={{
                     cancelProps: {
                         onClick: function() {

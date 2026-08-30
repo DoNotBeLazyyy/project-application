@@ -61,7 +61,7 @@ export default function GradeBreakdownModal({ enrollmentId, gradingPeriodId, onC
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-4 max-h-[85dvh] overflow-y-auto w-[min(94vw,640px)]' }}
+            cardProps={{ className: 'flex flex-col gap-4 h-full sm:h-auto max-h-[100dvh] sm:max-h-[85dvh] overflow-y-auto w-full sm:w-[min(94vw,640px)]' }}
             open={Boolean(gradingPeriodId)}
             onClose={onClose}
         >

@@ -1,3 +1,5 @@
+import FileAttachmentUploader from '@components/attachment/FileAttachmentUploader';
+import ValidCommonToastEditor from '@components/editor/ValidCommonToastEditor';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
@@ -7,14 +9,14 @@ import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { EventFormValues } from '@type/event.type';
 import { useEffect, useState } from 'react';
-import { Control } from 'react-hook-form';
+import { Control, useController } from 'react-hook-form';
 
 interface EventFormProps extends ComponentPropsForm {
     control: Control<EventFormValues>;
     disabled?: boolean;
 }
 
-function validateSections(value: string | string[]): string | true {
+function validateSections(value: unknown): string | true {
     return Array.isArray(value) && value.length > 0
         ? true
         : 'Select at least one section';
@@ -28,6 +30,13 @@ export default function EventForm({
     const activeRole = useAppStore((s) => s.activeRole);
     const isFacultyOnly = activeRole === 'Faculty';
     const [sectionOptions, setSectionOptions] = useState<CommonSelectOption[]>([]);
+
+    const {
+        field: { value: attachments = [], onChange: setAttachments }
+    } = useController({
+        control,
+        name: 'attachments'
+    });
 
     useEffect(function() {
         let active = true;
@@ -67,22 +76,10 @@ export default function EventForm({
         },
         {
             disabled,
-            fieldProps: {
-                exclusiveValue: isFacultyOnly
-                    ? undefined
-                    : ALL_SECTIONS_VALUE,
-                helperText: isFacultyOnly
-                    ? 'Show this event to one or more sections'
-                    : 'Pick "All (Everyone)" or one or more specific sections',
-                placeholder: 'Select sections'
-            },
-            label: 'Sections',
-            name: 'section_ids',
-            options: audienceOptions,
-            rules: disabled
-                ? undefined
-                : { validate: validateSections },
-            type: 'multi-select'
+            fieldProps: { helperText: 'Where the event takes place (optional)' },
+            label: 'Location',
+            name: 'location',
+            type: 'text'
         },
         {
             disabled,
@@ -103,26 +100,51 @@ export default function EventForm({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Where the event takes place (optional)' },
-            label: 'Location',
-            name: 'location',
-            type: 'text'
-        },
-        {
-            disabled,
-            label: 'Description',
-            name: 'description',
-            placeholder: 'Add event details...',
-            type: 'text-area'
+            fieldProps: {
+                exclusiveValue: isFacultyOnly
+                    ? undefined
+                    : ALL_SECTIONS_VALUE,
+                helperText: isFacultyOnly
+                    ? 'Show this event to one or more sections'
+                    : 'Pick "All (Everyone)" or one or more specific sections',
+                placeholder: 'Select sections'
+            },
+            gridCols: 2,
+            label: 'Sections',
+            name: 'section_ids',
+            options: audienceOptions,
+            rules: disabled
+                ? undefined
+                : { validate: validateSections },
+            type: 'multi-select'
         }
     ];
 
     return (
-        <CommonForm
-            control={control}
-            fields={fields}
-            formProps={formProps}
-            hasHelper
-        />
+        <form {...formProps} className="flex flex-col gap-5 w-full">
+            <CommonForm
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                control={control}
+                fields={fields}
+                hasHelper
+            />
+
+            <ValidCommonToastEditor
+                control={control}
+                disabled={disabled}
+                height="280px"
+                helperText="Provide rich details, instructions, agendas, or schedules using the toolbar."
+                label="Description"
+                name="description"
+                placeholder="Add event details..."
+            />
+
+            <FileAttachmentUploader
+                attachments={attachments ?? []}
+                disabled={disabled}
+                folderPrefix="events"
+                onChange={setAttachments}
+            />
+        </form>
     );
 }

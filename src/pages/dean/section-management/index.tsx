@@ -4,6 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CopySectionSetupModal from '@pages/dean/section-management/CopySectionSetupModal';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
+import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
 import SectionForm from '@pages/dean/section-management/SectionForm';
 import { useSectionTableConfig } from '@pages/dean/section-management/useSectionTableConfig';
 import {
@@ -190,11 +191,6 @@ export default function SectionManagement() {
                         searchHints: SEARCH_HINTS.sections
                     },
                     tableButtonsProps: {
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);
@@ -208,8 +204,7 @@ export default function SectionManagement() {
                             subheader: 'Fill in the details to create a new section.',
                             title: 'Create Section'
                         }
-                    },
-                    containerClassName: 'w-160',
+                    },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <SectionForm
@@ -250,6 +245,19 @@ export default function SectionManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <SectionGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onCopySetup={handleOpenCopySetup}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

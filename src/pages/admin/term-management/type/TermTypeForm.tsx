@@ -19,34 +19,32 @@ export default function TermTypeForm({
     const fields: FormFieldConfig<TermTypeFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
+            fieldProps: { helperText: 'Unique identifier, e.g. SEM-1, SEM-2, SUMMER' },
+            label: 'Code',
             name: 'code',
+            placeholder: 'e.g. SEM-1',
             rules: disabled || isCodeDisabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Code is required' },
             type: 'text'
         },
         {
             disabled,
+            fieldProps: { helperText: 'Full display name of this academic term type' },
+            label: 'Term Type Name',
             name: 'label',
+            placeholder: 'e.g. 1st Semester',
             rules: disabled
                 ? undefined
-                : { required: 'Required' },
+                : { required: 'Term type name is required' },
             type: 'text'
         },
         {
             disabled,
-            name: 'sequence',
-            rules: disabled
-                ? undefined
-                : {
-                    required: 'Required',
-                    min: { value: 1, message: 'Must be at least 1' }
-                },
-            type: 'number'
-        },
-        {
-            disabled,
+            fieldProps: { helperText: 'Optional description of this academic term' },
+            label: 'Description',
             name: 'description',
+            placeholder: 'e.g. Regular first academic semester',
             type: 'text-area'
         }
     ];

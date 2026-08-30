@@ -7,10 +7,6 @@ export function useScheduleConflictTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
-                field: 'conflict_type',
-                flex: 2,
-                headerName: 'Type',
-                mobileCard: 'subtitle',
                 cellRenderer: (params: { data: ScheduleConflictRow }) => (
                     <div className="flex h-full items-center">
                         <CommonBadgeStatus
@@ -20,7 +16,11 @@ export function useScheduleConflictTableConfig() {
                             variant="error"
                         />
                     </div>
-                )
+                ),
+                field: 'conflict_type',
+                flex: 2,
+                headerName: 'Type',
+                mobileCard: 'subtitle'
             },
             {
                 field: 'subject_label',

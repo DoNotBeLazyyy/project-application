@@ -211,11 +211,6 @@ export default function CurriculumMapManagement() {
                                     setIsBulkImportOpen(true);
                                 }
                             },
-                            downloadCsvButtonProps: {
-                                onClick: function() {
-                                    setIsBulkImportOpen(true);
-                                }
-                            },
                             extraOptions: [{
                                 children: 'Print',
                                 disabled: !selectedProgramId || !entries.length,

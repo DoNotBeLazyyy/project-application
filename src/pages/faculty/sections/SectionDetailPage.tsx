@@ -13,6 +13,7 @@ import {
     GraduationCapIcon, ListChecksIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
+import { useBreadcrumbStore } from '@stores/breadcrumb.store';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -34,13 +35,21 @@ export default function SectionDetailPage() {
         : 'students';
 
     useEffect(function() {
-        if (!sectionId) return;
+        if (!sectionId) {
+            return;
+        }
 
         async function fetchData() {
             const sectionResult = await getSectionDetail(sectionId);
 
             if (sectionResult.data) {
                 setSection(sectionResult.data);
+                const title = sectionResult.data.course_code
+                    ? `${sectionResult.data.section_code} (${sectionResult.data.course_code})`
+                    : sectionResult.data.section_code;
+                useBreadcrumbStore
+                    .getState()
+                    .setCustomLabel(sectionId, title);
             }
         }
 

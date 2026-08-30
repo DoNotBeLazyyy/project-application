@@ -3,8 +3,8 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
-import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
+import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
@@ -211,16 +211,42 @@ export default function SystemSettings() {
     }
 
     return (
-        <CommonCard className="h-full">
-            <div className="flex flex-col gap-6 h-full overflow-y-auto w-full">
-                <div className="flex flex-col gap-1">
-                    <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                    System Settings
-                    </h1>
-                    <p className="text-(--mui-palette-text-secondary) text-sm">
-                    Configure institution-wide settings for the system.
-                    </p>
-                </div>
+        <CommonCard
+            cardHeaderProps={{
+                action: (
+                    <div className="flex gap-2 items-center justify-end">
+                        <CommonButton
+                            disabled={!methods.formState.isDirty}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => methods.reset()}
+                        >
+                            Reset
+                        </CommonButton>
+                        <CommonButton
+                            disabled={!methods.formState.isDirty}
+                            form={SETTINGS_FORM_ID}
+                            size="small"
+                            type="submit"
+                            variant="contained"
+                        >
+                            Save Settings
+                        </CommonButton>
+                    </div>
+                ),
+                subheader: 'Configure institution-wide settings for the system.',
+                sx: {
+                    borderBottom: '1px solid var(--mui-palette-grey-100)',
+                    boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
+                    pb: 2.5,
+                    position: 'relative',
+                    zIndex: 1
+                },
+                title: 'System Settings'
+            }}
+            className="flex flex-col h-full"
+        >
+            <div className="flex flex-1 flex-col gap-6 min-h-0 overflow-y-auto p-4 w-full">
                 <div className="flex flex-col gap-4 items-center sm:flex-row sm:items-center">
                     {logoPreview
                         ? (
@@ -240,7 +266,7 @@ export default function SystemSettings() {
                         <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
                             Institution Logo
                         </h2>
-                        <p className="max-w-xs text-(--mui-palette-text-secondary) text-center text-xs sm:text-left">
+                        <p className="max-w-xs sm:text-left text-(--mui-palette-text-secondary) text-center text-xs">
                             JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed
                             documents.
                         </p>
@@ -290,25 +316,6 @@ export default function SystemSettings() {
                         hasHelper
                     />
                 </form>
-                <div className="flex gap-2 justify-start">
-                    <CommonButton
-                        disabled={!methods.formState.isDirty}
-                        size="small"
-                        variant="outlined"
-                        onClick={() => methods.reset()}
-                    >
-                    Reset
-                    </CommonButton>
-                    <CommonButton
-                        disabled={!methods.formState.isDirty}
-                        form={SETTINGS_FORM_ID}
-                        size="small"
-                        type="submit"
-                        variant="contained"
-                    >
-                    Save Settings
-                    </CommonButton>
-                </div>
             </div>
         </CommonCard>
     );

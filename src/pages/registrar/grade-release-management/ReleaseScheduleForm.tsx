@@ -56,7 +56,7 @@ export default function ReleaseScheduleForm({
                         ? `Schedule Release — ${period.grading_period_name}`
                         : 'Schedule Release'
                 },
-                className: 'w-[min(94vw,560px)]'
+                className: 'w-full sm:w-[min(94vw,560px)]'
             }}
             closeOnBackdropClick={!isSaving}
             formButtonsProps={{

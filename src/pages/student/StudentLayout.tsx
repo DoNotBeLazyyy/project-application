@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    BooksIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, ListChecksIcon, SquaresFourIcon
+    BooksIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -14,46 +14,56 @@ export default function StudentLayout() {
             sectionLabel: 'OVERVIEW',
             items: [
                 {
-                    icon: <SquaresFourIcon size={18} />,
+                    icon: <HouseIcon size={18} />,
                     isActive: pathname === '/student',
                     label: 'Dashboard',
                     onClick: () => navigate('/student')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'MY ACADEMICS',
+            items: [
                 {
                     icon: <CalendarDotsIcon size={18} />,
                     isActive: pathname === '/student/schedule',
-                    label: 'Schedule',
+                    label: 'Class Schedule',
                     onClick: () => navigate('/student/schedule')
                 },
                 {
                     icon: <BooksIcon size={18} />,
                     isActive: pathname === '/student/subjects',
-                    label: 'Subject',
+                    label: 'My Subjects',
                     onClick: () => navigate('/student/subjects')
                 },
                 {
                     icon: <ExamIcon size={18} />,
                     isActive: pathname === '/student/grade',
-                    label: 'Grade',
+                    label: 'Grades & Transcripts',
                     onClick: () => navigate('/student/grade')
-                },
-                {
-                    icon: <ClipboardTextIcon size={18} />,
-                    isActive: pathname.startsWith('/student/evaluations'),
-                    label: 'Evaluate',
-                    onClick: () => navigate('/student/evaluations')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'PROGRESS & FEEDBACK',
+            items: [
                 {
                     icon: <ListChecksIcon size={18} />,
                     isActive: pathname === '/student/curriculum',
-                    label: 'Curriculum',
+                    label: 'Curriculum Audit',
                     onClick: () => navigate('/student/curriculum')
                 },
                 {
                     icon: <ChartLineUpIcon size={18} />,
                     isActive: pathname === '/student/insight',
-                    label: 'Insight',
+                    label: 'Academic Insights',
                     onClick: () => navigate('/student/insight')
+                },
+                {
+                    icon: <ClipboardTextIcon size={18} />,
+                    isActive: pathname.startsWith('/student/evaluations'),
+                    label: 'Faculty Evaluations',
+                    onClick: () => navigate('/student/evaluations')
                 }
             ]
         }

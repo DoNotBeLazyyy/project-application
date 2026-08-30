@@ -4,6 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramFilterForm from '@pages/dean/program-management/ProgramFilterForm';
 import ProgramForm from '@pages/dean/program-management/ProgramForm';
+import ProgramGridCard from '@pages/dean/program-management/ProgramGridCard';
 import { useProgramTableConfig } from '@pages/dean/program-management/useProgramTableConfig';
 import {
     bulkCreatePrograms, bulkDeletePrograms, createProgram, deleteProgram, getProgramById, listPrograms, updateProgram
@@ -187,11 +188,6 @@ export default function ProgramManagement() {
                         searchHints: SEARCH_HINTS.programs
                     },
                     tableButtonsProps: {
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);
@@ -245,6 +241,18 @@ export default function ProgramManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <ProgramGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

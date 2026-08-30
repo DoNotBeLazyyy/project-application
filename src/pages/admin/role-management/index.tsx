@@ -3,6 +3,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { useRoleTableConfig } from '@pages/admin/role-management/hooks/useRoleTableConfig';
 import RoleForm from '@pages/admin/role-management/RoleForm';
+import RoleGridCard from '@pages/admin/role-management/RoleGridCard';
 import {
     createRole, deleteRole, getRoleById, listRoles, updateRole
 } from '@services/role.service';
@@ -176,6 +177,18 @@ export default function RoleManagement() {
                     }
                 }}
                 dependencies={[refreshKey]}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <RoleGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
+                }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{

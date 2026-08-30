@@ -9,6 +9,7 @@ import { ServiceResult } from '@type/service.type';
 const FORM_ID = 'event-form';
 
 const DEFAULT_VALUES: EventFormValues = {
+    attachments: [],
     description: '',
     end_at: '',
     location: '',
@@ -34,6 +35,7 @@ async function fetchEvent(id: string): Promise<ServiceResult<EventFormValues>> {
 
     return {
         data: {
+            attachments: result.data.attachments ?? [],
             description: result.data.description ?? '',
             end_at: toDateInput(result.data.end_at),
             location: result.data.location ?? '',

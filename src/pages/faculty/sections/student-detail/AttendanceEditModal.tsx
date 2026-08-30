@@ -66,7 +66,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-5 w-[min(92vw,460px)]' }}
+            cardProps={{ className: 'flex flex-col gap-5 w-full sm:w-[min(92vw,460px)]' }}
             open={Boolean(record)}
             onClose={onClose}
         >

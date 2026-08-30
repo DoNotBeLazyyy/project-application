@@ -67,7 +67,7 @@ export default function DuplicateToSectionsModal({
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-4 max-w-full p-6 w-[34rem]' }}
+            cardProps={{ className: 'flex flex-col gap-4 max-w-full p-4 sm:p-6 w-full sm:w-[34rem]' }}
             open={open}
             onClose={onClose}
         >
@@ -91,7 +91,7 @@ export default function DuplicateToSectionsModal({
 
                     return (
                         <button
-                            className="flex gap-3 items-center rounded-md border border-(--mui-palette-divider) px-3 py-2 text-left"
+                            className="border border-(--mui-palette-divider) flex gap-3 items-center px-3 py-2 rounded-md text-left"
                             key={section.id}
                             type="button"
                             onClick={function() {
@@ -99,8 +99,8 @@ export default function DuplicateToSectionsModal({
                             }}
                         >
                             {isSelected
-                                ? <CheckCircleIcon className="text-(--mui-palette-primary-main) shrink-0" size={20} weight="fill" />
-                                : <CircleIcon className="text-(--mui-palette-text-disabled) shrink-0" size={20} />}
+                                ? <CheckCircleIcon className="shrink-0 text-(--mui-palette-primary-main)" size={20} weight="fill" />
+                                : <CircleIcon className="shrink-0 text-(--mui-palette-text-disabled)" size={20} />}
                             <div className="flex flex-col">
                                 <span className="text-(--mui-palette-text-primary) text-sm">
                                     {section.course_code} — {section.section_code}

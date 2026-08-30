@@ -2,6 +2,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
+import AnnouncementGridCard from '@pages/shared/announcement-management/AnnouncementGridCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
 import { bulkDeleteAnnouncements, deleteAnnouncement, listAnnouncements } from '@services/announcement.service';
@@ -110,6 +111,18 @@ export default function AnnouncementManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <AnnouncementGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenEdit}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenDetail}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

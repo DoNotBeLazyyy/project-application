@@ -2,6 +2,7 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EventFilterForm from '@pages/shared/event-management/EventFilterForm';
+import EventGridCard from '@pages/shared/event-management/EventGridCard';
 import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import { useEventTableConfig } from '@pages/shared/event-management/useEventTableConfig';
 import { bulkDeleteEvents, deleteEvent, listEvents } from '@services/event.service';
@@ -106,6 +107,18 @@ export default function EventManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <EventGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenEdit}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenDetail}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

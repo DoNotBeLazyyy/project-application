@@ -7,10 +7,10 @@ import {
     ArrowsClockwiseIcon, LockIcon, PencilIcon, PlusIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
-import { ColDef } from 'ag-grid-community';
-import { FieldErrors, useForm } from 'react-hook-form';
 import { formErrors } from '@utils/form.util';
+import { ColDef } from 'ag-grid-community';
 import { useMemo, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-component-form';
 const UPDATE_FORM_ID = 'update-component-form';
@@ -139,7 +139,7 @@ export default function GradingComponentPanel({
     }, [locked, onDelete]);
 
     return (
-        <div className="flex flex-col gap-3 w-72 flex-shrink-0">
+        <div className="flex flex-col flex-shrink-0 gap-3 w-72">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col">
                     <span className="font-medium text-(--mui-palette-text-primary) text-sm">
@@ -170,7 +170,7 @@ export default function GradingComponentPanel({
             </div>
             {locked
                 ? (
-                    <div className="flex gap-2 items-start rounded-md bg-(--mui-palette-action-hover) p-2">
+                    <div className="bg-(--mui-palette-action-hover) flex gap-2 items-start p-2 rounded-md">
                         <LockIcon
                             className="mt-0.5 text-(--mui-palette-text-secondary)"
                             size={14}
@@ -214,7 +214,7 @@ export default function GradingComponentPanel({
                     setIsCreateOpen(false);
                 }}
             >
-                <div className="flex flex-col gap-4 w-80">
+                <div className="flex flex-col gap-4 max-w-full sm:w-80 w-full">
                     <CommonForm
                         containerClassName="flex flex-col gap-4"
                         control={createMethods.control}
@@ -257,7 +257,7 @@ export default function GradingComponentPanel({
                     setSelectedId('');
                 }}
             >
-                <div className="flex flex-col gap-4 w-80">
+                <div className="flex flex-col gap-4 max-w-full sm:w-80 w-full">
                     <CommonForm
                         containerClassName="flex flex-col gap-4"
                         control={updateMethods.control}

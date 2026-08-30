@@ -1,237 +1,282 @@
-import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import CommonTableCard from '@components/table-card/CommonTableCard';
-import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import CommonCard from '@components/card/CommonCard';
+import CommonFormModal from '@components/modal/CommonFormModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
+import TableCardActionMenu from '@components/table-card/TableCardActionMenu';
+import { SxProps, Theme } from '@mui/material';
 import TermTypeForm from '@pages/admin/term-management/type/TermTypeForm';
-import { useTermTypeTableConfig } from '@pages/admin/term-management/type/useTermTypeTableConfig';
+import TermTypeRow, { TERM_TYPE_GRID_CLASS } from '@pages/admin/term-management/type/TermTypeRow';
+import { useTermTypeComposer } from '@pages/admin/term-management/type/useTermTypeComposer';
 import {
-    createTermType, deleteTermType, getTermTypeById, listTermTypes, updateTermType
-} from '@services/term/term-type.service';
-import { SortStringDto } from '@type/http.type';
-import { TermTypeFormValues, TermTypeListRow } from '@type/term/term-type.type';
+    ArrowCounterClockwiseIcon,
+    FloppyDiskIcon,
+    PlusIcon
+} from '@phosphor-icons/react';
+import { TermTypeFormValues } from '@type/term/term-type.type';
 import { formErrors } from '@utils/form.util';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
-
-const SORT_COLUMNS: SortColumn[] = [
-    { field: 'code', label: 'Code' },
-    { field: 'label', label: 'Label' }
-];
 
 const CREATE_FORM_ID = 'create-term-type-form';
 const UPDATE_FORM_ID = 'update-term-type-form';
 
-export default function TermTypeManagement() {
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [isViewOpen, setIsViewOpen] = useState(false);
-    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
+const COLUMN_HEAD_CLASS = 'font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.1em] uppercase';
 
-    const defaultFormValues: TermTypeFormValues = {
-        code: '',
-        description: '',
-        label: '',
-        sequence: ''
-    };
+const INFO_CONTENT = 'Manage the chronological sequence of term types (e.g. 1st Semester, 2nd Semester, Summer) used across academic calendar schedules, curriculum maps, student batch progression, and transcripts.';
+
+const HEADER_SX: SxProps<Theme> = {
+    borderBottom: '1px solid var(--mui-palette-grey-100)',
+    boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
+    gap: 'var(--mui-tokens-spacing-5)',
+    pb: 2.5,
+    position: 'relative',
+    zIndex: 1,
+    '&& .MuiCardHeader-action': {
+        display: 'flex',
+        flexBasis: 'auto',
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+        marginLeft: 'auto'
+    }
+};
+
+const DEFAULT_FORM_VALUES: TermTypeFormValues = {
+    code: '',
+    description: '',
+    label: '',
+    sequence: ''
+};
+
+/**
+ * TermTypeManagement
+ *
+ * Sequential editor for academic term types. Replaces the generic card grid with
+ * an ordered chronological rail and one-click up/down buttons matching the Grading Period UI.
+ */
+export default function TermTypeManagement() {
+    const {
+        handleCloseCreate,
+        handleCloseDelete,
+        handleCloseEdit,
+        handleConfirmDelete,
+        handleCreateSubmit,
+        handleMove,
+        handleOpenCreate,
+        handleOpenDelete,
+        handleOpenEdit,
+        handleReset,
+        handleSaveOrder,
+        handleUpdateSubmit,
+        isCreateOpen,
+        isDeleteOpen,
+        isDirty,
+        isLoading,
+        isSaving,
+        isUpdateOpen,
+        selectedItem,
+        termTypes
+    } = useTermTypeComposer();
 
     const createMethods = useForm<TermTypeFormValues>({
-        defaultValues: defaultFormValues
+        defaultValues: DEFAULT_FORM_VALUES
     });
 
     const updateMethods = useForm<TermTypeFormValues>({
-        defaultValues: defaultFormValues
+        defaultValues: DEFAULT_FORM_VALUES
     });
 
-    function triggerRefresh() {
-        setRefreshKey((prev) => prev + 1);
-    }
-
-    async function loadIntoForm(id: string) {
-        const result = await getTermTypeById(id);
-
-        if (result.data) {
+    useEffect(function() {
+        if (selectedItem) {
             updateMethods.reset({
-                code: result.data.code,
-                description: result.data.description ?? '',
-                label: result.data.label,
-                sequence: result.data.sequence
+                code: selectedItem.code,
+                description: selectedItem.description ?? '',
+                label: selectedItem.label,
+                sequence: String(selectedItem.sequence)
             });
         }
-    }
+    }, [selectedItem, updateMethods]);
 
-    async function handleOpenView(id: string) {
-        setSelectedId(id);
-        await loadIntoForm(id);
-        setIsViewOpen(true);
-    }
-
-    function handleCloseView() {
-        setIsViewOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
-    }
-
-    async function handleOpenUpdate(id: string) {
-        setSelectedId(id);
-        await loadIntoForm(id);
-        setIsUpdateOpen(true);
-    }
-
-    async function handleSwitchToEdit(id: string) {
-        setIsViewOpen(false);
-        await loadIntoForm(id);
-        setIsUpdateOpen(true);
-    }
-
-    function handleCloseUpdate() {
-        setIsUpdateOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(defaultFormValues);
-    }
-
-    const { columnDefs, tableActionConfig } = useTermTypeTableConfig({
-        onEdit: handleOpenUpdate,
-        onRequestDeleteRow: function() {},
-        onView: handleOpenView
-    });
-
-    async function fetchTermTypes(
-        page: number,
-        size: number,
-        search: string,
-        sort: SortStringDto[]
-    ) {
-        return listTermTypes(page, size, search, sort);
-    }
-
-    async function handleCreateSubmit(values: TermTypeFormValues) {
-        const result = await createTermType(values);
-
-        if (!result.error) {
-            createMethods.reset(defaultFormValues);
-            setIsCreateOpen(false);
-            triggerRefresh();
-        }
-    }
-
-    async function handleUpdateSubmit(values: TermTypeFormValues) {
-        if (!selectedId) {
-            return;
-        }
-
-        const result = await updateTermType(selectedId, values);
-
-        if (!result.error) {
-            handleCloseUpdate();
-            triggerRefresh();
-        }
-    }
-
-    function handleCreateFormError(errors: FieldErrors<TermTypeFormValues>) {
+    function handleCreateError(errors: FieldErrors<TermTypeFormValues>) {
         formErrors(errors, createMethods);
     }
 
-    function handleUpdateFormError(errors: FieldErrors<TermTypeFormValues>) {
+    function handleUpdateError(errors: FieldErrors<TermTypeFormValues>) {
         formErrors(errors, updateMethods);
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <CommonTableCard<TermTypeListRow>
+        <div className="flex flex-1 flex-col h-full min-h-0 w-full">
+            <CommonCard
                 cardHeaderProps={{
-                    subheader: 'Manage academic term types used across the system.',
+                    action: (
+                        <div className="flex gap-(--mui-tokens-spacing-3) items-center justify-end w-full">
+                            <TableCardActionMenu
+                                extraOptions={[
+                                    {
+                                        children: 'Add Term Type',
+                                        disabled: isLoading || isSaving,
+                                        icon: <PlusIcon size={20} weight="bold" />,
+                                        key: 'add-term-type',
+                                        onClick: function() {
+                                            createMethods.reset(DEFAULT_FORM_VALUES);
+                                            handleOpenCreate();
+                                        }
+                                    },
+                                    ...(isDirty
+                                        ? [
+                                            {
+                                                children: isSaving
+                                                    ? 'Saving...'
+                                                    : 'Save Order',
+                                                disabled: isSaving,
+                                                icon: <FloppyDiskIcon size={20} weight="bold" />,
+                                                key: 'save-order',
+                                                onClick: handleSaveOrder
+                                            },
+                                            {
+                                                children: 'Cancel',
+                                                disabled: isSaving,
+                                                icon: <ArrowCounterClockwiseIcon size={20} weight="bold" />,
+                                                key: 'cancel',
+                                                onClick: handleReset
+                                            }
+                                        ]
+                                        : [])
+                                ]}
+                                inlineActionLimit={0}
+                            />
+                        </div>
+                    ),
+                    className: '@container shrink-0',
+                    sx: HEADER_SX,
                     title: 'Term Type Management'
                 }}
-                controls={{
-                    tableInputProps: {
-                        searchHints: SEARCH_HINTS.termTypes
+                className="flex flex-1 flex-col h-full min-h-0 w-full"
+                infoContent={INFO_CONTENT}
+            >
+                {isLoading
+                    ? (
+                        <div className="flex items-center justify-center py-16">
+                            <span className="text-(--mui-palette-text-secondary) text-sm">Loading...</span>
+                        </div>
+                    )
+                    : (
+                        <div className="flex flex-1 flex-col gap-4 min-h-0 p-4">
+                            <div className="flex flex-col min-h-0 min-w-0 overflow-auto">
+                                {termTypes.length > 0 && (
+                                    <div className={`${TERM_TYPE_GRID_CLASS} bg-(--mui-palette-background-paper) pb-2 sticky top-0 z-10`}>
+                                        <span className={COLUMN_HEAD_CLASS}>#</span>
+                                        <span className={COLUMN_HEAD_CLASS}>Term Type</span>
+                                        <span className={COLUMN_HEAD_CLASS}>Code</span>
+                                        <span className={COLUMN_HEAD_CLASS}>Description</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} justify-self-end`}>Actions</span>
+                                    </div>
+                                )}
+
+                                {termTypes.map((item, index) => (
+                                    <TermTypeRow
+                                        canMoveDown={index < termTypes.length - 1}
+                                        canMoveUp={index > 0}
+                                        disabled={isSaving}
+                                        index={index}
+                                        key={item.id}
+                                        row={item}
+                                        onDelete={handleOpenDelete}
+                                        onEdit={handleOpenEdit}
+                                        onMove={function(direction) {
+                                            handleMove(index, direction);
+                                        }}
+                                    />
+                                ))}
+
+                                {termTypes.length === 0 && (
+                                    <p className="py-12 text-(--mui-palette-text-secondary) text-center text-sm">
+                                        No term types configured yet. Click &quot;Add Term Type&quot; to create the first term.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+            </CommonCard>
+
+            {/* Create Modal */}
+            <CommonFormModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Add a new academic term type to the sequence ladder.',
+                        title: 'Create Term Type'
                     }
                 }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Fill in the details to create a new term type.',
-                            title: 'Create Term Type'
-                        }
-                    },
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <TermTypeForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateFormError)}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
+                confirmText="Create Term Type"
+                formContent={(
+                    <TermTypeForm
+                        control={createMethods.control}
+                        id={CREATE_FORM_ID}
+                        onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateError)}
+                    />
+                )}
+                formId={CREATE_FORM_ID}
+                open={isCreateOpen}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        height: 'auto',
+                        margin: 'auto',
+                        maxHeight: { sm: '85%', xs: '90%' },
+                        maxWidth: '680px',
+                        overflow: 'hidden',
+                        width: { md: '680px', sm: '640px', xs: '92%' }
                     }
                 }}
-                dependencies={[refreshKey]}
-                sortColumns={SORT_COLUMNS}
-                tableActionConfig={tableActionConfig}
-                tableProps={{
-                    leadingColumnDefs: columnDefs
+                onClose={handleCloseCreate}
+            />
+
+            {/* Edit Modal */}
+            <CommonFormModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: selectedItem
+                            ? `Update the details of ${selectedItem.label}.`
+                            : 'Update term type details.',
+                        title: 'Edit Term Type'
+                    }
                 }}
-                uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update the details of this term type.',
-                            title: 'Edit Term Type'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
-                        <TermTypeForm
-                            control={updateMethods.control}
-                            id={UPDATE_FORM_ID}
-                            onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
-                        />
-                    ),
-                    isDirty: updateMethods.formState.isDirty,
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
+                confirmText="Save Changes"
+                formContent={(
+                    <TermTypeForm
+                        control={updateMethods.control}
+                        id={UPDATE_FORM_ID}
+                        onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateError)}
+                    />
+                )}
+                formId={UPDATE_FORM_ID}
+                open={isUpdateOpen}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        height: 'auto',
+                        margin: 'auto',
+                        maxHeight: { sm: '85%', xs: '90%' },
+                        maxWidth: '680px',
+                        overflow: 'hidden',
+                        width: { md: '680px', sm: '640px', xs: '92%' }
+                    }
                 }}
-                viewModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Viewing term type details.',
-                            title: 'View Term Type'
-                        }
-                    },
-                    confirmText: 'Edit',
-                    formContent: (
-                        <TermTypeForm
-                            control={updateMethods.control}
-                            disabled
-                        />
-                    ),
-                    formButtonsProps: {
-                        confirmProps: {
-                            onClick: function() {
-                                if (selectedId) {
-                                    handleSwitchToEdit(selectedId);
-                                }
-                            }
-                        }
-                    },
-                    open: isViewOpen,
-                    onClose: handleCloseView
+                onClose={handleCloseEdit}
+            />
+
+            {/* Delete Prompt Modal */}
+            <DeletePromptModal
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: handleConfirmDelete
+                    }
                 }}
-                onCreate={function() {
-                    setIsCreateOpen(true);
+                mainContent={{
+                    title: selectedItem
+                        ? `Delete ${selectedItem.label}?`
+                        : 'Delete this term type?'
                 }}
-                onDeleteRow={deleteTermType}
-                onFetch={fetchTermTypes}
-                onRowClick={handleOpenView}
+                open={isDeleteOpen}
+                subContent={{ title: 'This will remove the term type from the sequence ladder. This action cannot be undone.' }}
+                onClose={handleCloseDelete}
             />
         </div>
     );

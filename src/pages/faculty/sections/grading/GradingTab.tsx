@@ -1,17 +1,22 @@
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
+import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
 import {
+    applySpecialGradeFlag,
     calculateAllGradesForPeriod,
     createGradingComponent,
     deleteGradingComponent,
+    dismissSpecialGradeFlag,
     isSectionGradingLocked,
     listGradeSheet,
     listGradingComponents,
     listGradingPeriodsBySection,
+    listSpecialGradeFlags,
     reseedSectionGrading,
     updateGradingComponent
 } from '@services/faculty.service';
+import { useToastStore } from '@stores/toast.store';
 import {
     GradeCalculationFailure,
     GradeSheetRow,
@@ -19,6 +24,7 @@ import {
     GradingComponentFormValues,
     GradingPeriod
 } from '@type/faculty.type';
+import { SpecialGradeFlag } from '@type/grading-config.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 
 interface GradingTabProps {
@@ -32,6 +38,9 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     const [calculationFailures, setCalculationFailures] = useState<GradeCalculationFailure[]>([]);
     const [gradeSheet, setGradeSheet] = useState<GradeSheetRow[]>([]);
     const [isLocked, setIsLocked] = useState(false);
+    const [specialGradeFlags, setSpecialGradeFlags] = useState<SpecialGradeFlag[]>([]);
+    const [flagPendingDismissal, setFlagPendingDismissal] = useState<SpecialGradeFlag | null>(null);
+    const [isFlagBusy, setIsFlagBusy] = useState(false);
 
     useEffect(function() {
         async function fetchPeriods() {
@@ -52,14 +61,16 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     }, [sectionId, activePeriodId]);
 
     async function fetchPeriodData() {
-        const [componentsResult, gradeSheetResult, lockedResult] = await Promise.all([
+        const [componentsResult, gradeSheetResult, lockedResult, flagsResult] = await Promise.all([
             listGradingComponents(sectionId, activePeriodId),
             listGradeSheet(sectionId, activePeriodId),
-            isSectionGradingLocked(sectionId, activePeriodId)
+            isSectionGradingLocked(sectionId, activePeriodId),
+            listSpecialGradeFlags(sectionId, activePeriodId)
         ]);
 
         if (componentsResult.data) setComponents(componentsResult.data);
         if (gradeSheetResult.data) setGradeSheet(gradeSheetResult.data);
+        if (flagsResult.data) setSpecialGradeFlags(flagsResult.data);
         setIsLocked(Boolean(lockedResult.data));
     }
 
@@ -95,6 +106,49 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
 
     function handleDismissFailures() {
         setCalculationFailures([]);
+    }
+
+    async function handleApplyFlag(flag: SpecialGradeFlag) {
+        setIsFlagBusy(true);
+        const result = await applySpecialGradeFlag(flag.id);
+        setIsFlagBusy(false);
+
+        const message = result.error?.message ?? result.data?.message;
+
+        if (result.error || !result.data?.success) {
+            useToastStore.getState()
+                .showToast(message ?? 'The special grade could not be applied.', 'warning');
+            return;
+        }
+
+        useToastStore.getState()
+            .showToast(message ?? `Applied ${flag.code}.`, 'success');
+        await fetchPeriodData();
+    }
+
+    function handleRequestDismissFlag(flag: SpecialGradeFlag) {
+        setFlagPendingDismissal(flag);
+    }
+
+    async function handleConfirmDismissFlag(reason: string) {
+        if (!flagPendingDismissal) return;
+
+        setIsFlagBusy(true);
+        const result = await dismissSpecialGradeFlag(flagPendingDismissal.id, reason);
+        setIsFlagBusy(false);
+
+        const message = result.error?.message ?? result.data?.message;
+
+        if (result.error || !result.data?.success) {
+            useToastStore.getState()
+                .showToast(message ?? 'The flag could not be dismissed.', 'warning');
+            return;
+        }
+
+        setFlagPendingDismissal(null);
+        useToastStore.getState()
+            .showToast(message ?? 'Flag dismissed.', 'success');
+        await fetchPeriodData();
     }
 
     async function handleReseed() {
@@ -134,10 +188,21 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
                     calculationFailures={calculationFailures}
                     components={components}
                     gradeSheet={gradeSheet}
+                    isFlagBusy={isFlagBusy}
+                    specialGradeFlags={specialGradeFlags}
+                    onApplyFlag={handleApplyFlag}
                     onCalculate={handleCalculate}
                     onDismissFailures={handleDismissFailures}
+                    onDismissFlag={handleRequestDismissFlag}
                 />
             </div>
+            <SpecialGradeFlagModal
+                flag={flagPendingDismissal}
+                isBusy={isFlagBusy}
+                open={Boolean(flagPendingDismissal)}
+                onClose={() => setFlagPendingDismissal(null)}
+                onConfirm={handleConfirmDismissFlag}
+            />
         </div>
     );
 }

@@ -4,6 +4,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import StudentFilterForm from '@pages/registrar/student-management/StudentFilterForm';
 import StudentForm from '@pages/registrar/student-management/StudentForm';
+import StudentGridCard from '@pages/registrar/student-management/StudentGridCard';
 import { useStudentTableConfig } from '@pages/registrar/student-management/useStudentTableConfig';
 import {
     bulkCreateStudents, bulkDeleteStudents, createStudent, deleteStudent, evaluateStudentYearLevel, getStudentById, listStudents, updateStudent
@@ -194,11 +195,6 @@ export default function StudentManagement() {
                         searchHints: SEARCH_HINTS.students
                     },
                     tableButtonsProps: {
-                        downloadCsvButtonProps: {
-                            onClick: function() {
-                                setIsBulkImportOpen(true);
-                            }
-                        },
                         uploadCsvButtonProps: {
                             onClick: function() {
                                 setIsBulkImportOpen(true);
@@ -212,8 +208,7 @@ export default function StudentManagement() {
                             subheader: 'Attach a student profile to an existing user.',
                             title: 'Create Student Profile'
                         }
-                    },
-                    containerClassName: 'w-160',
+                    },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <StudentForm
@@ -254,6 +249,20 @@ export default function StudentManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <StudentGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onEvaluate={handleEvaluate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                            onViewRecords={handleViewRecords}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

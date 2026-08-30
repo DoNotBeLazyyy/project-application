@@ -6,6 +6,7 @@ import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
 import UserForm from '@pages/admin/user-management/forms/UserForm';
 import { useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
+import UserGridCard from '@pages/admin/user-management/UserGridCard';
 import {
     bulkProvisionUsers, deleteUsers, getUserById, inviteSingleUser, listUsers, updateUser
 } from '@services/user.service';
@@ -221,6 +222,18 @@ export default function UserManagement() {
                         filterMethods.reset();
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <UserGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

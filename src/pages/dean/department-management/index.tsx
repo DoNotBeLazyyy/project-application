@@ -3,6 +3,7 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import DepartmentFilterForm from '@pages/dean/department-management/DepartmentFilterForm';
 import DepartmentForm from '@pages/dean/department-management/DepartmentForm';
+import DepartmentGridCard from '@pages/dean/department-management/DepartmentGridCard';
 import { useDepartmentTableConfig } from '@pages/dean/department-management/useDepartmentTableConfig';
 import {
     bulkDeleteDepartments, createDepartment, deleteDepartment, getDepartmentById, listDepartments, updateDepartment
@@ -210,6 +211,18 @@ export default function DepartmentManagement() {
                     onClose: function() {
                         setIsFilterOpen(false);
                     }
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <DepartmentGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenUpdate}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenView}
+                        />
+                    );
                 }}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}

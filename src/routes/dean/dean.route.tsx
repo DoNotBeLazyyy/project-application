@@ -70,6 +70,12 @@ export const deanRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/dean/schedule-conflicts');
+                }),
+                path: 'schedule-conflicts'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/shared/profile');
                 }),
                 path: 'profile'

@@ -4,14 +4,17 @@ import { useAnnouncementBasePath } from '@pages/shared/announcement-management/u
 import { createAnnouncement, getAnnouncementById, updateAnnouncement } from '@services/announcement.service';
 import { AnnouncementDetail, AnnouncementFormValues } from '@type/announcement.type';
 import { ServiceResult } from '@type/service.type';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 const FORM_ID = 'announcement-form';
 
 const DEFAULT_VALUES: AnnouncementFormValues = {
+    attachments: [],
+    author_name: '',
     content: '',
     expires_at: '',
     is_pinned: false,
+    posted_on: '',
     section_ids: [],
     target_audience: 'Global',
     title: ''
@@ -19,9 +22,12 @@ const DEFAULT_VALUES: AnnouncementFormValues = {
 
 function toFormValues(detail: AnnouncementDetail): AnnouncementFormValues {
     return {
+        attachments: detail.attachments ?? [],
+        author_name: detail.author_name ?? '—',
         content: detail.content,
         expires_at: detail.expires_at ?? '',
         is_pinned: detail.is_pinned,
+        posted_on: formatTimestamp(detail.published_at ?? detail.created_at),
         section_ids: detail.section_ids,
         target_audience: detail.target_audience,
         title: detail.title
@@ -42,7 +48,6 @@ function formatTimestamp(value: string | null): string {
 
 export default function AnnouncementDetailPage() {
     const basePath = useAnnouncementBasePath();
-    const [detail, setDetail] = useState<AnnouncementDetail | null>(null);
 
     const fetchAnnouncement = useCallback(async function(
         id: string
@@ -53,8 +58,6 @@ export default function AnnouncementDetailPage() {
             return { data: null, error: result.error };
         }
 
-        setDetail(result.data);
-
         return { data: toFormValues(result.data), error: null };
     }, []);
 
@@ -64,36 +67,14 @@ export default function AnnouncementDetailPage() {
             defaultValues={DEFAULT_VALUES}
             fetchById={fetchAnnouncement}
             formId={FORM_ID}
-            renderForm={function({ control, disabled, id, mode, onSubmit }) {
+            renderForm={function({ control, disabled, id, onSubmit }) {
                 return (
-                    <div className="flex flex-col gap-4">
-                        {mode !== 'create' && detail && (
-                            <div className="bg-(--mui-palette-action-hover) flex flex-wrap gap-6 p-3 rounded-lg">
-                                <div className="flex flex-col">
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        Posted by
-                                    </span>
-                                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                                        {detail.author_name ?? '—'}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        Posted on
-                                    </span>
-                                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                                        {formatTimestamp(detail.published_at ?? detail.created_at)}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                        <AnnouncementForm
-                            control={control}
-                            disabled={disabled}
-                            id={id}
-                            onSubmit={onSubmit}
-                        />
-                    </div>
+                    <AnnouncementForm
+                        control={control}
+                        disabled={disabled}
+                        id={id}
+                        onSubmit={onSubmit}
+                    />
                 );
             }}
             subheader={{

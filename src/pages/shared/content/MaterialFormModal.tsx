@@ -143,7 +143,7 @@ export default function MaterialFormModal({
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-4 max-w-full p-6 w-[32rem]' }}
+            cardProps={{ className: 'flex flex-col gap-4 max-w-full p-4 sm:p-6 w-full sm:w-[32rem]' }}
             open={open}
             onClose={onClose}
         >
