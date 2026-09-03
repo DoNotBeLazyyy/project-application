@@ -2,7 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import {
     AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
-import { SpecialGradeDetectionResult, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
+import { SectionOverridableRule, SpecialGradeDetectionResult, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -243,5 +243,58 @@ export async function dismissSpecialGradeFlag(
     return callRpc<SpecialGradeFlagResolution>('fn_dismiss_special_grade_flag', {
         p_flag_id: flagId,
         p_reason: reason
+    });
+}
+
+/**
+ * The rules the admin has opened up for section-level thresholds, together with
+ * whatever this section has already overridden.
+ *
+ * Returns only rules that are active, auto-detected, and explicitly marked
+ * overridable — a locked rule never reaches the faculty screen at all, so the
+ * UI has nothing to hide and nothing to enforce.
+ */
+export async function getSectionSpecialGradeOverrides(
+    sectionId: string
+): Promise<ServiceResult<SectionOverridableRule[]>> {
+    return callRpc<SectionOverridableRule[]>('fn_get_section_special_grade_overrides', {
+        p_section_id: sectionId
+    });
+}
+
+/**
+ * Moves one threshold for this section only. The signal and operator are not
+ * sent: the database re-reads them from the institution rule, so a tampered
+ * request cannot change what is measured, only the number it is measured
+ * against.
+ */
+export async function saveSectionSpecialGradeOverride(
+    sectionId: string,
+    specialGradeConfigId: string,
+    signal: string,
+    value: number,
+    valueMax?: number | null,
+    note?: string | null
+): Promise<ServiceResult<{ success: boolean; message: string }>> {
+    return callRpc<{ success: boolean; message: string }>('fn_save_section_special_grade_override', {
+        p_note: note ?? null,
+        p_section_id: sectionId,
+        p_signal: signal,
+        p_special_grade_config_id: specialGradeConfigId,
+        p_value: value,
+        p_value_max: valueMax ?? null
+    });
+}
+
+/** Drops this section's threshold so the institution default applies again. */
+export async function clearSectionSpecialGradeOverride(
+    sectionId: string,
+    specialGradeConfigId: string,
+    signal: string
+): Promise<ServiceResult<{ success: boolean; message: string }>> {
+    return callRpc<{ success: boolean; message: string }>('fn_clear_section_special_grade_override', {
+        p_section_id: sectionId,
+        p_signal: signal,
+        p_special_grade_config_id: specialGradeConfigId
     });
 }

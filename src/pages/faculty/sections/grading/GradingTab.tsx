@@ -1,4 +1,7 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
+import { SlidersHorizontalIcon } from '@phosphor-icons/react';
+import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
 import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
@@ -8,6 +11,7 @@ import {
     createGradingComponent,
     deleteGradingComponent,
     dismissSpecialGradeFlag,
+    getSectionSpecialGradeOverrides,
     isSectionGradingLocked,
     listGradeSheet,
     listGradingComponents,
@@ -24,7 +28,7 @@ import {
     GradingComponentFormValues,
     GradingPeriod
 } from '@type/faculty.type';
-import { SpecialGradeFlag } from '@type/grading-config.type';
+import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 
 interface GradingTabProps {
@@ -41,6 +45,8 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     const [specialGradeFlags, setSpecialGradeFlags] = useState<SpecialGradeFlag[]>([]);
     const [flagPendingDismissal, setFlagPendingDismissal] = useState<SpecialGradeFlag | null>(null);
     const [isFlagBusy, setIsFlagBusy] = useState(false);
+    const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
+    const [isThresholdOpen, setIsThresholdOpen] = useState(false);
 
     useEffect(function() {
         async function fetchPeriods() {
@@ -53,12 +59,18 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
         }
 
         fetchPeriods();
+        fetchOverridableRules();
     }, [sectionId]);
 
     useEffect(function() {
         if (!activePeriodId) return;
         fetchPeriodData();
     }, [sectionId, activePeriodId]);
+
+    async function fetchOverridableRules() {
+        const result = await getSectionSpecialGradeOverrides(sectionId);
+        setOverridableRules(result.data ?? []);
+    }
 
     async function fetchPeriodData() {
         const [componentsResult, gradeSheetResult, lockedResult, flagsResult] = await Promise.all([
@@ -168,13 +180,28 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <CommonTabMenu
-                menuStyle="outline"
-                size="small"
-                tabs={periods.map((p) => ({ label: p.name, value: p.id }))}
-                value={activePeriodId}
-                onChange={handleTabChange}
-            />
+            <div className="flex flex-wrap gap-2 items-center justify-between">
+                <CommonTabMenu
+                    menuStyle="outline"
+                    size="small"
+                    tabs={periods.map((p) => ({ label: p.name, value: p.id }))}
+                    value={activePeriodId}
+                    onChange={handleTabChange}
+                />
+
+                {overridableRules.length > 0
+                    ? (
+                        <CommonButton
+                            size="small"
+                            startIcon={<SlidersHorizontalIcon size={14} weight="bold" />}
+                            variant="outlined"
+                            onClick={() => setIsThresholdOpen(true)}
+                        >
+                            Section thresholds
+                        </CommonButton>
+                    )
+                    : null}
+            </div>
             <div className="flex gap-4 flex-1 min-h-0">
                 <GradingComponentPanel
                     components={components}
@@ -196,6 +223,13 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
                     onDismissFlag={handleRequestDismissFlag}
                 />
             </div>
+            <SectionThresholdModal
+                open={isThresholdOpen}
+                rules={overridableRules}
+                sectionId={sectionId}
+                onClose={() => setIsThresholdOpen(false)}
+                onSaved={fetchOverridableRules}
+            />
             <SpecialGradeFlagModal
                 flag={flagPendingDismissal}
                 isBusy={isFlagBusy}

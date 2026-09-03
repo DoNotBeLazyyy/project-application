@@ -1,6 +1,6 @@
 import '@components/editor/toastui-editor-theme.css';
 import { uploadFile } from '@services/storage.service';
-import Editor from '@toast-ui/editor';
+import Editor, { EditorInstance } from '@toast-ui/editor';
 import {
     forwardRef,
     useEffect,
@@ -11,6 +11,7 @@ import {
 export interface CommonToastEditorProps {
     disabled?: boolean;
     height?: string;
+    hideModeSwitch?: boolean;
     initialEditType?: 'markdown' | 'wysiwyg';
     initialValue?: string;
     placeholder?: string;
@@ -20,8 +21,6 @@ export interface CommonToastEditorProps {
     onBlur?: () => void;
     onChange?: (value: string) => void;
 }
-
-type EditorInstance = InstanceType<typeof Editor>;
 
 export interface CommonToastEditorRef {
     getInstance: () => EditorInstance | null;
@@ -34,13 +33,14 @@ export interface CommonToastEditorRef {
 /**
  * CommonToastEditor
  *
- * Encapsulated TOAST UI Editor wrapper providing rich markdown and WYSIWYG editing,
- * AU-JAS LMS brand styling, and seamless Supabase Storage image upload integration.
+ * Encapsulated TOAST UI Editor wrapper providing rich visual editing in edit mode,
+ * and a clean document reader view in read-only mode.
  */
 const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProps>(function CommonToastEditor(
     {
         disabled = false,
         height = '320px',
+        hideModeSwitch = true,
         initialEditType = 'wysiwyg',
         initialValue = '',
         placeholder = 'Write content here...',
@@ -53,20 +53,60 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
     ref
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const editorInstanceRef = useRef<EditorInstance | null>(null);
+    const instanceRef = useRef<EditorInstance | null>(null);
     const lastValueRef = useRef<string>(value ?? initialValue ?? '');
 
     useImperativeHandle(ref, () => ({
-        getInstance: () => editorInstanceRef.current,
-        getHTML: () => editorInstanceRef.current?.getHTML() ?? '',
-        getMarkdown: () => editorInstanceRef.current?.getMarkdown() ?? '',
-        setHTML: (html: string) => editorInstanceRef.current?.setHTML(html),
-        setMarkdown: (markdown: string) => editorInstanceRef.current?.setMarkdown(markdown)
+        getInstance: () => instanceRef.current,
+        getHTML: () => {
+            const inst = instanceRef.current;
+            if (!inst) return '';
+            if ('getHTML' in inst && typeof inst.getHTML === 'function') {
+                return inst.getHTML();
+            }
+            return '';
+        },
+        getMarkdown: () => {
+            const inst = instanceRef.current;
+            if (!inst) return '';
+            if ('getMarkdown' in inst && typeof inst.getMarkdown === 'function') {
+                return inst.getMarkdown();
+            }
+            return lastValueRef.current;
+        },
+        setHTML: (html: string) => {
+            const inst = instanceRef.current;
+            if (inst && 'setHTML' in inst && typeof inst.setHTML === 'function') {
+                inst.setHTML(html);
+            }
+        },
+        setMarkdown: (markdown: string) => {
+            const inst = instanceRef.current;
+            if (inst && 'setMarkdown' in inst && typeof inst.setMarkdown === 'function') {
+                inst.setMarkdown(markdown);
+            }
+        }
     }));
 
     useEffect(() => {
         if (!containerRef.current) {
             return;
+        }
+
+        const initialContent = value ?? initialValue ?? '';
+
+        if (disabled) {
+            const viewer = Editor.factory({
+                el: containerRef.current,
+                initialValue: initialContent,
+                viewer: true
+            });
+            instanceRef.current = viewer;
+
+            return () => {
+                viewer.destroy();
+                instanceRef.current = null;
+            };
         }
 
         const editor = new Editor({
@@ -82,6 +122,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
                 }
             },
             height,
+            hideModeSwitch,
             hooks: {
                 addImageBlobHook: async(blob: Blob | File, callback: (url: string, text?: string) => void) => {
                     try {
@@ -109,7 +150,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
                 }
             },
             initialEditType,
-            initialValue: value ?? initialValue ?? '',
+            initialValue: initialContent,
             placeholder,
             previewStyle,
             toolbarItems: [
@@ -122,26 +163,38 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
             usageStatistics: false
         });
 
-        editorInstanceRef.current = editor;
+        instanceRef.current = editor;
 
         return () => {
             editor.destroy();
-            editorInstanceRef.current = null;
+            instanceRef.current = null;
         };
-    }, []);
+    }, [disabled]);
 
     useEffect(() => {
-        if (editorInstanceRef.current && value !== undefined && value !== lastValueRef.current) {
+        if (instanceRef.current && value !== undefined && value !== lastValueRef.current) {
             lastValueRef.current = value;
-            editorInstanceRef.current.setMarkdown(value);
+            instanceRef.current.setMarkdown(value);
         }
     }, [value]);
 
+    if (disabled && (!value || !value.trim())) {
+        return (
+            <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) p-4 rounded-lg">
+                <span className="italic text-(--mui-palette-text-secondary) text-sm">
+                    No description or content provided.
+                </span>
+            </div>
+        );
+    }
+
     return (
         <div
-            className={`w-full transition-opacity ${disabled
-                ? 'opacity-60 pointer-events-none'
-                : ''}`}
+            className={
+                disabled
+                    ? 'bg-(--mui-palette-action-hover)/20 border border-(--mui-palette-divider) min-h-[80px] p-4 rounded-lg text-(--mui-palette-text-primary) text-sm w-full'
+                    : 'w-full'
+            }
             ref={containerRef}
         />
     );

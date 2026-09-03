@@ -131,9 +131,9 @@ export default function EventForm({
 
             <ValidCommonToastEditor
                 control={control}
+                description="Provide rich details, instructions, agendas, or schedules using the toolbar."
                 disabled={disabled}
                 height="280px"
-                helperText="Provide rich details, instructions, agendas, or schedules using the toolbar."
                 label="Description"
                 name="description"
                 placeholder="Add event details..."

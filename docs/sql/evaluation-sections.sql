@@ -1,6 +1,20 @@
 ALTER TABLE public.evaluation_templates
     ADD COLUMN IF NOT EXISTS sequence SMALLINT NOT NULL DEFAULT 1;
 
+ALTER TABLE public.evaluation_templates
+    ADD COLUMN IF NOT EXISTS target_mode TEXT NOT NULL DEFAULT 'INCLUDE';
+
+ALTER TABLE public.evaluation_templates
+    ADD COLUMN IF NOT EXISTS suggestion_placeholder TEXT;
+
+DO $$
+BEGIN
+    ALTER TABLE public.evaluation_templates
+        ADD CONSTRAINT evaluation_templates_target_mode_check
+        CHECK (target_mode IN ('INCLUDE', 'EXCLUDE'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 DO $$
 BEGIN
     IF (
@@ -90,14 +104,29 @@ RETURNS TABLE (id uuid, title text, description text, sequence smallint)
             SELECT 1 FROM public.evaluation_template_programs tp
             WHERE tp.template_id = t.id AND tp.deleted_at IS NULL
         )
-        OR EXISTS (
-            SELECT 1
-            FROM public.evaluation_template_programs tp
-            INNER JOIN public.students s
-                ON s.id = p_student_id
-                AND s.deleted_at IS NULL
-                AND s.program_id = tp.program_id
-            WHERE tp.template_id = t.id AND tp.deleted_at IS NULL
+        OR (
+            COALESCE(t.target_mode, 'INCLUDE') = 'INCLUDE'
+            AND EXISTS (
+                SELECT 1
+                FROM public.evaluation_template_programs tp
+                INNER JOIN public.students s
+                    ON s.id = p_student_id
+                    AND s.deleted_at IS NULL
+                    AND s.program_id = tp.program_id
+                WHERE tp.template_id = t.id AND tp.deleted_at IS NULL
+            )
+        )
+        OR (
+            t.target_mode = 'EXCLUDE'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM public.evaluation_template_programs tp
+                INNER JOIN public.students s
+                    ON s.id = p_student_id
+                    AND s.deleted_at IS NULL
+                    AND s.program_id = tp.program_id
+                WHERE tp.template_id = t.id AND tp.deleted_at IS NULL
+            )
         )
     )
     ORDER BY t.sequence ASC, t.created_at ASC;
@@ -163,11 +192,13 @@ BEGIN
     RETURN COALESCE((
         SELECT jsonb_agg(
             jsonb_build_object(
-                'id',          t.id,
-                'title',       t.title,
-                'description', t.description,
-                'is_active',   t.is_active,
-                'sequence',    t.sequence,
+                'id',                     t.id,
+                'title',                  t.title,
+                'description',            t.description,
+                'is_active',              t.is_active,
+                'sequence',               t.sequence,
+                'target_mode',            COALESCE(t.target_mode, 'INCLUDE'),
+                'suggestion_placeholder', t.suggestion_placeholder,
                 'program_ids', COALESCE((
                     SELECT jsonb_agg(tp.program_id)
                     FROM public.evaluation_template_programs tp
@@ -199,6 +230,9 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS public.fn_create_evaluation_template(text, text, boolean, jsonb);
+DROP FUNCTION IF EXISTS public.fn_create_evaluation_template(text, text, boolean, smallint, uuid[], jsonb);
+DROP FUNCTION IF EXISTS public.fn_create_evaluation_template(text, text, boolean, smallint, uuid[], jsonb, text);
+DROP FUNCTION IF EXISTS public.fn_create_evaluation_template(text, text, boolean, smallint, uuid[], jsonb, text, text);
 
 CREATE OR REPLACE FUNCTION public.fn_create_evaluation_template(
     p_title text,
@@ -206,14 +240,19 @@ CREATE OR REPLACE FUNCTION public.fn_create_evaluation_template(
     p_is_active boolean,
     p_sequence smallint,
     p_program_ids uuid[],
-    p_questions jsonb
+    p_questions jsonb,
+    p_target_mode text DEFAULT 'INCLUDE',
+    p_suggestion_placeholder text DEFAULT NULL
 ) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
     v_error TEXT;
     v_template_id UUID;
+    v_mode TEXT;
 BEGIN
+    PERFORM public.fn_assert_role('Admin');
+
     IF p_title IS NULL OR btrim(p_title) = '' THEN
         RETURN jsonb_build_object('success', false, 'message', 'Section title is required.');
     END IF;
@@ -223,6 +262,11 @@ BEGIN
         WHERE lower(title) = lower(btrim(p_title)) AND deleted_at IS NULL
     ) THEN
         RETURN jsonb_build_object('success', false, 'message', 'A section named "' || btrim(p_title) || '" already exists.');
+    END IF;
+
+    v_mode := upper(COALESCE(NULLIF(btrim(p_target_mode), ''), 'INCLUDE'));
+    IF v_mode NOT IN ('INCLUDE', 'EXCLUDE') THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Invalid target mode. Must be INCLUDE or EXCLUDE.');
     END IF;
 
     v_error := public.fn_validate_evaluation_questions(p_questions);
@@ -235,12 +279,16 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', v_error);
     END IF;
 
-    INSERT INTO public.evaluation_templates (title, description, is_active, sequence, created_by)
+    INSERT INTO public.evaluation_templates (
+        title, description, is_active, sequence, target_mode, suggestion_placeholder, created_by
+    )
     VALUES (
         btrim(p_title),
         NULLIF(btrim(COALESCE(p_description, '')), ''),
         COALESCE(p_is_active, true),
         GREATEST(COALESCE(p_sequence, 1), 1),
+        v_mode,
+        NULLIF(btrim(COALESCE(p_suggestion_placeholder, '')), ''),
         auth.uid()
     )
     RETURNING id INTO v_template_id;
@@ -253,6 +301,9 @@ END;
 $$;
 
 DROP FUNCTION IF EXISTS public.fn_update_evaluation_template(uuid, text, text, boolean, jsonb);
+DROP FUNCTION IF EXISTS public.fn_update_evaluation_template(uuid, text, text, boolean, smallint, uuid[], jsonb);
+DROP FUNCTION IF EXISTS public.fn_update_evaluation_template(uuid, text, text, boolean, smallint, uuid[], jsonb, text);
+DROP FUNCTION IF EXISTS public.fn_update_evaluation_template(uuid, text, text, boolean, smallint, uuid[], jsonb, text, text);
 
 CREATE OR REPLACE FUNCTION public.fn_update_evaluation_template(
     p_id uuid,
@@ -261,13 +312,18 @@ CREATE OR REPLACE FUNCTION public.fn_update_evaluation_template(
     p_is_active boolean,
     p_sequence smallint,
     p_program_ids uuid[],
-    p_questions jsonb
+    p_questions jsonb,
+    p_target_mode text DEFAULT 'INCLUDE',
+    p_suggestion_placeholder text DEFAULT NULL
 ) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
     v_error TEXT;
+    v_mode TEXT;
 BEGIN
+    PERFORM public.fn_assert_role('Admin');
+
     IF NOT EXISTS (
         SELECT 1 FROM public.evaluation_templates
         WHERE id = p_id AND deleted_at IS NULL
@@ -286,6 +342,11 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'A section named "' || btrim(p_title) || '" already exists.');
     END IF;
 
+    v_mode := upper(COALESCE(NULLIF(btrim(p_target_mode), ''), 'INCLUDE'));
+    IF v_mode NOT IN ('INCLUDE', 'EXCLUDE') THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Invalid target mode. Must be INCLUDE or EXCLUDE.');
+    END IF;
+
     v_error := public.fn_validate_evaluation_questions(p_questions);
     IF v_error IS NOT NULL THEN
         RETURN jsonb_build_object('success', false, 'message', v_error);
@@ -298,11 +359,13 @@ BEGIN
 
     UPDATE public.evaluation_templates
     SET
-        title       = btrim(p_title),
-        description = NULLIF(btrim(COALESCE(p_description, '')), ''),
-        is_active   = COALESCE(p_is_active, true),
-        sequence    = GREATEST(COALESCE(p_sequence, 1), 1),
-        updated_by  = auth.uid()
+        title                  = btrim(p_title),
+        description            = NULLIF(btrim(COALESCE(p_description, '')), ''),
+        is_active              = COALESCE(p_is_active, true),
+        sequence               = GREATEST(COALESCE(p_sequence, 1), 1),
+        target_mode            = v_mode,
+        suggestion_placeholder = NULLIF(btrim(COALESCE(p_suggestion_placeholder, '')), ''),
+        updated_by             = auth.uid()
     WHERE id = p_id AND deleted_at IS NULL;
 
     UPDATE public.evaluation_questions

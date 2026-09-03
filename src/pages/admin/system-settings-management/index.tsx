@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
@@ -42,6 +43,7 @@ export default function SystemSettings() {
             institution_address: '',
             institution_email: '',
             institution_phone: '',
+            institution_mobile: '',
             institution_website: '',
             institution_logo_url: '',
             academic_year_start_month: '6',
@@ -62,6 +64,7 @@ export default function SystemSettings() {
                     institution_address: result.data.institution_address,
                     institution_email: result.data.institution_email,
                     institution_phone: result.data.institution_phone,
+                    institution_mobile: result.data.institution_mobile ?? '',
                     institution_website: result.data.institution_website,
                     institution_logo_url: result.data.institution_logo_url,
                     academic_year_start_month: String(result.data.academic_year_start_month),
@@ -111,6 +114,11 @@ export default function SystemSettings() {
         setLogoPreview(null);
     }
 
+    function handleCancel() {
+        methods.reset();
+        setLogoPreview(methods.getValues('institution_logo_url') || null);
+    }
+
     async function handleSubmit(values: SystemSettingsFormValues) {
         const result = await updateSystemSettings(values);
 
@@ -154,6 +162,17 @@ export default function SystemSettings() {
             name: 'institution_phone',
             rules: { required: 'Institution phone is required' },
             type: 'text'
+        },
+        {
+            name: 'institution_mobile',
+            rules: {
+                pattern: {
+                    value: /^[+0-9][0-9 ()-]{6,19}$/,
+                    message: 'Invalid mobile number'
+                }
+            },
+            type: 'text',
+            placeholder: '09XX XXX XXXX'
         },
         {
             name: 'institution_website',
@@ -219,9 +238,9 @@ export default function SystemSettings() {
                             disabled={!methods.formState.isDirty}
                             size="small"
                             variant="outlined"
-                            onClick={() => methods.reset()}
+                            onClick={handleCancel}
                         >
-                            Reset
+                            Cancel
                         </CommonButton>
                         <CommonButton
                             disabled={!methods.formState.isDirty}
@@ -234,7 +253,6 @@ export default function SystemSettings() {
                         </CommonButton>
                     </div>
                 ),
-                subheader: 'Configure institution-wide settings for the system.',
                 sx: {
                     borderBottom: '1px solid var(--mui-palette-grey-100)',
                     boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
@@ -245,6 +263,7 @@ export default function SystemSettings() {
                 title: 'System Settings'
             }}
             className="flex flex-col h-full"
+            infoContent="Configure institution-wide settings for the system. Changes apply across every portal once saved."
         >
             <div className="flex flex-1 flex-col gap-6 min-h-0 overflow-y-auto p-4 w-full">
                 <div className="flex flex-col gap-4 items-center sm:flex-row sm:items-center">
@@ -263,13 +282,16 @@ export default function SystemSettings() {
                         )
                     }
                     <div className="flex flex-col gap-2 items-center sm:items-start">
-                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                            Institution Logo
-                        </h2>
-                        <p className="max-w-xs sm:text-left text-(--mui-palette-text-secondary) text-center text-xs">
-                            JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed
-                            documents.
-                        </p>
+                        <div className="flex gap-(--mui-tokens-spacing-3) items-center">
+                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                                Institution Logo
+                            </h2>
+                            <CommonInfoTooltip
+                                content="JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed documents."
+                                label="About the institution logo"
+                                size={16}
+                            />
+                        </div>
                         <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                             <CommonButton
                                 loading={isUploadingLogo}

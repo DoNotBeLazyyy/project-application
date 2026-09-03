@@ -1,3 +1,4 @@
+import FormLabel from '@components/form/FormLabel';
 import { CommonInputProps } from '@components/input/CommonInput';
 import InputClearAdornment from '@components/input/InputClearAdornment';
 import { InputBaseProps, TextField } from '@mui/material';
@@ -79,9 +80,17 @@ const TEXTAREA_MIN_SIZE = {
  * />
  */
 const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
+    className,
+    containerClassName,
+    error,
+    fullWidth,
     hasClearButton = true,
     hasTextCount = false,
+    helperText,
     inputRef,
+    isRequired,
+    label,
+    labelClassName,
     size = 'large',
     variant = 'outlined',
     maxLength,
@@ -106,6 +115,16 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     useEffect(() => {
         setCharCount(String(value ?? '').length);
     }, [value]);
+
+    const labelErrorMessage = label && error
+        ? helperText
+        : undefined;
+    const labelDescription = label && !error
+        ? helperText
+        : undefined;
+    const inlineHelperText = label
+        ? undefined
+        : helperText;
 
     const inputSlotProps = slotProps?.input as InputBaseProps | undefined;
 
@@ -299,117 +318,139 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
 
     return (
         <div
-            ref={containerRef}
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: 'auto',
-                maxHeight: '100%',
-                maxWidth: '100%',
-                minHeight: `${resolvedMinSize.minHeight}px`,
-                minWidth: resolvedMinWidth,
-                position: 'relative',
-                width: isFullWidth
-                    ? '100%'
-                    : resolvedMinWidth
-            }}
+            className={
+                classMerge(
+                    'flex flex-col gap-(--mui-tokens-spacing-2) relative',
+                    fullWidth && 'w-full',
+                    containerClassName
+                )
+            }
         >
+            {label && (
+                <FormLabel
+                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
+                    isRequired={isRequired}
+                    label={label}
+                />
+            )}
             <div
+                ref={containerRef}
                 style={{
-                    flex: 1,
-                    minHeight: 0,
-                    width: '100%'
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 'auto',
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    minHeight: `${resolvedMinSize.minHeight}px`,
+                    minWidth: resolvedMinWidth,
+                    position: 'relative',
+                    width: isFullWidth
+                        ? '100%'
+                        : resolvedMinWidth
                 }}
             >
-                <TextField
-                    fullWidth
-                    inputRef={handleAssignInputRef}
-                    multiline
-                    ref={ref}
-                    size={size}
-                    slotProps={{
-                        ...slotProps,
-                        input: {
-                            ...inputSlotProps,
-                            className: classMerge(
-                                'common_textarea_input'
-                            ),
-                            endAdornment: (
-                                <>
-                                    {isClearVisible && (
-                                        <InputClearAdornment
-                                            alignSelf="flex-start"
-                                            iconSize={iconSize + 2}
-                                            onClear={handleClear}
-                                        />
-                                    )}
-                                    {inputSlotProps?.endAdornment}
-                                </>
-                            ),
-                            inputComponent: 'textarea'
-                        },
-                        htmlInput: {
-                            ...slotProps?.htmlInput,
-                            className: classMerge(
-                                'common_textarea_html_input'
-                            ),
-                            maxLength
-                        }
-                    }}
-                    sx={[
-                        baseStyle,
-                        ...normalizeSx(sx)
-                    ]}
-                    value={value}
-                    variant={variant}
-                    onChange={handleChange}
-                    {...props}
-                />
-            </div>
-            {(hasTextCount || hasResize) && (
                 <div
                     style={{
-                        alignItems: 'flex-end',
-                        display: 'flex',
-                        pointerEvents: 'none',
-                        position: 'absolute',
-                        ...footerInsetStyle
+                        flex: 1,
+                        minHeight: 0,
+                        width: '100%'
                     }}
                 >
-                    {hasTextCount && (
-                        <div
-                            style={{
-                                color: 'var(--mui-tokens-color-neutral-500)',
-                                fontSize: 'var(--mui-tokens-font-size-xs)',
-                                lineHeight: '100%',
-                                pointerEvents: 'none'
-                            }}
-                        >
-                            <span>{charCount}</span>
-                            {maxLength
-                                ? <span> / {maxLength}</span>
-                                : null}
-                        </div>
-                    )}
-                    {hasResize && (
-                        <div
-                            style={{
-                                color: 'var(--mui-tokens-color-neutral-500)',
-                                cursor: resizeMeta.cursor,
-                                display: 'flex',
-                                marginLeft: 'auto',
-                                pointerEvents: 'auto'
-                            }}
-                            onMouseDown={handleMouseDown}
-                        >
-                            <NotchesIcon
-                                size={iconSize}
-                                weight="regular"
-                            />
-                        </div>
-                    )}
+                    <TextField
+                        className={className}
+                        error={error}
+                        fullWidth={fullWidth}
+                        helperText={inlineHelperText}
+                        inputRef={handleAssignInputRef}
+                        multiline
+                        ref={ref}
+                        size={size}
+                        slotProps={{
+                            ...slotProps,
+                            input: {
+                                ...inputSlotProps,
+                                className: classMerge(
+                                    'common_textarea_input'
+                                ),
+                                endAdornment: (
+                                    <>
+                                        {isClearVisible && (
+                                            <InputClearAdornment
+                                                alignSelf="flex-start"
+                                                iconSize={iconSize + 2}
+                                                onClear={handleClear}
+                                            />
+                                        )}
+                                        {inputSlotProps?.endAdornment}
+                                    </>
+                                ),
+                                inputComponent: 'textarea'
+                            },
+                            htmlInput: {
+                                ...slotProps?.htmlInput,
+                                className: classMerge(
+                                    'common_textarea_html_input'
+                                ),
+                                maxLength
+                            }
+                        }}
+                        sx={[
+                            baseStyle,
+                            ...normalizeSx(sx)
+                        ]}
+                        value={value}
+                        variant={variant}
+                        onChange={handleChange}
+                        {...props}
+                    />
                 </div>
-            )}
+                {(hasTextCount || hasResize) && (
+                    <div
+                        style={{
+                            alignItems: 'flex-end',
+                            display: 'flex',
+                            pointerEvents: 'none',
+                            position: 'absolute',
+                            ...footerInsetStyle
+                        }}
+                    >
+                        {hasTextCount && (
+                            <div
+                                style={{
+                                    color: 'var(--mui-tokens-color-neutral-500)',
+                                    fontSize: 'var(--mui-tokens-font-size-xs)',
+                                    lineHeight: '100%',
+                                    pointerEvents: 'none'
+                                }}
+                            >
+                                <span>{charCount}</span>
+                                {maxLength
+                                    ? <span> / {maxLength}</span>
+                                    : null}
+                            </div>
+                        )}
+                        {hasResize && (
+                            <div
+                                style={{
+                                    color: 'var(--mui-tokens-color-neutral-500)',
+                                    cursor: resizeMeta.cursor,
+                                    display: 'flex',
+                                    marginLeft: 'auto',
+                                    pointerEvents: 'auto'
+                                }}
+                                onMouseDown={handleMouseDown}
+                            >
+                                <NotchesIcon
+                                    size={iconSize}
+                                    weight="regular"
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 });

@@ -15,6 +15,7 @@ export async function updateSystemSettings(
         p_institution_address: params.institution_address,
         p_institution_email: params.institution_email,
         p_institution_phone: params.institution_phone,
+        p_institution_mobile: params.institution_mobile,
         p_institution_website: params.institution_website,
         p_institution_logo_url: params.institution_logo_url,
         p_academic_year_start_month: Number(params.academic_year_start_month),

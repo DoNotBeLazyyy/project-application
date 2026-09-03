@@ -25,23 +25,39 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
     const helperMessage = fieldState.error?.message ?? helperText;
 
     return (
-        <div className="flex flex-col">
-            <FormControlLabel
-                control={
+        <div className="flex flex-col w-fit">
+            {label
+                ? (
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                {...props}
+                                checked={!!value}
+                                disabled={disabled}
+                                inputRef={ref}
+                                sx={[{ paddingLeft: 0 }, ...normalizeSx(sx)]}
+                                onChange={function(e) {
+                                    onChange(e.target.checked);
+                                }}
+                            />
+                        }
+                        label={label}
+                        sx={{ marginLeft: 0, marginRight: 0, width: 'fit-content' }}
+                    />
+                )
+                : (
                     <Checkbox
                         {...props}
                         checked={!!value}
                         disabled={disabled}
                         inputRef={ref}
-                        sx={[{ paddingLeft: 0 }, ...normalizeSx(sx)]}
+                        sx={[{ padding: 0.5, width: 'fit-content' }, ...normalizeSx(sx)]}
                         onChange={function(e) {
                             onChange(e.target.checked);
                         }}
                     />
-                }
-                label={label ?? ''}
-                sx={{ marginLeft: 0, marginRight: 0 }}
-            />
+                )
+            }
             {hasHelper && helperMessage && (
                 <span
                     className={

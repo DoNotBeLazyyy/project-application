@@ -54,7 +54,9 @@ export async function createEvaluationTemplate(
         p_is_active: template.is_active,
         p_sequence: Number(template.sequence || 1),
         p_program_ids: mapProgramIds(template),
-        p_questions: mapQuestions(template)
+        p_questions: mapQuestions(template),
+        p_target_mode: template.target_mode || 'INCLUDE',
+        p_suggestion_placeholder: template.suggestion_placeholder || null
     });
 }
 
@@ -69,7 +71,9 @@ export async function updateEvaluationTemplate(
         p_is_active: template.is_active,
         p_sequence: Number(template.sequence || 1),
         p_program_ids: mapProgramIds(template),
-        p_questions: mapQuestions(template)
+        p_questions: mapQuestions(template),
+        p_target_mode: template.target_mode || 'INCLUDE',
+        p_suggestion_placeholder: template.suggestion_placeholder || null
     });
 }
 
@@ -129,15 +133,19 @@ function mapProgramIds(template: EvaluationTemplateForm): string[] | null {
 }
 
 function mapQuestions(template: EvaluationTemplateForm) {
-    return template.questions.map((question) => ({
-        question_text: question.question_text,
-        question_type: question.question_type,
-        is_required: question.is_required,
-        min_rating: question.question_type === 'Rating'
-            ? Number(question.min_rating || 1)
-            : null,
-        max_rating: question.question_type === 'Rating'
-            ? Number(question.max_rating || 5)
-            : null
-    }));
+    return template.questions.map((question) => {
+        const questionType = question.question_type || 'Rating';
+
+        return {
+            question_text: question.question_text,
+            question_type: questionType,
+            is_required: question.is_required ?? true,
+            min_rating: questionType === 'Rating'
+                ? Number(question.min_rating || 1)
+                : null,
+            max_rating: questionType === 'Rating'
+                ? Number(question.max_rating || 5)
+                : null
+        };
+    });
 }

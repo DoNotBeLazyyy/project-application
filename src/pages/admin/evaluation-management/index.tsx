@@ -3,7 +3,7 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { CommonSelectOption } from '@components/select/CommonSelect';
+
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EvaluationTemplateGridCard from '@pages/admin/evaluation-management/EvaluationTemplateGridCard';
@@ -36,16 +36,12 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only)' }
 ];
 
-function formatPrograms(programIds: string[], options: CommonSelectOption[]): string {
+function formatPrograms(programIds: string[]): string {
     if (!programIds.length) {
         return 'All programs';
     }
 
-    return programIds
-        .map(function(programId) {
-            return options.find((option) => option.value === programId)?.label ?? programId;
-        })
-        .join(', ');
+    return 'Selected only';
 }
 
 export default function EvaluationManagement() {
@@ -94,7 +90,9 @@ export default function EvaluationManagement() {
                 flex: 3,
                 headerName: 'Programs',
                 sortable: false,
-                valueGetter: (params) => formatPrograms(params.data?.program_ids ?? [], programOptions)
+                valueGetter: (params) => formatPrograms(
+                    params.data?.program_ids ?? []
+                )
             },
             {
                 field: 'question_count',
@@ -175,7 +173,9 @@ export default function EvaluationManagement() {
                     return (
                         <EvaluationTemplateGridCard
                             isSelected={isSelected}
-                            programsLabel={formatPrograms(item.program_ids ?? [], programOptions)}
+                            programsLabel={formatPrograms(
+                                item.program_ids ?? []
+                            )}
                             row={item}
                             onEdit={function(id) {
                                 navigate(`${BASE_PATH}/${id}?edit=1`);
@@ -213,6 +213,8 @@ export default function EvaluationManagement() {
                     section_sequence: row.section_sequence,
                     section_description: row.section_description,
                     is_active: row.is_active,
+                    target_mode: row.target_mode,
+                    suggestion_placeholder: row.suggestion_placeholder,
                     program_codes: row.program_codes,
                     question_text: row.question_text,
                     question_type: row.question_type,

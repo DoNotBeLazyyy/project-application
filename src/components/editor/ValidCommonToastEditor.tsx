@@ -36,14 +36,22 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
         fieldState: { error }
     } = useController({ control, name, rules });
 
-    const helperMessage = error?.message ?? helperText;
+    const labelErrorMessage = label && error
+        ? error.message
+        : undefined;
+    const labelDescription = label && !error
+        ? (description ?? helperText)
+        : description;
+    const inlineHelper = label
+        ? undefined
+        : (error?.message ?? helperText);
 
     return (
         <div className="flex flex-col gap-1.5 w-full">
             {label && (
                 <FormLabel
-                    description={description}
-                    errorMessage={error?.message}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
                     isRequired={isRequired}
                     label={label}
                 />
@@ -54,7 +62,7 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
                 onChange={onChange}
                 {...props}
             />
-            {hasHelper && helperMessage && (
+            {hasHelper && inlineHelper && (
                 <span
                     className={
                         error
@@ -62,7 +70,7 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
                             : 'text-(--mui-palette-text-secondary) text-xs'
                     }
                 >
-                    {helperMessage}
+                    {inlineHelper}
                 </span>
             )}
         </div>

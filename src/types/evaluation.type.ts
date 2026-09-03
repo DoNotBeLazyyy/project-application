@@ -2,13 +2,15 @@ export type EvaluationQuestionType = 'Rating' | 'Multiple Choice' | 'Open Ended'
 
 export type EvaluationScope = 'Period' | 'Term';
 
+export type EvaluationTargetMode = 'INCLUDE' | 'EXCLUDE';
+
 export interface EvaluationQuestionForm {
     id?: string;
     question_text: string;
-    question_type: EvaluationQuestionType;
+    question_type?: EvaluationQuestionType;
     is_required: boolean;
-    min_rating: string;
-    max_rating: string;
+    min_rating?: string;
+    max_rating?: string;
 }
 
 export interface EvaluationTemplateForm {
@@ -17,6 +19,8 @@ export interface EvaluationTemplateForm {
     description: string;
     is_active: boolean;
     sequence: string;
+    target_mode: EvaluationTargetMode;
+    suggestion_placeholder?: string;
     program_ids: string[];
     questions: EvaluationQuestionForm[];
 }
@@ -26,12 +30,14 @@ export interface EvaluationTemplateBulkRow {
     section_sequence: string;
     section_description: string;
     is_active: string;
+    target_mode?: string;
+    suggestion_placeholder?: string;
     program_codes: string;
     question_text: string;
-    question_type: string;
+    question_type?: string;
     is_required: string;
-    min_rating: string;
-    max_rating: string;
+    min_rating?: string;
+    max_rating?: string;
 }
 
 export interface EvaluationQuestionRow {
@@ -50,6 +56,8 @@ export interface EvaluationTemplateRow {
     description: string | null;
     is_active: boolean;
     sequence: number;
+    target_mode: EvaluationTargetMode;
+    suggestion_placeholder: string | null;
     program_ids: string[];
     questions: EvaluationQuestionRow[];
 }
@@ -59,6 +67,7 @@ export interface EvaluationSection {
     title: string;
     description: string | null;
     sequence: number;
+    suggestion_placeholder?: string | null;
     questions: EvaluationQuestionRow[];
 }
 
@@ -111,6 +120,8 @@ export interface EvaluationTemplateListRow {
     description: string | null;
     is_active: boolean;
     sequence: number;
+    target_mode: EvaluationTargetMode;
+    suggestion_placeholder?: string | null;
     program_ids: string[];
     question_count: number;
     total_count: number;

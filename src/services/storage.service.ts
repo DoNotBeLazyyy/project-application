@@ -5,7 +5,7 @@ import { parseServiceError } from '@utils/error.util';
 
 export type StorageBucket = 'logos' | 'avatars' | 'materials' | 'submissions' | 'discussions' | 'announcements' | 'events';
 
-const PUBLIC_BUCKETS: StorageBucket[] = ['logos', 'avatars'];
+const PUBLIC_BUCKETS: StorageBucket[] = ['logos', 'avatars', 'materials', 'announcements', 'events'];
 
 function isPublicBucket(bucket: StorageBucket): boolean {
     return PUBLIC_BUCKETS.includes(bucket);

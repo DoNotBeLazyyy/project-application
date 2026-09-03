@@ -161,9 +161,9 @@ export default function AnnouncementForm({
 
             <ValidCommonToastEditor
                 control={control}
+                description="Use the rich text toolbar to style headings, lists, bold/italic text, tables, and links."
                 disabled={disabled}
                 height="320px"
-                helperText="Use the rich text toolbar to style headings, lists, bold/italic text, tables, and links."
                 isRequired={!disabled}
                 label="Content"
                 name="content"

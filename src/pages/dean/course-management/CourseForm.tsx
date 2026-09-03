@@ -5,9 +5,12 @@ import CommonFormTable, { CommonFormTableColumn } from '@components/table/Common
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
+import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
 import { useDepartmentOptions } from '@pages/dean/department-management/useDepartmentOptions';
 import { ComponentPropsForm } from '@type/common.type';
+import { CourseTypeOption } from '@type/course/course-type.type';
 import { CourseFormValues, PrerequisiteRow } from '@type/course/course.type';
+import { useEffect, useRef } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useWatch
 } from 'react-hook-form';
@@ -19,18 +22,19 @@ type PrerequisiteField =
     | 'year_level_required'
     | 'minimum_grade';
 
-const MINIMUM_GRADE_OPTIONS: CommonSelectOption[] = [
-    { label: '—', value: '' },
-    { label: '1.0', value: '1.0' },
-    { label: '1.25', value: '1.25' },
-    { label: '1.5', value: '1.5' },
-    { label: '1.75', value: '1.75' },
-    { label: '2.0', value: '2.0' },
-    { label: '2.25', value: '2.25' },
-    { label: '2.5', value: '2.5' },
-    { label: '2.75', value: '2.75' },
-    { label: '3.0', value: '3.0' }
-];
+/**
+ * A course type that already covers both halves of a split course, e.g.
+ * "Lecture/Laboratory". Matched on text because course types are data the dean
+ * maintains, not a fixed enum.
+ *
+ * @param courseType - One course type option from the database.
+ * @returns
+ */
+function isCombinedCourseType(courseType: CourseTypeOption): boolean {
+    const haystack = `${courseType.code} ${courseType.label}`.toLowerCase();
+
+    return haystack.includes('lec') && haystack.includes('lab');
+}
 
 function prerequisiteName(index: number, field: PrerequisiteField): FieldPath<CourseFormValues> {
     return `prerequisites.${index}.${field}` as FieldPath<CourseFormValues>;
@@ -128,7 +132,16 @@ function PrerequisiteTypeCell({ control, disabled, rowIndex }: PrerequisiteCellP
     );
 }
 
-function PrerequisiteMinGradeCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
+interface PrerequisiteMinGradeCellProps extends PrerequisiteCellProps {
+    minimumGradeOptions: CommonSelectOption[];
+}
+
+function PrerequisiteMinGradeCell({
+    control,
+    disabled,
+    minimumGradeOptions,
+    rowIndex
+}: PrerequisiteMinGradeCellProps) {
     const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
     const type = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_type') });
     const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
@@ -139,11 +152,11 @@ function PrerequisiteMinGradeCell({ control, disabled, rowIndex }: PrerequisiteC
         <CommonSelect
             disabled={disabled || isLocked}
             fullWidth
-            options={MINIMUM_GRADE_OPTIONS}
+            options={minimumGradeOptions}
             size="small"
             value={isLocked
                 ? ''
-                : String(minimumGrade.field.value ?? '')}
+                : normalizeMinimumGrade(minimumGrade.field.value)}
             onChange={(e) => minimumGrade.field.onChange(e.target.value)}
         />
     );
@@ -165,15 +178,59 @@ export default function CourseForm({
 }: CourseFormProps) {
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const { departmentOptions } = useDepartmentOptions();
-    const { courseTypeOptions } = useCourseTypeOptions();
+    const { courseTypeOptions, courseTypes } = useCourseTypeOptions();
+    const { minimumGradeOptions } = useMinimumGradeOptions();
     const { courseOptions: allCourseOptions } = useCourseOptions({
         excludeIds: [excludeCourseId].filter((id): id is string => !!id)
     });
     const isSplit = useWatch({ control, name: 'is_split' });
+    const courseTypeId = useWatch({ control, name: 'course_type_id' });
+    const courseTypeController = useController({ control, name: 'course_type_id' });
+    const splitController = useController({ control, name: 'is_split' });
+    const combinedCourseType = courseTypes.find(isCombinedCourseType);
+    const isCourseTypeLocked = Boolean(isSplit) && Boolean(combinedCourseType);
+    const previousSelection = useRef({ courseTypeId: '', isSplit: false });
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'prerequisites'
     });
+
+    /*
+     * A split course is saved as one lecture row plus one laboratory row that share
+     * a single course type, so these two controls can never disagree. Whichever one
+     * the dean touches, the other follows.
+     */
+    useEffect(function() {
+        const previous = previousSelection.current;
+        const splitChecked = Boolean(isSplit);
+
+        previousSelection.current = { courseTypeId, isSplit: splitChecked };
+
+        if (disabled || !combinedCourseType) {
+            return;
+        }
+
+        if (previous.isSplit !== splitChecked) {
+            if (splitChecked && courseTypeId !== combinedCourseType.id) {
+                courseTypeController.field.onChange(combinedCourseType.id);
+            }
+
+            if (!splitChecked && courseTypeId === combinedCourseType.id) {
+                courseTypeController.field.onChange('');
+            }
+
+            return;
+        }
+
+        if (previous.courseTypeId !== courseTypeId) {
+            const shouldSplit = courseTypeId === combinedCourseType.id;
+
+            if (shouldSplit !== splitChecked) {
+                splitController.field.onChange(shouldSplit);
+            }
+        }
+    }, [combinedCourseType?.id, courseTypeId, disabled, isSplit]);
+
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
             disabled,
@@ -209,8 +266,12 @@ export default function CourseForm({
             gridCols: 2
         },
         {
-            disabled,
-            fieldProps: { helperText: 'Type of course, e.g. Lecture or Laboratory' },
+            disabled: disabled || isCourseTypeLocked,
+            fieldProps: {
+                helperText: isCourseTypeLocked
+                    ? `Locked to ${combinedCourseType?.label} while split is on`
+                    : 'Type of course, e.g. Lecture or Laboratory'
+            },
             name: 'course_type_id',
             options: courseTypeOptions,
             rules: disabled
@@ -265,17 +326,13 @@ export default function CourseForm({
         },
         {
             disabled,
-            name: 'is_split' as const,
-            fieldProps: { label: 'Split into LEC and LAB' },
-            type: 'checkbox' as const,
-            gridCols: 3
-        },
-        {
-            disabled,
-            name: 'is_active',
-            fieldProps: { label: 'Active' },
-            type: 'checkbox',
-            gridCols: 3
+            items: [
+                { name: 'is_split' as const, label: 'Split into LEC and LAB' },
+                { name: 'is_active' as const, label: 'Active' }
+            ],
+            name: 'is_split',
+            type: 'checkbox-group',
+            gridCols: 2
         },
         {
             disabled,
@@ -292,7 +349,7 @@ export default function CourseForm({
         {
             key: 'prerequisite_kind',
             headerName: 'Kind',
-            flex: 1,
+            flex: 2,
             renderCell: (params) => (
                 <PrerequisiteKindCell
                     control={params.control}
@@ -304,7 +361,7 @@ export default function CourseForm({
         {
             key: 'course_id',
             headerName: 'Course / Year Level',
-            flex: 3,
+            flex: 4,
             renderCell: (params) => (
                 <PrerequisiteTargetCell
                     control={params.control}
@@ -329,11 +386,12 @@ export default function CourseForm({
         {
             key: 'minimum_grade',
             headerName: 'Min Grade',
-            flex: 1,
+            flex: 3,
             renderCell: (params) => (
                 <PrerequisiteMinGradeCell
                     control={params.control}
                     disabled={params.disabled}
+                    minimumGradeOptions={minimumGradeOptions}
                     rowIndex={params.rowIndex}
                 />
             )
@@ -368,6 +426,7 @@ export default function CourseForm({
             />
             <CommonFormTable<PrerequisiteRow, CourseFormValues>
                 columns={prerequisiteColumns}
+                contentClassName="min-w-[44rem] lg:min-w-full"
                 control={control}
                 disabled={disabled}
                 emptyDataMessage="No prerequisites added yet"

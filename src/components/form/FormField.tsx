@@ -49,6 +49,23 @@ type CheckboxFieldConfig<T extends FieldValues> = {
     fieldProps?: Omit<CheckboxProps, 'defaultValue'> & { label?: string };
 } & BaseFieldConfig<T>;
 
+/**
+ * One toggle inside a `checkbox-group`. Each item still owns its own form field -
+ * grouping only changes where the toggles sit, never how they are registered.
+ */
+export interface CheckboxGroupItem<T extends FieldValues> {
+    name: Path<T>;
+    label: string;
+    disabled?: boolean;
+    helperText?: string;
+}
+
+type CheckboxGroupFieldConfig<T extends FieldValues> = {
+    type: 'checkbox-group';
+    fieldProps?: Omit<CheckboxProps, 'defaultValue'>;
+    items: CheckboxGroupItem<T>[];
+} & BaseFieldConfig<T>;
+
 interface BaseFieldConfig<T extends FieldValues> {
     name: Path<T>;
     label?: string;
@@ -67,7 +84,8 @@ export type FormFieldConfig<T extends FieldValues> =
     | MultiSelectFieldConfig<T>
     | TextAreaFieldConfig<T>
     | DateFieldConfig<T>
-    | CheckboxFieldConfig<T>;
+    | CheckboxFieldConfig<T>
+    | CheckboxGroupFieldConfig<T>;
 
 interface FormFieldProps<T extends FieldValues> {
     control: Control<T>;
@@ -102,6 +120,8 @@ export function FormField<T extends FieldValues>({
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
+                isRequired={Boolean(field.rules?.required)}
+                label={field.label}
                 name={field.name}
                 placeholder={field.placeholder}
                 rules={field.rules}
@@ -133,6 +153,27 @@ export function FormField<T extends FieldValues>({
                 name={field.name}
                 rules={field.rules}
             />
+        );
+    }
+
+    if (field.type === 'checkbox-group') {
+        return (
+            <div className="flex flex-wrap gap-x-6 gap-y-1 items-center">
+                {field.items.map(function(item) {
+                    return (
+                        <ValidCommonCheckbox
+                            {...field.fieldProps}
+                            control={control}
+                            disabled={item.disabled ?? field.disabled}
+                            hasHelper={hasHelper}
+                            helperText={item.helperText}
+                            key={item.name}
+                            label={item.label}
+                            name={item.name}
+                        />
+                    );
+                })}
+            </div>
         );
     }
 

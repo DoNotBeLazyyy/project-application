@@ -23,6 +23,8 @@ const DEFAULT_VALUES: EvaluationTemplateForm = {
     description: '',
     is_active: true,
     sequence: '1',
+    target_mode: 'INCLUDE',
+    suggestion_placeholder: '',
     program_ids: [],
     questions: DEFAULT_QUESTIONS
 };
@@ -41,6 +43,8 @@ async function fetchTemplate(id: string): Promise<ServiceResult<EvaluationTempla
             description: result.data.description ?? '',
             is_active: result.data.is_active,
             sequence: String(result.data.sequence ?? 1),
+            target_mode: result.data.target_mode ?? 'INCLUDE',
+            suggestion_placeholder: result.data.suggestion_placeholder ?? '',
             program_ids: result.data.program_ids ?? [],
             questions: result.data.questions.length
                 ? result.data.questions.map(function(question) {

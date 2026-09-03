@@ -56,6 +56,13 @@ export interface SignalDescriptor {
     unit: string;
     description: string;
     operators: SpecialGradeOperator[];
+
+    /**
+     * A signal the SQL registry still computes but the builder no longer offers.
+     * Kept so an older rule that uses it can still be read and explained; it is
+     * filtered out of the picker so no new rule can be built on one.
+     */
+    isDeprecated?: boolean;
 }
 
 export interface SpecialGradeConfig {
@@ -71,8 +78,10 @@ export interface SpecialGradeConfig {
     conditions?: SpecialGradeConditionGroup | null;
     priority?: number;
     is_auto_detected?: boolean;
+    allows_section_override?: boolean;
     rule_version?: number;
     pending_flag_count?: number;
+    section_override_count?: number;
 }
 
 export interface SpecialGradeFormValues {
@@ -87,6 +96,7 @@ export interface SpecialGradeFormValues {
     conditions?: SpecialGradeConditionGroup | null;
     priority?: string | number;
     is_auto_detected?: boolean;
+    allows_section_override?: boolean;
 }
 
 export interface SpecialGradeFilterValues {
@@ -168,4 +178,32 @@ export interface SpecialGradeFlagResolution {
     message: string;
     code?: string;
     grade_id?: string;
+}
+
+/**
+ * One threshold a section has moved off the institution default.
+ *
+ * Only the number changes. The signal and the operator stay as the admin wrote
+ * them, so a section can say "one missing Activity, not three" but can never
+ * invent a condition of its own.
+ */
+export interface SectionSignalOverride {
+    id: string;
+    signal: string;
+    value: number;
+    value_max: number | null;
+    note: string | null;
+    updated_at: string;
+}
+
+/** A rule the admin opened up for section thresholds, plus this section's overrides. */
+export interface SectionOverridableRule {
+    special_grade_config_id: string;
+    code: string;
+    label: string;
+    description: string | null;
+    is_passing: boolean;
+    priority: number;
+    conditions: SpecialGradeConditionGroup | null;
+    overrides: SectionSignalOverride[];
 }

@@ -86,7 +86,8 @@ export async function saveSpecialGradeConfigs(
             is_active: config.is_active,
             conditions: config.conditions ?? { all: [] },
             priority: Number(config.priority) || 100,
-            is_auto_detected: config.is_auto_detected ?? false
+            is_auto_detected: config.is_auto_detected ?? false,
+            allows_section_override: config.allows_section_override ?? false
         }))
     });
 }

@@ -323,6 +323,7 @@
                 t.description,
                 t.is_active,
                 t.sequence,
+                COALESCE(t.target_mode, ''INCLUDE'') AS target_mode,
                 COALESCE((
                     SELECT jsonb_agg(tp.program_id)
                     FROM public.evaluation_template_programs tp
@@ -360,6 +361,7 @@
             'description', t.description,
             'is_active',   t.is_active,
             'sequence',    t.sequence,
+            'target_mode', COALESCE(t.target_mode, 'INCLUDE'),
             'program_ids', COALESCE((
                 SELECT jsonb_agg(tp.program_id)
                 FROM public.evaluation_template_programs tp

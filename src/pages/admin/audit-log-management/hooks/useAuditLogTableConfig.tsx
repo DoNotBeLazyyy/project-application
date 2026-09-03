@@ -1,13 +1,11 @@
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { AuditAction, AuditLogRow } from '@type/audit-log.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-const ACTION_VARIANT: Record<AuditAction, 'success' | 'warning' | 'error'> = {
-    Insert: 'success',
-    Update: 'warning',
-    Delete: 'error'
-};
+function toTitleCase(value: string): string {
+    return value
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export function useAuditLogTableConfig() {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
@@ -18,25 +16,25 @@ export function useAuditLogTableConfig() {
                 headerName: 'Date',
                 minWidth: 175,
                 sortable: true,
-                valueFormatter: (params) => params.value
-                    ? new Date(params.value as string)
-                        .toLocaleString('en-PH')
-                    : ''
+                valueFormatter: (params) =>
+                    params.value
+                        ? new Date(params.value as string)
+                            .toLocaleString('en-PH', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            })
+                        : ''
             },
             {
                 field: 'action',
                 flex: 1,
                 headerName: 'Action',
                 minWidth: 110,
-                sortable: true,
-                cellRenderer: (params: { data: AuditLogRow }) => (
-                    <div className="flex h-full items-center">
-                        <CommonBadgeStatus
-                            label={params.data.action}
-                            variant={ACTION_VARIANT[params.data.action]}
-                        />
-                    </div>
-                )
+                sortable: true
             },
             {
                 field: 'table_name',
@@ -45,14 +43,22 @@ export function useAuditLogTableConfig() {
                 minWidth: 140,
                 mobileCard: 'title',
                 sortable: true,
-                tooltipField: 'table_name'
+                tooltipField: 'table_name',
+                valueFormatter: (params) =>
+                    params.value
+                        ? toTitleCase(String(params.value))
+                        : ''
             },
             {
                 field: 'field_changed',
                 flex: 2,
                 headerName: 'Field',
                 minWidth: 130,
-                tooltipField: 'field_changed'
+                tooltipField: 'field_changed',
+                valueFormatter: (params) =>
+                    params.value
+                        ? toTitleCase(String(params.value))
+                        : ''
             },
             {
                 field: 'old_value',
@@ -86,6 +92,14 @@ export function useAuditLogTableConfig() {
                 tooltipField: 'section_code'
             },
             {
+                field: 'grading_period_name',
+                flex: 2,
+                headerName: 'Grading Period',
+                minWidth: 160,
+                mobileCard: 'hidden',
+                tooltipField: 'grading_period_name'
+            },
+            {
                 field: 'changed_by_name',
                 flex: 2,
                 headerName: 'Changed By',
@@ -105,5 +119,5 @@ export function useAuditLogTableConfig() {
         ];
     }, []);
 
-    return { columnDefs };
+    return { columnDefs, hideMenuIcon: true };
 }

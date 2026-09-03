@@ -27,6 +27,7 @@ const UPDATE_FORM_ID = 'update-special-grade-form';
 const FILTER_FORM_ID = 'filter-special-grade-form';
 
 const DEFAULT_FORM_VALUES: SpecialGradeFormValues = {
+    allows_section_override: false,
     code: '',
     completion_deadline_days: '',
     conditions: { all: [] },
@@ -161,6 +162,7 @@ export default function SpecialGradesPage() {
             : g.code === idOrCode));
         if (grade) {
             updateMethods.reset({
+                allows_section_override: grade.allows_section_override ?? false,
                 code: grade.code,
                 completion_deadline_days: grade.completion_deadline_days
                     ? String(grade.completion_deadline_days)
@@ -224,8 +226,9 @@ export default function SpecialGradesPage() {
         }
 
         const newGrade: SpecialGradeConfig = {
+            allows_section_override: values.allows_section_override ?? false,
             code: codeNormalized,
-            completion_deadline_days: values.completion_deadline_days
+            completion_deadline_days: values.requires_completion && values.completion_deadline_days
                 ? Number(values.completion_deadline_days)
                 : null,
             conditions: values.conditions ?? { all: [] },
@@ -266,9 +269,10 @@ export default function SpecialGradesPage() {
             }
             return {
                 ...g,
+                allows_section_override: values.allows_section_override ?? false,
                 code: values.code.trim()
                     .toUpperCase(),
-                completion_deadline_days: values.completion_deadline_days
+                completion_deadline_days: values.requires_completion && values.completion_deadline_days
                     ? Number(values.completion_deadline_days)
                     : null,
                 conditions: values.conditions ?? { all: [] },

@@ -63,13 +63,15 @@ function CommonFormRow<T extends FieldValues>({
         : undefined;
     // `helperText` on a field config is guidance, not a message about state.
     const { helperText: description } = (field.fieldProps ?? {}) as { helperText?: string };
+    // Checkboxes carry their own inline label, so the hanging FormLabel is skipped.
+    const isSelfLabelled = field.type === 'checkbox' || field.type === 'checkbox-group';
 
     return (
         <div
             className={
                 classMerge(
                     'flex flex-col gap-1 min-w-0',
-                    field.type === 'checkbox'
+                    isSelfLabelled
                         ? 'justify-center'
                         : '',
                     field.gridCols
@@ -78,7 +80,7 @@ function CommonFormRow<T extends FieldValues>({
                 )
             }
         >
-            {field.type !== 'checkbox' && (
+            {!isSelfLabelled && (
                 <FormLabel
                     description={hasHelper && isOnLabel
                         ? description
