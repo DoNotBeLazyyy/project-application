@@ -15,6 +15,8 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     error: errorProp,
     hasHelper = true,
     helperText: helperTextProp,
+    disabled,
+    readOnly,
     onChange: onDefaultChange,
     ...props
 }: ValidCommonSelectProps<T>) {
@@ -25,7 +27,10 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
 
+    const isNonInteractive = Boolean(disabled || readOnly);
+
     function handleChange(event: InputChangeEvent) {
+        if (isNonInteractive) return;
         onChange(event);
         onDefaultChange?.(event);
     }
@@ -40,10 +45,12 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     }
 
     function handleOpen() {
+        if (isNonInteractive) return;
         setIsOpen(true);
     }
 
     function handleFocus() {
+        if (isNonInteractive) return;
         if (!isOpen && !isClosing.current) {
             setIsOpen(true);
         }
@@ -52,6 +59,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     return (
         <CommonSelect
             {...props}
+            disabled={disabled}
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
@@ -59,11 +67,12 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
                     : undefined
             }
             inputRef={ref}
+            readOnly={readOnly}
             slotProps={{
                 ...props.slotProps,
                 select: {
                     ...props.slotProps?.select,
-                    open: isOpen,
+                    open: isNonInteractive ? false : isOpen,
                     onOpen: handleOpen,
                     onClose: handleClose
                 },

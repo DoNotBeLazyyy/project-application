@@ -108,6 +108,7 @@ export function FormField<T extends FieldValues>({
                 hasHelper={hasHelper}
                 name={field.name}
                 options={field.options ?? []}
+                readOnly={field.readOnly}
                 rules={field.rules}
             />
         );
@@ -125,6 +126,7 @@ export function FormField<T extends FieldValues>({
                 label={field.label}
                 name={field.name}
                 placeholder={field.placeholder}
+                readOnly={field.readOnly}
                 rules={field.rules}
                 slotProps={{
                     ...field.fieldProps?.slotProps,
@@ -157,7 +159,7 @@ export function FormField<T extends FieldValues>({
             <ValidCommonCheckbox
                 {...field.fieldProps}
                 control={control}
-                disabled={field.disabled}
+                disabled={field.disabled || field.readOnly}
                 hasHelper={hasHelper}
                 name={field.name}
                 rules={field.rules}
@@ -173,7 +175,7 @@ export function FormField<T extends FieldValues>({
                         <ValidCommonCheckbox
                             {...field.fieldProps}
                             control={control}
-                            disabled={item.disabled ?? field.disabled}
+                            disabled={item.disabled ?? (field.disabled || field.readOnly)}
                             hasHelper={hasHelper}
                             helperText={item.helperText}
                             key={item.name}
@@ -196,6 +198,7 @@ export function FormField<T extends FieldValues>({
                 hasHelper={hasHelper}
                 name={field.name}
                 placeholder={field.placeholder}
+                readOnly={field.readOnly}
                 rules={field.rules}
                 type="text"
             />
@@ -211,6 +214,7 @@ export function FormField<T extends FieldValues>({
                 hasHelper={hasHelper}
                 name={field.name}
                 options={field.options ?? []}
+                readOnly={field.readOnly}
                 rules={field.rules}
             />
         );
@@ -230,6 +234,7 @@ export function FormField<T extends FieldValues>({
             hasHelper={hasHelper}
             name={field.name}
             placeholder={field.placeholder}
+            readOnly={field.readOnly}
             rules={resolvedRules}
             type={isEmail
                 ? 'text'

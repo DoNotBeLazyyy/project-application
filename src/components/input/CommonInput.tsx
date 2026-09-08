@@ -30,6 +30,9 @@ export type CommonInputProps = TextFieldProps & {
     // Properties passed to the label span element
     labelClassName?: string;
 
+    // Whether the field is read-only
+    readOnly?: boolean;
+
     // Callback invoked after the built-in clear button empties the field
     onClear?: () => void;
 }
@@ -60,6 +63,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     isRoundedFull,
     label,
     labelClassName,
+    readOnly,
     slotProps,
     type,
     value,
@@ -73,7 +77,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     const isPasswordField = Boolean(hasPasswordToggle) && type === 'password';
     const inputSlotProps = slotProps?.input as InputBaseProps | undefined;
     const htmlInputSlotProps = slotProps?.htmlInput as InputHTMLAttributes<HTMLInputElement> | undefined;
-    const isReadOnly = Boolean(inputSlotProps?.readOnly) || Boolean(htmlInputSlotProps?.readOnly);
+    const isReadOnly = Boolean(readOnly) || Boolean(inputSlotProps?.readOnly) || Boolean(htmlInputSlotProps?.readOnly);
     const isControlled = value !== undefined;
 
     /*
@@ -167,21 +171,24 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
         )
         : null;
 
-    const resolvedSlotProps = clearAdornment || passwordAdornment
-        ? {
-            ...slotProps,
-            input: {
-                ...inputSlotProps,
-                endAdornment: (
-                    <>
-                        {clearAdornment}
-                        {inputSlotProps?.endAdornment}
-                        {passwordAdornment}
-                    </>
-                )
-            }
-        } as TextFieldProps['slotProps']
-        : slotProps;
+    const resolvedSlotProps: TextFieldProps['slotProps'] = {
+        ...slotProps,
+        input: {
+            ...inputSlotProps,
+            readOnly: isReadOnly,
+            ...(clearAdornment || passwordAdornment
+                ? {
+                    endAdornment: (
+                        <>
+                            {clearAdornment}
+                            {inputSlotProps?.endAdornment}
+                            {passwordAdornment}
+                        </>
+                    )
+                }
+                : {})
+        }
+    };
 
     return (
         <div
@@ -207,7 +214,8 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                 className={
                     classMerge(
                         className,
-                        isRoundedFull && 'common_input_rounded_full'
+                        isRoundedFull && 'common_input_rounded_full',
+                        isReadOnly && 'common_input_readonly'
                     )
                 }
                 error={error}

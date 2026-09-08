@@ -64,9 +64,15 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
         onChange(next.filter((item) => item !== exclusiveValue));
     }
 
+    const isNonInteractive = Boolean(disabled || readOnly);
+
     return (
         <Autocomplete
-            className={classMerge(fullWidth && 'w-full', containerClassName)}
+            className={classMerge(
+                fullWidth && 'w-full',
+                isNonInteractive && 'common_input_readonly',
+                containerClassName
+            )}
             disableCloseOnSelect
             disabled={disabled}
             fullWidth={fullWidth}
@@ -80,7 +86,10 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    className={className}
+                    className={classMerge(
+                        className,
+                        isNonInteractive && 'common_input_readonly'
+                    )}
                     error={error}
                     helperText={helperText}
                     label={label}
@@ -104,10 +113,14 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                     return (
                         <Chip
                             deleteIcon={
-                                <XIcon
-                                    size={12}
-                                    weight="bold"
-                                />
+                                isNonInteractive
+                                    ? undefined
+                                    : (
+                                        <XIcon
+                                            size={12}
+                                            weight="bold"
+                                        />
+                                    )
                             }
                             key={key}
                             label={option.label}
@@ -115,10 +128,10 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                             variant="outlined"
                             {...tagProps}
                             sx={{
-                                backgroundColor: disabled
+                                backgroundColor: isNonInteractive
                                     ? 'var(--mui-tokens-color-common-white)'
                                     : 'var(--mui-tokens-color-brand-50)',
-                                borderColor: disabled
+                                borderColor: isNonInteractive
                                     ? 'var(--mui-tokens-color-brand-500)'
                                     : 'var(--mui-tokens-color-brand-600)',
                                 borderStyle: 'solid',
@@ -129,7 +142,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                 opacity: 1,
                                 transition: 'all 0.15s ease-in-out',
                                 '&:hover': {
-                                    backgroundColor: disabled
+                                    backgroundColor: isNonInteractive
                                         ? 'var(--mui-tokens-color-common-white)'
                                         : 'var(--mui-tokens-color-brand-100)',
                                     borderColor: 'var(--mui-tokens-color-brand-700)'
@@ -140,21 +153,23 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                     fontWeight: 500,
                                     opacity: 1,
                                     paddingLeft: 'var(--mui-tokens-spacing-2)',
-                                    paddingRight: 'var(--mui-tokens-spacing-1)',
+                                    paddingRight: isNonInteractive
+                                        ? 'var(--mui-tokens-spacing-2)'
+                                        : 'var(--mui-tokens-spacing-1)',
                                     WebkitTextFillColor: 'var(--mui-tokens-color-brand-950)'
                                 },
                                 '& .MuiChip-deleteIcon': {
                                     color: 'var(--mui-tokens-color-brand-700)',
-                                    cursor: disabled
+                                    cursor: isNonInteractive
                                         ? 'default'
                                         : 'pointer',
                                     fontSize: '0.75rem',
                                     marginLeft: 'var(--mui-tokens-spacing-2)',
                                     marginRight: '2px',
-                                    opacity: disabled
+                                    opacity: isNonInteractive
                                         ? 0.4
                                         : 1,
-                                    pointerEvents: disabled
+                                    pointerEvents: isNonInteractive
                                         ? 'none'
                                         : 'auto',
                                     transition: 'color 0.15s ease',

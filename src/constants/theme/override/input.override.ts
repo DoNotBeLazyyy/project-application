@@ -16,11 +16,14 @@ export const inputOverrides: ComponentTheme = {
             root: {
                 borderRadius: 'var(--mui-tokens-radius-md)',
                 boxSizing: 'border-box',
-                '&.Mui-disabled': {
+                '&.Mui-disabled, &.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &:has(textarea[readonly]), &.common_input_readonly': {
                     color: 'var(--mui-tokens-color-neutral-400)',
                     WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
                 },
-                '&.Mui-disabled .MuiChip-root': {
+                '&.Mui-disabled .MuiInputAdornment-root svg, &.MuiInputBase-readOnly .MuiInputAdornment-root svg, &[readonly] .MuiInputAdornment-root svg, &:has(input[readonly]) .MuiInputAdornment-root svg, &:has(textarea[readonly]) .MuiInputAdornment-root svg, &.common_input_readonly .MuiInputAdornment-root svg, &.Mui-disabled .MuiSelect-icon, &.MuiInputBase-readOnly .MuiSelect-icon, &.common_input_readonly .MuiSelect-icon': {
+                    color: 'var(--mui-tokens-color-neutral-400) !important'
+                },
+                '&.Mui-disabled .MuiChip-root, &.MuiInputBase-readOnly .MuiChip-root, &.common_input_readonly .MuiChip-root': {
                     backgroundColor: 'var(--mui-tokens-color-common-white) !important',
                     borderColor: 'var(--mui-tokens-color-brand-500) !important',
                     color: 'var(--mui-tokens-color-brand-950) !important',
@@ -173,12 +176,12 @@ export const inputOverrides: ComponentTheme = {
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
-                '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline': {
+                '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline, &.MuiInputBase-readOnly.common_textarea_input.MuiInputBase-multiline, &[readonly].common_textarea_input.MuiInputBase-multiline, &:has(textarea[readonly]).common_textarea_input.MuiInputBase-multiline, &.common_input_readonly.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: SURFACE_DISABLED
                 },
                 [`
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline,
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):hover .MuiOutlinedInput-notchedOutline
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):not(:has(textarea[readonly])):not(.common_input_readonly) .MuiOutlinedInput-notchedOutline,
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):not(:has(textarea[readonly])):not(.common_input_readonly):hover .MuiOutlinedInput-notchedOutline
                 `]: {
                     border: BORDER_NEUTRAL
                 },

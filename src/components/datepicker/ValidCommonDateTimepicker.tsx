@@ -1,6 +1,7 @@
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { classMerge } from '@utils/css.util';
 import { DateTime } from 'luxon';
 import { useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
@@ -77,7 +78,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     }
 
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object' ? props.slotProps.textField : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
 
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
@@ -95,6 +96,10 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         ...(typeof props.slotProps?.openPickerButton === 'object' ? props.slotProps.openPickerButton : {})
                     },
                     textField: {
+                        className: classMerge(
+                            externalClassName,
+                            isNonInteractive && 'common_input_readonly'
+                        ),
                         disabled,
                         error: errorProp ?? !!fieldState.error,
                         fullWidth,
@@ -112,8 +117,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         },
                         sx: [
                             ...(disabled ? [{
-                                pointerEvents: 'none' as const,
-                                opacity: 0.7
+                                pointerEvents: 'none' as const
                             }] : []),
                             ...(readOnly ? [{
                                 '& .MuiInputBase-root': {
@@ -123,8 +127,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                     cursor: 'default'
                                 },
                                 '& .MuiInputAdornment-root': {
-                                    pointerEvents: 'none' as const,
-                                    opacity: 0.5
+                                    pointerEvents: 'none' as const
                                 }
                             }] : []),
                             ...(externalTextFieldProps?.sx

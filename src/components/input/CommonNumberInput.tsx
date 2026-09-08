@@ -57,7 +57,7 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
     }
 
     const handleStep = useCallback(function(direction: 'up' | 'down') {
-        if (!onChange || step <= 0) return;
+        if (!onChange || step <= 0 || props.disabled || props.readOnly) return;
 
         const adjustment = direction === 'up'
             ? step

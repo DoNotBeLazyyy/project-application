@@ -94,6 +94,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     size = 'large',
     variant = 'outlined',
     maxLength,
+    readOnly,
     resize = 'none',
     slotProps,
     sx,
@@ -127,6 +128,8 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
         : helperText;
 
     const inputSlotProps = slotProps?.input as InputBaseProps | undefined;
+    const isReadOnly = Boolean(readOnly) || Boolean(inputSlotProps?.readOnly);
+    const isNonInteractive = Boolean(props.disabled || isReadOnly);
 
     const resizeMeta = useMemo<ResizeMetadata>(() => {
         switch (resize) {
@@ -184,7 +187,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
      * @returns
      */
     function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
-        if (!hasResize || !containerRef.current) {
+        if (!hasResize || isNonInteractive || !containerRef.current) {
             return;
         }
 
@@ -291,7 +294,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
 
     const isClearVisible = hasClearButton
         && !props.disabled
-        && !inputSlotProps?.readOnly
+        && !isReadOnly
         && charCount > 0;
 
     const resolvedMinWidth = `min(${resolvedMinSize.minWidth}px, 100%)`;
@@ -359,7 +362,10 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                     }}
                 >
                     <TextField
-                        className={className}
+                        className={classMerge(
+                            className,
+                            isNonInteractive && 'common_input_readonly'
+                        )}
                         error={error}
                         fullWidth={fullWidth}
                         helperText={inlineHelperText}
@@ -371,8 +377,10 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                             ...slotProps,
                             input: {
                                 ...inputSlotProps,
+                                readOnly: isReadOnly,
                                 className: classMerge(
-                                    'common_textarea_input'
+                                    'common_textarea_input',
+                                    isNonInteractive && 'common_input_readonly'
                                 ),
                                 endAdornment: (
                                     <>
@@ -406,7 +414,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                         {...props}
                     />
                 </div>
-                {(hasTextCount || hasResize) && (
+                {(hasTextCount || (hasResize && !isNonInteractive)) && (
                     <div
                         style={{
                             alignItems: 'flex-end',
@@ -431,7 +439,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                                     : null}
                             </div>
                         )}
-                        {hasResize && (
+                        {hasResize && !isNonInteractive && (
                             <div
                                 style={{
                                     color: 'var(--mui-tokens-color-neutral-500)',

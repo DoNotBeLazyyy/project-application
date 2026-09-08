@@ -20,9 +20,12 @@ export const autocompleteOverrides: ComponentTheme = {
                         minHeight: INPUT_HEIGHT_SMALL,
                         padding: 'var(--mui-tokens-spacing-1) var(--mui-tokens-spacing-2)'
                     },
-                    '&.Mui-disabled': {
+                    '&.Mui-disabled, &.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &.common_input_readonly': {
                         backgroundColor: SURFACE_DISABLED
                     }
+                },
+                '&.Mui-disabled .MuiAutocomplete-popupIndicator, &.Mui-readOnly .MuiAutocomplete-popupIndicator, & .Mui-disabled .MuiAutocomplete-popupIndicator, & .MuiInputBase-readOnly .MuiAutocomplete-popupIndicator': {
+                    color: 'var(--mui-tokens-color-neutral-400) !important'
                 },
                 '& .MuiAutocomplete-input': {
                     minWidth: '3.75rem',

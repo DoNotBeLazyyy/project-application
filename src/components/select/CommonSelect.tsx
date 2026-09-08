@@ -2,6 +2,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { StringNum } from '@type/common.type';
+import { classMerge } from '@utils/css.util';
 import { forwardRef } from 'react';
 
 export type SharedStringSizeProps = 'pagination' | 'xsmall' | 'small' | 'medium' | 'large';
@@ -16,6 +17,9 @@ export interface CommonSelectOption {
 export interface CommonSelectProps extends Omit<TextFieldProps, 'select' | 'children'> {
     // Select options
     options: CommonSelectOption[];
+
+    // Whether the select field is read-only
+    readOnly?: boolean;
 }
 
 /**
@@ -42,24 +46,39 @@ export interface CommonSelectProps extends Omit<TextFieldProps, 'select' | 'chil
  * />
  */
 const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
+    className,
+    disabled,
     options,
+    readOnly,
     size = 'large',
     slotProps,
     variant = 'outlined',
     ...props
 }, ref) => {
+    const isNonInteractive = Boolean(disabled || readOnly);
+
     return (
         <TextField
             ref={ref}
             select
+            className={classMerge(
+                className,
+                isNonInteractive && 'common_input_readonly'
+            )}
+            disabled={disabled}
             size={size}
             variant={variant}
             {...props}
             label=""
             slotProps={{
                 ...slotProps,
+                input: {
+                    ...slotProps?.input,
+                    readOnly
+                },
                 select: {
                     ...slotProps?.select,
+                    readOnly,
                     IconComponent: (iconProps) => (
                         <CaretDownIcon
                             {...iconProps}
