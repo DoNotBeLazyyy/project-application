@@ -451,6 +451,20 @@ export default function CommonTableCard<T extends FieldValues>({
                     // (square full-width ends, no side bleed); the larger blur/offset make
                     // it soft. It falls directly onto the content — no white gap between.
                     boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: { xs: 'stretch', md: 'center' },
+                    justifyContent: 'space-between',
+                    gap: { xs: 1.5, md: 2 },
+                    '& .MuiCardHeader-content': {
+                        width: { xs: '100%', md: 'auto' },
+                        minWidth: 0
+                    },
+                    '& .MuiCardHeader-action': {
+                        width: { xs: '100%', md: 'auto' },
+                        alignSelf: { xs: 'stretch', md: 'center' },
+                        margin: 0
+                    },
                     ...(cardHeaderProps?.sx as object)
                 },
                 action: (
