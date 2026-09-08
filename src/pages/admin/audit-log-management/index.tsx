@@ -75,8 +75,8 @@ export default function AuditLogManagement() {
         sort: SortStringDto[]
     ) {
         const result = await listGradeAuditLogs(page, size, search, sort, activeFilters);
-        if (result.data?.items) {
-            result.data.items.forEach(function(item) {
+        if (result.data?.content) {
+            result.data.content.forEach(function(item: AuditLogRow) {
                 rowsMapRef.current.set(item.id, item);
             });
         }
