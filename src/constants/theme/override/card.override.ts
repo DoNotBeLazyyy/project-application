@@ -70,32 +70,24 @@ export const cardOverrides: ComponentTheme = {
     },
     MuiCardHeader: {
         styleOverrides: {
-            root: ({ theme }) => ({
-                alignItems: 'center',
+            root: {
+                alignItems: 'flex-start',
                 display: 'flex',
+                flexDirection: 'row',
                 gap: 'var(--mui-tokens-spacing-3)',
                 justifyContent: 'space-between',
-                padding: 0,
-                [theme.breakpoints.down('sm')]: {
-                    alignItems: 'stretch',
-                    flexDirection: 'column',
-                    gap: 'var(--mui-tokens-spacing-3)'
-                }
-            }),
+                padding: 0
+            },
             content: {
                 flex: '1 1 auto',
                 minWidth: 0
             },
-            action: ({ theme }) => ({
-                alignSelf: 'center',
+            action: {
+                alignSelf: 'flex-start',
                 flexShrink: 0,
                 margin: 0,
-                minWidth: 0,
-                [theme.breakpoints.down('sm')]: {
-                    alignSelf: 'stretch',
-                    width: '100%'
-                }
-            }),
+                minWidth: 0
+            },
             title: ({ theme }) => ({
                 color: 'var(--mui-tokens-color-neutral-900)',
                 ...theme.typography.h6

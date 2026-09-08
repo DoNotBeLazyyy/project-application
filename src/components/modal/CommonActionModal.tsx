@@ -39,7 +39,16 @@ export default function CommonActionModal({
                         borderRadius: 'var(--mui-tokens-radius-lg)',
                         overflow: 'hidden',
                         '& > .MuiCardHeader-root': {
-                            flexShrink: 0
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            flexShrink: 0,
+                            '& .MuiCardHeader-action': {
+                                alignSelf: 'flex-start',
+                                flexShrink: 0,
+                                margin: 0
+                            }
                         }
                     },
                     ...normalizeSx(cardProps?.sx)
