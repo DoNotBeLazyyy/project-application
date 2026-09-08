@@ -26,7 +26,7 @@ export default function UnauthorizedPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full items-center justify-center w-full">
+        <div className="flex flex-col gap-4 h-full items-center justify-center p-4 text-center w-full">
             <h3 className="font-bold text-(--mui-palette-text-primary) text-5xl">
                 403
             </h3>

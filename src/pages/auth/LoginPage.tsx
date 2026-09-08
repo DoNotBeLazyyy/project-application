@@ -77,7 +77,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex h-full items-center justify-center w-full">
+        <div className="flex h-full items-center justify-center p-4 sm:p-6 w-full">
             <CommonCard
                 cardHeaderProps={{ title: 'AU-JAS LMS' }}
                 className="max-w-md w-full"
