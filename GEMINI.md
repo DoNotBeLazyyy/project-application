@@ -268,6 +268,8 @@ When asked to propose a UI/UX design, redesign, or evaluate an existing screen (
    - **Step 2: Structured Concepts (Concept A vs. Concept B)**: Present 1–2 focused alternatives with standardized metadata (`BEST AT`, `COSTS`, `ORDER`, `VERDICT` with a clear recommendation).
    - **Step 3: High-Fidelity AU-JAS LMS Visual Preview**: Use authentic AU brand tokens, standard card headers, action slots, and reactive state indicators.
 
+---
 
+## 14. Autonomous Git Operations & Direct Push Authorization
 
-
+The AI assistant is authorized to commit verified changes and push directly to the remote repository (`origin/master`) without requiring manual user intervention or intermediate permission prompts when running in autonomous / skip-permissions mode. Always ensure builds and typechecks pass (`npm run build-dev`) prior to pushing code updates.
