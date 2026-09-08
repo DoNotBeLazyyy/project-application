@@ -1,5 +1,4 @@
 import CommonCard, { CommonCardProps } from '@components/card/CommonCard';
-import useBreakpoint from '@hooks/useBreakpoint';
 import Dialog, { DialogOwnerState, DialogProps } from '@mui/material/Dialog';
 import { PaperProps } from '@mui/material/Paper';
 import { DialogCloseProps } from '@type/common/theme.type';
@@ -44,7 +43,6 @@ export default function CommonModal({
     onClose,
     ...props
 }: CommonModalProps) {
-    const { isMobile } = useBreakpoint();
     const originalPaperSlot = slotProps?.paper; // Capture original slot for evaluation
     const isPaperSlotFunction = typeof originalPaperSlot === 'function';
     const resolvedPaperSlot = isPaperSlotFunction
@@ -102,9 +100,7 @@ export default function CommonModal({
     }
 
     return <Dialog
-        fullScreen={props.fullScreen !== undefined
-            ? props.fullScreen
-            : isMobile}
+        fullScreen={props.fullScreen ?? false}
         {...props}
         slotProps={{
             ...slotProps,

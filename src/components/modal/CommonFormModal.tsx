@@ -82,12 +82,13 @@ export default function CommonFormModal({
             sx={[
                 {
                     '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                        borderRadius: 'var(--mui-tokens-radius-lg)',
                         height: 'auto',
-                        margin: 'auto',
-                        maxHeight: { sm: '70%' },
-                        maxWidth: { sm: '60%' },
+                        margin: { xs: '1rem', sm: 'auto' },
+                        maxHeight: { xs: 'calc(100% - 2rem)', sm: '70%' },
+                        maxWidth: { xs: 'calc(100% - 2rem)', sm: '60%' },
                         overflow: 'hidden',
-                        width: { sm: '60%' }
+                        width: { xs: 'calc(100% - 2rem)', sm: '60%' }
                     }
                 },
                 ...normalizeSx(sx)

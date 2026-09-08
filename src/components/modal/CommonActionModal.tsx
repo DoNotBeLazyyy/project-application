@@ -31,18 +31,12 @@ export default function CommonActionModal({
                         flexDirection: 'column',
                         // Halve the header / body / footer rhythm (medium card gap is 0.75rem).
                         gap: '0.375rem',
-                        height: {
-                            xs: '100dvh',
-                            sm: 'auto'
-                        },
+                        height: 'auto',
                         maxHeight: {
-                            xs: '100dvh',
+                            xs: 'calc(100dvh - 2rem)',
                             sm: 'calc(100dvh - 4rem)'
                         },
-                        borderRadius: {
-                            xs: 0,
-                            sm: 'var(--mui-tokens-radius-lg)'
-                        },
+                        borderRadius: 'var(--mui-tokens-radius-lg)',
                         overflow: 'hidden',
                         '& > .MuiCardHeader-root': {
                             flexShrink: 0
