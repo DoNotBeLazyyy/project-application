@@ -71,6 +71,7 @@ interface BaseFieldConfig<T extends FieldValues> {
     label?: string;
     rules?: Omit<RegisterOptions<T, Path<T>>, 'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'>;
     disabled?: boolean;
+    readOnly?: boolean;
     options?: CommonSelectOption[];
     placeholder?: string;
     gridCols?: number;
@@ -125,6 +126,13 @@ export function FormField<T extends FieldValues>({
                 name={field.name}
                 placeholder={field.placeholder}
                 rules={field.rules}
+                slotProps={{
+                    ...field.fieldProps?.slotProps,
+                    input: {
+                        readOnly: field.readOnly,
+                        ...field.fieldProps?.slotProps?.input
+                    }
+                }}
             />
         );
     }
@@ -138,6 +146,7 @@ export function FormField<T extends FieldValues>({
                 fullWidth
                 hasHelper={hasHelper}
                 name={field.name}
+                readOnly={field.readOnly}
                 rules={field.rules}
             />
         );

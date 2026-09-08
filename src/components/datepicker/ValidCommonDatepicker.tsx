@@ -23,6 +23,8 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     hasHelper = true,
     helperText: helperTextProp,
     fullWidth = true,
+    disabled,
+    readOnly,
     ...props
 }: ValidCommonDatePickerProps<T>) {
     const {
@@ -35,7 +37,12 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         ? DateTime.fromISO(value)
         : null;
 
+    const isNonInteractive = Boolean(disabled || readOnly);
+
     function handleChange(date: DateTime | null) {
+        if (isNonInteractive) {
+            return;
+        }
         onChange(
             date
                 ? date.toISODate()
@@ -53,32 +60,76 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     }
 
     function handleOpen() {
+        if (isNonInteractive) {
+            return;
+        }
         setIsOpen(true);
     }
 
     function handleFocus() {
+        if (isNonInteractive) {
+            return;
+        }
         if (!isOpen && !isClosing.current) {
             setIsOpen(true);
         }
     }
 
+    const externalTextFieldProps = typeof props.slotProps?.textField === 'object' ? props.slotProps.textField : undefined;
+    const { onFocus: externalOnFocus, variant: _variant, ...restTextFieldProps } = externalTextFieldProps ?? {};
+
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DatePicker
                 {...props}
+                disabled={disabled}
                 inputRef={ref}
-                open={isOpen}
+                open={isNonInteractive ? false : isOpen}
+                readOnly={readOnly}
                 slotProps={{
                     ...props.slotProps,
+                    openPickerButton: {
+                        disabled: isNonInteractive,
+                        ...(typeof props.slotProps?.openPickerButton === 'object' ? props.slotProps.openPickerButton : {})
+                    },
                     textField: {
-                        ...props.slotProps?.textField,
+                        disabled,
                         error: errorProp ?? !!fieldState.error,
+                        fullWidth,
                         helperText: hasHelper
                             ? fieldState.error?.message ?? helperTextProp
                             : undefined,
-                        fullWidth,
-                        variant: 'outlined',
-                        onFocus: handleFocus
+                        variant: 'outlined' as const,
+                        ...restTextFieldProps,
+                        onFocus: () => {
+                            if (isNonInteractive) {
+                                return;
+                            }
+                            handleFocus();
+                        },
+                        sx: [
+                            ...(disabled ? [{
+                                pointerEvents: 'none' as const,
+                                opacity: 0.7
+                            }] : []),
+                            ...(readOnly ? [{
+                                '& .MuiInputBase-root': {
+                                    cursor: 'default'
+                                },
+                                '& .MuiInputBase-input': {
+                                    cursor: 'default'
+                                },
+                                '& .MuiInputAdornment-root': {
+                                    pointerEvents: 'none' as const,
+                                    opacity: 0.5
+                                }
+                            }] : []),
+                            ...(externalTextFieldProps?.sx
+                                ? (Array.isArray(externalTextFieldProps.sx)
+                                    ? externalTextFieldProps.sx
+                                    : [externalTextFieldProps.sx])
+                                : [])
+                        ]
                     }
                 }}
                 value={resolvedValue}
