@@ -14,6 +14,7 @@ export async function updateAcademicThresholds(
             id: t.id,
             min_gwa: t.min_gwa,
             max_gwa: t.max_gwa,
+            min_subject_grade: t.min_subject_grade,
             requires_no_failing: t.requires_no_failing,
             scholarship_discount_pct: t.scholarship_discount_pct,
             is_active: t.is_active

@@ -1,408 +1,432 @@
-import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import CommonTableCard from '@components/table-card/CommonTableCard';
-import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import AcademicThresholdFilterForm from '@pages/admin/academic-threshold-management/AcademicThresholdFilterForm';
-import AcademicThresholdForm from '@pages/admin/academic-threshold-management/AcademicThresholdForm';
-import AcademicThresholdGridCard from '@pages/admin/academic-threshold-management/AcademicThresholdGridCard';
-import { useAcademicThresholdTableConfig } from '@pages/admin/academic-threshold-management/useAcademicThresholdTableConfig';
+import CommonCard from '@components/card/CommonCard';
+import CommonInput from '@components/input/CommonInput';
+import TableCardActionMenu from '@components/table-card/TableCardActionMenu';
+import { InputAdornment, SxProps, Theme } from '@mui/material';
+import AcademicThresholdRow, {
+    ACADEMIC_THRESHOLD_GRID_CLASS,
+    AcademicThresholdDraft
+} from '@pages/admin/academic-threshold-management/AcademicThresholdRow';
+import {
+    ArrowCounterClockwiseIcon,
+    ArrowsClockwiseIcon,
+    FloppyDiskIcon,
+    MagnifyingGlassIcon,
+    WarningCircleIcon
+} from '@phosphor-icons/react';
 import { getAcademicThresholds, updateAcademicThresholds } from '@services/academic-threshold.service';
 import { useToastStore } from '@stores/toast.store';
-import {
-    AcademicThreshold,
-    AcademicThresholdFilterValues,
-    AcademicThresholdFormValues
-} from '@type/academic-threshold.type';
-import { CommonListResDto, SortStringDto } from '@type/http.type';
-import { ServiceResult } from '@type/service.type';
-import { formErrors } from '@utils/form.util';
-import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { AcademicThreshold, AcademicThresholdCategory } from '@type/academic-threshold.type';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const FILTER_FORM_ID = 'filter-academic-threshold-form';
-const UPDATE_FORM_ID = 'update-academic-threshold-form';
+const COLUMN_HEAD_CLASS = 'font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.1em] uppercase';
 
-const SORT_COLUMNS: SortColumn[] = [
-    { field: 'category', label: 'Category' },
-    { field: 'label', label: 'Threshold' },
-    { field: 'max_gwa', label: 'Maximum GWA' }
-];
+const INFO_CONTENT =
+    'Academic thresholds define the cutoff criteria for Latin Honors, Academic Scholarships, and Deans List / Academic Standing. Configure the GWA range, minimum individual subject grade requirements (subject floor), and discount percentages. Students who meet the GWA cutoff but have any individual subject grade worse than the subject floor will not receive the honor or scholarship.';
 
-const DEFAULT_FILTER_VALUES: AcademicThresholdFilterValues = {
-    category: 'All',
-    is_active: 'All'
+const HEADER_SX: SxProps<Theme> = {
+    borderBottom: '1px solid var(--mui-palette-grey-100)',
+    boxShadow: '0 10px 10px -10px rgb(15 23 42 / 0.18)',
+    gap: 'var(--mui-tokens-spacing-5)',
+    pb: 2.5,
+    position: 'relative',
+    zIndex: 1,
+    '&& .MuiCardHeader-action': {
+        display: 'flex',
+        flexBasis: 'auto',
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+        marginLeft: 'auto'
+    }
 };
 
-const DEFAULT_FORM_VALUES: AcademicThresholdFormValues = {
-    is_active: true,
-    max_gwa: '',
-    min_gwa: '',
-    requires_no_failing: false,
-    scholarship_discount_pct: ''
-};
+const CATEGORIES: ('All' | AcademicThresholdCategory)[] = ['All', 'Honor', 'Scholarship', 'Standing'];
 
-/** The RPC takes every numeric field as a string, with an empty one standing for NULL. */
-function toNumericPayload(value: string | number | null | undefined): string {
-    if (value === null || value === undefined || value === '') {
-        return '';
-    }
-
-    return String(value);
-}
-
-/**
- * The thresholds RPC returns the whole seeded ladder in one call - there are
- * only a dozen or so rows - so search, filter, sort and paging are applied
- * client side, the same way the special grade rules list does it.
- */
-function buildThresholdListDto(
-    rows: AcademicThreshold[],
-    page: number,
-    size: number,
-    search?: string,
-    filters?: AcademicThresholdFilterValues | null,
-    sortCol?: string,
-    sortDir?: string
-): CommonListResDto<AcademicThreshold> {
-    let filtered = [...rows];
-
-    if (search && search.trim()) {
-        const query = search.toLowerCase()
-            .trim();
-        filtered = filtered.filter((row) =>
-            row.code.toLowerCase()
-                .includes(query)
-            || row.label.toLowerCase()
-                .includes(query)
-            || row.category.toLowerCase()
-                .includes(query));
-    }
-
-    if (filters) {
-        if (filters.category && filters.category !== 'All') {
-            filtered = filtered.filter((row) => row.category === filters.category);
-        }
-        if (filters.is_active && filters.is_active !== 'All') {
-            const activeVal = filters.is_active === 'Active';
-            filtered = filtered.filter((row) => row.is_active === activeVal);
-        }
-    }
-
-    if (sortCol) {
-        filtered.sort((a, b) => {
-            let aVal: string | number = (a as unknown as Record<string, string | number>)[sortCol] ?? '';
-            let bVal: string | number = (b as unknown as Record<string, string | number>)[sortCol] ?? '';
-            if (typeof aVal === 'string') {
-                aVal = aVal.toLowerCase();
-            }
-            if (typeof bVal === 'string') {
-                bVal = bVal.toLowerCase();
-            }
-            if (aVal < bVal) {
-                return sortDir === 'DESC'
-                    ? 1
-                    : -1;
-            }
-            if (aVal > bVal) {
-                return sortDir === 'DESC'
-                    ? -1
-                    : 1;
-            }
-            return 0;
-        });
-    }
-
-    const totalElements = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalElements / size));
-    const pageNumber = Math.min(Math.max(page, 1), totalPages) - 1;
-    const offset = pageNumber * size;
-    const content = filtered.slice(offset, offset + size);
-
+function toDraft(item: AcademicThreshold): AcademicThresholdDraft {
     return {
-        content,
-        empty: totalElements === 0,
-        first: pageNumber === 0,
-        last: pageNumber === totalPages - 1,
-        number: pageNumber,
-        numberOfElements: content.length,
-        pageable: {
-            offset,
-            paged: true,
-            pageNumber,
-            pageSize: size,
-            sort: { empty: true, sorted: false, unsorted: true },
-            unpaged: false
-        },
-        size,
-        sort: { empty: true, sorted: false, unsorted: true },
-        totalElements,
-        totalPages
+        category: item.category,
+        code: item.code,
+        id: item.id,
+        is_active: item.is_active ?? true,
+        label: item.label,
+        max_gwa: item.max_gwa !== null && item.max_gwa !== undefined
+            ? String(item.max_gwa)
+            : '',
+        min_gwa: item.min_gwa !== null && item.min_gwa !== undefined
+            ? String(item.min_gwa)
+            : '',
+        min_subject_grade: item.min_subject_grade !== null && item.min_subject_grade !== undefined
+            ? String(item.min_subject_grade)
+            : '',
+        requires_no_failing: item.requires_no_failing ?? false,
+        scholarship_discount_pct: item.scholarship_discount_pct !== null && item.scholarship_discount_pct !== undefined
+            ? String(item.scholarship_discount_pct)
+            : '',
+        sort_order: item.sort_order ?? 0
     };
 }
 
-export default function AcademicThresholdManagement() {
-    const [thresholds, setThresholds] = useState<AcademicThreshold[]>([]);
-    const [activeFilters, setActiveFilters] = useState<AcademicThresholdFilterValues | null>(null);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [isViewOpen, setIsViewOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-
-    const filterMethods = useForm<AcademicThresholdFilterValues>({
-        defaultValues: DEFAULT_FILTER_VALUES
-    });
-
-    const updateMethods = useForm<AcademicThresholdFormValues>({
-        defaultValues: DEFAULT_FORM_VALUES
-    });
-
-    const activeThreshold = thresholds.find((t) => t.id === selectedId);
-
-    function refreshList() {
-        setActiveFilters(function(prev) {
-            return { ...DEFAULT_FILTER_VALUES, ...prev };
-        });
+function checkIsDirty(drafts: AcademicThresholdDraft[], initials: AcademicThreshold[]): boolean {
+    if (drafts.length !== initials.length) {
+        return true;
     }
 
-    function loadIntoForm(id: string) {
-        const threshold = thresholds.find((t) => t.id === id);
+    for (const d of drafts) {
+        const orig = initials.find((i) => i.id === d.id);
+        if (!orig) {
+            return true;
+        }
 
-        if (threshold) {
-            updateMethods.reset({
-                is_active: threshold.is_active,
-                max_gwa: String(threshold.max_gwa),
-                min_gwa: threshold.min_gwa === null
-                    ? ''
-                    : String(threshold.min_gwa),
-                requires_no_failing: threshold.requires_no_failing,
-                scholarship_discount_pct: threshold.scholarship_discount_pct === null
-                    ? ''
-                    : String(threshold.scholarship_discount_pct)
-            });
+        const origMinGwa = orig.min_gwa !== null && orig.min_gwa !== undefined
+            ? String(orig.min_gwa)
+            : '';
+        const origMaxGwa = orig.max_gwa !== null && orig.max_gwa !== undefined
+            ? String(orig.max_gwa)
+            : '';
+        const origMinSubj = orig.min_subject_grade !== null && orig.min_subject_grade !== undefined
+            ? String(orig.min_subject_grade)
+            : '';
+        const origDiscount = orig.scholarship_discount_pct !== null && orig.scholarship_discount_pct !== undefined
+            ? String(orig.scholarship_discount_pct)
+            : '';
+        const origNoFailing = orig.requires_no_failing ?? false;
+        const origActive = orig.is_active ?? true;
+
+        if (d.min_gwa !== origMinGwa) {
+            return true;
+        }
+        if (d.max_gwa !== origMaxGwa) {
+            return true;
+        }
+        if (d.min_subject_grade !== origMinSubj) {
+            return true;
+        }
+        if (d.scholarship_discount_pct !== origDiscount) {
+            return true;
+        }
+        if (d.requires_no_failing !== origNoFailing) {
+            return true;
+        }
+        if (d.is_active !== origActive) {
+            return true;
         }
     }
 
-    function handleOpenView(id: string) {
-        setSelectedId(id);
-        loadIntoForm(id);
-        setIsViewOpen(true);
+    return false;
+}
+
+function validateDrafts(drafts: AcademicThresholdDraft[]): string[] {
+    const blockers: string[] = [];
+
+    for (const draft of drafts) {
+        const name = draft.label || draft.code;
+
+        if (!draft.max_gwa.trim()) {
+            blockers.push(`${name}: Maximum GWA is required.`);
+        } else {
+            const maxVal = Number(draft.max_gwa);
+            if (Number.isNaN(maxVal) || maxVal < 1.0 || maxVal > 5.0) {
+                blockers.push(`${name}: Maximum GWA must be between 1.00 and 5.00.`);
+            }
+        }
+
+        if (draft.min_gwa.trim()) {
+            const minVal = Number(draft.min_gwa);
+            if (Number.isNaN(minVal) || minVal < 1.0 || minVal > 5.0) {
+                blockers.push(`${name}: Minimum GWA must be between 1.00 and 5.00.`);
+            } else if (draft.max_gwa.trim()) {
+                const maxVal = Number(draft.max_gwa);
+                if (!Number.isNaN(maxVal) && minVal > maxVal) {
+                    blockers.push(`${name}: Minimum GWA (${minVal}) cannot be greater than Maximum GWA (${maxVal}).`);
+                }
+            }
+        }
+
+        if (draft.category !== 'Standing' && draft.min_subject_grade.trim()) {
+            const floorVal = Number(draft.min_subject_grade);
+            if (Number.isNaN(floorVal) || floorVal < 1.0 || floorVal > 5.0) {
+                blockers.push(`${name}: Minimum subject grade must be between 1.00 and 5.00.`);
+            }
+        }
+
+        if (draft.category === 'Scholarship' && draft.scholarship_discount_pct.trim()) {
+            const discVal = Number(draft.scholarship_discount_pct);
+            if (Number.isNaN(discVal) || discVal < 0 || discVal > 100) {
+                blockers.push(`${name}: Discount percentage must be between 0% and 100%.`);
+            }
+        }
     }
 
-    function handleCloseView() {
-        setIsViewOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(DEFAULT_FORM_VALUES);
+    return blockers;
+}
+
+export default function AcademicThresholdManagement() {
+    const [initialThresholds, setInitialThresholds] = useState<AcademicThreshold[]>([]);
+    const [drafts, setDrafts] = useState<AcademicThresholdDraft[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [selectedCategory, setSelectedCategory] = useState<'All' | AcademicThresholdCategory>('All');
+
+    const fetchThresholds = useCallback(async function() {
+        setIsLoading(true);
+        const result = await getAcademicThresholds();
+        if (result.data) {
+            setInitialThresholds(result.data);
+            setDrafts(result.data.map(toDraft));
+        }
+        setIsLoading(false);
+    }, []);
+
+    useEffect(() => {
+        fetchThresholds();
+    }, [fetchThresholds]);
+
+    const isDirty = useMemo(() => {
+        return checkIsDirty(drafts, initialThresholds);
+    }, [drafts, initialThresholds]);
+
+    const blockers = useMemo(() => {
+        return validateDrafts(drafts);
+    }, [drafts]);
+
+    const canSave = isDirty && blockers.length === 0 && !isSaving && !isLoading;
+
+    function handleRowChange(id: string, patch: Partial<AcademicThresholdDraft>) {
+        setDrafts((prev) =>
+            prev.map((item) =>
+                item.id === id
+                    ? { ...item, ...patch }
+                    : item));
     }
 
-    function handleOpenUpdate(id: string) {
-        setSelectedId(id);
-        loadIntoForm(id);
-        setIsUpdateOpen(true);
+    function handleReset() {
+        setDrafts(initialThresholds.map(toDraft));
     }
 
-    function handleCloseUpdate() {
-        setIsUpdateOpen(false);
-        setSelectedId(null);
-        updateMethods.reset(DEFAULT_FORM_VALUES);
-    }
-
-    function handleSwitchToEdit(id: string) {
-        handleCloseView();
-        handleOpenUpdate(id);
-    }
-
-    async function handleUpdateSubmit(values: AcademicThresholdFormValues) {
-        const target = thresholds.find((t) => t.id === selectedId);
-
-        if (!target) {
+    async function handleSave() {
+        if (!canSave) {
             return;
         }
 
-        // Fields a category does not expose are carried over untouched rather
-        // than submitted blank - the RPC overwrites every column it is given.
-        const result = await updateAcademicThresholds([{
-            id: target.id,
-            is_active: values.is_active,
-            max_gwa: toNumericPayload(values.max_gwa),
-            min_gwa: toNumericPayload(values.min_gwa),
-            requires_no_failing: target.category === 'Standing'
-                ? target.requires_no_failing
-                : values.requires_no_failing,
-            scholarship_discount_pct: target.category === 'Scholarship'
-                ? toNumericPayload(values.scholarship_discount_pct)
-                : toNumericPayload(target.scholarship_discount_pct)
-        }]);
+        setIsSaving(true);
+        const payload = drafts.map((d) => ({
+            id: d.id,
+            is_active: d.is_active,
+            max_gwa: d.max_gwa.trim(),
+            min_gwa: d.min_gwa.trim() === ''
+                ? ''
+                : d.min_gwa.trim(),
+            min_subject_grade: d.category === 'Standing'
+                ? ''
+                : (d.min_subject_grade.trim() === ''
+                    ? ''
+                    : d.min_subject_grade.trim()),
+            requires_no_failing: d.category === 'Standing'
+                ? false
+                : d.requires_no_failing,
+            scholarship_discount_pct: d.category === 'Scholarship'
+                ? (d.scholarship_discount_pct.trim() === ''
+                    ? ''
+                    : d.scholarship_discount_pct.trim())
+                : ''
+        }));
+
+        const result = await updateAcademicThresholds(payload);
+        setIsSaving(false);
 
         if (!result.error) {
             useToastStore.getState()
-                .showToast('Academic threshold updated successfully.', 'success');
-            handleCloseUpdate();
-            refreshList();
+                .showToast('Academic thresholds updated successfully.', 'success');
+            await fetchThresholds();
         }
     }
 
-    function handleFilterApply(values: AcademicThresholdFilterValues) {
-        setActiveFilters(values);
-        setIsFilterOpen(false);
-    }
+    const filteredDrafts = useMemo(() => {
+        let list = [...drafts];
 
-    function handleFilterReset() {
-        filterMethods.reset(DEFAULT_FILTER_VALUES);
-        setActiveFilters(null);
-        setIsFilterOpen(false);
-    }
-
-    async function fetchThresholds(
-        page: number,
-        size: number,
-        search: string,
-        sort: SortStringDto[]
-    ): Promise<ServiceResult<CommonListResDto<AcademicThreshold>>> {
-        const result = await getAcademicThresholds();
-
-        if (!result.data) {
-            return { data: null, error: result.error };
+        if (selectedCategory !== 'All') {
+            list = list.filter((item) => item.category === selectedCategory);
         }
 
-        setThresholds(result.data);
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            list = list.filter((item) =>
+                item.label.toLowerCase().includes(query)
+                || item.code.toLowerCase().includes(query)
+                || item.category.toLowerCase().includes(query));
+        }
 
-        const activeSort = sort.length > 0
-            ? sort[0]
-            : undefined;
+        return list;
+    }, [drafts, selectedCategory, searchQuery]);
 
-        const dto = buildThresholdListDto(
-            result.data,
-            page,
-            size,
-            search,
-            activeFilters,
-            activeSort?.sortKey,
-            activeSort
-                ? (activeSort.isAsc
-                    ? 'ASC'
-                    : 'DESC')
-                : undefined
-        );
-
-        return { data: dto, error: null };
-    }
-
-    const { columnDefs, tableActionConfig } = useAcademicThresholdTableConfig({
-        onEdit: handleOpenUpdate,
-        onView: handleOpenView
-    });
+    const subheader = isLoading
+        ? 'Loading...'
+        : `${drafts.length} threshold tier${drafts.length === 1
+            ? ''
+            : 's'}${isDirty
+            ? ' · unsaved changes'
+            : ''}`;
 
     return (
-        <CommonTableCard<AcademicThreshold>
+        <CommonCard
             cardHeaderProps={{
-                subheader: 'Configure the honor, scholarship, and standing cutoffs used across grade computation and learning analytics.',
+                action: (
+                    <div className="flex gap-(--mui-tokens-spacing-3) items-center justify-end w-full">
+                        <TableCardActionMenu
+                            extraOptions={[
+                                {
+                                    children: 'Reload',
+                                    disabled: isLoading || isSaving,
+                                    icon: <ArrowsClockwiseIcon size={20} weight="bold" />,
+                                    key: 'reload',
+                                    onClick: fetchThresholds
+                                },
+                                {
+                                    children: 'Cancel',
+                                    disabled: !isDirty || isSaving,
+                                    icon: <ArrowCounterClockwiseIcon size={20} weight="bold" />,
+                                    key: 'cancel',
+                                    onClick: handleReset
+                                },
+                                {
+                                    children: isSaving
+                                        ? 'Saving...'
+                                        : 'Save',
+                                    disabled: !canSave,
+                                    icon: <FloppyDiskIcon size={20} weight="bold" />,
+                                    key: 'save',
+                                    onClick: handleSave
+                                }
+                            ]}
+                            inlineActionLimit={0}
+                        />
+                    </div>
+                ),
+                className: '@container shrink-0',
+                subheader,
+                sx: HEADER_SX,
                 title: 'Academic Thresholds'
             }}
-            controls={{
-                tableInputProps: {
-                    searchHints: SEARCH_HINTS.academicThresholds
-                }
-            }}
-            dependencies={[activeFilters]}
-            filterModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        subheader: 'Filter thresholds by category and status.',
-                        title: 'Filter Academic Thresholds'
-                    }
-                },
-                confirmText: 'Apply Filters',
-                formContent: (
-                    <AcademicThresholdFilterForm
-                        control={filterMethods.control}
-                        id={FILTER_FORM_ID}
-                        onSubmit={filterMethods.handleSubmit(handleFilterApply)}
-                    />
-                ),
-                formId: FILTER_FORM_ID,
-                open: isFilterOpen,
-                onClose: function() {
-                    setIsFilterOpen(false);
-                },
-                onReset: handleFilterReset
-            }}
-            renderGridCard={function(item, isSelected, onToggleSelect) {
-                return (
-                    <AcademicThresholdGridCard
-                        isSelected={isSelected}
-                        row={item}
-                        onEdit={handleOpenUpdate}
-                        onToggleSelect={onToggleSelect}
-                        onView={handleOpenView}
-                    />
-                );
-            }}
-            sortColumns={SORT_COLUMNS}
-            tableActionConfig={tableActionConfig}
-            tableProps={{
-                hasCheckbox: false,
-                leadingColumnDefs: columnDefs
-            }}
-            uniqueIdKey="id"
-            updateModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        subheader: activeThreshold
-                            ? `Update the cutoff for ${activeThreshold.label}.`
-                            : 'Update the cutoff for this threshold.',
-                        title: 'Edit Academic Threshold'
-                    }
-                },
-                confirmText: 'Save Changes',
-                formContent: activeThreshold
-                    ? (
-                        <AcademicThresholdForm
-                            category={activeThreshold.category}
-                            control={updateMethods.control}
-                            id={UPDATE_FORM_ID}
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                (errs: FieldErrors<AcademicThresholdFormValues>) => formErrors(errs, updateMethods)
+            className="flex flex-1 flex-col h-full min-h-0 w-full"
+            infoContent={INFO_CONTENT}
+        >
+            {isLoading
+                ? (
+                    <div className="flex items-center justify-center py-16">
+                        <span className="text-(--mui-palette-text-secondary) text-sm">Loading academic thresholds...</span>
+                    </div>
+                )
+                : (
+                    <div className="flex flex-1 flex-col gap-4 min-h-0 p-4">
+                        {/* Filter toolbar: Search and Category Pills */}
+                        <div className="flex flex-wrap gap-3 items-center justify-between">
+                            <div className="flex flex-wrap gap-1.5 items-center">
+                                {CATEGORIES.map((cat) => {
+                                    const isSelected = selectedCategory === cat;
+                                    const count = cat === 'All'
+                                        ? drafts.length
+                                        : drafts.filter((d) => d.category === cat).length;
+
+                                    return (
+                                        <button
+                                            className={`cursor-pointer flex font-semibold gap-1.5 items-center px-3 py-1.5 rounded-(--mui-tokens-radius-full) text-xs transition-colors ${
+                                                isSelected
+                                                    ? 'bg-(--mui-tokens-color-brand-900) text-(--mui-tokens-color-common-white)'
+                                                    : 'bg-(--mui-palette-grey-100) hover:bg-(--mui-palette-grey-200) text-(--mui-palette-text-secondary)'
+                                            }`}
+                                            key={cat}
+                                            type="button"
+                                            onClick={function() {
+                                                setSelectedCategory(cat);
+                                            }}
+                                        >
+                                            <span>{cat}</span>
+                                            <span
+                                                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                                                    isSelected
+                                                        ? 'bg-white/20 text-white'
+                                                        : 'bg-black/5 text-(--mui-palette-text-secondary)'
+                                                }`}
+                                            >
+                                                {count}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="max-w-xs w-full">
+                                <CommonInput
+                                    hasClearButton
+                                    placeholder="Search by label or code..."
+                                    size="small"
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <MagnifyingGlassIcon size={16} />
+                                                </InputAdornment>
+                                            )
+                                        }
+                                    }}
+                                    value={searchQuery}
+                                    onChange={function(e) {
+                                        setSearchQuery(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Blocker alert box */}
+                        {isDirty && blockers.length > 0 && (
+                            <div className="bg-amber-50 border border-amber-200 flex flex-col gap-1 p-3 rounded-(--mui-tokens-radius-md) text-amber-900 text-xs">
+                                <div className="flex font-semibold gap-1.5 items-center">
+                                    <WarningCircleIcon size={16} weight="bold" />
+                                    <span>Please fix the following validation issues before saving:</span>
+                                </div>
+                                <ul className="flex flex-col gap-0.5 list-disc ml-5 mt-1 text-amber-800">
+                                    {blockers.map((b) => (
+                                        <li key={b}>{b}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Sticky row composer table */}
+                        <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-auto">
+                            {filteredDrafts.length > 0 && (
+                                <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} bg-(--mui-palette-background-paper) pb-2 sticky top-0 z-10`}>
+                                    <span className={COLUMN_HEAD_CLASS}>#</span>
+                                    <span className={COLUMN_HEAD_CLASS}>Threshold</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Max GWA</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min Subj Grade</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Discount %</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>No Failing</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Status</span>
+                                </div>
                             )}
-                        />
-                    )
-                    : null,
-                formId: UPDATE_FORM_ID,
-                isDirty: updateMethods.formState.isDirty,
-                open: isUpdateOpen,
-                onClose: handleCloseUpdate
-            }}
-            viewModalProps={{
-                cardProps: {
-                    cardHeaderProps: {
-                        subheader: activeThreshold
-                            ? `Viewing the cutoff for ${activeThreshold.label}.`
-                            : 'Viewing the cutoff for this threshold.',
-                        title: 'View Academic Threshold'
-                    }
-                },
-                confirmText: 'Edit',
-                formButtonsProps: {
-                    confirmProps: {
-                        onClick: function() {
-                            if (selectedId) {
-                                handleSwitchToEdit(selectedId);
-                            }
-                        }
-                    }
-                },
-                formContent: activeThreshold
-                    ? (
-                        <AcademicThresholdForm
-                            category={activeThreshold.category}
-                            control={updateMethods.control}
-                            disabled
-                        />
-                    )
-                    : null,
-                open: isViewOpen,
-                onClose: handleCloseView
-            }}
-            onFetch={fetchThresholds}
-        />
+
+                            {filteredDrafts.map((threshold, index) => (
+                                <AcademicThresholdRow
+                                    disabled={isSaving}
+                                    index={index}
+                                    key={threshold.id}
+                                    threshold={threshold}
+                                    onChange={function(patch) {
+                                        handleRowChange(threshold.id, patch);
+                                    }}
+                                />
+                            ))}
+
+                            {filteredDrafts.length === 0 && (
+                                <p className="py-12 text-(--mui-palette-text-secondary) text-center text-sm">
+                                    No academic thresholds match your filter or search query.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+        </CommonCard>
     );
 }

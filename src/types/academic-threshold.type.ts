@@ -7,6 +7,7 @@ export interface AcademicThreshold {
     label: string;
     min_gwa: number | null;
     max_gwa: number;
+    min_subject_grade: number | null;
     requires_no_failing: boolean;
     scholarship_discount_pct: number | null;
     sort_order: number;
@@ -17,16 +18,18 @@ export interface AcademicThresholdUpdate {
     id: string;
     min_gwa: string;
     max_gwa: string;
+    min_subject_grade: string;
     requires_no_failing: boolean;
     scholarship_discount_pct: string;
     is_active: boolean;
 }
 
-/** One row of the management list, edited through the update modal. */
+/** One row of the management list, edited through the update modal or in-place row editor. */
 export interface AcademicThresholdFormValues {
     is_active: boolean;
     max_gwa: string;
     min_gwa: string;
+    min_subject_grade: string;
     requires_no_failing: boolean;
     scholarship_discount_pct: string;
 }

@@ -57,6 +57,13 @@ export default function AcademicThresholdGridCard({
             value: formatGwaBand(row.min_gwa, row.max_gwa)
         },
         {
+            icon: <SealCheckIcon size={FACT_ICON_SIZE} weight="fill" />,
+            label: 'Min Subj',
+            value: isStanding || row.min_subject_grade === null
+                ? 'None'
+                : `\u2264 ${Number(row.min_subject_grade).toFixed(2)}`
+        },
+        {
             icon: row.requires_no_failing
                 ? <SealCheckIcon size={FACT_ICON_SIZE} weight="fill" />
                 : <MinusCircleIcon size={FACT_ICON_SIZE} weight="fill" />,

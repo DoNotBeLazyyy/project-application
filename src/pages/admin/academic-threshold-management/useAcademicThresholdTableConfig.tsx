@@ -49,6 +49,28 @@ export function useAcademicThresholdTableConfig({
             },
             {
                 cellRenderer: (params: { data: AcademicThreshold }) => (
+                    <div className="flex font-medium h-full items-center text-(--mui-palette-text-primary) text-sm">
+                        {params.data.category === 'Standing' || params.data.min_subject_grade === null
+                            ? (
+                                <span className="text-(--mui-palette-text-disabled) text-xs">
+                                    None
+                                </span>
+                            )
+                            : (
+                                <span className="font-mono text-xs">
+                                    &le; {Number(params.data.min_subject_grade).toFixed(2)}
+                                </span>
+                            )}
+                    </div>
+                ),
+                field: 'min_subject_grade',
+                flex: 1.3,
+                headerName: 'Min Subj Grade',
+                minWidth: 140,
+                sortable: true
+            },
+            {
+                cellRenderer: (params: { data: AcademicThreshold }) => (
                     <div className="flex h-full items-center">
                         {params.data.category === 'Standing'
                             ? (

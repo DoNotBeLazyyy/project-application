@@ -49,6 +49,14 @@ export function formatThresholdDiscount(threshold: AcademicThreshold): string {
     return `${Number(threshold.scholarship_discount_pct)}%`;
 }
 
+export function formatMinSubjectGrade(value: number | null): string {
+    if (value === null || Number.isNaN(Number(value))) {
+        return 'None';
+    }
+
+    return `\u2264 ${Number(value).toFixed(2)}`;
+}
+
 /**
  * The rule spelled out as a sentence. The card and the table both carry the raw
  * numbers; this is what an admin reads to confirm the numbers mean what they
@@ -60,6 +68,10 @@ export function describeAcademicThreshold(threshold: AcademicThreshold): string 
         : `falls between ${formatGwa(threshold.min_gwa)} and ${formatGwa(threshold.max_gwa)}`;
 
     const sentences = [`Applies when the general weighted average ${band}.`];
+
+    if (threshold.min_subject_grade !== null) {
+        sentences.push(`Requires a grade of ${formatGwa(threshold.min_subject_grade)} or better in all individual subjects.`);
+    }
 
     if (threshold.requires_no_failing) {
         sentences.push('A failing grade in any subject disqualifies the student.');

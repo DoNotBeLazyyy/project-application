@@ -68,6 +68,31 @@ export default function AcademicThresholdForm({
                 },
             type: 'number'
         },
+        ...(category === 'Standing'
+            ? []
+            : [{
+                disabled,
+                fieldProps: { helperText: 'Lowest grade allowed in any individual subject (e.g. 1.75). Leave blank if no per-subject floor.' },
+                label: 'Min Subject Grade (Floor)',
+                name: 'min_subject_grade' as const,
+                rules: disabled
+                    ? undefined
+                    : {
+                        validate: function(value: unknown) {
+                            if (value === '' || value === null || value === undefined) {
+                                return true;
+                            }
+
+                            const val = Number(value);
+                            if (Number.isNaN(val) || val < 1 || val > 5) {
+                                return 'Minimum subject grade must be between 1.00 and 5.00';
+                            }
+
+                            return true;
+                        }
+                    },
+                type: 'number' as const
+            }]),
         ...(category === 'Scholarship'
             ? [{
                 disabled,
