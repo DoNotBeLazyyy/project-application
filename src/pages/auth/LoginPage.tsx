@@ -2,11 +2,12 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import FormErrorSummary from '@components/form/FormErrorSummary';
 import ValidCommonInput from '@components/input/ValidCommonInput';
-import { login } from '@services/auth.service';
+import { login, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
 import { formErrors } from '@utils/form.util';
+import { isSessionExpiredDueToInactivity } from '@utils/session.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -35,6 +36,11 @@ export default function LoginPage() {
     const { handleSubmit, formState: { isSubmitting } } = methods;
 
     useEffect(() => {
+        if (isSessionExpiredDueToInactivity()) {
+            logout();
+            return;
+        }
+
         const profile = useAppStore.getState().userProfile;
         if (profile?.status === 'Invited') {
             navigate('/set-password', { replace: true });

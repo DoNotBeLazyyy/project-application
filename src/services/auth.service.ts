@@ -6,6 +6,11 @@ import { Session } from '@supabase/supabase-js';
 import { AuthContext, AuthSessionStatus } from '@type/app.type';
 import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
+import {
+    clearActivity,
+    isSessionExpiredDueToInactivity,
+    recordActivity
+} from '@utils/session.util';
 
 export const INCOMPLETE_PROFILE_MESSAGE = 'Your account is not fully set up. Contact your administrator.';
 
@@ -14,6 +19,8 @@ export async function login(email: string, password: string): Promise<ServiceRes
     if (error) {
         return { data: null, error: parseServiceError(error) };
     }
+
+    recordActivity();
 
     const status = await initAuthSession();
 
@@ -40,6 +47,7 @@ export async function requestPasswordReset(email: string): Promise<ServiceResult
 }
 
 export async function logout(): Promise<void> {
+    clearActivity();
     await supabase.auth.signOut();
     useAppStore.getState()
         .clearSession();
@@ -78,6 +86,13 @@ export async function getAuthContext(): Promise<ServiceResult<AuthContext>> {
 }
 
 export async function initAuthSession(): Promise<AuthSessionStatus> {
+    if (isSessionExpiredDueToInactivity()) {
+        await logout();
+        useToastStore.getState()
+            .showToast('Your session expired due to inactivity. Please sign in again.', 'info');
+        return 'unauthenticated';
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
 
     const store = useAppStore.getState();
@@ -85,8 +100,11 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
 
     if (!session) {
         store.clearSession();
+        clearActivity();
         return 'unauthenticated';
     }
+
+    recordActivity();
 
     const { data: context, error } = await getAuthContext();
 

@@ -1,4 +1,7 @@
+import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
+import { isSessionExpiredDueToInactivity } from '@utils/session.util';
+import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 export default function AuthGuard() {
@@ -6,7 +9,15 @@ export default function AuthGuard() {
     const userProfile = useAppStore((s) => s.userProfile);
     const { pathname } = useLocation();
 
-    if (!session) {
+    const isExpired = Boolean(session && isSessionExpiredDueToInactivity());
+
+    useEffect(() => {
+        if (isExpired) {
+            logout();
+        }
+    }, [isExpired]);
+
+    if (!session || isExpired) {
         return <Navigate replace to="/login" />;
     }
 
