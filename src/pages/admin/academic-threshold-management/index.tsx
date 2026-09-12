@@ -406,7 +406,7 @@ export default function AcademicThresholdManagement() {
                             <div className="max-w-xs w-full">
                                 <CommonInput
                                     hasClearButton
-                                    placeholder="Search by label or code..."
+                                    placeholder="Search thresholds..."
                                     size="small"
                                     slotProps={{
                                         input: {

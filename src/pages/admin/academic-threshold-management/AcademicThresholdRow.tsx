@@ -60,17 +60,12 @@ export default function AcademicThresholdRow({
                     {index + 1}
                 </span>
 
-                <div className="flex flex-col gap-0.5 min-w-0 pr-2">
-                    <div className="flex flex-wrap gap-1.5 items-center">
-                        <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
-                            {threshold.label}
-                        </span>
-                        <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
-                            {threshold.category}
-                        </span>
-                    </div>
-                    <span className="font-mono text-(--mui-palette-text-disabled) text-[11px] truncate">
-                        {threshold.code}
+                <div className="flex flex-wrap gap-1.5 items-center min-w-0 pr-2">
+                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
+                        {threshold.label}
+                    </span>
+                    <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
+                        {threshold.category}
                     </span>
                 </div>
 
@@ -205,17 +200,12 @@ export default function AcademicThresholdRow({
                         >
                             {index + 1}
                         </span>
-                        <div className="flex flex-col min-w-0">
-                            <div className="flex flex-wrap gap-1.5 items-center">
-                                <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
-                                    {threshold.label}
-                                </span>
-                                <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
-                                    {threshold.category}
-                                </span>
-                            </div>
-                            <span className="font-mono text-(--mui-palette-text-disabled) text-[11px] truncate">
-                                {threshold.code}
+                        <div className="flex flex-wrap gap-1.5 items-center min-w-0">
+                            <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
+                                {threshold.label}
+                            </span>
+                            <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
+                                {threshold.category}
                             </span>
                         </div>
                     </div>
