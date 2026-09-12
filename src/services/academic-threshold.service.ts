@@ -15,7 +15,9 @@ export async function updateAcademicThresholds(
         p_thresholds: thresholds.map((t) => ({
             category: t.category,
             code: t.code,
-            id: t.id && !t.id.startsWith('temp-') ? t.id : null,
+            id: t.id && !t.id.startsWith('temp-')
+                ? t.id
+                : null,
             is_active: t.is_active,
             label: t.label,
             max_gwa: t.max_gwa,

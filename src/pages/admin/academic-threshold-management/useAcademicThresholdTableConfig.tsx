@@ -58,7 +58,8 @@ export function useAcademicThresholdTableConfig({
                             )
                             : (
                                 <span className="font-mono text-xs">
-                                    &le; {Number(params.data.min_subject_grade).toFixed(2)}
+                                    &le; {Number(params.data.min_subject_grade)
+                                        .toFixed(2)}
                                 </span>
                             )}
                     </div>

@@ -61,7 +61,8 @@ export default function AcademicThresholdGridCard({
             label: 'Min Subj',
             value: isStanding || row.min_subject_grade === null
                 ? 'None'
-                : `\u2264 ${Number(row.min_subject_grade).toFixed(2)}`
+                : `\u2264 ${Number(row.min_subject_grade)
+                    .toFixed(2)}`
         },
         {
             icon: row.requires_no_failing

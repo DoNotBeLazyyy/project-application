@@ -22,8 +22,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const COLUMN_HEAD_CLASS = 'font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.1em] uppercase';
 
-const INFO_CONTENT =
-    'Academic thresholds define the cutoff criteria for Latin Honors, Academic Scholarships, and Deans List / Academic Standing. Configure the GWA range, minimum individual subject grade requirements (subject floor), and discount percentages. Students who meet the GWA cutoff but have any individual subject grade worse than the subject floor will not receive the honor or scholarship.';
+const INFO_CONTENT
+    = 'Academic thresholds define the cutoff criteria for Latin Honors, Academic Scholarships, and Deans List / Academic Standing. Configure the GWA range, minimum individual subject grade requirements (subject floor), and discount percentages. Students who meet the GWA cutoff but have any individual subject grade worse than the subject floor will not receive the honor or scholarship.';
 
 const HEADER_SX: SxProps<Theme> = {
     borderBottom: '1px solid var(--mui-palette-grey-100)',
@@ -147,7 +147,8 @@ function validateDrafts(drafts: AcademicThresholdDraft[]): string[] {
 
         if (!draft.max_gwa.trim()) {
             blockers.push(`${name}: Maximum GWA is required.`);
-        } else {
+        }
+        else {
             const maxVal = Number(draft.max_gwa);
             if (Number.isNaN(maxVal) || maxVal < 1.0 || maxVal > 5.0) {
                 blockers.push(`${name}: Maximum GWA must be between 1.00 and 5.00.`);
@@ -158,7 +159,8 @@ function validateDrafts(drafts: AcademicThresholdDraft[]): string[] {
             const minVal = Number(draft.min_gwa);
             if (Number.isNaN(minVal) || minVal < 1.0 || minVal > 5.0) {
                 blockers.push(`${name}: Minimum GWA must be between 1.00 and 5.00.`);
-            } else if (draft.max_gwa.trim()) {
+            }
+            else if (draft.max_gwa.trim()) {
                 const maxVal = Number(draft.max_gwa);
                 if (!Number.isNaN(maxVal) && minVal > maxVal) {
                     blockers.push(`${name}: Minimum GWA (${minVal}) cannot be greater than Maximum GWA (${maxVal}).`);
@@ -277,7 +279,9 @@ export default function AcademicThresholdManagement() {
         const newCategory: AcademicThresholdCategory = selectedCategory !== 'All'
             ? selectedCategory
             : 'Honor';
-        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        const tempId = `temp-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 7)}`;
         const newDraft: AcademicThresholdDraft = {
             category: newCategory,
             code: '',
@@ -297,7 +301,8 @@ export default function AcademicThresholdManagement() {
     function handleDeleteRow(threshold: AcademicThresholdDraft) {
         if (threshold.id.startsWith('temp-')) {
             setDrafts((prev) => prev.filter((d) => d.id !== threshold.id));
-        } else {
+        }
+        else {
             setThresholdToDelete(threshold);
         }
     }
@@ -367,11 +372,15 @@ export default function AcademicThresholdManagement() {
         }
 
         if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase().trim();
+            const query = searchQuery.toLowerCase()
+                .trim();
             list = list.filter((item) =>
-                item.label.toLowerCase().includes(query)
-                || item.code.toLowerCase().includes(query)
-                || item.category.toLowerCase().includes(query));
+                item.label.toLowerCase()
+                    .includes(query)
+                || item.code.toLowerCase()
+                    .includes(query)
+                || item.category.toLowerCase()
+                    .includes(query));
         }
 
         return list;
@@ -435,7 +444,7 @@ export default function AcademicThresholdManagement() {
                 sx: HEADER_SX,
                 title: 'Academic Thresholds'
             }}
-            className="flex flex-1 flex-col h-full min-h-0 w-full"
+            className="flex flex-col w-full"
             infoContent={INFO_CONTENT}
         >
             {isLoading
@@ -445,7 +454,7 @@ export default function AcademicThresholdManagement() {
                     </div>
                 )
                 : (
-                    <div className="flex flex-1 flex-col gap-4 min-h-0 p-4">
+                    <div className="flex flex-col gap-4 p-4">
                         {/* Filter toolbar: Search and Category Pills */}
                         <div className="flex flex-wrap gap-3 items-center justify-between">
                             <div className="flex flex-wrap gap-1.5 items-center">
@@ -533,11 +542,11 @@ export default function AcademicThresholdManagement() {
                         )}
 
                         {/* Row composer table container */}
-                        <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-x-auto">
-                            <div className="flex flex-col flex-1 min-h-0 min-w-full md:min-w-5xl">
-                                {/* Desktop Table Header - fixed above the vertical scroll container */}
+                        <div className="flex flex-col md:border md:border-(--mui-palette-divider) md:rounded-(--mui-tokens-radius-lg) min-w-0 overflow-x-auto w-full">
+                            <div className="flex flex-col min-w-full md:min-w-5xl">
+                                {/* Desktop Table Header */}
                                 {filteredDrafts.length > 0 && (
-                                    <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} border-(--mui-palette-divider) border-b bg-(--mui-palette-background-paper) hidden md:grid pb-2.5 pt-1 shrink-0 w-full`}>
+                                    <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} border-(--mui-palette-divider) border-b bg-neutral-50/80 hidden md:grid pb-2.5 pt-2 px-3 rounded-t-(--mui-tokens-radius-lg) shrink-0 w-full`}>
                                         <span className={COLUMN_HEAD_CLASS}>#</span>
                                         <span className={COLUMN_HEAD_CLASS}>Threshold</span>
                                         <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA (Best)</span>
@@ -550,12 +559,13 @@ export default function AcademicThresholdManagement() {
                                     </div>
                                 )}
 
-                                {/* Scrollable rows body - vertical scrollbar only appears here below the header */}
-                                <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
+                                {/* Rows list */}
+                                <div className="flex flex-col w-full">
                                     {filteredDrafts.map((threshold, index) => (
                                         <AcademicThresholdRow
                                             disabled={isSaving}
                                             index={index}
+                                            isLast={index === filteredDrafts.length - 1}
                                             key={threshold.id}
                                             threshold={threshold}
                                             onChange={function(patch) {
@@ -577,13 +587,21 @@ export default function AcademicThresholdManagement() {
                         </div>
 
                         <DeletePromptModal
-                            description={`Are you sure you want to remove "${thresholdToDelete?.label || 'this threshold'}"? It will be marked for removal and deleted when you save changes.`}
-                            isOpen={Boolean(thresholdToDelete)}
-                            title="Delete Academic Threshold"
+                            formButtonsProps={{
+                                confirmProps: {
+                                    onClick: handleConfirmDelete
+                                }
+                            }}
+                            mainContent={{
+                                title: `Delete ${thresholdToDelete?.label || 'academic threshold'}?`
+                            }}
+                            open={Boolean(thresholdToDelete)}
+                            subContent={{
+                                title: 'It will be marked for removal and deleted when you save changes.'
+                            }}
                             onClose={function() {
                                 setThresholdToDelete(null);
                             }}
-                            onConfirm={handleConfirmDelete}
                         />
                     </div>
                 )}

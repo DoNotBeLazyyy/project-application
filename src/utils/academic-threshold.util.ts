@@ -54,7 +54,8 @@ export function formatMinSubjectGrade(value: number | null): string {
         return 'None';
     }
 
-    return `\u2264 ${Number(value).toFixed(2)}`;
+    return `\u2264 ${Number(value)
+        .toFixed(2)}`;
 }
 
 /**

@@ -4,8 +4,8 @@ import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { periodRailColor } from '@utils/period-allocation.util';
 import { ChangeEvent } from 'react';
 
-export const ACADEMIC_THRESHOLD_GRID_CLASS =
-    'gap-3 grid grid-cols-[2rem_minmax(12rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem_2.5rem] items-center min-w-5xl';
+export const ACADEMIC_THRESHOLD_GRID_CLASS
+    = 'gap-3 grid grid-cols-[2rem_minmax(12rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem_2.5rem] items-center min-w-5xl';
 
 const CATEGORY_BADGE_STYLE: Record<AcademicThresholdCategory, string> = {
     Honor: 'bg-amber-50 text-amber-700 border-amber-200/80',
@@ -30,6 +30,7 @@ export interface AcademicThresholdDraft {
 export interface AcademicThresholdRowProps {
     disabled?: boolean;
     index: number;
+    isLast?: boolean;
     threshold: AcademicThresholdDraft;
     onChange: (patch: Partial<AcademicThresholdDraft>) => void;
     onDelete: () => void;
@@ -38,6 +39,7 @@ export interface AcademicThresholdRowProps {
 export default function AcademicThresholdRow({
     disabled = false,
     index,
+    isLast = false,
     threshold,
     onChange,
     onDelete
@@ -62,7 +64,10 @@ export default function AcademicThresholdRow({
     return (
         <div className="flex flex-col w-full">
             {/* Desktop View (md and up) */}
-            <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} border-(--mui-palette-divider) border-b hidden md:grid hover:bg-neutral-50/60 py-3 transition-colors w-full`}>
+            <div
+                className={`${ACADEMIC_THRESHOLD_GRID_CLASS} ${isLast
+                    ? ''
+                    : 'border-(--mui-palette-divider) border-b'} hidden md:grid hover:bg-neutral-50/60 px-3 py-3 transition-colors w-full`}>
                 <span
                     className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-8 text-(--mui-tokens-color-common-white) text-xs"
                     style={{ background: periodRailColor(index) }}
@@ -72,37 +77,39 @@ export default function AcademicThresholdRow({
 
                 <div className="flex flex-col gap-1 min-w-0 pr-2">
                     <div className="flex items-center gap-1.5">
-                        {isNew ? (
-                            <div className="flex gap-1 items-center">
-                                {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
-                                    <button
-                                        className={`cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
-                                            threshold.category === cat
-                                                ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
-                                                : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100'
-                                        }`}
-                                        disabled={disabled}
-                                        key={cat}
-                                        type="button"
-                                        onClick={function() {
-                                            onChange({ category: cat });
-                                        }}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <button
-                                className={`border cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
-                                disabled={disabled}
-                                title="Click to change category"
-                                type="button"
-                                onClick={handleCycleCategory}
-                            >
-                                {threshold.category}
-                            </button>
-                        )}
+                        {isNew
+                            ? (
+                                <div className="flex gap-1 items-center">
+                                    {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
+                                        <button
+                                            className={`cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
+                                                threshold.category === cat
+                                                    ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
+                                                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100'
+                                            }`}
+                                            disabled={disabled}
+                                            key={cat}
+                                            type="button"
+                                            onClick={function() {
+                                                onChange({ category: cat });
+                                            }}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            )
+                            : (
+                                <button
+                                    className={`border cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
+                                    disabled={disabled}
+                                    title="Click to change category"
+                                    type="button"
+                                    onClick={handleCycleCategory}
+                                >
+                                    {threshold.category}
+                                </button>
+                            )}
                     </div>
                     <CommonInput
                         containerClassName="min-w-0 w-full"
@@ -202,17 +209,19 @@ export default function AcademicThresholdRow({
                                     onChange({ requires_no_failing: !threshold.requires_no_failing });
                                 }}
                             >
-                                {threshold.requires_no_failing ? (
-                                    <>
-                                        <SealCheckIcon size={12} weight="bold" />
-                                        <span>Required</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <MinusCircleIcon size={12} weight="bold" />
-                                        <span>Optional</span>
-                                    </>
-                                )}
+                                {threshold.requires_no_failing
+                                    ? (
+                                        <>
+                                            <SealCheckIcon size={12} weight="bold" />
+                                            <span>Required</span>
+                                        </>
+                                    )
+                                    : (
+                                        <>
+                                            <MinusCircleIcon size={12} weight="bold" />
+                                            <span>Optional</span>
+                                        </>
+                                    )}
                             </button>
                         </div>
                     )}
@@ -230,7 +239,10 @@ export default function AcademicThresholdRow({
                             onChange({ is_active: !threshold.is_active });
                         }}
                     >
-                        <span className={`rounded-full size-1.5 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                        <span
+                            className={`rounded-full size-1.5 ${threshold.is_active
+                                ? 'bg-emerald-500'
+                                : 'bg-neutral-400'}`} />
                         {threshold.is_active
                             ? 'Active'
                             : 'Off'}
@@ -263,37 +275,39 @@ export default function AcademicThresholdRow({
                             >
                                 {index + 1}
                             </span>
-                            {isNew ? (
-                                <div className="flex flex-wrap gap-1 items-center">
-                                    {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
-                                        <button
-                                            className={`cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
-                                                threshold.category === cat
-                                                    ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
-                                                    : 'bg-neutral-50 text-neutral-500 border-neutral-200'
-                                            }`}
-                                            disabled={disabled}
-                                            key={cat}
-                                            type="button"
-                                            onClick={function() {
-                                                onChange({ category: cat });
-                                            }}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <button
-                                    className={`border cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
-                                    disabled={disabled}
-                                    title="Click to change category"
-                                    type="button"
-                                    onClick={handleCycleCategory}
-                                >
-                                    {threshold.category}
-                                </button>
-                            )}
+                            {isNew
+                                ? (
+                                    <div className="flex flex-wrap gap-1 items-center">
+                                        {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
+                                            <button
+                                                className={`cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
+                                                    threshold.category === cat
+                                                        ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
+                                                        : 'bg-neutral-50 text-neutral-500 border-neutral-200'
+                                                }`}
+                                                disabled={disabled}
+                                                key={cat}
+                                                type="button"
+                                                onClick={function() {
+                                                    onChange({ category: cat });
+                                                }}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )
+                                : (
+                                    <button
+                                        className={`border cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
+                                        disabled={disabled}
+                                        title="Click to change category"
+                                        type="button"
+                                        onClick={handleCycleCategory}
+                                    >
+                                        {threshold.category}
+                                    </button>
+                                )}
                         </div>
 
                         <div className="flex gap-1.5 items-center shrink-0">
@@ -309,7 +323,10 @@ export default function AcademicThresholdRow({
                                     onChange({ is_active: !threshold.is_active });
                                 }}
                             >
-                                <span className={`rounded-full size-2 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                                <span
+                                    className={`rounded-full size-2 ${threshold.is_active
+                                        ? 'bg-emerald-500'
+                                        : 'bg-neutral-400'}`} />
                                 {threshold.is_active
                                     ? 'Active'
                                     : 'Off'}
@@ -419,17 +436,19 @@ export default function AcademicThresholdRow({
                                         onChange({ requires_no_failing: !threshold.requires_no_failing });
                                     }}
                                 >
-                                    {threshold.requires_no_failing ? (
-                                        <>
-                                            <SealCheckIcon size={14} weight="bold" />
-                                            <span>Required</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <MinusCircleIcon size={14} weight="bold" />
-                                            <span>Optional</span>
-                                        </>
-                                    )}
+                                    {threshold.requires_no_failing
+                                        ? (
+                                            <>
+                                                <SealCheckIcon size={14} weight="bold" />
+                                                <span>Required</span>
+                                            </>
+                                        )
+                                        : (
+                                            <>
+                                                <MinusCircleIcon size={14} weight="bold" />
+                                                <span>Optional</span>
+                                            </>
+                                        )}
                                 </button>
                             </div>
                         </div>
