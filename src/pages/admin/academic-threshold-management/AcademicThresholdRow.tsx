@@ -1,16 +1,11 @@
 import CommonInput from '@components/input/CommonInput';
-import CommonSelect from '@components/select/CommonSelect';
+import { MinusCircleIcon, SealCheckIcon } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { periodRailColor } from '@utils/period-allocation.util';
 import { ChangeEvent } from 'react';
 
 export const ACADEMIC_THRESHOLD_GRID_CLASS =
-    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_7.5rem_5rem] items-center min-w-4xl';
-
-const NO_FAILING_OPTIONS = [
-    { label: 'Required', value: 'true' },
-    { label: 'Optional', value: 'false' }
-];
+    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem] items-center min-w-4xl';
 
 const CATEGORY_BADGE_STYLE: Record<AcademicThresholdCategory, string> = {
     Honor: 'bg-amber-50 text-amber-700 border-amber-200/80',
@@ -150,17 +145,32 @@ export default function AcademicThresholdRow({
                         </span>
                     )
                     : (
-                        <CommonSelect
-                            containerClassName="min-w-0 w-full"
-                            disabled={disabled}
-                            fullWidth
-                            options={NO_FAILING_OPTIONS}
-                            size="small"
-                            value={threshold.requires_no_failing ? 'true' : 'false'}
-                            onChange={function(e) {
-                                onChange({ requires_no_failing: e.target.value === 'true' });
-                            }}
-                        />
+                        <div className="flex items-center justify-center">
+                            <button
+                                className={`cursor-pointer flex font-bold gap-1 items-center px-2 py-0.5 rounded-full text-[11px] transition-colors shrink-0 ${
+                                    threshold.requires_no_failing
+                                        ? 'bg-blue-50 border border-blue-300 text-blue-700 hover:bg-blue-100'
+                                        : 'bg-neutral-100 border border-neutral-300 text-neutral-500 hover:bg-neutral-200'
+                                }`}
+                                disabled={disabled}
+                                type="button"
+                                onClick={function() {
+                                    onChange({ requires_no_failing: !threshold.requires_no_failing });
+                                }}
+                            >
+                                {threshold.requires_no_failing ? (
+                                    <>
+                                        <SealCheckIcon size={12} weight="bold" />
+                                        <span>Required</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <MinusCircleIcon size={12} weight="bold" />
+                                        <span>Optional</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     )}
 
                 <div className="flex items-center justify-center">
@@ -231,6 +241,7 @@ export default function AcademicThresholdRow({
 
                 {/* Tier 2: Form fields without horizontal scroll */}
                 <div className="border-(--mui-palette-divider)/60 border-t flex flex-col gap-3 pt-2">
+                    {/* Row 1: GWA Range */}
                     <div className="flex flex-col gap-1">
                         <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider uppercase">
                             GWA Range (Best &rarr; Cutoff)
@@ -247,7 +258,7 @@ export default function AcademicThresholdRow({
                                 value={threshold.min_gwa}
                                 onChange={handleNumericChange('min_gwa')}
                             />
-                            <span className="font-bold text-(--mui-palette-text-disabled) text-sm">&rarr;</span>
+                            <span className="font-bold text-(--mui-palette-text-disabled) text-center text-sm w-4 shrink-0">&rarr;</span>
                             <CommonInput
                                 containerClassName="min-w-0 w-full"
                                 disabled={disabled}
@@ -262,9 +273,10 @@ export default function AcademicThresholdRow({
                         </div>
                     </div>
 
+                    {/* Row 2: Min Subj Floor and Zero Failing Marks in the SAME row with matching field widths */}
                     {!isStanding && (
-                        <div className="gap-3 grid grid-cols-2">
-                            <div className="flex flex-col gap-1">
+                        <div className="gap-2 grid grid-cols-[1fr_auto_1fr] items-end">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
                                     Min Subj Floor
                                 </span>
@@ -280,40 +292,74 @@ export default function AcademicThresholdRow({
                                     onChange={handleNumericChange('min_subject_grade')}
                                 />
                             </div>
-                            <div className="flex flex-col gap-1">
+
+                            <span
+                                aria-hidden="true"
+                                className="font-bold opacity-0 pointer-events-none select-none text-center text-sm w-4 shrink-0"
+                            >
+                                &rarr;
+                            </span>
+
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
-                                    No Failing Grades
+                                    Zero Failing Marks
                                 </span>
-                                <CommonSelect
+                                <button
+                                    className={`cursor-pointer flex font-bold gap-1.5 h-9 items-center justify-center rounded-(--mui-tokens-radius-md) text-xs transition-colors w-full border ${
+                                        threshold.requires_no_failing
+                                            ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
+                                            : 'bg-neutral-100 border-neutral-300 text-neutral-500 hover:bg-neutral-200'
+                                    }`}
                                     disabled={disabled}
-                                    fullWidth
-                                    options={NO_FAILING_OPTIONS}
-                                    size="small"
-                                    value={threshold.requires_no_failing ? 'true' : 'false'}
-                                    onChange={function(e) {
-                                        onChange({ requires_no_failing: e.target.value === 'true' });
+                                    type="button"
+                                    onClick={function() {
+                                        onChange({ requires_no_failing: !threshold.requires_no_failing });
                                     }}
-                                />
+                                >
+                                    {threshold.requires_no_failing ? (
+                                        <>
+                                            <SealCheckIcon size={14} weight="bold" />
+                                            <span>Required</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <MinusCircleIcon size={14} weight="bold" />
+                                            <span>Optional</span>
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     )}
 
+                    {/* Row 3: Discount % for Scholarship with matching field width */}
                     {isScholarship && (
-                        <div className="flex flex-col gap-1">
-                            <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
-                                Tuition Discount %
+                        <div className="gap-2 grid grid-cols-[1fr_auto_1fr] items-end">
+                            <div className="flex flex-col gap-1 min-w-0">
+                                <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                    Discount %
+                                </span>
+                                <CommonInput
+                                    containerClassName="min-w-0 w-full"
+                                    disabled={disabled}
+                                    fullWidth
+                                    hasClearButton={false}
+                                    placeholder="e.g. 100"
+                                    size="small"
+                                    slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                    value={threshold.scholarship_discount_pct}
+                                    onChange={handleNumericChange('scholarship_discount_pct')}
+                                />
+                            </div>
+
+                            <span
+                                aria-hidden="true"
+                                className="font-bold opacity-0 pointer-events-none select-none text-center text-sm w-4 shrink-0"
+                            >
+                                &rarr;
                             </span>
-                            <CommonInput
-                                containerClassName="min-w-0 w-full"
-                                disabled={disabled}
-                                fullWidth
-                                hasClearButton={false}
-                                placeholder="e.g. 100"
-                                size="small"
-                                slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
-                                value={threshold.scholarship_discount_pct}
-                                onChange={handleNumericChange('scholarship_discount_pct')}
-                            />
+
+                            <div className="min-w-0 w-full" />
                         </div>
                     )}
                 </div>
