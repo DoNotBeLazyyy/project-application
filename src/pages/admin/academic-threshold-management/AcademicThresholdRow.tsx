@@ -1,10 +1,10 @@
 import CommonInput from '@components/input/CommonInput';
-import { AcademicThreshold, AcademicThresholdCategory } from '@type/academic-threshold.type';
+import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { periodRailColor } from '@utils/period-allocation.util';
 import { ChangeEvent } from 'react';
 
 export const ACADEMIC_THRESHOLD_GRID_CLASS =
-    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_4.5rem] items-center min-w-4xl';
+    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem] items-center min-w-4xl';
 
 const CATEGORY_BADGE_STYLE: Record<AcademicThresholdCategory, string> = {
     Honor: 'bg-amber-50 text-amber-700 border-amber-200/80',
@@ -50,7 +50,8 @@ export default function AcademicThresholdRow({
 
     return (
         <div className="border-(--mui-palette-divider) border-t flex flex-col last:border-b">
-            <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} py-3`}>
+            {/* Desktop View (md and up) */}
+            <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} hidden md:grid py-3`}>
                 <span
                     className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-8 text-(--mui-tokens-color-common-white) text-xs"
                     style={{ background: periodRailColor(index) }}
@@ -147,7 +148,7 @@ export default function AcademicThresholdRow({
                             <label className="cursor-pointer flex gap-1.5 items-center select-none text-xs">
                                 <input
                                     checked={threshold.requires_no_failing}
-                                    className="accent-(--mui-palette-primary-main) rounded size-4"
+                                    className="accent-(--mui-palette-primary-main) cursor-pointer rounded size-4"
                                     disabled={disabled}
                                     type="checkbox"
                                     onChange={function(e) {
@@ -167,25 +168,161 @@ export default function AcademicThresholdRow({
                     )}
 
                 <div className="flex items-center justify-center">
-                    <label className="cursor-pointer flex gap-1.5 items-center select-none text-xs">
-                        <input
-                            checked={threshold.is_active}
-                            className="accent-emerald-600 rounded size-4"
-                            disabled={disabled}
-                            type="checkbox"
-                            onChange={function(e) {
-                                onChange({ is_active: e.target.checked });
-                            }}
-                        />
-                        <span className={threshold.is_active
-                            ? 'font-bold text-emerald-700 text-xs'
-                            : 'font-medium text-(--mui-palette-text-disabled) text-xs'}
+                    <button
+                        className={`cursor-pointer flex font-bold gap-1.5 items-center px-2 py-0.5 rounded-full text-[11px] transition-colors shrink-0 ${
+                            threshold.is_active
+                                ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+                                : 'bg-neutral-100 border border-neutral-300 text-neutral-500'
+                        }`}
+                        disabled={disabled}
+                        type="button"
+                        onClick={function() {
+                            onChange({ is_active: !threshold.is_active });
+                        }}
+                    >
+                        <span className={`rounded-full size-1.5 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                        {threshold.is_active
+                            ? 'Active'
+                            : 'Off'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile View: 2-tier touch card (< md) */}
+            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col gap-3 md:hidden my-2 p-3.5 rounded-xl shadow-xs">
+                {/* Tier 1: Header with Badge, Title, Category and Active switch */}
+                <div className="flex gap-2 items-start justify-between">
+                    <div className="flex gap-2.5 items-center min-w-0">
+                        <span
+                            className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-7 text-(--mui-tokens-color-common-white) text-xs"
+                            style={{ background: periodRailColor(index) }}
                         >
-                            {threshold.is_active
-                                ? 'Active'
-                                : 'Off'}
+                            {index + 1}
                         </span>
-                    </label>
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex flex-wrap gap-1.5 items-center">
+                                <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
+                                    {threshold.label}
+                                </span>
+                                <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
+                                    {threshold.category}
+                                </span>
+                            </div>
+                            <span className="font-mono text-(--mui-palette-text-disabled) text-[11px] truncate">
+                                {threshold.code}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        className={`cursor-pointer flex font-bold gap-1.5 items-center px-2.5 py-1 rounded-full text-xs transition-colors shrink-0 ${
+                            threshold.is_active
+                                ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+                                : 'bg-neutral-100 border border-neutral-300 text-neutral-500'
+                        }`}
+                        disabled={disabled}
+                        type="button"
+                        onClick={function() {
+                            onChange({ is_active: !threshold.is_active });
+                        }}
+                    >
+                        <span className={`rounded-full size-2 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                        {threshold.is_active
+                            ? 'Active'
+                            : 'Off'}
+                    </button>
+                </div>
+
+                {/* Tier 2: Form fields without horizontal scroll */}
+                <div className="border-(--mui-palette-divider)/60 border-t flex flex-col gap-3 pt-2">
+                    <div className="flex flex-col gap-1">
+                        <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider uppercase">
+                            GWA Range (Best &rarr; Cutoff)
+                        </span>
+                        <div className="gap-2 grid grid-cols-[1fr_auto_1fr] items-center">
+                            <CommonInput
+                                containerClassName="min-w-0 w-full"
+                                disabled={disabled}
+                                fullWidth
+                                hasClearButton={false}
+                                placeholder="e.g. 1.00"
+                                size="small"
+                                slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                value={threshold.min_gwa}
+                                onChange={handleNumericChange('min_gwa')}
+                            />
+                            <span className="font-bold text-(--mui-palette-text-disabled) text-sm">&rarr;</span>
+                            <CommonInput
+                                containerClassName="min-w-0 w-full"
+                                disabled={disabled}
+                                fullWidth
+                                hasClearButton={false}
+                                placeholder="e.g. 1.25"
+                                size="small"
+                                slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                value={threshold.max_gwa}
+                                onChange={handleNumericChange('max_gwa')}
+                            />
+                        </div>
+                    </div>
+
+                    {(!isStanding || isScholarship) && (
+                        <div className="gap-3 grid grid-cols-2">
+                            {!isStanding && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                        Min Subj Floor
+                                    </span>
+                                    <CommonInput
+                                        containerClassName="min-w-0 w-full"
+                                        disabled={disabled}
+                                        fullWidth
+                                        hasClearButton={false}
+                                        placeholder="e.g. 1.75"
+                                        size="small"
+                                        slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                        value={threshold.min_subject_grade}
+                                        onChange={handleNumericChange('min_subject_grade')}
+                                    />
+                                </div>
+                            )}
+                            {isScholarship && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                        Discount %
+                                    </span>
+                                    <CommonInput
+                                        containerClassName="min-w-0 w-full"
+                                        disabled={disabled}
+                                        fullWidth
+                                        hasClearButton={false}
+                                        placeholder="e.g. 100"
+                                        size="small"
+                                        slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                        value={threshold.scholarship_discount_pct}
+                                        onChange={handleNumericChange('scholarship_discount_pct')}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!isStanding && (
+                        <label className="bg-(--mui-palette-background-default) border border-(--mui-palette-divider)/80 cursor-pointer flex items-center justify-between p-2.5 rounded-lg select-none">
+                            <span className="font-medium text-(--mui-palette-text-primary) text-xs">
+                                Zero Failing Grades Allowed
+                            </span>
+                            <input
+                                checked={threshold.requires_no_failing}
+                                className="accent-(--mui-palette-primary-main) cursor-pointer rounded size-4"
+                                disabled={disabled}
+                                type="checkbox"
+                                onChange={function(e) {
+                                    onChange({ requires_no_failing: e.target.checked });
+                                }}
+                            />
+                        </label>
+                    )}
                 </div>
             </div>
         </div>

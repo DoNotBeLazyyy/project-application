@@ -1,6 +1,6 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
-import TableCardActionMenu from '@components/table-card/TableCardActionMenu';
 import { InputAdornment, SxProps, Theme } from '@mui/material';
 import AcademicThresholdRow, {
     ACADEMIC_THRESHOLD_GRID_CLASS,
@@ -185,6 +185,44 @@ export default function AcademicThresholdManagement() {
         return checkIsDirty(drafts, initialThresholds);
     }, [drafts, initialThresholds]);
 
+    const dirtyCount = useMemo(() => {
+        let count = 0;
+        for (const d of drafts) {
+            const orig = initialThresholds.find((i) => i.id === d.id);
+            if (!orig) {
+                continue;
+            }
+
+            const origMinGwa = orig.min_gwa !== null && orig.min_gwa !== undefined
+                ? String(orig.min_gwa)
+                : '';
+            const origMaxGwa = orig.max_gwa !== null && orig.max_gwa !== undefined
+                ? String(orig.max_gwa)
+                : '';
+            const origMinSubj = orig.min_subject_grade !== null && orig.min_subject_grade !== undefined
+                ? String(orig.min_subject_grade)
+                : '';
+            const origDiscount = orig.scholarship_discount_pct !== null && orig.scholarship_discount_pct !== undefined
+                ? String(orig.scholarship_discount_pct)
+                : '';
+            const origNoFailing = orig.requires_no_failing ?? false;
+            const origActive = orig.is_active ?? true;
+
+            if (
+                d.min_gwa !== origMinGwa
+                || d.max_gwa !== origMaxGwa
+                || d.min_subject_grade !== origMinSubj
+                || d.scholarship_discount_pct !== origDiscount
+                || d.requires_no_failing !== origNoFailing
+                || d.is_active !== origActive
+            ) {
+                count++;
+            }
+        }
+
+        return count;
+    }, [drafts, initialThresholds]);
+
     const blockers = useMemo(() => {
         return validateDrafts(drafts);
     }, [drafts]);
@@ -271,35 +309,45 @@ export default function AcademicThresholdManagement() {
         <CommonCard
             cardHeaderProps={{
                 action: (
-                    <div className="flex gap-(--mui-tokens-spacing-3) items-center justify-end w-full">
-                        <TableCardActionMenu
-                            extraOptions={[
-                                {
-                                    children: 'Reload',
-                                    disabled: isLoading || isSaving,
-                                    icon: <ArrowsClockwiseIcon size={20} weight="bold" />,
-                                    key: 'reload',
-                                    onClick: fetchThresholds
-                                },
-                                {
-                                    children: 'Cancel',
-                                    disabled: !isDirty || isSaving,
-                                    icon: <ArrowCounterClockwiseIcon size={20} weight="bold" />,
-                                    key: 'cancel',
-                                    onClick: handleReset
-                                },
-                                {
-                                    children: isSaving
-                                        ? 'Saving...'
-                                        : 'Save',
-                                    disabled: !canSave,
-                                    icon: <FloppyDiskIcon size={20} weight="bold" />,
-                                    key: 'save',
-                                    onClick: handleSave
-                                }
-                            ]}
-                            inlineActionLimit={0}
-                        />
+                    <div className="flex gap-(--mui-tokens-spacing-2) items-center justify-end w-full">
+                        <CommonButton
+                            aria-label="Reload academic thresholds"
+                            color="inherit"
+                            disabled={isLoading || isSaving}
+                            size="small"
+                            sx={{ minWidth: '2.25rem', px: 1 }}
+                            variant="outlined"
+                            onClick={fetchThresholds}
+                        >
+                            <ArrowsClockwiseIcon size={16} weight="bold" />
+                        </CommonButton>
+                        <CommonButton
+                            className="@max-[26rem]:flex-1"
+                            color="secondary"
+                            disabled={!isDirty || isSaving}
+                            size="small"
+                            startIcon={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
+                            variant="outlined"
+                            onClick={handleReset}
+                        >
+                            Cancel
+                        </CommonButton>
+                        <CommonButton
+                            className="@max-[26rem]:flex-1"
+                            color="primary"
+                            disabled={!canSave}
+                            loading={isSaving}
+                            size="small"
+                            startIcon={<FloppyDiskIcon size={16} weight="bold" />}
+                            variant="contained"
+                            onClick={handleSave}
+                        >
+                            {isSaving
+                                ? 'Saving...'
+                                : dirtyCount > 0
+                                    ? `Save Changes (${dirtyCount})`
+                                    : 'Save Changes'}
+                        </CommonButton>
                     </div>
                 ),
                 className: '@container shrink-0',
@@ -395,11 +443,11 @@ export default function AcademicThresholdManagement() {
                         {/* Sticky row composer table */}
                         <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-auto">
                             {filteredDrafts.length > 0 && (
-                                <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} bg-(--mui-palette-background-paper) pb-2 sticky top-0 z-10`}>
+                                <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} bg-(--mui-palette-background-paper) hidden md:grid pb-2 sticky top-0 z-10`}>
                                     <span className={COLUMN_HEAD_CLASS}>#</span>
                                     <span className={COLUMN_HEAD_CLASS}>Threshold</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Max GWA</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA (Best)</span>
+                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Max GWA (Cutoff)</span>
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min Subj Grade</span>
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>Discount %</span>
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>No Failing</span>
