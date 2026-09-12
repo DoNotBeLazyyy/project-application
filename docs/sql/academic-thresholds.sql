@@ -106,7 +106,13 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.fn_update_academic_thresholds(p_thresholds jsonb)
+DROP FUNCTION IF EXISTS public.fn_update_academic_thresholds(jsonb);
+DROP FUNCTION IF EXISTS public.fn_update_academic_thresholds(jsonb, uuid[]);
+
+CREATE OR REPLACE FUNCTION public.fn_update_academic_thresholds(
+    p_thresholds jsonb,
+    p_deleted_ids uuid[] DEFAULT '{}'::uuid[]
+)
     RETURNS jsonb
     LANGUAGE plpgsql
     SECURITY DEFINER
@@ -115,53 +121,123 @@ CREATE OR REPLACE FUNCTION public.fn_update_academic_thresholds(p_thresholds jso
 DECLARE
     v_item JSONB;
     v_id UUID;
+    v_category TEXT;
+    v_label TEXT;
+    v_code TEXT;
+    v_slug TEXT;
     v_min_gwa NUMERIC(4,2);
     v_max_gwa NUMERIC(4,2);
     v_min_subject_grade NUMERIC(4,2);
+    v_requires_no_failing BOOLEAN;
+    v_scholarship_discount_pct NUMERIC(5,2);
+    v_is_active BOOLEAN;
+    v_sort_order INTEGER;
     v_updated INTEGER := 0;
+    v_inserted INTEGER := 0;
+    v_deleted INTEGER := 0;
 BEGIN
     PERFORM public.fn_assert_role('Admin');
 
-    IF jsonb_typeof(p_thresholds) <> 'array' THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Invalid payload: an array of thresholds is required.');
+    IF p_deleted_ids IS NOT NULL AND array_length(p_deleted_ids, 1) > 0 THEN
+        UPDATE public.academic_thresholds
+        SET deleted_at = now(),
+            deleted_by = auth.uid()
+        WHERE id = ANY(p_deleted_ids)
+          AND deleted_at IS NULL;
+        GET DIAGNOSTICS v_deleted = ROW_COUNT;
     END IF;
 
-    FOR v_item IN SELECT * FROM jsonb_array_elements(p_thresholds)
-    LOOP
-        v_id := (v_item->>'id')::UUID;
-        v_min_gwa := NULLIF(v_item->>'min_gwa', '')::NUMERIC(4,2);
-        v_max_gwa := (v_item->>'max_gwa')::NUMERIC(4,2);
-        v_min_subject_grade := NULLIF(v_item->>'min_subject_grade', '')::NUMERIC(4,2);
+    IF p_thresholds IS NOT NULL AND jsonb_typeof(p_thresholds) = 'array' THEN
+        FOR v_item IN SELECT * FROM jsonb_array_elements(p_thresholds)
+        LOOP
+            v_id := NULLIF(v_item->>'id', '')::UUID;
+            v_category := COALESCE(NULLIF(trim(v_item->>'category'), ''), 'Honor');
+            v_label := COALESCE(NULLIF(trim(v_item->>'label'), ''), 'Threshold');
+            v_min_gwa := NULLIF(v_item->>'min_gwa', '')::NUMERIC(4,2);
+            v_max_gwa := (v_item->>'max_gwa')::NUMERIC(4,2);
+            v_min_subject_grade := NULLIF(v_item->>'min_subject_grade', '')::NUMERIC(4,2);
+            v_requires_no_failing := COALESCE((v_item->>'requires_no_failing')::BOOLEAN, true);
+            v_scholarship_discount_pct := NULLIF(v_item->>'scholarship_discount_pct', '')::NUMERIC(5,2);
+            v_is_active := COALESCE((v_item->>'is_active')::BOOLEAN, true);
+            v_sort_order := COALESCE((v_item->>'sort_order')::INTEGER, 0);
 
-        IF v_max_gwa IS NULL OR v_max_gwa < 1.00 OR v_max_gwa > 5.00 THEN
-            RETURN jsonb_build_object('success', false, 'message', 'Each threshold must have a passing grade ceiling between 1.00 and 5.00.');
-        END IF;
+            IF v_max_gwa IS NULL OR v_max_gwa < 1.00 OR v_max_gwa > 5.00 THEN
+                RETURN jsonb_build_object('success', false, 'message', 'Each threshold must have a passing grade ceiling between 1.00 and 5.00.');
+            END IF;
 
-        IF v_min_gwa IS NOT NULL AND v_min_gwa > v_max_gwa THEN
-            RETURN jsonb_build_object('success', false, 'message', 'A threshold minimum cannot be greater than its maximum.');
-        END IF;
+            IF v_min_gwa IS NOT NULL AND v_min_gwa > v_max_gwa THEN
+                RETURN jsonb_build_object('success', false, 'message', 'A threshold minimum cannot be greater than its maximum.');
+            END IF;
 
-        IF v_min_subject_grade IS NOT NULL AND (v_min_subject_grade < 1.00 OR v_min_subject_grade > 5.00) THEN
-            RETURN jsonb_build_object('success', false, 'message', 'Minimum subject grade requirement must be between 1.00 and 5.00.');
-        END IF;
+            IF v_min_subject_grade IS NOT NULL AND (v_min_subject_grade < 1.00 OR v_min_subject_grade > 5.00) THEN
+                RETURN jsonb_build_object('success', false, 'message', 'Minimum subject grade requirement must be between 1.00 and 5.00.');
+            END IF;
 
-        UPDATE public.academic_thresholds
-        SET
-            min_gwa = v_min_gwa,
-            max_gwa = v_max_gwa,
-            min_subject_grade = v_min_subject_grade,
-            requires_no_failing = COALESCE((v_item->>'requires_no_failing')::BOOLEAN, requires_no_failing),
-            scholarship_discount_pct = NULLIF(v_item->>'scholarship_discount_pct', '')::NUMERIC(5,2),
-            is_active = COALESCE((v_item->>'is_active')::BOOLEAN, is_active)
-        WHERE id = v_id
-          AND deleted_at IS NULL;
+            IF v_id IS NOT NULL AND EXISTS (SELECT 1 FROM public.academic_thresholds WHERE id = v_id AND deleted_at IS NULL) THEN
+                UPDATE public.academic_thresholds
+                SET
+                    label = v_label,
+                    category = v_category,
+                    min_gwa = v_min_gwa,
+                    max_gwa = v_max_gwa,
+                    min_subject_grade = v_min_subject_grade,
+                    requires_no_failing = v_requires_no_failing,
+                    scholarship_discount_pct = v_scholarship_discount_pct,
+                    sort_order = CASE WHEN v_sort_order > 0 THEN v_sort_order ELSE sort_order END,
+                    is_active = v_is_active
+                WHERE id = v_id
+                  AND deleted_at IS NULL;
 
-        IF FOUND THEN
-            v_updated := v_updated + 1;
-        END IF;
-    END LOOP;
+                IF FOUND THEN
+                    v_updated := v_updated + 1;
+                END IF;
+            ELSE
+                v_code := NULLIF(trim(v_item->>'code'), '');
+                v_slug := trim(both '_' from lower(regexp_replace(COALESCE(v_code, v_label), '[^a-zA-Z0-9]+', '_', 'g')));
+                IF v_slug = '' OR v_slug IS NULL THEN
+                    v_slug := 'threshold_' || substr(gen_random_uuid()::text, 1, 8);
+                END IF;
 
-    RETURN jsonb_build_object('success', true, 'message', format('Updated %s academic threshold(s).', v_updated));
+                IF EXISTS (SELECT 1 FROM public.academic_thresholds WHERE code = v_slug AND deleted_at IS NULL) THEN
+                    v_slug := v_slug || '_' || substr(gen_random_uuid()::text, 1, 6);
+                END IF;
+
+                IF v_sort_order <= 0 THEN
+                    SELECT COALESCE(MAX(sort_order), 0) + 1 INTO v_sort_order
+                    FROM public.academic_thresholds
+                    WHERE category = v_category AND deleted_at IS NULL;
+                END IF;
+
+                INSERT INTO public.academic_thresholds (
+                    category,
+                    code,
+                    label,
+                    min_gwa,
+                    max_gwa,
+                    min_subject_grade,
+                    requires_no_failing,
+                    scholarship_discount_pct,
+                    sort_order,
+                    is_active
+                ) VALUES (
+                    v_category,
+                    v_slug,
+                    v_label,
+                    v_min_gwa,
+                    v_max_gwa,
+                    v_min_subject_grade,
+                    v_requires_no_failing,
+                    v_scholarship_discount_pct,
+                    v_sort_order,
+                    v_is_active
+                );
+
+                v_inserted := v_inserted + 1;
+            END IF;
+        END LOOP;
+    END IF;
+
+    RETURN jsonb_build_object('success', true, 'message', format('Saved academic thresholds (%s updated, %s added, %s removed).', v_updated, v_inserted, v_deleted));
 
 EXCEPTION WHEN OTHERS THEN
     RETURN jsonb_build_object('success', false, 'message', SQLERRM);
@@ -299,8 +375,8 @@ END;
 $$;
 
 REVOKE EXECUTE ON FUNCTION public.fn_get_academic_thresholds() FROM anon;
-REVOKE EXECUTE ON FUNCTION public.fn_update_academic_thresholds(jsonb) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.fn_update_academic_thresholds(jsonb, uuid[]) FROM anon;
 REVOKE EXECUTE ON FUNCTION public.fn_get_academic_standing(uuid, uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.fn_get_academic_thresholds() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.fn_update_academic_thresholds(jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_update_academic_thresholds(jsonb, uuid[]) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.fn_get_academic_standing(uuid, uuid) TO authenticated;

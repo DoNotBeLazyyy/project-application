@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import { InputAdornment, SxProps, Theme } from '@mui/material';
 import AcademicThresholdRow, {
     ACADEMIC_THRESHOLD_GRID_CLASS,
@@ -11,11 +12,12 @@ import {
     ArrowsClockwiseIcon,
     FloppyDiskIcon,
     MagnifyingGlassIcon,
+    PlusIcon,
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { getAcademicThresholds, updateAcademicThresholds } from '@services/academic-threshold.service';
 import { useToastStore } from '@stores/toast.store';
-import { AcademicThreshold, AcademicThresholdCategory } from '@type/academic-threshold.type';
+import { AcademicThreshold, AcademicThresholdCategory, AcademicThresholdUpdate } from '@type/academic-threshold.type';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const COLUMN_HEAD_CLASS = 'font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.1em] uppercase';
@@ -65,12 +67,24 @@ function toDraft(item: AcademicThreshold): AcademicThresholdDraft {
     };
 }
 
-function checkIsDirty(drafts: AcademicThresholdDraft[], initials: AcademicThreshold[]): boolean {
+function checkIsDirty(
+    drafts: AcademicThresholdDraft[],
+    initials: AcademicThreshold[],
+    pendingDeletedIds: string[]
+): boolean {
+    if (pendingDeletedIds.length > 0) {
+        return true;
+    }
+
     if (drafts.length !== initials.length) {
         return true;
     }
 
     for (const d of drafts) {
+        if (d.id.startsWith('temp-')) {
+            return true;
+        }
+
         const orig = initials.find((i) => i.id === d.id);
         if (!orig) {
             return true;
@@ -91,6 +105,12 @@ function checkIsDirty(drafts: AcademicThresholdDraft[], initials: AcademicThresh
         const origNoFailing = orig.requires_no_failing ?? false;
         const origActive = orig.is_active ?? true;
 
+        if (d.label !== orig.label) {
+            return true;
+        }
+        if (d.category !== orig.category) {
+            return true;
+        }
         if (d.min_gwa !== origMinGwa) {
             return true;
         }
@@ -117,8 +137,13 @@ function checkIsDirty(drafts: AcademicThresholdDraft[], initials: AcademicThresh
 function validateDrafts(drafts: AcademicThresholdDraft[]): string[] {
     const blockers: string[] = [];
 
-    for (const draft of drafts) {
-        const name = draft.label || draft.code;
+    for (let index = 0; index < drafts.length; index++) {
+        const draft = drafts[index];
+        const name = draft.label.trim() || `Threshold #${index + 1}`;
+
+        if (!draft.label.trim()) {
+            blockers.push(`Threshold #${index + 1}: Threshold name is required.`);
+        }
 
         if (!draft.max_gwa.trim()) {
             blockers.push(`${name}: Maximum GWA is required.`);
@@ -162,6 +187,8 @@ function validateDrafts(drafts: AcademicThresholdDraft[]): string[] {
 export default function AcademicThresholdManagement() {
     const [initialThresholds, setInitialThresholds] = useState<AcademicThreshold[]>([]);
     const [drafts, setDrafts] = useState<AcademicThresholdDraft[]>([]);
+    const [pendingDeletedIds, setPendingDeletedIds] = useState<string[]>([]);
+    const [thresholdToDelete, setThresholdToDelete] = useState<AcademicThresholdDraft | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -173,6 +200,7 @@ export default function AcademicThresholdManagement() {
         if (result.data) {
             setInitialThresholds(result.data);
             setDrafts(result.data.map(toDraft));
+            setPendingDeletedIds([]);
         }
         setIsLoading(false);
     }, []);
@@ -182,14 +210,20 @@ export default function AcademicThresholdManagement() {
     }, [fetchThresholds]);
 
     const isDirty = useMemo(() => {
-        return checkIsDirty(drafts, initialThresholds);
-    }, [drafts, initialThresholds]);
+        return checkIsDirty(drafts, initialThresholds, pendingDeletedIds);
+    }, [drafts, initialThresholds, pendingDeletedIds]);
 
     const dirtyCount = useMemo(() => {
-        let count = 0;
+        let count = pendingDeletedIds.length;
         for (const d of drafts) {
+            if (d.id.startsWith('temp-')) {
+                count++;
+                continue;
+            }
+
             const orig = initialThresholds.find((i) => i.id === d.id);
             if (!orig) {
+                count++;
                 continue;
             }
 
@@ -209,7 +243,9 @@ export default function AcademicThresholdManagement() {
             const origActive = orig.is_active ?? true;
 
             if (
-                d.min_gwa !== origMinGwa
+                d.label !== orig.label
+                || d.category !== orig.category
+                || d.min_gwa !== origMinGwa
                 || d.max_gwa !== origMaxGwa
                 || d.min_subject_grade !== origMinSubj
                 || d.scholarship_discount_pct !== origDiscount
@@ -221,7 +257,7 @@ export default function AcademicThresholdManagement() {
         }
 
         return count;
-    }, [drafts, initialThresholds]);
+    }, [drafts, initialThresholds, pendingDeletedIds]);
 
     const blockers = useMemo(() => {
         return validateDrafts(drafts);
@@ -237,8 +273,49 @@ export default function AcademicThresholdManagement() {
                     : item));
     }
 
+    function handleAddThreshold() {
+        const newCategory: AcademicThresholdCategory = selectedCategory !== 'All'
+            ? selectedCategory
+            : 'Honor';
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        const newDraft: AcademicThresholdDraft = {
+            category: newCategory,
+            code: '',
+            id: tempId,
+            is_active: true,
+            label: '',
+            max_gwa: '',
+            min_gwa: '',
+            min_subject_grade: '',
+            requires_no_failing: true,
+            scholarship_discount_pct: '',
+            sort_order: drafts.length + 1
+        };
+        setDrafts((prev) => [...prev, newDraft]);
+    }
+
+    function handleDeleteRow(threshold: AcademicThresholdDraft) {
+        if (threshold.id.startsWith('temp-')) {
+            setDrafts((prev) => prev.filter((d) => d.id !== threshold.id));
+        } else {
+            setThresholdToDelete(threshold);
+        }
+    }
+
+    function handleConfirmDelete() {
+        if (!thresholdToDelete) {
+            return;
+        }
+        const id = thresholdToDelete.id;
+        setPendingDeletedIds((prev) => [...prev, id]);
+        setDrafts((prev) => prev.filter((d) => d.id !== id));
+        setThresholdToDelete(null);
+    }
+
     function handleReset() {
         setDrafts(initialThresholds.map(toDraft));
+        setPendingDeletedIds([]);
+        setThresholdToDelete(null);
     }
 
     async function handleSave() {
@@ -247,9 +324,11 @@ export default function AcademicThresholdManagement() {
         }
 
         setIsSaving(true);
-        const payload = drafts.map((d) => ({
+        const payload: AcademicThresholdUpdate[] = drafts.map((d, index) => ({
+            category: d.category,
             id: d.id,
             is_active: d.is_active,
+            label: d.label.trim(),
             max_gwa: d.max_gwa.trim(),
             min_gwa: d.min_gwa.trim() === ''
                 ? ''
@@ -266,10 +345,11 @@ export default function AcademicThresholdManagement() {
                 ? (d.scholarship_discount_pct.trim() === ''
                     ? ''
                     : d.scholarship_discount_pct.trim())
-                : ''
+                : '',
+            sort_order: index + 1
         }));
 
-        const result = await updateAcademicThresholds(payload);
+        const result = await updateAcademicThresholds(payload, pendingDeletedIds);
         setIsSaving(false);
 
         if (!result.error) {
@@ -403,25 +483,37 @@ export default function AcademicThresholdManagement() {
                                 })}
                             </div>
 
-                            <div className="max-w-xs w-full">
-                                <CommonInput
-                                    hasClearButton
-                                    placeholder="Search thresholds..."
+                            <div className="flex flex-wrap gap-2 items-center justify-end max-w-md w-full sm:w-auto">
+                                <div className="max-w-xs min-w-[12rem] flex-1">
+                                    <CommonInput
+                                        hasClearButton
+                                        placeholder="Search thresholds..."
+                                        size="small"
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <MagnifyingGlassIcon size={16} />
+                                                    </InputAdornment>
+                                                )
+                                            }
+                                        }}
+                                        value={searchQuery}
+                                        onChange={function(e) {
+                                            setSearchQuery(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isLoading || isSaving}
                                     size="small"
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <MagnifyingGlassIcon size={16} />
-                                                </InputAdornment>
-                                            )
-                                        }
-                                    }}
-                                    value={searchQuery}
-                                    onChange={function(e) {
-                                        setSearchQuery(e.target.value);
-                                    }}
-                                />
+                                    startIcon={<PlusIcon size={16} weight="bold" />}
+                                    variant="outlined"
+                                    onClick={handleAddThreshold}
+                                >
+                                    Add Threshold
+                                </CommonButton>
                             </div>
                         </div>
 
@@ -452,6 +544,7 @@ export default function AcademicThresholdManagement() {
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>Discount %</span>
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>No Failing</span>
                                     <span className={`${COLUMN_HEAD_CLASS} text-center`}>Status</span>
+                                    <span aria-hidden="true" />
                                 </div>
                             )}
 
@@ -464,6 +557,9 @@ export default function AcademicThresholdManagement() {
                                     onChange={function(patch) {
                                         handleRowChange(threshold.id, patch);
                                     }}
+                                    onDelete={function() {
+                                        handleDeleteRow(threshold);
+                                    }}
                                 />
                             ))}
 
@@ -473,6 +569,16 @@ export default function AcademicThresholdManagement() {
                                 </p>
                             )}
                         </div>
+
+                        <DeletePromptModal
+                            description={`Are you sure you want to remove "${thresholdToDelete?.label || 'this threshold'}"? It will be marked for removal and deleted when you save changes.`}
+                            isOpen={Boolean(thresholdToDelete)}
+                            title="Delete Academic Threshold"
+                            onClose={function() {
+                                setThresholdToDelete(null);
+                            }}
+                            onConfirm={handleConfirmDelete}
+                        />
                     </div>
                 )}
         </CommonCard>

@@ -1,11 +1,11 @@
 import CommonInput from '@components/input/CommonInput';
-import { MinusCircleIcon, SealCheckIcon } from '@phosphor-icons/react';
+import { MinusCircleIcon, SealCheckIcon, TrashIcon } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { periodRailColor } from '@utils/period-allocation.util';
 import { ChangeEvent } from 'react';
 
 export const ACADEMIC_THRESHOLD_GRID_CLASS =
-    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem] items-center min-w-4xl';
+    'gap-3 grid grid-cols-[2rem_minmax(12rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem_2.5rem] items-center min-w-5xl';
 
 const CATEGORY_BADGE_STYLE: Record<AcademicThresholdCategory, string> = {
     Honor: 'bg-amber-50 text-amber-700 border-amber-200/80',
@@ -32,21 +32,31 @@ export interface AcademicThresholdRowProps {
     index: number;
     threshold: AcademicThresholdDraft;
     onChange: (patch: Partial<AcademicThresholdDraft>) => void;
+    onDelete: () => void;
 }
 
 export default function AcademicThresholdRow({
     disabled = false,
     index,
     threshold,
-    onChange
+    onChange,
+    onDelete
 }: AcademicThresholdRowProps) {
     const isStanding = threshold.category === 'Standing';
     const isScholarship = threshold.category === 'Scholarship';
+    const isNew = threshold.id.startsWith('temp-');
 
     function handleNumericChange(field: keyof AcademicThresholdDraft) {
         return function(event: ChangeEvent<HTMLInputElement>) {
             onChange({ [field]: event.target.value });
         };
+    }
+
+    function handleCycleCategory() {
+        const order: AcademicThresholdCategory[] = ['Honor', 'Scholarship', 'Standing'];
+        const currentIdx = order.indexOf(threshold.category);
+        const nextCat = order[(currentIdx + 1) % order.length];
+        onChange({ category: nextCat });
     }
 
     return (
@@ -60,13 +70,52 @@ export default function AcademicThresholdRow({
                     {index + 1}
                 </span>
 
-                <div className="flex flex-wrap gap-1.5 items-center min-w-0 pr-2">
-                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
-                        {threshold.label}
-                    </span>
-                    <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
-                        {threshold.category}
-                    </span>
+                <div className="flex flex-col gap-1 min-w-0 pr-2">
+                    <div className="flex items-center gap-1.5">
+                        {isNew ? (
+                            <div className="flex gap-1 items-center">
+                                {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
+                                    <button
+                                        className={`cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
+                                            threshold.category === cat
+                                                ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
+                                                : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100'
+                                        }`}
+                                        disabled={disabled}
+                                        key={cat}
+                                        type="button"
+                                        onClick={function() {
+                                            onChange({ category: cat });
+                                        }}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <button
+                                className={`border cursor-pointer font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
+                                disabled={disabled}
+                                title="Click to change category"
+                                type="button"
+                                onClick={handleCycleCategory}
+                            >
+                                {threshold.category}
+                            </button>
+                        )}
+                    </div>
+                    <CommonInput
+                        containerClassName="min-w-0 w-full"
+                        disabled={disabled}
+                        fullWidth
+                        hasClearButton={false}
+                        placeholder="Threshold name (e.g. Magna Cum Laude)"
+                        size="small"
+                        value={threshold.label}
+                        onChange={function(event: ChangeEvent<HTMLInputElement>) {
+                            onChange({ label: event.target.value });
+                        }}
+                    />
                 </div>
 
                 <CommonInput
@@ -187,46 +236,110 @@ export default function AcademicThresholdRow({
                             : 'Off'}
                     </button>
                 </div>
+
+                <div className="flex items-center justify-center">
+                    <button
+                        aria-label={`Delete ${threshold.label || 'threshold'}`}
+                        className="cursor-pointer flex items-center justify-center p-1.5 rounded-(--mui-tokens-radius-md) text-(--mui-palette-text-disabled) hover:text-(--mui-palette-error-main) hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                        disabled={disabled}
+                        title="Delete threshold"
+                        type="button"
+                        onClick={onDelete}
+                    >
+                        <TrashIcon size={16} weight="bold" />
+                    </button>
+                </div>
             </div>
 
             {/* Mobile View: 2-tier touch card (< md) */}
             <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col gap-3 md:hidden my-2 p-3.5 rounded-xl shadow-xs">
-                {/* Tier 1: Header with Badge, Title, Category and Active switch */}
-                <div className="flex gap-2 items-start justify-between">
-                    <div className="flex gap-2.5 items-center min-w-0">
-                        <span
-                            className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-7 text-(--mui-tokens-color-common-white) text-xs"
-                            style={{ background: periodRailColor(index) }}
-                        >
-                            {index + 1}
-                        </span>
-                        <div className="flex flex-wrap gap-1.5 items-center min-w-0">
-                            <span className="font-semibold text-(--mui-palette-text-primary) text-sm truncate">
-                                {threshold.label}
+                {/* Tier 1: Header with Index, Category, Title input, Active switch and Delete button */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 items-center justify-between">
+                        <div className="flex gap-2 items-center min-w-0">
+                            <span
+                                className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-7 text-(--mui-tokens-color-common-white) text-xs"
+                                style={{ background: periodRailColor(index) }}
+                            >
+                                {index + 1}
                             </span>
-                            <span className={`border font-semibold px-1.5 py-0.2 rounded-full text-[10px] tracking-tight uppercase ${CATEGORY_BADGE_STYLE[threshold.category]}`}>
-                                {threshold.category}
-                            </span>
+                            {isNew ? (
+                                <div className="flex flex-wrap gap-1 items-center">
+                                    {(['Honor', 'Scholarship', 'Standing'] as const).map((cat) => (
+                                        <button
+                                            className={`cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase border transition-colors ${
+                                                threshold.category === cat
+                                                    ? `${CATEGORY_BADGE_STYLE[cat]} ring-1 ring-current`
+                                                    : 'bg-neutral-50 text-neutral-500 border-neutral-200'
+                                            }`}
+                                            disabled={disabled}
+                                            key={cat}
+                                            type="button"
+                                            onClick={function() {
+                                                onChange({ category: cat });
+                                            }}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <button
+                                    className={`border cursor-pointer font-semibold px-2 py-0.5 rounded-full text-[10px] tracking-tight uppercase transition-transform active:scale-95 ${CATEGORY_BADGE_STYLE[threshold.category]}`}
+                                    disabled={disabled}
+                                    title="Click to change category"
+                                    type="button"
+                                    onClick={handleCycleCategory}
+                                >
+                                    {threshold.category}
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex gap-1.5 items-center shrink-0">
+                            <button
+                                className={`cursor-pointer flex font-bold gap-1.5 items-center px-2.5 py-1 rounded-full text-xs transition-colors shrink-0 ${
+                                    threshold.is_active
+                                        ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+                                        : 'bg-neutral-100 border border-neutral-300 text-neutral-500'
+                                }`}
+                                disabled={disabled}
+                                type="button"
+                                onClick={function() {
+                                    onChange({ is_active: !threshold.is_active });
+                                }}
+                            >
+                                <span className={`rounded-full size-2 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                                {threshold.is_active
+                                    ? 'Active'
+                                    : 'Off'}
+                            </button>
+
+                            <button
+                                aria-label={`Delete ${threshold.label || 'threshold'}`}
+                                className="cursor-pointer flex items-center justify-center p-1.5 rounded-lg text-(--mui-palette-text-disabled) hover:text-(--mui-palette-error-main) hover:bg-red-50 transition-colors shrink-0"
+                                disabled={disabled}
+                                title="Delete threshold"
+                                type="button"
+                                onClick={onDelete}
+                            >
+                                <TrashIcon size={16} weight="bold" />
+                            </button>
                         </div>
                     </div>
 
-                    <button
-                        className={`cursor-pointer flex font-bold gap-1.5 items-center px-2.5 py-1 rounded-full text-xs transition-colors shrink-0 ${
-                            threshold.is_active
-                                ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
-                                : 'bg-neutral-100 border border-neutral-300 text-neutral-500'
-                        }`}
+                    <CommonInput
+                        containerClassName="w-full"
                         disabled={disabled}
-                        type="button"
-                        onClick={function() {
-                            onChange({ is_active: !threshold.is_active });
+                        fullWidth
+                        hasClearButton={false}
+                        placeholder="Threshold Name (e.g. Magna Cum Laude)"
+                        size="small"
+                        value={threshold.label}
+                        onChange={function(event: ChangeEvent<HTMLInputElement>) {
+                            onChange({ label: event.target.value });
                         }}
-                    >
-                        <span className={`rounded-full size-2 ${threshold.is_active ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
-                        {threshold.is_active
-                            ? 'Active'
-                            : 'Off'}
-                    </button>
+                    />
                 </div>
 
                 {/* Tier 2: Form fields without horizontal scroll */}

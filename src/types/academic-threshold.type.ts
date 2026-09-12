@@ -15,12 +15,16 @@ export interface AcademicThreshold {
 }
 
 export interface AcademicThresholdUpdate {
-    id: string;
+    id?: string | null;
+    category?: AcademicThresholdCategory;
+    code?: string;
+    label?: string;
     min_gwa: string;
     max_gwa: string;
     min_subject_grade: string;
     requires_no_failing: boolean;
     scholarship_discount_pct: string;
+    sort_order?: number;
     is_active: boolean;
 }
 
