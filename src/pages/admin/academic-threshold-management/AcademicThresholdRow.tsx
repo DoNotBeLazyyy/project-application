@@ -1,10 +1,16 @@
 import CommonInput from '@components/input/CommonInput';
+import CommonSelect from '@components/select/CommonSelect';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { periodRailColor } from '@utils/period-allocation.util';
 import { ChangeEvent } from 'react';
 
 export const ACADEMIC_THRESHOLD_GRID_CLASS =
-    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_6.5rem_5.5rem] items-center min-w-4xl';
+    'gap-3 grid grid-cols-[2rem_minmax(11rem,1.8fr)_6.5rem_6.5rem_7.5rem_6.5rem_7.5rem_5rem] items-center min-w-4xl';
+
+const NO_FAILING_OPTIONS = [
+    { label: 'Required', value: 'true' },
+    { label: 'Optional', value: 'false' }
+];
 
 const CATEGORY_BADGE_STYLE: Record<AcademicThresholdCategory, string> = {
     Honor: 'bg-amber-50 text-amber-700 border-amber-200/80',
@@ -144,27 +150,17 @@ export default function AcademicThresholdRow({
                         </span>
                     )
                     : (
-                        <div className="flex items-center justify-center">
-                            <label className="cursor-pointer flex gap-1.5 items-center select-none text-xs">
-                                <input
-                                    checked={threshold.requires_no_failing}
-                                    className="accent-(--mui-palette-primary-main) cursor-pointer rounded size-4"
-                                    disabled={disabled}
-                                    type="checkbox"
-                                    onChange={function(e) {
-                                        onChange({ requires_no_failing: e.target.checked });
-                                    }}
-                                />
-                                <span className={threshold.requires_no_failing
-                                    ? 'font-medium text-blue-700 text-xs'
-                                    : 'text-(--mui-palette-text-secondary) text-xs'}
-                                >
-                                    {threshold.requires_no_failing
-                                        ? 'Required'
-                                        : 'Optional'}
-                                </span>
-                            </label>
-                        </div>
+                        <CommonSelect
+                            containerClassName="min-w-0 w-full"
+                            disabled={disabled}
+                            fullWidth
+                            options={NO_FAILING_OPTIONS}
+                            size="small"
+                            value={threshold.requires_no_failing ? 'true' : 'false'}
+                            onChange={function(e) {
+                                onChange({ requires_no_failing: e.target.value === 'true' });
+                            }}
+                        />
                     )}
 
                 <div className="flex items-center justify-center">
@@ -266,62 +262,59 @@ export default function AcademicThresholdRow({
                         </div>
                     </div>
 
-                    {(!isStanding || isScholarship) && (
+                    {!isStanding && (
                         <div className="gap-3 grid grid-cols-2">
-                            {!isStanding && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
-                                        Min Subj Floor
-                                    </span>
-                                    <CommonInput
-                                        containerClassName="min-w-0 w-full"
-                                        disabled={disabled}
-                                        fullWidth
-                                        hasClearButton={false}
-                                        placeholder="e.g. 1.75"
-                                        size="small"
-                                        slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
-                                        value={threshold.min_subject_grade}
-                                        onChange={handleNumericChange('min_subject_grade')}
-                                    />
-                                </div>
-                            )}
-                            {isScholarship && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
-                                        Discount %
-                                    </span>
-                                    <CommonInput
-                                        containerClassName="min-w-0 w-full"
-                                        disabled={disabled}
-                                        fullWidth
-                                        hasClearButton={false}
-                                        placeholder="e.g. 100"
-                                        size="small"
-                                        slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
-                                        value={threshold.scholarship_discount_pct}
-                                        onChange={handleNumericChange('scholarship_discount_pct')}
-                                    />
-                                </div>
-                            )}
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                    Min Subj Floor
+                                </span>
+                                <CommonInput
+                                    containerClassName="min-w-0 w-full"
+                                    disabled={disabled}
+                                    fullWidth
+                                    hasClearButton={false}
+                                    placeholder="e.g. 1.75"
+                                    size="small"
+                                    slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                    value={threshold.min_subject_grade}
+                                    onChange={handleNumericChange('min_subject_grade')}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                    No Failing Grades
+                                </span>
+                                <CommonSelect
+                                    disabled={disabled}
+                                    fullWidth
+                                    options={NO_FAILING_OPTIONS}
+                                    size="small"
+                                    value={threshold.requires_no_failing ? 'true' : 'false'}
+                                    onChange={function(e) {
+                                        onChange({ requires_no_failing: e.target.value === 'true' });
+                                    }}
+                                />
+                            </div>
                         </div>
                     )}
 
-                    {!isStanding && (
-                        <label className="bg-(--mui-palette-background-default) border border-(--mui-palette-divider)/80 cursor-pointer flex items-center justify-between p-2.5 rounded-lg select-none">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-xs">
-                                Zero Failing Grades Allowed
+                    {isScholarship && (
+                        <div className="flex flex-col gap-1">
+                            <span className="font-bold text-(--mui-palette-text-secondary) text-[10px] tracking-wider truncate uppercase">
+                                Tuition Discount %
                             </span>
-                            <input
-                                checked={threshold.requires_no_failing}
-                                className="accent-(--mui-palette-primary-main) cursor-pointer rounded size-4"
+                            <CommonInput
+                                containerClassName="min-w-0 w-full"
                                 disabled={disabled}
-                                type="checkbox"
-                                onChange={function(e) {
-                                    onChange({ requires_no_failing: e.target.checked });
-                                }}
+                                fullWidth
+                                hasClearButton={false}
+                                placeholder="e.g. 100"
+                                size="small"
+                                slotProps={{ htmlInput: { inputMode: 'decimal', style: { textAlign: 'center' } } }}
+                                value={threshold.scholarship_discount_pct}
+                                onChange={handleNumericChange('scholarship_discount_pct')}
                             />
-                        </label>
+                        </div>
                     )}
                 </div>
             </div>
