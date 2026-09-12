@@ -60,9 +60,9 @@ export default function AcademicThresholdRow({
     }
 
     return (
-        <div className="border-(--mui-palette-divider) border-t flex flex-col last:border-b">
+        <div className="flex flex-col w-full">
             {/* Desktop View (md and up) */}
-            <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} hidden md:grid py-3`}>
+            <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} border-(--mui-palette-divider) border-b hidden md:grid hover:bg-neutral-50/60 py-3 transition-colors w-full`}>
                 <span
                     className="flex font-bold items-center justify-center rounded-(--mui-tokens-radius-md) shrink-0 size-8 text-(--mui-tokens-color-common-white) text-xs"
                     style={{ background: periodRailColor(index) }}

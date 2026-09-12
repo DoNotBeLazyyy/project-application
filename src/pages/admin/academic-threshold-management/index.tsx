@@ -532,42 +532,48 @@ export default function AcademicThresholdManagement() {
                             </div>
                         )}
 
-                        {/* Sticky row composer table */}
-                        <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-auto">
-                            {filteredDrafts.length > 0 && (
-                                <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} bg-(--mui-palette-background-paper) hidden md:grid pb-2 sticky top-0 z-10`}>
-                                    <span className={COLUMN_HEAD_CLASS}>#</span>
-                                    <span className={COLUMN_HEAD_CLASS}>Threshold</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA (Best)</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Max GWA (Cutoff)</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min Subj Grade</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Discount %</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>No Failing</span>
-                                    <span className={`${COLUMN_HEAD_CLASS} text-center`}>Status</span>
-                                    <span aria-hidden="true" />
+                        {/* Row composer table container */}
+                        <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-x-auto">
+                            <div className="flex flex-col flex-1 min-h-0 min-w-full md:min-w-5xl">
+                                {/* Desktop Table Header - fixed above the vertical scroll container */}
+                                {filteredDrafts.length > 0 && (
+                                    <div className={`${ACADEMIC_THRESHOLD_GRID_CLASS} border-(--mui-palette-divider) border-b bg-(--mui-palette-background-paper) hidden md:grid pb-2.5 pt-1 shrink-0 w-full`}>
+                                        <span className={COLUMN_HEAD_CLASS}>#</span>
+                                        <span className={COLUMN_HEAD_CLASS}>Threshold</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min GWA (Best)</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>Max GWA (Cutoff)</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>Min Subj Grade</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>Discount %</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>No Failing</span>
+                                        <span className={`${COLUMN_HEAD_CLASS} text-center`}>Status</span>
+                                        <span aria-hidden="true" />
+                                    </div>
+                                )}
+
+                                {/* Scrollable rows body - vertical scrollbar only appears here below the header */}
+                                <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
+                                    {filteredDrafts.map((threshold, index) => (
+                                        <AcademicThresholdRow
+                                            disabled={isSaving}
+                                            index={index}
+                                            key={threshold.id}
+                                            threshold={threshold}
+                                            onChange={function(patch) {
+                                                handleRowChange(threshold.id, patch);
+                                            }}
+                                            onDelete={function() {
+                                                handleDeleteRow(threshold);
+                                            }}
+                                        />
+                                    ))}
+
+                                    {filteredDrafts.length === 0 && (
+                                        <p className="py-12 text-(--mui-palette-text-secondary) text-center text-sm">
+                                            No academic thresholds match your filter or search query.
+                                        </p>
+                                    )}
                                 </div>
-                            )}
-
-                            {filteredDrafts.map((threshold, index) => (
-                                <AcademicThresholdRow
-                                    disabled={isSaving}
-                                    index={index}
-                                    key={threshold.id}
-                                    threshold={threshold}
-                                    onChange={function(patch) {
-                                        handleRowChange(threshold.id, patch);
-                                    }}
-                                    onDelete={function() {
-                                        handleDeleteRow(threshold);
-                                    }}
-                                />
-                            ))}
-
-                            {filteredDrafts.length === 0 && (
-                                <p className="py-12 text-(--mui-palette-text-secondary) text-center text-sm">
-                                    No academic thresholds match your filter or search query.
-                                </p>
-                            )}
+                            </div>
                         </div>
 
                         <DeletePromptModal
