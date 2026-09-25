@@ -76,8 +76,14 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         }
     }
 
-    const externalTextFieldProps = typeof props.slotProps?.textField === 'object' ? props.slotProps.textField : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
+        ? props.slotProps.textField
+        : undefined;
+    const { onFocus: externalOnFocus, variant: _unusedVariant, className: externalClassName, ...restTextFieldProps } = (externalTextFieldProps ?? {}) as Record<string, unknown>;
+    void _unusedVariant;
+    const classNameStr = typeof externalClassName === 'string'
+        ? externalClassName
+        : undefined;
 
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
@@ -85,17 +91,21 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                 {...props}
                 disabled={disabled}
                 inputRef={ref}
-                open={isNonInteractive ? false : isOpen}
+                open={isNonInteractive
+                    ? false
+                    : isOpen}
                 readOnly={readOnly}
                 slotProps={{
                     ...props.slotProps,
                     openPickerButton: {
                         disabled: isNonInteractive,
-                        ...(typeof props.slotProps?.openPickerButton === 'object' ? props.slotProps.openPickerButton : {})
+                        ...(typeof props.slotProps?.openPickerButton === 'object'
+                            ? props.slotProps.openPickerButton
+                            : {})
                     },
                     textField: {
                         className: classMerge(
-                            externalClassName,
+                            classNameStr,
                             isNonInteractive && 'common_input_readonly'
                         ),
                         disabled,
@@ -106,27 +116,34 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             : undefined,
                         variant: 'outlined' as const,
                         ...restTextFieldProps,
-                        onFocus: () => {
+                        onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            if (typeof externalOnFocus === 'function') {
+                                (externalOnFocus as (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void)(e);
+                            }
                             if (isNonInteractive) {
                                 return;
                             }
                             handleFocus();
                         },
                         sx: [
-                            ...(disabled ? [{
-                                pointerEvents: 'none' as const
-                            }] : []),
-                            ...(readOnly ? [{
-                                '& .MuiInputBase-root': {
-                                    cursor: 'default'
-                                },
-                                '& .MuiInputBase-input': {
-                                    cursor: 'default'
-                                },
-                                '& .MuiInputAdornment-root': {
+                            ...(disabled
+                                ? [{
                                     pointerEvents: 'none' as const
-                                }
-                            }] : []),
+                                }]
+                                : []),
+                            ...(readOnly
+                                ? [{
+                                    '& .MuiInputBase-root': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputBase-input': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputAdornment-root': {
+                                        pointerEvents: 'none' as const
+                                    }
+                                }]
+                                : []),
                             ...(externalTextFieldProps?.sx
                                 ? (Array.isArray(externalTextFieldProps.sx)
                                     ? externalTextFieldProps.sx
