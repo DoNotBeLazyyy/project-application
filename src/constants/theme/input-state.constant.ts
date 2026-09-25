@@ -28,7 +28,8 @@ const DISABLED_OR_READONLY_SELECTOR = `
     &.common_input_readonly:hover
 `;
 
-const DISABLED_OR_READONLY_NOTCH_SELECTOR = (outline: string) => `
+function DISABLED_OR_READONLY_NOTCH_SELECTOR(outline: string) {
+    return `
     &.Mui-disabled ${outline},
     &.MuiInputBase-readOnly ${outline},
     &[readonly] ${outline},
@@ -36,6 +37,7 @@ const DISABLED_OR_READONLY_NOTCH_SELECTOR = (outline: string) => `
     &:has(textarea[readonly]) ${outline},
     &.common_input_readonly ${outline}
 `;
+}
 
 export function buildInputStateStyles(outlineClassName?: string): CSSObject {
     if (!outlineClassName) {
