@@ -72,7 +72,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     // Assert that the caller has Admin role in database
     const { error: roleGuardError } = await userClient.rpc('fn_assert_role', {
-        p_role_code: 'Admin'
+        p_roles: ['Admin']
     });
 
     if (roleGuardError) {
