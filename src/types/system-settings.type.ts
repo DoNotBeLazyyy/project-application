@@ -14,6 +14,8 @@ export interface SystemSettings {
     max_units_per_term: number;
     default_term_type_id: string | null;
     default_evaluation_scope: EvaluationScope;
+    max_upload_size_mb: number;
+    allowed_upload_types: string;
 }
 
 export interface SystemSettingsFormValues {
@@ -29,4 +31,6 @@ export interface SystemSettingsFormValues {
     max_units_per_term: string;
     default_term_type_id: string;
     default_evaluation_scope: EvaluationScope;
-}
+    max_upload_size_mb: string;
+    allowed_upload_types: string;
+}

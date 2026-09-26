@@ -1,7 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    BookmarkSimpleIcon,
-    CalendarDotsIcon, CalendarIcon, ChartBarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, ShieldCheckIcon, StackIcon, UsersIcon
+    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -46,12 +45,6 @@ export default function AdminLayout() {
                         onClick: () => navigate('/admin/terms')
                     },
                     {
-                        icon: <StackIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/term-types'),
-                        label: 'Term Types',
-                        onClick: () => navigate('/admin/term-types')
-                    },
-                    {
                         icon: <GraduationCapIcon size={18} />,
                         isActive: pathname === '/admin/academic-thresholds',
                         label: 'Academic Thresholds',
@@ -64,21 +57,13 @@ export default function AdminLayout() {
                 items: [
                     {
                         icon: <PercentIcon size={18} />,
-                        isActive: pathname === '/admin/transmutation' || pathname === '/admin/grade-configurations',
-                        label: 'Transmutation',
-                        onClick: () => navigate('/admin/transmutation')
-                    },
-                    {
-                        icon: <ChartBarIcon size={18} />,
-                        isActive: pathname === '/admin/grading-periods',
-                        label: 'Grading Periods',
-                        onClick: () => navigate('/admin/grading-periods')
-                    },
-                    {
-                        icon: <BookmarkSimpleIcon size={18} />,
-                        isActive: pathname === '/admin/special-grades',
-                        label: 'Special Grades',
-                        onClick: () => navigate('/admin/special-grades')
+                        isActive: pathname.startsWith('/admin/grade-configurations')
+                            || pathname.startsWith('/admin/grading-rules')
+                            || pathname.startsWith('/admin/transmutation')
+                            || pathname.startsWith('/admin/grading-periods')
+                            || pathname.startsWith('/admin/special-grades'),
+                        label: 'Grading Rules',
+                        onClick: () => navigate('/admin/grade-configurations')
                     }
                 ]
             },
@@ -108,12 +93,6 @@ export default function AdminLayout() {
             {
                 sectionLabel: 'SYSTEM & SECURITY',
                 items: [
-                    {
-                        icon: <ShieldCheckIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/roles'),
-                        label: 'Permissions',
-                        onClick: () => navigate('/admin/roles')
-                    },
                     {
                         icon: <ClockCounterClockwiseIcon size={18} />,
                         isActive: pathname.startsWith('/admin/audit-logs'),

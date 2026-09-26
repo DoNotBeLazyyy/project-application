@@ -21,6 +21,8 @@ export async function updateSystemSettings(
         p_academic_year_start_month: Number(params.academic_year_start_month),
         p_max_units_per_term: Number(params.max_units_per_term),
         p_default_term_type_id: params.default_term_type_id || null,
-        p_default_evaluation_scope: params.default_evaluation_scope || 'Period'
+        p_default_evaluation_scope: params.default_evaluation_scope || 'Period',
+        p_max_upload_size_mb: Number(params.max_upload_size_mb),
+        p_allowed_upload_types: params.allowed_upload_types
     });
-}
+}

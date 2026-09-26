@@ -5,7 +5,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
-import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
+import { CameraIcon, HardDrivesIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
@@ -26,6 +26,16 @@ const MONTH_OPTIONS = [
     { label: 'October', value: '10' },
     { label: 'November', value: '11' },
     { label: 'December', value: '12' }
+];
+
+const BUCKET_ROWS: { bucket: string; label: string; use: string }[] = [
+    { bucket: 'materials', label: 'Materials', use: 'Faculty learning materials (slides, PDFs)' },
+    { bucket: 'submissions', label: 'Submissions', use: 'Student homework & assessment file answers' },
+    { bucket: 'discussions', label: 'Discussions', use: 'Attachments on discussion thread posts' },
+    { bucket: 'announcements', label: 'Announcements', use: 'Images & documents on announcements' },
+    { bucket: 'events', label: 'Events', use: 'Cover images on campus events' },
+    { bucket: 'avatars', label: 'Avatars', use: 'User profile photos' },
+    { bucket: 'logos', label: 'Logos', use: 'Institution logo (managed above)' }
 ];
 
 const SETTINGS_FORM_ID = 'system-settings-form';
@@ -49,7 +59,9 @@ export default function SystemSettings() {
             academic_year_start_month: '6',
             max_units_per_term: '24',
             default_term_type_id: '',
-            default_evaluation_scope: 'Period'
+            default_evaluation_scope: 'Period',
+            max_upload_size_mb: '25',
+            allowed_upload_types: 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
         }
     });
 
@@ -70,7 +82,9 @@ export default function SystemSettings() {
                     academic_year_start_month: String(result.data.academic_year_start_month),
                     max_units_per_term: String(result.data.max_units_per_term),
                     default_term_type_id: result.data.default_term_type_id ?? '',
-                    default_evaluation_scope: result.data.default_evaluation_scope ?? 'Period'
+                    default_evaluation_scope: result.data.default_evaluation_scope ?? 'Period',
+                    max_upload_size_mb: String(result.data.max_upload_size_mb ?? 25),
+                    allowed_upload_types: result.data.allowed_upload_types ?? 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
                 });
 
                 if (result.data.institution_logo_url) {
@@ -216,6 +230,28 @@ export default function SystemSettings() {
             fieldProps: {
                 helperText: EVALUATION_SCOPE_HELPER
             }
+        },
+        {
+            label: 'Max Upload Size (MB)',
+            name: 'max_upload_size_mb',
+            rules: {
+                required: 'Max upload size is required',
+                min: { value: 1, message: 'Must be at least 1 MB' },
+                max: { value: 500, message: 'Cannot exceed 500 MB' }
+            },
+            type: 'number',
+            fieldProps: {
+                helperText: 'Applies to materials, submissions, discussion attachments, and event images.'
+            }
+        },
+        {
+            label: 'Allowed File Types',
+            name: 'allowed_upload_types',
+            rules: { required: 'At least one file type is required' },
+            type: 'text',
+            fieldProps: {
+                helperText: 'Comma-separated extensions without dots, e.g. pdf,docx,png,zip'
+            }
         }
     ];
 
@@ -338,7 +374,42 @@ export default function SystemSettings() {
                         hasHelper
                     />
                 </form>
+
+                <div className="border border-(--mui-palette-divider) rounded-lg">
+                    <div className="border-b border-(--mui-palette-divider) flex gap-3 items-center px-4 py-3">
+                        <HardDrivesIcon
+                            className="shrink-0 text-(--mui-palette-text-secondary)"
+                            size={18}
+                        />
+                        <div className="flex flex-col">
+                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                                Storage Buckets
+                            </h2>
+                            <p className="text-(--mui-palette-text-secondary) text-xs">
+                                Read-only reference — shows each bucket and what it stores. Manage
+                                bucket size limits and file-type rules in Supabase Storage settings.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-(--mui-palette-divider)">
+                        {BUCKET_ROWS.map(function(row) {
+                            return (
+                                <div
+                                    className="flex items-center gap-3 px-4 py-2.5"
+                                    key={row.bucket}
+                                >
+                                    <span className="bg-(--mui-palette-primary-50) font-mono px-2 py-0.5 rounded text-(--mui-palette-primary-main) text-xs w-28 shrink-0">
+                                        {row.bucket}
+                                    </span>
+                                    <span className="text-(--mui-palette-text-secondary) text-xs">
+                                        {row.use}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </CommonCard>
     );
-}
+}

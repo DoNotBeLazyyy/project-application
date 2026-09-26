@@ -46,9 +46,15 @@ export const adminRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management/TransmutationPage');
+                    return import('@pages/admin/grading-config-management');
                 }),
                 path: 'grade-configurations'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/admin/grading-config-management');
+                }),
+                path: 'grading-rules'
             },
             {
                 element: lazyElement(function() {

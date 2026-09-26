@@ -13,7 +13,7 @@ export default function CreateUserForm({
     control,
     ...formProps
 }: CreateUserFormProps) {
-    const { roleOptions } = useRoleOptions({ withAllOption: true });
+    const { roleOptions } = useRoleOptions();
     const fields: FormFieldConfig<AddUserFormValues>[] = [
         {
             name: 'first_name',
