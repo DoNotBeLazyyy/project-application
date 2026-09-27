@@ -10,14 +10,17 @@ export default function AuthGuard() {
     const { pathname } = useLocation();
 
     const isExpired = Boolean(session && isSessionExpiredDueToInactivity());
+    const isSuspendedOrInactive = Boolean(
+        userProfile && (userProfile.status === 'Suspended' || userProfile.status === 'Inactive')
+    );
 
     useEffect(() => {
-        if (isExpired) {
+        if (isExpired || isSuspendedOrInactive) {
             logout();
         }
-    }, [isExpired]);
+    }, [isExpired, isSuspendedOrInactive]);
 
-    if (!session || isExpired) {
+    if (!session || isExpired || isSuspendedOrInactive) {
         return <Navigate replace to="/login" />;
     }
 

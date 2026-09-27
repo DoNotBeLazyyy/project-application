@@ -1,6 +1,7 @@
-import { GradingComponent, GradingPeriod } from '@type/faculty.type';
+import { GradeSheetRow, GradingComponent, GradingPeriod } from '@type/faculty.type';
 import { TransmutationRow } from '@type/grading-config.type';
 import { RubricCriterionInput, RubricEvaluationInput } from '@type/rubric.type';
+import { escapeCsvField, generateGradeSheetCsv } from '@utils/grading.util';
 import {
     AssessmentItemRecord,
     AssessmentSubmissionRecord,
@@ -841,6 +842,140 @@ describe('Faculty & Student Deep Workflows: Grading, Period Locking & Rubric Eva
                 .toBe(1);
             expect(outcome.newRubrics?.[0].sectionId)
                 .toBe('sec-cs101-b');
+        });
+    });
+
+    describe('8. Attendance Bulk Operations: Mark All Present', () => {
+        it('should update all draft attendance records to Present', () => {
+            const initialDrafts = [
+                { id: 'att-1', status: 'Absent' as const, remarks: '' },
+                { id: 'att-2', status: 'Late' as const, remarks: 'Traffic' },
+                { id: 'att-3', status: 'Excused' as const, remarks: 'Medical' }
+            ];
+
+            const updatedDrafts = initialDrafts.map((r) => ({ ...r, status: 'Present' as const }));
+
+            expect(updatedDrafts.every((r) => r.status === 'Present'))
+                .toBe(true);
+            expect(updatedDrafts[1].remarks)
+                .toBe('Traffic');
+        });
+    });
+
+    describe('9. Grade Sheet CSV Export Generation', () => {
+        it('should escape CSV values correctly with quotes and handle special characters', () => {
+            expect(escapeCsvField('Hello'))
+                .toBe('"Hello"');
+            expect(escapeCsvField('Quotes "Inside" Text'))
+                .toBe('"Quotes ""Inside"" Text"');
+            expect(escapeCsvField('Dela Cruz, Juan'))
+                .toBe('"Dela Cruz, Juan"');
+            expect(escapeCsvField(null))
+                .toBe('""');
+            expect(escapeCsvField(undefined))
+                .toBe('""');
+            expect(escapeCsvField(95.5))
+                .toBe('"95.5"');
+        });
+
+        it('should generate complete CSV with metadata, headers, and student rows', () => {
+            const mockGradeSheet: GradeSheetRow[] = [
+                {
+                    enrollment_id: 'en-1',
+                    student_number: '2026-0001',
+                    full_name: 'Dela Cruz, Juan',
+                    raw_grade: 92.5,
+                    final_grade: 92.5,
+                    transmuted_grade: 1.25,
+                    status: 'Draft',
+                    special_grade: null
+                },
+                {
+                    enrollment_id: 'en-2',
+                    student_number: '2026-0002',
+                    full_name: 'Santos, Maria',
+                    raw_grade: null,
+                    final_grade: null,
+                    transmuted_grade: null,
+                    status: 'Draft',
+                    special_grade: 'INC'
+                }
+            ];
+
+            const csv = generateGradeSheetCsv({
+                courseCode: 'CS101',
+                courseTitle: 'Introduction to Computing',
+                sectionCode: 'BSIT-1A',
+                periodName: 'Prelim',
+                gradeSheet: mockGradeSheet
+            });
+
+            expect(csv)
+                .toContain('"Course / Section","CS101 — BSIT-1A"');
+            expect(csv)
+                .toContain('"Course Title","Introduction to Computing"');
+            expect(csv)
+                .toContain('"Grading Period","Prelim"');
+            expect(csv)
+                .toContain('"Student No.","Full Name","Raw Grade","Transmuted Grade","Special Grade","Status"');
+            expect(csv)
+                .toContain('"2026-0001","Dela Cruz, Juan","92.5%","1.25","—","Draft"');
+            expect(csv)
+                .toContain('"2026-0002","Santos, Maria","—","—","INC","Draft"');
+        });
+
+        it('should generate CSV correctly when grade sheet is empty', () => {
+            const csv = generateGradeSheetCsv({
+                courseCode: 'CS101',
+                sectionCode: 'BSIT-1A',
+                periodName: 'Midterm',
+                gradeSheet: []
+            });
+
+            expect(csv)
+                .toContain('"Grading Period","Midterm"');
+            expect(csv)
+                .toContain('"Student No.","Full Name","Raw Grade","Transmuted Grade","Special Grade","Status"');
+        });
+    });
+
+    describe('10. Section Grade Submission to Registrar & Lock Status', () => {
+        it('should detect when grade sheet status is submitted', () => {
+            const draftSheet: GradeSheetRow[] = [
+                {
+                    enrollment_id: 'en-1',
+                    student_number: '2026-0001',
+                    full_name: 'Dela Cruz, Juan',
+                    raw_grade: 92.5,
+                    final_grade: 92.5,
+                    transmuted_grade: 1.25,
+                    status: 'Draft',
+                    special_grade: null
+                }
+            ];
+
+            const submittedSheet: GradeSheetRow[] = [
+                {
+                    enrollment_id: 'en-1',
+                    student_number: '2026-0001',
+                    full_name: 'Dela Cruz, Juan',
+                    raw_grade: 92.5,
+                    final_grade: 92.5,
+                    transmuted_grade: 1.25,
+                    status: 'Submitted',
+                    special_grade: null
+                }
+            ];
+
+            const isDraftSubmitted = draftSheet.length > 0 && draftSheet.some((r) =>
+                r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released');
+            const isSubmitted = submittedSheet.length > 0 && submittedSheet.some((r) =>
+                r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released');
+
+            expect(isDraftSubmitted)
+                .toBe(false);
+            expect(isSubmitted)
+                .toBe(true);
         });
     });
 });

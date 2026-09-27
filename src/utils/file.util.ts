@@ -46,3 +46,22 @@ export function extractClipboardFiles(clipboardData: DataTransfer | null): File[
             return file !== null;
         });
 }
+
+/**
+ * Triggers a browser file download of CSV content with UTF-8 BOM encoding
+ * so applications like Microsoft Excel correctly render special characters.
+ */
+export function exportCsvFile(filename: string, csvContent: string): void {
+    const safeFilename = filename.endsWith('.csv')
+        ? filename
+        : `${filename}.csv`;
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', safeFilename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}

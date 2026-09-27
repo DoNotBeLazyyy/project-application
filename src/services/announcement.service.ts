@@ -43,6 +43,18 @@ export async function listMyAnnouncementsFeed(
     }, { background: true, silent: true });
 }
 
+export async function listSectionAnnouncements(
+    sectionId: string,
+    page = 1,
+    size = 20
+): Promise<ServiceResult<CommonListResDto<AnnouncementFeedRow>>> {
+    return callRpc<CommonListResDto<AnnouncementFeedRow>>('fn_list_section_announcements', {
+        p_page: page,
+        p_section_id: sectionId,
+        p_size: size
+    });
+}
+
 export async function getAnnouncementById(
     announcementId: string
 ): Promise<ServiceResult<AnnouncementDetail>> {

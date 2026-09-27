@@ -38,6 +38,16 @@ BEGIN
             USING ERRCODE = 'P0002';
     END IF;
 
+    IF (v_profile->>'status') = 'Suspended' THEN
+        RAISE EXCEPTION 'Your account has been suspended. Please contact your administrator.'
+            USING ERRCODE = '42501';
+    END IF;
+
+    IF (v_profile->>'status') = 'Inactive' THEN
+        RAISE EXCEPTION 'Your account is currently inactive. Please contact your administrator.'
+            USING ERRCODE = '42501';
+    END IF;
+
     SELECT coalesce(
                jsonb_agg(DISTINCT jsonb_build_object('id', r.id, 'code', r.code, 'label', r.label)),
                '[]'::jsonb

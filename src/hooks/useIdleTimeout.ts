@@ -121,6 +121,7 @@ export default function useIdleTimeout({
         }
 
         checkInactivity();
+        const intervalId = setInterval(checkInactivity, 2000);
 
         function handleVisibilityChange() {
             if (document.visibilityState === 'visible') {
@@ -160,6 +161,7 @@ export default function useIdleTimeout({
 
         return () => {
             clearTimers();
+            clearInterval(intervalId);
             events.forEach((event) => {
                 window.removeEventListener(event, handleActivity);
             });

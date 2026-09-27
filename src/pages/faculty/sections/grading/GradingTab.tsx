@@ -18,6 +18,7 @@ import {
     listGradingPeriodsBySection,
     listSpecialGradeFlags,
     reseedSectionGrading,
+    submitSectionGrades,
     updateGradingComponent
 } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
@@ -32,10 +33,18 @@ import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.t
 import { SyntheticEvent, useEffect, useState } from 'react';
 
 interface GradingTabProps {
+    courseCode?: string;
+    courseTitle?: string;
+    sectionCode?: string;
     sectionId: string;
 }
 
-export default function GradingTab({ sectionId }: GradingTabProps) {
+export default function GradingTab({
+    courseCode,
+    courseTitle,
+    sectionCode,
+    sectionId
+}: GradingTabProps) {
     const [periods, setPeriods] = useState<GradingPeriod[]>([]);
     const [activePeriodId, setActivePeriodId] = useState('');
     const [components, setComponents] = useState<GradingComponent[]>([]);
@@ -47,6 +56,7 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
     const [isFlagBusy, setIsFlagBusy] = useState(false);
     const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
     const [isThresholdOpen, setIsThresholdOpen] = useState(false);
+    const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
 
     useEffect(function() {
         async function fetchPeriods() {
@@ -168,6 +178,24 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
         if (!result.error) await fetchPeriodData();
     }
 
+    async function handleSubmitGrades() {
+        setIsSubmittingGrades(true);
+        const result = await submitSectionGrades(sectionId, activePeriodId);
+        setIsSubmittingGrades(false);
+
+        const message = result.error?.message ?? result.data?.message;
+
+        if (result.error || !result.data?.success) {
+            useToastStore.getState()
+                .showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
+            return;
+        }
+
+        useToastStore.getState()
+            .showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
+        await fetchPeriodData();
+    }
+
     if (periods.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center">
@@ -214,13 +242,20 @@ export default function GradingTab({ sectionId }: GradingTabProps) {
                 <GradeSheetPanel
                     calculationFailures={calculationFailures}
                     components={components}
+                    courseCode={courseCode}
+                    courseTitle={courseTitle}
                     gradeSheet={gradeSheet}
+                    gradingPeriodId={activePeriodId}
                     isFlagBusy={isFlagBusy}
+                    isSubmittingGrades={isSubmittingGrades}
+                    periodName={periods.find((p) => p.id === activePeriodId)?.name}
+                    sectionCode={sectionCode}
                     specialGradeFlags={specialGradeFlags}
                     onApplyFlag={handleApplyFlag}
                     onCalculate={handleCalculate}
                     onDismissFailures={handleDismissFailures}
                     onDismissFlag={handleRequestDismissFlag}
+                    onSubmitGrades={handleSubmitGrades}
                 />
             </div>
             <SectionThresholdModal

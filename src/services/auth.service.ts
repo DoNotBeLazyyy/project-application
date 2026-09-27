@@ -5,6 +5,7 @@ import { useToastStore } from '@stores/toast.store';
 import { Session } from '@supabase/supabase-js';
 import { AuthContext, AuthSessionStatus } from '@type/app.type';
 import { ServiceResult } from '@type/service.type';
+import { cookieStorage } from '@utils/cookie.util';
 import { parseServiceError } from '@utils/error.util';
 import {
     clearActivity,
@@ -13,6 +14,8 @@ import {
 } from '@utils/session.util';
 
 export const INCOMPLETE_PROFILE_MESSAGE = 'Your account is not fully set up. Contact your administrator.';
+export const SUSPENDED_ACCOUNT_MESSAGE = 'Your account has been suspended. Please contact your administrator.';
+export const INACTIVE_ACCOUNT_MESSAGE = 'Your account is currently inactive. Please contact your administrator.';
 
 export async function login(email: string, password: string): Promise<ServiceResult<Session>> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -24,11 +27,22 @@ export async function login(email: string, password: string): Promise<ServiceRes
 
     const status = await initAuthSession();
 
-    if (status === 'incomplete') {
-        return {
-            data: null,
-            error: { code: null, message: INCOMPLETE_PROFILE_MESSAGE, status: null }
-        };
+    if (status !== 'authenticated') {
+        const storeSession = useAppStore.getState().session;
+        if (!storeSession) {
+            const userProfile = useAppStore.getState().userProfile;
+            let msg = INCOMPLETE_PROFILE_MESSAGE;
+            if (userProfile?.status === 'Suspended') {
+                msg = SUSPENDED_ACCOUNT_MESSAGE;
+            }
+            else if (userProfile?.status === 'Inactive') {
+                msg = INACTIVE_ACCOUNT_MESSAGE;
+            }
+            return {
+                data: null,
+                error: { code: null, message: msg, status: null }
+            };
+        }
     }
 
     return { data: data.session, error: null };
@@ -53,12 +67,13 @@ export async function logout(): Promise<void> {
         .clearSession();
 
     try {
+        cookieStorage.removeItem('au-jas-app');
         if (typeof localStorage !== 'undefined') {
             localStorage.removeItem('au-jas-app');
         }
     }
     catch {
-        // Safe ignore for environments without localStorage access
+        // Safe ignore for restricted storage environments
     }
 }
 
@@ -101,6 +116,12 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
     if (!session) {
         store.clearSession();
         clearActivity();
+        try {
+            cookieStorage.removeItem('au-jas-app');
+        }
+        catch {
+            // Safe ignore
+        }
         return 'unauthenticated';
     }
 
@@ -108,14 +129,29 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
 
     const { data: context, error } = await getAuthContext();
 
-    if (!context) {
+    if (!context || context.profile?.status === 'Suspended' || context.profile?.status === 'Inactive') {
+        let msg = INCOMPLETE_PROFILE_MESSAGE;
+        if (context?.profile?.status === 'Suspended' || error?.message?.includes('suspended')) {
+            msg = SUSPENDED_ACCOUNT_MESSAGE;
+        }
+        else if (context?.profile?.status === 'Inactive' || error?.message?.includes('inactive')) {
+            msg = INACTIVE_ACCOUNT_MESSAGE;
+        }
+        else if (error?.message) {
+            msg = error.message;
+        }
+
         await supabase.auth.signOut();
         store.clearSession();
-
-        if (!error) {
-            useToastStore.getState()
-                .showToast(INCOMPLETE_PROFILE_MESSAGE, 'error');
+        try {
+            cookieStorage.removeItem('au-jas-app');
         }
+        catch {
+            // Safe ignore
+        }
+
+        useToastStore.getState()
+            .showToast(msg, 'error');
 
         return 'incomplete';
     }
@@ -126,3 +162,36 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
 
     return 'authenticated';
 }
+
+export function setupAuthListener(): () => void {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const store = useAppStore.getState();
+
+        if (event === 'SIGNED_OUT' || (!session && store.session)) {
+            store.clearSession();
+            clearActivity();
+            try {
+                cookieStorage.removeItem('au-jas-app');
+            }
+            catch {
+                // Safe ignore
+            }
+
+            if (
+                typeof window !== 'undefined'
+                && window.location.pathname !== '/login'
+                && window.location.pathname !== '/set-password'
+                && window.location.pathname !== '/forgot-password'
+            ) {
+                window.location.href = '/login';
+            }
+        }
+        else if (session && event === 'TOKEN_REFRESHED') {
+            store.setSession(session);
+        }
+    });
+
+    return () => {
+        subscription.unsubscribe();
+    };
+}

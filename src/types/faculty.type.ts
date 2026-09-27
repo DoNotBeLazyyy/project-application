@@ -214,3 +214,94 @@ export interface GradeCalculationResult {
     failed: number;
     failures: GradeCalculationFailure[];
 }
+
+export interface FacultyEvaluationSectionSummary {
+    section_id: string;
+    section_code: string;
+    course_code: string;
+    course_title: string;
+    avg_rating: number | null;
+    evaluations_count: number;
+}
+
+export interface FacultyEvaluationQuestionSummary {
+    question_id: string;
+    question_text: string;
+    question_type: string;
+    avg_rating: number | null;
+    responses_count: number;
+}
+
+export interface FacultyEvaluationComment {
+    response_id: string;
+    section_code: string;
+    course_code: string;
+    response_text: string;
+    created_at: string;
+}
+
+export interface FacultyEvaluationSummary {
+    success: boolean;
+    overall_avg_rating: number | null;
+    total_evaluations_count: number;
+    rating_distribution: {
+        '5': number;
+        '4': number;
+        '3': number;
+        '2': number;
+        '1': number;
+    };
+    sections: FacultyEvaluationSectionSummary[];
+    questions: FacultyEvaluationQuestionSummary[];
+    comments: FacultyEvaluationComment[];
+}
+
+export interface FacultyGradeBreakdownItem {
+    id: string;
+    title: string;
+    assessment_type: string;
+    earned_points: number | null;
+    max_points: number;
+    submission_status: string | null;
+    is_late: boolean | null;
+    is_counted: boolean;
+    due_at: string | null;
+    graded_at: string | null;
+}
+
+export interface FacultyGradeBreakdownComponent {
+    id: string;
+    name: string;
+    weight: number;
+    earned_points: number;
+    max_points: number;
+    percentage: number | null;
+    weighted_score: number;
+    graded_count: number;
+    pending_count: number;
+    items: FacultyGradeBreakdownItem[];
+}
+
+export interface FacultyStudentGradeBreakdown {
+    enrollment_id: string;
+    student_id: string;
+    student_name: string;
+    student_number: string;
+    section_id: string;
+    section_code: string;
+    course_code: string;
+    course_title: string;
+    term_label: string;
+    grading_period_id: string;
+    grading_period_name: string;
+    sequence: number;
+    weight: number;
+    raw_grade: number;
+    final_grade: number;
+    transmuted_grade: string;
+    special_grade: string | null;
+    status: GradeStatus;
+    components: FacultyGradeBreakdownComponent[];
+    total_component_weight: number;
+    passing_grade: number;
+}

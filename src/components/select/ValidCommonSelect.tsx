@@ -72,7 +72,9 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
                 ...props.slotProps,
                 select: {
                     ...props.slotProps?.select,
-                    open: isNonInteractive ? false : isOpen,
+                    open: isNonInteractive
+                        ? false
+                        : isOpen,
                     onOpen: handleOpen,
                     onClose: handleClose
                 },

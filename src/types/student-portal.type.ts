@@ -1,6 +1,6 @@
 import { AssessmentAttachment, AssessmentType, QuestionType, SubmissionStatus } from '@type/assessment.type';
 import { EnrollmentStatus } from '@type/enrollment.type';
-import { GradeStatus } from '@type/faculty.type';
+import { AttendanceStatus, GradeStatus } from '@type/faculty.type';
 
 export interface StudentDashboard {
     success: boolean;
@@ -323,4 +323,13 @@ export interface MyGradeBreakdown {
 
 export interface MyGradesFilterValues {
     term_id: string;
+}
+
+export interface StudentSubjectAttendanceItem {
+    record_id: string;
+    session_id: string;
+    session_date: string;
+    notes: string | null;
+    status: AttendanceStatus;
+    remarks: string | null;
 }

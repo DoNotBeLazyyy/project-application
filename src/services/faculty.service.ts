@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
+    AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, FacultyEvaluationSummary, FacultyStudentGradeBreakdown, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeDetectionResult, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
@@ -298,3 +298,41 @@ export async function clearSectionSpecialGradeOverride(
         p_special_grade_config_id: specialGradeConfigId
     });
 }
+
+/**
+ * Officially submits calculated section grades for a grading period to the Registrar.
+ */
+export async function submitSectionGrades(
+    sectionId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<{ message: string; submitted_count?: number; success: boolean }>> {
+    return callRpc<{ message: string; submitted_count?: number; success: boolean }>('fn_submit_section_grades', {
+        p_grading_period_id: gradingPeriodId,
+        p_section_id: sectionId
+    });
+}
+
+/**
+ * Fetches the aggregated student evaluation performance summary for the logged-in faculty member.
+ */
+export async function getFacultyEvaluationSummary(
+    termId?: string
+): Promise<ServiceResult<FacultyEvaluationSummary>> {
+    return callRpc<FacultyEvaluationSummary>('fn_get_faculty_evaluation_summary', {
+        p_term_id: termId || null
+    });
+}
+
+/**
+ * Fetches itemized score calculation math and grade component breakdown for a specific student in a section.
+ */
+export async function getFacultyStudentGradeBreakdown(
+    enrollmentId: string,
+    gradingPeriodId: string
+): Promise<ServiceResult<FacultyStudentGradeBreakdown>> {
+    return callRpc<FacultyStudentGradeBreakdown>('fn_get_faculty_student_grade_breakdown', {
+        p_enrollment_id: enrollmentId,
+        p_grading_period_id: gradingPeriodId
+    });
+}
+

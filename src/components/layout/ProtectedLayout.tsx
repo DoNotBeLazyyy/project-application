@@ -11,10 +11,7 @@ export default function ProtectedLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
-    const { isIdle, resetTimer } = useIdleTimeout({
-        countdownTime: 60 * 1000,
-        idleTime: 30 * 60 * 1000
-    });
+    const { isIdle, resetTimer } = useIdleTimeout();
 
     useEffect(function() {
         return function() {

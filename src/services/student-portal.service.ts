@@ -3,7 +3,7 @@ import { callRpc, callStorage } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import {
-    DraftAnswer, MyGradeBreakdown, MyGradeListRow, MySubjectListRow, ProctorEventType, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
+    DraftAnswer, MyGradeBreakdown, MyGradeListRow, MySubjectListRow, ProctorEventType, StudentAssessment, StudentAssessmentResult, StudentDashboard, StudentQuestion, StudentScheduleSection, StudentSectionColor, StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem, SubmissionFileAttachment
 } from '@type/student-portal.type';
 import { parseServiceError } from '@utils/error.util';
 
@@ -51,6 +51,14 @@ export async function getSubjectGrades(
     enrollmentId: string
 ): Promise<ServiceResult<SubjectGradeItem[]>> {
     return callRpc<SubjectGradeItem[]>('fn_get_subject_grades', {
+        p_enrollment_id: enrollmentId
+    });
+}
+
+export async function getSubjectAttendance(
+    enrollmentId: string
+): Promise<ServiceResult<StudentSubjectAttendanceItem[]>> {
+    return callRpc<StudentSubjectAttendanceItem[]>('fn_get_subject_attendance', {
         p_enrollment_id: enrollmentId
     });
 }

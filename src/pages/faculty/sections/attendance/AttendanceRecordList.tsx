@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTable from '@components/table/CommonTable';
+import { CheckCircleIcon } from '@phosphor-icons/react';
 import { AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceStatus } from '@type/faculty.type';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -18,6 +19,7 @@ interface AttendanceRecordListProps {
     isDirty: boolean;
     records: AttendanceRecord[];
     selectedSession: AttendanceSession;
+    onMarkAllPresent?: () => void;
     onSave: () => Promise<void>;
     onStatusChange: (recordId: string, status: AttendanceStatus) => void;
 }
@@ -27,6 +29,7 @@ export default function AttendanceRecordList({
     isDirty,
     records,
     selectedSession,
+    onMarkAllPresent,
     onSave,
     onStatusChange
 }: AttendanceRecordListProps) {
@@ -97,14 +100,27 @@ export default function AttendanceRecordList({
                         )
                         : null}
                 </div>
-                <CommonButton
-                    disabled={!isDirty}
-                    size="small"
-                    variant="contained"
-                    onClick={onSave}
-                >
-                    Save Attendance
-                </CommonButton>
+                <div className="flex gap-2 items-center">
+                    {onMarkAllPresent && (
+                        <CommonButton
+                            disabled={draftRecords.length === 0}
+                            size="small"
+                            startIcon={<CheckCircleIcon size={14} weight="bold" />}
+                            variant="outlined"
+                            onClick={onMarkAllPresent}
+                        >
+                            Mark All Present
+                        </CommonButton>
+                    )}
+                    <CommonButton
+                        disabled={!isDirty}
+                        size="small"
+                        variant="contained"
+                        onClick={onSave}
+                    >
+                        Save Attendance
+                    </CommonButton>
+                </div>
             </div>
             <div className="flex-1 min-h-0">
                 <CommonTable<AttendanceRecordUpdate>

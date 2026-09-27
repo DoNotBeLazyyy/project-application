@@ -1,5 +1,5 @@
 import RoleShell from '@components/layout/RoleShell';
-import { CalendarIcon, ChalkboardTeacherIcon, HouseIcon, MegaphoneIcon } from '@phosphor-icons/react';
+import { ChalkboardTeacherIcon, HouseIcon, StarIcon } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -27,23 +27,12 @@ export default function FacultyLayout() {
                     isActive: pathname === '/faculty/sections',
                     label: 'My Sections',
                     onClick: () => navigate('/faculty/sections')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'CAMPUS COMMUNICATION',
-            items: [
-                {
-                    icon: <MegaphoneIcon size={18} />,
-                    isActive: pathname.startsWith('/faculty/announcement-management'),
-                    label: 'Announcements',
-                    onClick: () => navigate('/faculty/announcement-management')
                 },
                 {
-                    icon: <CalendarIcon size={18} />,
-                    isActive: pathname.startsWith('/faculty/event-management'),
-                    label: 'Events',
-                    onClick: () => navigate('/faculty/event-management')
+                    icon: <StarIcon size={18} />,
+                    isActive: pathname.startsWith('/faculty/evaluations'),
+                    label: 'Student Evaluations',
+                    onClick: () => navigate('/faculty/evaluations')
                 }
             ]
         }

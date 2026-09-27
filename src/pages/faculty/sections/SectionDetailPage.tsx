@@ -6,11 +6,12 @@ import GradingTab from '@pages/faculty/sections/grading/GradingTab';
 import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
 import SectionInsightPanel from '@pages/shared/analytics/SectionInsightPanel';
+import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnouncementPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
     BookOpenIcon, CalendarCheckIcon, ChartLineUpIcon, ChatCircleTextIcon, ClipboardTextIcon,
-    GraduationCapIcon, ListChecksIcon, NotepadIcon
+    GraduationCapIcon, ListChecksIcon, MegaphoneIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { useBreadcrumbStore } from '@stores/breadcrumb.store';
@@ -18,10 +19,10 @@ import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'rubrics' | 'content' | 'discussion' | 'insight';
+type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'rubrics' | 'content' | 'discussion' | 'announcements' | 'insight';
 
 const SECTION_TABS: SectionTab[] = [
-    'students', 'attendance', 'grading', 'assessments', 'rubrics', 'content', 'discussion', 'insight'
+    'students', 'attendance', 'grading', 'assessments', 'rubrics', 'content', 'discussion', 'announcements', 'insight'
 ];
 
 export default function SectionDetailPage() {
@@ -127,6 +128,11 @@ export default function SectionDetailPage() {
                             value: 'discussion'
                         },
                         {
+                            icon: <MegaphoneIcon />,
+                            label: 'Announcements',
+                            value: 'announcements'
+                        },
+                        {
                             icon: <ChartLineUpIcon />,
                             label: 'Insight',
                             value: 'insight'
@@ -143,7 +149,12 @@ export default function SectionDetailPage() {
                         <AttendanceTab sectionId={sectionId} />
                     )}
                     {activeTab === 'grading' && (
-                        <GradingTab sectionId={sectionId} />
+                        <GradingTab
+                            courseCode={section?.course_code}
+                            courseTitle={section?.course_title}
+                            sectionCode={section?.section_code}
+                            sectionId={sectionId}
+                        />
                     )}
                     {activeTab === 'assessments' && (
                         <AssessmentsTab sectionId={sectionId} />
@@ -156,6 +167,9 @@ export default function SectionDetailPage() {
                     )}
                     {activeTab === 'discussion' && (
                         <SectionDiscussionPanel sectionId={sectionId} />
+                    )}
+                    {activeTab === 'announcements' && (
+                        <SectionAnnouncementPanel sectionId={sectionId} />
                     )}
                     {activeTab === 'insight' && (
                         <SectionInsightPanel sectionId={sectionId} />

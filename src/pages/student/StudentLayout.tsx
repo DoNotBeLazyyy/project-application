@@ -18,28 +18,28 @@ export default function StudentLayout() {
                     isActive: pathname === '/student',
                     label: 'Dashboard',
                     onClick: () => navigate('/student')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'MY ACADEMICS',
-            items: [
+                },
                 {
                     icon: <CalendarDotsIcon size={18} />,
                     isActive: pathname === '/student/schedule',
                     label: 'Class Schedule',
                     onClick: () => navigate('/student/schedule')
-                },
+                }
+            ]
+        },
+        {
+            sectionLabel: 'COURSES & GRADES',
+            items: [
                 {
                     icon: <BooksIcon size={18} />,
-                    isActive: pathname === '/student/subjects',
+                    isActive: pathname.startsWith('/student/subjects'),
                     label: 'My Subjects',
                     onClick: () => navigate('/student/subjects')
                 },
                 {
                     icon: <ExamIcon size={18} />,
-                    isActive: pathname === '/student/grade',
-                    label: 'Grades & Transcripts',
+                    isActive: pathname.startsWith('/student/grade'),
+                    label: 'My Grades',
                     onClick: () => navigate('/student/grade')
                 }
             ]
@@ -47,12 +47,6 @@ export default function StudentLayout() {
         {
             sectionLabel: 'PROGRESS & FEEDBACK',
             items: [
-                {
-                    icon: <ListChecksIcon size={18} />,
-                    isActive: pathname === '/student/curriculum',
-                    label: 'Curriculum Audit',
-                    onClick: () => navigate('/student/curriculum')
-                },
                 {
                     icon: <ChartLineUpIcon size={18} />,
                     isActive: pathname === '/student/insight',
@@ -64,6 +58,17 @@ export default function StudentLayout() {
                     isActive: pathname.startsWith('/student/evaluations'),
                     label: 'Faculty Evaluations',
                     onClick: () => navigate('/student/evaluations')
+                }
+            ]
+        },
+        {
+            sectionLabel: 'ACADEMIC RECORDS',
+            items: [
+                {
+                    icon: <ListChecksIcon size={18} />,
+                    isActive: pathname === '/student/curriculum',
+                    label: 'Curriculum Audit',
+                    onClick: () => navigate('/student/curriculum')
                 }
             ]
         }

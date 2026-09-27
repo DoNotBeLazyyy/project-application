@@ -22,6 +22,12 @@ export const facultyRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/faculty/evaluations/FacultyEvaluationsPage');
+                }),
+                path: 'evaluations'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/faculty/sections/SectionDetailPage');
                 }),
                 path: 'sections/:sectionId'

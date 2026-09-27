@@ -85,6 +85,12 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
         setIsDirty(true);
     }
 
+    function handleMarkAllPresent() {
+        setDraftRecords((prev) =>
+            prev.map((r) => ({ ...r, status: 'Present' })));
+        setIsDirty(true);
+    }
+
     async function handleSave() {
         if (!selectedSession) return;
 
@@ -117,6 +123,7 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                         isDirty={isDirty}
                         records={records}
                         selectedSession={selectedSession}
+                        onMarkAllPresent={handleMarkAllPresent}
                         onSave={handleSave}
                         onStatusChange={handleStatusChange}
                     />

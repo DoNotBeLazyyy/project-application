@@ -2,18 +2,20 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
+import SubjectAttendanceList from '@pages/student/subject/SubjectAttendanceList';
 import SubjectGradeList from '@pages/student/subject/SubjectGradeList';
+import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnouncementPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    ArrowLeftIcon, BookOpenIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon
+    ArrowLeftIcon, BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, MegaphoneIcon
 } from '@phosphor-icons/react';
-import { getSubjectAssessments, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
-import { SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
+import { getSubjectAssessments, getSubjectAttendance, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
+import { StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-type SubjectTab = 'assessments' | 'grades' | 'content' | 'discussion';
+type SubjectTab = 'assessments' | 'attendance' | 'grades' | 'content' | 'discussion' | 'announcements';
 
 export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
@@ -21,6 +23,7 @@ export default function SubjectDetailPage() {
     const [subject, setSubject] = useState<SubjectDetail | null>(null);
     const [activeTab, setActiveTab] = useState<SubjectTab>('assessments');
     const [assessments, setAssessments] = useState<SubjectAssessmentItem[] | null>(null);
+    const [attendance, setAttendance] = useState<StudentSubjectAttendanceItem[] | null>(null);
     const [grades, setGrades] = useState<SubjectGradeItem[] | null>(null);
 
     useEffect(function() {
@@ -42,9 +45,15 @@ export default function SubjectDetailPage() {
             if (result.data) setAssessments(result.data);
         }
 
+        async function fetchAttendance() {
+            const result = await getSubjectAttendance(enrollmentId);
+            if (result.data) setAttendance(result.data);
+        }
+
         if (activeTab === 'assessments' && assessments === null) fetchAssessments();
+        if (activeTab === 'attendance' && attendance === null) fetchAttendance();
         if (activeTab === 'grades' && grades === null) fetchGrades();
-    }, [activeTab, assessments, enrollmentId, grades]);
+    }, [activeTab, assessments, attendance, enrollmentId, grades]);
 
     async function fetchGrades() {
         const result = await getSubjectGrades(enrollmentId);
@@ -113,6 +122,11 @@ export default function SubjectDetailPage() {
                         value: 'assessments'
                     },
                     {
+                        icon: <CalendarCheckIcon />,
+                        label: 'Attendance',
+                        value: 'attendance'
+                    },
+                    {
                         icon: <GraduationCapIcon />,
                         label: 'Grades',
                         value: 'grades'
@@ -126,6 +140,11 @@ export default function SubjectDetailPage() {
                         icon: <ChatCircleTextIcon />,
                         label: 'Discussion',
                         value: 'discussion'
+                    },
+                    {
+                        icon: <MegaphoneIcon />,
+                        label: 'Announcements',
+                        value: 'announcements'
                     }
                 ]}
                 value={activeTab}
@@ -138,6 +157,9 @@ export default function SubjectDetailPage() {
                         enrollmentId={enrollmentId}
                     />
                 )}
+                {activeTab === 'attendance' && (
+                    <SubjectAttendanceList attendance={attendance ?? []} />
+                )}
                 {activeTab === 'grades' && (
                     <SubjectGradeList
                         enrollmentId={enrollmentId}
@@ -149,6 +171,9 @@ export default function SubjectDetailPage() {
                 )}
                 {activeTab === 'discussion' && subject?.section_id && (
                     <SectionDiscussionPanel sectionId={subject.section_id} />
+                )}
+                {activeTab === 'announcements' && subject?.section_id && (
+                    <SectionAnnouncementPanel canManage={false} sectionId={subject.section_id} />
                 )}
             </div>
         </CommonCard>
