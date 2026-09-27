@@ -116,7 +116,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
         const authId = inviteData.user.id;
 
-        const { data: provisionData, error: provisionError } = await adminClient.rpc('fn_provision_single_user', {
+        const { data: provisionData, error: provisionError } = await userClient.rpc('fn_provision_single_user', {
             p_auth_id: authId,
             p_email: email,
             p_first_name: first_name,
@@ -203,7 +203,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
             return success({ provisioned_count: 0, errors }, 'No accounts were provisioned.');
         }
 
-        const { data: bulkData, error: bulkError } = await adminClient.rpc('fn_bulk_provision_users', {
+        const { data: bulkData, error: bulkError } = await userClient.rpc('fn_bulk_provision_users', {
             p_users: provisionedUsers
         });
 
