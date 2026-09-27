@@ -21,6 +21,7 @@ export interface ContentModule {
     id: string;
     title: string;
     description: string | null;
+    grading_period?: string | null;
     sequence: number;
     is_published: boolean;
     material_count: number;

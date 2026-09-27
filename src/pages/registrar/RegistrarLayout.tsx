@@ -45,7 +45,7 @@ export default function RegistrarLayout() {
             ]
         },
         {
-            sectionLabel: 'ACADEMIC CLEARANCE',
+            sectionLabel: 'GRADE RELEASE & VERIFICATION',
             items: [
                 {
                     icon: <SealCheckIcon size={18} />,

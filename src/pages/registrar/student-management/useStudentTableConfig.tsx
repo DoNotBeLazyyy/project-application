@@ -71,8 +71,41 @@ export function useStudentTableConfig({
                 field: 'year_level',
                 flex: 1,
                 headerName: 'Year Level',
-                minWidth: 130,
+                minWidth: 120,
                 sortable: true
+            },
+            {
+                field: 'academic_standing',
+                flex: 1,
+                headerName: 'Standing',
+                minWidth: 130,
+                sortable: false,
+                cellRenderer: (params: { data: StudentListRow }) => {
+                    const standing = params.data.academic_standing ?? 'Regular';
+                    const variant = standing === 'Probationary'
+                        ? 'warning'
+                        : standing === 'Irregular'
+                            ? 'info'
+                            : 'success';
+
+                    return (
+                        <div className="flex h-full items-center">
+                            <CommonBadgeStatus
+                                label={standing}
+                                variant={variant}
+                            />
+                        </div>
+                    );
+                }
+            },
+            {
+                field: 'curriculum_version',
+                flex: 1,
+                headerName: 'Curriculum',
+                minWidth: 140,
+                sortable: false,
+                valueGetter: (params: { data: StudentListRow }) =>
+                    params.data.curriculum_version ?? `${params.data.program_code ?? 'BSCS'} (v2024-2025)`
             },
             {
                 field: 'status',

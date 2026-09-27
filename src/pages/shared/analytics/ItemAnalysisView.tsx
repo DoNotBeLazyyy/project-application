@@ -1,5 +1,4 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { CommonChip } from '@components/badge/CommonChip';
 import InsightStatTile from '@pages/shared/analytics/InsightStatTile';
 import { getAssessmentItemAnalysis } from '@services/analytics.service';
 import { AssessmentItemAnalysis, ItemAnalysisQuestion } from '@type/analytics.type';
@@ -9,32 +8,9 @@ interface ItemAnalysisViewProps {
     assessmentId: string;
 }
 
-type BadgeVariant = 'success' | 'error' | 'warning' | 'info';
-
-const DIFFICULTY_VARIANT_MAP: Record<string, BadgeVariant> = {
-    Difficult: 'error',
-    Easy: 'success',
-    Moderate: 'warning'
-};
-
-const DISCRIMINATION_VARIANT_MAP: Record<string, BadgeVariant> = {
-    Excellent: 'success',
-    Fair: 'warning',
-    Good: 'info',
-    Poor: 'error'
-};
-
 function formatPct(value: number | null): string {
     return value !== null && value !== undefined
-        ? `${Number(value)
-            .toFixed(1)}%`
-        : '—';
-}
-
-function formatIndex(value: number | null): string {
-    return value !== null && value !== undefined
-        ? Number(value)
-            .toFixed(2)
+        ? `${Number(value).toFixed(1)}%`
         : '—';
 }
 
@@ -43,61 +19,43 @@ interface QuestionCardProps {
 }
 
 function QuestionCard({ question }: QuestionCardProps) {
+    const passRate = question.answered_count > 0
+        ? Math.round((question.correct_count / question.answered_count) * 100)
+        : 0;
+
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
             <div className="flex flex-wrap gap-3 items-start justify-between">
                 <div className="flex flex-col gap-1 min-w-0">
-                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
+                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase font-medium">
                         Question {question.sequence} · {question.question_type} · {Number(question.points)} pt(s)
                     </span>
-                    <span className="text-(--mui-palette-text-primary) text-sm">
+                    <span className="text-(--mui-palette-text-primary) text-sm font-medium">
                         {question.question_text}
                     </span>
-                    {question.competencies.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                            {question.competencies.map(function(competency) {
-                                return (
-                                    <CommonChip
-                                        key={competency.code}
-                                        label={competency.code}
-                                        size="small"
-                                        variant="outline"
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
                 </div>
                 <div className="flex gap-2">
-                    {question.difficulty_label && (
-                        <CommonBadgeStatus
-                            label={`${question.difficulty_label} · p=${formatIndex(question.difficulty_index)}`}
-                            variant={DIFFICULTY_VARIANT_MAP[question.difficulty_label] ?? 'info'}
-                        />
-                    )}
-                    {question.discrimination_label && (
-                        <CommonBadgeStatus
-                            label={`${question.discrimination_label} · D=${formatIndex(question.discrimination_index)}`}
-                            variant={DISCRIMINATION_VARIANT_MAP[question.discrimination_label] ?? 'info'}
-                        />
-                    )}
+                    <CommonBadgeStatus
+                        label={`Pass Rate: ${passRate}%`}
+                        variant={passRate >= 75 ? 'success' : passRate >= 50 ? 'warning' : 'error'}
+                    />
                 </div>
             </div>
 
             <div className="flex flex-wrap gap-4">
                 <span className="text-(--mui-palette-text-secondary) text-xs">
-                    Answered by {question.answered_count}
+                    Answered: {question.answered_count} student(s)
                 </span>
                 <span className="text-(--mui-palette-text-secondary) text-xs">
-                    Correct: {question.correct_count}
+                    Correct: {question.correct_count} ({passRate}%)
                 </span>
             </div>
 
             {question.choices.length > 0 && (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 mt-1">
                     {question.choices.map(function(choice) {
                         const share = question.answered_count > 0
-                            ? choice.selected_count / question.answered_count * 100
+                            ? (choice.selected_count / question.answered_count) * 100
                             : 0;
 
                         return (
@@ -110,7 +68,7 @@ function QuestionCard({ question }: QuestionCardProps) {
                                         ? 'font-medium text-(--mui-palette-success-main) text-sm w-1/3'
                                         : 'text-(--mui-palette-text-secondary) text-sm w-1/3'}
                                 >
-                                    {choice.choice_text}
+                                    {choice.choice_text} {choice.is_correct && '✓'}
                                 </span>
                                 <div className="bg-(--mui-palette-action-hover) flex-1 h-2 overflow-hidden rounded">
                                     <div
@@ -152,7 +110,7 @@ export default function ItemAnalysisView({ assessmentId }: ItemAnalysisViewProps
     if (!isLoaded) {
         return (
             <p className="text-(--mui-palette-text-secondary) text-sm">
-                Loading...
+                Loading assessment summary...
             </p>
         );
     }
@@ -160,57 +118,59 @@ export default function ItemAnalysisView({ assessmentId }: ItemAnalysisViewProps
     if (!analysis || !analysis.success) {
         return (
             <p className="text-(--mui-palette-text-secondary) text-sm">
-                {analysis?.message ?? 'Item analysis is not available.'}
+                {analysis?.message ?? 'Assessment summary is not available.'}
             </p>
         );
     }
 
     const { summary } = analysis;
+    const totalQuestions = analysis.questions.length;
+    const answeredQuestions = analysis.questions.filter((q) => q.answered_count > 0);
+    const overallPassRate = answeredQuestions.length > 0
+        ? Math.round(
+            answeredQuestions.reduce(
+                (acc, q) => acc + (q.answered_count > 0 ? (q.correct_count / q.answered_count) * 100 : 0),
+                0
+            ) / answeredQuestions.length
+        )
+        : 0;
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col">
                 <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                    Item Analysis
+                    Assessment Summary
                 </h1>
                 <span className="text-(--mui-palette-text-secondary) text-sm">
                     {analysis.assessment.title} · {analysis.assessment.course_code} · {analysis.assessment.section_code}
                 </span>
             </div>
 
-            <div className="gap-3 grid grid-cols-2 md:grid-cols-5">
+            <div className="gap-3 grid grid-cols-2 md:grid-cols-4">
                 <InsightStatTile
                     label="Submissions"
                     value={String(summary.submission_count)}
                 />
                 <InsightStatTile
-                    label="Mean"
+                    label="Average Score"
                     value={formatPct(summary.mean_pct)}
                 />
                 <InsightStatTile
-                    label="Median"
-                    value={formatPct(summary.median_pct)}
+                    label="Pass Rate"
+                    value={`${overallPassRate}%`}
                 />
                 <InsightStatTile
-                    hint={`Low ${formatPct(summary.lowest_pct)}`}
-                    label="High"
+                    hint={`Lowest: ${formatPct(summary.lowest_pct)}`}
+                    label="Highest Score"
                     value={formatPct(summary.highest_pct)}
-                />
-                <InsightStatTile
-                    hint={`Upper/lower group size ${summary.group_size}`}
-                    label="Std Dev"
-                    value={formatPct(summary.std_dev_pct)}
                 />
             </div>
 
             <div className="flex flex-col gap-3">
                 <div className="flex gap-2 items-baseline justify-between">
                     <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                        Questions
+                        Question Breakdown ({totalQuestions})
                     </h2>
-                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                        p = difficulty (share of points earned) · D = discrimination (top 27% minus bottom 27%)
-                    </span>
                 </div>
                 {analysis.questions.length > 0
                     ? (
@@ -233,4 +193,4 @@ export default function ItemAnalysisView({ assessmentId }: ItemAnalysisViewProps
             </div>
         </div>
     );
-}
+}

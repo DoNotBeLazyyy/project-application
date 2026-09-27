@@ -149,7 +149,7 @@ export default function TakeAssessmentPage() {
             const result = await submitAssessment(submissionId);
             if (!result.error) {
                 if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-                navigate(`/student/subjects/${enrollmentId}`);
+                navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result?submitted=true`);
             }
         }
         finally {

@@ -2,14 +2,14 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import {
-    ArrowLeftIcon, ArrowLineDownIcon, CheckCircleIcon, ClockIcon, LockIcon, XCircleIcon
+    ArrowLeftIcon, ArrowLineDownIcon, CheckCircleIcon, ClockIcon, LockIcon, SparkleIcon, TrophyIcon, XCircleIcon
 } from '@phosphor-icons/react';
 import { getAttachmentSignedUrl } from '@services/assessment.service';
 import { getMyAssessmentResult } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
 import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const CHOICE_TYPES = ['Multiple Choice', 'True or False', 'Matching'];
 
@@ -278,11 +278,28 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
     );
 }
 
+function computeTransmutedGrade(score: number | null, total: number | null): string {
+    if (score === null || total === null || total === 0) return '—';
+    const pct = (score / total) * 100;
+    if (pct >= 99) return '1.00 (99–100% · Excellent)';
+    if (pct >= 96) return '1.25 (96–98% · Superior)';
+    if (pct >= 93) return '1.50 (93–95% · Very Good)';
+    if (pct >= 90) return '1.75 (90–92% · Good)';
+    if (pct >= 87) return '2.00 (87–89% · Meritorious)';
+    if (pct >= 84) return '2.25 (84–86% · Satisfactory)';
+    if (pct >= 81) return '2.50 (81–83% · Fair)';
+    if (pct >= 78) return '2.75 (78–80% · Passing)';
+    if (pct >= 75) return '3.00 (75–77% · Conditional)';
+    return '5.00 (Below 75% · Failed)';
+}
+
 export default function AssessmentResultPage() {
     const { enrollmentId = '', assessmentId = '' } = useParams<{
         enrollmentId: string;
         assessmentId: string;
     }>();
+    const [searchParams] = useSearchParams();
+    const isJustSubmitted = searchParams.get('submitted') === 'true';
     const navigate = useNavigate();
 
     const [result, setResult] = useState<StudentAssessmentResult | null>(null);
@@ -333,6 +350,35 @@ export default function AssessmentResultPage() {
 
             {result && (
                 <div className="flex flex-1 flex-col gap-4 min-h-0 overflow-y-auto">
+                    {(isJustSubmitted || result.has_submission) && (
+                        <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-100) flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-xl">
+                            <div className="flex gap-3 items-center">
+                                <div className="bg-(--mui-tokens-color-brand-900) p-2.5 rounded-lg text-white">
+                                    <SparkleIcon size={24} weight="fill" />
+                                </div>
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="font-semibold text-(--mui-tokens-color-brand-950) text-base">
+                                        Assessment Submitted &amp; Transmuted
+                                    </span>
+                                    <p className="m-0 text-(--mui-tokens-color-neutral-600) text-xs md:text-sm">
+                                        Transmuted Grade Scale:{' '}
+                                        <strong>{computeTransmutedGrade(result.final_score ?? result.raw_score, result.total_points)}</strong>.{' '}
+                                        Your GWA &amp; Latin Honors Trajectory have been recalculated in real time.
+                                    </p>
+                                </div>
+                            </div>
+                            <CommonButton
+                                size="small"
+                                startIcon={<TrophyIcon size={16} weight="fill" />}
+                                variant="contained"
+                                onClick={function() {
+                                    navigate('/student/insight');
+                                }}
+                            >
+                                View Achievement Tracker
+                            </CommonButton>
+                        </div>
+                    )}
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap gap-2 items-center">
                             <CommonBadgeStatus label={result.assessment_type} variant="info" />

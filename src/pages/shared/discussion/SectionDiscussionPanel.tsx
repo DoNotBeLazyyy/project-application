@@ -28,6 +28,7 @@ interface SectionDiscussionPanelProps {
 export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionPanelProps) {
     const [threads, setThreads] = useState<DiscussionThreadRow[]>([]);
     const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+    const [filterMode, setFilterMode] = useState<'All' | 'Pinned' | 'Unanswered' | 'Resolved'>('All');
     const [isComposing, setIsComposing] = useState(false);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
@@ -46,6 +47,13 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     useEffect(function() {
         loadThreads();
     }, [sectionId]);
+
+    const filteredThreads = threads.filter((t) => {
+        if (filterMode === 'Pinned') return t.is_pinned;
+        if (filterMode === 'Unanswered') return t.reply_count === 0 && !t.is_resolved;
+        if (filterMode === 'Resolved') return t.is_resolved;
+        return true;
+    });
 
     function handleAddFiles(added: File[]) {
         const accepted = added.filter(function(file) {
@@ -135,14 +143,27 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         );
     }
 
+    const FILTER_OPTIONS: ('All' | 'Pinned' | 'Unanswered' | 'Resolved')[] = ['All', 'Pinned', 'Unanswered', 'Resolved'];
+
     return (
         <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto">
-            <div className="flex items-center justify-between shrink-0">
-                <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
-                    {threads.length} Discussion{threads.length === 1
-                        ? ''
-                        : 's'}
-                </span>
+            <div className="flex flex-wrap gap-2 items-center justify-between shrink-0">
+                <div className="flex gap-1 items-center">
+                    {FILTER_OPTIONS.map((f) => (
+                        <button
+                            className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                                filterMode === f
+                                    ? 'bg-(--mui-palette-primary-main) text-white'
+                                    : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            key={f}
+                            type="button"
+                            onClick={() => setFilterMode(f)}
+                        >
+                            {f === 'All' ? 'All Threads' : f}
+                        </button>
+                    ))}
+                </div>
                 <CommonButton
                     size="small"
                     startIcon={<PlusIcon size={16} weight="bold" />}
@@ -203,22 +224,26 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     </div>
                 </div>
             )}
-            {threads.length === 0 && !isComposing && (
+            {filteredThreads.length === 0 && !isComposing && (
                 <div className="flex flex-col gap-2 items-center py-10">
                     <ChatCircleTextIcon
                         className="text-(--mui-palette-text-disabled)"
                         size={32}
                     />
                     <p className="text-(--mui-palette-text-secondary) text-sm">
-                        No discussions yet. Start the first one.
+                        No {filterMode !== 'All' ? filterMode.toLowerCase() : ''} discussions found.
                     </p>
                 </div>
             )}
             <div className="flex flex-col gap-2">
-                {threads.map(function(thread) {
+                {filteredThreads.map(function(thread) {
                     return (
                         <button
-                            className="flex flex-col gap-1 rounded-lg border border-(--mui-palette-divider) p-4 text-left hover:bg-black/5"
+                            className={`flex flex-col gap-1 rounded-lg border p-4 text-left transition-colors ${
+                                thread.is_pinned
+                                    ? 'border-(--mui-palette-primary-main)/40 bg-(--mui-palette-primary-main)/5'
+                                    : 'border-(--mui-palette-divider) hover:bg-black/5'
+                            }`}
                             key={thread.id}
                             type="button"
                             onClick={function() {
@@ -227,21 +252,19 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                         >
                             <div className="flex gap-2 items-center">
                                 {thread.is_pinned && (
-                                    <PushPinIcon
-                                        className="text-(--mui-palette-primary-main)"
-                                        size={14}
-                                        weight="fill"
-                                    />
+                                    <span className="flex items-center gap-1 text-xs font-semibold text-(--mui-palette-primary-main)">
+                                        <PushPinIcon size={14} weight="fill" />
+                                        Pinned
+                                    </span>
                                 )}
                                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">
                                     {thread.title}
                                 </span>
                                 {thread.is_resolved && (
-                                    <CheckCircleIcon
-                                        className="text-(--mui-palette-success-main)"
-                                        size={14}
-                                        weight="fill"
-                                    />
+                                    <span className="flex items-center gap-1 text-xs text-(--mui-palette-success-main) font-medium">
+                                        <CheckCircleIcon size={14} weight="fill" />
+                                        Resolved
+                                    </span>
                                 )}
                             </div>
                             <span className="line-clamp-1 text-(--mui-palette-text-secondary) text-xs">

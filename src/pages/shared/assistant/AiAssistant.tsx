@@ -76,14 +76,15 @@ const ROLE_SUGGESTIONS: Record<string, string[]> = {
         'How do I set clearance requirements?'
     ],
     Student: [
+        'Am I on track for Latin honors?',
+        'Explain a course concept from my syllabus',
         'What assignments are due this week?',
+        'Which subject is hurting my GWA the most?',
+        'How do I use the What-If Grade Simulator?',
+        'How do I review my exam mistakes?',
         'Check prerequisite eligibility',
         'Am I at risk of DRP?',
-        'Am I on track for Latin honors?',
-        'Which subject is hurting my GWA the most?',
-        'What should I focus on for the rest of this term?',
-        'How is my attendance so far?',
-        'Where do I check my clearance status?'
+        'What should I focus on for the rest of this term?'
     ]
 };
 

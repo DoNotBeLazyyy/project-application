@@ -80,7 +80,9 @@ export default function StudentGridCard({
             isSelected={isSelected}
             metrics={[
                 { label: 'Program', value: row.program_code ?? 'Unassigned' },
-                { label: 'Year Level', value: `Year ${row.year_level}` }
+                { label: 'Year Level', value: `Year ${row.year_level}` },
+                { label: 'Standing', value: row.academic_standing ?? 'Regular' },
+                { label: 'Curriculum', value: row.curriculum_version ?? `${row.program_code ?? 'BSCS'} (v2024)` }
             ]}
             selectVariant="button"
             status={row.status}

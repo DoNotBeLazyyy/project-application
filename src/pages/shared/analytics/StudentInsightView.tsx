@@ -2,6 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import GwaTrendChart from '@pages/shared/analytics/GwaTrendChart';
 import InsightStatTile from '@pages/shared/analytics/InsightStatTile';
 import MasteryBarList from '@pages/shared/analytics/MasteryBarList';
+import WhatIfGradeSimulator from '@pages/shared/analytics/WhatIfGradeSimulator';
 import { ChartLineUpIcon, TargetIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { getStudentInsight } from '@services/analytics.service';
 import { InsightCourse, InsightTrajectory, RiskLevel, StudentInsight } from '@type/analytics.type';
@@ -299,6 +300,12 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
                         </p>
                     )}
             </div>
+
+            <WhatIfGradeSimulator
+                academic={academic}
+                courses={insight.courses}
+                trajectory={insight.trajectory}
+            />
 
             <div className="flex flex-col gap-3">
                 <div className="flex gap-2 items-center">

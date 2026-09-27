@@ -37,14 +37,23 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
     const [isComposing, setIsComposing] = useState(false);
     const [moduleTitle, setModuleTitle] = useState('');
     const [moduleDescription, setModuleDescription] = useState('');
+    const [selectedPeriod, setSelectedPeriod] = useState<string>('All');
     const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
     const [pendingDelete, setPendingDelete] = useState<DeleteState | null>(null);
     const [duplicatingModule, setDuplicatingModule] = useState<ContentModule | null>(null);
 
     const canManage = content?.can_manage ?? false;
-    const modules = content?.modules ?? [];
-    const editingModule = modules.find((mod) => mod.id === editingModuleId);
+    const rawModules = content?.modules ?? [];
+    const modules = rawModules.filter((mod) => {
+        if (selectedPeriod === 'All') return true;
+        const titleLower = mod.title.toLowerCase();
+        const descLower = (mod.description ?? '').toLowerCase();
+        const target = selectedPeriod.toLowerCase();
+        return titleLower.includes(target) || descLower.includes(target);
+    });
+
+    const editingModule = rawModules.find((mod) => mod.id === editingModuleId);
     const isModuleUnchanged = editingModule
         ? moduleTitle.trim() === editingModule.title
             && (moduleDescription.trim() || null) === (editingModule.description ?? null)
@@ -130,33 +139,41 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
         if (!result.error) await loadContent();
     }
 
+    const PERIOD_TABS = ['All', 'Prelim', 'Midterm', 'Semi-Final', 'Finals'];
+
     return (
         <div className="flex flex-col gap-4">
-            {(modules.length > 0 || canManage) && (
-                <div className="flex items-center justify-between">
-                    {modules.length > 0 && (
-                        <span className="font-medium text-(--mui-palette-text-secondary) text-sm">
-                            {modules.length} Module{modules.length === 1
-                                ? ''
-                                : 's'}
-                        </span>
-                    )}
-                    {canManage && (
-                        <CommonButton
-                            className="ml-auto"
-                            size="small"
-                            startIcon={<PlusIcon size={16} weight="bold" />}
-                            variant="contained"
-                            onClick={function() {
-                                resetComposer();
-                                setIsComposing(true);
-                            }}
+            <div className="flex flex-wrap gap-2 items-center justify-between border-b border-(--mui-palette-divider) pb-3">
+                <div className="flex gap-1 items-center">
+                    {PERIOD_TABS.map((period) => (
+                        <button
+                            className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                                selectedPeriod === period
+                                    ? 'bg-(--mui-palette-primary-main) text-white'
+                                    : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            key={period}
+                            type="button"
+                            onClick={() => setSelectedPeriod(period)}
                         >
-                            Add Module
-                        </CommonButton>
-                    )}
+                            {period === 'All' ? 'All Content' : period}
+                        </button>
+                    ))}
                 </div>
-            )}
+                {canManage && (
+                    <CommonButton
+                        size="small"
+                        startIcon={<PlusIcon size={16} weight="bold" />}
+                        variant="contained"
+                        onClick={function() {
+                            resetComposer();
+                            setIsComposing(true);
+                        }}
+                    >
+                        Add Module
+                    </CommonButton>
+                )}
+            </div>
             {canManage && isComposing && (
                 <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4">
                     <CommonInput

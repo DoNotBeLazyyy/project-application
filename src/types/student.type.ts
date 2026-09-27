@@ -14,6 +14,8 @@ export interface StudentListRow {
     last_name: string;
     email: string;
     user_status: string;
+    academic_standing?: string;
+    curriculum_version?: string;
     total_count: number;
 }
 

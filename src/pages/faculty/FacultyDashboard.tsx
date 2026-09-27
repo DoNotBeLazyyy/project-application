@@ -256,38 +256,54 @@ export default function FacultyDashboard() {
 
                 <CommonCard
                     cardHeaderProps={{
-                        subheader: 'Students who need an intervention first.',
-                        title: 'Insight Highlights'
+                        subheader: 'Track student academic performance, at-risk alerts, and Dean\'s List contenders.',
+                        title: 'Achievement & Early Warning Radar'
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-3 p-4 pt-0">
                         {dashboard?.at_risk_students.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
-                                No at-risk students detected.
-                            </p>
-                        )}
-                        {dashboard?.at_risk_students.map((student) => (
-                            <div
-                                className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg"
-                                key={student.enrollment_id}
-                            >
-                                <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
-                                        {student.full_name}
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
-                                        {student.course_code} · {student.section_code}
-                                        {student.avg_score_pct !== null && ` · Avg ${student.avg_score_pct}%`}
-                                        {student.attendance_rate !== null && ` · Att ${student.attendance_rate}%`}
-                                    </span>
-                                </div>
-                                <CommonBadgeStatus
-                                    label={student.risk_level}
-                                    variant={RISK_VARIANT[student.risk_level]}
-                                />
+                            <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-4 rounded-lg bg-(--mui-palette-success-main)/5 text-center">
+                                <span className="font-semibold text-(--mui-palette-success-main) text-sm">
+                                    All Students On Track
+                                </span>
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                    No students currently fall below academic safety thresholds.
+                                </span>
                             </div>
-                        ))}
+                        )}
+                        {dashboard?.at_risk_students.map((student) => {
+                            const isHighRisk = student.risk_level === 'High';
+                            const missingAlert = student.missing_count >= 2;
+
+                            return (
+                                <div
+                                    className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg hover:border-(--mui-palette-primary-main) transition-colors cursor-pointer"
+                                    key={student.enrollment_id}
+                                    onClick={() => navigate(`/faculty/sections/${student.section_id}?tab=students`)}
+                                >
+                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                        <div className="flex gap-2 items-center">
+                                            <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                                {student.full_name}
+                                            </span>
+                                            <span className="text-(--mui-palette-text-disabled) text-xs">
+                                                ({student.student_number})
+                                            </span>
+                                        </div>
+                                        <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                            {student.course_code} · {student.section_code}
+                                            {student.avg_score_pct !== null && ` · Avg ${student.avg_score_pct}%`}
+                                            {missingAlert && ` · ${student.missing_count} Missing Assessments`}
+                                        </span>
+                                    </div>
+                                    <CommonBadgeStatus
+                                        label={missingAlert ? `${student.risk_level} (${student.missing_count} missing)` : student.risk_level}
+                                        variant={RISK_VARIANT[student.risk_level]}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </CommonCard>
             </div>

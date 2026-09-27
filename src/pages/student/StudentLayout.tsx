@@ -50,7 +50,7 @@ export default function StudentLayout() {
                 {
                     icon: <ChartLineUpIcon size={18} />,
                     isActive: pathname === '/student/insight',
-                    label: 'Academic Insights',
+                    label: 'Achievement & Honors Tracker',
                     onClick: () => navigate('/student/insight')
                 },
                 {

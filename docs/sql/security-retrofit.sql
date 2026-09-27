@@ -1205,6 +1205,20 @@ BEGIN
             u.last_name,
             u.email,
             u.status AS user_status,
+            COALESCE(
+                (
+                    SELECT CASE
+                        WHEN COUNT(sfg.id) FILTER (WHERE sfg.status = ''Released'' AND COALESCE(sfg.transmuted_grade, sfg.final_grade) > 3.0) > 0 THEN ''Probationary''
+                        WHEN COUNT(sfg.id) FILTER (WHERE sfg.status = ''Released'' AND COALESCE(sfg.transmuted_grade, sfg.final_grade) <= 3.0) > 0 THEN ''Regular''
+                        ELSE ''Regular''
+                    END
+                    FROM public.enrollments e
+                    LEFT JOIN public.section_final_grades sfg ON sfg.enrollment_id = e.id AND sfg.deleted_at IS NULL
+                    WHERE e.student_id = st.id AND e.deleted_at IS NULL
+                ),
+                ''Regular''
+            ) AS academic_standing,
+            COALESCE(p.code || '' (v2024-2025)'', ''v2024-2025'') AS curriculum_version,
             COUNT(*) OVER() AS total_count
         FROM public.students st
         INNER JOIN public.users u ON u.id = st.user_id AND u.deleted_at IS NULL

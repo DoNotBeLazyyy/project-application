@@ -32,6 +32,8 @@ export interface SectionStudent {
     year_level: number;
     status: string;
     enrolled_at: string;
+    risk_level?: string | null;
+    gwa?: number | null;
 }
 
 export interface StudentEvaluationProfile {

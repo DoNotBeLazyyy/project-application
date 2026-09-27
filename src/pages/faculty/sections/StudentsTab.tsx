@@ -1,3 +1,4 @@
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
@@ -53,9 +54,34 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                 sortable: true
             },
             {
+                cellRenderer: (params: { data: SectionStudent }) => {
+                    const student = params.data;
+                    if (student.risk_level === 'High' || student.risk_level === 'Moderate') {
+                        return (
+                            <CommonBadgeStatus
+                                label={`At Risk (${student.risk_level})`}
+                                variant={student.risk_level === 'High' ? 'error' : 'warning'}
+                            />
+                        );
+                    }
+                    if (student.gwa !== null && student.gwa !== undefined && student.gwa <= 1.75) {
+                        return (
+                            <CommonBadgeStatus
+                                label="Dean's List Candidate"
+                                variant="success"
+                            />
+                        );
+                    }
+                    return (
+                        <CommonBadgeStatus
+                            label={student.status ?? 'Enrolled'}
+                            variant="info"
+                        />
+                    );
+                },
                 field: 'status',
-                flex: 1,
-                headerName: 'Status',
+                flex: 1.5,
+                headerName: 'Academic Status',
                 sortable: false
             },
             {
