@@ -1,6 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    DepartmentFilterValues, DepartmentFormValues, DepartmentListRow, DepartmentOption, FacultyDeanUserOption
+    DepartmentFilterValues, DepartmentFormValues, DepartmentListRow, DepartmentOption
 } from '@type/department.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -39,9 +39,6 @@ export async function getDepartments(): Promise<ServiceResult<DepartmentOption[]
     return callRpc<DepartmentOption[]>('fn_get_departments');
 }
 
-export async function getFacultyDeanUsers(): Promise<ServiceResult<FacultyDeanUserOption[]>> {
-    return callRpc<FacultyDeanUserOption[]>('fn_get_faculty_dean_users');
-}
 
 export async function createDepartment(
     params: DepartmentFormValues
