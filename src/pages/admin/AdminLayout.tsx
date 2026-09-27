@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, UsersIcon
+    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, TagIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -40,9 +40,15 @@ export default function AdminLayout() {
                     },
                     {
                         icon: <ClockIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/terms'),
+                        isActive: pathname === '/admin/terms' || (pathname.startsWith('/admin/terms') && !pathname.startsWith('/admin/term-types')),
                         label: 'Terms',
                         onClick: () => navigate('/admin/terms')
+                    },
+                    {
+                        icon: <TagIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/term-types'),
+                        label: 'Term Types',
+                        onClick: () => navigate('/admin/term-types')
                     },
                     {
                         icon: <GraduationCapIcon size={18} />,

@@ -14,9 +14,11 @@ import {
 } from '@services/term/term.service';
 import { SortStringDto } from '@type/http.type';
 import { TermFilterValues, TermFormValues, TermListRow, TermStatus } from '@type/term/term.type';
+import { TagIcon } from '@phosphor-icons/react';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'start_date', label: 'Start Date' },
@@ -29,6 +31,7 @@ const UPDATE_FORM_ID = 'update-term-form';
 const FILTER_FORM_ID = 'filter-term-form';
 
 export default function TermManagement() {
+    const navigate = useNavigate();
     const [activeFilters, setActiveFilters] = useState<TermFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -198,6 +201,16 @@ export default function TermManagement() {
                     title: 'Term Management'
                 }}
                 controls={{
+                    tableButtonsProps: {
+                        extraOptions: [
+                            {
+                                children: 'Term Types',
+                                icon: <TagIcon size={18} />,
+                                key: 'manage-term-types',
+                                onClick: () => navigate('/admin/term-types')
+                            }
+                        ]
+                    },
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.terms
                     }
