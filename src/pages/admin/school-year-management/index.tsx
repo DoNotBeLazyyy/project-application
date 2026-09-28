@@ -101,6 +101,11 @@ export default function SchoolYearManagement() {
                     title: 'Academic Years'
                 }}
                 controls={{
+                    tableButtonsProps: {
+                        createButtonProps: {
+                            onClick: handleOpenCreate
+                        }
+                    },
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.schoolYears
                     }

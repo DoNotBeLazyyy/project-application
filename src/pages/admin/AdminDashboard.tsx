@@ -50,7 +50,7 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Active Terms',
         statKey: 'active_terms',
-        to: '/admin/terms'
+        to: '/admin/school-years'
     },
     {
         icon: <ClipboardTextIcon size={24} />,

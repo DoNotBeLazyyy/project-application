@@ -1,5 +1,5 @@
 import { lazyElement } from '@utils/lazy.util';
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 
 export const adminRoutes: RouteObject[] = [
     {
@@ -27,33 +27,23 @@ export const adminRoutes: RouteObject[] = [
                 path: 'school-years'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management/TransmutationPage');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'transmutation'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management/PeriodsPage');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'grading-periods'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management/SpecialGradesPage');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'special-grades'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'grade-configurations'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/grading-config-management');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'grading-rules'
             },
             {
@@ -81,15 +71,11 @@ export const adminRoutes: RouteObject[] = [
                 path: 'roles'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/term-management');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'terms'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/term-management/type');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'term-types'
             },
             {

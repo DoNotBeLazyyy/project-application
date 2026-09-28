@@ -496,8 +496,9 @@ export default function CommonTableCard<T extends FieldValues>({
                                     showViewToggle={showViewToggle}
                                     tableButtonsProps={{
                                         ...controls?.tableButtonsProps,
-                                        createButtonProps: createModalProps
+                                        createButtonProps: (createModalProps || onCreate)
                                             ? {
+                                                ...controls?.tableButtonsProps?.createButtonProps,
                                                 onClick: function() {
                                                     onCreate?.();
                                                 }

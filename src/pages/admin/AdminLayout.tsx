@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, ClockIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, PercentIcon, TagIcon, UsersIcon
+    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -39,37 +39,10 @@ export default function AdminLayout() {
                         onClick: () => navigate('/admin/school-years')
                     },
                     {
-                        icon: <ClockIcon size={18} />,
-                        isActive: pathname === '/admin/terms' || (pathname.startsWith('/admin/terms') && !pathname.startsWith('/admin/term-types')),
-                        label: 'Terms',
-                        onClick: () => navigate('/admin/terms')
-                    },
-                    {
-                        icon: <TagIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/term-types'),
-                        label: 'Term Types',
-                        onClick: () => navigate('/admin/term-types')
-                    },
-                    {
                         icon: <GraduationCapIcon size={18} />,
                         isActive: pathname === '/admin/academic-thresholds',
                         label: 'Academic Thresholds',
                         onClick: () => navigate('/admin/academic-thresholds')
-                    }
-                ]
-            },
-            {
-                sectionLabel: 'GRADING RULES',
-                items: [
-                    {
-                        icon: <PercentIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/grade-configurations')
-                            || pathname.startsWith('/admin/grading-rules')
-                            || pathname.startsWith('/admin/transmutation')
-                            || pathname.startsWith('/admin/grading-periods')
-                            || pathname.startsWith('/admin/special-grades'),
-                        label: 'Grading Rules',
-                        onClick: () => navigate('/admin/grade-configurations')
                     }
                 ]
             },
