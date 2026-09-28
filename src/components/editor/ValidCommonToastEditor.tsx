@@ -47,7 +47,7 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
         : (error?.message ?? helperText);
 
     return (
-        <div className="flex flex-col gap-1.5 w-full">
+        <div className="flex flex-col gap-1.5 w-full min-w-0 max-w-full overflow-hidden">
             {label && (
                 <FormLabel
                     description={labelDescription}

@@ -151,7 +151,7 @@ export default function AnnouncementForm({
     ];
 
     return (
-        <form {...formProps} className="flex flex-col gap-5 w-full">
+        <form {...formProps} className="flex flex-col gap-5 w-full min-w-0 max-w-full">
             <CommonForm
                 containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                 control={control}

@@ -88,24 +88,54 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         }
     }));
 
+    const destroyCurrentInstance = () => {
+        if (instanceRef.current) {
+            try {
+                instanceRef.current.destroy();
+            } catch {
+                // Ignore destroy errors during unmount or transition
+            }
+            instanceRef.current = null;
+        }
+        if (containerRef.current) {
+            containerRef.current.innerHTML = '';
+        }
+    };
+
+    // Initialize or re-create instance when mode (disabled) or editor configuration changes
     useEffect(() => {
         if (!containerRef.current) {
             return;
         }
 
-        const initialContent = value ?? initialValue ?? '';
+        const currentVal = value ?? initialValue ?? '';
+        lastValueRef.current = currentVal;
+
+        destroyCurrentInstance();
 
         if (disabled) {
+            if (!currentVal.trim()) {
+                if (containerRef.current) {
+                    containerRef.current.innerHTML = `
+                        <div class="italic text-slate-400 dark:text-zinc-500 text-sm py-2">
+                            No description or content provided.
+                        </div>
+                    `;
+                }
+                return () => {
+                    destroyCurrentInstance();
+                };
+            }
+
             const viewer = Editor.factory({
                 el: containerRef.current,
-                initialValue: initialContent,
+                initialValue: currentVal,
                 viewer: true
             });
             instanceRef.current = viewer;
 
             return () => {
-                viewer.destroy();
-                instanceRef.current = null;
+                destroyCurrentInstance();
             };
         }
 
@@ -150,7 +180,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
                 }
             },
             initialEditType,
-            initialValue: initialContent,
+            initialValue: currentVal,
             placeholder,
             previewStyle,
             toolbarItems: [
@@ -166,34 +196,59 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
         instanceRef.current = editor;
 
         return () => {
-            editor.destroy();
-            instanceRef.current = null;
+            destroyCurrentInstance();
         };
-    }, [disabled]);
+    }, [disabled, height, hideModeSwitch, initialEditType, placeholder, previewStyle, storageBucket]);
 
+    // Handle asynchronous content updates (e.g. when data is fetched from the server)
     useEffect(() => {
-        if (instanceRef.current && value !== undefined && value !== lastValueRef.current) {
-            lastValueRef.current = value;
-            instanceRef.current.setMarkdown(value);
+        if (value === undefined || value === lastValueRef.current) {
+            return;
         }
-    }, [value]);
 
-    if (disabled && (!value || !value.trim())) {
-        return (
-            <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) p-4 rounded-lg">
-                <span className="italic text-(--mui-palette-text-secondary) text-sm">
-                    No description or content provided.
-                </span>
-            </div>
-        );
-    }
+        lastValueRef.current = value;
+
+        if (disabled) {
+            if (!containerRef.current) return;
+
+            if (!value.trim()) {
+                destroyCurrentInstance();
+                if (containerRef.current) {
+                    containerRef.current.innerHTML = `
+                        <div class="italic text-slate-400 dark:text-zinc-500 text-sm py-2">
+                            No description or content provided.
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            if (instanceRef.current && typeof instanceRef.current.setMarkdown === 'function') {
+                instanceRef.current.setMarkdown(value);
+            } else {
+                destroyCurrentInstance();
+                if (containerRef.current) {
+                    const viewer = Editor.factory({
+                        el: containerRef.current,
+                        initialValue: value,
+                        viewer: true
+                    });
+                    instanceRef.current = viewer;
+                }
+            }
+        } else {
+            if (instanceRef.current && typeof instanceRef.current.setMarkdown === 'function') {
+                instanceRef.current.setMarkdown(value);
+            }
+        }
+    }, [value, disabled]);
 
     return (
         <div
             className={
                 disabled
-                    ? 'bg-(--mui-palette-action-hover)/20 border border-(--mui-palette-divider) min-h-[80px] p-4 rounded-lg text-(--mui-palette-text-primary) text-sm w-full'
-                    : 'w-full'
+                    ? 'bg-(--mui-palette-action-hover)/20 border border-(--mui-palette-divider) min-h-[100px] max-h-[480px] p-4 rounded-lg text-(--mui-palette-text-primary) text-sm w-full max-w-full overflow-y-auto overflow-x-auto break-words'
+                    : 'w-full max-w-full overflow-hidden'
             }
             ref={containerRef}
         />

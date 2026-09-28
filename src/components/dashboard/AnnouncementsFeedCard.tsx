@@ -107,7 +107,7 @@ function AnnouncementDetailModal({ announcement, onClose }: AnnouncementDetailMo
                 <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
                     Content
                 </span>
-                <p className="leading-relaxed m-0 text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                <p className="leading-relaxed m-0 text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap break-words">
                     {announcement.content}
                 </p>
             </div>
