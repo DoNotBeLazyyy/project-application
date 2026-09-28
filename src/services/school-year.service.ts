@@ -1,6 +1,13 @@
 import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
-import { SchoolYearFilterValues, SchoolYearFormValues, SchoolYearListRow, SchoolYearOption } from '@type/school-year.type';
+import {
+    AcademicYearCalendarDetails,
+    SaveAcademicYearCalendarPayload,
+    SchoolYearFilterValues,
+    SchoolYearFormValues,
+    SchoolYearListRow,
+    SchoolYearOption
+} from '@type/school-year.type';
 import { ServiceResult } from '@type/service.type';
 
 export async function listSchoolYears(
@@ -34,6 +41,37 @@ export async function getSchoolYearById(
     return callRpc<SchoolYearFormValues>('fn_get_school_year_by_id', {
         p_school_year_id: schoolYearId
     });
+}
+
+export async function getAcademicYearCalendarDetails(
+    schoolYearId: string
+): Promise<ServiceResult<AcademicYearCalendarDetails>> {
+    const res = await callRpc<{ success: boolean; data: AcademicYearCalendarDetails }>(
+        'fn_get_academic_year_calendar_details',
+        { p_school_year_id: schoolYearId }
+    );
+    if (res.error) {
+        return { data: null, error: res.error };
+    }
+    return { data: res.data?.data ?? null, error: null };
+}
+
+export async function saveAcademicYearCalendar(
+    payload: SaveAcademicYearCalendarPayload
+): Promise<ServiceResult<{ success: boolean; message: string; school_year_id: string }>> {
+    return callRpc<{ success: boolean; message: string; school_year_id: string }>(
+        'fn_save_academic_year_calendar',
+        {
+            p_code: payload.p_code,
+            p_end_date: payload.p_end_date,
+            p_is_active: payload.p_is_active,
+            p_label: payload.p_label,
+            p_school_year_id: payload.p_school_year_id,
+            p_start_date: payload.p_start_date,
+            p_terms: payload.p_terms,
+            p_transmutation_rows: payload.p_transmutation_rows
+        }
+    );
 }
 
 export async function createSchoolYear(
@@ -80,4 +118,5 @@ export async function bulkDeleteSchoolYears(
 
 export async function getSchoolYears(): Promise<ServiceResult<SchoolYearOption[]>> {
     return callRpc<SchoolYearOption[]>('fn_get_school_years');
-}
+}
+
