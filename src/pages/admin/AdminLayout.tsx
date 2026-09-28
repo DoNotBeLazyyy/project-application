@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, GraduationCapIcon, HouseIcon, MegaphoneIcon, UsersIcon
+    CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, HouseIcon, MegaphoneIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -37,12 +37,6 @@ export default function AdminLayout() {
                         isActive: pathname.startsWith('/admin/school-years'),
                         label: 'Academic Years',
                         onClick: () => navigate('/admin/school-years')
-                    },
-                    {
-                        icon: <GraduationCapIcon size={18} />,
-                        isActive: pathname === '/admin/academic-thresholds',
-                        label: 'Academic Thresholds',
-                        onClick: () => navigate('/admin/academic-thresholds')
                     }
                 ]
             },

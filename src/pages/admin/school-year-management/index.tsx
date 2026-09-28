@@ -1,6 +1,7 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
+import AcademicYearHistoryModal from '@pages/admin/school-year-management/history/AcademicYearHistoryModal';
 import SchoolYearFilterForm from '@pages/admin/school-year-management/SchoolYearFilterForm';
 import SchoolYearGridCard from '@pages/admin/school-year-management/SchoolYearGridCard';
 import { useSchoolYearTableConfig } from '@pages/admin/school-year-management/useSchoolYearTableConfig';
@@ -33,6 +34,11 @@ export default function SchoolYearManagement() {
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [wizardSchoolYearId, setWizardSchoolYearId] = useState<string | null>(null);
     const [isWizardReadOnly, setIsWizardReadOnly] = useState(false);
+
+    // History modal state
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [historySchoolYearId, setHistorySchoolYearId] = useState<string | null>(null);
+    const [historySchoolYearLabel, setHistorySchoolYearLabel] = useState<string>('');
 
     const filterMethods = useForm<SchoolYearFilterValues>({
         defaultValues: {
@@ -69,8 +75,21 @@ export default function SchoolYearManagement() {
         setIsWizardReadOnly(false);
     }
 
+    function handleOpenHistory(id: string, label: string) {
+        setHistorySchoolYearId(id);
+        setHistorySchoolYearLabel(label);
+        setIsHistoryOpen(true);
+    }
+
+    function handleCloseHistory() {
+        setIsHistoryOpen(false);
+        setHistorySchoolYearId(null);
+        setHistorySchoolYearLabel('');
+    }
+
     const { columnDefs, tableActionConfig } = useSchoolYearTableConfig({
         onEdit: handleOpenUpdate,
+        onOpenHistory: handleOpenHistory,
         onRequestDeleteRow: function() {},
         onView: handleOpenView
     });
@@ -97,7 +116,7 @@ export default function SchoolYearManagement() {
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<SchoolYearListRow>
                 cardHeaderProps={{
-                    subheader: 'Manage academic years, terms, grading periods, and grade transmutation schemas.',
+                    subheader: 'Manage academic years, terms, grading periods, grade transmutation, and academic thresholds.',
                     title: 'Academic Years'
                 }}
                 controls={{
@@ -140,6 +159,7 @@ export default function SchoolYearManagement() {
                             isSelected={isSelected}
                             row={item}
                             onEdit={handleOpenUpdate}
+                            onOpenHistory={handleOpenHistory}
                             onRequestDelete={onRequestDeleteRow}
                             onToggleSelect={onToggleSelect}
                             onView={handleOpenView}
@@ -168,6 +188,14 @@ export default function SchoolYearManagement() {
                 schoolYearId={wizardSchoolYearId}
                 onClose={handleCloseWizard}
                 onSuccess={triggerRefresh}
+            />
+
+            {/* Academic Year History Modal */}
+            <AcademicYearHistoryModal
+                open={isHistoryOpen}
+                schoolYearId={historySchoolYearId}
+                schoolYearLabel={historySchoolYearLabel}
+                onClose={handleCloseHistory}
             />
         </div>
     );

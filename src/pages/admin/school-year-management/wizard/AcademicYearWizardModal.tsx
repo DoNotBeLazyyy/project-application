@@ -5,6 +5,7 @@ import {
     ArrowRightIcon,
     CalendarDotsIcon,
     CheckCircleIcon,
+    ClockCounterClockwiseIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
     XIcon
@@ -20,12 +21,14 @@ import {
 } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import AcademicYearHistoryModal from '../history/AcademicYearHistoryModal';
 import Step1SchoolYearInfo from './Step1SchoolYearInfo';
 import Step2TermsConfig from './Step2TermsConfig';
 import Step3GradingPeriodsConfig from './Step3GradingPeriodsConfig';
 import Step4TransmutationConfig from './Step4TransmutationConfig';
+import Step5ThresholdsConfig from './Step5ThresholdsConfig';
 import {
-    DEFAULT_GRADING_PERIODS,
+    DEFAULT_ACADEMIC_THRESHOLDS,
     DEFAULT_TRANSMUTATION_ROWS,
     WIZARD_STEPS
 } from './wizard.constants';
@@ -49,6 +52,7 @@ export default function AcademicYearWizardModal({
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
     const defaultValues: AcademicYearWizardFormValues = {
         code: '',
@@ -58,6 +62,7 @@ export default function AcademicYearWizardModal({
         label: '',
         start_date: '',
         terms: [],
+        thresholds: [...DEFAULT_ACADEMIC_THRESHOLDS],
         transmutation_rows: [...DEFAULT_TRANSMUTATION_ROWS]
     };
 
@@ -73,6 +78,7 @@ export default function AcademicYearWizardModal({
             setCurrentStep(1);
             reset(defaultValues);
             setIsReadOnly(initialReadOnly);
+            setIsHistoryModalOpen(false);
             return;
         }
 
@@ -92,6 +98,10 @@ export default function AcademicYearWizardModal({
                             label: data.label || '',
                             start_date: data.start_date || '',
                             terms: data.terms && data.terms.length > 0 ? data.terms : [],
+                            thresholds:
+                                data.thresholds && data.thresholds.length > 0
+                                    ? data.thresholds
+                                    : [...DEFAULT_ACADEMIC_THRESHOLDS],
                             transmutation_rows:
                                 data.transmutation_rows && data.transmutation_rows.length > 0
                                     ? data.transmutation_rows
@@ -105,6 +115,7 @@ export default function AcademicYearWizardModal({
         } else {
             reset({
                 ...defaultValues,
+                thresholds: [...DEFAULT_ACADEMIC_THRESHOLDS],
                 transmutation_rows: [...DEFAULT_TRANSMUTATION_ROWS]
             });
         }
@@ -233,6 +244,39 @@ export default function AcademicYearWizardModal({
         return true;
     }
 
+    // Validation for Step 5
+    function validateStep5(): boolean {
+        const values = getValues();
+        const thresholds = values.thresholds || [];
+
+        if (thresholds.length === 0) {
+            useToastStore.getState().showToast(
+                'Please configure at least one academic threshold.',
+                'error'
+            );
+            return false;
+        }
+
+        for (let i = 0; i < thresholds.length; i++) {
+            const t = thresholds[i];
+            if (!t.label || !t.label.trim()) {
+                useToastStore.getState().showToast(
+                    `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`,
+                    'error'
+                );
+                return false;
+            }
+            if (t.max_gwa === '' || t.max_gwa === null || t.max_gwa === undefined) {
+                useToastStore.getState().showToast(
+                    `Threshold "${t.label}" must specify a Max GWA cutoff.`,
+                    'error'
+                );
+                return false;
+            }
+        }
+        return true;
+    }
+
     function handleNext() {
         if (currentStep === 1) {
             if (!validateStep1()) return;
@@ -243,6 +287,9 @@ export default function AcademicYearWizardModal({
         } else if (currentStep === 3) {
             if (!validateStep3()) return;
             setCurrentStep(4);
+        } else if (currentStep === 4) {
+            if (!validateStep4()) return;
+            setCurrentStep(5);
         }
     }
 
@@ -267,12 +314,19 @@ export default function AcademicYearWizardModal({
         if (currentStep === 1 && !validateStep1()) return;
         if (currentStep === 2 && !validateStep2()) return;
         if (currentStep === 3 && !validateStep3()) return;
+        if (currentStep === 4 && !validateStep4()) return;
 
         setCurrentStep(stepNumber);
     }
 
     async function handleSave() {
-        if (!validateStep1() || !validateStep2() || !validateStep3() || !validateStep4()) {
+        if (
+            !validateStep1() ||
+            !validateStep2() ||
+            !validateStep3() ||
+            !validateStep4() ||
+            !validateStep5()
+        ) {
             return;
         }
 
@@ -303,6 +357,32 @@ export default function AcademicYearWizardModal({
                     end_date: gp.end_date || null,
                     weight: Number(gp.weight) || 0
                 }))
+            })),
+            p_thresholds: (values.thresholds || []).map((th, idx) => ({
+                id: th.id,
+                category: th.category,
+                code: th.code.trim(),
+                label: th.label.trim(),
+                min_gwa:
+                    th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
+                        ? Number(th.min_gwa)
+                        : null,
+                max_gwa: Number(th.max_gwa) || 1.75,
+                min_subject_grade:
+                    th.min_subject_grade !== null &&
+                    th.min_subject_grade !== undefined &&
+                    th.min_subject_grade !== ''
+                        ? Number(th.min_subject_grade)
+                        : null,
+                requires_no_failing: Boolean(th.requires_no_failing),
+                scholarship_discount_pct:
+                    th.scholarship_discount_pct !== null &&
+                    th.scholarship_discount_pct !== undefined &&
+                    th.scholarship_discount_pct !== ''
+                        ? Number(th.scholarship_discount_pct)
+                        : null,
+                sort_order: th.sort_order || idx + 1,
+                is_active: Boolean(th.is_active)
             })),
             p_transmutation_rows: (values.transmutation_rows || []).map((r) => ({
                 id: r.id,
@@ -352,17 +432,29 @@ export default function AcademicYearWizardModal({
                         <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
                             {schoolYearId
                                 ? isReadOnly
-                                    ? 'Academic Year Calendar'
+                                    ? 'Academic Year Calendar & Criteria'
                                     : 'Edit Academic Year & Calendar'
                                 : 'Academic Year & Calendar Wizard'}
                         </h2>
                         <p className="text-xs text-slate-500">
-                            Unified setup for operational dates, terms, grading periods, and grade schema.
+                            Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {schoolYearId && (
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={() => setIsHistoryModalOpen(true)}
+                        >
+                            History
+                        </CommonButton>
+                    )}
+
                     {isReadOnly && (
                         <CommonButton
                             color="primary"
@@ -388,7 +480,7 @@ export default function AcademicYearWizardModal({
             {/* Stepper Progress Bar */}
             <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0">
                 {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-4 gap-2">
+                <div className="hidden md:grid grid-cols-5 gap-2">
                     {WIZARD_STEPS.map((s) => {
                         const isActive = currentStep === s.step;
                         const isDone = currentStep > s.step;
@@ -396,7 +488,7 @@ export default function AcademicYearWizardModal({
                         return (
                             <button
                                 key={s.step}
-                                className={`flex items-center gap-3 p-2 rounded-xl text-left transition-all ${
+                                className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
                                     isActive
                                         ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
                                         : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
@@ -425,7 +517,7 @@ export default function AcademicYearWizardModal({
                                     >
                                         {s.title}
                                     </p>
-                                    <p className="text-[11px] text-slate-400 truncate">{s.subtitle}</p>
+                                    <p className="text-[10px] text-slate-400 truncate">{s.subtitle}</p>
                                 </div>
                             </button>
                         );
@@ -436,30 +528,28 @@ export default function AcademicYearWizardModal({
                 <div className="block md:hidden">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
-                            Step {currentStep} of 4: {currentStepConfig?.title}
+                            Step {currentStep} of 5: {currentStepConfig?.title}
                         </span>
                         <span className="text-xs text-slate-400 font-medium">
-                            {Math.round((currentStep / 4) * 100)}%
+                            {Math.round((currentStep / 5) * 100)}%
                         </span>
                     </div>
                     {/* Progress Bar Line */}
                     <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
                         <div
                             className="bg-brand-600 h-full transition-all duration-300 rounded-full"
-                            style={{ width: `${(currentStep / 4) * 100}%` }}
+                            style={{ width: `${(currentStep / 5) * 100}%` }}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Scrollable Step Content Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 overscroll-contain">
+            {/* Wizard Step Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
                 {isLoading ? (
-                    <div className="py-20 text-center space-y-3">
-                        <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                        <p className="text-xs sm:text-sm text-slate-500">
-                            Loading academic calendar details...
-                        </p>
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-xs text-slate-500">Loading academic year calendar details...</p>
                     </div>
                 ) : (
                     <>
@@ -493,6 +583,13 @@ export default function AcademicYearWizardModal({
                                 disabled={isReadOnly}
                             />
                         )}
+
+                        {currentStep === 5 && (
+                            <Step5ThresholdsConfig
+                                control={control}
+                                disabled={isReadOnly}
+                            />
+                        )}
                     </>
                 )}
             </div>
@@ -513,12 +610,12 @@ export default function AcademicYearWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 4 — {currentStepConfig?.title}
+                    Step {currentStep} of 5 — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 4 ? (
+                    {currentStep < 5 ? (
                         <CommonButton
                             color="primary"
                             disabled={isLoading}
@@ -552,6 +649,14 @@ export default function AcademicYearWizardModal({
                     )}
                 </div>
             </div>
+
+            {/* History Modal */}
+            <AcademicYearHistoryModal
+                open={isHistoryModalOpen}
+                schoolYearId={schoolYearId}
+                schoolYearLabel={watch('label')}
+                onClose={() => setIsHistoryModalOpen(false)}
+            />
         </CommonModal>
     );
 }

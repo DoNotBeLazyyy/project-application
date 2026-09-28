@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
     AcademicYearCalendarDetails,
+    AcademicYearHistoryItem,
     SaveAcademicYearCalendarPayload,
     SchoolYearFilterValues,
     SchoolYearFormValues,
@@ -69,9 +70,23 @@ export async function saveAcademicYearCalendar(
             p_school_year_id: payload.p_school_year_id,
             p_start_date: payload.p_start_date,
             p_terms: payload.p_terms,
+            p_thresholds: payload.p_thresholds || [],
             p_transmutation_rows: payload.p_transmutation_rows
         }
     );
+}
+
+export async function getAcademicYearHistory(
+    schoolYearId: string
+): Promise<ServiceResult<AcademicYearHistoryItem[]>> {
+    const res = await callRpc<{ success: boolean; data: AcademicYearHistoryItem[] }>(
+        'fn_get_academic_year_history',
+        { p_school_year_id: schoolYearId }
+    );
+    if (res.error) {
+        return { data: null, error: res.error };
+    }
+    return { data: res.data?.data ?? [], error: null };
 }
 
 export async function createSchoolYear(

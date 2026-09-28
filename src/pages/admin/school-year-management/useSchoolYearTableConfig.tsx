@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import { SchoolYearListRow } from '@type/school-year.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
@@ -8,11 +9,13 @@ import { useMemo } from 'react';
 interface UseSchoolYearTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
     onEdit: (id: string) => void;
+    onOpenHistory?: (id: string, label: string) => void;
     onView: (id: string) => void;
 }
 
 export function useSchoolYearTableConfig({
     onEdit,
+    onOpenHistory,
     onView
 }: UseSchoolYearTableConfigProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
@@ -83,6 +86,16 @@ export function useSchoolYearTableConfig({
                         preset: 'edit',
                         onClick: () => onEdit(row.id)
                     },
+                    ...(onOpenHistory
+                        ? [
+                            {
+                                icon: <ClockCounterClockwiseIcon size={18} weight="bold" />,
+                                key: 'history',
+                                label: 'History',
+                                onClick: () => onOpenHistory(row.id, row.label)
+                            }
+                        ]
+                        : []),
                     {
                         preset: 'delete',
                         onClick: () => onDelete(row.id)
@@ -90,7 +103,7 @@ export function useSchoolYearTableConfig({
                 ]
             };
         };
-    }, [onEdit, onView]);
+    }, [onEdit, onOpenHistory, onView]);
 
     return { columnDefs, tableActionConfig };
 }

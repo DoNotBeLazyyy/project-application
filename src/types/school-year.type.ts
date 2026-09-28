@@ -1,3 +1,5 @@
+import { AcademicThresholdCategory } from '@type/academic-threshold.type';
+
 export interface SchoolYearListRow {
     id: string;
     code: string;
@@ -61,6 +63,20 @@ export interface WizardTransmutationRow {
     description?: string | null;
 }
 
+export interface WizardThresholdItem {
+    id?: string | null;
+    category: AcademicThresholdCategory;
+    code: string;
+    label: string;
+    min_gwa: number | string | null;
+    max_gwa: number | string;
+    min_subject_grade: number | string | null;
+    requires_no_failing: boolean;
+    scholarship_discount_pct: number | string | null;
+    sort_order: number;
+    is_active: boolean;
+}
+
 export interface AcademicYearCalendarDetails {
     id: string;
     code: string;
@@ -70,6 +86,7 @@ export interface AcademicYearCalendarDetails {
     is_active: boolean;
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
+    thresholds: WizardThresholdItem[];
 }
 
 export interface SaveAcademicYearCalendarPayload {
@@ -81,6 +98,7 @@ export interface SaveAcademicYearCalendarPayload {
     p_is_active: boolean;
     p_terms: WizardTermItem[];
     p_transmutation_rows: WizardTransmutationRow[];
+    p_thresholds?: WizardThresholdItem[];
 }
 
 export interface AcademicYearWizardFormValues {
@@ -92,4 +110,32 @@ export interface AcademicYearWizardFormValues {
     is_active: boolean;
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
-}
+    thresholds: WizardThresholdItem[];
+}
+
+export interface AcademicYearHistoryItem {
+    id: string;
+    school_year_id: string;
+    action: 'CREATED' | 'UPDATED';
+    changed_at: string;
+    changed_by: string | null;
+    changed_by_name: string | null;
+    changed_by_email: string | null;
+    changed_by_role: string | null;
+    change_summary: string | null;
+    snapshot: {
+        id?: string;
+        code?: string;
+        label?: string;
+        start_date?: string;
+        end_date?: string;
+        is_active?: boolean;
+        terms_count?: number;
+        transmutation_rows_count?: number;
+        thresholds_count?: number;
+        terms?: WizardTermItem[];
+        transmutation_rows?: WizardTransmutationRow[];
+        thresholds?: WizardThresholdItem[];
+    };
+    changes?: Record<string, any> | null;
+}

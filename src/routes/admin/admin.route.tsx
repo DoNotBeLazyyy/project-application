@@ -79,9 +79,7 @@ export const adminRoutes: RouteObject[] = [
                 path: 'term-types'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/academic-threshold-management');
-                }),
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'academic-thresholds'
             },
             {
