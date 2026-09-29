@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
 import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, FloppyDiskIcon, PencilSimpleIcon } from '@phosphor-icons/react';
@@ -31,7 +32,8 @@ export default function EntityFormPage<TValues extends FieldValues>({
     subheader,
     title,
     onCreate,
-    onUpdate
+    onUpdate,
+    renderView
 }: EntityFormPageProps<TValues>) {
     const { id = '' } = useParams<{ id: string }>();
     const [searchParams] = useSearchParams();
@@ -41,6 +43,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
     const isCreate = id === 'new' || !id || normalizedPath.endsWith('/new');
 
     const [isEditing, setIsEditing] = useState(isCreate || searchParams.get('edit') === '1');
+    const [isLoading, setIsLoading] = useState(!isCreate && Boolean(fetchById && id));
     const shouldExitAfterSave = useRef(false);
 
     const methods = useForm<TValues>({ defaultValues });
@@ -62,10 +65,17 @@ export default function EntityFormPage<TValues extends FieldValues>({
         const load = fetchById;
 
         async function loadEntity() {
-            const result = await load(id);
+            setIsLoading(true);
+            try {
+                const result = await load(id);
 
-            if (active && result.data) {
-                reset(result.data as TValues);
+                if (active && result.data) {
+                    reset(result.data as TValues);
+                }
+            } finally {
+                if (active) {
+                    setIsLoading(false);
+                }
             }
         }
 
@@ -204,13 +214,19 @@ export default function EntityFormPage<TValues extends FieldValues>({
                 </div>
             </div>
             <div className="flex-1 min-h-0 min-w-0 w-full max-w-full overflow-y-auto pr-4">
-                {renderForm({
-                    control,
-                    disabled: isDisabled,
-                    id: formId,
-                    mode,
-                    onSubmit: submitHandler
-                })}
+                {isLoading ? (
+                    <PageLoadingFallback />
+                ) : mode === 'view' && renderView ? (
+                    renderView(methods.watch())
+                ) : (
+                    renderForm({
+                        control,
+                        disabled: isDisabled,
+                        id: formId,
+                        mode,
+                        onSubmit: submitHandler
+                    })
+                )}
             </div>
             <UnsavedChangesPrompt
                 open={backGuard.isPromptOpen}

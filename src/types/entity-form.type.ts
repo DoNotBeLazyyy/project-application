@@ -25,4 +25,5 @@ export interface EntityFormPageProps<TValues extends FieldValues> {
     fetchById?: (id: string) => Promise<ServiceResult<TValues>>;
     onCreate?: (values: TValues) => Promise<ServiceResult<unknown>>;
     onUpdate?: (id: string, values: TValues) => Promise<ServiceResult<unknown>>;
+    renderView?: (values: TValues) => ReactNode;
 }

@@ -49,6 +49,11 @@ export interface EventFormValues {
     end_at: string;
     description: string;
     attachments?: AttachmentInputDto[];
+    all_day?: boolean;
+    author_name?: string;
+    created_at?: string;
+    sections?: AnnouncementSectionRef[];
+    target_audience?: AnnouncementAudience;
 }
 
 export interface EventFeedRow {

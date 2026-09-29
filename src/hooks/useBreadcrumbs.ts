@@ -23,9 +23,6 @@ function formatFallbackSegment(segment: string, prevSegment?: string): string {
         if (prevSegment === 'faculty-load') {
             return 'Faculty Member';
         }
-        if (prevSegment === 'student-management') {
-            return 'Student Detail';
-        }
         if (prevSegment === 'rubrics') {
             return 'Rubric Detail';
         }

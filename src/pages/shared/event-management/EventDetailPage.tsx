@@ -1,6 +1,7 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import EventForm from '@pages/shared/event-management/EventForm';
+import EventViewerCard from '@pages/shared/event-management/EventViewerCard';
 import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import { createEvent, getEventById, updateEvent } from '@services/event.service';
 import { EventFormValues } from '@type/event.type';
@@ -35,14 +36,19 @@ async function fetchEvent(id: string): Promise<ServiceResult<EventFormValues>> {
 
     return {
         data: {
+            all_day: result.data.all_day,
             attachments: result.data.attachments ?? [],
+            author_name: result.data.author_name ?? 'Staff',
+            created_at: result.data.created_at,
             description: result.data.description ?? '',
             end_at: toDateInput(result.data.end_at),
             location: result.data.location ?? '',
             section_ids: result.data.target_audience === 'Section'
                 ? result.data.section_ids
                 : [ALL_SECTIONS_VALUE],
+            sections: result.data.sections ?? [],
             start_at: toDateInput(result.data.start_at),
+            target_audience: result.data.target_audience,
             title: result.data.title
         },
         error: null
@@ -68,15 +74,18 @@ export default function EventDetailPage() {
                     />
                 );
             }}
+            renderView={function(values) {
+                return <EventViewerCard values={values} />;
+            }}
             subheader={{
                 create: 'Schedule a new event and choose who sees it.',
                 edit: 'Update the details of this event.',
-                view: 'Viewing event details.'
+                view: 'Preview how this event appears to attendees.'
             }}
             title={{
                 create: 'Create Event',
                 edit: 'Edit Event',
-                view: 'View Event'
+                view: 'Event Details'
             }}
             onCreate={createEvent}
             onUpdate={updateEvent}

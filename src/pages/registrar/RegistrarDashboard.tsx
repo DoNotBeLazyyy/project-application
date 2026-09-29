@@ -33,7 +33,7 @@ const STAT_CARDS: RegistrarStatCard[] = [
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Active Students',
         statKey: 'active_students',
-        to: '/registrar/student-management'
+        to: '/registrar/enrollment-management'
     },
     {
         icon: <ClipboardTextIcon size={24} />,
@@ -65,7 +65,7 @@ const STAT_CARDS: RegistrarStatCard[] = [
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Dropped This Term',
         statKey: 'dropped_this_term',
-        to: '/registrar/student-management'
+        to: '/registrar/enrollment-management'
     }
 ];
 

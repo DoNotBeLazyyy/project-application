@@ -1,5 +1,6 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
+import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import { createAnnouncement, getAnnouncementById, updateAnnouncement } from '@services/announcement.service';
 import { AnnouncementDetail, AnnouncementFormValues } from '@type/announcement.type';
@@ -29,6 +30,7 @@ function toFormValues(detail: AnnouncementDetail): AnnouncementFormValues {
         is_pinned: detail.is_pinned,
         posted_on: formatTimestamp(detail.published_at ?? detail.created_at),
         section_ids: detail.section_ids,
+        sections: detail.sections ?? [],
         target_audience: detail.target_audience,
         title: detail.title
     };
@@ -77,15 +79,18 @@ export default function AnnouncementDetailPage() {
                     />
                 );
             }}
+            renderView={function(values) {
+                return <AnnouncementViewerCard values={values} />;
+            }}
             subheader={{
                 create: 'Compose a new announcement and choose who receives it.',
                 edit: 'Update the details of this announcement.',
-                view: 'Viewing announcement details.'
+                view: 'Preview how this announcement appears to students and faculty.'
             }}
             title={{
                 create: 'Post Announcement',
                 edit: 'Edit Announcement',
-                view: 'View Announcement'
+                view: 'Announcement Details'
             }}
             onCreate={createAnnouncement}
             onUpdate={updateAnnouncement}

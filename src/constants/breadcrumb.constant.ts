@@ -45,10 +45,7 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
     rubrics: 'Rubrics',
 
     // Registrar Pages
-    'student-management': 'Student Registry',
-    records: 'Student Records',
-    'enrollment-management': 'Enrollments',
-    'batch-progression': 'Batch Progression',
+    'enrollment-management': 'Section Enrollments',
     'grade-release': 'Grade Release',
 
     // Student Pages

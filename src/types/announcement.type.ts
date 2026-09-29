@@ -62,6 +62,7 @@ export interface AnnouncementFormValues {
     target_audience: AnnouncementAudience;
     title: string;
     attachments?: AttachmentInputDto[];
+    sections?: AnnouncementSectionRef[];
 }
 
 export interface AnnouncementFeedRow {

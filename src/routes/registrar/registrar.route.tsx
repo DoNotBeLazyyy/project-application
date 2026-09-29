@@ -16,18 +16,6 @@ export const registrarRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/registrar/student-management');
-                }),
-                path: 'student-management'
-            },
-            {
-                element: lazyElement(function() {
-                    return import('@pages/registrar/student-records/StudentRecordsPage');
-                }),
-                path: 'student-management/:studentId/records'
-            },
-            {
-                element: lazyElement(function() {
                     return import('@pages/registrar/enrollment-management');
                 }),
                 path: 'enrollment-management'

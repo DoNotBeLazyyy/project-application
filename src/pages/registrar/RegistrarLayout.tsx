@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    CalendarIcon, HouseIcon, MegaphoneIcon, SealCheckIcon, StudentIcon, UserPlusIcon
+    CalendarIcon, HouseIcon, MegaphoneIcon, SealCheckIcon, UserPlusIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -22,18 +22,12 @@ export default function RegistrarLayout() {
             ]
         },
         {
-            sectionLabel: 'STUDENT REGISTRY',
+            sectionLabel: 'COURSE ENROLLMENTS',
             items: [
-                {
-                    icon: <StudentIcon size={18} />,
-                    isActive: pathname === '/registrar/student-management',
-                    label: 'Student Records',
-                    onClick: () => navigate('/registrar/student-management')
-                },
                 {
                     icon: <UserPlusIcon size={18} />,
                     isActive: pathname === '/registrar/enrollment-management',
-                    label: 'Enrollments',
+                    label: 'Section Enrollments',
                     onClick: () => navigate('/registrar/enrollment-management')
                 }
             ]
