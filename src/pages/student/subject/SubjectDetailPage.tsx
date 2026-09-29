@@ -133,7 +133,7 @@ export default function SubjectDetailPage() {
                     },
                     {
                         icon: <BookOpenIcon />,
-                        label: 'Content',
+                        label: 'Lectures & Syllabus',
                         value: 'content'
                     },
                     {

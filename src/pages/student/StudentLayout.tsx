@@ -11,13 +11,19 @@ export default function StudentLayout() {
     const { pathname } = useLocation();
     const navSections = useMemo((): SideBarSection[] => [
         {
-            sectionLabel: 'OVERVIEW',
+            sectionLabel: 'ACADEMIC HUB',
             items: [
                 {
                     icon: <HouseIcon size={18} />,
                     isActive: pathname === '/student',
                     label: 'Dashboard',
                     onClick: () => navigate('/student')
+                },
+                {
+                    icon: <BooksIcon size={18} />,
+                    isActive: pathname.startsWith('/student/subjects'),
+                    label: 'My Subjects',
+                    onClick: () => navigate('/student/subjects')
                 },
                 {
                     icon: <CalendarDotsIcon size={18} />,
@@ -28,47 +34,31 @@ export default function StudentLayout() {
             ]
         },
         {
-            sectionLabel: 'COURSES & GRADES',
+            sectionLabel: 'PERFORMANCE & RECORDS',
             items: [
-                {
-                    icon: <BooksIcon size={18} />,
-                    isActive: pathname.startsWith('/student/subjects'),
-                    label: 'My Subjects',
-                    onClick: () => navigate('/student/subjects')
-                },
                 {
                     icon: <ExamIcon size={18} />,
                     isActive: pathname.startsWith('/student/grade'),
-                    label: 'My Grades',
+                    label: 'Grades & Honors',
                     onClick: () => navigate('/student/grade')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'PROGRESS & FEEDBACK',
-            items: [
+                },
                 {
                     icon: <ChartLineUpIcon size={18} />,
                     isActive: pathname === '/student/insight',
-                    label: 'Achievement & Honors Tracker',
+                    label: 'Honors & Analytics',
                     onClick: () => navigate('/student/insight')
+                },
+                {
+                    icon: <ListChecksIcon size={18} />,
+                    isActive: pathname === '/student/curriculum',
+                    label: 'Curriculum Audit',
+                    onClick: () => navigate('/student/curriculum')
                 },
                 {
                     icon: <ClipboardTextIcon size={18} />,
                     isActive: pathname.startsWith('/student/evaluations'),
                     label: 'Faculty Evaluations',
                     onClick: () => navigate('/student/evaluations')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'ACADEMIC RECORDS',
-            items: [
-                {
-                    icon: <ListChecksIcon size={18} />,
-                    isActive: pathname === '/student/curriculum',
-                    label: 'Curriculum Audit',
-                    onClick: () => navigate('/student/curriculum')
                 }
             ]
         }
