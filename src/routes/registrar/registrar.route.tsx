@@ -34,12 +34,6 @@ export const registrarRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/registrar/batch-progression');
-                }),
-                path: 'batch-progression'
-            },
-            {
-                element: lazyElement(function() {
                     return import('@pages/registrar/grade-release-management');
                 }),
                 path: 'grade-release'

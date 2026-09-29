@@ -6,9 +6,7 @@ import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
     ClipboardTextIcon,
-    GraduationCapIcon,
     HourglassIcon,
-    PauseCircleIcon,
     SealCheckIcon,
     SignOutIcon,
     UsersThreeIcon
@@ -67,22 +65,6 @@ const STAT_CARDS: RegistrarStatCard[] = [
         iconColor: 'text-[var(--mui-palette-error-main)]',
         label: 'Dropped This Term',
         statKey: 'dropped_this_term',
-        to: '/registrar/student-management'
-    },
-    {
-        icon: <PauseCircleIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-secondary-50)]',
-        iconColor: 'text-[var(--mui-palette-secondary-main)]',
-        label: 'Students on LOA',
-        statKey: 'students_on_loa',
-        to: '/registrar/student-management'
-    },
-    {
-        icon: <GraduationCapIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-success-50)]',
-        iconColor: 'text-[var(--mui-palette-success-main)]',
-        label: 'Graduated Students',
-        statKey: 'graduated_students',
         to: '/registrar/student-management'
     }
 ];

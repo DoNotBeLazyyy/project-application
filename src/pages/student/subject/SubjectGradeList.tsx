@@ -113,7 +113,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
                     return (
                         <div className="flex h-full items-center">
-                            <CommonBadgeStatus label="Not yet released" variant="error" />
+                            <CommonBadgeStatus label="Pending Registrar Release" variant="warning" />
                         </div>
                     );
                 }
@@ -123,9 +123,14 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
     return (
         <div className="flex flex-1 flex-col gap-3 min-h-0">
-            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                Grades
-            </span>
+            <div className="flex flex-col gap-1">
+                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                    Official Term Grades
+                </span>
+                <span className="text-(--mui-palette-text-secondary) text-xs">
+                    Continuous quiz and activity scores can be tracked under the <strong>Assessments</strong> tab in real time. Official term grades appear here once submitted by faculty and released by the Registrar.
+                </span>
+            </div>
             {grades.length === 0
                 ? (
                     <div className="flex flex-1 flex-col gap-1 items-center justify-center py-10 text-center">
@@ -133,7 +138,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                             No grades to show yet
                         </span>
                         <span className="max-w-md text-(--mui-palette-text-secondary) text-xs">
-                            Grades appear here once your instructor has set up grading periods for this section and released them. Check back later in the term.
+                            Grades appear here once your instructor has set up grading periods for this section and they have been released by the Registrar.
                         </span>
                     </div>
                 )

@@ -1,17 +1,15 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import LifecyclePanel from '@pages/registrar/student-records/LifecyclePanel';
-import StudentInsightView from '@pages/shared/analytics/StudentInsightView';
 import CurriculumAuditView from '@pages/shared/records/CurriculumAuditView';
 import TranscriptView from '@pages/shared/records/TranscriptView';
 import {
-    ArrowLeftIcon, ChartLineUpIcon, ClockCounterClockwiseIcon, ListChecksIcon, ScrollIcon
+    ArrowLeftIcon, ListChecksIcon, ScrollIcon
 } from '@phosphor-icons/react';
 import { SyntheticEvent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-type RecordsTab = 'transcript' | 'checklist' | 'lifecycle' | 'insight';
+type RecordsTab = 'transcript' | 'checklist';
 
 export default function StudentRecordsPage() {
     const { studentId = '' } = useParams<{ studentId: string }>();
@@ -53,16 +51,6 @@ export default function StudentRecordsPage() {
                         icon: <ListChecksIcon />,
                         label: 'Curriculum Checklist',
                         value: 'checklist'
-                    },
-                    {
-                        icon: <ChartLineUpIcon />,
-                        label: 'Insight',
-                        value: 'insight'
-                    },
-                    {
-                        icon: <ClockCounterClockwiseIcon />,
-                        label: 'Lifecycle',
-                        value: 'lifecycle'
                     }
                 ]}
                 value={activeTab}
@@ -71,8 +59,6 @@ export default function StudentRecordsPage() {
             <div className="flex-1 min-h-0 overflow-y-auto">
                 {activeTab === 'transcript' && <TranscriptView studentId={studentId} />}
                 {activeTab === 'checklist' && <CurriculumAuditView studentId={studentId} />}
-                {activeTab === 'insight' && <StudentInsightView studentId={studentId} />}
-                {activeTab === 'lifecycle' && <LifecyclePanel studentId={studentId} />}
             </div>
         </CommonCard>
     );

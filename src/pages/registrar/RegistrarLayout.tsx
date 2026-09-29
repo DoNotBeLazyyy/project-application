@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    ArrowsClockwiseIcon, CalendarIcon, HouseIcon, MegaphoneIcon, SealCheckIcon, StudentIcon, UserPlusIcon
+    CalendarIcon, HouseIcon, MegaphoneIcon, SealCheckIcon, StudentIcon, UserPlusIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -35,12 +35,6 @@ export default function RegistrarLayout() {
                     isActive: pathname === '/registrar/enrollment-management',
                     label: 'Enrollments',
                     onClick: () => navigate('/registrar/enrollment-management')
-                },
-                {
-                    icon: <ArrowsClockwiseIcon size={18} />,
-                    isActive: pathname === '/registrar/batch-progression',
-                    label: 'Batch Progression',
-                    onClick: () => navigate('/registrar/batch-progression')
                 }
             ]
         },
