@@ -1,5 +1,5 @@
 import { lazyElement } from '@utils/lazy.util';
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 
 export const deanRoutes: RouteObject[] = [
     {
@@ -13,6 +13,14 @@ export const deanRoutes: RouteObject[] = [
                     return import('@pages/dean/DeanDashboard');
                 }),
                 index: true
+            },
+            {
+                element: <Navigate replace to="/admin/departments" />,
+                path: 'department-management'
+            },
+            {
+                element: <Navigate replace to="/admin/departments" />,
+                path: 'departments'
             },
             {
                 element: lazyElement(function() {

@@ -1,7 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
-import { useDepartmentOptions } from '@pages/dean/department-management/useDepartmentOptions';
+import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFilterValues } from '@type/course/course.type';
 import { Control } from 'react-hook-form';

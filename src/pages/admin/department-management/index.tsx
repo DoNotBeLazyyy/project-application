@@ -1,10 +1,10 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import DepartmentFilterForm from '@pages/dean/department-management/DepartmentFilterForm';
-import DepartmentForm from '@pages/dean/department-management/DepartmentForm';
-import DepartmentGridCard from '@pages/dean/department-management/DepartmentGridCard';
-import { useDepartmentTableConfig } from '@pages/dean/department-management/useDepartmentTableConfig';
+import DepartmentFilterForm from '@pages/admin/department-management/DepartmentFilterForm';
+import DepartmentForm from '@pages/admin/department-management/DepartmentForm';
+import DepartmentGridCard from '@pages/admin/department-management/DepartmentGridCard';
+import { useDepartmentTableConfig } from '@pages/admin/department-management/useDepartmentTableConfig';
 import {
     bulkDeleteDepartments, createDepartment, deleteDepartment, getDepartmentById, listDepartments, updateDepartment
 } from '@services/department.service';
@@ -157,7 +157,7 @@ export default function DepartmentManagement() {
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<DepartmentListRow>
                 cardHeaderProps={{
-                    subheader: 'Manage university departments and their heads.',
+                    subheader: 'Manage academic departments, colleges, and their designated department heads.',
                     title: 'Department Management'
                 }}
                 controls={{

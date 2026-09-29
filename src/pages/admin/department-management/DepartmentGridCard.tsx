@@ -15,9 +15,8 @@ export interface DepartmentGridCardProps {
 /**
  * DepartmentGridCard
  *
- * Grid (bento) representation of a department row. Follows the shared
- * management-list card pattern (see docs/MANAGEMENT_LIST_CARDS.md): name as the
- * hero title, code as the subtitle, and department head in the person slot.
+ * Grid (bento) representation of a department row for Admin.
+ * Name as hero title, code as subtitle, and department head in the person slot.
  */
 export default function DepartmentGridCard({
     row,

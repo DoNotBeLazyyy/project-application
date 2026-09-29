@@ -27,6 +27,16 @@ export const adminRoutes: RouteObject[] = [
                 path: 'school-years'
             },
             {
+                element: lazyElement(function() {
+                    return import('@pages/admin/department-management');
+                }),
+                path: 'departments'
+            },
+            {
+                element: <Navigate replace to="/admin/departments" />,
+                path: 'department-management'
+            },
+            {
                 element: <Navigate replace to="/admin/school-years" />,
                 path: 'transmutation'
             },

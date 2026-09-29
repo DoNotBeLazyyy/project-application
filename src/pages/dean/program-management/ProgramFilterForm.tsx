@@ -1,6 +1,6 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useDepartmentOptions } from '@pages/dean/department-management/useDepartmentOptions';
+import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFilterValues } from '@type/program/program.type';

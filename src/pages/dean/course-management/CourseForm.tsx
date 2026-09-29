@@ -6,7 +6,7 @@ import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDI
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
-import { useDepartmentOptions } from '@pages/dean/department-management/useDepartmentOptions';
+import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseTypeOption } from '@type/course/course-type.type';
 import { CourseFormValues, PrerequisiteRow } from '@type/course/course.type';
