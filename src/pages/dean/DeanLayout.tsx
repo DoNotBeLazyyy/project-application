@@ -22,47 +22,7 @@ export default function DeanLayout() {
             ]
         },
         {
-            sectionLabel: 'ACADEMIC ORGANIZATION',
-            items: [
-                {
-                    icon: <CertificateIcon size={18} />,
-                    isActive: pathname === '/dean/program-management',
-                    label: 'Programs',
-                    onClick: () => navigate('/dean/program-management')
-                },
-                {
-                    icon: <StepsIcon size={18} />,
-                    isActive: pathname === '/dean/program-level-management',
-                    label: 'Program Levels',
-                    onClick: () => navigate('/dean/program-level-management')
-                },
-                {
-                    icon: <TagIcon size={18} />,
-                    isActive: pathname === '/dean/course-type-management',
-                    label: 'Course Types',
-                    onClick: () => navigate('/dean/course-type-management')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'CURRICULUM & COURSES',
-            items: [
-                {
-                    icon: <BookOpenTextIcon size={18} />,
-                    isActive: pathname === '/dean/course-management',
-                    label: 'Courses',
-                    onClick: () => navigate('/dean/course-management')
-                },
-                {
-                    icon: <TreeStructureIcon size={18} />,
-                    isActive: pathname === '/dean/curriculum-map-management',
-                    label: 'Curriculum Maps',
-                    onClick: () => navigate('/dean/curriculum-map-management')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'INSTRUCTION & FACULTY',
+            sectionLabel: 'ACADEMIC LOGISTICS',
             items: [
                 {
                     icon: <UsersThreeIcon size={18} />,
@@ -81,6 +41,46 @@ export default function DeanLayout() {
                     isActive: pathname.startsWith('/dean/schedule-conflicts'),
                     label: 'Schedule Conflicts',
                     onClick: () => navigate('/dean/schedule-conflicts')
+                }
+            ]
+        },
+        {
+            sectionLabel: 'CURRICULUM & CATALOG',
+            items: [
+                {
+                    icon: <CertificateIcon size={18} />,
+                    isActive: pathname === '/dean/program-management',
+                    label: 'Programs',
+                    onClick: () => navigate('/dean/program-management')
+                },
+                {
+                    icon: <BookOpenTextIcon size={18} />,
+                    isActive: pathname === '/dean/course-management',
+                    label: 'Courses',
+                    onClick: () => navigate('/dean/course-management')
+                },
+                {
+                    icon: <TreeStructureIcon size={18} />,
+                    isActive: pathname === '/dean/curriculum-map-management',
+                    label: 'Curriculum Maps',
+                    onClick: () => navigate('/dean/curriculum-map-management')
+                }
+            ]
+        },
+        {
+            sectionLabel: 'ACADEMIC LOOKUPS',
+            items: [
+                {
+                    icon: <StepsIcon size={18} />,
+                    isActive: pathname === '/dean/program-level-management',
+                    label: 'Program Levels',
+                    onClick: () => navigate('/dean/program-level-management')
+                },
+                {
+                    icon: <TagIcon size={18} />,
+                    isActive: pathname === '/dean/course-type-management',
+                    label: 'Course Types',
+                    onClick: () => navigate('/dean/course-type-management')
                 }
             ]
         },
