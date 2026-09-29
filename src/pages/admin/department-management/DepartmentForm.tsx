@@ -37,7 +37,6 @@ export default function DepartmentForm({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Overview or scope of this department (optional)' },
             name: 'description',
             type: 'text-area'
         }

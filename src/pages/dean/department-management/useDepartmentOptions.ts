@@ -1,1 +1,0 @@
-export { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';

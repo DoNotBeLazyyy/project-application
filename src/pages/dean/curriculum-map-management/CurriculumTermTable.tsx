@@ -30,12 +30,12 @@ export default function CurriculumTermTable({
     }];
 
     return (
-        <div className="border border-(--mui-palette-divider) rounded-lg flex flex-1 flex-col gap-1 min-w-0 overflow-hidden bg-(--mui-palette-background-paper)">
-            <div className="border-b border-(--mui-palette-divider) font-semibold px-3 py-1.5 bg-(--mui-palette-background-default)/60 text-(--mui-palette-text-primary) text-center text-xs uppercase tracking-wider">
+        <div className="border-(--mui-palette-divider) border-r flex flex-1 flex-col gap-1 min-w-0">
+            <div className="border border-(--mui-palette-divider) font-semibold px-2 py-1 rounded-t text-(--mui-palette-text-primary) text-center text-xs uppercase">
                 {termTypeLabel}
             </div>
-            <div className="min-w-0 w-full overflow-x-auto print:overflow-visible">
-                <div className="min-w-[480px] w-full print:min-w-0">
+            <div className="min-w-0 overflow-x-auto print:overflow-visible">
+                <div className="min-w-160 print:min-w-0">
                     <CommonTable
                         domLayout="autoHeight"
                         isMobileCardDisabled

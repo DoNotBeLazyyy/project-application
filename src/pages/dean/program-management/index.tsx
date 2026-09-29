@@ -15,7 +15,6 @@ import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow 
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -51,12 +50,12 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
 ];
 
 export default function ProgramManagement() {
-    const navigate = useNavigate();
     const [activeFilters, setActiveFilters] = useState<ProgramFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
     const createMethods = useForm<ProgramFormValues>({
@@ -92,12 +91,26 @@ export default function ProgramManagement() {
         }
     }
 
-    function handleOpenView(id: string) {
-        navigate(`/dean/program-management/${id}`);
+    async function handleOpenView(id: string) {
+        setSelectedId(id);
+        await loadIntoForm(id);
+        setIsViewOpen(true);
+    }
+
+    function handleCloseView() {
+        setIsViewOpen(false);
+        setSelectedId(null);
+        updateMethods.reset(defaultFormValues);
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
+        await loadIntoForm(id);
+        setIsUpdateOpen(true);
+    }
+
+    async function handleSwitchToEdit(id: string) {
+        setIsViewOpen(false);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
@@ -277,7 +290,32 @@ export default function ProgramManagement() {
                     open: isUpdateOpen,
                     onClose: handleCloseUpdate
                 }}
-
+                viewModalProps={{
+                    cardProps: {
+                        cardHeaderProps: {
+                            subheader: 'Viewing program details.',
+                            title: 'View Program'
+                        }
+                    },
+                    confirmText: 'Edit',
+                    formContent: (
+                        <ProgramForm
+                            control={updateMethods.control}
+                            disabled
+                        />
+                    ),
+                    formButtonsProps: {
+                        confirmProps: {
+                            onClick: function() {
+                                if (selectedId) {
+                                    handleSwitchToEdit(selectedId);
+                                }
+                            }
+                        }
+                    },
+                    open: isViewOpen,
+                    onClose: handleCloseView
+                }}
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}

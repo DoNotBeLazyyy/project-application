@@ -10,7 +10,7 @@ export async function listDepartments(
     size: number,
     search: string,
     sort: SortStringDto[],
-    filters: DepartmentFilterValues | null
+    _filters: DepartmentFilterValues | null
 ): Promise<ServiceResult<CommonListResDto<DepartmentListRow>>> {
     return callRpc<CommonListResDto<DepartmentListRow>>('fn_list_departments_json', {
         p_page: page,
@@ -18,12 +18,7 @@ export async function listDepartments(
         p_size: size,
         p_sort: sort.length > 0
             ? sort
-            : null,
-        p_has_head: filters?.has_head === 'true'
-            ? true
-            : filters?.has_head === 'false'
-                ? false
-                : null
+            : null
     });
 }
 
@@ -39,14 +34,12 @@ export async function getDepartments(): Promise<ServiceResult<DepartmentOption[]
     return callRpc<DepartmentOption[]>('fn_get_departments');
 }
 
-
 export async function createDepartment(
     params: DepartmentFormValues
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_department', {
         p_code: params.code,
         p_description: params.description || null,
-        p_head_user_id: params.head_user_id || null,
         p_name: params.name
     });
 }
@@ -59,7 +52,6 @@ export async function updateDepartment(
         p_code: params.code,
         p_department_id: departmentId,
         p_description: params.description || null,
-        p_head_user_id: params.head_user_id || null,
         p_name: params.name
     });
 }

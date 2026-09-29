@@ -28,7 +28,7 @@ const DEFAULT_FORM_VALUES: DepartmentFormValues = {
 };
 
 export default function DepartmentManagement() {
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [refreshKey, setRefreshKey] = useState(0);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
@@ -43,7 +43,7 @@ export default function DepartmentManagement() {
     });
 
     function refreshList() {
-        setRefreshTrigger((prev) => prev + 1);
+        setRefreshKey((prev) => prev + 1);
     }
 
     async function loadIntoForm(id: string) {
@@ -138,7 +138,7 @@ export default function DepartmentManagement() {
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<DepartmentListRow>
                 cardHeaderProps={{
-                    subheader: 'Manage academic departments and colleges to organize degree programs and courses.',
+                    subheader: 'Manage academic departments and colleges to group programs and courses.',
                     title: 'Department Management'
                 }}
                 controls={{
@@ -170,7 +170,7 @@ export default function DepartmentManagement() {
                         setIsCreateOpen(false);
                     }
                 }}
-                dependencies={[refreshTrigger]}
+                dependencies={[refreshKey]}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <DepartmentGridCard
