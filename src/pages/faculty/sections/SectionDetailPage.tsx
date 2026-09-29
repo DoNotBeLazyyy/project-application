@@ -119,7 +119,7 @@ export default function SectionDetailPage() {
                         },
                         {
                             icon: <BookOpenIcon />,
-                            label: 'Content',
+                            label: 'Lectures & Syllabus',
                             value: 'content'
                         },
                         {

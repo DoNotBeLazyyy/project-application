@@ -6,15 +6,17 @@ import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import MaterialFormModal from '@pages/shared/content/MaterialFormModal';
 import {
-    ArrowSquareOutIcon, BookOpenIcon, CheckCircleIcon, CircleIcon, CopySimpleIcon, FilePlusIcon,
-    LinkSimpleIcon, PencilSimpleIcon, PlusIcon, TrashIcon
+    ArrowSquareOutIcon, BookOpenIcon, CheckCircleIcon, CircleIcon, CopySimpleIcon,
+    FileDocIcon, FileIcon, FilePlusIcon, LinkSimpleIcon, PencilSimpleIcon, PlusIcon,
+    PresentationIcon, TrashIcon, VideoCameraIcon
 } from '@phosphor-icons/react';
 import {
     createModule, deleteMaterial, deleteModule, duplicateModuleToSections, getSectionContent,
     markMaterialComplete, setMaterialPublished, setModulePublished, updateModule
 } from '@services/content.service';
 import { getFileUrl } from '@services/storage.service';
-import { ContentModule, CourseMaterial, SectionContent } from '@type/content.type';
+import { ContentModule, CourseMaterial, MaterialType, SectionContent } from '@type/content.type';
+import { formatFileSize } from '@utils/file.util';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 interface SectionContentPanelProps {
@@ -30,6 +32,29 @@ interface DeleteState {
     kind: 'module' | 'material';
     id: string;
     label: string;
+}
+
+const MODULE_TEMPLATES = [
+    { desc: 'Course orientation, learning outcomes, grading system, and policies.', title: 'Syllabus & Course Policies' },
+    { desc: 'Preliminary modules, foundational principles, and lecture notes.', title: 'Prelim Period: Core Concepts' },
+    { desc: 'Midterm modules, hands-on activities, and laboratory exercises.', title: 'Midterm Period: Applied Topics' },
+    { desc: 'Specialized subject matter, case reviews, and project guidelines.', title: 'Semi-Final Period: Advanced Topics' },
+    { desc: 'Final review modules, synthesis materials, and culminating assessments.', title: 'Finals Period: Comprehensive Synthesis' }
+];
+
+function getMaterialIcon(type: MaterialType) {
+    switch (type) {
+        case 'Document':
+            return <FileDocIcon className="shrink-0 text-(--mui-palette-primary-main)" size={18} />;
+        case 'Slide':
+            return <PresentationIcon className="shrink-0 text-(--mui-palette-secondary-main)" size={18} />;
+        case 'Video':
+            return <VideoCameraIcon className="shrink-0 text-(--mui-palette-info-main)" size={18} />;
+        case 'Link':
+            return <LinkSimpleIcon className="shrink-0 text-(--mui-palette-text-secondary)" size={18} />;
+        default:
+            return <FileIcon className="shrink-0 text-(--mui-palette-text-secondary)" size={18} />;
+    }
 }
 
 export default function SectionContentPanel({ sectionId }: SectionContentPanelProps) {
@@ -175,10 +200,32 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                 )}
             </div>
             {canManage && isComposing && (
-                <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4">
+                <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
+                    {!editingModuleId && (
+                        <div className="flex flex-col gap-1.5">
+                            <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
+                                Quick Module Presets
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                                {MODULE_TEMPLATES.map((tmpl) => (
+                                    <button
+                                        className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) cursor-pointer font-medium hover:border-(--mui-palette-primary-main) hover:text-(--mui-palette-primary-main) px-2.5 py-1 rounded-full text-(--mui-palette-text-primary) text-xs transition-colors"
+                                        key={tmpl.title}
+                                        type="button"
+                                        onClick={() => {
+                                            setModuleTitle(tmpl.title);
+                                            setModuleDescription(tmpl.desc);
+                                        }}
+                                    >
+                                        + {tmpl.title}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <CommonInput
                         fullWidth
-                        placeholder="Module title"
+                        placeholder="Module title (e.g. Prelim: Introduction to Web Systems)"
                         size="small"
                         value={moduleTitle}
                         onChange={function(e: ChangeEvent<HTMLInputElement>) {
@@ -318,19 +365,27 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                                             key={material.id}
                                         >
                                             <button
-                                                className="flex flex-1 gap-2 items-center text-left"
+                                                className="flex flex-1 gap-2.5 items-center text-left"
                                                 type="button"
                                                 onClick={function() {
                                                     handleOpenMaterial(material);
                                                 }}
                                             >
-                                                {material.material_type === 'Link'
-                                                    ? <LinkSimpleIcon className="text-(--mui-palette-text-secondary) shrink-0" size={16} />
-                                                    : <ArrowSquareOutIcon className="text-(--mui-palette-text-secondary) shrink-0" size={16} />}
+                                                {getMaterialIcon(material.material_type)}
                                                 <div className="flex flex-col">
-                                                    <span className="text-(--mui-palette-text-primary) text-sm">
-                                                        {material.title}
-                                                    </span>
+                                                    <div className="flex flex-wrap gap-1.5 items-center">
+                                                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                                            {material.title}
+                                                        </span>
+                                                        <span className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) font-normal px-1.5 py-0.2 rounded text-[11px] text-(--mui-palette-text-secondary)">
+                                                            {material.material_type}
+                                                        </span>
+                                                        {material.file_size_bytes ? (
+                                                            <span className="text-(--mui-palette-text-disabled) text-[11px]">
+                                                                ({formatFileSize(material.file_size_bytes)})
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
                                                     {material.description && (
                                                         <span className="text-(--mui-palette-text-secondary) text-xs">
                                                             {material.description}
