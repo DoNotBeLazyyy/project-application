@@ -6,7 +6,6 @@ import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
     BookOpenIcon,
-    BuildingsIcon,
     ChalkboardTeacherIcon,
     GraduationCapIcon,
     StackIcon,
@@ -31,14 +30,6 @@ interface DeanStatCard {
 }
 
 const STAT_CARDS: DeanStatCard[] = [
-    {
-        icon: <BuildingsIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-primary-50)]',
-        iconColor: 'text-[var(--mui-palette-primary-main)]',
-        label: 'Departments',
-        statKey: 'total_departments',
-        to: '/dean/department-management'
-    },
     {
         icon: <GraduationCapIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-secondary-50)]',

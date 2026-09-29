@@ -28,12 +28,6 @@ export const deanRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/dean/department-management');
-                }),
-                path: 'department-management'
-            },
-            {
-                element: lazyElement(function() {
                     return import('@pages/dean/program-management');
                 }),
                 path: 'program-management'

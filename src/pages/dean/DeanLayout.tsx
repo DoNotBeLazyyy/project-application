@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    BookOpenTextIcon, BuildingsIcon, CalendarIcon, CertificateIcon, ChalkboardTeacherIcon, HouseIcon, MegaphoneIcon, StepsIcon, TagIcon, TreeStructureIcon, UsersThreeIcon, WarningIcon
+    BookOpenTextIcon, CalendarIcon, CertificateIcon, ChalkboardTeacherIcon, HouseIcon, MegaphoneIcon, StepsIcon, TagIcon, TreeStructureIcon, UsersThreeIcon, WarningIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -24,12 +24,6 @@ export default function DeanLayout() {
         {
             sectionLabel: 'ACADEMIC ORGANIZATION',
             items: [
-                {
-                    icon: <BuildingsIcon size={18} />,
-                    isActive: pathname === '/dean/department-management',
-                    label: 'Departments',
-                    onClick: () => navigate('/dean/department-management')
-                },
                 {
                     icon: <CertificateIcon size={18} />,
                     isActive: pathname === '/dean/program-management',
