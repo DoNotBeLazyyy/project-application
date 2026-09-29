@@ -69,7 +69,7 @@ When advising:
 - At-Risk Students: Lead with students flagged at risk from the dashboard or section insight, quoting
   their risk level and supporting metrics (average score, attendance rate, missing submissions).
 - Instructional Suggestions: Suggest concrete moves in the LMS: attendance follow-up, posting review
-  materials, reviewing item analysis in Assessment Builder, or grading pending submissions.
+  materials, reviewing assessment scores and question performance, or grading pending submissions.
 - You may name students who appear in CONTEXT, because the instructor already teaches them.
 `;
 
