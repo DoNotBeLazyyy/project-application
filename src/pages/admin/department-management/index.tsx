@@ -1,14 +1,13 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import DepartmentFilterForm from '@pages/admin/department-management/DepartmentFilterForm';
 import DepartmentForm from '@pages/admin/department-management/DepartmentForm';
 import DepartmentGridCard from '@pages/admin/department-management/DepartmentGridCard';
 import { useDepartmentTableConfig } from '@pages/admin/department-management/useDepartmentTableConfig';
 import {
     bulkDeleteDepartments, createDepartment, deleteDepartment, getDepartmentById, listDepartments, updateDepartment
 } from '@services/department.service';
-import { DepartmentFilterValues, DepartmentFormValues, DepartmentListRow } from '@type/department.type';
+import { DepartmentFormValues, DepartmentListRow } from '@type/department.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
@@ -21,19 +20,16 @@ const SORT_COLUMNS: SortColumn[] = [
 
 const CREATE_FORM_ID = 'create-department-form';
 const UPDATE_FORM_ID = 'update-department-form';
-const FILTER_FORM_ID = 'filter-department-form';
 
 const DEFAULT_FORM_VALUES: DepartmentFormValues = {
     code: '',
     description: '',
-    head_user_id: '',
     name: ''
 };
 
 export default function DepartmentManagement() {
-    const [activeFilters, setActiveFilters] = useState<DepartmentFilterValues | null>(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -42,16 +38,12 @@ export default function DepartmentManagement() {
         defaultValues: DEFAULT_FORM_VALUES
     });
 
-    const filterMethods = useForm<DepartmentFilterValues>({
-        defaultValues: { has_head: 'All' }
-    });
-
     const updateMethods = useForm<DepartmentFormValues>({
         defaultValues: DEFAULT_FORM_VALUES
     });
 
     function refreshList() {
-        setActiveFilters((prev) => ({ ...prev } as DepartmentFilterValues));
+        setRefreshTrigger((prev) => prev + 1);
     }
 
     async function loadIntoForm(id: string) {
@@ -61,7 +53,6 @@ export default function DepartmentManagement() {
             updateMethods.reset({
                 code: result.data.code,
                 description: result.data.description ?? '',
-                head_user_id: result.data.head_user_id ?? '',
                 name: result.data.name
             });
         }
@@ -109,7 +100,7 @@ export default function DepartmentManagement() {
         search: string,
         sort: SortStringDto[]
     ) {
-        return listDepartments(page, size, search, sort, activeFilters);
+        return listDepartments(page, size, search, sort, null);
     }
 
     async function handleCreateSubmit(values: DepartmentFormValues) {
@@ -143,21 +134,11 @@ export default function DepartmentManagement() {
         formErrors(errors, updateMethods);
     }
 
-    function handleFilterSubmit(values: DepartmentFilterValues) {
-        setActiveFilters(values);
-        setIsFilterOpen(false);
-    }
-
-    function handleFilterReset() {
-        filterMethods.reset();
-        setActiveFilters(null);
-    }
-
     return (
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<DepartmentListRow>
                 cardHeaderProps={{
-                    subheader: 'Manage academic departments, colleges, and their designated department heads.',
+                    subheader: 'Manage academic departments and colleges to organize degree programs and courses.',
                     title: 'Department Management'
                 }}
                 controls={{
@@ -189,29 +170,7 @@ export default function DepartmentManagement() {
                         setIsCreateOpen(false);
                     }
                 }}
-                dependencies={[activeFilters]}
-                filterModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Filter departments by head assignment status.',
-                            title: 'Filter Departments'
-                        }
-                    },
-                    confirmText: 'Apply Filters',
-                    formId: FILTER_FORM_ID,
-                    formContent: (
-                        <DepartmentFilterForm
-                            control={filterMethods.control}
-                            id={FILTER_FORM_ID}
-                            onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
-                        />
-                    ),
-                    onReset: handleFilterReset,
-                    open: isFilterOpen,
-                    onClose: function() {
-                        setIsFilterOpen(false);
-                    }
-                }}
+                dependencies={[refreshTrigger]}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
                         <DepartmentGridCard
@@ -292,9 +251,6 @@ export default function DepartmentManagement() {
                 onDelete={bulkDeleteDepartments}
                 onDeleteRow={deleteDepartment}
                 onFetch={fetchDepartments}
-                onFilter={function() {
-                    setIsFilterOpen(true);
-                }}
                 onRowClick={handleOpenView}
             />
         </div>

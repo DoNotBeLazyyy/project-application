@@ -344,7 +344,7 @@ export default function ProgramDetailPage() {
     }
 
     return (
-        <div className="flex flex-col gap-6 h-full w-full overflow-y-auto pb-12">
+        <div className="flex flex-col gap-6 w-full pb-12">
             {/* Top Program Card */}
             <CommonCard className="w-full">
                 <div className="flex flex-col gap-5 p-2">
@@ -395,7 +395,7 @@ export default function ProgramDetailPage() {
                                 />
                             </div>
                             {program.description && (
-                                <p className="text-(--mui-palette-text-secondary) text-sm m-0 mt-1 max-w-3xl">
+                                <p className="text-(--mui-palette-text-secondary) text-sm m-0 mt-1 max-w-3xl whitespace-pre-line max-h-36 overflow-y-auto pr-2 border-l-2 border-(--mui-palette-primary-main)/30 pl-3">
                                     {program.description}
                                 </p>
                             )}
@@ -629,7 +629,7 @@ export default function ProgramDetailPage() {
                                             </h3>
                                             <div className="flex-1 border-b border-(--mui-palette-divider)" />
                                         </div>
-                                        <div className="flex flex-col lg:flex-row gap-4">
+                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
                                             {terms.map((term) => (
                                                 <CurriculumTermTable
                                                     entries={term.entries}
@@ -661,7 +661,7 @@ export default function ProgramDetailPage() {
                 open={isCreateEntryOpen}
                 onClose={() => setIsCreateEntryOpen(false)}
             >
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-2">
                     <CurriculumMapForm
                         control={createEntryMethods.control}
                         id={CREATE_ENTRY_FORM_ID}
@@ -670,7 +670,7 @@ export default function ProgramDetailPage() {
                             handleCreateEntryFormError
                         )}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="sticky bottom-0 bg-(--mui-palette-background-paper) py-2 -mb-2 flex gap-2 justify-end border-t border-(--mui-palette-divider)">
                         <CommonButton
                             color="inherit"
                             size="small"
@@ -703,7 +703,7 @@ export default function ProgramDetailPage() {
                 open={isUpdateEntryOpen}
                 onClose={handleCloseUpdateEntry}
             >
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-2">
                     <CurriculumMapForm
                         control={updateEntryMethods.control}
                         id={UPDATE_ENTRY_FORM_ID}
@@ -712,7 +712,7 @@ export default function ProgramDetailPage() {
                             handleUpdateEntryFormError
                         )}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="sticky bottom-0 bg-(--mui-palette-background-paper) py-2 -mb-2 flex gap-2 justify-end border-t border-(--mui-palette-divider)">
                         <CommonButton
                             color="inherit"
                             size="small"
@@ -746,12 +746,12 @@ export default function ProgramDetailPage() {
                 open={isViewEntryOpen}
                 onClose={handleCloseViewEntry}
             >
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-2">
                     <CurriculumMapForm
                         control={updateEntryMethods.control}
                         disabled
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="sticky bottom-0 bg-(--mui-palette-background-paper) py-2 -mb-2 flex gap-2 justify-end border-t border-(--mui-palette-divider)">
                         <CommonButton
                             color="inherit"
                             size="small"
@@ -797,7 +797,7 @@ export default function ProgramDetailPage() {
                 open={isEditProgramOpen}
                 onClose={() => setIsEditProgramOpen(false)}
             >
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-2">
                     <ProgramForm
                         control={editProgramMethods.control}
                         id={UPDATE_PROGRAM_FORM_ID}
@@ -807,7 +807,7 @@ export default function ProgramDetailPage() {
                             handleEditProgramFormError
                         )}
                     />
-                    <div className="flex gap-2 justify-end">
+                    <div className="sticky bottom-0 bg-(--mui-palette-background-paper) py-2 -mb-2 flex gap-2 justify-end border-t border-(--mui-palette-divider)">
                         <CommonButton
                             color="inherit"
                             size="small"

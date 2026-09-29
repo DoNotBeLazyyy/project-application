@@ -110,7 +110,7 @@ export default function CloneCurriculumModal({
             open={open}
             onClose={onClose}
         >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-1">
                 <div className="border border-(--mui-palette-divider) flex flex-col gap-1.5 p-3 rounded-lg bg-(--mui-palette-background-default)/50 text-xs text-(--mui-palette-text-secondary)">
                     <div className="flex items-center gap-1.5 font-medium text-(--mui-palette-text-primary)">
                         <CopyIcon size={16} />

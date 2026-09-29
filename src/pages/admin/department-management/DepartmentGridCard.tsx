@@ -26,8 +26,6 @@ export default function DepartmentGridCard({
     onEdit,
     onRequestDelete
 }: DepartmentGridCardProps) {
-    const hasHead = Boolean(row.head_user_id && row.head_full_name);
-
     return (
         <CommonBentoCard
             actionMenu={(
@@ -56,13 +54,9 @@ export default function DepartmentGridCard({
                     ariaLabel="Department actions"
                 />
             )}
-            faculty={hasHead
-                ? {
-                    name: row.head_full_name as string,
-                    role: row.head_role_label ?? 'DEPARTMENT HEAD'
-                }
+            details={row.description
+                ? [{ label: 'Description', value: row.description }]
                 : undefined}
-            facultyNotAssigned
             isSelected={isSelected}
             selectVariant="button"
             status=""

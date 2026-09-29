@@ -1,6 +1,5 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useUserOptions } from '@pages/admin/user-management/hooks/useUserOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { DepartmentFormValues } from '@type/department.type';
 import { Control } from 'react-hook-form';
@@ -17,8 +16,6 @@ export default function DepartmentForm({
     isCodeDisabled,
     ...formProps
 }: DepartmentFormProps) {
-    const { userOptions } = useUserOptions({ roleCodes: ['Faculty', 'Dean'] });
-
     const fields: FormFieldConfig<DepartmentFormValues>[] = [
         {
             disabled: disabled || isCodeDisabled,
@@ -40,16 +37,7 @@ export default function DepartmentForm({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Faculty or dean who heads this department (optional)' },
-            name: 'head_user_id',
-            options: [
-                { label: 'None', value: '' },
-                ...userOptions
-            ],
-            type: 'select'
-        },
-        {
-            disabled,
+            fieldProps: { helperText: 'Overview or scope of this department (optional)' },
             name: 'description',
             type: 'text-area'
         }

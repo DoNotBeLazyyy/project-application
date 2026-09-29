@@ -1,4 +1,3 @@
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { DepartmentListRow } from '@type/department.type';
@@ -26,35 +25,20 @@ export function useDepartmentTableConfig({
             },
             {
                 field: 'name',
-                flex: 3,
+                flex: 2,
                 headerName: 'Name',
                 mobileCard: 'title',
                 sortable: true
             },
             {
-                field: 'head_full_name',
-                flex: 2,
-                headerName: 'Department Head',
+                field: 'description',
+                flex: 3,
+                headerName: 'Description',
                 sortable: false,
                 cellRenderer: (params: { data: DepartmentListRow }) => (
-                    <div className="flex h-full items-center">
-                        {params.data.head_full_name
-                            ? (
-                                <span className="text-(--mui-palette-text-primary) text-sm">
-                                    {params.data.head_full_name}
-                                    <span className="ml-1 text-(--mui-palette-text-secondary) text-xs">
-                                        — {params.data.head_role_label}
-                                    </span>
-                                </span>
-                            )
-                            : (
-                                <CommonBadgeStatus
-                                    label="Unassigned"
-                                    variant="warning"
-                                />
-                            )
-                        }
-                    </div>
+                    <span className="text-(--mui-palette-text-secondary) text-sm truncate">
+                        {params.data.description || '—'}
+                    </span>
                 )
             }
         ];

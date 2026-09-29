@@ -85,7 +85,7 @@ export default function CommonFormModal({
                         borderRadius: 'var(--mui-tokens-radius-lg)',
                         height: 'auto',
                         margin: { xs: '1rem', sm: 'auto' },
-                        maxHeight: { xs: 'calc(100% - 2rem)', sm: '70%' },
+                        maxHeight: { xs: 'calc(100% - 2rem)', sm: '85%' },
                         maxWidth: { xs: 'calc(100% - 2rem)', sm: '60%' },
                         overflow: 'hidden',
                         width: { xs: 'calc(100% - 2rem)', sm: '60%' }
