@@ -1,19 +1,44 @@
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import CommonInput from '@components/input/CommonInput';
 import CommonSelect from '@components/select/CommonSelect';
-import { CalendarBlankIcon, CheckCircleIcon, ClockIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import ReleaseScheduleForm from '@pages/registrar/grade-release-management/ReleaseScheduleForm';
-import { listGradeReleaseSchedule, releaseGradingPeriodNow, setGradingPeriodReleaseAt } from '@services/grade-release.service';
+import SectionGradeSheetModal from '@pages/registrar/grade-release-management/SectionGradeSheetModal';
+import {
+    CalendarBlankIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    EyeIcon,
+    MagnifyingGlassIcon,
+    SealCheckIcon,
+    WarningCircleIcon
+} from '@phosphor-icons/react';
+import {
+    approveAndReleaseSection,
+    listGradeReleaseSchedule,
+    listSectionGradeSubmissions,
+    releaseGradingPeriodNow,
+    setGradingPeriodReleaseAt
+} from '@services/grade-release.service';
 import { getTerms, TermOption } from '@services/section.service';
 import { ChangeEventInputTextarea } from '@type/common.type';
-import { GradeReleaseSchedule } from '@type/grade-release.type';
+import {
+    GradeReleaseSchedule,
+    SectionGradeSubmissionRow,
+    SectionGradeSubmissionStatus
+} from '@type/grade-release.type';
 import { DateTime } from 'luxon';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 function formatReleaseAt(releaseAt: string): string {
-    return DateTime.fromISO(releaseAt)
-        .toFormat('MMM d, yyyy · h:mm a');
+    return DateTime.fromISO(releaseAt).toFormat('MMM d, yyyy · h:mm a');
+}
+
+function formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    return DateTime.fromISO(iso).toFormat('MMM d, yyyy · h:mm a');
 }
 
 function isDue(period: GradeReleaseSchedule): boolean {
@@ -40,31 +65,81 @@ function resolveStatusLabel(period: GradeReleaseSchedule): string {
     return `Releasing — ${period.blocked_count} awaiting evaluation`;
 }
 
+function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 'default' | 'success' | 'warning' | 'info' | 'error' {
+    switch (status) {
+        case 'Released':
+            return 'success';
+        case 'Approved':
+            return 'info';
+        case 'Submitted':
+            return 'warning';
+        case 'Draft':
+            return 'default';
+        case 'Not Calculated':
+            return 'default';
+        case 'No Enrollees':
+            return 'default';
+        default:
+            return 'default';
+    }
+}
+
+type StatusFilterTab = 'ALL' | 'SUBMITTED' | 'DRAFT' | 'APPROVED' | 'RELEASED';
+
 export default function GradeRelease() {
     const [termOptions, setTermOptions] = useState<{ label: string; value: string }[]>([]);
     const [selectedTermId, setSelectedTermId] = useState<string>('');
     const [periods, setPeriods] = useState<GradeReleaseSchedule[]>([]);
+    const [selectedPeriodId, setSelectedPeriodId] = useState<string>('');
     const [activePeriod, setActivePeriod] = useState<GradeReleaseSchedule | null>(null);
     const [isScheduleOpen, setIsScheduleOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [releaseTarget, setReleaseTarget] = useState<GradeReleaseSchedule | null>(null);
 
+    // Section Grade Submissions state
+    const [sectionRows, setSectionRows] = useState<SectionGradeSubmissionRow[]>([]);
+    const [isSectionsLoading, setIsSectionsLoading] = useState(false);
+    const [sectionSearch, setSectionSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState<StatusFilterTab>('ALL');
+    const [inspectedSection, setInspectedSection] = useState<SectionGradeSubmissionRow | null>(null);
+    const [sectionToRelease, setSectionToRelease] = useState<SectionGradeSubmissionRow | null>(null);
+    const [isReleasingSection, setIsReleasingSection] = useState(false);
+
     const fetchPeriods = useCallback(async function(termId: string) {
-        if (!termId) {
+        if (!termId) return;
+
+        const result = await listGradeReleaseSchedule(termId);
+        if (result.data) {
+            setPeriods(result.data);
+            setSelectedPeriodId((prev) => {
+                if (prev && result.data.some((p) => p.grading_period_id === prev)) {
+                    return prev;
+                }
+                return result.data[0]?.grading_period_id ?? '';
+            });
+        }
+    }, []);
+
+    const fetchSections = useCallback(async function(termId: string, periodId: string) {
+        if (!termId || !periodId) {
+            setSectionRows([]);
             return;
         }
 
-        const result = await listGradeReleaseSchedule(termId);
-
-        if (result.data) {
-            setPeriods(result.data);
+        setIsSectionsLoading(true);
+        try {
+            const result = await listSectionGradeSubmissions(termId, periodId);
+            if (result.data) {
+                setSectionRows(result.data);
+            }
+        } finally {
+            setIsSectionsLoading(false);
         }
     }, []);
 
     useEffect(function() {
         async function fetchTerms() {
             const result = await getTerms();
-
             if (result.data) {
                 const options = result.data.map(function(term: TermOption) {
                     return {
@@ -74,7 +149,6 @@ export default function GradeRelease() {
                 });
 
                 setTermOptions(options);
-
                 if (options.length > 0) {
                     setSelectedTermId(options[0].value);
                 }
@@ -87,6 +161,12 @@ export default function GradeRelease() {
     useEffect(function() {
         fetchPeriods(selectedTermId);
     }, [selectedTermId, fetchPeriods]);
+
+    useEffect(function() {
+        if (selectedTermId && selectedPeriodId) {
+            fetchSections(selectedTermId, selectedPeriodId);
+        }
+    }, [selectedTermId, selectedPeriodId, fetchSections]);
 
     function handleTermChange(e: ChangeEventInputTextarea) {
         setSelectedTermId(e.target.value);
@@ -103,21 +183,16 @@ export default function GradeRelease() {
     }
 
     async function persistReleaseAt(releaseAt: string | null) {
-        if (!activePeriod) {
-            return;
-        }
+        if (!activePeriod) return;
 
         setIsSaving(true);
-
         try {
             const result = await setGradingPeriodReleaseAt(activePeriod.grading_period_id, releaseAt);
-
             if (!result.error) {
                 handleCloseSchedule();
                 await fetchPeriods(selectedTermId);
             }
-        }
-        finally {
+        } finally {
             setIsSaving(false);
         }
     }
@@ -131,33 +206,96 @@ export default function GradeRelease() {
     }
 
     async function handleConfirmReleaseNow() {
-        if (!releaseTarget) {
-            return;
-        }
+        if (!releaseTarget) return;
 
         const result = await releaseGradingPeriodNow(releaseTarget.grading_period_id);
-
         setReleaseTarget(null);
 
         if (!result.error) {
             await fetchPeriods(selectedTermId);
+            if (selectedPeriodId) {
+                await fetchSections(selectedTermId, selectedPeriodId);
+            }
         }
     }
 
+    async function handleConfirmReleaseSingleSection() {
+        if (!sectionToRelease || !selectedPeriodId) return;
+
+        setIsReleasingSection(true);
+        try {
+            const result = await approveAndReleaseSection(sectionToRelease.section_id, selectedPeriodId);
+            if (result.data?.success) {
+                setSectionToRelease(null);
+                await fetchPeriods(selectedTermId);
+                await fetchSections(selectedTermId, selectedPeriodId);
+            }
+        } finally {
+            setIsReleasingSection(false);
+        }
+    }
+
+    const currentPeriod = useMemo(function() {
+        return periods.find((p) => p.grading_period_id === selectedPeriodId) ?? periods[0] ?? null;
+    }, [periods, selectedPeriodId]);
+
+    // Filter section submissions
+    const filteredSections = useMemo(function() {
+        return sectionRows.filter(function(row) {
+            // Status Tab Filter
+            if (statusFilter === 'SUBMITTED' && row.submission_status !== 'Submitted') {
+                return false;
+            }
+            if (statusFilter === 'DRAFT' && row.submission_status !== 'Draft' && row.submission_status !== 'Not Calculated') {
+                return false;
+            }
+            if (statusFilter === 'APPROVED' && row.submission_status !== 'Approved') {
+                return false;
+            }
+            if (statusFilter === 'RELEASED' && row.submission_status !== 'Released') {
+                return false;
+            }
+
+            // Text search
+            const query = sectionSearch.trim().toLowerCase();
+            if (!query) return true;
+
+            return (
+                row.course_code.toLowerCase().includes(query) ||
+                row.course_title.toLowerCase().includes(query) ||
+                row.section_code.toLowerCase().includes(query) ||
+                row.faculty_name.toLowerCase().includes(query)
+            );
+        });
+    }, [sectionRows, statusFilter, sectionSearch]);
+
+    // Section Summary Counts
+    const submissionCounts = useMemo(function() {
+        const total = sectionRows.length;
+        const submitted = sectionRows.filter((r) => r.submission_status === 'Submitted').length;
+        const approved = sectionRows.filter((r) => r.submission_status === 'Approved').length;
+        const released = sectionRows.filter((r) => r.submission_status === 'Released').length;
+        const draftOrNone = sectionRows.filter((r) => r.submission_status === 'Draft' || r.submission_status === 'Not Calculated').length;
+
+        return { approved, draftOrNone, released, submitted, total };
+    }, [sectionRows]);
+
     return (
-        <CommonCard className="flex flex-col gap-4 h-full min-h-0 p-4 w-full">
+        <CommonCard className="flex flex-col gap-6 h-full min-h-0 p-4 w-full">
+            {/* Header */}
             <div className="flex flex-col gap-1">
-                <h1 className="font-semibold text-[var(--mui-palette-text-primary)] text-xl">
-                    Grade Release
+                <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
+                    Grade Release & Submission Verification
                 </h1>
-                <p className="text-[var(--mui-palette-text-secondary)] text-sm">
-                    Schedule when each grading period&apos;s grades become visible to students. Release runs
-                    automatically once the scheduled time passes.
+                <p className="text-(--mui-palette-text-secondary) text-sm">
+                    Track faculty term grade submissions by section, inspect student grade sheets before release, and publish official grades.
                 </p>
             </div>
+
+            {/* Term Selector */}
             <div className="flex flex-col gap-3 items-start sm:flex-row sm:items-center">
-                <span className="font-medium text-[var(--mui-palette-text-primary)] text-sm whitespace-nowrap">
-                    Select Term
+                <span className="font-medium text-(--mui-palette-text-primary) text-sm whitespace-nowrap">
+                    Academic Term:
                 </span>
                 <div className="w-full sm:w-80">
                     <CommonSelect
@@ -169,98 +307,293 @@ export default function GradeRelease() {
                     />
                 </div>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                {periods.length === 0
-                    ? (
-                        <p className="text-[var(--mui-palette-text-disabled)] text-sm">
-                            This term has no grading periods configured.
-                        </p>
-                    )
-                    : (
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 md:grid-cols-2">
-                            {periods.map(function(period) {
-                                const isFullyReleased = period.total_grades > 0
-                                    && period.released_count === period.total_grades;
-                                const hasBlocked = period.blocked_count > 0;
 
-                                return (
-                                    <div
-                                        className="border border-[var(--mui-palette-divider)] flex flex-col gap-3 p-4 rounded-xl"
-                                        key={period.grading_period_id}
-                                    >
-                                        <div className="flex items-start justify-between">
-                                            <h2 className="font-semibold text-[var(--mui-palette-text-primary)] text-base">
+            {/* Grading Periods Grid */}
+            <div className="flex flex-col gap-2">
+                <span className="font-semibold text-(--mui-palette-text-primary) text-xs tracking-wider uppercase">
+                    Select Grading Period
+                </span>
+                {periods.length === 0 ? (
+                    <p className="text-(--mui-palette-text-disabled) text-sm">
+                        This term has no grading periods configured.
+                    </p>
+                ) : (
+                    <div className="gap-4 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2">
+                        {periods.map(function(period) {
+                            const isSelected = period.grading_period_id === selectedPeriodId;
+                            const isFullyReleased = period.total_grades > 0 && period.released_count === period.total_grades;
+                            const hasBlocked = period.blocked_count > 0;
+
+                            return (
+                                <div
+                                    className={`border flex flex-col gap-3 p-4 rounded-xl cursor-pointer transition-all ${
+                                        isSelected
+                                            ? 'border-(--mui-palette-primary-main) bg-(--mui-palette-primary-50)/15 ring-2 ring-(--mui-palette-primary-main)'
+                                            : 'border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)'
+                                    }`}
+                                    key={period.grading_period_id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setSelectedPeriodId(period.grading_period_id)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            setSelectedPeriodId(period.grading_period_id);
+                                        }
+                                    }}
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex flex-col">
+                                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
                                                 {period.grading_period_name}
                                             </h2>
-                                            {isFullyReleased
-                                                ? (
-                                                    <CheckCircleIcon
-                                                        className="text-[var(--mui-palette-success-main)]"
-                                                        size={20}
-                                                        weight="fill"
-                                                    />
-                                                )
-                                                : (
-                                                    <ClockIcon
-                                                        className="text-[var(--mui-palette-text-disabled)]"
-                                                        size={20}
-                                                    />
-                                                )
-                                            }
+                                            {isSelected && (
+                                                <span className="font-bold text-(--mui-palette-primary-main) text-[11px] uppercase">
+                                                    Currently Selected
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-[var(--mui-palette-text-secondary)] text-sm">
-                                                {period.released_count}/{period.total_grades} grades released
-                                            </span>
-                                            <span className="text-[var(--mui-palette-text-secondary)] text-xs">
-                                                {resolveStatusLabel(period)}
+                                        {isFullyReleased ? (
+                                            <CheckCircleIcon className="text-(--mui-palette-success-main)" size={20} weight="fill" />
+                                        ) : (
+                                            <ClockIcon className="text-(--mui-palette-text-disabled)" size={20} />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                            {period.released_count}/{period.total_grades} grades released
+                                        </span>
+                                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                                            {resolveStatusLabel(period)}
+                                        </span>
+                                    </div>
+                                    {hasBlocked && (
+                                        <div className="flex gap-1 items-center text-(--mui-palette-warning-main)">
+                                            <WarningCircleIcon size={14} weight="fill" />
+                                            <span className="text-xs">
+                                                {period.blocked_count} student(s) pending evaluation
                                             </span>
                                         </div>
-                                        {hasBlocked
-                                            ? (
-                                                <div className="flex gap-1 items-center text-[var(--mui-palette-warning-main)]">
-                                                    <WarningCircleIcon size={14} weight="fill" />
-                                                    <span className="text-xs">
-                                                        {period.blocked_count} student(s) have not submitted their evaluation
+                                    )}
+                                    <div className="flex gap-2 mt-auto pt-2" onClick={(e) => e.stopPropagation()}>
+                                        <CommonButton
+                                            fullWidth
+                                            size="small"
+                                            startIcon={<CalendarBlankIcon size={14} />}
+                                            variant="contained"
+                                            onClick={() => handleOpenSchedule(period)}
+                                        >
+                                            {period.release_at ? 'Edit Schedule' : 'Schedule'}
+                                        </CommonButton>
+                                        <CommonButton
+                                            disabled={isFullyReleased || period.total_grades === 0}
+                                            fullWidth
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() => setReleaseTarget(period)}
+                                        >
+                                            Release All
+                                        </CommonButton>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Section Submissions Breakdown */}
+            <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-4 min-h-0 p-4 rounded-xl">
+                {/* Section Header & Subtitle */}
+                <div className="flex flex-wrap gap-4 items-center justify-between">
+                    <div>
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                            {currentPeriod ? `${currentPeriod.grading_period_name} · Section Grade Submissions` : 'Section Submissions'}
+                        </h2>
+                        <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
+                            Verify grades submitted by instructors. Click &ldquo;Inspect&rdquo; to view individual student grades and evaluation status.
+                        </p>
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <div className="bg-(--mui-palette-action-hover)/40 flex gap-1 p-1 rounded-lg text-xs">
+                        <button
+                            className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                statusFilter === 'ALL'
+                                    ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-xs'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            type="button"
+                            onClick={() => setStatusFilter('ALL')}
+                        >
+                            All ({submissionCounts.total})
+                        </button>
+                        <button
+                            className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                statusFilter === 'SUBMITTED'
+                                    ? 'bg-(--mui-palette-warning-50) text-(--mui-palette-warning-dark) shadow-xs font-semibold'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            type="button"
+                            onClick={() => setStatusFilter('SUBMITTED')}
+                        >
+                            Submitted ({submissionCounts.submitted})
+                        </button>
+                        <button
+                            className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                statusFilter === 'DRAFT'
+                                    ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-xs'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            type="button"
+                            onClick={() => setStatusFilter('DRAFT')}
+                        >
+                            Pending Faculty ({submissionCounts.draftOrNone})
+                        </button>
+                        <button
+                            className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                statusFilter === 'RELEASED'
+                                    ? 'bg-(--mui-palette-success-50) text-(--mui-palette-success-dark) shadow-xs font-semibold'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            type="button"
+                            onClick={() => setStatusFilter('RELEASED')}
+                        >
+                            Released ({submissionCounts.released})
+                        </button>
+                    </div>
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="flex items-center justify-between">
+                    <div className="w-full sm:w-80">
+                        <CommonInput
+                            fullWidth
+                            placeholder="Filter by course, section, or faculty..."
+                            size="small"
+                            startIcon={<MagnifyingGlassIcon size={16} />}
+                            value={sectionSearch}
+                            onChange={(e) => setSectionSearch(e.target.value)}
+                        />
+                    </div>
+                    <span className="text-(--mui-palette-text-secondary) text-xs">
+                        Showing {filteredSections.length} of {sectionRows.length} sections
+                    </span>
+                </div>
+
+                {/* Section Table */}
+                <div className="border border-(--mui-palette-divider) flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-lg">
+                    {isSectionsLoading ? (
+                        <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
+                            Loading section submissions...
+                        </div>
+                    ) : filteredSections.length === 0 ? (
+                        <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
+                            {sectionRows.length === 0
+                                ? 'No sections found for this academic term.'
+                                : 'No section submissions match the selected filter.'}
+                        </div>
+                    ) : (
+                        <table className="border-collapse text-left text-sm w-full">
+                            <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
+                                <tr>
+                                    <th className="font-semibold p-3">Course</th>
+                                    <th className="font-semibold p-3">Section</th>
+                                    <th className="font-semibold p-3">Instructor</th>
+                                    <th className="font-semibold p-3 text-center">Enrolled</th>
+                                    <th className="font-semibold p-3 text-center">Grades Computed</th>
+                                    <th className="font-semibold p-3 text-center">Status</th>
+                                    <th className="font-semibold p-3">Last Submitted</th>
+                                    <th className="font-semibold p-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-(--mui-palette-divider)">
+                                {filteredSections.map(function(row) {
+                                    const canRelease =
+                                        row.submission_status !== 'Released' &&
+                                        row.submission_status !== 'No Enrollees' &&
+                                        row.graded_count > 0;
+
+                                    return (
+                                        <tr className="hover:bg-(--mui-palette-action-hover)/30 transition-colors" key={row.section_id}>
+                                            <td className="p-3">
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-(--mui-palette-text-primary)">
+                                                        {row.course_code}
+                                                    </span>
+                                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate max-w-xs">
+                                                        {row.course_title}
                                                     </span>
                                                 </div>
-                                            )
-                                            : null
-                                        }
-                                        <div className="flex gap-2 mt-auto pt-2">
-                                            <CommonButton
-                                                fullWidth
-                                                size="small"
-                                                startIcon={<CalendarBlankIcon size={14} />}
-                                                variant="contained"
-                                                onClick={function() {
-                                                    handleOpenSchedule(period);
-                                                }}
-                                            >
-                                                {period.release_at
-                                                    ? 'Edit Schedule'
-                                                    : 'Schedule'
-                                                }
-                                            </CommonButton>
-                                            <CommonButton
-                                                disabled={isFullyReleased || period.total_grades === 0}
-                                                fullWidth
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={function() {
-                                                    setReleaseTarget(period);
-                                                }}
-                                            >
-                                                Release Now
-                                            </CommonButton>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )
-                }
+                                            </td>
+                                            <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
+                                                {row.section_code}
+                                                {row.room && (
+                                                    <span className="block text-(--mui-palette-text-secondary) text-xs">
+                                                        {row.room}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="p-3 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-(--mui-palette-text-primary)">
+                                                        {row.faculty_name}
+                                                    </span>
+                                                    {row.faculty_email && (
+                                                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                                                            {row.faculty_email}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="font-medium p-3 text-center text-(--mui-palette-text-primary)">
+                                                {row.enrolled_count}
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <span className="font-mono text-xs">
+                                                    {row.graded_count} / {row.enrolled_count}
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <CommonBadgeStatus
+                                                    label={row.submission_status}
+                                                    variant={resolveSubmissionBadgeVariant(row.submission_status)}
+                                                />
+                                            </td>
+                                            <td className="p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
+                                                {formatDate(row.last_submitted_at)}
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <div className="flex gap-2 items-center justify-center">
+                                                    <CommonButton
+                                                        size="small"
+                                                        startIcon={<EyeIcon size={14} />}
+                                                        variant="outlined"
+                                                        onClick={() => setInspectedSection(row)}
+                                                    >
+                                                        Inspect
+                                                    </CommonButton>
+                                                    {canRelease && (
+                                                        <CommonButton
+                                                            size="small"
+                                                            startIcon={<SealCheckIcon size={14} />}
+                                                            variant="contained"
+                                                            onClick={() => setSectionToRelease(row)}
+                                                        >
+                                                            Release
+                                                        </CommonButton>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
+
+            {/* Schedule Modal */}
             <ReleaseScheduleForm
                 isSaving={isSaving}
                 open={isScheduleOpen}
@@ -269,30 +602,72 @@ export default function GradeRelease() {
                 onClose={handleCloseSchedule}
                 onSave={handleSaveSchedule}
             />
+
+            {/* Release Entire Period Confirm Modal */}
             <ConfirmPromptModal
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Cancel',
-                        onClick: function() {
-                            setReleaseTarget(null);
-                        }
+                        onClick: () => setReleaseTarget(null)
                     },
                     confirmProps: {
                         children: 'Release Now',
                         onClick: handleConfirmReleaseNow
                     }
                 }}
-                mainContent={{ title: 'Release grades immediately?' }}
+                mainContent={{ title: 'Release all grades for this period?' }}
                 open={!!releaseTarget}
                 subContent={{
                     title: releaseTarget
-                        ? `${releaseTarget.grading_period_name} grades become visible to students right away. Students with a pending faculty evaluation stay blocked until they submit it. This cannot be undone.`
+                        ? `${releaseTarget.grading_period_name} grades for all sections will become visible to compliant students immediately. Students with a pending faculty evaluation stay blocked until they submit it.`
                         : ''
                 }}
-                onClose={function() {
-                    setReleaseTarget(null);
-                }}
+                onClose={() => setReleaseTarget(null)}
             />
+
+            {/* Release Single Section Confirm Modal */}
+            <ConfirmPromptModal
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Cancel',
+                        onClick: () => setSectionToRelease(null)
+                    },
+                    confirmProps: {
+                        children: isReleasingSection ? 'Releasing...' : 'Confirm Release',
+                        disabled: isReleasingSection,
+                        onClick: handleConfirmReleaseSingleSection
+                    }
+                }}
+                mainContent={{
+                    title: sectionToRelease
+                        ? `Release grades for ${sectionToRelease.course_code} (${sectionToRelease.section_code})?`
+                        : ''
+                }}
+                open={!!sectionToRelease}
+                subContent={{
+                    title: sectionToRelease
+                        ? `Grades will be published to enrolled students who have submitted their faculty evaluation. Students with pending evaluations remain blocked until completed.`
+                        : ''
+                }}
+                onClose={() => setSectionToRelease(null)}
+            />
+
+            {/* Grade Sheet Inspection Modal */}
+            {inspectedSection && currentPeriod && (
+                <SectionGradeSheetModal
+                    gradingPeriodId={currentPeriod.grading_period_id}
+                    gradingPeriodName={currentPeriod.grading_period_name}
+                    open={!!inspectedSection}
+                    section={inspectedSection}
+                    onClose={() => setInspectedSection(null)}
+                    onReleased={async () => {
+                        await fetchPeriods(selectedTermId);
+                        if (selectedPeriodId) {
+                            await fetchSections(selectedTermId, selectedPeriodId);
+                        }
+                    }}
+                />
+            )}
         </CommonCard>
     );
 }
