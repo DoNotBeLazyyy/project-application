@@ -280,132 +280,148 @@ export default function GradeRelease() {
     }, [sectionRows]);
 
     return (
-        <CommonCard className="flex flex-col gap-6 h-full min-h-0 p-4 w-full">
-            {/* Header */}
-            <div className="flex flex-col gap-1">
-                <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                    Grade Release & Submission Verification
-                </h1>
-                <p className="text-(--mui-palette-text-secondary) text-sm">
-                    Track faculty term grade submissions by section, inspect student grade sheets before release, and publish official grades.
-                </p>
-            </div>
+        <CommonCard className="flex flex-col gap-3.5 h-full min-h-0 p-3 sm:p-5 w-full">
+            {/* Header & Term Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-(--mui-palette-divider)">
+                <div className="flex flex-col">
+                    <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl">
+                        Grade Release &amp; Submission Verification
+                    </h1>
+                    <p className="text-(--mui-palette-text-secondary) text-xs hidden sm:block">
+                        Track faculty term grade submissions by section, inspect student grade sheets, and publish official grades.
+                    </p>
+                </div>
 
-            {/* Term Selector */}
-            <div className="flex flex-col gap-3 items-start sm:flex-row sm:items-center">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm whitespace-nowrap">
-                    Academic Term:
-                </span>
-                <div className="w-full sm:w-80">
-                    <CommonSelect
-                        fullWidth
-                        options={termOptions}
-                        size="small"
-                        value={selectedTermId}
-                        onChange={handleTermChange}
-                    />
+                {/* Term Selector */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
+                        Term:
+                    </span>
+                    <div className="w-full sm:w-64">
+                        <CommonSelect
+                            fullWidth
+                            options={termOptions}
+                            size="small"
+                            value={selectedTermId}
+                            onChange={handleTermChange}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Grading Periods Grid */}
+            {/* Compact Grading Periods Selector & Active Toolbar */}
             <div className="flex flex-col gap-2">
-                <span className="font-semibold text-(--mui-palette-text-primary) text-xs tracking-wider uppercase">
-                    Select Grading Period
-                </span>
                 {periods.length === 0 ? (
-                    <p className="text-(--mui-palette-text-disabled) text-sm">
+                    <p className="text-(--mui-palette-text-disabled) text-xs">
                         This term has no grading periods configured.
                     </p>
                 ) : (
-                    <div className="gap-4 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2">
-                        {periods.map(function(period) {
-                            const isSelected = period.grading_period_id === selectedPeriodId;
-                            const isFullyReleased = period.total_grades > 0 && period.released_count === period.total_grades;
-                            const hasBlocked = period.blocked_count > 0;
+                    <div className="flex flex-col gap-2">
+                        {/* Horizontal Period Selector Pills */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                            {periods.map(function(period) {
+                                const isSelected = period.grading_period_id === selectedPeriodId;
+                                const isFullyReleased = period.total_grades > 0 && period.released_count === period.total_grades;
 
-                            return (
-                                <div
-                                    className={`border flex flex-col gap-3 p-4 rounded-xl cursor-pointer transition-all ${
-                                        isSelected
-                                            ? 'border-(--mui-palette-primary-main) bg-(--mui-palette-primary-50)/15 ring-2 ring-(--mui-palette-primary-main)'
-                                            : 'border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)'
-                                    }`}
-                                    key={period.grading_period_id}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => setSelectedPeriodId(period.grading_period_id)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            setSelectedPeriodId(period.grading_period_id);
-                                        }
-                                    }}
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex flex-col">
-                                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                                                {period.grading_period_name}
-                                            </h2>
-                                            {isSelected && (
-                                                <span className="font-bold text-(--mui-palette-primary-main) text-[11px] uppercase">
-                                                    Currently Selected
-                                                </span>
-                                            )}
-                                        </div>
+                                return (
+                                    <button
+                                        key={period.grading_period_id}
+                                        type="button"
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
+                                            isSelected
+                                                ? 'bg-(--mui-palette-primary-main) text-white border-(--mui-palette-primary-main) shadow-xs'
+                                                : 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)/60'
+                                        }`}
+                                        onClick={() => setSelectedPeriodId(period.grading_period_id)}
+                                    >
+                                        <span>{period.grading_period_name}</span>
+                                        <span
+                                            className={`text-[11px] font-mono px-1.5 py-0.2 rounded-md ${
+                                                isSelected
+                                                    ? 'bg-white/20 text-white'
+                                                    : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary)'
+                                            }`}
+                                        >
+                                            {period.released_count}/{period.total_grades}
+                                        </span>
                                         {isFullyReleased ? (
-                                            <CheckCircleIcon className="text-(--mui-palette-success-main)" size={20} weight="fill" />
-                                        ) : (
-                                            <ClockIcon className="text-(--mui-palette-text-disabled)" size={20} />
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                            {period.released_count}/{period.total_grades} grades released
+                                            <CheckCircleIcon
+                                                size={15}
+                                                weight="fill"
+                                                className={isSelected ? 'text-white' : 'text-(--mui-palette-success-main)'}
+                                            />
+                                        ) : period.release_at ? (
+                                            <ClockIcon
+                                                size={15}
+                                                weight="bold"
+                                                className={isSelected ? 'text-white' : 'text-(--mui-palette-info-main)'}
+                                            />
+                                        ) : null}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Active Period Status & Action Strip */}
+                        {currentPeriod && (
+                            <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) rounded-xl px-3.5 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
+                                    <div className="flex items-center gap-1.5 font-semibold text-(--mui-palette-text-primary)">
+                                        <span>{currentPeriod.grading_period_name}:</span>
+                                        <span className="font-mono text-(--mui-palette-primary-main)">
+                                            {currentPeriod.released_count} of {currentPeriod.total_grades} grades released
+                                            ({currentPeriod.total_grades > 0 ? Math.round((currentPeriod.released_count / currentPeriod.total_grades) * 100) : 0}%)
                                         </span>
-                                        <span className="text-(--mui-palette-text-secondary) text-xs">
-                                            {resolveStatusLabel(period)}
-                                        </span>
                                     </div>
-                                    {hasBlocked && (
-                                        <div className="flex gap-1 items-center text-(--mui-palette-warning-main)">
-                                            <WarningCircleIcon size={14} weight="fill" />
-                                            <span className="text-xs">
-                                                {period.blocked_count} student(s) pending evaluation
-                                            </span>
-                                        </div>
+
+                                    <span className="text-(--mui-palette-text-disabled) hidden sm:inline">·</span>
+
+                                    <span className="text-(--mui-palette-text-secondary)">
+                                        {resolveStatusLabel(currentPeriod)}
+                                    </span>
+
+                                    {currentPeriod.blocked_count > 0 && (
+                                        <span className="flex items-center gap-1 text-(--mui-palette-warning-main) font-medium bg-amber-500/10 px-2 py-0.5 rounded-full text-[11px]">
+                                            <WarningCircleIcon size={13} weight="fill" />
+                                            <span>{currentPeriod.blocked_count} student(s) pending eval</span>
+                                        </span>
                                     )}
-                                    <div className="flex gap-2 mt-auto pt-2" onClick={(e) => e.stopPropagation()}>
-                                        <CommonButton
-                                            fullWidth
-                                            size="small"
-                                            startIcon={<CalendarBlankIcon size={14} />}
-                                            variant="contained"
-                                            onClick={() => handleOpenSchedule(period)}
-                                        >
-                                            {period.release_at ? 'Edit Schedule' : 'Schedule'}
-                                        </CommonButton>
-                                        <CommonButton
-                                            disabled={isFullyReleased || period.total_grades === 0}
-                                            fullWidth
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() => setReleaseTarget(period)}
-                                        >
-                                            Release All
-                                        </CommonButton>
-                                    </div>
                                 </div>
-                            );
-                        })}
+
+                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                    <CommonButton
+                                        size="small"
+                                        startIcon={<CalendarBlankIcon size={14} />}
+                                        variant="outlined"
+                                        onClick={() => handleOpenSchedule(currentPeriod)}
+                                    >
+                                        {currentPeriod.release_at ? 'Edit Schedule' : 'Schedule'}
+                                    </CommonButton>
+                                    <CommonButton
+                                        disabled={
+                                            (currentPeriod.total_grades > 0 && currentPeriod.released_count === currentPeriod.total_grades) ||
+                                            currentPeriod.total_grades === 0
+                                        }
+                                        size="small"
+                                        startIcon={<SealCheckIcon size={14} weight="bold" />}
+                                        variant="contained"
+                                        onClick={() => setReleaseTarget(currentPeriod)}
+                                    >
+                                        Release All
+                                    </CommonButton>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
             {/* Section Submissions Breakdown */}
-            <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-4 min-h-0 p-4 rounded-xl">
+            <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-3 min-h-0 p-3 sm:p-4 rounded-xl overflow-hidden">
                 {/* Section Header & Subtitle */}
-                <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div>
-                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-base sm:text-lg">
                             {currentPeriod ? `${currentPeriod.grading_period_name} · Section Grade Submissions` : 'Section Submissions'}
                         </h2>
                         <p className="m-0 text-(--mui-palette-text-secondary) text-xs">
@@ -414,7 +430,7 @@ export default function GradeRelease() {
                     </div>
 
                     {/* Filter Tabs */}
-                    <div className="bg-(--mui-palette-action-hover)/40 flex flex-wrap gap-1 p-1 rounded-lg text-xs">
+                    <div className="bg-(--mui-palette-action-hover)/40 flex flex-wrap gap-1 p-1 rounded-lg text-xs shrink-0">
                         <button
                             className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
                                 statusFilter === 'ALL'
