@@ -311,7 +311,7 @@ export default function AcademicYearHistoryModal({
                                                                         <div className="text-[10px] text-slate-500 mt-1 space-y-0.5">
                                                                             <p>GWA Cutoff: <strong>≤ {th.max_gwa}</strong></p>
                                                                             {th.min_subject_grade && <p>Subject Floor: <strong>≤ {th.min_subject_grade}</strong></p>}
-                                                                            {th.scholarship_discount_pct && <p className="text-emerald-600 font-semibold">{th.scholarship_discount_pct}% Tuition Discount</p>}
+                                                                            {th.requires_no_failing && <p className="text-amber-600 dark:text-amber-400 font-medium">No failing grades permitted</p>}
                                                                         </div>
                                                                     </div>
                                                                 ))}

@@ -82,7 +82,7 @@ export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
         max_gwa: 1.45,
         min_subject_grade: null,
         requires_no_failing: true,
-        scholarship_discount_pct: 100.00,
+        scholarship_discount_pct: null,
         sort_order: 1,
         is_active: true
     },
@@ -94,7 +94,7 @@ export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
         max_gwa: 1.75,
         min_subject_grade: null,
         requires_no_failing: true,
-        scholarship_discount_pct: 50.00,
+        scholarship_discount_pct: null,
         sort_order: 2,
         is_active: true
     },

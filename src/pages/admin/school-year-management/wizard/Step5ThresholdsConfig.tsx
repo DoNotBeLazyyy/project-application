@@ -20,8 +20,8 @@ interface Step5ThresholdsConfigProps {
 
 const CATEGORY_OPTIONS: { label: string; value: AcademicThresholdCategory }[] = [
     { label: 'Honor (Latin Honors)', value: 'Honor' },
-    { label: 'Scholarship', value: 'Scholarship' },
-    { label: 'Academic Standing', value: 'Standing' }
+    { label: 'Scholarship (Academic Qualification)', value: 'Scholarship' },
+    { label: 'Academic Standing (Retention & Status)', value: 'Standing' }
 ];
 
 export default function Step5ThresholdsConfig({
@@ -55,7 +55,7 @@ export default function Step5ThresholdsConfig({
             min_gwa: 1.00,
             min_subject_grade: null,
             requires_no_failing: true,
-            scholarship_discount_pct: defaultCategory === 'Scholarship' ? 50 : null,
+            scholarship_discount_pct: null,
             sort_order: thresholds.length + 1
         };
         append(newThreshold);
@@ -72,10 +72,10 @@ export default function Step5ThresholdsConfig({
                 <GraduationCapIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-slate-700 dark:text-slate-300">
                     <p className="font-semibold text-slate-900 dark:text-slate-100">
-                        Academic Thresholds & Cutoff Criteria
+                        Academic Thresholds & Qualification Flags
                     </p>
                     <p className="text-xs sm:text-sm">
-                        Define qualification cutoffs for Latin Honors (Summa, Magna, Cum Laude), Academic Scholarships, and Deans List / Academic Standing for this school year. These thresholds determine student honors recognition, tuition discounts, and academic probation.
+                        Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean&apos;s List) and disadvantages (Academic Probation / Standing). These serve as official academic achievement and qualification flags for students and academic advisers.
                     </p>
                 </div>
             </div>
@@ -174,7 +174,6 @@ export default function Step5ThresholdsConfig({
                 ) : (
                     filteredIndices.map((item) => {
                         const idx = item.originalIndex;
-                        const isScholarship = item.category === 'Scholarship';
 
                         return (
                             <div
@@ -196,8 +195,7 @@ export default function Step5ThresholdsConfig({
                                                 const cat = e.target.value as AcademicThresholdCategory;
                                                 update(idx, {
                                                     ...item,
-                                                    category: cat,
-                                                    scholarship_discount_pct: cat === 'Scholarship' ? (item.scholarship_discount_pct || 50) : null
+                                                    category: cat
                                                 });
                                             }}
                                         >
@@ -265,17 +263,17 @@ export default function Step5ThresholdsConfig({
                                     </div>
                                 </div>
 
-                                {/* Criteria Details Row: GWA Range, Floor, Requires No Failing, Discount */}
+                                {/* Criteria Details Row: GWA Range, Floor, Requires No Failing */}
                                 <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 items-end">
                                     {/* Min GWA */}
-                                    <div className="sm:col-span-2">
+                                    <div className="sm:col-span-3">
                                         <label className="block text-[11px] font-medium text-slate-500 mb-1">
                                             Min GWA
                                         </label>
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
                                             disabled={disabled}
-                                            placeholder="1.00"
+                                            placeholder="1.00 (Optional)"
                                             step="0.01"
                                             type="number"
                                             value={item.min_gwa ?? ''}
@@ -289,7 +287,7 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Max GWA (Cutoff) */}
-                                    <div className="sm:col-span-2">
+                                    <div className="sm:col-span-3">
                                         <label className="block text-[11px] font-semibold text-brand-600 dark:text-brand-400 mb-1">
                                             Max GWA (Cutoff) *
                                         </label>
@@ -312,7 +310,7 @@ export default function Step5ThresholdsConfig({
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
                                             disabled={disabled}
-                                            placeholder="Optional (e.g. 2.00)"
+                                            placeholder="Optional (e.g. 2.50)"
                                             step="0.01"
                                             type="number"
                                             value={item.min_subject_grade ?? ''}
@@ -324,35 +322,6 @@ export default function Step5ThresholdsConfig({
                                             }
                                         />
                                     </div>
-
-                                    {/* Tuition Discount (if Scholarship) */}
-                                    {isScholarship ? (
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mb-1">
-                                                Tuition Discount %
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    className="w-full h-8 px-2.5 pr-6 rounded-lg border border-emerald-300 dark:border-emerald-700/60 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
-                                                    disabled={disabled}
-                                                    max="100"
-                                                    min="0"
-                                                    placeholder="100"
-                                                    type="number"
-                                                    value={item.scholarship_discount_pct ?? ''}
-                                                    onChange={(e) =>
-                                                        update(idx, {
-                                                            ...item,
-                                                            scholarship_discount_pct: e.target.value === '' ? null : e.target.value
-                                                        })
-                                                    }
-                                                />
-                                                <span className="absolute right-2 top-1.5 text-xs text-slate-400 font-semibold">%</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="hidden sm:block sm:col-span-2" />
-                                    )}
 
                                     {/* Requires No Failing Grade Checkbox */}
                                     <div className="col-span-2 sm:col-span-3 pb-1">
