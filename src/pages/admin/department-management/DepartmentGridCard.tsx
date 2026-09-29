@@ -54,7 +54,7 @@ export default function DepartmentGridCard({
                     ariaLabel="Department actions"
                 />
             )}
-            description={row.description || undefined}
+            details={row.description ? [{ label: 'Description', value: row.description }] : undefined}
             isSelected={isSelected}
             selectVariant="button"
             status=""

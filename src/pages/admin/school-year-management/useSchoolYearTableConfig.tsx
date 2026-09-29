@@ -89,9 +89,13 @@ export function useSchoolYearTableConfig({
                     ...(onOpenHistory
                         ? [
                             {
-                                icon: <ClockCounterClockwiseIcon size={18} weight="bold" />,
+                                children: (
+                                    <div className="flex gap-2 items-center">
+                                        <ClockCounterClockwiseIcon size={18} weight="bold" />
+                                        <span>History</span>
+                                    </div>
+                                ),
                                 key: 'history',
-                                label: 'History',
                                 onClick: () => onOpenHistory(row.id, row.label)
                             }
                         ]

@@ -6,17 +6,15 @@ import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import MaterialFormModal from '@pages/shared/content/MaterialFormModal';
 import {
-    ArrowSquareOutIcon, BookOpenIcon, CheckCircleIcon, CircleIcon, CopySimpleIcon,
-    FileDocIcon, FileIcon, FilePlusIcon, LinkSimpleIcon, PencilSimpleIcon, PlusIcon,
-    PresentationIcon, TrashIcon, VideoCameraIcon
+    ArrowSquareOutIcon, BookOpenIcon, CheckCircleIcon, CircleIcon, CopySimpleIcon, FilePlusIcon,
+    LinkSimpleIcon, PencilSimpleIcon, PlusIcon, TrashIcon
 } from '@phosphor-icons/react';
 import {
     createModule, deleteMaterial, deleteModule, duplicateModuleToSections, getSectionContent,
     markMaterialComplete, setMaterialPublished, setModulePublished, updateModule
 } from '@services/content.service';
 import { getFileUrl } from '@services/storage.service';
-import { ContentModule, CourseMaterial, MaterialType, SectionContent } from '@type/content.type';
-import { formatFileSize } from '@utils/file.util';
+import { ContentModule, CourseMaterial, SectionContent } from '@type/content.type';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 interface SectionContentPanelProps {
@@ -32,29 +30,6 @@ interface DeleteState {
     kind: 'module' | 'material';
     id: string;
     label: string;
-}
-
-const MODULE_TEMPLATES = [
-    { desc: 'Course orientation, learning outcomes, grading system, and policies.', title: 'Syllabus & Course Policies' },
-    { desc: 'Preliminary modules, foundational principles, and lecture notes.', title: 'Prelim Period: Core Concepts' },
-    { desc: 'Midterm modules, hands-on activities, and laboratory exercises.', title: 'Midterm Period: Applied Topics' },
-    { desc: 'Specialized subject matter, case reviews, and project guidelines.', title: 'Semi-Final Period: Advanced Topics' },
-    { desc: 'Final review modules, synthesis materials, and culminating assessments.', title: 'Finals Period: Comprehensive Synthesis' }
-];
-
-function getMaterialIcon(type: MaterialType) {
-    switch (type) {
-        case 'Document':
-            return <FileDocIcon className="shrink-0 text-(--mui-palette-primary-main)" size={18} />;
-        case 'Slide':
-            return <PresentationIcon className="shrink-0 text-(--mui-palette-secondary-main)" size={18} />;
-        case 'Video':
-            return <VideoCameraIcon className="shrink-0 text-(--mui-palette-info-main)" size={18} />;
-        case 'Link':
-            return <LinkSimpleIcon className="shrink-0 text-(--mui-palette-text-secondary)" size={18} />;
-        default:
-            return <FileIcon className="shrink-0 text-(--mui-palette-text-secondary)" size={18} />;
-    }
 }
 
 export default function SectionContentPanel({ sectionId }: SectionContentPanelProps) {
@@ -77,6 +52,10 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
         const target = selectedPeriod.toLowerCase();
         return titleLower.includes(target) || descLower.includes(target);
     });
+
+    const syllabusMaterial = rawModules
+        .flatMap((mod) => mod.materials)
+        .find((mat) => mat.title.toLowerCase().includes('syllabus') || (mat.description?.toLowerCase().includes('syllabus') ?? false));
 
     const editingModule = rawModules.find((mod) => mod.id === editingModuleId);
     const isModuleUnchanged = editingModule
@@ -168,6 +147,47 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
 
     return (
         <div className="flex flex-col gap-4">
+            {/* Pinned Course Syllabus Card */}
+            {syllabusMaterial ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-lg border border-(--mui-palette-primary-main)/30 bg-(--mui-palette-primary-main)/5">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-md bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) shrink-0">
+                            <BookOpenIcon size={24} weight="duotone" />
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                                    {syllabusMaterial.title}
+                                </span>
+                                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-(--mui-palette-primary-main)/15 text-(--mui-palette-primary-main)">
+                                    Official Syllabus
+                                </span>
+                            </div>
+                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                                {syllabusMaterial.description || 'Course Outline, Schedule of Topics, and Grading Policies'}
+                            </span>
+                        </div>
+                    </div>
+                    <CommonButton
+                        size="small"
+                        variant="outlined"
+                        startIcon={<ArrowSquareOutIcon size={14} weight="bold" />}
+                        onClick={() => handleOpenMaterial(syllabusMaterial)}
+                    >
+                        View Syllabus
+                    </CommonButton>
+                </div>
+            ) : canManage ? (
+                <div className="flex items-center justify-between p-3 rounded-lg border border-dashed border-(--mui-palette-divider) bg-(--mui-palette-action-hover)/40">
+                    <div className="flex items-center gap-2.5">
+                        <BookOpenIcon size={18} className="text-(--mui-palette-text-secondary)" />
+                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                            Course Syllabus not yet pinned. Name any uploaded document &ldquo;Syllabus&rdquo; to highlight it here for students.
+                        </span>
+                    </div>
+                </div>
+            ) : null}
+
             <div className="flex flex-wrap gap-2 items-center justify-between border-b border-(--mui-palette-divider) pb-3">
                 <div className="flex gap-1 items-center">
                     {PERIOD_TABS.map((period) => (
@@ -200,32 +220,10 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                 )}
             </div>
             {canManage && isComposing && (
-                <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
-                    {!editingModuleId && (
-                        <div className="flex flex-col gap-1.5">
-                            <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
-                                Quick Module Presets
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                                {MODULE_TEMPLATES.map((tmpl) => (
-                                    <button
-                                        className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) cursor-pointer font-medium hover:border-(--mui-palette-primary-main) hover:text-(--mui-palette-primary-main) px-2.5 py-1 rounded-full text-(--mui-palette-text-primary) text-xs transition-colors"
-                                        key={tmpl.title}
-                                        type="button"
-                                        onClick={() => {
-                                            setModuleTitle(tmpl.title);
-                                            setModuleDescription(tmpl.desc);
-                                        }}
-                                    >
-                                        + {tmpl.title}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                <div className="flex flex-col gap-3 rounded-lg border border-(--mui-palette-divider) p-4">
                     <CommonInput
                         fullWidth
-                        placeholder="Module title (e.g. Prelim: Introduction to Web Systems)"
+                        placeholder="Module title"
                         size="small"
                         value={moduleTitle}
                         onChange={function(e: ChangeEvent<HTMLInputElement>) {
@@ -365,27 +363,19 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                                             key={material.id}
                                         >
                                             <button
-                                                className="flex flex-1 gap-2.5 items-center text-left"
+                                                className="flex flex-1 gap-2 items-center text-left"
                                                 type="button"
                                                 onClick={function() {
                                                     handleOpenMaterial(material);
                                                 }}
                                             >
-                                                {getMaterialIcon(material.material_type)}
+                                                {material.material_type === 'Link'
+                                                    ? <LinkSimpleIcon className="text-(--mui-palette-text-secondary) shrink-0" size={16} />
+                                                    : <ArrowSquareOutIcon className="text-(--mui-palette-text-secondary) shrink-0" size={16} />}
                                                 <div className="flex flex-col">
-                                                    <div className="flex flex-wrap gap-1.5 items-center">
-                                                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                                            {material.title}
-                                                        </span>
-                                                        <span className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) font-normal px-1.5 py-0.2 rounded text-[11px] text-(--mui-palette-text-secondary)">
-                                                            {material.material_type}
-                                                        </span>
-                                                        {material.file_size_bytes ? (
-                                                            <span className="text-(--mui-palette-text-disabled) text-[11px]">
-                                                                ({formatFileSize(material.file_size_bytes)})
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
+                                                    <span className="text-(--mui-palette-text-primary) text-sm">
+                                                        {material.title}
+                                                    </span>
                                                     {material.description && (
                                                         <span className="text-(--mui-palette-text-secondary) text-xs">
                                                             {material.description}

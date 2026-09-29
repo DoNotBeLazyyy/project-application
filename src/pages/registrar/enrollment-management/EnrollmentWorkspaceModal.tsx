@@ -6,6 +6,7 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { InputAdornment } from '@mui/material';
 import AvailableSectionBentoCard from '@pages/registrar/enrollment-management/AvailableSectionBentoCard';
 import EligibleSectionFilterBar from '@pages/registrar/enrollment-management/EligibleSectionFilterBar';
 import StudentLoadBentoCard, { StudentLoadCardItem, StudentLoadCardState } from '@pages/registrar/enrollment-management/StudentLoadBentoCard';
@@ -79,6 +80,7 @@ export default function EnrollmentWorkspaceModal({
     // Staged changes state
     const [stagedNewSections, setStagedNewSections] = useState<EligibleSectionRow[]>([]);
     const [markedDropIds, setMarkedDropIds] = useState<Set<string>>(new Set());
+    const [mobileTab, setMobileTab] = useState<'load' | 'available'>('load');
 
     // Saving & prompt states
     const [isSaving, setIsSaving] = useState(false);
@@ -156,6 +158,7 @@ export default function EnrollmentWorkspaceModal({
             setStagedNewSections([]);
             setMarkedDropIds(new Set());
             setSaveErrorMessage(null);
+            setMobileTab('load');
         }
     }, [open, defaultTermId, filterMethods]);
 
@@ -345,9 +348,9 @@ export default function EnrollmentWorkspaceModal({
                 <div className="flex flex-col gap-4">
                     {/* Student Info & Term Header Banner */}
                     <div className="bg-(--mui-palette-action-hover)/40 border border-(--mui-palette-divider) flex flex-wrap gap-4 items-center justify-between p-3.5 rounded-xl">
-                        <div className="flex flex-wrap gap-6 items-center">
+                        <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
                             <div className="flex items-center gap-2.5">
-                                <IdentificationCardIcon size={24} className="text-(--mui-palette-primary-main)" weight="bold" />
+                                <IdentificationCardIcon size={24} className="text-(--mui-palette-primary-main) shrink-0" weight="bold" />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Student</span>
                                     <span className="font-bold text-(--mui-palette-text-primary) text-sm">
@@ -359,10 +362,10 @@ export default function EnrollmentWorkspaceModal({
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2.5 pl-4 border-l border-(--mui-palette-divider)">
-                                <GraduationCapIcon size={24} className="text-(--mui-palette-info-main)" weight="bold" />
+                            <div className="flex items-center gap-2.5 sm:pl-4 sm:border-l sm:border-(--mui-palette-divider)">
+                                <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0" weight="bold" />
                                 <div className="flex flex-col">
-                                    <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Program & Year</span>
+                                    <span className="text-[11px] text-(--mui-palette-text-secondary) font-medium">Program &amp; Year</span>
                                     <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
                                         {detail?.program_name ?? detail?.program_code ?? '—'}
                                     </span>
@@ -374,11 +377,11 @@ export default function EnrollmentWorkspaceModal({
                         </div>
 
                         {/* Term Switcher */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-xs font-semibold text-(--mui-palette-text-secondary) whitespace-nowrap">
                                 Term:
                             </span>
-                            <div className="w-64">
+                            <div className="w-full sm:w-64">
                                 <CommonSelect
                                     fullWidth
                                     options={termOptions}
@@ -407,12 +410,54 @@ export default function EnrollmentWorkspaceModal({
                         </div>
                     )}
 
+                    {/* Mobile Viewport Segmented Switcher (Visible only on < lg) */}
+                    <div className="flex lg:hidden rounded-lg bg-(--mui-palette-action-hover) p-1 gap-1 shrink-0">
+                        <button
+                            type="button"
+                            className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                                mobileTab === 'load'
+                                    ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-sm'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            onClick={() => setMobileTab('load')}
+                        >
+                            <span>Student Load</span>
+                            <span className="bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) font-mono text-[11px] px-1.5 py-0.2 rounded-full font-bold">
+                                {netCount}
+                            </span>
+                            {stagedNewSections.length > 0 && (
+                                <span className="bg-blue-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                                    +{stagedNewSections.length}
+                                </span>
+                            )}
+                            {markedDropIds.size > 0 && (
+                                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                                    -{markedDropIds.size}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                                mobileTab === 'available'
+                                    ? 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) shadow-sm'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            onClick={() => setMobileTab('available')}
+                        >
+                            <span>Available Sections</span>
+                            <span className="bg-(--mui-palette-action-selected) text-(--mui-palette-text-secondary) font-mono text-[11px] px-1.5 py-0.2 rounded-full font-semibold">
+                                {availableSections.length}
+                            </span>
+                        </button>
+                    </div>
+
                     {/* Main Split Layout: Student Load (Left) + Available Choices Sidebar (Right) */}
-                    <div className="flex flex-col lg:flex-row gap-5 min-h-[38rem] max-h-[68vh] overflow-hidden">
+                    <div className="flex flex-col lg:flex-row gap-5 min-h-0 lg:min-h-[36rem] max-h-[72vh] lg:max-h-[68vh] overflow-hidden">
                         {/* ================================================================= */}
                         {/* LEFT: Student's Load Bento Workspace                              */}
                         {/* ================================================================= */}
-                        <div className="flex-1 min-w-0 flex flex-col gap-3 overflow-hidden">
+                        <div className={`flex-1 min-w-0 flex-col gap-3 overflow-hidden ${mobileTab === 'load' ? 'flex' : 'hidden lg:flex'}`}>
                             {/* Schedule & Load Header with Real-Time Counters */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-(--mui-palette-divider)">
                                 <div className="flex flex-col">
@@ -570,7 +615,7 @@ export default function EnrollmentWorkspaceModal({
                         {/* ================================================================= */}
                         {/* RIGHT: Available Section Choices Sidebar                          */}
                         {/* ================================================================= */}
-                        <div className="w-full lg:w-96 xl:w-[26rem] shrink-0 flex flex-col gap-3 border-t lg:border-t-0 lg:border-l border-(--mui-palette-divider) pt-4 lg:pt-0 lg:pl-5 overflow-hidden">
+                        <div className={`w-full lg:w-96 xl:w-[26rem] shrink-0 flex-col gap-3 lg:border-t-0 lg:border-l border-(--mui-palette-divider) lg:pt-0 lg:pl-5 overflow-hidden ${mobileTab === 'available' ? 'flex' : 'hidden lg:flex'}`}>
                             {/* Sidebar Header */}
                             <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center justify-between">
@@ -591,7 +636,15 @@ export default function EnrollmentWorkspaceModal({
                                         fullWidth
                                         placeholder="Search course, code or faculty..."
                                         size="small"
-                                        startIcon={<MagnifyingGlassIcon size={15} />}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <MagnifyingGlassIcon size={15} />
+                                                    </InputAdornment>
+                                                )
+                                            }
+                                        }}
                                         value={searchInput}
                                         onChange={(e) => setSearchInput(e.target.value)}
                                         onKeyDown={(e) => {

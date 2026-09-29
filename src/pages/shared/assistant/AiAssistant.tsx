@@ -76,13 +76,15 @@ const ROLE_SUGGESTIONS: Record<string, string[]> = {
         'How do I set clearance requirements?'
     ],
     Student: [
-        'Am I qualified for Dean\'s List or Latin Honors?',
-        'What final exam score do I need to keep a 1.75 GWA?',
+        'Am I on track for Latin honors?',
+        'Explain a course concept from my syllabus',
+        'What assignments are due this week?',
         'Which subject is hurting my GWA the most?',
-        'Do I have any missing assessments or unsubmitted work?',
-        'Check my prerequisite eligibility for next semester',
-        'Explain the syllabus and learning objectives for my enrolled subjects',
-        'What is the passing threshold for my active courses?'
+        'How do I use the What-If Grade Simulator?',
+        'How do I review my exam mistakes?',
+        'Check prerequisite eligibility',
+        'Am I at risk of DRP?',
+        'What should I focus on for the rest of this term?'
     ]
 };
 

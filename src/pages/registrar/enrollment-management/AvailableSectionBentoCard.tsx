@@ -137,7 +137,7 @@ export default function AvailableSectionBentoCard({
             </div>
 
             {/* Action State / Button */}
-            <div className="pt-1.5 border-t border-(--mui-palette-divider)/50 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+            <div className="pt-1.5 border-t border-(--mui-palette-divider)/50 flex items-center justify-between flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                 {isEnrolled ? (
                     <div className="flex items-center gap-1 text-(--mui-palette-success-main) font-medium text-[11px]">
                         <CheckIcon size={14} weight="bold" />

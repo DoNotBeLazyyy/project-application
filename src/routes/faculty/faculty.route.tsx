@@ -46,18 +46,6 @@ export const facultyRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/faculty/sections/assessments/analysis/ItemAnalysisPage');
-                }),
-                path: 'sections/:sectionId/assessments/:assessmentId/analysis'
-            },
-            {
-                element: lazyElement(function() {
-                    return import('@pages/faculty/sections/assessments/integrity/IntegrityReportPage');
-                }),
-                path: 'sections/:sectionId/assessments/:assessmentId/integrity'
-            },
-            {
-                element: lazyElement(function() {
                     return import('@pages/faculty/sections/rubrics/RubricBuilderPage');
                 }),
                 path: 'sections/:sectionId/rubrics/:rubricId'

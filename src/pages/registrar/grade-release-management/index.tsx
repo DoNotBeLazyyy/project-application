@@ -4,6 +4,7 @@ import CommonCard from '@components/card/CommonCard';
 import CommonInput from '@components/input/CommonInput';
 import CommonSelect from '@components/select/CommonSelect';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import { InputAdornment } from '@mui/material';
 import ReleaseScheduleForm from '@pages/registrar/grade-release-management/ReleaseScheduleForm';
 import SectionGradeSheetModal from '@pages/registrar/grade-release-management/SectionGradeSheetModal';
 import {
@@ -65,7 +66,7 @@ function resolveStatusLabel(period: GradeReleaseSchedule): string {
     return `Releasing — ${period.blocked_count} awaiting evaluation`;
 }
 
-function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 'default' | 'success' | 'warning' | 'info' | 'error' {
+function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 'success' | 'warning' | 'info' | 'error' {
     switch (status) {
         case 'Released':
             return 'success';
@@ -74,13 +75,10 @@ function resolveSubmissionBadgeVariant(status: SectionGradeSubmissionStatus): 'd
         case 'Submitted':
             return 'warning';
         case 'Draft':
-            return 'default';
         case 'Not Calculated':
-            return 'default';
         case 'No Enrollees':
-            return 'default';
         default:
-            return 'default';
+            return 'info';
     }
 }
 
@@ -110,12 +108,13 @@ export default function GradeRelease() {
 
         const result = await listGradeReleaseSchedule(termId);
         if (result.data) {
-            setPeriods(result.data);
+            const data = result.data;
+            setPeriods(data);
             setSelectedPeriodId((prev) => {
-                if (prev && result.data.some((p) => p.grading_period_id === prev)) {
+                if (prev && data.some((p) => p.grading_period_id === prev)) {
                     return prev;
                 }
-                return result.data[0]?.grading_period_id ?? '';
+                return data[0]?.grading_period_id ?? '';
             });
         }
     }, []);
@@ -415,7 +414,7 @@ export default function GradeRelease() {
                     </div>
 
                     {/* Filter Tabs */}
-                    <div className="bg-(--mui-palette-action-hover)/40 flex gap-1 p-1 rounded-lg text-xs">
+                    <div className="bg-(--mui-palette-action-hover)/40 flex flex-wrap gap-1 p-1 rounded-lg text-xs">
                         <button
                             className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
                                 statusFilter === 'ALL'
@@ -464,13 +463,21 @@ export default function GradeRelease() {
                 </div>
 
                 {/* Filter and Search Bar */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
                     <div className="w-full sm:w-80">
                         <CommonInput
                             fullWidth
                             placeholder="Filter by course, section, or faculty..."
                             size="small"
-                            startIcon={<MagnifyingGlassIcon size={16} />}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <MagnifyingGlassIcon size={16} />
+                                        </InputAdornment>
+                                    )
+                                }
+                            }}
                             value={sectionSearch}
                             onChange={(e) => setSectionSearch(e.target.value)}
                         />
@@ -480,7 +487,7 @@ export default function GradeRelease() {
                     </span>
                 </div>
 
-                {/* Section Table */}
+                {/* Section Table / Mobile Cards */}
                 <div className="border border-(--mui-palette-divider) flex-1 min-h-0 overflow-x-auto overflow-y-auto rounded-lg">
                     {isSectionsLoading ? (
                         <div className="p-8 text-center text-(--mui-palette-text-secondary) text-sm">
@@ -493,20 +500,9 @@ export default function GradeRelease() {
                                 : 'No section submissions match the selected filter.'}
                         </div>
                     ) : (
-                        <table className="border-collapse text-left text-sm w-full">
-                            <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
-                                <tr>
-                                    <th className="font-semibold p-3">Course</th>
-                                    <th className="font-semibold p-3">Section</th>
-                                    <th className="font-semibold p-3">Instructor</th>
-                                    <th className="font-semibold p-3 text-center">Enrolled</th>
-                                    <th className="font-semibold p-3 text-center">Grades Computed</th>
-                                    <th className="font-semibold p-3 text-center">Status</th>
-                                    <th className="font-semibold p-3">Last Submitted</th>
-                                    <th className="font-semibold p-3 text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-(--mui-palette-divider)">
+                        <>
+                            {/* Mobile View: Section Breakdown Cards */}
+                            <div className="md:hidden flex flex-col divide-y divide-(--mui-palette-divider)">
                                 {filteredSections.map(function(row) {
                                     const canRelease =
                                         row.submission_status !== 'Released' &&
@@ -514,81 +510,175 @@ export default function GradeRelease() {
                                         row.graded_count > 0;
 
                                     return (
-                                        <tr className="hover:bg-(--mui-palette-action-hover)/30 transition-colors" key={row.section_id}>
-                                            <td className="p-3">
-                                                <div className="flex flex-col">
-                                                    <span className="font-semibold text-(--mui-palette-text-primary)">
-                                                        {row.course_code}
-                                                    </span>
-                                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate max-w-xs">
+                                        <div key={row.section_id} className="p-4 flex flex-col gap-3 bg-(--mui-palette-background-paper) hover:bg-(--mui-palette-action-hover)/20 transition-colors">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex flex-col min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-bold text-(--mui-palette-text-primary) text-base">
+                                                            {row.course_code}
+                                                        </span>
+                                                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) font-semibold">
+                                                            Sec {row.section_code}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs text-(--mui-palette-text-secondary) mt-0.5 line-clamp-1">
                                                         {row.course_title}
                                                     </span>
                                                 </div>
-                                            </td>
-                                            <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
-                                                {row.section_code}
-                                                {row.room && (
-                                                    <span className="block text-(--mui-palette-text-secondary) text-xs">
-                                                        {row.room}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="p-3 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-(--mui-palette-text-primary)">
-                                                        {row.faculty_name}
-                                                    </span>
-                                                    {row.faculty_email && (
-                                                        <span className="text-(--mui-palette-text-secondary) text-xs">
-                                                            {row.faculty_email}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="font-medium p-3 text-center text-(--mui-palette-text-primary)">
-                                                {row.enrolled_count}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                                <span className="font-mono text-xs">
-                                                    {row.graded_count} / {row.enrolled_count}
-                                                </span>
-                                            </td>
-                                            <td className="p-3 text-center">
                                                 <CommonBadgeStatus
                                                     label={row.submission_status}
                                                     variant={resolveSubmissionBadgeVariant(row.submission_status)}
                                                 />
-                                            </td>
-                                            <td className="p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
-                                                {formatDate(row.last_submitted_at)}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                                <div className="flex gap-2 items-center justify-center">
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2 bg-(--mui-palette-action-hover)/30 p-2.5 rounded-lg text-xs">
+                                                <div>
+                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Instructor</span>
+                                                    <span className="font-medium text-(--mui-palette-text-primary) truncate block">
+                                                        {row.faculty_name}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Graded</span>
+                                                    <span className="font-mono font-semibold text-(--mui-palette-text-primary)">
+                                                        {row.graded_count} / {row.enrolled_count} ({row.enrolled_count > 0 ? Math.round((row.graded_count / row.enrolled_count) * 100) : 0}%)
+                                                    </span>
+                                                </div>
+                                                {row.room && (
+                                                    <div>
+                                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Room</span>
+                                                        <span className="text-(--mui-palette-text-primary)">{row.room}</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <span className="text-[10px] text-(--mui-palette-text-secondary) block uppercase font-medium">Submitted</span>
+                                                    <span className="text-(--mui-palette-text-secondary)">{formatDate(row.last_submitted_at)}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-(--mui-palette-divider)/60">
+                                                <CommonButton
+                                                    size="small"
+                                                    startIcon={<EyeIcon size={14} />}
+                                                    variant="outlined"
+                                                    onClick={() => setInspectedSection(row)}
+                                                >
+                                                    Inspect
+                                                </CommonButton>
+                                                {canRelease && (
                                                     <CommonButton
                                                         size="small"
-                                                        startIcon={<EyeIcon size={14} />}
-                                                        variant="outlined"
-                                                        onClick={() => setInspectedSection(row)}
+                                                        startIcon={<SealCheckIcon size={14} />}
+                                                        variant="contained"
+                                                        onClick={() => setSectionToRelease(row)}
                                                     >
-                                                        Inspect
+                                                        Release
                                                     </CommonButton>
-                                                    {canRelease && (
-                                                        <CommonButton
-                                                            size="small"
-                                                            startIcon={<SealCheckIcon size={14} />}
-                                                            variant="contained"
-                                                            onClick={() => setSectionToRelease(row)}
-                                                        >
-                                                            Release
-                                                        </CommonButton>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                )}
+                                            </div>
+                                        </div>
                                     );
                                 })}
-                            </tbody>
-                        </table>
+                            </div>
+
+                            {/* Desktop View: Full Table */}
+                            <table className="hidden md:table border-collapse text-left text-sm w-full">
+                                <thead className="bg-(--mui-palette-action-hover)/50 border-b border-(--mui-palette-divider) sticky text-(--mui-palette-text-secondary) text-xs top-0 uppercase">
+                                    <tr>
+                                        <th className="font-semibold p-3">Course</th>
+                                        <th className="font-semibold p-3">Section</th>
+                                        <th className="font-semibold p-3">Instructor</th>
+                                        <th className="font-semibold p-3 text-center">Enrolled</th>
+                                        <th className="font-semibold p-3 text-center">Grades Computed</th>
+                                        <th className="font-semibold p-3 text-center">Status</th>
+                                        <th className="font-semibold p-3">Last Submitted</th>
+                                        <th className="font-semibold p-3 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-(--mui-palette-divider)">
+                                    {filteredSections.map(function(row) {
+                                        const canRelease =
+                                            row.submission_status !== 'Released' &&
+                                            row.submission_status !== 'No Enrollees' &&
+                                            row.graded_count > 0;
+
+                                        return (
+                                            <tr className="hover:bg-(--mui-palette-action-hover)/30 transition-colors" key={row.section_id}>
+                                                <td className="p-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-semibold text-(--mui-palette-text-primary)">
+                                                            {row.course_code}
+                                                        </span>
+                                                        <span className="text-(--mui-palette-text-secondary) text-xs truncate max-w-xs">
+                                                            {row.course_title}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="font-medium p-3 text-(--mui-palette-text-primary) whitespace-nowrap">
+                                                    {row.section_code}
+                                                    {row.room && (
+                                                        <span className="block text-(--mui-palette-text-secondary) text-xs">
+                                                            {row.room}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="p-3 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-(--mui-palette-text-primary)">
+                                                            {row.faculty_name}
+                                                        </span>
+                                                        {row.faculty_email && (
+                                                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                                                                {row.faculty_email}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="font-medium p-3 text-center text-(--mui-palette-text-primary)">
+                                                    {row.enrolled_count}
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    <span className="font-mono text-xs">
+                                                        {row.graded_count} / {row.enrolled_count}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    <CommonBadgeStatus
+                                                        label={row.submission_status}
+                                                        variant={resolveSubmissionBadgeVariant(row.submission_status)}
+                                                    />
+                                                </td>
+                                                <td className="p-3 text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
+                                                    {formatDate(row.last_submitted_at)}
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    <div className="flex gap-2 items-center justify-center">
+                                                        <CommonButton
+                                                            size="small"
+                                                            startIcon={<EyeIcon size={14} />}
+                                                            variant="outlined"
+                                                            onClick={() => setInspectedSection(row)}
+                                                        >
+                                                            Inspect
+                                                        </CommonButton>
+                                                        {canRelease && (
+                                                            <CommonButton
+                                                                size="small"
+                                                                startIcon={<SealCheckIcon size={14} />}
+                                                                variant="contained"
+                                                                onClick={() => setSectionToRelease(row)}
+                                                            >
+                                                                Release
+                                                            </CommonButton>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </>
                     )}
                 </div>
             </div>

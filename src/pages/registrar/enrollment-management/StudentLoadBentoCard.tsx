@@ -116,7 +116,7 @@ export default function StudentLoadBentoCard({
                         ) : (
                             <CommonBadgeStatus
                                 label={item.status || 'Enrolled'}
-                                variant={item.status === 'Enrolled' || !item.status ? 'success' : 'default'}
+                                variant={item.status === 'Enrolled' || !item.status ? 'success' : 'info'}
                             />
                         )}
                     </div>
@@ -160,7 +160,7 @@ export default function StudentLoadBentoCard({
             </div>
 
             {/* Action Row */}
-            <div className="flex items-center justify-between pt-2 border-t border-(--mui-palette-divider)/60 pl-1.5">
+            <div className="flex items-center justify-between pt-2 border-t border-(--mui-palette-divider)/60 pl-1.5 flex-wrap gap-2">
                 <span className="text-[11px] text-(--mui-palette-text-disabled)">
                     {isNew
                         ? 'Will be enrolled upon saving'

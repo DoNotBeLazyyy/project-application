@@ -7,7 +7,6 @@ import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services/content.service';
 import { uploadFile } from '@services/storage.service';
 import { CourseMaterial, MaterialType } from '@type/content.type';
-import { formatFileSize } from '@utils/file.util';
 import { generateId } from '@utils/uuid.util';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
@@ -19,14 +18,6 @@ interface MaterialFormModalProps {
     onClose: () => void;
     onSaved: () => void;
 }
-
-const QUICK_TEMPLATES: { label: string; type: MaterialType; title: string }[] = [
-    { label: 'Course Syllabus', type: 'Document', title: 'Course Syllabus & Classroom Policies' },
-    { label: 'Lecture Slides', type: 'Slide', title: 'Lecture Slides: ' },
-    { label: 'Recorded Lecture', type: 'Video', title: 'Recorded Lecture: ' },
-    { label: 'Reading Handout', type: 'File', title: 'Required Reading: ' },
-    { label: 'Resource Link', type: 'Link', title: 'Reference Resource: ' }
-];
 
 export default function MaterialFormModal({
     open,
@@ -156,44 +147,64 @@ export default function MaterialFormModal({
             open={open}
             onClose={onClose}
         >
-            <div className="flex flex-col gap-0.5">
-                <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                    {isEdit
-                        ? 'Edit Material'
-                        : 'Upload Course Material'}
-                </h2>
-                <span className="text-(--mui-palette-text-secondary) text-xs">
-                    Provide lecture slides, syllabus, reading handouts, or educational links.
+            <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                {isEdit
+                    ? 'Edit Material'
+                    : 'Add Material'}
+            </h2>
+            <div className="flex flex-col gap-1">
+                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                    Title
                 </span>
-            </div>
-
-            {!isEdit && (
-                <div className="flex flex-col gap-1.5">
-                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
-                        Quick Presets
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                        {QUICK_TEMPLATES.map((tmpl) => (
+                <CommonInput
+                    fullWidth
+                    placeholder="e.g. Course Syllabus or Week 1: Lecture Slides"
+                    size="small"
+                    value={title}
+                    onChange={function(e: ChangeEvent<HTMLInputElement>) {
+                        setTitle(e.target.value);
+                    }}
+                />
+                {!isEdit && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                        {['Course Syllabus', 'Lecture Slides', 'Reading Handout', 'Lab Activity'].map((preset) => (
                             <button
-                                className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) cursor-pointer font-medium hover:border-(--mui-palette-primary-main) hover:text-(--mui-palette-primary-main) px-2.5 py-1 rounded-full text-(--mui-palette-text-primary) text-xs transition-colors"
-                                key={tmpl.label}
+                                key={preset}
                                 type="button"
                                 onClick={() => {
-                                    setMaterialType(tmpl.type);
-                                    setTitle(tmpl.title);
+                                    setTitle(preset);
+                                    if (preset === 'Course Syllabus' && !description) {
+                                        setDescription('Official Course Outline, Learning Outcomes, and Academic Policies');
+                                        setMaterialType('Document');
+                                    } else if (preset === 'Lecture Slides') {
+                                        setMaterialType('Slide');
+                                    }
                                 }}
+                                className="px-2 py-0.5 text-[11px] rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-primary-main) hover:bg-(--mui-palette-primary-main)/10 transition-colors"
                             >
-                                + {tmpl.label}
+                                + {preset}
                             </button>
                         ))}
                     </div>
-                </div>
-            )}
-
+                )}
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                    Description &amp; Learning Objectives
+                </span>
+                <CommonTextarea
+                    maxLength={1000}
+                    placeholder="Brief description, learning outcomes, chapter coverage, or reading guide..."
+                    value={description}
+                    onChange={function(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+                        setDescription(e.target.value);
+                    }}
+                />
+            </div>
             {!isEdit && (
                 <div className="flex flex-col gap-1">
                     <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Material Type
+                        Type
                     </span>
                     <CommonSelect
                         fullWidth
@@ -205,60 +216,27 @@ export default function MaterialFormModal({
                     />
                 </div>
             )}
-
-            <div className="flex flex-col gap-1">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Title
-                </span>
-                <CommonInput
-                    fullWidth
-                    placeholder="e.g. Chapter 1: Introduction to Course Concepts"
-                    size="small"
-                    value={title}
-                    onChange={function(e: ChangeEvent<HTMLInputElement>) {
-                        setTitle(e.target.value);
-                    }}
-                />
-            </div>
-
-            <div className="flex flex-col gap-1">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Description & Objectives
-                </span>
-                <CommonTextarea
-                    maxLength={1000}
-                    placeholder="Optional description, syllabus breakdown, or learning objectives"
-                    value={description}
-                    onChange={function(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-                        setDescription(e.target.value);
-                    }}
-                />
-            </div>
-
             {materialType === 'Link'
                 ? (
                     <div className="flex flex-col gap-1">
                         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Resource URL
+                            URL
                         </span>
                         <CommonInput
                             fullWidth
-                            placeholder="https://drive.google.com/..., https://youtu.be/..., or external resource"
+                            placeholder="https://..."
                             size="small"
                             value={externalUrl}
                             onChange={function(e: ChangeEvent<HTMLInputElement>) {
                                 setExternalUrl(e.target.value);
                             }}
                         />
-                        <span className="text-(--mui-palette-text-disabled) text-[11px]">
-                            Direct link to cloud storage, YouTube, or external reading reference.
-                        </span>
                     </div>
                 )
                 : !isEdit && (
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1">
                         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            File Attachment
+                            File
                         </span>
                         <input
                             className="hidden"
@@ -266,29 +244,19 @@ export default function MaterialFormModal({
                             type="file"
                             onChange={handleFileChange}
                         />
-                        <div className="flex flex-wrap gap-2 items-center">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<UploadSimpleIcon size={16} />}
-                                variant="outlined"
-                                onClick={function() {
-                                    fileInputRef.current?.click();
-                                }}
-                            >
-                                {file
-                                    ? 'Change file'
-                                    : 'Choose file'}
-                            </CommonButton>
-                            {file && (
-                                <span className="font-medium max-w-xs text-(--mui-palette-text-primary) text-xs truncate">
-                                    {file.name} ({formatFileSize(file.size)})
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-(--mui-palette-text-disabled) text-[11px]">
-                            Accepted formats: PDF, PPTX, DOCX, XLSX, MP4, MP3, PNG, JPG, ZIP (max 50MB)
-                        </span>
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            startIcon={<UploadSimpleIcon size={16} />}
+                            variant="outlined"
+                            onClick={function() {
+                                fileInputRef.current?.click();
+                            }}
+                        >
+                            {file
+                                ? file.name
+                                : 'Choose file'}
+                        </CommonButton>
                     </div>
                 )}
             <div className="flex gap-2 justify-end">

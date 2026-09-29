@@ -30,25 +30,6 @@ export default function StudentInsightSummaryCard({
     const topFocus = insight?.recommended_focus?.[0] ?? null;
     const weaknesses = insight?.performance?.weaknesses?.slice(0, 3) ?? [];
 
-    const qualified = insight?.trajectories?.find((t) => t.is_currently_qualified && !t.is_blocked_by_failing);
-    const attainable = insight?.trajectories?.find((t) => !t.is_currently_qualified && t.is_attainable !== false && !t.is_blocked_by_failing);
-    const hasFailing = (insight?.academic?.failing_count ?? 0) > 0;
-
-    const standingLabel = hasFailing
-        ? 'Deficiency'
-        : qualified
-            ? qualified.label
-            : attainable
-                ? `${attainable.label} Track`
-                : 'Good Standing';
-    const standingVariant: 'success' | 'warning' | 'error' | 'info' = hasFailing
-        ? 'error'
-        : qualified
-            ? 'success'
-            : attainable
-                ? 'warning'
-                : 'info';
-
     return (
         <CommonCard
             cardHeaderProps={{
@@ -62,8 +43,8 @@ export default function StudentInsightSummaryCard({
                         View Insight
                     </CommonButton>
                 ),
-                subheader: 'Academic standing & honors performance overview.',
-                title: 'Academic & Honors Insight'
+                subheader: 'How you are tracking this term.',
+                title: 'Learning Insight'
             }}
             className="flex flex-col"
         >
@@ -97,8 +78,8 @@ export default function StudentInsightSummaryCard({
                         {insight
                             ? (
                                 <CommonBadgeStatus
-                                    label={standingLabel}
-                                    variant={standingVariant}
+                                    label={insight.risk.risk_level}
+                                    variant={RISK_VARIANT[insight.risk.risk_level]}
                                 />
                             )
                             : (
@@ -108,7 +89,7 @@ export default function StudentInsightSummaryCard({
                             )
                         }
                         <span className="text-(--mui-palette-text-secondary) text-xs">
-                            Honors Track
+                            Risk Level
                         </span>
                     </div>
                 </div>

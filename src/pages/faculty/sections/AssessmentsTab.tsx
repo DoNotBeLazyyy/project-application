@@ -2,9 +2,10 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonTable from '@components/table/CommonTable';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
+import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import {
-    BookOpenIcon, ChartBarIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon,
-    ShieldCheckIcon, TrashIcon
+    BookOpenIcon, CopySimpleIcon, EyeIcon, EyeSlashIcon, ListChecksIcon, PlusIcon,
+    TrashIcon
 } from '@phosphor-icons/react';
 import {
     deleteAssessment, duplicateAssessmentToSections, listAssessments, publishAssessment,
@@ -30,6 +31,7 @@ interface AssessmentsTabProps {
 
 export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
     const navigate = useNavigate();
+    const [activeView, setActiveView] = useState<'assessments' | 'rubrics'>('assessments');
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
     const [duplicating, setDuplicating] = useState<AssessmentListRow | null>(null);
 
@@ -179,24 +181,7 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
                                 : <EyeIcon size={14} weight="bold" />
                             }
                         </button>
-                        <button
-                            className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
-                            title="Item analysis"
-                            onClick={function() {
-                                navigate(`/faculty/sections/${sectionId}/assessments/${params.data.id}/analysis`);
-                            }}
-                        >
-                            <ChartBarIcon size={14} weight="bold" />
-                        </button>
-                        <button
-                            className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
-                            title="Integrity report"
-                            onClick={function() {
-                                navigate(`/faculty/sections/${sectionId}/assessments/${params.data.id}/integrity`);
-                            }}
-                        >
-                            <ShieldCheckIcon size={14} weight="bold" />
-                        </button>
+
                         <button
                             className="hover:bg-(--mui-palette-action-hover) px-2 py-1 rounded text-(--mui-palette-text-secondary) transition-colors"
                             title="Copy to other sections"
@@ -223,43 +208,73 @@ export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
 
     return (
         <div className="flex flex-col gap-3 h-full">
-            <div className="flex items-center justify-between">
-                <p className="text-(--mui-palette-text-secondary) text-sm">
-                    {assessments.length} assessment{assessments.length !== 1
-                        ? 's'
-                        : ''}
-                </p>
-                <CommonButton
-                    size="small"
-                    startIcon={<PlusIcon size={14} weight="bold" />}
-                    variant="contained"
-                    onClick={function() {
-                        navigate(`/faculty/sections/${sectionId}/assessments/new/builder`);
-                    }}
-                >
-                    New Assessment
-                </CommonButton>
+            <div className="flex flex-wrap gap-2 items-center justify-between border-b border-(--mui-palette-divider) pb-2">
+                <div className="flex gap-1 items-center">
+                    <button
+                        type="button"
+                        onClick={() => setActiveView('assessments')}
+                        className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                            activeView === 'assessments'
+                                ? 'bg-(--mui-palette-primary-main) text-white'
+                                : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                        }`}
+                    >
+                        Assessments ({assessments.length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveView('rubrics')}
+                        className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                            activeView === 'rubrics'
+                                ? 'bg-(--mui-palette-primary-main) text-white'
+                                : 'bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                        }`}
+                    >
+                        Grading Rubrics
+                    </button>
+                </div>
+                {activeView === 'assessments' && (
+                    <CommonButton
+                        size="small"
+                        startIcon={<PlusIcon size={14} weight="bold" />}
+                        variant="contained"
+                        onClick={function() {
+                            navigate(`/faculty/sections/${sectionId}/assessments/new/builder`);
+                        }}
+                    >
+                        New Assessment
+                    </CommonButton>
+                )}
             </div>
-            <div className="flex-1 min-h-0">
-                <CommonTable<AssessmentListRow>
-                    leadingColumnDefs={columnDefs}
-                    rowData={assessments}
-                />
-            </div>
-            {duplicating && (
-                <DuplicateToSectionsModal
-                    entityLabel="Assessment"
-                    entityTitle={duplicating.title}
-                    open={duplicating !== null}
-                    sectionId={sectionId}
-                    onClose={function() {
-                        setDuplicating(null);
-                    }}
-                    onConfirm={function(sectionIds: string[]) {
-                        return duplicateAssessmentToSections(duplicating.id, sectionIds);
-                    }}
-                    onDuplicated={fetchAssessments}
-                />
+
+            {activeView === 'rubrics' ? (
+                <div className="flex-1 min-h-0">
+                    <RubricsTab sectionId={sectionId} />
+                </div>
+            ) : (
+                <>
+                    <div className="flex-1 min-h-0">
+                        <CommonTable<AssessmentListRow>
+                            leadingColumnDefs={columnDefs}
+                            rowData={assessments}
+                        />
+                    </div>
+                    {duplicating && (
+                        <DuplicateToSectionsModal
+                            entityLabel="Assessment"
+                            entityTitle={duplicating.title}
+                            open={duplicating !== null}
+                            sectionId={sectionId}
+                            onClose={function() {
+                                setDuplicating(null);
+                            }}
+                            onConfirm={function(sectionIds: string[]) {
+                                return duplicateAssessmentToSections(duplicating.id, sectionIds);
+                            }}
+                            onDuplicated={fetchAssessments}
+                        />
+                    )}
+                </>
             )}
         </div>
     );

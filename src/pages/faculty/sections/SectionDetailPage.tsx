@@ -3,15 +3,13 @@ import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import AssessmentsTab from '@pages/faculty/sections/AssessmentsTab';
 import AttendanceTab from '@pages/faculty/sections/attendance/AttendanceTab';
 import GradingTab from '@pages/faculty/sections/grading/GradingTab';
-import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import StudentsTab from '@pages/faculty/sections/StudentsTab';
-import SectionInsightPanel from '@pages/shared/analytics/SectionInsightPanel';
 import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnouncementPanel';
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChartLineUpIcon, ChatCircleTextIcon, ClipboardTextIcon,
-    GraduationCapIcon, ListChecksIcon, MegaphoneIcon, NotepadIcon
+    BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon,
+    GraduationCapIcon, MegaphoneIcon, NotepadIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { useBreadcrumbStore } from '@stores/breadcrumb.store';
@@ -19,10 +17,10 @@ import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'students' | 'attendance' | 'grading' | 'assessments' | 'rubrics' | 'content' | 'discussion' | 'announcements' | 'insight';
+type SectionTab = 'content' | 'assessments' | 'grading' | 'attendance' | 'students' | 'discussion' | 'announcements';
 
 const SECTION_TABS: SectionTab[] = [
-    'students', 'attendance', 'grading', 'assessments', 'rubrics', 'content', 'discussion', 'announcements', 'insight'
+    'content', 'assessments', 'grading', 'attendance', 'students', 'discussion', 'announcements'
 ];
 
 export default function SectionDetailPage() {
@@ -33,7 +31,7 @@ export default function SectionDetailPage() {
     const tabParam = searchParams.get('tab') as SectionTab | null;
     const activeTab: SectionTab = tabParam && SECTION_TABS.includes(tabParam)
         ? tabParam
-        : 'students';
+        : 'content';
 
     useEffect(function() {
         if (!sectionId) {
@@ -93,19 +91,9 @@ export default function SectionDetailPage() {
                     menuStyle="outline"
                     tabs={[
                         {
-                            icon: <GraduationCapIcon />,
-                            label: 'Students',
-                            value: 'students'
-                        },
-                        {
-                            icon: <CalendarCheckIcon />,
-                            label: 'Attendance',
-                            value: 'attendance'
-                        },
-                        {
-                            icon: <ClipboardTextIcon />,
-                            label: 'Grading',
-                            value: 'grading'
+                            icon: <BookOpenIcon />,
+                            label: 'Lessons & Syllabus',
+                            value: 'content'
                         },
                         {
                             icon: <NotepadIcon />,
@@ -113,40 +101,40 @@ export default function SectionDetailPage() {
                             value: 'assessments'
                         },
                         {
-                            icon: <ListChecksIcon />,
-                            label: 'Rubrics',
-                            value: 'rubrics'
+                            icon: <ClipboardTextIcon />,
+                            label: 'Gradebook',
+                            value: 'grading'
                         },
                         {
-                            icon: <BookOpenIcon />,
-                            label: 'Lectures & Syllabus',
-                            value: 'content'
+                            icon: <CalendarCheckIcon />,
+                            label: 'Attendance',
+                            value: 'attendance'
+                        },
+                        {
+                            icon: <GraduationCapIcon />,
+                            label: 'Class Roster',
+                            value: 'students'
                         },
                         {
                             icon: <ChatCircleTextIcon />,
-                            label: 'Discussion',
+                            label: 'Discussions',
                             value: 'discussion'
                         },
                         {
                             icon: <MegaphoneIcon />,
                             label: 'Announcements',
                             value: 'announcements'
-                        },
-                        {
-                            icon: <ChartLineUpIcon />,
-                            label: 'Insight',
-                            value: 'insight'
                         }
                     ]}
                     value={activeTab}
                     onChange={handleTabChange}
                 />
                 <div className="flex-1 min-h-0">
-                    {activeTab === 'students' && (
-                        <StudentsTab sectionId={sectionId} />
+                    {activeTab === 'content' && (
+                        <SectionContentPanel sectionId={sectionId} />
                     )}
-                    {activeTab === 'attendance' && (
-                        <AttendanceTab sectionId={sectionId} />
+                    {activeTab === 'assessments' && (
+                        <AssessmentsTab sectionId={sectionId} />
                     )}
                     {activeTab === 'grading' && (
                         <GradingTab
@@ -156,23 +144,17 @@ export default function SectionDetailPage() {
                             sectionId={sectionId}
                         />
                     )}
-                    {activeTab === 'assessments' && (
-                        <AssessmentsTab sectionId={sectionId} />
+                    {activeTab === 'attendance' && (
+                        <AttendanceTab sectionId={sectionId} />
                     )}
-                    {activeTab === 'rubrics' && (
-                        <RubricsTab sectionId={sectionId} />
-                    )}
-                    {activeTab === 'content' && (
-                        <SectionContentPanel sectionId={sectionId} />
+                    {activeTab === 'students' && (
+                        <StudentsTab sectionId={sectionId} />
                     )}
                     {activeTab === 'discussion' && (
                         <SectionDiscussionPanel sectionId={sectionId} />
                     )}
                     {activeTab === 'announcements' && (
                         <SectionAnnouncementPanel sectionId={sectionId} />
-                    )}
-                    {activeTab === 'insight' && (
-                        <SectionInsightPanel sectionId={sectionId} />
                     )}
                 </div>
             </div>

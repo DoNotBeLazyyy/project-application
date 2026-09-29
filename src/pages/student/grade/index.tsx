@@ -3,12 +3,9 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { toTargetPath } from '@pages/student/evaluation/useEvaluationTargets';
-import AcademicHonorsBanner from '@pages/student/grade/AcademicHonorsBanner';
 import MyGradesFilterForm from '@pages/student/grade/MyGradesFilterForm';
-import { getStudentInsight } from '@services/analytics.service';
 import { getTerms } from '@services/section.service';
 import { listStudentGrades } from '@services/student-portal.service';
-import { StudentInsight } from '@type/analytics.type';
 import { SortStringDto } from '@type/http.type';
 import { MyGradeListRow, MyGradesFilterValues } from '@type/student-portal.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -45,25 +42,10 @@ export default function StudentGrades() {
     const [activeFilters, setActiveFilters] = useState<MyGradesFilterValues | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [rows, setRows] = useState<MyGradeListRow[]>([]);
-    const [insight, setInsight] = useState<StudentInsight | null>(null);
-    const [isLoadingInsight, setIsLoadingInsight] = useState(true);
 
     const filterMethods = useForm<MyGradesFilterValues>({
         defaultValues: { term_id: '' }
     });
-
-    useEffect(function() {
-        async function fetchInsight() {
-            setIsLoadingInsight(true);
-            const result = await getStudentInsight(undefined, activeFilters?.term_id || undefined);
-            if (result.data) {
-                setInsight(result.data);
-            }
-            setIsLoadingInsight(false);
-        }
-
-        fetchInsight();
-    }, [activeFilters?.term_id]);
 
     useEffect(function() {
         async function fetchTerms() {
@@ -237,11 +219,6 @@ export default function StudentGrades() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <AcademicHonorsBanner
-                insight={insight}
-                isLoading={isLoadingInsight}
-            />
-
             <div className="flex-1 min-h-0">
                 <CommonTableCard<MyGradeListRow>
                     cardHeaderProps={{

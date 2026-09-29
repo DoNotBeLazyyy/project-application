@@ -129,10 +129,10 @@ export async function markMaterialComplete(
 }
 
 export const MATERIAL_TYPE_OPTIONS: { label: string; value: MaterialType }[] = [
-    { label: 'File', value: 'File' },
-    { label: 'Link', value: 'Link' },
-    { label: 'Video', value: 'Video' },
-    { label: 'Document', value: 'Document' },
-    { label: 'Slide', value: 'Slide' },
-    { label: 'Other', value: 'Other' }
+    { label: 'Document / Syllabus / Handout', value: 'Document' },
+    { label: 'Lecture Slides (PPT / PDF)', value: 'Slide' },
+    { label: 'Video Lecture / Demo', value: 'Video' },
+    { label: 'Web Link / Reference URL', value: 'Link' },
+    { label: 'Course File / Worksheet', value: 'File' },
+    { label: 'Other Resource', value: 'Other' }
 ];
