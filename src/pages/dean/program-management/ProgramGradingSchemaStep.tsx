@@ -142,24 +142,16 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
 
     return (
         <div className="flex flex-col gap-5 h-full">
-            {/* Header & Controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm shrink-0">
+            {/* Header & Controls in dedicated rows */}
+            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm shrink-0">
+                {/* Row 1: Title & Description */}
                 <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400">
+                    <div className="p-2.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 shrink-0">
                         <ScalesIcon className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                             Grading Schema Configuration
-                            {overrideEnabled ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                    Program Override Active
-                                </span>
-                            ) : (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Inheriting Academic Year Defaults
-                                </span>
-                            )}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
@@ -169,8 +161,25 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Row 2: Status Card */}
+                <div className="w-full">
+                    {overrideEnabled ? (
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold">
+                            <InfoIcon className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>Program Override Active — Custom grading schema is defined for this program.</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
+                            <CheckCircleIcon className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                            <span>Inheriting Academic Year Defaults — Program uses standard university grading settings.</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Row 3: Action Buttons (Default & Clear in their own row) */}
+                <div className="flex items-center gap-2 w-full pt-1">
                     <CommonButton
+                        className="flex-1"
                         disabled={disabled || !overrideEnabled}
                         size="small"
                         variant="outlined"
@@ -180,6 +189,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         Default (Inherit)
                     </CommonButton>
                     <CommonButton
+                        className="flex-1"
                         disabled={disabled}
                         size="small"
                         variant="outlined"
@@ -214,8 +224,8 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                 )}
             </div>
 
-            {/* Period Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+            {/* Period Cards - Each entry as a row of its own */}
+            <div className="flex flex-col gap-4 flex-1 w-full">
                 {activePeriods.map((period, pIdx) => {
                     const compTotal = (period.components || []).reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
                     const isCompValid = compTotal === 100;
