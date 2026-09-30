@@ -485,6 +485,7 @@ export function cloneSchoolYearForDuplication(
         enrollment_end_date: t.enrollment_end_date || '',
         grading_deadline: t.grading_deadline || '',
         status: 'Upcoming',
+        evaluation_scope: t.evaluation_scope || details.evaluation_scope || 'Period',
         grading_periods: (t.grading_periods || []).map((gp, gIdx) => ({
             id: undefined,
             name: gp.name,
@@ -530,6 +531,8 @@ export function cloneSchoolYearForDuplication(
         start_date: '',
         end_date: '',
         is_active: false,
+        max_units_per_term: details.max_units_per_term || 24,
+        evaluation_scope: details.evaluation_scope || 'Period',
         terms: clonedTerms,
         transmutation_rows: clonedTransmutation,
         thresholds: clonedThresholds
@@ -636,7 +639,14 @@ export function checkSchoolYearDateConflict(
 }
 
 export function validateStep1SchoolYear(
-    values: { code: string; label: string; start_date: string; end_date: string },
+    values: {
+        code: string;
+        label: string;
+        start_date: string;
+        end_date: string;
+        max_units_per_term?: number | string;
+        evaluation_scope?: string;
+    },
     sourceSchoolYear?: SourceSchoolYearInfo | null,
     existingSchoolYears?: ExistingSchoolYearComparison[] | null,
     currentId?: string | null
@@ -655,6 +665,17 @@ export function validateStep1SchoolYear(
     }
     if (!values.label || !values.label.trim()) {
         return { isValid: false, error: 'Academic Year Label is required.' };
+    }
+
+    if (
+        values.max_units_per_term !== undefined &&
+        values.max_units_per_term !== null &&
+        values.max_units_per_term !== ''
+    ) {
+        const units = Number(values.max_units_per_term);
+        if (isNaN(units) || units < 1 || units > 60) {
+            return { isValid: false, error: 'Max units per term must be between 1 and 60.' };
+        }
     }
 
     const codeConflict = checkSchoolYearCodeConflict(

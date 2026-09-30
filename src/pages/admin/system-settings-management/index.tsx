@@ -3,8 +3,6 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
-import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { CameraIcon, HardDrivesIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
@@ -45,7 +43,6 @@ export default function SystemSettings() {
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { termTypeOptions } = useTermTypeOptions();
     const methods = useForm<SystemSettingsFormValues>({
         defaultValues: {
             institution_name: '',
@@ -57,9 +54,6 @@ export default function SystemSettings() {
             institution_website: '',
             institution_logo_url: '',
             academic_year_start_month: '6',
-            max_units_per_term: '24',
-            default_term_type_id: '',
-            default_evaluation_scope: 'Period',
             max_upload_size_mb: '25',
             allowed_upload_types: 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
         }
@@ -80,9 +74,6 @@ export default function SystemSettings() {
                     institution_website: result.data.institution_website,
                     institution_logo_url: result.data.institution_logo_url,
                     academic_year_start_month: String(result.data.academic_year_start_month),
-                    max_units_per_term: String(result.data.max_units_per_term),
-                    default_term_type_id: result.data.default_term_type_id ?? '',
-                    default_evaluation_scope: result.data.default_evaluation_scope ?? 'Period',
                     max_upload_size_mb: String(result.data.max_upload_size_mb ?? 25),
                     allowed_upload_types: result.data.allowed_upload_types ?? 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
                 });
@@ -203,33 +194,6 @@ export default function SystemSettings() {
             options: MONTH_OPTIONS,
             rules: { required: 'Academic year start month is required' },
             type: 'select'
-        },
-        {
-            name: 'max_units_per_term',
-            rules: {
-                required: 'Max units per term is required',
-                min: { value: 1, message: 'Must be at least 1' },
-                max: { value: 60, message: 'Cannot exceed 60' }
-            },
-            type: 'number',
-            fieldProps: {
-                max: 24
-            }
-        },
-        {
-            name: 'default_term_type_id',
-            options: [{ label: 'None', value: '' }, ...termTypeOptions],
-            type: 'select'
-        },
-        {
-            label: 'Faculty Evaluation Scope',
-            name: 'default_evaluation_scope',
-            options: EVALUATION_SCOPE_OPTIONS,
-            rules: { required: 'Faculty evaluation scope is required' },
-            type: 'select',
-            fieldProps: {
-                helperText: EVALUATION_SCOPE_HELPER
-            }
         },
         {
             label: 'Max Upload Size (MB)',

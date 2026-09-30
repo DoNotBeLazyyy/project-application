@@ -71,7 +71,9 @@ export async function saveAcademicYearCalendar(
             p_start_date: payload.p_start_date,
             p_terms: payload.p_terms,
             p_thresholds: payload.p_thresholds || [],
-            p_transmutation_rows: payload.p_transmutation_rows
+            p_transmutation_rows: payload.p_transmutation_rows,
+            p_max_units_per_term: payload.p_max_units_per_term ? Number(payload.p_max_units_per_term) : 24,
+            p_evaluation_scope: payload.p_evaluation_scope || 'Period'
         }
     );
 }

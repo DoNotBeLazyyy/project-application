@@ -30,6 +30,7 @@ export default function Step2TermsConfig({
 
     const syStartDate = useWatch({ control, name: 'start_date' });
     const syEndDate = useWatch({ control, name: 'end_date' });
+    const syEvaluationScope = useWatch({ control, name: 'evaluation_scope' }) || 'Period';
 
     const { fields, append, remove, update } = useFieldArray({
         control,
@@ -521,6 +522,36 @@ export default function Step2TermsConfig({
                                         }}
                                     />
                                     <p className="text-[11px] text-slate-500 mt-1">Cut-off for final grade encoding</p>
+                                </div>
+
+                                {/* Evaluation Scope for this term */}
+                                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        Faculty Evaluation Scope
+                                    </label>
+                                    <CommonSelect
+                                        disabled={disabled}
+                                        fullWidth
+                                        options={[
+                                            {
+                                                label: `Academic Year Default (${syEvaluationScope === 'Period' ? 'Per Period' : 'Per Term'})`,
+                                                value: ''
+                                            },
+                                            { label: 'Per Grading Period (Prelim, Midterm, Finals)', value: 'Period' },
+                                            { label: 'Per Term (Once at End of Term)', value: 'Term' }
+                                        ]}
+                                        size="medium"
+                                        value={currentTerm.evaluation_scope || ''}
+                                        onChange={(e) => {
+                                            update(index, {
+                                                ...currentTerm,
+                                                evaluation_scope: (e.target.value as any) || null
+                                            });
+                                        }}
+                                    />
+                                    <p className="text-[11px] text-slate-500 mt-1">
+                                        Override evaluation schedule for this term
+                                    </p>
                                 </div>
                             </div>
                         </div>

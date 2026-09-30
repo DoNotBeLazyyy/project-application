@@ -1,4 +1,5 @@
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
+import { EvaluationScope } from '@type/evaluation.type';
 
 export interface SchoolYearListRow {
     id: string;
@@ -51,6 +52,7 @@ export interface WizardTermItem {
     enrollment_end_date?: string | null;
     grading_deadline?: string | null;
     status?: string;
+    evaluation_scope?: EvaluationScope | null;
     grading_periods: WizardGradingPeriodItem[];
 }
 
@@ -86,6 +88,8 @@ export interface AcademicYearCalendarDetails {
     start_date: string;
     end_date: string;
     is_active: boolean;
+    max_units_per_term?: number;
+    evaluation_scope?: EvaluationScope;
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
     thresholds: WizardThresholdItem[];
@@ -101,6 +105,8 @@ export interface SaveAcademicYearCalendarPayload {
     p_terms: WizardTermItem[];
     p_transmutation_rows: WizardTransmutationRow[];
     p_thresholds?: WizardThresholdItem[];
+    p_max_units_per_term?: number;
+    p_evaluation_scope?: EvaluationScope;
 }
 
 export interface AcademicYearWizardFormValues {
@@ -110,6 +116,8 @@ export interface AcademicYearWizardFormValues {
     start_date: string;
     end_date: string;
     is_active: boolean;
+    max_units_per_term: number | string;
+    evaluation_scope: EvaluationScope;
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
     thresholds: WizardThresholdItem[];
@@ -132,6 +140,8 @@ export interface AcademicYearHistoryItem {
         start_date?: string;
         end_date?: string;
         is_active?: boolean;
+        max_units_per_term?: number;
+        evaluation_scope?: EvaluationScope;
         terms_count?: number;
         transmutation_rows_count?: number;
         thresholds_count?: number;

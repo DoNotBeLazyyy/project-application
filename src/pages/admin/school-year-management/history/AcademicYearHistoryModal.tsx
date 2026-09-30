@@ -255,7 +255,7 @@ export default function AcademicYearHistoryModal({
                                                             Config Counts
                                                         </span>
                                                         <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                                                            {snap.terms_count ?? (snap.terms?.length || 0)} Terms • {snap.transmutation_rows_count ?? (snap.transmutation_rows?.length || 0)} Grades • {snap.thresholds_count ?? (snap.thresholds?.length || 0)} Thresholds
+                                                            {snap.terms_count ?? (snap.terms?.length || 0)} Terms • {snap.transmutation_rows_count ?? (snap.transmutation_rows?.length || 0)} Grades • {snap.thresholds_count ?? (snap.thresholds?.length || 0)} Thresholds{snap.max_units_per_term ? ` • Max ${snap.max_units_per_term} Units` : ''}{snap.evaluation_scope ? ` • ${snap.evaluation_scope} Eval` : ''}
                                                         </p>
                                                     </div>
                                                 </div>

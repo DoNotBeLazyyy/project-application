@@ -73,9 +73,11 @@ export default function AcademicYearWizardModal({
     const defaultValues: AcademicYearWizardFormValues = {
         code: '',
         end_date: '',
+        evaluation_scope: 'Period',
         id: null,
         is_active: false,
         label: '',
+        max_units_per_term: 24,
         start_date: '',
         terms: [],
         thresholds: [],
@@ -156,18 +158,23 @@ export default function AcademicYearWizardModal({
                         reset({
                             code: data.code || '',
                             end_date: data.end_date || '',
+                            evaluation_scope: data.evaluation_scope || 'Period',
                             id: data.id,
                             is_active: Boolean(data.is_active),
                             label: data.label || '',
+                            max_units_per_term: data.max_units_per_term ?? 24,
                             start_date: data.start_date || '',
-                            terms: data.terms && data.terms.length > 0 ? data.terms : [],
+                            terms: (data.terms && data.terms.length > 0 ? data.terms : []).map((t) => ({
+                                ...t,
+                                evaluation_scope: t.evaluation_scope || data.evaluation_scope || 'Period'
+                            })),
                             thresholds: data.thresholds || [],
                             transmutation_rows: (data.transmutation_rows || []).map((r) => {
                                 const isSpecial = isSpecialGradeRow(r);
                                 return {
                                     ...r,
-                                    min_percentage: isSpecial ? null : r.min_percentage,
                                     max_percentage: isSpecial ? null : r.max_percentage,
+                                    min_percentage: isSpecial ? null : r.min_percentage,
                                     transmuted_grade: isSpecial ? null : r.transmuted_grade
                                 };
                             })
@@ -320,8 +327,10 @@ export default function AcademicYearWizardModal({
         const payload: SaveAcademicYearCalendarPayload = {
             p_code: values.code.trim(),
             p_end_date: values.end_date,
+            p_evaluation_scope: values.evaluation_scope || 'Period',
             p_is_active: Boolean(values.is_active),
             p_label: values.label.trim(),
+            p_max_units_per_term: values.max_units_per_term ? Number(values.max_units_per_term) : 24,
             p_school_year_id: values.id || null,
             p_start_date: values.start_date,
             p_terms: (values.terms || []).map((t) => ({
@@ -333,6 +342,7 @@ export default function AcademicYearWizardModal({
                 enrollment_end_date: t.enrollment_end_date || null,
                 grading_deadline: t.grading_deadline || null,
                 status: t.status || 'Upcoming',
+                evaluation_scope: t.evaluation_scope || values.evaluation_scope || 'Period',
                 grading_periods: (t.grading_periods || []).map((gp, idx) => ({
                     id: gp.id,
                     name: gp.name.trim(),

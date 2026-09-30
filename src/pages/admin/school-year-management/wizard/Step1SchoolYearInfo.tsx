@@ -2,7 +2,9 @@ import CommonButton from '@components/button/CommonButton';
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
-import { CopySimpleIcon, InfoIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
+import { CopySimpleIcon, InfoIcon, ShieldCheckIcon, SlidersIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
 import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -348,6 +350,60 @@ export default function Step1SchoolYearInfo({
                             Human-friendly title displayed on transcripts and portals.
                         </p>
                     )}
+                </div>
+            </div>
+
+            {/* Academic Policies & Evaluation */}
+            <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-200/80 dark:border-zinc-700/60 pb-3">
+                    <SlidersIcon className="w-4 h-4 text-brand-600" />
+                    <div>
+                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                            Academic Policies & Evaluation
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Configure standard enrollment unit limits and faculty evaluation frequency for this academic year.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                            Max Units per Term <span className="text-red-500">*</span>
+                        </label>
+                        <ValidCommonInput
+                            control={control}
+                            disabled={disabled}
+                            name="max_units_per_term"
+                            placeholder="24"
+                            rules={{
+                                required: 'Max units per term is required',
+                                min: { value: 1, message: 'Must be at least 1 unit' },
+                                max: { value: 60, message: 'Cannot exceed 60 units' }
+                            }}
+                            type="number"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                            Standard maximum credit units a student can register for in any term of this academic year (1 - 60).
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                            Faculty Evaluation Scope <span className="text-red-500">*</span>
+                        </label>
+                        <ValidCommonSelect
+                            control={control}
+                            disabled={disabled}
+                            name="evaluation_scope"
+                            options={EVALUATION_SCOPE_OPTIONS}
+                            rules={{ required: 'Faculty evaluation scope is required' }}
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                            {EVALUATION_SCOPE_HELPER}
+                        </p>
+                    </div>
                 </div>
             </div>
 
