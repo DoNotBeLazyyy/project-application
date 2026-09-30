@@ -565,8 +565,8 @@ export default function CourseForm({
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        <div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                                        <div className="w-full">
                                             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                 Course Type
                                             </label>
@@ -577,7 +577,7 @@ export default function CourseForm({
                                                 rowIndex={index}
                                             />
                                         </div>
-                                        <div>
+                                        <div className="w-full">
                                             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                 Units
                                             </label>
@@ -587,7 +587,7 @@ export default function CourseForm({
                                                 rowIndex={index}
                                             />
                                         </div>
-                                        <div>
+                                        <div className="w-full">
                                             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                 Credit Hours
                                             </label>

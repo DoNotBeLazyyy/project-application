@@ -13,6 +13,7 @@ export interface CommonStepperInputProps {
     helperText?: string;
     size?: 'small' | 'medium';
     className?: string;
+    showButtons?: boolean;
 }
 
 const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>(({
@@ -25,7 +26,8 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     label,
     helperText,
     size = 'small',
-    className = ''
+    className = '',
+    showButtons = false
 }, ref) => {
     const numericValue = typeof value === 'string'
         ? (parseFloat(value) || 0)
@@ -55,24 +57,27 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     }, [max, min, onChange]);
 
     return (
-        <div ref={ref} className={`flex flex-col gap-1 ${className}`}>
+        <div className={`flex flex-col gap-1 w-full ${className}`} ref={ref}>
             {label && (
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                     {label}
                 </label>
             )}
-            <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    disabled={disabled || numericValue <= min}
-                    onClick={handleDecrement}
-                    className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                    <MinusIcon className="w-4 h-4" />
-                </button>
-                <div className="w-16">
+            <div className="flex items-center gap-1 w-full">
+                {showButtons && (
+                    <button
+                        className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer"
+                        disabled={disabled || numericValue <= min}
+                        type="button"
+                        onClick={handleDecrement}
+                    >
+                        <MinusIcon className="w-4 h-4" />
+                    </button>
+                )}
+                <div className="w-full flex-1">
                     <CommonInput
                         disabled={disabled}
+                        fullWidth
                         size={size}
                         type="number"
                         value={numericValue}
@@ -82,19 +87,21 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                                 min,
                                 max,
                                 step,
-                                className: 'text-center font-semibold'
+                                className: 'font-semibold'
                             }
                         }}
                     />
                 </div>
-                <button
-                    type="button"
-                    disabled={disabled || numericValue >= max}
-                    onClick={handleIncrement}
-                    className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                    <PlusIcon className="w-4 h-4" />
-                </button>
+                {showButtons && (
+                    <button
+                        className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer"
+                        disabled={disabled || numericValue >= max}
+                        type="button"
+                        onClick={handleIncrement}
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                    </button>
+                )}
             </div>
             {helperText && (
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
