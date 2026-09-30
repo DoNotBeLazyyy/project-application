@@ -2,10 +2,11 @@ import { listMyAnnouncementsFeed } from '@services/announcement.service';
 import { listMyEventsFeed } from '@services/event.service';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const ANNOUNCEMENT_LIMIT = 5;
 const EVENT_WINDOW_DAYS = 30;
+const REFETCH_COOLDOWN_MS = 30000; // 30 seconds standard stale-time convention
 
 interface UseDashboardFeedsResult {
     announcements: AnnouncementFeedRow[];
@@ -20,8 +21,16 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
     const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventFeedRow[]>([]);
     const [eventsError, setEventsError] = useState<string | null>(null);
+    const lastFetchTimeRef = useRef<number>(0);
 
-    const refresh = useCallback(async function() {
+    const refreshFeed = useCallback(async function(force = false) {
+        const now = Date.now();
+        if (!force && now - lastFetchTimeRef.current < REFETCH_COOLDOWN_MS) {
+            return;
+        }
+
+        lastFetchTimeRef.current = now;
+
         const from = new Date();
         const to = new Date();
         to.setDate(to.getDate() + EVENT_WINDOW_DAYS);
@@ -49,30 +58,38 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
     }, []);
 
     useEffect(function() {
-        refresh();
-    }, [refresh]);
+        refreshFeed(true);
+    }, [refreshFeed]);
 
     useEffect(function() {
         function handleVisibilityChange() {
             if (document.visibilityState === 'visible') {
-                refresh();
+                refreshFeed(false);
             }
         }
 
-        window.addEventListener('focus', refresh);
+        function handleFocus() {
+            refreshFeed(false);
+        }
+
+        window.addEventListener('focus', handleFocus);
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return function() {
-            window.removeEventListener('focus', refresh);
+            window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [refresh]);
+    }, [refreshFeed]);
+
+    const handleManualRefresh = useCallback(async function() {
+        await refreshFeed(true);
+    }, [refreshFeed]);
 
     return {
         announcements,
         announcementsError,
         events,
         eventsError,
-        refresh
+        refresh: handleManualRefresh
     };
 }

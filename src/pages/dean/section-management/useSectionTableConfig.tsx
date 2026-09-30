@@ -93,9 +93,11 @@ export function useSectionTableConfig({
     const tableActionConfig = useMemo(function() {
         return function(onDelete: (id: string) => void): TableActionConfig<SectionListRow> {
             return {
-                onEditClick: (row: SectionListRow) => (row.is_active_academic_year !== false
-                    ? () => onEdit(row.id)
-                    : undefined),
+                onEditClick: (row: SectionListRow) => () => {
+                    if (row.is_active_academic_year !== false) {
+                        onEdit(row.id);
+                    }
+                },
                 menuOptions: (row: SectionListRow): MenuOption[] => {
                     const isEditable = row.is_active_academic_year !== false;
 

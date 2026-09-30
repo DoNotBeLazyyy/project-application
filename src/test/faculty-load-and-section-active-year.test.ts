@@ -21,7 +21,8 @@ describe('Faculty Loading Term Options and Filtering', () => {
                 rows: [],
                 size: 20,
                 total_count: 0
-            }
+            },
+            error: null
         });
 
         await listFacultyLoad(1, 20, '', [], { term_id: '' });
@@ -44,7 +45,8 @@ describe('Faculty Loading Term Options and Filtering', () => {
                 rows: [],
                 size: 20,
                 total_count: 0
-            }
+            },
+            error: null
         });
 
         await listFacultyLoad(1, 20, '', [], { term_id: 'term-active-123' });
@@ -102,6 +104,7 @@ describe('Section Management Active Academic Year Read-Only Constraints', () => 
     };
 
     it('allows edit and delete actions for sections in the active academic year', () => {
+        mockOnEdit.mockClear();
         const { result } = renderHook(() => useSectionTableConfig({
             onCopySetup: mockOnCopySetup,
             onEdit: mockOnEdit,
@@ -119,9 +122,12 @@ describe('Section Management Active Academic Year Read-Only Constraints', () => 
 
         const editClick = config.onEditClick ? config.onEditClick(activeSectionRow) : undefined;
         expect(editClick).toBeDefined();
+        editClick?.();
+        expect(mockOnEdit).toHaveBeenCalledWith('sec-1');
     });
 
     it('hides edit and delete actions for sections in inactive academic years (read-only)', () => {
+        mockOnEdit.mockClear();
         const { result } = renderHook(() => useSectionTableConfig({
             onCopySetup: mockOnCopySetup,
             onEdit: mockOnEdit,
@@ -142,6 +148,8 @@ describe('Section Management Active Academic Year Read-Only Constraints', () => 
         expect(copyOption).toBeDefined();
 
         const editClick = config.onEditClick ? config.onEditClick(inactiveSectionRow) : undefined;
-        expect(editClick).toBeUndefined();
+        expect(editClick).toBeDefined();
+        editClick?.();
+        expect(mockOnEdit).not.toHaveBeenCalled();
     });
 });
