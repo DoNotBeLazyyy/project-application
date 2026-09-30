@@ -206,7 +206,7 @@ export default function SectionGradingOverride({
 
     return (
         <div className="col-span-1 md:col-span-2 flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30">
-            {/* Header & Status (Indicates if overridden or inheriting academic year defaults) */}
+            {/* Header & Status (Indicates if overridden or inheriting program defaults) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2.5">
                     <SlidersIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
@@ -219,14 +219,14 @@ export default function SectionGradingOverride({
                                 </span>
                             ) : (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Inheriting Academic Year Defaults
+                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Inheriting Program Defaults
                                 </span>
                             )}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
                                 ? 'Custom grading schema override active for this section.'
-                                : 'Default: Inheriting system-wide grading schema. Modifying any value or selecting a preset will set section override.'}
+                                : 'Default: Inheriting program grading schema settings. Modifying any value or selecting a preset will set section override.'}
                         </p>
                     </div>
                 </div>
@@ -255,7 +255,7 @@ export default function SectionGradingOverride({
                                 <span className="font-bold">
                                     {overrideEnabled
                                         ? 'Custom Section Grading Schema'
-                                        : 'Inherited Academic Year Grading Schema'}
+                                        : 'Inherited Program Grading Schema'}
                                 </span>
                                 <p className="mt-0.5 text-blue-700 dark:text-blue-300">
                                     {overrideEnabled
