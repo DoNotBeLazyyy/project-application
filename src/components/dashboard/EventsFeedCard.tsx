@@ -156,14 +156,21 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
 
     return (
         <CommonModal
-            cardProps={{ className: 'flex flex-col gap-5 max-h-[85dvh] max-w-full overflow-y-auto p-4 sm:p-6' }}
+            cardProps={{
+                className: 'flex flex-col max-h-[85dvh] w-full max-w-2xl p-0 overflow-hidden',
+                sx: {
+                    gap: '0 !important',
+                    maxWidth: '42rem !important',
+                    p: '0 !important'
+                }
+            }}
             fullScreen={false}
             fullWidth
             maxWidth="md"
             open={Boolean(event)}
             onClose={onClose}
         >
-            <div className="flex gap-3 items-start justify-between">
+            <div className="border-(--mui-palette-divider) border-b flex gap-3 items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 shrink-0">
                 <div className="flex flex-col gap-2 min-w-0">
                     <CommonBadgeStatus
                         label={event.all_day
@@ -171,11 +178,12 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                             : 'Scheduled'}
                         variant="info"
                     />
-                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl">
+                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl break-words">
                         {event.title}
                     </h2>
                 </div>
                 <button
+                    aria-label="Close"
                     className="hover:bg-(--mui-palette-action-hover) p-1 rounded shrink-0 text-(--mui-palette-text-secondary) transition-colors cursor-pointer"
                     title="Close"
                     type="button"
@@ -185,50 +193,52 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                 </button>
             </div>
 
-            <div className="bg-(--mui-palette-action-hover)/20 border border-(--mui-palette-divider) rounded-xl p-4 flex flex-col gap-3">
-                <EventDetailField
-                    icon={<ClockIcon size={16} />}
-                    label="When"
-                    value={formatEventRange(event)}
-                />
-                {event.location && (
+            <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6">
+                <div className="bg-(--mui-palette-action-hover)/20 border border-(--mui-palette-divider) rounded-xl p-4 flex flex-col gap-3">
                     <EventDetailField
-                        icon={<MapPinIcon size={16} />}
-                        label="Where"
-                        value={event.location}
+                        icon={<ClockIcon size={16} />}
+                        label="When"
+                        value={formatEventRange(event)}
                     />
-                )}
-                <EventDetailField
-                    icon={<UsersThreeIcon size={16} />}
-                    label="Audience"
-                    value={event.target_audience}
-                />
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <span className="text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider font-semibold">
-                    Description
-                </span>
-                <div className="min-h-[80px] w-full">
-                    <RichContentReader
-                        content={description}
-                        emptyPlaceholder="No further details were provided for this event."
+                    {event.location && (
+                        <EventDetailField
+                            icon={<MapPinIcon size={16} />}
+                            label="Where"
+                            value={event.location}
+                        />
+                    )}
+                    <EventDetailField
+                        icon={<UsersThreeIcon size={16} />}
+                        label="Audience"
+                        value={event.target_audience}
                     />
                 </div>
-            </div>
 
-            {attachments.length > 0 && (
-                <div className="border-(--mui-palette-divider) border-t flex flex-col gap-3 pt-4">
-                    <span className="flex font-semibold gap-1.5 items-center text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider">
-                        <PaperclipIcon size={15} weight="bold" />
-                        Attachments ({attachments.length})
+                <div className="flex flex-col gap-2">
+                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider font-semibold">
+                        Description
                     </span>
-                    <FileAttachmentList
-                        attachments={attachments}
-                        bucket="materials"
-                    />
+                    <div className="min-h-[80px] w-full">
+                        <RichContentReader
+                            content={description}
+                            emptyPlaceholder="No further details were provided for this event."
+                        />
+                    </div>
                 </div>
-            )}
+
+                {attachments.length > 0 && (
+                    <div className="border-(--mui-palette-divider) border-t flex flex-col gap-3 pt-4">
+                        <span className="flex font-semibold gap-1.5 items-center text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider">
+                            <PaperclipIcon size={15} weight="bold" />
+                            Attachments ({attachments.length})
+                        </span>
+                        <FileAttachmentList
+                            attachments={attachments}
+                            bucket="materials"
+                        />
+                    </div>
+                )}
+            </div>
         </CommonModal>
     );
 }
