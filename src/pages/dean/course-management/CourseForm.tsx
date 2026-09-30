@@ -1,3 +1,4 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonStepperInput from '@components/input/CommonStepperInput';
@@ -8,10 +9,18 @@ import { useDepartmentOptions } from '@pages/admin/department-management/useDepa
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
+import {
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    BookOpenIcon,
+    FileTextIcon,
+    GitForkIcon
+} from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
+import { useEffect, useState } from 'react';
 import {
-    Control, FieldPath, useController, useFieldArray, useWatch
+    Control, FieldPath, useController, useFieldArray, useFormState, useWatch
 } from 'react-hook-form';
 
 type PrerequisiteField =
@@ -223,6 +232,30 @@ interface CourseFormProps extends ComponentPropsForm {
     isCodeDisabled?: boolean;
 }
 
+export const COURSE_FORM_STEPS = [
+    {
+        id: 1,
+        title: 'Overview Data',
+        label: 'Overview Data',
+        subtitle: 'General info, course title, code & department',
+        icon: FileTextIcon
+    },
+    {
+        id: 2,
+        title: 'Course Type',
+        label: 'Course Type',
+        subtitle: 'Course type units & credit hours breakdown',
+        icon: BookOpenIcon
+    },
+    {
+        id: 3,
+        title: 'Prerequisite',
+        label: 'Prerequisite',
+        subtitle: 'Required subjects & standing prerequisites',
+        icon: GitForkIcon
+    }
+];
+
 export default function CourseForm({
     control,
     disabled,
@@ -230,6 +263,9 @@ export default function CourseForm({
     isCodeDisabled,
     ...formProps
 }: CourseFormProps) {
+    const [activeStep, setActiveStep] = useState<number>(1);
+    const { errors } = useFormState({ control });
+
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
 
@@ -257,6 +293,19 @@ export default function CourseForm({
         control,
         name: 'prerequisites'
     });
+
+    // Automatically switch active step to the first step containing validation errors upon form submit
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            if (errors.title || errors.code || errors.department_id || errors.description || errors.is_active) {
+                setActiveStep(1);
+            } else if (errors.course_types) {
+                setActiveStep(2);
+            } else if (errors.prerequisites) {
+                setActiveStep(3);
+            }
+        }
+    }, [errors]);
 
     // Calculate total units dynamically as sum of selected course types' units
     const totalUnits = courseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0);
@@ -440,67 +489,159 @@ export default function CourseForm({
 
     return (
         <div className="flex flex-col gap-5">
-            <CommonForm
-                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
-                control={control}
-                fields={fields_config}
-                formProps={formProps}
-                hasHelper
-            />
+            {/* Stepper Header Navigation */}
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2 overflow-x-auto py-1">
+                    {STEPS.map((step) => {
+                        const Icon = step.icon;
+                        const isActive = activeStep === step.id;
 
-            {/* Course Types Breakdown Table */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                            Course Types Breakdown
-                        </h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Configure units and credit hours for each type component.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                        <span>Total Units: <strong>{totalUnits}</strong></span>
-                        <span>•</span>
-                        <span>Total Credit Hours: <strong>{totalCreditHours}</strong></span>
-                    </div>
+                        return (
+                            <button
+                                key={step.id}
+                                type="button"
+                                onClick={() => setActiveStep(step.id)}
+                                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                                    isActive
+                                        ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                }`}
+                            >
+                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    isActive
+                                        ? 'bg-white text-blue-600'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                }`}>
+                                    {step.id}
+                                </span>
+                                <Icon className="w-4 h-4" />
+                                <span>{step.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
+                <span className="text-xs text-slate-400 font-medium shrink-0 ml-2">
+                    Step {activeStep} of {STEPS.length}
+                </span>
+            </div>
 
-                <CommonFormTable<CourseTypeRow, CourseFormValues>
-                    columns={courseTypeColumns}
-                    contentClassName="min-w-[44rem] lg:min-w-full"
+            {/* Step 1: Overview Data */}
+            <div className={activeStep === 1 ? 'flex flex-col gap-4' : 'hidden'}>
+                <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <FileTextIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        Overview Data
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Enter the basic details, title, code, and department for this course.
+                    </p>
+                </div>
+                <CommonForm
+                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
                     control={control}
-                    disabled={disabled}
-                    emptyDataMessage="No course types added yet. Click Add Row below."
-                    fieldArrayName="course_types"
-                    rows={courseTypeFields as unknown as (CourseTypeRow & { id: string })[]}
-                    tableProps={{
-                        containerClassName: 'min-h-[140px]'
-                    }}
-                    title=""
-                    onAddRow={courseTypes.length < courseTypeOptions.length ? handleAddCourseType : undefined}
-                    onRemoveRow={handleRemoveCourseType}
+                    fields={fields_config}
+                    formProps={formProps}
+                    hasHelper
                 />
             </div>
 
-            {/* Prerequisites Table */}
-            <CommonFormTable<PrerequisiteRow, CourseFormValues>
-                columns={prerequisiteColumns}
-                contentClassName="min-w-[44rem] lg:min-w-full"
-                control={control}
-                disabled={disabled}
-                emptyDataMessage="No prerequisites added yet"
-                fieldArrayName="prerequisites"
-                rows={prereqFields as unknown as (PrerequisiteRow & { id: string })[]}
-                tableProps={{
-                    containerClassName: 'min-h-[160px]'
-                }}
-                title="Prerequisites"
-                onAddRow={courseKindCount < allCourseOptions.length
-                    ? handleAddPrerequisite
-                    : undefined}
-                onRemoveRow={handleRemovePrerequisite}
-            />
+            {/* Step 2: Course Type */}
+            <div className={activeStep === 2 ? 'flex flex-col gap-4' : 'hidden'}>
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <BookOpenIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                Course Type Breakdown
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Configure units and credit hours for each type component.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            <span>Total Units: <strong>{totalUnits}</strong></span>
+                            <span>•</span>
+                            <span>Total Credit Hours: <strong>{totalCreditHours}</strong></span>
+                        </div>
+                    </div>
+
+                    <CommonFormTable<CourseTypeRow, CourseFormValues>
+                        columns={courseTypeColumns}
+                        contentClassName="min-w-[44rem] lg:min-w-full"
+                        control={control}
+                        disabled={disabled}
+                        emptyDataMessage="No course types added yet. Click Add Row below."
+                        fieldArrayName="course_types"
+                        rows={courseTypeFields as unknown as (CourseTypeRow & { id: string })[]}
+                        tableProps={{
+                            containerClassName: 'min-h-[140px]'
+                        }}
+                        title=""
+                        onAddRow={courseTypes.length < courseTypeOptions.length ? handleAddCourseType : undefined}
+                        onRemoveRow={handleRemoveCourseType}
+                    />
+                </div>
+            </div>
+
+            {/* Step 3: Prerequisite */}
+            <div className={activeStep === 3 ? 'flex flex-col gap-4' : 'hidden'}>
+                <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <GitForkIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        Prerequisites
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Set prerequisite courses, co-requisites, standing requirements, and minimum passing grades.
+                    </p>
+                </div>
+                <CommonFormTable<PrerequisiteRow, CourseFormValues>
+                    columns={prerequisiteColumns}
+                    contentClassName="min-w-[44rem] lg:min-w-full"
+                    control={control}
+                    disabled={disabled}
+                    emptyDataMessage="No prerequisites added yet"
+                    fieldArrayName="prerequisites"
+                    rows={prereqFields as unknown as (PrerequisiteRow & { id: string })[]}
+                    tableProps={{
+                        containerClassName: 'min-h-[160px]'
+                    }}
+                    title=""
+                    onAddRow={courseKindCount < allCourseOptions.length
+                        ? handleAddPrerequisite
+                        : undefined}
+                    onRemoveRow={handleRemovePrerequisite}
+                />
+            </div>
+
+            {/* Stepper Footer / Navigation Controls */}
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div>
+                    {activeStep > 1 && (
+                        <CommonButton
+                            color="secondary"
+                            size="small"
+                            startIcon={<ArrowLeftIcon weight="bold" />}
+                            variant="outlined"
+                            onClick={() => setActiveStep((prev) => prev - 1)}
+                        >
+                            Back: {STEPS[activeStep - 2].title}
+                        </CommonButton>
+                    )}
+                </div>
+                <div>
+                    {activeStep < 3 && (
+                        <CommonButton
+                            color="primary"
+                            endIcon={<ArrowRightIcon weight="bold" />}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setActiveStep((prev) => prev + 1)}
+                        >
+                            Next: {STEPS[activeStep].title}
+                        </CommonButton>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
