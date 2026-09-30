@@ -7,8 +7,13 @@ import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-yea
 import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
+    checkSchoolYearCodeConflict,
+    checkSchoolYearDateConflict,
+    checkSchoolYearLabelConflict,
+    ExistingSchoolYearComparison,
     generateAcademicYearCode,
-    generateAcademicYearLabel
+    generateAcademicYearLabel,
+    SourceSchoolYearInfo
 } from './wizard.constants';
 
 interface Step1SchoolYearInfoProps {
@@ -16,14 +21,10 @@ interface Step1SchoolYearInfoProps {
     disabled?: boolean;
     isNew?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
-    sourceSchoolYear?: {
-        id: string;
-        code: string;
-        label: string;
-        start_date: string;
-        end_date: string;
-    } | null;
+    sourceSchoolYear?: SourceSchoolYearInfo | null;
     availableSourceYears?: SchoolYearOption[];
+    existingSchoolYears?: ExistingSchoolYearComparison[];
+    currentSchoolYearId?: string | null;
     onSelectSourceYear?: (sourceId: string) => void;
     onClearSourceYear?: () => void;
 }
@@ -31,7 +32,9 @@ interface Step1SchoolYearInfoProps {
 export default function Step1SchoolYearInfo({
     availableSourceYears = [],
     control,
+    currentSchoolYearId = null,
     disabled = false,
+    existingSchoolYears = [],
     isNew = true,
     onClearSourceYear,
     onSelectSourceYear,
@@ -206,7 +209,20 @@ export default function Step1SchoolYearInfo({
                         rules={{
                             required: 'Start date is required',
                             validate: (val) => {
-                                if (
+                                if (!val) return 'Start date is required';
+                                if (endDate) {
+                                    if (new Date(endDate) <= new Date(val as string)) {
+                                        return 'Start date must be strictly before end date';
+                                    }
+                                    const dateConflict = checkSchoolYearDateConflict(
+                                        val as string,
+                                        endDate,
+                                        existingSchoolYears,
+                                        currentSchoolYearId,
+                                        sourceSchoolYear
+                                    );
+                                    if (dateConflict) return dateConflict;
+                                } else if (
                                     sourceSchoolYear &&
                                     val === sourceSchoolYear.start_date &&
                                     endDate === sourceSchoolYear.end_date
@@ -231,11 +247,20 @@ export default function Step1SchoolYearInfo({
                         rules={{
                             required: 'End date is required',
                             validate: (val) => {
-                                if (!startDate || !val) return true;
-                                if (new Date(val as string) <= new Date(startDate)) {
-                                    return 'End date must be strictly after start date';
-                                }
-                                if (
+                                if (!val) return 'End date is required';
+                                if (startDate) {
+                                    if (new Date(val as string) <= new Date(startDate)) {
+                                        return 'End date must be strictly after start date';
+                                    }
+                                    const dateConflict = checkSchoolYearDateConflict(
+                                        startDate,
+                                        val as string,
+                                        existingSchoolYears,
+                                        currentSchoolYearId,
+                                        sourceSchoolYear
+                                    );
+                                    if (dateConflict) return dateConflict;
+                                } else if (
                                     sourceSchoolYear &&
                                     startDate === sourceSchoolYear.start_date &&
                                     val === sourceSchoolYear.end_date
@@ -264,13 +289,14 @@ export default function Step1SchoolYearInfo({
                         rules={{
                             required: 'Academic year code is required',
                             validate: (val) => {
-                                if (
-                                    sourceSchoolYear &&
-                                    (val as string).trim().toLowerCase() ===
-                                        sourceSchoolYear.code.trim().toLowerCase()
-                                ) {
-                                    return `Code must differ from duplicated year (${sourceSchoolYear.code})`;
-                                }
+                                if (!val || !(val as string).trim()) return 'Academic year code is required';
+                                const codeConflict = checkSchoolYearCodeConflict(
+                                    val as string,
+                                    existingSchoolYears,
+                                    currentSchoolYearId,
+                                    sourceSchoolYear
+                                );
+                                if (codeConflict) return codeConflict;
                                 return true;
                             }
                         }}
@@ -301,13 +327,14 @@ export default function Step1SchoolYearInfo({
                         rules={{
                             required: 'Academic year label is required',
                             validate: (val) => {
-                                if (
-                                    sourceSchoolYear &&
-                                    (val as string).trim().toLowerCase() ===
-                                        sourceSchoolYear.label.trim().toLowerCase()
-                                ) {
-                                    return `Label must differ from duplicated year (${sourceSchoolYear.label})`;
-                                }
+                                if (!val || !(val as string).trim()) return 'Academic year label is required';
+                                const labelConflict = checkSchoolYearLabelConflict(
+                                    val as string,
+                                    existingSchoolYears,
+                                    currentSchoolYearId,
+                                    sourceSchoolYear
+                                );
+                                if (labelConflict) return labelConflict;
                                 return true;
                             }
                         }}

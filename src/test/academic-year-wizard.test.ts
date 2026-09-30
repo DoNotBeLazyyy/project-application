@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+    checkSchoolYearCodeConflict,
+    checkSchoolYearDateConflict,
+    checkSchoolYearLabelConflict,
     cloneSchoolYearForDuplication,
+    ExistingSchoolYearComparison,
     generateAcademicYearCode,
     generateAcademicYearLabel,
     parseYearFromDate,
@@ -289,4 +293,196 @@ describe('Academic Year Code & Label Auto-Population Helpers', () => {
         expect(generateAcademicYearLabel('2026-08-15', '')).toBeNull();
     });
 });
+
+describe('Academic Year Duplicate & Overlap Conflict Detection', () => {
+    const existingYears: ExistingSchoolYearComparison[] = [
+        {
+            id: 'sy-2025-2026',
+            code: 'AY-2025-2026',
+            label: 'Academic Year 2025-2026',
+            start_date: '2025-08-01',
+            end_date: '2026-06-30'
+        },
+        {
+            id: 'sy-2027-2028',
+            code: 'AY-2027-2028',
+            label: 'Academic Year 2027-2028',
+            start_date: '2027-08-01',
+            end_date: '2028-06-30'
+        }
+    ];
+
+    describe('checkSchoolYearCodeConflict', () => {
+        it('should detect duplicate code case-insensitively', () => {
+            const err1 = checkSchoolYearCodeConflict('ay-2025-2026', existingYears);
+            expect(err1).toContain('already in use');
+
+            const err2 = checkSchoolYearCodeConflict('  AY-2025-2026  ', existingYears);
+            expect(err2).toContain('already in use');
+        });
+
+        it('should ignore duplicate code if matching current school year id', () => {
+            const err = checkSchoolYearCodeConflict('AY-2025-2026', existingYears, 'sy-2025-2026');
+            expect(err).toBeNull();
+        });
+
+        it('should pass when code is unique', () => {
+            const err = checkSchoolYearCodeConflict('AY-2026-2027', existingYears);
+            expect(err).toBeNull();
+        });
+    });
+
+    describe('checkSchoolYearLabelConflict', () => {
+        it('should detect duplicate label case-insensitively', () => {
+            const err = checkSchoolYearLabelConflict('academic year 2025-2026', existingYears);
+            expect(err).toContain('already in use');
+        });
+
+        it('should ignore duplicate label if matching current school year id', () => {
+            const err = checkSchoolYearLabelConflict('Academic Year 2025-2026', existingYears, 'sy-2025-2026');
+            expect(err).toBeNull();
+        });
+
+        it('should pass when label is unique', () => {
+            const err = checkSchoolYearLabelConflict('Academic Year 2026-2027', existingYears);
+            expect(err).toBeNull();
+        });
+    });
+
+    describe('checkSchoolYearDateConflict', () => {
+        it('should reject exact same start and end dates', () => {
+            const err = checkSchoolYearDateConflict('2025-08-01', '2026-06-30', existingYears);
+            expect(err).toContain('exact same dates');
+            expect(err).toContain('Academic Year 2025-2026');
+        });
+
+        it('should reject overlapping dates (new year starts before existing ends)', () => {
+            const err = checkSchoolYearDateConflict('2026-01-01', '2026-12-31', existingYears);
+            expect(err).toContain('overlap with Academic Year 2025-2026');
+        });
+
+        it('should reject overlapping dates (new year encloses an existing year)', () => {
+            const err = checkSchoolYearDateConflict('2025-01-01', '2026-12-31', existingYears);
+            expect(err).toContain('overlap with Academic Year 2025-2026');
+        });
+
+        it('should reject overlapping dates (new year inside an existing year)', () => {
+            const err = checkSchoolYearDateConflict('2025-09-01', '2026-05-30', existingYears);
+            expect(err).toContain('overlap with Academic Year 2025-2026');
+        });
+
+        it('should allow distinct non-overlapping calendar period', () => {
+            const err = checkSchoolYearDateConflict('2026-08-01', '2027-06-30', existingYears);
+            expect(err).toBeNull();
+        });
+
+        it('should allow adjacent contiguous dates without overlap', () => {
+            // Ending 2026-06-30, next starts 2026-06-30 or 2026-07-01
+            const err1 = checkSchoolYearDateConflict('2026-07-01', '2027-06-30', existingYears);
+            expect(err1).toBeNull();
+
+            const err2 = checkSchoolYearDateConflict('2026-06-30', '2027-06-30', existingYears);
+            expect(err2).toBeNull();
+        });
+
+        it('should ignore date conflicts when editing own school year', () => {
+            const err = checkSchoolYearDateConflict('2025-08-01', '2026-06-30', existingYears, 'sy-2025-2026');
+            expect(err).toBeNull();
+        });
+    });
+
+    describe('validateStep1SchoolYear with Existing School Years', () => {
+        it('should fail when code collides with another school year', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-2025-2026',
+                    label: 'Academic Year 2026-2027',
+                    start_date: '2026-08-01',
+                    end_date: '2027-06-30'
+                },
+                null,
+                existingYears
+            );
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('already in use');
+        });
+
+        it('should fail when label collides with another school year', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-2026-2027',
+                    label: 'Academic Year 2025-2026',
+                    start_date: '2026-08-01',
+                    end_date: '2027-06-30'
+                },
+                null,
+                existingYears
+            );
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('already in use');
+        });
+
+        it('should fail when dates collide identically with another school year', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-NEW-YEAR',
+                    label: 'Academic Year New',
+                    start_date: '2025-08-01',
+                    end_date: '2026-06-30'
+                },
+                null,
+                existingYears
+            );
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('exact same dates');
+        });
+
+        it('should fail when dates overlap with another school year', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-2026-MID',
+                    label: 'Academic Year Mid',
+                    start_date: '2026-03-01',
+                    end_date: '2027-03-01'
+                },
+                null,
+                existingYears
+            );
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('overlap with Academic Year 2025-2026');
+        });
+
+        it('should succeed when code, label, and dates are unique and non-overlapping', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-2026-2027',
+                    label: 'Academic Year 2026-2027',
+                    start_date: '2026-08-01',
+                    end_date: '2027-06-30'
+                },
+                null,
+                existingYears
+            );
+            expect(res.isValid).toBe(true);
+            expect(res.error).toBeUndefined();
+        });
+
+        it('should succeed when editing the existing school year with its own values', () => {
+            const res = validateStep1SchoolYear(
+                {
+                    code: 'AY-2025-2026',
+                    label: 'Academic Year 2025-2026',
+                    start_date: '2025-08-01',
+                    end_date: '2026-06-30'
+                },
+                null,
+                existingYears,
+                'sy-2025-2026'
+            );
+            expect(res.isValid).toBe(true);
+            expect(res.error).toBeUndefined();
+        });
+    });
+});
+
 

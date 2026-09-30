@@ -213,7 +213,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
                     )}
                 </div>
             </div>
-            <div className="flex-1 min-h-0 min-w-0 w-full max-w-full overflow-y-auto pr-4">
+            <div className="flex-1 min-h-0 min-w-0 w-full max-w-full overflow-y-auto pr-1 sm:pr-4">
                 {isLoading ? (
                     <PageLoadingFallback />
                 ) : mode === 'view' && renderView ? (

@@ -33,6 +33,7 @@ import {
     cloneSchoolYearForDuplication,
     DEFAULT_ACADEMIC_THRESHOLDS,
     DEFAULT_TRANSMUTATION_ROWS,
+    ExistingSchoolYearComparison,
     SourceSchoolYearInfo,
     validateGradingPeriods,
     validateStep1SchoolYear,
@@ -64,6 +65,7 @@ export default function AcademicYearWizardModal({
 
     const [sourceSchoolYear, setSourceSchoolYear] = useState<SourceSchoolYearInfo | null>(null);
     const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
+    const [existingSchoolYears, setExistingSchoolYears] = useState<ExistingSchoolYearComparison[]>([]);
 
     const defaultValues: AcademicYearWizardFormValues = {
         code: '',
@@ -116,16 +118,17 @@ export default function AcademicYearWizardModal({
         reset(defaultValues);
     }
 
-    // Fetch existing school years list for in-wizard duplication dropdown
+    // Fetch existing school years list for in-wizard duplication dropdown and uniqueness validation
     useEffect(() => {
-        if (open && !schoolYearId) {
+        if (open) {
             getSchoolYears().then((res) => {
                 if (res.data) {
+                    setExistingSchoolYears(res.data);
                     setAvailableSourceYears(res.data);
                 }
             });
         }
-    }, [open, schoolYearId]);
+    }, [open]);
 
     // Load existing school year calendar details when modal opens with schoolYearId or duplicateSchoolYearId
     useEffect(() => {
@@ -174,7 +177,12 @@ export default function AcademicYearWizardModal({
     // Validation for Step 1
     function validateStep1(): boolean {
         const values = getValues();
-        const result = validateStep1SchoolYear(values, sourceSchoolYear);
+        const result = validateStep1SchoolYear(
+            values,
+            sourceSchoolYear,
+            existingSchoolYears,
+            schoolYearId
+        );
         if (!result.isValid && result.error) {
             useToastStore.getState().showToast(result.error, 'error');
             return false;
@@ -556,7 +564,9 @@ export default function AcademicYearWizardModal({
                             <Step1SchoolYearInfo
                                 availableSourceYears={availableSourceYears}
                                 control={control}
+                                currentSchoolYearId={schoolYearId}
                                 disabled={isReadOnly}
+                                existingSchoolYears={existingSchoolYears}
                                 isNew={!schoolYearId}
                                 setValue={setValue}
                                 sourceSchoolYear={sourceSchoolYear}

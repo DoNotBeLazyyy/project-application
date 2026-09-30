@@ -8,6 +8,7 @@ const COMPONENT_COLUMNS: CommonFormTableColumn<GradingComponentTemplate, PeriodF
         key: 'name',
         headerName: 'Component Name',
         flex: 2,
+        minWidth: 160,
         fieldConfig: {
             type: 'text',
             rules: { required: 'Required' }
@@ -17,6 +18,7 @@ const COMPONENT_COLUMNS: CommonFormTableColumn<GradingComponentTemplate, PeriodF
         key: 'weight',
         headerName: 'Weight (%)',
         flex: 1,
+        minWidth: 90,
         fieldConfig: {
             type: 'number',
             rules: {
@@ -74,6 +76,7 @@ export default function PeriodTableForm({
             <div className="flex flex-1 h-full w-full">
                 <CommonFormTable<GradingComponentTemplate, PeriodFormValues>
                     columns={COMPONENT_COLUMNS}
+                    contentClassName="min-w-[360px] sm:min-w-full"
                     control={control}
                     disabled={disabled}
                     emptyDataMessage="No components yet. Click + to add one."

@@ -263,9 +263,110 @@ export function cloneSchoolYearForDuplication(
     };
 }
 
+export interface ExistingSchoolYearComparison {
+    id: string;
+    code: string;
+    label: string;
+    start_date?: string | null;
+    end_date?: string | null;
+}
+
+export function checkSchoolYearCodeConflict(
+    code: string,
+    existingSchoolYears?: ExistingSchoolYearComparison[] | null,
+    currentId?: string | null,
+    sourceSchoolYear?: SourceSchoolYearInfo | null
+): string | null {
+    const cleanCode = code ? code.trim().toLowerCase() : '';
+    if (!cleanCode) return null;
+
+    if (sourceSchoolYear && cleanCode === sourceSchoolYear.code.trim().toLowerCase()) {
+        return `Academic Year Code must be changed. It cannot match the duplicated year (${sourceSchoolYear.code}).`;
+    }
+
+    if (existingSchoolYears && existingSchoolYears.length > 0) {
+        const match = existingSchoolYears.find(
+            (sy) => sy.id !== currentId && sy.code && sy.code.trim().toLowerCase() === cleanCode
+        );
+        if (match) {
+            return `Academic Year Code "${code.trim()}" is already in use by ${match.label} (${match.code}).`;
+        }
+    }
+
+    return null;
+}
+
+export function checkSchoolYearLabelConflict(
+    label: string,
+    existingSchoolYears?: ExistingSchoolYearComparison[] | null,
+    currentId?: string | null,
+    sourceSchoolYear?: SourceSchoolYearInfo | null
+): string | null {
+    const cleanLabel = label ? label.trim().toLowerCase() : '';
+    if (!cleanLabel) return null;
+
+    if (sourceSchoolYear && cleanLabel === sourceSchoolYear.label.trim().toLowerCase()) {
+        return `Academic Year Label must be changed. It cannot match the duplicated year (${sourceSchoolYear.label}).`;
+    }
+
+    if (existingSchoolYears && existingSchoolYears.length > 0) {
+        const match = existingSchoolYears.find(
+            (sy) => sy.id !== currentId && sy.label && sy.label.trim().toLowerCase() === cleanLabel
+        );
+        if (match) {
+            return `Academic Year Label "${label.trim()}" is already in use.`;
+        }
+    }
+
+    return null;
+}
+
+export function checkSchoolYearDateConflict(
+    startDate: string,
+    endDate: string,
+    existingSchoolYears?: ExistingSchoolYearComparison[] | null,
+    currentId?: string | null,
+    sourceSchoolYear?: SourceSchoolYearInfo | null
+): string | null {
+    if (!startDate || !endDate) return null;
+
+    if (
+        sourceSchoolYear &&
+        startDate === sourceSchoolYear.start_date &&
+        endDate === sourceSchoolYear.end_date
+    ) {
+        return 'Academic Year Start and End Dates must be changed from the duplicated year.';
+    }
+
+    if (existingSchoolYears && existingSchoolYears.length > 0) {
+        for (const sy of existingSchoolYears) {
+            if (sy.id === currentId || !sy.start_date || !sy.end_date) continue;
+
+            const sStart = sy.start_date.substring(0, 10);
+            const sEnd = sy.end_date.substring(0, 10);
+            const cStart = startDate.substring(0, 10);
+            const cEnd = endDate.substring(0, 10);
+
+            // 1. Identical date span check
+            if (cStart === sStart && cEnd === sEnd) {
+                return `Two academic years cannot have the exact same dates. Conflicts with ${sy.label} (${sStart} to ${sEnd}).`;
+            }
+
+            // 2. Overlapping calendar period: cStart < sEnd AND cEnd > sStart
+            if (cStart < sEnd && cEnd > sStart) {
+                return `Academic year dates (${cStart} to ${cEnd}) overlap with ${sy.label} (${sStart} to ${sEnd}). Each academic year must have a distinct, non-overlapping calendar period.`;
+            }
+        }
+    }
+
+    return null;
+}
+
 export function validateStep1SchoolYear(
     values: { code: string; label: string; start_date: string; end_date: string },
-    sourceSchoolYear?: SourceSchoolYearInfo | null
+    sourceSchoolYear?: SourceSchoolYearInfo | null,
+    existingSchoolYears?: ExistingSchoolYearComparison[] | null,
+    currentId?: string | null
 ): { isValid: boolean; error?: string } {
     if (!values.start_date) {
         return { isValid: false, error: 'Please select a Start Date for the school year.' };
@@ -283,28 +384,35 @@ export function validateStep1SchoolYear(
         return { isValid: false, error: 'Academic Year Label is required.' };
     }
 
-    if (sourceSchoolYear) {
-        if (values.code.trim().toLowerCase() === sourceSchoolYear.code.trim().toLowerCase()) {
-            return {
-                isValid: false,
-                error: `Academic Year Code must be changed. It cannot match the duplicated year (${sourceSchoolYear.code}).`
-            };
-        }
-        if (values.label.trim().toLowerCase() === sourceSchoolYear.label.trim().toLowerCase()) {
-            return {
-                isValid: false,
-                error: `Academic Year Label must be changed. It cannot match the duplicated year (${sourceSchoolYear.label}).`
-            };
-        }
-        if (
-            values.start_date === sourceSchoolYear.start_date &&
-            values.end_date === sourceSchoolYear.end_date
-        ) {
-            return {
-                isValid: false,
-                error: 'Academic Year Start and End Dates must be changed from the duplicated year.'
-            };
-        }
+    const codeConflict = checkSchoolYearCodeConflict(
+        values.code,
+        existingSchoolYears,
+        currentId,
+        sourceSchoolYear
+    );
+    if (codeConflict) {
+        return { isValid: false, error: codeConflict };
+    }
+
+    const labelConflict = checkSchoolYearLabelConflict(
+        values.label,
+        existingSchoolYears,
+        currentId,
+        sourceSchoolYear
+    );
+    if (labelConflict) {
+        return { isValid: false, error: labelConflict };
+    }
+
+    const dateConflict = checkSchoolYearDateConflict(
+        values.start_date,
+        values.end_date,
+        existingSchoolYears,
+        currentId,
+        sourceSchoolYear
+    );
+    if (dateConflict) {
+        return { isValid: false, error: dateConflict };
     }
 
     return { isValid: true };

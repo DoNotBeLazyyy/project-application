@@ -1,9 +1,11 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
+import { PlusIcon } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
 import { Control, FieldValues, useFieldArray, useWatch } from 'react-hook-form';
@@ -42,6 +44,7 @@ const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, Evaluation
         key: 'question_text',
         headerName: 'Question',
         flex: 1,
+        minWidth: 280,
         fieldConfig: {
             type: 'text',
             rules: {
@@ -183,13 +186,31 @@ export default function EvaluationTemplateFormPanel({
                 formProps={formProps}
                 hasHelper
             />
-            <div className="flex flex-col gap-2 h-80">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Questions
-                </span>
+            <div className="flex flex-col gap-2 h-96 sm:h-80">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                            Questions
+                        </span>
+                        <span className="text-xs text-(--mui-palette-text-secondary) sm:hidden">
+                            (Scroll sideways for options →)
+                        </span>
+                    </div>
+                    {!disabled && (
+                        <CommonButton
+                            size="small"
+                            startIcon={<PlusIcon size={16} weight="bold" />}
+                            variant="outlined"
+                            onClick={handleAddRow}
+                        >
+                            Add Question
+                        </CommonButton>
+                    )}
+                </div>
                 <div className="flex flex-1 min-h-0 w-full">
                     <CommonFormTable<EvaluationQuestionForm, EvaluationTemplateForm>
                         columns={QUESTION_COLUMNS}
+                        contentClassName="min-w-[560px] sm:min-w-full"
                         control={control}
                         disabled={disabled}
                         emptyDataMessage="No questions yet. Click + to add one."

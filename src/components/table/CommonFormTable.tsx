@@ -89,7 +89,8 @@ export default function CommonFormTable<TRow, TForm extends FieldValues>({
 
         return {
             flex: column.flex ?? 1,
-            minWidth: 0
+            maxWidth: column.maxWidth !== undefined ? `${column.maxWidth}px` : undefined,
+            minWidth: column.minWidth !== undefined ? `${column.minWidth}px` : 0
         };
     }
 
