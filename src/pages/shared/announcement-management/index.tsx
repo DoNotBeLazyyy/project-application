@@ -28,6 +28,7 @@ interface AnnouncementManagementProps {
 
 export default function AnnouncementManagement({ defaultTab: _defaultTab }: AnnouncementManagementProps = {}) {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const basePath = useAnnouncementBasePath();
 
     const [activeFilters, setActiveFilters] = useState<AnnouncementFilterValues | null>(null);

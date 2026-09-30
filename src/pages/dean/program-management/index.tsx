@@ -58,6 +58,7 @@ export default function ProgramManagement() {
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isViewOpen, setIsViewOpen] = useState(false);
 
     const createMethods = useForm<ProgramFormValues>({
         defaultValues: defaultFormValues
@@ -92,12 +93,26 @@ export default function ProgramManagement() {
         }
     }
 
-    function handleOpenView(id: string) {
-        navigate(`/dean/program-management/${id}`);
+    async function handleOpenView(id: string) {
+        setSelectedId(id);
+        await loadIntoForm(id);
+        setIsViewOpen(true);
+    }
+
+    function handleCloseView() {
+        setIsViewOpen(false);
+        setSelectedId(null);
+        updateMethods.reset(defaultFormValues);
     }
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
+        await loadIntoForm(id);
+        setIsUpdateOpen(true);
+    }
+
+    async function handleSwitchToEdit(id: string) {
+        setIsViewOpen(false);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
@@ -277,6 +292,21 @@ export default function ProgramManagement() {
                 methods={updateMethods}
                 onClose={handleCloseUpdate}
                 onSubmit={handleUpdateSubmit}
+            />
+
+            {/* View Program Wizard Modal */}
+            <ProgramWizardModal
+                open={isViewOpen}
+                readOnly
+                isCodeDisabled
+                methods={updateMethods}
+                onClose={handleCloseView}
+                onSubmit={function() {}}
+                onSwitchToEdit={function() {
+                    if (selectedId) {
+                        handleSwitchToEdit(selectedId);
+                    }
+                }}
             />
         </div>
     );

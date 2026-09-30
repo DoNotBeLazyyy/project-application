@@ -41,9 +41,7 @@ export const deanRoutes: RouteObject[] = [
                 path: 'program-management'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/dean/program-management/ProgramDetailPage');
-                }),
+                element: <Navigate replace to="/dean/program-management" />,
                 path: 'program-management/:programId'
             },
             {
