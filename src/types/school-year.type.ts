@@ -57,8 +57,8 @@ export interface WizardTermItem {
 export interface WizardTransmutationRow {
     id?: string;
     label: string;
-    min_percentage: number | string;
-    max_percentage: number | string;
+    min_percentage?: number | string | null;
+    max_percentage?: number | string | null;
     transmuted_grade?: number | string | null;
     is_passing: boolean;
     special_code?: string | null;

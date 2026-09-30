@@ -26,6 +26,25 @@ export const FOUR_PERIOD_PRESET: WizardGradingPeriodItem[] = [
     { name: 'Finals', sequence: 4, weight: 25 }
 ];
 
+export function isSpecialGradeRow(row?: {
+    label?: string;
+    special_code?: string | null;
+} | null): boolean {
+    if (!row) return false;
+    const code = (row.special_code || '').trim().toUpperCase();
+    const label = (row.label || '').trim().toUpperCase();
+    return (
+        code === 'DRP' ||
+        code === 'INC' ||
+        code === 'W' ||
+        code === 'NFE' ||
+        label === 'DRP' ||
+        label === 'INC' ||
+        label === 'W' ||
+        label === 'NFE'
+    );
+}
+
 export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
     { label: '1.00', min_percentage: 98, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, special_code: null, description: 'Excellent' },
     { label: '1.25', min_percentage: 95, max_percentage: 97, transmuted_grade: 1.25, is_passing: true, special_code: null, description: 'Superior' },
@@ -36,9 +55,10 @@ export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
     { label: '2.50', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.50, is_passing: true, special_code: null, description: 'Satisfactory' },
     { label: '2.75', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.75, is_passing: true, special_code: null, description: 'Fairly Satisfactory' },
     { label: '3.00', min_percentage: 75, max_percentage: 76, transmuted_grade: 3.00, is_passing: true, special_code: null, description: 'Passing' },
-    { label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, special_code: 'INC', description: 'Incomplete / Conditional' },
+    { label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, special_code: null, description: 'Conditional' },
     { label: '5.00', min_percentage: 0, max_percentage: 69, transmuted_grade: 5.00, is_passing: false, special_code: null, description: 'Failed' },
-    { label: 'DRP', min_percentage: 0, max_percentage: 0, transmuted_grade: null, is_passing: false, special_code: 'DRP', description: 'Officially Dropped' }
+    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'INC', description: 'Incomplete Requirements' },
+    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'DRP', description: 'Officially Dropped' }
 ];
 
 export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
@@ -399,16 +419,42 @@ export function validateTransmutationRows(
             };
         }
 
-        if (r.min_percentage < 0 || r.max_percentage > 100) {
+        // Special status grades like DRP and INC do not require grade percentage ranges
+        if (isSpecialGradeRow(r)) {
+            continue;
+        }
+
+        const minPct = r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== ''
+            ? Number(r.min_percentage)
+            : null;
+        const maxPct = r.max_percentage !== null && r.max_percentage !== undefined && r.max_percentage !== ''
+            ? Number(r.max_percentage)
+            : null;
+
+        if (minPct === null || isNaN(minPct)) {
+            return {
+                error: `Row #${i + 1} (${r.label}) must have a Min % specified.`,
+                isValid: false
+            };
+        }
+
+        if (maxPct === null || isNaN(maxPct)) {
+            return {
+                error: `Row #${i + 1} (${r.label}) must have a Max % specified.`,
+                isValid: false
+            };
+        }
+
+        if (minPct < 0 || maxPct > 100) {
             return {
                 error: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
                 isValid: false
             };
         }
 
-        if (r.min_percentage > r.max_percentage) {
+        if (minPct > maxPct) {
             return {
-                error: `Row #${i + 1} (${r.label}) Min % (${r.min_percentage}) cannot be greater than Max % (${r.max_percentage}).`,
+                error: `Row #${i + 1} (${r.label}) Min % (${minPct}) cannot be greater than Max % (${maxPct}).`,
                 isValid: false
             };
         }
@@ -449,16 +495,19 @@ export function cloneSchoolYearForDuplication(
         }))
     }));
 
-    const clonedTransmutation: WizardTransmutationRow[] = (details.transmutation_rows || []).map((r) => ({
-        id: undefined,
-        label: r.label,
-        min_percentage: r.min_percentage,
-        max_percentage: r.max_percentage,
-        transmuted_grade: r.transmuted_grade,
-        is_passing: Boolean(r.is_passing),
-        special_code: r.special_code,
-        description: r.description
-    }));
+    const clonedTransmutation: WizardTransmutationRow[] = (details.transmutation_rows || []).map((r) => {
+        const isSpecial = isSpecialGradeRow(r);
+        return {
+            id: undefined,
+            label: r.label,
+            min_percentage: isSpecial ? null : r.min_percentage,
+            max_percentage: isSpecial ? null : r.max_percentage,
+            transmuted_grade: isSpecial ? null : r.transmuted_grade,
+            is_passing: Boolean(r.is_passing),
+            special_code: r.special_code,
+            description: r.description
+        };
+    });
 
     const clonedThresholds: WizardThresholdItem[] = (details.thresholds || []).map((th, thIdx) => ({
         id: undefined,

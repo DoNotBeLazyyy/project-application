@@ -35,6 +35,7 @@ import {
     DEFAULT_TRANSMUTATION_ROWS,
     ExistingSchoolYearComparison,
     SourceSchoolYearInfo,
+    isSpecialGradeRow,
     validateGradingPeriods,
     validateStep1SchoolYear,
     validateTerms,
@@ -161,7 +162,15 @@ export default function AcademicYearWizardModal({
                             start_date: data.start_date || '',
                             terms: data.terms && data.terms.length > 0 ? data.terms : [],
                             thresholds: data.thresholds || [],
-                            transmutation_rows: data.transmutation_rows || []
+                            transmutation_rows: (data.transmutation_rows || []).map((r) => {
+                                const isSpecial = isSpecialGradeRow(r);
+                                return {
+                                    ...r,
+                                    min_percentage: isSpecial ? null : r.min_percentage,
+                                    max_percentage: isSpecial ? null : r.max_percentage,
+                                    transmuted_grade: isSpecial ? null : r.transmuted_grade
+                                };
+                            })
                         });
                     }
                 })
@@ -363,21 +372,33 @@ export default function AcademicYearWizardModal({
                     is_active: Boolean(th.is_active)
                 };
             }),
-            p_transmutation_rows: (values.transmutation_rows || []).map((r, idx) => ({
-                id: r.id,
-                label: (r.label || '').trim() || `Row #${idx + 1}`,
-                min_percentage: Number(r.min_percentage) || 0,
-                max_percentage: Number(r.max_percentage) || 0,
-                transmuted_grade:
-                    r.transmuted_grade !== null &&
-                    r.transmuted_grade !== undefined &&
-                    r.transmuted_grade !== ''
-                        ? Number(r.transmuted_grade)
-                        : null,
-                is_passing: Boolean(r.is_passing),
-                special_code: r.special_code ? r.special_code.trim() : null,
-                description: r.description ? r.description.trim() : null
-            }))
+            p_transmutation_rows: (values.transmutation_rows || []).map((r, idx) => {
+                const isSpecial = isSpecialGradeRow(r);
+                return {
+                    id: r.id,
+                    label: (r.label || '').trim() || `Row #${idx + 1}`,
+                    min_percentage: isSpecial
+                        ? 0
+                        : (r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== ''
+                            ? Number(r.min_percentage)
+                            : 0),
+                    max_percentage: isSpecial
+                        ? 0
+                        : (r.max_percentage !== null && r.max_percentage !== undefined && r.max_percentage !== ''
+                            ? Number(r.max_percentage)
+                            : 0),
+                    transmuted_grade:
+                        !isSpecial &&
+                        r.transmuted_grade !== null &&
+                        r.transmuted_grade !== undefined &&
+                        r.transmuted_grade !== ''
+                            ? Number(r.transmuted_grade)
+                            : null,
+                    is_passing: Boolean(r.is_passing),
+                    special_code: r.special_code ? r.special_code.trim() : null,
+                    description: r.description ? r.description.trim() : null
+                };
+            })
         };
 
         const res = await saveAcademicYearCalendar(payload);

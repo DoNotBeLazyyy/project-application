@@ -12,9 +12,11 @@ import {
     validateGradingPeriods,
     validateStep1SchoolYear,
     validateTerms,
-    distributeDatesAcrossPeriods
+    distributeDatesAcrossPeriods,
+    validateTransmutationRows,
+    isSpecialGradeRow
 } from '@pages/admin/school-year-management/wizard/wizard.constants';
-import { AcademicYearCalendarDetails, WizardTermItem } from '@type/school-year.type';
+import { AcademicYearCalendarDetails, WizardTermItem, WizardTransmutationRow } from '@type/school-year.type';
 
 describe('Academic Year Wizard - Grading Periods Validation', () => {
     const validTerm: WizardTermItem = {
@@ -536,6 +538,42 @@ describe('Academic Year Duplicate & Overlap Conflict Detection', () => {
             expect(distributed[2].end_date).toBe('2026-12-20');
             expect(new Date(distributed[0].end_date) > new Date(distributed[0].start_date)).toBe(true);
             expect(new Date(distributed[1].start_date) >= new Date(distributed[0].end_date)).toBe(true);
+        });
+    });
+
+    describe('Transmutation Validation & Special Status Grades (DRP, INC)', () => {
+        it('should identify DRP and INC as special grades by label or special_code', () => {
+            expect(isSpecialGradeRow({ label: 'DRP' })).toBe(true);
+            expect(isSpecialGradeRow({ label: 'INC' })).toBe(true);
+            expect(isSpecialGradeRow({ label: 'drp' })).toBe(true);
+            expect(isSpecialGradeRow({ special_code: 'DRP' })).toBe(true);
+            expect(isSpecialGradeRow({ special_code: 'INC' })).toBe(true);
+            expect(isSpecialGradeRow({ label: '1.00', special_code: null })).toBe(false);
+            expect(isSpecialGradeRow({ label: '5.00', special_code: null })).toBe(false);
+        });
+
+        it('should pass validation when DRP and INC have null/empty min and max percentages', () => {
+            const rows: WizardTransmutationRow[] = [
+                { label: '1.00', min_percentage: 95, max_percentage: 100, transmuted_grade: 1.00, is_passing: true },
+                { label: '3.00', min_percentage: 75, max_percentage: 94, transmuted_grade: 3.00, is_passing: true },
+                { label: '5.00', min_percentage: 0, max_percentage: 74, transmuted_grade: 5.00, is_passing: false },
+                { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'INC' },
+                { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'DRP' }
+            ];
+
+            const res = validateTransmutationRows(rows);
+            expect(res.isValid).toBe(true);
+            expect(res.error).toBeUndefined();
+        });
+
+        it('should fail validation when regular numeric grade has missing or invalid min/max percentage', () => {
+            const invalidRows: WizardTransmutationRow[] = [
+                { label: '1.00', min_percentage: null, max_percentage: 100, transmuted_grade: 1.00, is_passing: true }
+            ];
+
+            const res = validateTransmutationRows(invalidRows);
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('must have a Min % specified');
         });
     });
 });

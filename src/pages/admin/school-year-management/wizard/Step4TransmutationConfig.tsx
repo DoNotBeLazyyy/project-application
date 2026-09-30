@@ -10,7 +10,7 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
-import { DEFAULT_TRANSMUTATION_ROWS } from './wizard.constants';
+import { DEFAULT_TRANSMUTATION_ROWS, isSpecialGradeRow } from './wizard.constants';
 
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -57,44 +57,66 @@ export default function Step4TransmutationConfig({
         const currentRow = { ...updatedRows[index], [field]: val };
         updatedRows[index] = currentRow;
 
-        const nextRow = updatedRows[index + 1];
-        const prevRow = updatedRows[index - 1];
+        // Skip any special flag rows (DRP, INC) when auto-adjusting adjacent score ladders
+        let nextIndex = index + 1;
+        while (nextIndex < updatedRows.length && isSpecialGradeRow(updatedRows[nextIndex])) {
+            nextIndex++;
+        }
+        let prevIndex = index - 1;
+        while (prevIndex >= 0 && isSpecialGradeRow(updatedRows[prevIndex])) {
+            prevIndex--;
+        }
+
+        const nextRow = nextIndex < updatedRows.length ? updatedRows[nextIndex] : null;
+        const prevRow = prevIndex >= 0 ? updatedRows[prevIndex] : null;
 
         if (field === 'max_percentage') {
-            if (nextRow) {
-                const isAscending = nextRow.min_percentage >= currentRow.min_percentage;
+            if (nextRow && nextRow.min_percentage !== null && nextRow.min_percentage !== undefined) {
+                const currentMin = Number(currentRow.min_percentage) || 0;
+                const nextMin = Number(nextRow.min_percentage) || 0;
+                const isAscending = nextMin >= currentMin;
                 if (isAscending) {
-                    const step = (val % 1 !== 0 || nextRow.min_percentage % 1 !== 0) ? 0.5 : 1;
+                    const step = (val % 1 !== 0 || nextMin % 1 !== 0) ? 0.5 : 1;
                     const newNextMin = Math.min(100, Math.max(0, val + step));
-                    const newNextMax = Math.max(newNextMin, nextRow.max_percentage);
-                    updatedRows[index + 1] = {
+                    const newNextMax = Math.max(newNextMin, Number(nextRow.max_percentage) || newNextMin);
+                    updatedRows[nextIndex] = {
                         ...nextRow,
                         max_percentage: newNextMax,
                         min_percentage: newNextMin
                     };
                 }
             }
-            if (prevRow && val >= prevRow.min_percentage && prevRow.min_percentage > 0) {
-                const step = (val % 1 !== 0 || prevRow.min_percentage % 1 !== 0) ? 0.5 : 1;
-                currentRow.max_percentage = Math.max(0, prevRow.min_percentage - step);
+            if (prevRow && prevRow.min_percentage !== null && prevRow.min_percentage !== undefined) {
+                const prevMin = Number(prevRow.min_percentage) || 0;
+                if (val >= prevMin && prevMin > 0) {
+                    const step = (val % 1 !== 0 || prevMin % 1 !== 0) ? 0.5 : 1;
+                    currentRow.max_percentage = Math.max(0, prevMin - step);
+                }
             }
         } else if (field === 'min_percentage') {
-            if (nextRow && val <= nextRow.max_percentage) {
-                const step = (val % 1 !== 0 || nextRow.max_percentage % 1 !== 0) ? 0.5 : 1;
-                const newNextMax = Math.max(0, Math.min(100, val - step));
-                const newNextMin = Math.min(newNextMax, nextRow.min_percentage);
-                updatedRows[index + 1] = {
-                    ...nextRow,
-                    max_percentage: newNextMax,
-                    min_percentage: newNextMin
-                };
+            if (nextRow && nextRow.max_percentage !== null && nextRow.max_percentage !== undefined) {
+                const nextMax = Number(nextRow.max_percentage) || 0;
+                if (val <= nextMax) {
+                    const step = (val % 1 !== 0 || nextMax % 1 !== 0) ? 0.5 : 1;
+                    const newNextMax = Math.max(0, Math.min(100, val - step));
+                    const newNextMin = Math.min(newNextMax, Number(nextRow.min_percentage) || 0);
+                    updatedRows[nextIndex] = {
+                        ...nextRow,
+                        max_percentage: newNextMax,
+                        min_percentage: newNextMin
+                    };
+                }
             }
-            if (prevRow && val <= prevRow.max_percentage) {
-                const step = (val % 1 !== 0 || prevRow.max_percentage % 1 !== 0) ? 0.5 : 1;
-                updatedRows[index - 1] = {
-                    ...prevRow,
-                    max_percentage: Math.max(prevRow.min_percentage, val - step)
-                };
+            if (prevRow && prevRow.max_percentage !== null && prevRow.max_percentage !== undefined) {
+                const prevMax = Number(prevRow.max_percentage) || 0;
+                if (val <= prevMax) {
+                    const step = (val % 1 !== 0 || prevMax % 1 !== 0) ? 0.5 : 1;
+                    const prevMin = Number(prevRow.min_percentage) || 0;
+                    updatedRows[prevIndex] = {
+                        ...prevRow,
+                        max_percentage: Math.max(prevMin, val - step)
+                    };
+                }
             }
         }
 
@@ -190,10 +212,10 @@ export default function Step4TransmutationConfig({
                                 Mark / Grade <span className="text-red-500">*</span>
                             </th>
                             <th className="py-3 px-3 w-24">
-                                Min % <span className="text-red-500">*</span>
+                                Min %
                             </th>
                             <th className="py-3 px-3 w-24">
-                                Max % <span className="text-red-500">*</span>
+                                Max %
                             </th>
                             <th className="py-3 px-4 w-32 text-center">Status</th>
                             <th className="py-3 px-3 w-28">Special Code</th>
@@ -204,6 +226,7 @@ export default function Step4TransmutationConfig({
                     <tbody className="divide-y divide-slate-100 dark:divide-zinc-700/60">
                         {fields.map((field, index) => {
                             const row = rows[index] || field;
+                            const isSpecial = isSpecialGradeRow(row);
 
                             return (
                                 <tr
@@ -220,11 +243,20 @@ export default function Step4TransmutationConfig({
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
+                                                const upper = val.trim().toUpperCase();
                                                 const numeric = parseFloat(val);
+                                                const autoSpecialCode =
+                                                    upper === 'INC' || upper === 'DRP' || upper === 'W' || upper === 'NFE'
+                                                        ? upper
+                                                        : row.special_code;
+                                                const willBeSpecial = isSpecialGradeRow({ label: val, special_code: autoSpecialCode });
                                                 update(index, {
                                                     ...row,
                                                     label: val,
-                                                    transmuted_grade: isNaN(numeric) ? null : numeric
+                                                    special_code: autoSpecialCode,
+                                                    transmuted_grade: isNaN(numeric) ? null : numeric,
+                                                    min_percentage: willBeSpecial ? null : row.min_percentage,
+                                                    max_percentage: willBeSpecial ? null : row.max_percentage
                                                 });
                                             }}
                                         />
@@ -232,30 +264,48 @@ export default function Step4TransmutationConfig({
 
                                     {/* Min % */}
                                     <td className="py-2.5 px-3">
-                                        <input
-                                            className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            max={100}
-                                            min={0}
-                                            step={0.5}
-                                            type="number"
-                                            value={row.min_percentage ?? ''}
-                                            onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
-                                        />
+                                        {isSpecial ? (
+                                            <span
+                                                className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-zinc-700/50 rounded border border-dashed border-slate-200 dark:border-zinc-700 select-none"
+                                                title="Special grade flag (no percentage range required)"
+                                            >
+                                                N/A
+                                            </span>
+                                        ) : (
+                                            <input
+                                                className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                disabled={disabled}
+                                                max={100}
+                                                min={0}
+                                                step={0.5}
+                                                type="number"
+                                                value={row.min_percentage ?? ''}
+                                                onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
+                                            />
+                                        )}
                                     </td>
 
                                     {/* Max % */}
                                     <td className="py-2.5 px-3">
-                                        <input
-                                            className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            max={100}
-                                            min={0}
-                                            step={0.5}
-                                            type="number"
-                                            value={row.max_percentage ?? ''}
-                                            onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
-                                        />
+                                        {isSpecial ? (
+                                            <span
+                                                className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-zinc-700/50 rounded border border-dashed border-slate-200 dark:border-zinc-700 select-none"
+                                                title="Special grade flag (no percentage range required)"
+                                            >
+                                                N/A
+                                            </span>
+                                        ) : (
+                                            <input
+                                                className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                disabled={disabled}
+                                                max={100}
+                                                min={0}
+                                                step={0.5}
+                                                type="number"
+                                                value={row.max_percentage ?? ''}
+                                                onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
+                                            />
+                                        )}
                                     </td>
 
                                     {/* Passing / Failing toggle */}
@@ -280,7 +330,17 @@ export default function Step4TransmutationConfig({
                                             className="w-full px-2 py-1 text-xs rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                                             disabled={disabled}
                                             value={row.special_code || ''}
-                                            onChange={(e) => update(index, { ...row, special_code: e.target.value || null })}
+                                            onChange={(e) => {
+                                                const code = e.target.value || null;
+                                                const willBeSpecial = isSpecialGradeRow({ label: row.label, special_code: code });
+                                                update(index, {
+                                                    ...row,
+                                                    special_code: code,
+                                                    min_percentage: willBeSpecial ? null : row.min_percentage,
+                                                    max_percentage: willBeSpecial ? null : row.max_percentage,
+                                                    transmuted_grade: willBeSpecial ? null : row.transmuted_grade
+                                                });
+                                            }}
                                         >
                                             <option value="">None</option>
                                             <option value="INC">INC</option>
@@ -326,6 +386,7 @@ export default function Step4TransmutationConfig({
             <div className="block md:hidden space-y-3">
                 {fields.map((field, index) => {
                     const row = rows[index] || field;
+                    const isSpecial = isSpecialGradeRow(row);
 
                     return (
                         <div
@@ -344,11 +405,20 @@ export default function Step4TransmutationConfig({
                                         value={row.label}
                                         onChange={(e) => {
                                             const val = e.target.value;
+                                            const upper = val.trim().toUpperCase();
                                             const numeric = parseFloat(val);
+                                            const autoSpecialCode =
+                                                upper === 'INC' || upper === 'DRP' || upper === 'W' || upper === 'NFE'
+                                                    ? upper
+                                                    : row.special_code;
+                                            const willBeSpecial = isSpecialGradeRow({ label: val, special_code: autoSpecialCode });
                                             update(index, {
                                                 ...row,
                                                 label: val,
-                                                transmuted_grade: isNaN(numeric) ? null : numeric
+                                                special_code: autoSpecialCode,
+                                                transmuted_grade: isNaN(numeric) ? null : numeric,
+                                                min_percentage: willBeSpecial ? null : row.min_percentage,
+                                                max_percentage: willBeSpecial ? null : row.max_percentage
                                             });
                                         }}
                                     />
@@ -380,37 +450,44 @@ export default function Step4TransmutationConfig({
                                 </div>
                             </div>
 
-                            {/* Card Middle: Min % & Max % */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Min % <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                        disabled={disabled}
-                                        max={100}
-                                        min={0}
-                                        type="number"
-                                        value={row.min_percentage ?? ''}
-                                        onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
-                                    />
+                            {/* Card Middle: Min % & Max % (or N/A banner for special grades) */}
+                            {isSpecial ? (
+                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-dashed border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-500">
+                                    <span className="font-medium">Grade Range (Min/Max %):</span>
+                                    <span className="font-semibold text-slate-400">N/A (Flag only, no score range)</span>
                                 </div>
-                                <div>
-                                    <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Max % <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                        disabled={disabled}
-                                        max={100}
-                                        min={0}
-                                        type="number"
-                                        value={row.max_percentage ?? ''}
-                                        onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
-                                    />
+                            ) : (
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
+                                            Min % <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                            disabled={disabled}
+                                            max={100}
+                                            min={0}
+                                            type="number"
+                                            value={row.min_percentage ?? ''}
+                                            onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
+                                            Max % <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                            disabled={disabled}
+                                            max={100}
+                                            min={0}
+                                            type="number"
+                                            value={row.max_percentage ?? ''}
+                                            onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Card Bottom: Special Code & Description */}
                             <div className="grid grid-cols-3 gap-2">
@@ -422,7 +499,17 @@ export default function Step4TransmutationConfig({
                                         className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                                         disabled={disabled}
                                         value={row.special_code || ''}
-                                        onChange={(e) => update(index, { ...row, special_code: e.target.value || null })}
+                                        onChange={(e) => {
+                                            const code = e.target.value || null;
+                                            const willBeSpecial = isSpecialGradeRow({ label: row.label, special_code: code });
+                                            update(index, {
+                                                ...row,
+                                                special_code: code,
+                                                min_percentage: willBeSpecial ? null : row.min_percentage,
+                                                max_percentage: willBeSpecial ? null : row.max_percentage,
+                                                transmuted_grade: willBeSpecial ? null : row.transmuted_grade
+                                            });
+                                        }}
                                     >
                                         <option value="">None</option>
                                         <option value="INC">INC</option>
