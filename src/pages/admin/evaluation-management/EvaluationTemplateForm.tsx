@@ -20,7 +20,7 @@ const DEFAULT_QUESTION: EvaluationQuestionForm = {
     is_required: true
 };
 
-function validateUniqueQuestion(value: string, formValues: FieldValues) {
+export function validateUniqueQuestion(value: string, formValues: FieldValues) {
     const normalized = String(value ?? '')
         .trim()
         .toLowerCase();
@@ -39,7 +39,7 @@ function validateUniqueQuestion(value: string, formValues: FieldValues) {
     return occurrences < 2 || 'Question must be unique';
 }
 
-const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, EvaluationTemplateForm>[] = [
+export const QUESTION_COLUMNS: CommonFormTableColumn<EvaluationQuestionForm, EvaluationTemplateForm>[] = [
     {
         key: 'question_text',
         headerName: 'Question',
