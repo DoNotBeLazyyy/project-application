@@ -219,7 +219,8 @@ export default function CourseManagement() {
                             subheader: 'Fill in the details to create a new course.',
                             title: 'Create Course'
                         }
-                    },
+                    },
+                    formButtonsProps: { className: '!hidden' },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <CourseForm
@@ -286,7 +287,8 @@ export default function CourseManagement() {
                             title: 'Edit Course'
                         }
                     },
-                    confirmText: 'Save',
+                    confirmText: 'Save',
+                    formButtonsProps: { className: '!hidden' },
                     formId: UPDATE_FORM_ID,
                     formContent: (
                         <CourseForm
@@ -315,23 +317,19 @@ export default function CourseManagement() {
                             subheader: 'Viewing course details.',
                             title: 'View Course'
                         }
-                    },
-                    confirmText: 'Edit',
+                    },
+                    formButtonsProps: { className: '!hidden' },
                     formContent: (
                         <CourseForm
                             control={updateMethods.control}
                             disabled
-                        />
-                    ),
-                    formButtonsProps: {
-                        confirmProps: {
-                            onClick: function() {
+                            onSwitchToEdit={function() {
                                 if (selectedId) {
                                     handleSwitchToEdit(selectedId);
                                 }
-                            }
-                        }
-                    },
+                            }}
+                        />
+                    ),
                     open: isViewOpen,
                     onClose: handleCloseView
                 }}

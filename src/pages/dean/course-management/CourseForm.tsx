@@ -15,7 +15,9 @@ import {
     BookOpenIcon,
     CheckCircleIcon,
     FileTextIcon,
+    FloppyDiskIcon,
     GitForkIcon,
+    PencilSimpleIcon,
     PlusIcon,
     TrashIcon
 } from '@phosphor-icons/react';
@@ -233,6 +235,7 @@ interface CourseFormProps extends ComponentPropsForm {
     disabled?: boolean;
     excludeCourseId?: string;
     isCodeDisabled?: boolean;
+    onSwitchToEdit?: () => void;
 }
 
 export const COURSE_FORM_STEPS = [
@@ -260,6 +263,7 @@ export default function CourseForm({
     disabled,
     excludeCourseId,
     isCodeDisabled,
+    onSwitchToEdit,
     ...formProps
 }: CourseFormProps) {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -754,7 +758,7 @@ export default function CourseForm({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {activeStep < 3 && (
+                    {activeStep < 3 ? (
                         <CommonButton
                             color="primary"
                             endIcon={<ArrowRightIcon className="w-4 h-4" />}
@@ -763,6 +767,29 @@ export default function CourseForm({
                             onClick={() => setActiveStep((prev) => prev + 1)}
                         >
                             Next Step
+                        </CommonButton>
+                    ) : disabled ? (
+                        onSwitchToEdit ? (
+                            <CommonButton
+                                color="primary"
+                                size="medium"
+                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                variant="contained"
+                                onClick={onSwitchToEdit}
+                            >
+                                Edit Course
+                            </CommonButton>
+                        ) : null
+                    ) : (
+                        <CommonButton
+                            color="primary"
+                            form={formProps.id}
+                            size="medium"
+                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                            type="submit"
+                            variant="contained"
+                        >
+                            {isCodeDisabled ? 'Save Changes' : 'Save Course'}
                         </CommonButton>
                     )}
                 </div>
