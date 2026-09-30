@@ -12,12 +12,14 @@ import {
 } from '@phosphor-icons/react';
 import {
     getAcademicYearCalendarDetails,
+    getSchoolYears,
     saveAcademicYearCalendar
 } from '@services/school-year.service';
 import { useToastStore } from '@stores/toast.store';
 import {
     AcademicYearWizardFormValues,
-    SaveAcademicYearCalendarPayload
+    SaveAcademicYearCalendarPayload,
+    SchoolYearOption
 } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,8 +30,12 @@ import Step3GradingPeriodsConfig from './Step3GradingPeriodsConfig';
 import Step4TransmutationConfig from './Step4TransmutationConfig';
 import Step5ThresholdsConfig from './Step5ThresholdsConfig';
 import {
+    cloneSchoolYearForDuplication,
     DEFAULT_ACADEMIC_THRESHOLDS,
     DEFAULT_TRANSMUTATION_ROWS,
+    SourceSchoolYearInfo,
+    validateGradingPeriods,
+    validateStep1SchoolYear,
     WIZARD_STEPS
 } from './wizard.constants';
 
@@ -37,6 +43,7 @@ interface AcademicYearWizardModalProps {
     open: boolean;
     readOnly?: boolean;
     schoolYearId?: string | null;
+    duplicateSchoolYearId?: string | null;
     onClose: () => void;
     onSuccess: () => void;
 }
@@ -45,6 +52,7 @@ export default function AcademicYearWizardModal({
     open,
     readOnly: initialReadOnly = false,
     schoolYearId,
+    duplicateSchoolYearId,
     onClose,
     onSuccess
 }: AcademicYearWizardModalProps) {
@@ -54,6 +62,9 @@ export default function AcademicYearWizardModal({
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
+    const [sourceSchoolYear, setSourceSchoolYear] = useState<SourceSchoolYearInfo | null>(null);
+    const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
+
     const defaultValues: AcademicYearWizardFormValues = {
         code: '',
         end_date: '',
@@ -62,8 +73,8 @@ export default function AcademicYearWizardModal({
         label: '',
         start_date: '',
         terms: [],
-        thresholds: [...DEFAULT_ACADEMIC_THRESHOLDS],
-        transmutation_rows: [...DEFAULT_TRANSMUTATION_ROWS]
+        thresholds: [],
+        transmutation_rows: []
     };
 
     const methods = useForm<AcademicYearWizardFormValues>({
@@ -72,19 +83,65 @@ export default function AcademicYearWizardModal({
 
     const { control, getValues, reset, setValue, watch } = methods;
 
-    // Load existing school year calendar details when modal opens with schoolYearId
+    async function loadAndDuplicateSchoolYear(sourceId: string) {
+        setIsLoading(true);
+        try {
+            const res = await getAcademicYearCalendarDetails(sourceId);
+            if (res.data) {
+                const data = res.data;
+                setSourceSchoolYear({
+                    id: data.id,
+                    code: data.code,
+                    label: data.label,
+                    start_date: data.start_date,
+                    end_date: data.end_date
+                });
+                const cloned = cloneSchoolYearForDuplication(data);
+                reset({
+                    ...defaultValues,
+                    ...cloned
+                });
+                useToastStore.getState().showToast(
+                    `Duplicated configuration from ${data.label}. Please specify a new Academic Year Code, Label, and Dates.`,
+                    'info'
+                );
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    function handleClearDuplication() {
+        setSourceSchoolYear(null);
+        reset(defaultValues);
+    }
+
+    // Fetch existing school years list for in-wizard duplication dropdown
+    useEffect(() => {
+        if (open && !schoolYearId) {
+            getSchoolYears().then((res) => {
+                if (res.data) {
+                    setAvailableSourceYears(res.data);
+                }
+            });
+        }
+    }, [open, schoolYearId]);
+
+    // Load existing school year calendar details when modal opens with schoolYearId or duplicateSchoolYearId
     useEffect(() => {
         if (!open) {
             setCurrentStep(1);
             reset(defaultValues);
             setIsReadOnly(initialReadOnly);
             setIsHistoryModalOpen(false);
+            setSourceSchoolYear(null);
             return;
         }
 
         setIsReadOnly(initialReadOnly);
 
         if (schoolYearId) {
+            setSourceSchoolYear(null);
             setIsLoading(true);
             getAcademicYearCalendarDetails(schoolYearId)
                 .then((res) => {
@@ -98,50 +155,28 @@ export default function AcademicYearWizardModal({
                             label: data.label || '',
                             start_date: data.start_date || '',
                             terms: data.terms && data.terms.length > 0 ? data.terms : [],
-                            thresholds:
-                                data.thresholds && data.thresholds.length > 0
-                                    ? data.thresholds
-                                    : [...DEFAULT_ACADEMIC_THRESHOLDS],
-                            transmutation_rows:
-                                data.transmutation_rows && data.transmutation_rows.length > 0
-                                    ? data.transmutation_rows
-                                    : [...DEFAULT_TRANSMUTATION_ROWS]
+                            thresholds: data.thresholds || [],
+                            transmutation_rows: data.transmutation_rows || []
                         });
                     }
                 })
                 .finally(() => {
                     setIsLoading(false);
                 });
+        } else if (duplicateSchoolYearId) {
+            loadAndDuplicateSchoolYear(duplicateSchoolYearId);
         } else {
-            reset({
-                ...defaultValues,
-                thresholds: [...DEFAULT_ACADEMIC_THRESHOLDS],
-                transmutation_rows: [...DEFAULT_TRANSMUTATION_ROWS]
-            });
+            setSourceSchoolYear(null);
+            reset(defaultValues);
         }
-    }, [open, schoolYearId, initialReadOnly]);
+    }, [open, schoolYearId, duplicateSchoolYearId, initialReadOnly]);
 
     // Validation for Step 1
     function validateStep1(): boolean {
         const values = getValues();
-        if (!values.start_date) {
-            useToastStore.getState().showToast('Please select a Start Date for the school year.', 'error');
-            return false;
-        }
-        if (!values.end_date) {
-            useToastStore.getState().showToast('Please select an End Date for the school year.', 'error');
-            return false;
-        }
-        if (new Date(values.end_date) <= new Date(values.start_date)) {
-            useToastStore.getState().showToast('End Date must be strictly after Start Date.', 'error');
-            return false;
-        }
-        if (!values.code || !values.code.trim()) {
-            useToastStore.getState().showToast('Academic Year Code is required.', 'error');
-            return false;
-        }
-        if (!values.label || !values.label.trim()) {
-            useToastStore.getState().showToast('Academic Year Label is required.', 'error');
+        const result = validateStep1SchoolYear(values, sourceSchoolYear);
+        if (!result.isValid && result.error) {
+            useToastStore.getState().showToast(result.error, 'error');
             return false;
         }
         return true;
@@ -182,38 +217,10 @@ export default function AcademicYearWizardModal({
     function validateStep3(): boolean {
         const values = getValues();
         const terms = values.terms || [];
-
-        for (let i = 0; i < terms.length; i++) {
-            const t = terms[i];
-            const termName = t.term_type_label || `Term #${i + 1}`;
-            const periods = t.grading_periods || [];
-
-            if (periods.length === 0) {
-                useToastStore.getState().showToast(
-                    `Please define at least one grading period for ${termName}.`,
-                    'error'
-                );
-                return false;
-            }
-
-            for (const p of periods) {
-                if (!p.name || !p.name.trim()) {
-                    useToastStore.getState().showToast(
-                        `All grading periods in ${termName} must have a name.`,
-                        'error'
-                    );
-                    return false;
-                }
-            }
-
-            const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
-            if (totalWeight !== 100) {
-                useToastStore.getState().showToast(
-                    `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`,
-                    'error'
-                );
-                return false;
-            }
+        const result = validateGradingPeriods(terms);
+        if (!result.isValid && result.error) {
+            useToastStore.getState().showToast(result.error, 'error');
+            return false;
         }
         return true;
     }
@@ -222,14 +229,6 @@ export default function AcademicYearWizardModal({
     function validateStep4(): boolean {
         const values = getValues();
         const rows = values.transmutation_rows || [];
-
-        if (rows.length === 0) {
-            useToastStore.getState().showToast(
-                'Please configure at least one transmutation grade rung.',
-                'error'
-            );
-            return false;
-        }
 
         for (let i = 0; i < rows.length; i++) {
             const r = rows[i];
@@ -248,14 +247,6 @@ export default function AcademicYearWizardModal({
     function validateStep5(): boolean {
         const values = getValues();
         const thresholds = values.thresholds || [];
-
-        if (thresholds.length === 0) {
-            useToastStore.getState().showToast(
-                'Please configure at least one academic threshold.',
-                'error'
-            );
-            return false;
-        }
 
         for (let i = 0; i < thresholds.length; i++) {
             const t = thresholds[i];
@@ -358,35 +349,39 @@ export default function AcademicYearWizardModal({
                     weight: Number(gp.weight) || 0
                 }))
             })),
-            p_thresholds: (values.thresholds || []).map((th, idx) => ({
-                id: th.id,
-                category: th.category,
-                code: th.code.trim(),
-                label: th.label.trim(),
-                min_gwa:
-                    th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
-                        ? Number(th.min_gwa)
-                        : null,
-                max_gwa: Number(th.max_gwa) || 1.75,
-                min_subject_grade:
-                    th.min_subject_grade !== null &&
-                    th.min_subject_grade !== undefined &&
-                    th.min_subject_grade !== ''
-                        ? Number(th.min_subject_grade)
-                        : null,
-                requires_no_failing: Boolean(th.requires_no_failing),
-                scholarship_discount_pct:
-                    th.scholarship_discount_pct !== null &&
-                    th.scholarship_discount_pct !== undefined &&
-                    th.scholarship_discount_pct !== ''
-                        ? Number(th.scholarship_discount_pct)
-                        : null,
-                sort_order: th.sort_order || idx + 1,
-                is_active: Boolean(th.is_active)
-            })),
-            p_transmutation_rows: (values.transmutation_rows || []).map((r) => ({
+            p_thresholds: (values.thresholds || []).map((th, idx) => {
+                const labelTrimmed = (th.label || '').trim() || `Threshold #${idx + 1}`;
+                const autoCode = labelTrimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                return {
+                    id: th.id,
+                    category: th.category || 'Honor',
+                    code: (th.code || '').trim() || autoCode || `threshold_${idx + 1}`,
+                    label: labelTrimmed,
+                    min_gwa:
+                        th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
+                            ? Number(th.min_gwa)
+                            : null,
+                    max_gwa: Number(th.max_gwa) || 1.75,
+                    min_subject_grade:
+                        th.min_subject_grade !== null &&
+                        th.min_subject_grade !== undefined &&
+                        th.min_subject_grade !== ''
+                            ? Number(th.min_subject_grade)
+                            : null,
+                    requires_no_failing: Boolean(th.requires_no_failing),
+                    scholarship_discount_pct:
+                        th.scholarship_discount_pct !== null &&
+                        th.scholarship_discount_pct !== undefined &&
+                        th.scholarship_discount_pct !== ''
+                            ? Number(th.scholarship_discount_pct)
+                            : null,
+                    sort_order: th.sort_order || idx + 1,
+                    is_active: Boolean(th.is_active)
+                };
+            }),
+            p_transmutation_rows: (values.transmutation_rows || []).map((r, idx) => ({
                 id: r.id,
-                label: r.label.trim(),
+                label: (r.label || '').trim() || `Row #${idx + 1}`,
                 min_percentage: Number(r.min_percentage) || 0,
                 max_percentage: Number(r.max_percentage) || 0,
                 transmuted_grade:
@@ -434,10 +429,14 @@ export default function AcademicYearWizardModal({
                                 ? isReadOnly
                                     ? 'Academic Year Calendar & Criteria'
                                     : 'Edit Academic Year & Calendar'
-                                : 'Academic Year & Calendar Wizard'}
+                                : sourceSchoolYear
+                                ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
+                                : 'Create Academic Year & Calendar'}
                         </h2>
                         <p className="text-xs text-slate-500">
-                            Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.
+                            {sourceSchoolYear
+                                ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
+                                : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'}
                         </p>
                     </div>
                 </div>
@@ -555,10 +554,14 @@ export default function AcademicYearWizardModal({
                     <>
                         {currentStep === 1 && (
                             <Step1SchoolYearInfo
+                                availableSourceYears={availableSourceYears}
                                 control={control}
                                 disabled={isReadOnly}
                                 isNew={!schoolYearId}
                                 setValue={setValue}
+                                sourceSchoolYear={sourceSchoolYear}
+                                onClearSourceYear={handleClearDuplication}
+                                onSelectSourceYear={(id) => loadAndDuplicateSchoolYear(id)}
                             />
                         )}
 

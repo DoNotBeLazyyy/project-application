@@ -1,5 +1,8 @@
 import {
+    AcademicYearCalendarDetails,
+    AcademicYearWizardFormValues,
     WizardGradingPeriodItem,
+    WizardTermItem,
     WizardThresholdItem,
     WizardTransmutationRow
 } from '@type/school-year.type';
@@ -131,3 +134,179 @@ export const WIZARD_STEPS = [
     { step: 4, title: 'Grade Schema', subtitle: 'Transmutation & passing marks' },
     { step: 5, title: 'Academic Thresholds', subtitle: 'Honors, scholarships & standing' }
 ];
+
+export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: boolean; error?: string } {
+    for (let i = 0; i < terms.length; i++) {
+        const t = terms[i];
+        const termName = t.term_type_label || `Term #${i + 1}`;
+        const periods = t.grading_periods || [];
+
+        if (periods.length === 0) {
+            return {
+                isValid: false,
+                error: `Please define at least one grading period for ${termName}.`
+            };
+        }
+
+        for (const p of periods) {
+            const periodLabel = p.name ? `"${p.name}"` : `Period #${p.sequence || 1}`;
+            if (!p.name || !p.name.trim()) {
+                return {
+                    isValid: false,
+                    error: `All grading periods in ${termName} must have a name.`
+                };
+            }
+            if (!p.weight || Number(p.weight) <= 0) {
+                return {
+                    isValid: false,
+                    error: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`
+                };
+            }
+            if (!p.start_date || !p.start_date.trim()) {
+                return {
+                    isValid: false,
+                    error: `Grading period ${periodLabel} in ${termName} must have a Start Date.`
+                };
+            }
+            if (!p.end_date || !p.end_date.trim()) {
+                return {
+                    isValid: false,
+                    error: `Grading period ${periodLabel} in ${termName} must have an End Date.`
+                };
+            }
+            if (new Date(p.end_date) < new Date(p.start_date)) {
+                return {
+                    isValid: false,
+                    error: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`
+                };
+            }
+        }
+
+        const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
+        if (totalWeight !== 100) {
+            return {
+                isValid: false,
+                error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`
+            };
+        }
+    }
+    return { isValid: true };
+}
+
+export interface SourceSchoolYearInfo {
+    id: string;
+    code: string;
+    label: string;
+    start_date: string;
+    end_date: string;
+}
+
+export function cloneSchoolYearForDuplication(
+    details: AcademicYearCalendarDetails
+): Partial<AcademicYearWizardFormValues> {
+    const clonedTerms: WizardTermItem[] = (details.terms || []).map((t) => ({
+        id: undefined,
+        term_type_id: t.term_type_id,
+        term_type_label: t.term_type_label,
+        term_type_code: t.term_type_code,
+        start_date: t.start_date || '',
+        end_date: t.end_date || '',
+        enrollment_start_date: t.enrollment_start_date || '',
+        enrollment_end_date: t.enrollment_end_date || '',
+        grading_deadline: t.grading_deadline || '',
+        status: 'Upcoming',
+        grading_periods: (t.grading_periods || []).map((gp, gIdx) => ({
+            id: undefined,
+            name: gp.name,
+            sequence: gp.sequence || gIdx + 1,
+            start_date: gp.start_date || '',
+            end_date: gp.end_date || '',
+            weight: Number(gp.weight) || 0
+        }))
+    }));
+
+    const clonedTransmutation: WizardTransmutationRow[] = (details.transmutation_rows || []).map((r) => ({
+        id: undefined,
+        label: r.label,
+        min_percentage: r.min_percentage,
+        max_percentage: r.max_percentage,
+        transmuted_grade: r.transmuted_grade,
+        is_passing: Boolean(r.is_passing),
+        special_code: r.special_code,
+        description: r.description
+    }));
+
+    const clonedThresholds: WizardThresholdItem[] = (details.thresholds || []).map((th, thIdx) => ({
+        id: undefined,
+        category: th.category,
+        code: th.code,
+        label: th.label,
+        min_gwa: th.min_gwa,
+        max_gwa: th.max_gwa,
+        min_subject_grade: th.min_subject_grade,
+        requires_no_failing: Boolean(th.requires_no_failing),
+        scholarship_discount_pct: th.scholarship_discount_pct,
+        sort_order: th.sort_order || thIdx + 1,
+        is_active: Boolean(th.is_active)
+    }));
+
+    return {
+        id: null,
+        code: '',
+        label: '',
+        start_date: '',
+        end_date: '',
+        is_active: false,
+        terms: clonedTerms,
+        transmutation_rows: clonedTransmutation,
+        thresholds: clonedThresholds
+    };
+}
+
+export function validateStep1SchoolYear(
+    values: { code: string; label: string; start_date: string; end_date: string },
+    sourceSchoolYear?: SourceSchoolYearInfo | null
+): { isValid: boolean; error?: string } {
+    if (!values.start_date) {
+        return { isValid: false, error: 'Please select a Start Date for the school year.' };
+    }
+    if (!values.end_date) {
+        return { isValid: false, error: 'Please select an End Date for the school year.' };
+    }
+    if (new Date(values.end_date) <= new Date(values.start_date)) {
+        return { isValid: false, error: 'End Date must be strictly after Start Date.' };
+    }
+    if (!values.code || !values.code.trim()) {
+        return { isValid: false, error: 'Academic Year Code is required.' };
+    }
+    if (!values.label || !values.label.trim()) {
+        return { isValid: false, error: 'Academic Year Label is required.' };
+    }
+
+    if (sourceSchoolYear) {
+        if (values.code.trim().toLowerCase() === sourceSchoolYear.code.trim().toLowerCase()) {
+            return {
+                isValid: false,
+                error: `Academic Year Code must be changed. It cannot match the duplicated year (${sourceSchoolYear.code}).`
+            };
+        }
+        if (values.label.trim().toLowerCase() === sourceSchoolYear.label.trim().toLowerCase()) {
+            return {
+                isValid: false,
+                error: `Academic Year Label must be changed. It cannot match the duplicated year (${sourceSchoolYear.label}).`
+            };
+        }
+        if (
+            values.start_date === sourceSchoolYear.start_date &&
+            values.end_date === sourceSchoolYear.end_date
+        ) {
+            return {
+                isValid: false,
+                error: 'Academic Year Start and End Dates must be changed from the duplicated year.'
+            };
+        }
+    }
+
+    return { isValid: true };
+}
+

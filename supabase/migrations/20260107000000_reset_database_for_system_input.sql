@@ -13,7 +13,6 @@ DECLARE
         'dsadsa@gmail.com',
         'erikapaulamendoza2003@gmail.com',
         'hbaki386@gmail.com',
-        'julius.iveinc@gmail.com',
         'juliusexample@gmail.com',
         'juliustolentino.diamond@gmail.com',
         'juliustolentino0101@gmail.com',

@@ -24,7 +24,7 @@ export interface TableCardControlsProps {
  */
 export default function TableCardControls({
     hasInput = true,
-    showViewToggle = true,
+    showViewToggle = false,
     tableButtonsProps,
     tableInputProps,
     viewMode = 'grid',

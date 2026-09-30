@@ -185,7 +185,7 @@ export default function Step5ThresholdsConfig({
                                     {/* Category */}
                                     <div className="sm:col-span-3">
                                         <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                            Category
+                                            Category <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -210,7 +210,7 @@ export default function Step5ThresholdsConfig({
                                     {/* Label */}
                                     <div className="sm:col-span-4">
                                         <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                            Threshold Name / Label
+                                            Threshold Name / Label <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -289,7 +289,7 @@ export default function Step5ThresholdsConfig({
                                     {/* Max GWA (Cutoff) */}
                                     <div className="sm:col-span-3">
                                         <label className="block text-[11px] font-semibold text-brand-600 dark:text-brand-400 mb-1">
-                                            Max GWA (Cutoff) *
+                                            Max GWA (Cutoff) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-brand-300 dark:border-brand-700/60 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"

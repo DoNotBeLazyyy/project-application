@@ -133,9 +133,15 @@ export default function Step4TransmutationConfig({
                 <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-slate-50 dark:bg-zinc-700/50 border-b border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 font-semibold">
                         <tr>
-                            <th className="py-3 px-4 w-28">Mark / Grade</th>
-                            <th className="py-3 px-3 w-24">Min %</th>
-                            <th className="py-3 px-3 w-24">Max %</th>
+                            <th className="py-3 px-4 w-28">
+                                Mark / Grade <span className="text-red-500">*</span>
+                            </th>
+                            <th className="py-3 px-3 w-24">
+                                Min % <span className="text-red-500">*</span>
+                            </th>
+                            <th className="py-3 px-3 w-24">
+                                Max % <span className="text-red-500">*</span>
+                            </th>
                             <th className="py-3 px-4 w-32 text-center">Status</th>
                             <th className="py-3 px-3 w-28">Special Code</th>
                             <th className="py-3 px-4">Description</th>
@@ -325,7 +331,7 @@ export default function Step4TransmutationConfig({
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Min %
+                                        Min % <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
@@ -339,7 +345,7 @@ export default function Step4TransmutationConfig({
                                 </div>
                                 <div>
                                     <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Max %
+                                        Max % <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"

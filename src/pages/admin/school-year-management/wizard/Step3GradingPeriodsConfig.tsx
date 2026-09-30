@@ -305,9 +305,10 @@ export default function Step3GradingPeriodsConfig({
                                         {/* Start Date */}
                                         <div className="w-full md:w-36">
                                             <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                Start Date
+                                                Start Date <span className="text-red-500">*</span>
                                             </label>
                                             <input
+                                                required
                                                 className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
                                                 disabled={disabled}
                                                 type="date"
@@ -319,10 +320,15 @@ export default function Step3GradingPeriodsConfig({
                                         {/* End Date */}
                                         <div className="w-full md:w-36">
                                             <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                End Date
+                                                End Date <span className="text-red-500">*</span>
                                             </label>
                                             <input
-                                                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                                required
+                                                className={`w-full px-2.5 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
+                                                    period.start_date && period.end_date && new Date(period.end_date) < new Date(period.start_date)
+                                                        ? 'border-red-500 dark:border-red-500 focus:ring-red-500'
+                                                        : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
+                                                }`}
                                                 disabled={disabled}
                                                 type="date"
                                                 value={period.end_date || ''}

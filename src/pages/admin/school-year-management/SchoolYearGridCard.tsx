@@ -1,6 +1,6 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
-import { ClockCounterClockwiseIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import { ClockCounterClockwiseIcon, CopySimpleIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { SchoolYearListRow } from '@type/school-year.type';
 import { formatShortDate } from '@utils/date.util';
 
@@ -10,6 +10,7 @@ export interface SchoolYearGridCardProps {
     onToggleSelect: () => void;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
+    onDuplicate?: (id: string) => void;
     onOpenHistory?: (id: string, label: string) => void;
     onRequestDelete: (id: string) => void;
 }
@@ -28,6 +29,7 @@ export default function SchoolYearGridCard({
     onToggleSelect,
     onView,
     onEdit,
+    onDuplicate,
     onOpenHistory,
     onRequestDelete
 }: SchoolYearGridCardProps) {
@@ -48,6 +50,16 @@ export default function SchoolYearGridCard({
                             icon: <PencilSimpleIcon size={18} weight="bold" />,
                             onClick: () => onEdit(row.id)
                         },
+                        ...(onDuplicate
+                            ? [
+                                {
+                                    key: 'duplicate',
+                                    label: 'Duplicate',
+                                    icon: <CopySimpleIcon size={18} weight="bold" />,
+                                    onClick: () => onDuplicate(row.id)
+                                }
+                            ]
+                            : []),
                         ...(onOpenHistory
                             ? [
                                 {

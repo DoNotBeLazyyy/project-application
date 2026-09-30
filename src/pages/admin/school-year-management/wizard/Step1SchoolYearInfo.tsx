@@ -1,52 +1,110 @@
+import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
-import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
-import { CalendarDotsIcon, InfoIcon, ShieldCheckIcon } from '@phosphor-icons/react';
-import { AcademicYearWizardFormValues } from '@type/school-year.type';
-import { useEffect } from 'react';
-import { Control, UseFormSetValue, useFormState, useWatch } from 'react-hook-form';
+import { CopySimpleIcon, InfoIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step1SchoolYearInfoProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
     isNew?: boolean;
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
+    sourceSchoolYear?: {
+        id: string;
+        code: string;
+        label: string;
+        start_date: string;
+        end_date: string;
+    } | null;
+    availableSourceYears?: SchoolYearOption[];
+    onSelectSourceYear?: (sourceId: string) => void;
+    onClearSourceYear?: () => void;
 }
 
 export default function Step1SchoolYearInfo({
+    availableSourceYears = [],
     control,
     disabled = false,
     isNew = true,
-    setValue
+    onClearSourceYear,
+    onSelectSourceYear,
+    sourceSchoolYear
 }: Step1SchoolYearInfoProps) {
     const startDate = useWatch({ control, name: 'start_date' });
     const endDate = useWatch({ control, name: 'end_date' });
-    const isActive = useWatch({ control, name: 'is_active' });
-    const { dirtyFields } = useFormState({ control, name: ['code', 'label'] });
-
-    useEffect(() => {
-        if (!isNew || !startDate || !endDate) {
-            return;
-        }
-
-        const startYear = new Date(startDate).getFullYear();
-        const endYear = new Date(endDate).getFullYear();
-
-        if (isNaN(startYear) || isNaN(endYear)) {
-            return;
-        }
-
-        if (!dirtyFields.code) {
-            setValue('code', `AY-${startYear}-${endYear}`, { shouldValidate: true });
-        }
-
-        if (!dirtyFields.label) {
-            setValue('label', `Academic Year ${startYear}-${endYear}`, { shouldValidate: true });
-        }
-    }, [startDate, endDate, isNew, setValue, dirtyFields.code, dirtyFields.label]);
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Duplicate Banner when duplicating from an existing academic year */}
+            {sourceSchoolYear && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-800/60 text-sm">
+                    <div className="flex items-start gap-3">
+                        <CopySimpleIcon
+                            className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+                            weight="bold"
+                        />
+                        <div className="space-y-1 text-slate-800 dark:text-slate-200">
+                            <p className="font-semibold text-amber-900 dark:text-amber-200">
+                                Duplicating configuration from {sourceSchoolYear.label} ({sourceSchoolYear.code})
+                            </p>
+                            <p className="text-xs text-amber-800 dark:text-amber-300/90">
+                                Terms, grading periods, grade transmutation table, and academic thresholds have been copied.
+                                <span className="font-semibold block sm:inline sm:ml-1">
+                                    You are required to change and set a new Academic Year Code, Label, and Dates.
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    {!disabled && onClearSourceYear && (
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={onClearSourceYear}
+                        >
+                            Start Blank
+                        </CommonButton>
+                    )}
+                </div>
+            )}
+
+            {/* Dropdown to copy from existing school year when creating fresh */}
+            {isNew && !sourceSchoolYear && availableSourceYears && availableSourceYears.length > 0 && (
+                <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            <CopySimpleIcon className="w-4 h-4 text-brand-600" weight="bold" />
+                            <span>Duplicate from Existing Academic Year (Optional)</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Copy terms, grading periods, transmutation rules, and thresholds from an existing year instead of setting them up manually.
+                        </p>
+                    </div>
+                    <div className="sm:w-72 shrink-0">
+                        <select
+                            aria-label="Select Academic Year to duplicate configuration"
+                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
+                            disabled={disabled}
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value && onSelectSourceYear) {
+                                    onSelectSourceYear(e.target.value);
+                                }
+                            }}
+                        >
+                            <option value="">-- Select Academic Year to Copy --</option>
+                            {availableSourceYears.map((sy) => (
+                                <option key={sy.id} value={sy.id}>
+                                    {sy.label} ({sy.code})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
+
             {/* Banner info */}
             <div className="flex items-start gap-3 p-4 rounded-xl bg-brand-50/60 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 text-sm">
                 <InfoIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
@@ -70,7 +128,19 @@ export default function Step1SchoolYearInfo({
                         control={control}
                         disabled={disabled}
                         name="start_date"
-                        rules={{ required: 'Start date is required' }}
+                        rules={{
+                            required: 'Start date is required',
+                            validate: (val) => {
+                                if (
+                                    sourceSchoolYear &&
+                                    val === sourceSchoolYear.start_date &&
+                                    endDate === sourceSchoolYear.end_date
+                                ) {
+                                    return 'Dates must be changed from the duplicated year';
+                                }
+                                return true;
+                            }
+                        }}
                     />
                     <p className="text-xs text-slate-500 mt-1">Official start date of the academic calendar.</p>
                 </div>
@@ -87,8 +157,17 @@ export default function Step1SchoolYearInfo({
                             required: 'End date is required',
                             validate: (val) => {
                                 if (!startDate || !val) return true;
-                                return new Date(val as string) > new Date(startDate)
-                                    || 'End date must be strictly after start date';
+                                if (new Date(val as string) <= new Date(startDate)) {
+                                    return 'End date must be strictly after start date';
+                                }
+                                if (
+                                    sourceSchoolYear &&
+                                    startDate === sourceSchoolYear.start_date &&
+                                    val === sourceSchoolYear.end_date
+                                ) {
+                                    return 'Dates must be changed from the duplicated year';
+                                }
+                                return true;
                             }
                         }}
                     />
@@ -104,9 +183,29 @@ export default function Step1SchoolYearInfo({
                         disabled={disabled}
                         name="code"
                         placeholder="e.g. AY-2026-2027"
-                        rules={{ required: 'Academic year code is required' }}
+                        rules={{
+                            required: 'Academic year code is required',
+                            validate: (val) => {
+                                if (
+                                    sourceSchoolYear &&
+                                    (val as string).trim().toLowerCase() ===
+                                        sourceSchoolYear.code.trim().toLowerCase()
+                                ) {
+                                    return `Code must differ from duplicated year (${sourceSchoolYear.code})`;
+                                }
+                                return true;
+                            }
+                        }}
                     />
-                    <p className="text-xs text-slate-500 mt-1">Unique machine-readable identifier (e.g. AY-2026-2027).</p>
+                    {sourceSchoolYear ? (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            Required to change from: &quot;{sourceSchoolYear.code}&quot;
+                        </p>
+                    ) : (
+                        <p className="text-xs text-slate-500 mt-1">
+                            Unique machine-readable identifier (e.g. AY-2026-2027).
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -118,9 +217,29 @@ export default function Step1SchoolYearInfo({
                         disabled={disabled}
                         name="label"
                         placeholder="e.g. Academic Year 2026-2027"
-                        rules={{ required: 'Academic year label is required' }}
+                        rules={{
+                            required: 'Academic year label is required',
+                            validate: (val) => {
+                                if (
+                                    sourceSchoolYear &&
+                                    (val as string).trim().toLowerCase() ===
+                                        sourceSchoolYear.label.trim().toLowerCase()
+                                ) {
+                                    return `Label must differ from duplicated year (${sourceSchoolYear.label})`;
+                                }
+                                return true;
+                            }
+                        }}
                     />
-                    <p className="text-xs text-slate-500 mt-1">Human-friendly title displayed on transcripts and portals.</p>
+                    {sourceSchoolYear ? (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            Required to change from: &quot;{sourceSchoolYear.label}&quot;
+                        </p>
+                    ) : (
+                        <p className="text-xs text-slate-500 mt-1">
+                            Human-friendly title displayed on transcripts and portals.
+                        </p>
+                    )}
                 </div>
             </div>
 

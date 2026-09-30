@@ -279,6 +279,10 @@ export async function callFunction<T>(
             };
         }
 
+        if (isRpcSuccessPayload(data) && !isSilent) {
+            notify(data.message, 'success');
+        }
+
         return { data: data as T, error: null };
     }
     catch (err) {

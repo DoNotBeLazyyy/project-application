@@ -21,3 +21,9 @@ export interface DepartmentOption {
 export interface DepartmentFilterValues {
     search?: string;
 }
+
+export interface DepartmentBulkRow {
+    code: string;
+    name: string;
+    description?: string;
+}

@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { ClockCounterClockwiseIcon } from '@phosphor-icons/react';
+import { ClockCounterClockwiseIcon, CopySimpleIcon } from '@phosphor-icons/react';
 import { SchoolYearListRow } from '@type/school-year.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
@@ -9,11 +9,13 @@ import { useMemo } from 'react';
 interface UseSchoolYearTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
     onEdit: (id: string) => void;
+    onDuplicate?: (id: string) => void;
     onOpenHistory?: (id: string, label: string) => void;
     onView: (id: string) => void;
 }
 
 export function useSchoolYearTableConfig({
+    onDuplicate,
     onEdit,
     onOpenHistory,
     onView
@@ -86,6 +88,20 @@ export function useSchoolYearTableConfig({
                         preset: 'edit',
                         onClick: () => onEdit(row.id)
                     },
+                    ...(onDuplicate
+                        ? [
+                            {
+                                children: (
+                                    <div className="flex gap-2 items-center">
+                                        <CopySimpleIcon size={18} weight="bold" />
+                                        <span>Duplicate</span>
+                                    </div>
+                                ),
+                                key: 'duplicate',
+                                onClick: () => onDuplicate(row.id)
+                            }
+                        ]
+                        : []),
                     ...(onOpenHistory
                         ? [
                             {
@@ -107,7 +123,7 @@ export function useSchoolYearTableConfig({
                 ]
             };
         };
-    }, [onEdit, onOpenHistory, onView]);
+    }, [onDuplicate, onEdit, onOpenHistory, onView]);
 
     return { columnDefs, tableActionConfig };
 }

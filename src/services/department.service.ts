@@ -1,6 +1,7 @@
 import { callRpc } from '@services/supabase.wrapper';
+import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
 import {
-    DepartmentFilterValues, DepartmentFormValues, DepartmentListRow, DepartmentOption
+    DepartmentBulkRow, DepartmentFilterValues, DepartmentFormValues, DepartmentListRow, DepartmentOption
 } from '@type/department.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -70,4 +71,30 @@ export async function bulkDeleteDepartments(
     return callRpc<null>('fn_bulk_delete_departments', {
         p_department_ids: departmentIds
     });
+}
+
+export async function bulkCreateDepartments(
+    departments: DepartmentBulkRow[]
+): Promise<DetailedBulkImportResult> {
+    const result = await callRpc<{
+        provisioned_count: number;
+        errors: BulkImportError[];
+    }>('fn_bulk_create_departments', {
+        p_departments: departments
+    });
+
+    if (result.error) {
+        return {
+            provisioned_count: 0,
+            errors: [result.error.message]
+        };
+    }
+
+    const structuredErrors = result.data?.errors ?? [];
+    return {
+        provisioned_count: result.data?.provisioned_count ?? 0,
+        errors: structuredErrors.map((error) =>
+            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
+        structuredErrors
+    };
 }

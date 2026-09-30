@@ -58,18 +58,24 @@ export default function Step2TermsConfig({
     function handleAddTerm(termTypeId?: string) {
         const selectedTypeId = termTypeId || (termTypes.length > 0 ? termTypes[0].id : '');
         const matchedType = termTypes.find((t) => t.id === selectedTypeId);
+        const termStart = syStartDate || '';
+        const termEnd = syEndDate || '';
 
         const newTerm: WizardTermItem = {
             term_type_id: selectedTypeId,
             term_type_label: matchedType?.label || '',
             term_type_code: matchedType?.code || '',
-            start_date: syStartDate || '',
-            end_date: syEndDate || '',
+            start_date: termStart,
+            end_date: termEnd,
             enrollment_start_date: '',
             enrollment_end_date: '',
             grading_deadline: '',
             status: 'Upcoming',
-            grading_periods: [...DEFAULT_GRADING_PERIODS]
+            grading_periods: DEFAULT_GRADING_PERIODS.map((gp) => ({
+                ...gp,
+                start_date: termStart,
+                end_date: termEnd
+            }))
         };
 
         append(newTerm);
@@ -86,30 +92,42 @@ export default function Step2TermsConfig({
         const sYear = syStartDate ? new Date(syStartDate).getFullYear() : 2026;
         const eYear = syEndDate ? new Date(syEndDate).getFullYear() : 2027;
 
+        const term1Start = syStartDate || `${sYear}-08-15`;
+        const term1End = `${sYear}-12-20`;
         const term1: WizardTermItem = {
             term_type_id: sem1 ? sem1.id : termTypes[0].id,
             term_type_label: sem1 ? sem1.label : termTypes[0].label,
             term_type_code: sem1 ? sem1.code : termTypes[0].code,
-            start_date: syStartDate || `${sYear}-08-15`,
-            end_date: `${sYear}-12-20`,
+            start_date: term1Start,
+            end_date: term1End,
             enrollment_start_date: `${sYear}-08-01`,
             enrollment_end_date: `${sYear}-08-14`,
             grading_deadline: `${sYear}-12-23`,
             status: 'Upcoming',
-            grading_periods: [...DEFAULT_GRADING_PERIODS]
+            grading_periods: DEFAULT_GRADING_PERIODS.map((gp) => ({
+                ...gp,
+                start_date: term1Start,
+                end_date: term1End
+            }))
         };
 
+        const term2Start = `${eYear}-01-10`;
+        const term2End = syEndDate || `${eYear}-05-30`;
         const term2: WizardTermItem = {
             term_type_id: sem2 ? sem2.id : (termTypes[1]?.id || termTypes[0].id),
             term_type_label: sem2 ? sem2.label : (termTypes[1]?.label || termTypes[0].label),
             term_type_code: sem2 ? sem2.code : (termTypes[1]?.code || termTypes[0].code),
-            start_date: `${eYear}-01-10`,
-            end_date: syEndDate || `${eYear}-05-30`,
+            start_date: term2Start,
+            end_date: term2End,
             enrollment_start_date: `${eYear}-01-02`,
             enrollment_end_date: `${eYear}-01-09`,
             grading_deadline: `${eYear}-06-05`,
             status: 'Upcoming',
-            grading_periods: [...DEFAULT_GRADING_PERIODS]
+            grading_periods: DEFAULT_GRADING_PERIODS.map((gp) => ({
+                ...gp,
+                start_date: term2Start,
+                end_date: term2End
+            }))
         };
 
         // If currently empty, append both

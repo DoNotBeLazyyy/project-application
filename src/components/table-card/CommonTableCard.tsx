@@ -32,7 +32,7 @@ export default function CommonTableCard<T extends FieldValues>({
     infoContent,
     renderGridCard,
     showSubheader = false,
-    showViewToggle = true,
+    showViewToggle = false,
     sortColumns,
     tableActionConfig,
     tableProps,
@@ -525,7 +525,9 @@ export default function CommonTableCard<T extends FieldValues>({
                                         value: searchQuery
                                     }}
                                     viewMode={activeViewMode}
-                                    onToggleViewMode={setActiveViewMode}
+                                    onToggleViewMode={showViewToggle
+                                        ? setActiveViewMode
+                                        : undefined}
                                 />
                             )}
                     </div>

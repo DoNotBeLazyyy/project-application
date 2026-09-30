@@ -1,3 +1,4 @@
+import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
@@ -5,9 +6,11 @@ import DepartmentForm from '@pages/admin/department-management/DepartmentForm';
 import DepartmentGridCard from '@pages/admin/department-management/DepartmentGridCard';
 import { useDepartmentTableConfig } from '@pages/admin/department-management/useDepartmentTableConfig';
 import {
+    bulkCreateDepartments,
     bulkDeleteDepartments, createDepartment, deleteDepartment, getDepartmentById, listDepartments, updateDepartment
 } from '@services/department.service';
-import { DepartmentFormValues, DepartmentListRow } from '@type/department.type';
+import { CsvTemplateColumn } from '@type/bulk-import.type';
+import { DepartmentBulkRow, DepartmentFormValues, DepartmentListRow } from '@type/department.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
@@ -21,6 +24,12 @@ const SORT_COLUMNS: SortColumn[] = [
 const CREATE_FORM_ID = 'create-department-form';
 const UPDATE_FORM_ID = 'update-department-form';
 
+const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'code', label: 'Code', hint: 'e.g. CCS' },
+    { key: 'name', label: 'Name', hint: 'e.g. College of Computer Studies' },
+    { key: 'description', label: 'Description', hint: 'e.g. Department of Computer Studies (optional)' }
+];
+
 const DEFAULT_FORM_VALUES: DepartmentFormValues = {
     code: '',
     description: '',
@@ -29,6 +38,7 @@ const DEFAULT_FORM_VALUES: DepartmentFormValues = {
 
 export default function DepartmentManagement() {
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
@@ -144,6 +154,13 @@ export default function DepartmentManagement() {
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.departments
+                    },
+                    tableButtonsProps: {
+                        uploadCsvButtonProps: {
+                            onClick: function() {
+                                setIsBulkImportOpen(true);
+                            }
+                        }
                     }
                 }}
                 createModalProps={{
@@ -252,6 +269,23 @@ export default function DepartmentManagement() {
                 onDeleteRow={deleteDepartment}
                 onFetch={fetchDepartments}
                 onRowClick={handleOpenView}
+            />
+            <BulkImportModal<DepartmentBulkRow>
+                open={isBulkImportOpen}
+                templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                title="Bulk Import Departments"
+                onBulkImport={bulkCreateDepartments}
+                onClose={function() {
+                    setIsBulkImportOpen(false);
+                }}
+                onMapRow={function(row) {
+                    return {
+                        code: row.code,
+                        description: row.description,
+                        name: row.name
+                    };
+                }}
+                onSuccess={refreshList}
             />
         </div>
     );

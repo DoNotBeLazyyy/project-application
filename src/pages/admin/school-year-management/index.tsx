@@ -33,6 +33,7 @@ export default function SchoolYearManagement() {
     // Wizard modal state
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [wizardSchoolYearId, setWizardSchoolYearId] = useState<string | null>(null);
+    const [duplicateSchoolYearId, setDuplicateSchoolYearId] = useState<string | null>(null);
     const [isWizardReadOnly, setIsWizardReadOnly] = useState(false);
 
     // History modal state
@@ -53,18 +54,28 @@ export default function SchoolYearManagement() {
 
     function handleOpenCreate() {
         setWizardSchoolYearId(null);
+        setDuplicateSchoolYearId(null);
+        setIsWizardReadOnly(false);
+        setIsWizardOpen(true);
+    }
+
+    function handleOpenDuplicate(id: string) {
+        setWizardSchoolYearId(null);
+        setDuplicateSchoolYearId(id);
         setIsWizardReadOnly(false);
         setIsWizardOpen(true);
     }
 
     function handleOpenView(id: string) {
         setWizardSchoolYearId(id);
+        setDuplicateSchoolYearId(null);
         setIsWizardReadOnly(true);
         setIsWizardOpen(true);
     }
 
     function handleOpenUpdate(id: string) {
         setWizardSchoolYearId(id);
+        setDuplicateSchoolYearId(null);
         setIsWizardReadOnly(false);
         setIsWizardOpen(true);
     }
@@ -72,6 +83,7 @@ export default function SchoolYearManagement() {
     function handleCloseWizard() {
         setIsWizardOpen(false);
         setWizardSchoolYearId(null);
+        setDuplicateSchoolYearId(null);
         setIsWizardReadOnly(false);
     }
 
@@ -88,6 +100,7 @@ export default function SchoolYearManagement() {
     }
 
     const { columnDefs, tableActionConfig } = useSchoolYearTableConfig({
+        onDuplicate: handleOpenDuplicate,
         onEdit: handleOpenUpdate,
         onOpenHistory: handleOpenHistory,
         onRequestDeleteRow: function() {},
@@ -158,6 +171,7 @@ export default function SchoolYearManagement() {
                         <SchoolYearGridCard
                             isSelected={isSelected}
                             row={item}
+                            onDuplicate={handleOpenDuplicate}
                             onEdit={handleOpenUpdate}
                             onOpenHistory={handleOpenHistory}
                             onRequestDelete={onRequestDeleteRow}
@@ -183,6 +197,7 @@ export default function SchoolYearManagement() {
 
             {/* Academic Year & Calendar Wizard Modal */}
             <AcademicYearWizardModal
+                duplicateSchoolYearId={duplicateSchoolYearId}
                 open={isWizardOpen}
                 readOnly={isWizardReadOnly}
                 schoolYearId={wizardSchoolYearId}
