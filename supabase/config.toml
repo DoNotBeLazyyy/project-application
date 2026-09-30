@@ -1,10 +1,10 @@
 project_id = "au-jas-lms"
 
 [auth]
-site_url = "https://project-application.vercel.app"
+site_url = "https://project-application-donotbelazyyy.vercel.app"
 additional_redirect_urls = [
-  "https://project-application.vercel.app/**",
   "https://project-application-donotbelazyyy.vercel.app/**",
+  "https://project-application.vercel.app/**",
   "https://learning-management-system-for-au-j.vercel.app/**",
   "https://learning-management-system-for-au-jas-donotbelazyyy.vercel.app/**",
   "http://localhost:3000/**",
