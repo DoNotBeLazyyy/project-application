@@ -774,12 +774,36 @@ export function generatePresetHolidays(syStart?: string, syEnd?: string) {
 
     return [
         {
-            title: 'All Saints & Souls Day',
+            title: 'Ninoy Aquino Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-08-21`,
+            end_date: `${startYear}-08-21`,
+            affects_attendance: true,
+            description: 'Special Non-Working Holiday (R.A. 9256)'
+        },
+        {
+            title: 'National Heroes Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-08-31`,
+            end_date: `${startYear}-08-31`,
+            affects_attendance: true,
+            description: 'Regular National Holiday (Last Monday of August)'
+        },
+        {
+            title: "All Saints' Day",
             exception_type: 'Holiday' as const,
             start_date: `${startYear}-11-01`,
+            end_date: `${startYear}-11-01`,
+            affects_attendance: true,
+            description: 'Special Non-Working Holiday'
+        },
+        {
+            title: "All Souls' Day",
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-11-02`,
             end_date: `${startYear}-11-02`,
             affects_attendance: true,
-            description: 'National Regular & Special Non-Working Holidays'
+            description: 'Special Non-Working Holiday'
         },
         {
             title: 'Bonifacio Day',
@@ -790,6 +814,14 @@ export function generatePresetHolidays(syStart?: string, syEnd?: string) {
             description: 'Regular National Holiday'
         },
         {
+            title: 'Feast of the Immaculate Conception of Mary',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-12-08`,
+            end_date: `${startYear}-12-08`,
+            affects_attendance: true,
+            description: 'Special Non-Working Holiday (R.A. 10966)'
+        },
+        {
             title: 'Christmas & Year-End Academic Break',
             exception_type: 'Break' as const,
             start_date: `${startYear}-12-20`,
@@ -798,12 +830,92 @@ export function generatePresetHolidays(syStart?: string, syEnd?: string) {
             description: 'Institutional Holiday Recess & New Year Break'
         },
         {
-            title: 'Maundy Thursday & Good Friday',
+            title: 'Christmas Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-12-25`,
+            end_date: `${startYear}-12-25`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Rizal Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-12-30`,
+            end_date: `${startYear}-12-30`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Last Day of the Year',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-12-31`,
+            end_date: `${startYear}-12-31`,
+            affects_attendance: true,
+            description: 'Special Non-Working Holiday'
+        },
+        {
+            title: "New Year's Day",
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-01-01`,
+            end_date: `${endYear}-01-01`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Chinese New Year',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-02-17`,
+            end_date: `${endYear}-02-17`,
+            affects_attendance: true,
+            description: 'Special Non-Working Holiday (Lunar New Year)'
+        },
+        {
+            title: 'EDSA People Power Revolution Anniversary',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-02-25`,
+            end_date: `${endYear}-02-25`,
+            affects_attendance: true,
+            description: 'Special National Holiday'
+        },
+        {
+            title: "Eid'l Fitr (End of Ramadan)",
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-03-20`,
+            end_date: `${endYear}-03-20`,
+            affects_attendance: true,
+            description: 'Regular National Holiday (R.A. 9177)'
+        },
+        {
+            title: 'Araw ng Kagitingan (Day of Valor)',
             exception_type: 'Holiday' as const,
             start_date: `${endYear}-04-09`,
+            end_date: `${endYear}-04-09`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Maundy Thursday',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-04-09`,
+            end_date: `${endYear}-04-09`,
+            affects_attendance: true,
+            description: 'Holy Week Regular National Holiday'
+        },
+        {
+            title: 'Good Friday',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-04-10`,
             end_date: `${endYear}-04-10`,
             affects_attendance: true,
-            description: 'Holy Week Regular National Holidays'
+            description: 'Holy Week Regular National Holiday'
+        },
+        {
+            title: 'Black Saturday',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-04-11`,
+            end_date: `${endYear}-04-11`,
+            affects_attendance: true,
+            description: 'Holy Week Special Non-Working Holiday'
         },
         {
             title: 'Labor Day',
@@ -812,6 +924,14 @@ export function generatePresetHolidays(syStart?: string, syEnd?: string) {
             end_date: `${endYear}-05-01`,
             affects_attendance: true,
             description: 'Regular National Holiday'
+        },
+        {
+            title: "Eid'l Adha (Feast of Sacrifice)",
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-05-27`,
+            end_date: `${endYear}-05-27`,
+            affects_attendance: true,
+            description: 'Regular National Holiday (R.A. 9849)'
         },
         {
             title: 'Independence Day',

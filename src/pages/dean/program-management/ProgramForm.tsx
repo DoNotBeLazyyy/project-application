@@ -1,6 +1,7 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { CheckCircleIcon, ListChecksIcon, ScalesIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, ListChecksIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
@@ -107,13 +108,14 @@ export default function ProgramForm({
     ];
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col flex-1 h-full min-h-[70vh] sm:min-h-0 justify-between gap-4">
             {/* Stepper Header Navigation */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 shrink-0">
                 <div className="flex items-center gap-2">
                     {steps.map((step) => {
                         const Icon = step.icon;
                         const isActive = activeStep === step.id;
+                        const isDone = activeStep > step.id;
 
                         return (
                             <button
@@ -123,10 +125,12 @@ export default function ProgramForm({
                                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                     isActive
                                         ? 'bg-blue-600 text-white shadow-sm'
+                                        : isDone
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                             >
-                                <Icon className="w-4 h-4" />
+                                {isDone ? <CheckCircleIcon className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                                 <span>{step.label}</span>
                             </button>
                         );
@@ -137,23 +141,57 @@ export default function ProgramForm({
                 </span>
             </div>
 
-            {/* Stepper Content */}
-            {activeStep === 1 && (
-                <CommonForm
-                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                    control={control}
-                    fields={fields}
-                    formProps={formProps}
-                    hasHelper
-                />
-            )}
+            {/* Stepper Content Area (Takes Full Available Height in Mobile) */}
+            <div className="flex-1 overflow-y-auto min-h-[380px] sm:min-h-0 pr-1">
+                {activeStep === 1 && (
+                    <CommonForm
+                        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                        control={control}
+                        fields={fields}
+                        formProps={formProps}
+                        hasHelper
+                    />
+                )}
 
-            {activeStep === 2 && (
-                <ProgramGradingSchemaStep
-                    control={control}
-                    disabled={disabled}
-                />
-            )}
+                {activeStep === 2 && (
+                    <ProgramGradingSchemaStep
+                        control={control}
+                        disabled={disabled}
+                    />
+                )}
+            </div>
+
+            {/* Stepper Footer Action Bar (Back / Next Navigation) */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+                <CommonButton
+                    type="button"
+                    variant="outlined"
+                    color="inherit"
+                    disabled={activeStep === 1}
+                    onClick={() => setActiveStep(1)}
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                    size="small"
+                >
+                    Back
+                </CommonButton>
+
+                {activeStep < steps.length ? (
+                    <CommonButton
+                        type="button"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setActiveStep(2)}
+                        endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                        size="small"
+                    >
+                        Next: Grading Schema
+                    </CommonButton>
+                ) : (
+                    <span className="text-xs text-slate-500 font-medium italic flex items-center gap-1.5">
+                        <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Form complete
+                    </span>
+                )}
+            </div>
         </div>
     );
 }
