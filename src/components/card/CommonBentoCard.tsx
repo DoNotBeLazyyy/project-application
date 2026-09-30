@@ -218,22 +218,16 @@ export default function CommonBentoCard({
                         )}
                     </div>
 
-                    <div
-                        className="hover:bg-slate-100 hover:text-slate-600 p-1 rounded-lg shrink-0 text-slate-400 transition-colors"
-                        onClick={function(e) {
-                            e.stopPropagation();
-                        }}
-                    >
-                        {actionMenu ?? (
-                            <button
-                                aria-label="Card actions"
-                                className="cursor-pointer flex items-center justify-center"
-                                type="button"
-                            >
-                                <DotsThreeVerticalIcon size={18} weight="bold" />
-                            </button>
-                        )}
-                    </div>
+                    {actionMenu && (
+                        <div
+                            className="hover:bg-slate-100 hover:text-slate-600 p-1 rounded-lg shrink-0 text-slate-400 transition-colors"
+                            onClick={function(e) {
+                                e.stopPropagation();
+                            }}
+                        >
+                            {actionMenu}
+                        </div>
+                    )}
                 </div>
 
                 {/* 2. Hero Title & Optional Subtitle */}
