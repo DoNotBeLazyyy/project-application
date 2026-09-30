@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
+    BroomIcon,
     CheckCircleIcon,
     InfoIcon,
     PlusIcon,
@@ -31,6 +32,28 @@ export default function Step3GradingPeriodsConfig({
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
+
+    // Clear all grading periods in a term down to 1 blank period
+    function handleClearTermPeriods(termIndex: number) {
+        const targetTerm = terms[termIndex];
+        if (!targetTerm) return;
+
+        const clearedPeriod: WizardGradingPeriodItem = {
+            end_date: '',
+            name: '',
+            sequence: 1,
+            start_date: '',
+            weight: 0
+        };
+
+        const updatedTerms = [...terms];
+        updatedTerms[termIndex] = {
+            ...targetTerm,
+            grading_periods: [clearedPeriod]
+        };
+
+        onChangeTerms(updatedTerms);
+    }
 
     // Add a period to a specific term
     function handleAddPeriod(termIndex: number) {
@@ -280,15 +303,27 @@ export default function Step3GradingPeriodsConfig({
                                     </span>
 
                                     {!disabled && (
-                                        <CommonButton
-                                            color="primary"
-                                            size="small"
-                                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                                            variant="outlined"
-                                            onClick={() => handleAddPeriod(tIdx)}
-                                        >
-                                            Add Period
-                                        </CommonButton>
+                                        <div className="flex items-center gap-2">
+                                            <CommonButton
+                                                color="inherit"
+                                                size="small"
+                                                startIcon={<BroomIcon className="w-3.5 h-3.5" />}
+                                                variant="outlined"
+                                                onClick={() => handleClearTermPeriods(tIdx)}
+                                                title="Clear all grading periods for this term"
+                                            >
+                                                Clear Term
+                                            </CommonButton>
+                                            <CommonButton
+                                                color="primary"
+                                                size="small"
+                                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                                variant="outlined"
+                                                onClick={() => handleAddPeriod(tIdx)}
+                                            >
+                                                Add Period
+                                            </CommonButton>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -391,152 +426,150 @@ export default function Step3GradingPeriodsConfig({
                                     return (
                                         <div
                                             key={period.id || pIdx}
-                                            className={`p-3.5 rounded-xl border flex flex-col md:flex-row md:items-center gap-3 transition-colors ${
+                                            className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
                                                 isDuplicateName || hasPrecedingConflict || hasDateOrderError || isOutsideTerm
                                                     ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                     : 'border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/40'
                                             }`}
                                         >
-                                            {/* Sequence Badge */}
-                                            <div className="flex items-center justify-between md:justify-start gap-2">
-                                                <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                                    #{period.sequence}
-                                                </span>
-                                                <span className="text-xs font-medium text-slate-500 md:hidden">
-                                                    Period {period.sequence}
-                                                </span>
-                                                {!disabled && periods.length > 1 && (
-                                                    <button
-                                                        className="md:hidden text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1"
-                                                        type="button"
-                                                        onClick={() => handleRemovePeriod(tIdx, pIdx)}
-                                                    >
-                                                        <TrashIcon className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Name input */}
-                                            <div className="flex-1 min-w-[130px]">
-                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    <span>Period Name <span className="text-red-500">*</span></span>
-                                                    <CommonInfoTooltip content="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)." size={13} />
-                                                </label>
-                                                <input
-                                                    className={`w-full px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                        isDuplicateName
-                                                            ? 'border-red-500 focus:ring-red-500'
-                                                            : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                    }`}
-                                                    disabled={disabled}
-                                                    placeholder="e.g. Prelim, Midterm, Finals"
-                                                    type="text"
-                                                    value={period.name}
-                                                    onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { name: e.target.value })}
-                                                />
-                                                {isDuplicateName && (
-                                                    <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                                                        Duplicate name in this term
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Weight input */}
-                                            <div className="w-full md:w-28">
-                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    <span>Weight (%) <span className="text-red-500">*</span></span>
-                                                    <CommonInfoTooltip content="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%." size={13} />
-                                                </label>
-                                                <div className="relative">
-                                                    <input
-                                                        className="w-full px-3 py-1.5 pr-7 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 font-semibold text-right"
-                                                        disabled={disabled}
-                                                        max={100}
-                                                        min={0}
-                                                        step={1}
-                                                        type="number"
-                                                        value={period.weight ?? ''}
-                                                        onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { weight: Number(e.target.value) || 0 })}
-                                                    />
-                                                    <span className="absolute right-2.5 top-1.5 text-xs text-slate-400 font-bold pointer-events-none">
-                                                        %
+                                            {/* Row 1: Entry number and action buttons */}
+                                            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-700/50 pb-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                                        #{period.sequence}
+                                                    </span>
+                                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                        Period #{period.sequence}
                                                     </span>
                                                 </div>
-                                            </div>
 
-                                            {/* Start Date */}
-                                            <div className="w-full md:w-36">
-                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    <span>Start Date <span className="text-red-500">*</span></span>
-                                                    <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
-                                                </label>
-                                                <input
-                                                    required
-                                                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                        hasPrecedingConflict
-                                                            ? 'border-amber-500 focus:ring-amber-500'
-                                                            : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                    }`}
-                                                    disabled={disabled}
-                                                    type="date"
-                                                    value={period.start_date || ''}
-                                                    onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', e.target.value)}
-                                                />
-                                                {hasPrecedingConflict && (
-                                                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
-                                                        Overlaps with #{pIdx} end date
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* End Date */}
-                                            <div className="w-full md:w-36">
-                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    <span>End Date <span className="text-red-500">*</span></span>
-                                                    <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
-                                                </label>
-                                                <input
-                                                    required
-                                                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                        hasDateOrderError
-                                                            ? 'border-red-500 focus:ring-red-500'
-                                                            : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                    }`}
-                                                    disabled={disabled}
-                                                    type="date"
-                                                    value={period.end_date || ''}
-                                                    onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', e.target.value)}
-                                                />
-                                                {hasDateOrderError && (
-                                                    <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                                                        Must be after start date
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Row Actions (Reset to Blank & Remove) */}
-                                            {!disabled && (
-                                                <div className="flex items-center gap-1 pt-4">
-                                                    <button
-                                                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
-                                                        title="Reset period inputs to blank"
-                                                        type="button"
-                                                        onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '' })}
-                                                    >
-                                                        <ArrowCounterClockwiseIcon className="w-4 h-4" />
-                                                    </button>
-                                                    {periods.length > 1 && (
-                                                        <button
-                                                            className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                                            title="Remove period"
-                                                            type="button"
-                                                            onClick={() => handleRemovePeriod(tIdx, pIdx)}
+                                                {!disabled && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <CommonButton
+                                                            color="inherit"
+                                                            size="small"
+                                                            startIcon={<BroomIcon className="w-3.5 h-3.5" />}
+                                                            variant="outlined"
+                                                            onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '' })}
+                                                            title="Clear period fields"
                                                         >
-                                                            <TrashIcon className="w-4 h-4" />
-                                                        </button>
+                                                            <span className="hidden sm:inline">Clear</span>
+                                                        </CommonButton>
+                                                        {periods.length > 1 && (
+                                                            <CommonButton
+                                                                color="error"
+                                                                size="small"
+                                                                startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                                variant="outlined"
+                                                                onClick={() => handleRemovePeriod(tIdx, pIdx)}
+                                                                title="Remove period"
+                                                            >
+                                                                <span className="hidden sm:inline">Remove</span>
+                                                            </CommonButton>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Row 2: Period name and weight */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                        <span>Period Name <span className="text-red-500">*</span></span>
+                                                        <CommonInfoTooltip content="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)." size={13} />
+                                                    </label>
+                                                    <input
+                                                        className={`w-full px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
+                                                            isDuplicateName
+                                                                ? 'border-red-500 focus:ring-red-500'
+                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
+                                                        }`}
+                                                        disabled={disabled}
+                                                        placeholder="e.g. Prelim, Midterm, Finals"
+                                                        type="text"
+                                                        value={period.name}
+                                                        onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { name: e.target.value })}
+                                                    />
+                                                    {isDuplicateName && (
+                                                        <p className="text-[10px] text-red-500 font-semibold mt-0.5">
+                                                            Duplicate name in this term
+                                                        </p>
                                                     )}
                                                 </div>
-                                            )}
+
+                                                <div>
+                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                        <span>Weight (%) <span className="text-red-500">*</span></span>
+                                                        <CommonInfoTooltip content="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%." size={13} />
+                                                    </label>
+                                                    <div className="relative">
+                                                        <input
+                                                            className="w-full px-3 py-1.5 pr-7 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 font-semibold text-right"
+                                                            disabled={disabled}
+                                                            max={100}
+                                                            min={0}
+                                                            step={1}
+                                                            type="number"
+                                                            value={period.weight ?? ''}
+                                                            onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { weight: Number(e.target.value) || 0 })}
+                                                        />
+                                                        <span className="absolute right-2.5 top-1.5 text-xs text-slate-400 font-bold pointer-events-none">
+                                                            %
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Row 3: Start and end date */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                        <span>Start Date <span className="text-red-500">*</span></span>
+                                                        <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
+                                                            hasPrecedingConflict
+                                                                ? 'border-amber-500 focus:ring-amber-500'
+                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
+                                                        }`}
+                                                        disabled={disabled}
+                                                        type="date"
+                                                        value={period.start_date || ''}
+                                                        onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', e.target.value)}
+                                                    />
+                                                    {hasPrecedingConflict && (
+                                                        <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
+                                                            Overlaps with #{pIdx} end date
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                        <span>End Date <span className="text-red-500">*</span></span>
+                                                        <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
+                                                    </label>
+                                                    <input
+                                                        required
+                                                        className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
+                                                            hasDateOrderError
+                                                                ? 'border-red-500 focus:ring-red-500'
+                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
+                                                        }`}
+                                                        disabled={disabled}
+                                                        type="date"
+                                                        value={period.end_date || ''}
+                                                        onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', e.target.value)}
+                                                    />
+                                                    {hasDateOrderError && (
+                                                        <p className="text-[10px] text-red-500 font-semibold mt-0.5">
+                                                            Must be after start date
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     );
                                 })}

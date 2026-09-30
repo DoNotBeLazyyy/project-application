@@ -3,7 +3,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { BroomIcon, CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
 import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -49,6 +49,19 @@ export default function Step1SchoolYearInfo({
 
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
+
+    function handleClearForm() {
+        setValue('start_date', '', { shouldValidate: false, shouldDirty: true });
+        setValue('end_date', '', { shouldValidate: false, shouldDirty: true });
+        setValue('code', '', { shouldValidate: false, shouldDirty: true });
+        setValue('label', '', { shouldValidate: false, shouldDirty: true });
+        setValue('is_active', false, { shouldValidate: false, shouldDirty: true });
+        userEditedCodeRef.current = false;
+        userEditedLabelRef.current = false;
+        if (onClearSourceYear) {
+            onClearSourceYear();
+        }
+    }
 
     useEffect(() => {
         userEditedCodeRef.current = false;
@@ -116,6 +129,29 @@ export default function Step1SchoolYearInfo({
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Step Header Block with Description & Clear Form Button */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Academic Year Details</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Define operational start and end dates, system code, display label, and active status.
+                    </p>
+                </div>
+                {!disabled && (
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        startIcon={<BroomIcon className="w-4 h-4" />}
+                        variant="outlined"
+                        onClick={handleClearForm}
+                        title="Clear form fields in this step"
+                    >
+                        <span className="hidden sm:inline">Clear Form</span>
+                        <span className="sm:hidden">Clear</span>
+                    </CommonButton>
+                )}
+            </div>
+
             {/* Duplicate Banner when duplicating from an existing academic year */}
             {sourceSchoolYear && (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/25 border border-amber-300 dark:border-amber-800/60 text-sm">
