@@ -2,7 +2,6 @@ import FileAttachmentList from '@components/attachment/FileAttachmentList';
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { CommonChip } from '@components/badge/CommonChip';
 import RichContentReader from '@components/editor/RichContentReader';
-import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import {
     CalendarBlankIcon,
     ClockIcon,
@@ -11,6 +10,7 @@ import {
     UserIcon,
     UsersThreeIcon
 } from '@phosphor-icons/react';
+import { AnnouncementAudience } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
 import { ReactNode } from 'react';
 
@@ -90,6 +90,13 @@ function EventMetaTile({ children, icon, label, value }: EventMetaTileProps) {
     );
 }
 
+const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
+    Faculty: 'Faculty only',
+    Global: 'Everyone (Global)',
+    Section: 'Specific Sections',
+    Student: 'Students only'
+};
+
 /**
  * EventViewerCard
  *
@@ -97,9 +104,11 @@ function EventMetaTile({ children, icon, label, value }: EventMetaTileProps) {
  * highlights for date, location, target audience, rich description, and attachments.
  */
 export default function EventViewerCard({ values }: EventViewerCardProps) {
-    const isGlobal = values.section_ids?.includes(ALL_SECTIONS_VALUE) || values.target_audience === 'Global';
+    const audience: AnnouncementAudience = values.target_audience || 'Global';
+    const audienceLabel = AUDIENCE_LABELS[audience] ?? audience;
+    const isSection = audience === 'Section';
     const hasAttachments = Boolean(values.attachments && values.attachments.length > 0);
-    const hasSections = !isGlobal && values.sections && values.sections.length > 0;
+    const hasSections = isSection && values.sections && values.sections.length > 0;
     const whenLabel = formatEventDisplayRange(values.start_at, values.end_at);
 
     return (
@@ -113,9 +122,7 @@ export default function EventViewerCard({ values }: EventViewerCardProps) {
                     variant="info"
                 />
                 <CommonChip
-                    label={isGlobal
-                        ? 'Everyone (Global)'
-                        : 'Section Event'}
+                    label={audienceLabel}
                     variant="light"
                 />
             </div>
@@ -141,30 +148,32 @@ export default function EventViewerCard({ values }: EventViewerCardProps) {
                     icon={<UsersThreeIcon size={18} weight="bold" />}
                     label="Audience"
                 >
-                    {isGlobal ? (
-                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Everyone (Campus-wide)
-                        </span>
-                    ) : hasSections ? (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                            {values.sections!.map(function(section) {
-                                const label = section.course_code
-                                    ? `${section.course_code} · ${section.code}`
-                                    : section.code;
+                    {isSection ? (
+                        hasSections ? (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                {values.sections!.map(function(section) {
+                                    const label = section.course_code
+                                        ? `${section.course_code} · ${section.code}`
+                                        : section.code;
 
-                                return (
-                                    <span
-                                        className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) font-medium px-2 py-0.5 rounded text-xs text-(--mui-palette-text-primary)"
-                                        key={section.id}
-                                    >
-                                        {label}
-                                    </span>
-                                );
-                            })}
-                        </div>
+                                    return (
+                                        <span
+                                            className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) font-medium px-2 py-0.5 rounded text-xs text-(--mui-palette-text-primary)"
+                                            key={section.id}
+                                        >
+                                            {label}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                Specific Sections
+                            </span>
+                        )
                     ) : (
                         <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Specific Sections
+                            {audienceLabel}
                         </span>
                     )}
                 </EventMetaTile>

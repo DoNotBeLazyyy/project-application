@@ -1,5 +1,4 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
-import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
@@ -57,7 +56,7 @@ export default function AnnouncementDetailPage() {
             item_type: initialType,
             location: '',
             posted_on: '',
-            section_ids: initialType === 'Event' ? [ALL_SECTIONS_VALUE] : [],
+            section_ids: [],
             start_at: '',
             target_audience: 'Global',
             title: ''
@@ -87,10 +86,10 @@ export default function AnnouncementDetailPage() {
                         item_type: 'Event',
                         location: d.location ?? '',
                         posted_on: formatTimestamp(d.created_at),
-                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [ALL_SECTIONS_VALUE],
+                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
                         sections: d.sections ?? [],
                         start_at: toDateInput(d.start_at),
-                        target_audience: d.target_audience,
+                        target_audience: d.target_audience || 'Global',
                         title: d.title
                     },
                     error: null
@@ -119,7 +118,7 @@ export default function AnnouncementDetailPage() {
                     section_ids: d.section_ids ?? [],
                     sections: d.sections ?? [],
                     start_at: '',
-                    target_audience: d.target_audience,
+                    target_audience: d.target_audience || 'Global',
                     title: d.title
                 },
                 error: null
@@ -144,10 +143,10 @@ export default function AnnouncementDetailPage() {
                     item_type: 'Event',
                     location: d.location ?? '',
                     posted_on: formatTimestamp(d.created_at),
-                    section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [ALL_SECTIONS_VALUE],
+                    section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
                     sections: d.sections ?? [],
                     start_at: toDateInput(d.start_at),
-                    target_audience: d.target_audience,
+                    target_audience: d.target_audience || 'Global',
                     title: d.title
                 },
                 error: null
@@ -158,17 +157,18 @@ export default function AnnouncementDetailPage() {
     }, [pathname]);
 
     async function handleCreate(values: CommunicationFormValues) {
+        const audience = values.target_audience || 'Global';
+        const sectionIds = audience === 'Section' ? sanitizeUuidArray(values.section_ids ?? []) : [];
+
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';
-            const isAll = values.section_ids?.includes(ALL_SECTIONS_VALUE);
-            const audience = isAll ? 'Global' : 'Section';
             const eventPayload: EventFormValues = {
                 all_day: values.all_day ?? false,
                 attachments: values.attachments,
                 description: body,
                 end_at: values.end_at || '',
                 location: values.location || '',
-                section_ids: isAll ? [] : sanitizeUuidArray(values.section_ids ?? []),
+                section_ids: sectionIds,
                 start_at: values.start_at || '',
                 target_audience: audience,
                 title: values.title
@@ -182,24 +182,25 @@ export default function AnnouncementDetailPage() {
             content: body,
             expires_at: values.expires_at || '',
             is_pinned: values.is_pinned ?? false,
-            section_ids: values.target_audience === 'Section' ? (values.section_ids ?? []) : [],
-            target_audience: values.target_audience || 'Global',
+            section_ids: sectionIds,
+            target_audience: audience,
             title: values.title
         });
     }
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
+        const audience = values.target_audience || 'Global';
+        const sectionIds = audience === 'Section' ? sanitizeUuidArray(values.section_ids ?? []) : [];
+
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';
-            const isAll = values.section_ids?.includes(ALL_SECTIONS_VALUE);
-            const audience = isAll ? 'Global' : 'Section';
             const eventPayload: EventFormValues = {
                 all_day: values.all_day ?? false,
                 attachments: values.attachments,
                 description: body,
                 end_at: values.end_at || '',
                 location: values.location || '',
-                section_ids: isAll ? [] : sanitizeUuidArray(values.section_ids ?? []),
+                section_ids: sectionIds,
                 start_at: values.start_at || '',
                 target_audience: audience,
                 title: values.title
@@ -213,8 +214,8 @@ export default function AnnouncementDetailPage() {
             content: body,
             expires_at: values.expires_at || '',
             is_pinned: values.is_pinned ?? false,
-            section_ids: values.target_audience === 'Section' ? (values.section_ids ?? []) : [],
-            target_audience: values.target_audience || 'Global',
+            section_ids: sectionIds,
+            target_audience: audience,
             title: values.title
         });
     }

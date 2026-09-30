@@ -3,7 +3,6 @@ import ValidCommonToastEditor from '@components/editor/ValidCommonToastEditor';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { ALL_SECTIONS_OPTION, ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import { getAnnouncementSectionOptions } from '@services/announcement.service';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
@@ -109,10 +108,6 @@ export default function AnnouncementForm({
         };
     }, []);
 
-    const eventAudienceOptions = isFacultyOnly
-        ? sectionOptions
-        : [ALL_SECTIONS_OPTION, ...sectionOptions];
-
     const fields: FormFieldConfig<CommunicationFormValues>[] = [
         ...(authorName || postedOn
             ? [
@@ -157,39 +152,46 @@ export default function AnnouncementForm({
                 : { required: 'Title is required' },
             type: 'text'
         },
+        {
+            disabled,
+            fieldProps: {
+                helperText: itemType === 'Event'
+                    ? 'Who should be able to view and attend this event'
+                    : 'Who should receive this announcement'
+            },
+            label: 'Audience',
+            name: 'target_audience' as const,
+            options: isFacultyOnly
+                ? FACULTY_AUDIENCE_OPTIONS
+                : STAFF_AUDIENCE_OPTIONS,
+            rules: disabled
+                ? undefined
+                : { required: 'Audience is required' },
+            type: 'select' as const
+        },
+        ...(audience === 'Section'
+            ? [
+                {
+                    disabled,
+                    fieldProps: {
+                        helperText: 'Select one or more sections',
+                        placeholder: 'Select sections'
+                    },
+                    gridCols: 2,
+                    label: 'Sections',
+                    name: 'section_ids' as const,
+                    options: sectionOptions,
+                    rules: disabled
+                        ? undefined
+                        : { validate: validateSections },
+                    type: 'multi-select' as const
+                }
+            ]
+            : []),
 
         // --- SPECIFIC FIELDS FOR ANNOUNCEMENTS ---
         ...(itemType === 'Announcement'
             ? [
-                {
-                    disabled,
-                    fieldProps: { helperText: 'Who should receive this announcement' },
-                    label: 'Audience',
-                    name: 'target_audience' as const,
-                    options: isFacultyOnly
-                        ? FACULTY_AUDIENCE_OPTIONS
-                        : STAFF_AUDIENCE_OPTIONS,
-                    rules: disabled
-                        ? undefined
-                        : { required: 'Audience is required' },
-                    type: 'select' as const
-                },
-                ...(audience === 'Section'
-                    ? [
-                        {
-                            disabled,
-                            fieldProps: { helperText: 'Post to one or more sections at once' },
-                            gridCols: 2,
-                            label: 'Sections',
-                            name: 'section_ids' as const,
-                            options: sectionOptions,
-                            rules: disabled
-                                ? undefined
-                                : { required: 'Select at least one section' },
-                            type: 'multi-select' as const
-                        }
-                    ]
-                    : []),
                 {
                     disabled,
                     fieldProps: { helperText: 'Leave empty to keep it visible indefinitely' },
@@ -233,26 +235,6 @@ export default function AnnouncementForm({
                     label: 'End Date',
                     name: 'end_at' as const,
                     type: 'date' as const
-                },
-                {
-                    disabled,
-                    fieldProps: {
-                        exclusiveValue: isFacultyOnly
-                            ? undefined
-                            : ALL_SECTIONS_VALUE,
-                        helperText: isFacultyOnly
-                            ? 'Show this event to one or more sections'
-                            : 'Pick "All (Everyone)" or one or more specific sections',
-                        placeholder: 'Select sections'
-                    },
-                    gridCols: 2,
-                    label: 'Sections',
-                    name: 'section_ids' as const,
-                    options: eventAudienceOptions,
-                    rules: disabled
-                        ? undefined
-                        : { validate: validateSections },
-                    type: 'multi-select' as const
                 }
             ]
             : [])

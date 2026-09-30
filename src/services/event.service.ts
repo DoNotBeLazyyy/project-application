@@ -1,4 +1,3 @@
-import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import { callRpc } from '@services/supabase.wrapper';
 import { AnnouncementAudience } from '@type/announcement.type';
 import { EventDetail, EventFeedRow, EventFormValues, EventListRow } from '@type/event.type';
@@ -45,34 +44,24 @@ export async function getEventById(
     });
 }
 
-interface EventAudienceParams {
-    audience: AnnouncementAudience;
-    sectionIds: string[] | null;
-}
-
-function toAudienceParams(sectionIds: string[]): EventAudienceParams {
-    if (sectionIds.includes(ALL_SECTIONS_VALUE)) {
-        return { audience: 'Global', sectionIds: null };
-    }
-
-    return { audience: 'Section', sectionIds: sanitizeUuidArray(sectionIds) };
-}
-
 export async function createEvent(
     params: EventFormValues
 ): Promise<ServiceResult<null>> {
-    const audienceParams = toAudienceParams(params.section_ids);
+    const audience = params.target_audience || 'Global';
+    const sectionIds = audience === 'Section' && params.section_ids && params.section_ids.length > 0
+        ? sanitizeUuidArray(params.section_ids)
+        : null;
 
     return callRpc<null>('fn_create_event', {
-        p_all_day: false,
+        p_all_day: params.all_day ?? false,
         p_attachments: params.attachments && params.attachments.length > 0
             ? params.attachments
             : null,
-        p_audience: audienceParams.audience,
+        p_audience: audience,
         p_description: params.description || null,
         p_end_at: params.end_at || null,
         p_location: params.location || null,
-        p_section_ids: audienceParams.sectionIds,
+        p_section_ids: sectionIds,
         p_start_at: nullIfBlank(params.start_at),
         p_title: params.title
     });
@@ -82,19 +71,22 @@ export async function updateEvent(
     eventId: string,
     params: EventFormValues
 ): Promise<ServiceResult<null>> {
-    const audienceParams = toAudienceParams(params.section_ids);
+    const audience = params.target_audience || 'Global';
+    const sectionIds = audience === 'Section' && params.section_ids && params.section_ids.length > 0
+        ? sanitizeUuidArray(params.section_ids)
+        : null;
 
     return callRpc<null>('fn_update_event', {
-        p_all_day: false,
+        p_all_day: params.all_day ?? false,
         p_attachments: params.attachments && params.attachments.length > 0
             ? params.attachments
             : null,
-        p_audience: audienceParams.audience,
+        p_audience: audience,
         p_description: params.description || null,
         p_end_at: params.end_at || null,
         p_id: eventId,
         p_location: params.location || null,
-        p_section_ids: audienceParams.sectionIds,
+        p_section_ids: sectionIds,
         p_start_at: nullIfBlank(params.start_at),
         p_title: params.title
     });
