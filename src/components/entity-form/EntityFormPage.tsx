@@ -152,8 +152,8 @@ export default function EntityFormPage<TValues extends FieldValues>({
 
     return (
         <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-            <div className="flex flex-wrap gap-4 items-start justify-between">
-                <div className="flex gap-3 items-start">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-(--mui-palette-divider) pb-3.5 mb-1">
+                <div className="flex items-start gap-3">
                     <CommonButton
                         color="inherit"
                         size="small"
@@ -163,18 +163,18 @@ export default function EntityFormPage<TValues extends FieldValues>({
                     >
                         Back
                     </CommonButton>
-                    <div className="flex flex-col gap-1">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
+                    <div className="flex flex-col gap-0.5">
+                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl">
                             {resolveModeText(title, mode)}
                         </h1>
                         {subheader && (
-                            <p className="text-(--mui-palette-text-secondary) text-sm">
+                            <p className="text-(--mui-palette-text-secondary) text-xs sm:text-sm">
                                 {resolveModeText(subheader, mode)}
                             </p>
                         )}
                     </div>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     {mode === 'view' && canEdit && (
                         <CommonButton
                             size="small"
