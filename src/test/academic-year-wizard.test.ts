@@ -10,7 +10,9 @@ import {
     parseYearFromDate,
     SourceSchoolYearInfo,
     validateGradingPeriods,
-    validateStep1SchoolYear
+    validateStep1SchoolYear,
+    validateTerms,
+    distributeDatesAcrossPeriods
 } from '@pages/admin/school-year-management/wizard/wizard.constants';
 import { AcademicYearCalendarDetails, WizardTermItem } from '@type/school-year.type';
 
@@ -481,6 +483,59 @@ describe('Academic Year Duplicate & Overlap Conflict Detection', () => {
             );
             expect(res.isValid).toBe(true);
             expect(res.error).toBeUndefined();
+        });
+    });
+
+    describe('Terms Validation & Non-overlapping Scheduling', () => {
+        it('should fail when two terms have the same term type (e.g. two summer terms)', () => {
+            const duplicateTerms: WizardTermItem[] = [
+                {
+                    end_date: '2027-07-15',
+                    start_date: '2027-06-10',
+                    term_type_id: 'summer-type-id',
+                    term_type_label: 'Summer Term'
+                },
+                {
+                    end_date: '2027-08-20',
+                    start_date: '2027-07-20',
+                    term_type_id: 'summer-type-id',
+                    term_type_label: 'Summer Term'
+                }
+            ];
+
+            const res = validateTerms(duplicateTerms);
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('Duplicate term type');
+        });
+
+        it('should fail when preceding term end date conflicts with succeeding term start date', () => {
+            const overlappingTerms: WizardTermItem[] = [
+                {
+                    end_date: '2026-12-20',
+                    start_date: '2026-08-15',
+                    term_type_id: 'sem-1',
+                    term_type_label: '1st Semester'
+                },
+                {
+                    end_date: '2027-05-30',
+                    start_date: '2026-12-10', // Before term 1 end date!
+                    term_type_id: 'sem-2',
+                    term_type_label: '2nd Semester'
+                }
+            ];
+
+            const res = validateTerms(overlappingTerms);
+            expect(res.isValid).toBe(false);
+            expect(res.error).toContain('conflicts with preceding term');
+        });
+
+        it('should distribute dates across periods proportionally without overlap', () => {
+            const distributed = distributeDatesAcrossPeriods('2026-08-15', '2026-12-20', 3);
+            expect(distributed).toHaveLength(3);
+            expect(distributed[0].start_date).toBe('2026-08-15');
+            expect(distributed[2].end_date).toBe('2026-12-20');
+            expect(new Date(distributed[0].end_date) > new Date(distributed[0].start_date)).toBe(true);
+            expect(new Date(distributed[1].start_date) >= new Date(distributed[0].end_date)).toBe(true);
         });
     });
 });

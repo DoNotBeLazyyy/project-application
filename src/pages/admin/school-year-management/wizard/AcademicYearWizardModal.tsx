@@ -37,6 +37,8 @@ import {
     SourceSchoolYearInfo,
     validateGradingPeriods,
     validateStep1SchoolYear,
+    validateTerms,
+    validateTransmutationRows,
     WIZARD_STEPS
 } from './wizard.constants';
 
@@ -193,30 +195,10 @@ export default function AcademicYearWizardModal({
     // Validation for Step 2
     function validateStep2(): boolean {
         const values = getValues();
-        if (!values.terms || values.terms.length === 0) {
-            useToastStore.getState().showToast('Please declare at least one Term for this academic year.', 'error');
+        const result = validateTerms(values.terms || [], values.start_date, values.end_date);
+        if (!result.isValid && result.error) {
+            useToastStore.getState().showToast(result.error, 'error');
             return false;
-        }
-
-        for (let i = 0; i < values.terms.length; i++) {
-            const t = values.terms[i];
-            const termName = t.term_type_label || `Term #${i + 1}`;
-            if (!t.term_type_id) {
-                useToastStore.getState().showToast(`Please select a Term Type for ${termName}.`, 'error');
-                return false;
-            }
-            if (!t.start_date) {
-                useToastStore.getState().showToast(`Please specify a Start Date for ${termName}.`, 'error');
-                return false;
-            }
-            if (!t.end_date) {
-                useToastStore.getState().showToast(`Please specify an End Date for ${termName}.`, 'error');
-                return false;
-            }
-            if (new Date(t.end_date) < new Date(t.start_date)) {
-                useToastStore.getState().showToast(`End Date cannot be before Start Date in ${termName}.`, 'error');
-                return false;
-            }
         }
         return true;
     }
@@ -237,16 +219,10 @@ export default function AcademicYearWizardModal({
     function validateStep4(): boolean {
         const values = getValues();
         const rows = values.transmutation_rows || [];
-
-        for (let i = 0; i < rows.length; i++) {
-            const r = rows[i];
-            if (!r.label || !r.label.trim()) {
-                useToastStore.getState().showToast(
-                    `Row #${i + 1} must have a Grade Mark / Label (e.g. 1.00, 1.21, INC).`,
-                    'error'
-                );
-                return false;
-            }
+        const result = validateTransmutationRows(rows);
+        if (!result.isValid && result.error) {
+            useToastStore.getState().showToast(result.error, 'error');
+            return false;
         }
         return true;
     }

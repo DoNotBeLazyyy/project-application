@@ -6,6 +6,7 @@ import {
     WizardThresholdItem,
     WizardTransmutationRow
 } from '@type/school-year.type';
+import { formatDate } from '@utils/date.util';
 
 export const DEFAULT_GRADING_PERIODS: WizardGradingPeriodItem[] = [
     { name: 'Prelim', sequence: 1, weight: 30 },
@@ -135,6 +136,144 @@ export const WIZARD_STEPS = [
     { step: 5, title: 'Academic Thresholds', subtitle: 'Honors, scholarships & standing' }
 ];
 
+export function distributeDatesAcrossPeriods(
+    startDateStr: string,
+    endDateStr: string,
+    count: number
+): { start_date: string; end_date: string }[] {
+    if (count <= 0) return [];
+    if (!startDateStr || !endDateStr) {
+        return Array.from({ length: count }, () => ({
+            end_date: endDateStr || '',
+            start_date: startDateStr || ''
+        }));
+    }
+
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+    const diffMs = end.getTime() - start.getTime();
+
+    if (diffMs <= 0 || isNaN(diffMs)) {
+        return Array.from({ length: count }, () => ({
+            end_date: endDateStr,
+            start_date: startDateStr
+        }));
+    }
+
+    const chunkMs = diffMs / count;
+    const result: { start_date: string; end_date: string }[] = [];
+
+    for (let i = 0; i < count; i++) {
+        const pStart = new Date(start.getTime() + i * chunkMs);
+        const pEnd = i === count - 1 ? end : new Date(start.getTime() + (i + 1) * chunkMs);
+        result.push({
+            end_date: formatDate(pEnd),
+            start_date: formatDate(pStart)
+        });
+    }
+
+    return result;
+}
+
+export function validateTerms(
+    terms: WizardTermItem[],
+    syStartDate?: string,
+    syEndDate?: string
+): { isValid: boolean; error?: string } {
+    if (!terms || terms.length === 0) {
+        return {
+            error: 'Please declare at least one Term for this academic year.',
+            isValid: false
+        };
+    }
+
+    const seenTypeIds = new Set<string>();
+
+    for (let i = 0; i < terms.length; i++) {
+        const t = terms[i];
+        const termName = t.term_type_label || `Term #${i + 1}`;
+
+        if (!t.term_type_id) {
+            return {
+                error: `Please select a Term Type for ${termName}.`,
+                isValid: false
+            };
+        }
+
+        if (seenTypeIds.has(t.term_type_id)) {
+            return {
+                error: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique term type (e.g. cannot have two Summer terms).`,
+                isValid: false
+            };
+        }
+        seenTypeIds.add(t.term_type_id);
+
+        if (!t.start_date) {
+            return {
+                error: `Please specify a Start Date for ${termName}.`,
+                isValid: false
+            };
+        }
+
+        if (!t.end_date) {
+            return {
+                error: `Please specify an End Date for ${termName}.`,
+                isValid: false
+            };
+        }
+
+        if (new Date(t.end_date) < new Date(t.start_date)) {
+            return {
+                error: `End Date cannot be before Start Date in ${termName}.`,
+                isValid: false
+            };
+        }
+
+        if (new Date(t.end_date).getTime() === new Date(t.start_date).getTime()) {
+            return {
+                error: `End Date must be strictly after Start Date in ${termName}.`,
+                isValid: false
+            };
+        }
+
+        if (i > 0) {
+            const prevTerm = terms[i - 1];
+            const prevName = prevTerm.term_type_label || `Term #${i}`;
+            if (new Date(t.start_date) < new Date(prevTerm.end_date)) {
+                return {
+                    error: `Term #${i + 1} (${termName}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
+                    isValid: false
+                };
+            }
+        }
+
+        if (syStartDate && new Date(t.start_date) < new Date(syStartDate)) {
+            return {
+                error: `Term #${i + 1} (${termName}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,
+                isValid: false
+            };
+        }
+
+        if (syEndDate && new Date(t.end_date) > new Date(syEndDate)) {
+            return {
+                error: `Term #${i + 1} (${termName}) end date (${t.end_date}) cannot be after the school year end date (${syEndDate}).`,
+                isValid: false
+            };
+        }
+
+        if (t.enrollment_start_date && t.enrollment_end_date) {
+            if (new Date(t.enrollment_end_date) < new Date(t.enrollment_start_date)) {
+                return {
+                    error: `Enrollment End Date cannot be before Enrollment Start Date in ${termName}.`,
+                    isValid: false
+                };
+            }
+        }
+    }
+
+    return { isValid: true };
+}
+
 export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: boolean; error?: string } {
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
@@ -143,41 +282,89 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
 
         if (periods.length === 0) {
             return {
-                isValid: false,
-                error: `Please define at least one grading period for ${termName}.`
+                error: `Please define at least one grading period for ${termName}.`,
+                isValid: false
             };
         }
 
-        for (const p of periods) {
-            const periodLabel = p.name ? `"${p.name}"` : `Period #${p.sequence || 1}`;
+        const seenNames = new Set<string>();
+
+        for (let j = 0; j < periods.length; j++) {
+            const p = periods[j];
+            const periodLabel = p.name ? `"${p.name}"` : `Period #${p.sequence || j + 1}`;
+
             if (!p.name || !p.name.trim()) {
                 return {
-                    isValid: false,
-                    error: `All grading periods in ${termName} must have a name.`
+                    error: `All grading periods in ${termName} must have a name.`,
+                    isValid: false
                 };
             }
+
+            const cleanName = p.name.trim().toLowerCase();
+            if (seenNames.has(cleanName)) {
+                return {
+                    error: `Duplicate grading period name "${p.name}" in ${termName}. Each grading period in a term must have a unique name.`,
+                    isValid: false
+                };
+            }
+            seenNames.add(cleanName);
+
             if (!p.weight || Number(p.weight) <= 0) {
                 return {
-                    isValid: false,
-                    error: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`
+                    error: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`,
+                    isValid: false
                 };
             }
+
             if (!p.start_date || !p.start_date.trim()) {
                 return {
-                    isValid: false,
-                    error: `Grading period ${periodLabel} in ${termName} must have a Start Date.`
+                    error: `Grading period ${periodLabel} in ${termName} must have a Start Date.`,
+                    isValid: false
                 };
             }
+
             if (!p.end_date || !p.end_date.trim()) {
                 return {
-                    isValid: false,
-                    error: `Grading period ${periodLabel} in ${termName} must have an End Date.`
+                    error: `Grading period ${periodLabel} in ${termName} must have an End Date.`,
+                    isValid: false
                 };
             }
+
             if (new Date(p.end_date) < new Date(p.start_date)) {
                 return {
-                    isValid: false,
-                    error: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`
+                    error: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`,
+                    isValid: false
+                };
+            }
+
+            if (new Date(p.end_date).getTime() === new Date(p.start_date).getTime()) {
+                return {
+                    error: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
+                    isValid: false
+                };
+            }
+
+            if (j > 0) {
+                const prev = periods[j - 1];
+                if (new Date(p.start_date) < new Date(prev.end_date)) {
+                    return {
+                        error: `Grading period ${periodLabel} start date (${p.start_date}) conflicts with preceding period "${prev.name}" end date (${prev.end_date}) in ${termName}. Grading periods cannot overlap.`,
+                        isValid: false
+                    };
+                }
+            }
+
+            if (t.start_date && new Date(p.start_date) < new Date(t.start_date)) {
+                return {
+                    error: `Grading period ${periodLabel} start date (${p.start_date}) cannot be before the term start date (${t.start_date}).`,
+                    isValid: false
+                };
+            }
+
+            if (t.end_date && new Date(p.end_date) > new Date(t.end_date)) {
+                return {
+                    error: `Grading period ${periodLabel} end date (${p.end_date}) cannot be after the term end date (${t.end_date}).`,
+                    isValid: false
                 };
             }
         }
@@ -185,11 +372,48 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
         const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
         if (totalWeight !== 100) {
             return {
-                isValid: false,
-                error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`
+                error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`,
+                isValid: false
             };
         }
     }
+    return { isValid: true };
+}
+
+export function validateTransmutationRows(
+    rows: WizardTransmutationRow[]
+): { isValid: boolean; error?: string } {
+    if (!rows || rows.length === 0) {
+        return {
+            error: 'Please define at least one transmutation row / grade ladder.',
+            isValid: false
+        };
+    }
+
+    for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r.label || !r.label.trim()) {
+            return {
+                error: `Row #${i + 1} must have a Grade Mark / Label (e.g. 1.00, 1.25, INC).`,
+                isValid: false
+            };
+        }
+
+        if (r.min_percentage < 0 || r.max_percentage > 100) {
+            return {
+                error: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
+                isValid: false
+            };
+        }
+
+        if (r.min_percentage > r.max_percentage) {
+            return {
+                error: `Row #${i + 1} (${r.label}) Min % (${r.min_percentage}) cannot be greater than Max % (${r.max_percentage}).`,
+                isValid: false
+            };
+        }
+    }
+
     return { isValid: true };
 }
 

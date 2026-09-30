@@ -48,6 +48,59 @@ export default function Step4TransmutationConfig({
         replace([...DEFAULT_TRANSMUTATION_ROWS]);
     }
 
+    function handleUpdatePercentage(
+        index: number,
+        field: 'min_percentage' | 'max_percentage',
+        val: number
+    ) {
+        const updatedRows = [...rows];
+        const currentRow = { ...updatedRows[index], [field]: val };
+        updatedRows[index] = currentRow;
+
+        const nextRow = updatedRows[index + 1];
+        const prevRow = updatedRows[index - 1];
+
+        if (field === 'max_percentage') {
+            if (nextRow) {
+                const isAscending = nextRow.min_percentage >= currentRow.min_percentage;
+                if (isAscending) {
+                    const step = (val % 1 !== 0 || nextRow.min_percentage % 1 !== 0) ? 0.5 : 1;
+                    const newNextMin = Math.min(100, Math.max(0, val + step));
+                    const newNextMax = Math.max(newNextMin, nextRow.max_percentage);
+                    updatedRows[index + 1] = {
+                        ...nextRow,
+                        max_percentage: newNextMax,
+                        min_percentage: newNextMin
+                    };
+                }
+            }
+            if (prevRow && val >= prevRow.min_percentage && prevRow.min_percentage > 0) {
+                const step = (val % 1 !== 0 || prevRow.min_percentage % 1 !== 0) ? 0.5 : 1;
+                currentRow.max_percentage = Math.max(0, prevRow.min_percentage - step);
+            }
+        } else if (field === 'min_percentage') {
+            if (nextRow && val <= nextRow.max_percentage) {
+                const step = (val % 1 !== 0 || nextRow.max_percentage % 1 !== 0) ? 0.5 : 1;
+                const newNextMax = Math.max(0, Math.min(100, val - step));
+                const newNextMin = Math.min(newNextMax, nextRow.min_percentage);
+                updatedRows[index + 1] = {
+                    ...nextRow,
+                    max_percentage: newNextMax,
+                    min_percentage: newNextMin
+                };
+            }
+            if (prevRow && val <= prevRow.max_percentage) {
+                const step = (val % 1 !== 0 || prevRow.max_percentage % 1 !== 0) ? 0.5 : 1;
+                updatedRows[index - 1] = {
+                    ...prevRow,
+                    max_percentage: Math.max(prevRow.min_percentage, val - step)
+                };
+            }
+        }
+
+        replace(updatedRows);
+    }
+
     return (
         <div className="flex flex-col gap-6">
             {/* Header info */}
@@ -187,7 +240,7 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             type="number"
                                             value={row.min_percentage ?? ''}
-                                            onChange={(e) => update(index, { ...row, min_percentage: Number(e.target.value) || 0 })}
+                                            onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
                                         />
                                     </td>
 
@@ -201,7 +254,7 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             type="number"
                                             value={row.max_percentage ?? ''}
-                                            onChange={(e) => update(index, { ...row, max_percentage: Number(e.target.value) || 0 })}
+                                            onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
                                         />
                                     </td>
 
@@ -340,7 +393,7 @@ export default function Step4TransmutationConfig({
                                         min={0}
                                         type="number"
                                         value={row.min_percentage ?? ''}
-                                        onChange={(e) => update(index, { ...row, min_percentage: Number(e.target.value) || 0 })}
+                                        onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
                                     />
                                 </div>
                                 <div>
@@ -354,7 +407,7 @@ export default function Step4TransmutationConfig({
                                         min={0}
                                         type="number"
                                         value={row.max_percentage ?? ''}
-                                        onChange={(e) => update(index, { ...row, max_percentage: Number(e.target.value) || 0 })}
+                                        onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
                                     />
                                 </div>
                             </div>
