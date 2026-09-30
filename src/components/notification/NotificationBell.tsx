@@ -89,7 +89,16 @@ export default function NotificationBell() {
         const target = resolveNotificationPath(item.action_url, activeRole);
 
         if (target) {
-            navigate(target);
+            if (target.startsWith('?')) {
+                const params = new URLSearchParams(target);
+                const currentParams = new URLSearchParams(window.location.search);
+                params.forEach((value, key) => {
+                    currentParams.set(key, value);
+                });
+                navigate(`?${currentParams.toString()}`);
+            } else {
+                navigate(target);
+            }
         }
     }
 

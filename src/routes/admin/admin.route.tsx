@@ -63,15 +63,11 @@ export const adminRoutes: RouteObject[] = [
                 path: 'evaluations'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/evaluation-management/EvaluationTemplateDetailPage');
-                }),
+                element: <Navigate replace to="/admin/evaluations" />,
                 path: 'evaluations/new'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/admin/evaluation-management/EvaluationTemplateDetailPage');
-                }),
+                element: <Navigate replace to="/admin/evaluations" />,
                 path: 'evaluations/:id'
             },
             {

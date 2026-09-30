@@ -31,19 +31,38 @@ export function resolveNotificationPath(
         return null;
     }
 
+    let announcementId: string | null = null;
+    let eventId: string | null = null;
+
+    if (segments[0] === 'announcements' || segments[0] === 'announcement-management') {
+        announcementId = segments[1] || null;
+    } else if (
+        segments.length >= 3 &&
+        isRoleHomeSegment(segments[0]) &&
+        (segments[1] === 'announcements' || segments[1] === 'announcement-management')
+    ) {
+        announcementId = segments[2] || null;
+    }
+
+    if (segments[0] === 'events' || segments[0] === 'event-management') {
+        eventId = segments[1] || null;
+    } else if (
+        segments.length >= 3 &&
+        isRoleHomeSegment(segments[0]) &&
+        (segments[1] === 'events' || segments[1] === 'event-management')
+    ) {
+        eventId = segments[2] || null;
+    }
+
+    if (announcementId) {
+        return `?announcementId=${announcementId}`;
+    }
+
+    if (eventId) {
+        return `?eventId=${eventId}`;
+    }
+
     const firstSegment = segments[0];
-
-    if (firstSegment === 'announcements' || firstSegment === 'announcement-management') {
-        const id = segments[1];
-        const homePath = ROLE_HOME[activeRole];
-        return id ? `${homePath}?announcementId=${id}` : homePath;
-    }
-
-    if (firstSegment === 'events' || firstSegment === 'event-management') {
-        const id = segments[1];
-        const homePath = ROLE_HOME[activeRole];
-        return id ? `${homePath}?eventId=${id}` : homePath;
-    }
 
     if (isRoleHomeSegment(firstSegment)) {
         return cleanUrl;

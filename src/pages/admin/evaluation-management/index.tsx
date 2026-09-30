@@ -3,20 +3,26 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EvaluationTemplateGridCard from '@pages/admin/evaluation-management/EvaluationTemplateGridCard';
+import EvaluationWizardModal from '@pages/admin/evaluation-management/EvaluationWizardModal';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { bulkCreateEvaluationTemplates, deleteEvaluationTemplate, listEvaluationTemplates } from '@services/evaluation.service';
+import {
+    bulkCreateEvaluationTemplates,
+    createEvaluationTemplate,
+    deleteEvaluationTemplate,
+    getEvaluationTemplateById,
+    listEvaluationTemplates,
+    updateEvaluationTemplate
+} from '@services/evaluation.service';
+import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
-import { EvaluationTemplateBulkRow, EvaluationTemplateListRow } from '@type/evaluation.type';
+import { EvaluationQuestionForm, EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateListRow } from '@type/evaluation.type';
 import { SortStringDto } from '@type/http.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const BASE_PATH = '/admin/evaluations';
+import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'sequence', label: 'Order' },
@@ -36,6 +42,27 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only)' }
 ];
 
+const DEFAULT_QUESTIONS: EvaluationQuestionForm[] = [
+    {
+        question_text: '',
+        question_type: 'Rating',
+        is_required: true,
+        min_rating: '1',
+        max_rating: '5'
+    }
+];
+
+const DEFAULT_FORM_VALUES: EvaluationTemplateForm = {
+    title: '',
+    description: '',
+    is_active: true,
+    sequence: '1',
+    target_mode: 'INCLUDE',
+    suggestion_placeholder: '',
+    program_ids: [],
+    questions: DEFAULT_QUESTIONS
+};
+
 function formatPrograms(programIds: string[]): string {
     if (!programIds.length) {
         return 'All programs';
@@ -45,11 +72,23 @@ function formatPrograms(programIds: string[]): string {
 }
 
 export default function EvaluationManagement() {
-    const navigate = useNavigate();
     const [refreshKey, setRefreshKey] = useState(0);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isViewOpen, setIsViewOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const { programOptions } = useProgramOptions();
+
+    const createMethods = useForm<EvaluationTemplateForm>({
+        defaultValues: DEFAULT_FORM_VALUES
+    });
+
+    const updateMethods = useForm<EvaluationTemplateForm>({
+        defaultValues: DEFAULT_FORM_VALUES
+    });
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
@@ -66,6 +105,103 @@ export default function EvaluationManagement() {
 
     async function handleDeleteRow(id: string) {
         return deleteEvaluationTemplate(id);
+    }
+
+    async function loadIntoForm(id: string) {
+        const res = await getEvaluationTemplateById(id);
+        if (res.data) {
+            updateMethods.reset({
+                id: res.data.id,
+                title: res.data.title,
+                description: res.data.description ?? '',
+                is_active: res.data.is_active,
+                sequence: String(res.data.sequence ?? 1),
+                target_mode: res.data.target_mode ?? 'INCLUDE',
+                suggestion_placeholder: res.data.suggestion_placeholder ?? '',
+                program_ids: res.data.program_ids ?? [],
+                questions: res.data.questions.length
+                    ? res.data.questions.map(function(q) {
+                        return {
+                            id: q.id,
+                            question_text: q.question_text,
+                            question_type: q.question_type,
+                            is_required: q.is_required,
+                            min_rating: String(q.min_rating ?? 1),
+                            max_rating: String(q.max_rating ?? 5)
+                        };
+                    })
+                    : DEFAULT_QUESTIONS
+            });
+        }
+    }
+
+    function handleOpenCreate() {
+        createMethods.reset(DEFAULT_FORM_VALUES);
+        setIsCreateOpen(true);
+    }
+
+    function handleCloseCreate() {
+        setIsCreateOpen(false);
+        createMethods.reset(DEFAULT_FORM_VALUES);
+    }
+
+    async function handleOpenView(id: string) {
+        setSelectedId(id);
+        await loadIntoForm(id);
+        setIsViewOpen(true);
+    }
+
+    function handleCloseView() {
+        setIsViewOpen(false);
+        setSelectedId(null);
+        updateMethods.reset(DEFAULT_FORM_VALUES);
+    }
+
+    async function handleOpenUpdate(id: string) {
+        setSelectedId(id);
+        await loadIntoForm(id);
+        setIsUpdateOpen(true);
+    }
+
+    async function handleSwitchToEdit(id: string) {
+        setIsViewOpen(false);
+        await loadIntoForm(id);
+        setIsUpdateOpen(true);
+    }
+
+    function handleCloseUpdate() {
+        setIsUpdateOpen(false);
+        setSelectedId(null);
+        updateMethods.reset(DEFAULT_FORM_VALUES);
+    }
+
+    async function handleCreateSubmit(values: EvaluationTemplateForm) {
+        setIsSaving(true);
+        try {
+            const res = await createEvaluationTemplate(values);
+            if (!res.error) {
+                useToastStore.getState().showToast('Evaluation section created successfully.', 'success');
+                handleCloseCreate();
+                triggerRefresh();
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    async function handleUpdateSubmit(values: EvaluationTemplateForm) {
+        if (!selectedId) return;
+        setIsSaving(true);
+        try {
+            const res = await updateEvaluationTemplate(selectedId, values);
+            if (!res.error) {
+                useToastStore.getState().showToast('Evaluation section updated successfully.', 'success');
+                handleCloseUpdate();
+                triggerRefresh();
+            }
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
@@ -124,16 +260,16 @@ export default function EvaluationManagement() {
         return function(onDelete: (id: string) => void): TableActionConfig<EvaluationTemplateListRow> {
             return {
                 onEditClick: (row: EvaluationTemplateListRow) => function() {
-                    navigate(`${BASE_PATH}/${row.id}?edit=1`);
+                    handleOpenUpdate(row.id);
                 },
                 menuOptions: (row: EvaluationTemplateListRow): MenuOption[] => [
                     {
                         preset: 'view',
-                        onClick: () => navigate(`${BASE_PATH}/${row.id}`)
+                        onClick: () => handleOpenView(row.id)
                     },
                     {
                         preset: 'edit',
-                        onClick: () => navigate(`${BASE_PATH}/${row.id}?edit=1`)
+                        onClick: () => handleOpenUpdate(row.id)
                     },
                     {
                         preset: 'delete',
@@ -142,7 +278,7 @@ export default function EvaluationManagement() {
                 ]
             };
         };
-    }, [navigate]);
+    }, []);
 
     return (
         <>
@@ -157,9 +293,7 @@ export default function EvaluationManagement() {
                     },
                     tableButtonsProps: {
                         createButtonProps: {
-                            onClick: function() {
-                                navigate(`${BASE_PATH}/new`);
-                            }
+                            onClick: handleOpenCreate
                         },
                         uploadCsvButtonProps: {
                             onClick: function() {
@@ -178,12 +312,12 @@ export default function EvaluationManagement() {
                             )}
                             row={item}
                             onEdit={function(id) {
-                                navigate(`${BASE_PATH}/${id}?edit=1`);
+                                handleOpenUpdate(id);
                             }}
                             onRequestDelete={onRequestDeleteRow}
                             onToggleSelect={onToggleSelect}
                             onView={function(id) {
-                                navigate(`${BASE_PATH}/${id}`);
+                                handleOpenView(id);
                             }}
                         />
                     );
@@ -197,9 +331,10 @@ export default function EvaluationManagement() {
                 onDeleteRow={handleDeleteRow}
                 onFetch={fetchTemplates}
                 onRowClick={function(id: string) {
-                    navigate(`${BASE_PATH}/${id}`);
+                    handleOpenView(id);
                 }}
             />
+
             <BulkImportModal<EvaluationTemplateBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
@@ -223,6 +358,40 @@ export default function EvaluationManagement() {
                     max_rating: row.max_rating
                 })}
                 onSuccess={triggerRefresh}
+            />
+
+            {/* Create Evaluation Section Wizard Modal */}
+            <EvaluationWizardModal
+                isSaving={isSaving}
+                methods={createMethods}
+                open={isCreateOpen}
+                onClose={handleCloseCreate}
+                onSubmit={handleCreateSubmit}
+            />
+
+            {/* Edit Evaluation Section Wizard Modal */}
+            <EvaluationWizardModal
+                isSaving={isSaving}
+                methods={updateMethods}
+                open={isUpdateOpen}
+                templateId={selectedId}
+                onClose={handleCloseUpdate}
+                onSubmit={handleUpdateSubmit}
+            />
+
+            {/* View Evaluation Section Wizard Modal */}
+            <EvaluationWizardModal
+                readOnly
+                methods={updateMethods}
+                open={isViewOpen}
+                templateId={selectedId}
+                onClose={handleCloseView}
+                onSubmit={function() {}}
+                onSwitchToEdit={function() {
+                    if (selectedId) {
+                        handleSwitchToEdit(selectedId);
+                    }
+                }}
             />
         </>
     );

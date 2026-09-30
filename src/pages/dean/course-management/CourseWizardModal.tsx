@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import CourseForm, { COURSE_FORM_STEPS } from '@pages/dean/course-management/CourseForm';
 import {
@@ -157,77 +158,17 @@ export default function CourseWizardModal({
                 )}
             </div>
 
-            {/* Stepper Progress Bar Header (Exactly matching Academic Year Stepper Modal Step Tracker) */}
-            <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0">
-                {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-3 gap-2">
-                    {COURSE_FORM_STEPS.map((s) => {
-                        const isActive = currentStep === s.step;
-                        const isDone = currentStep > s.step;
-
-                        return (
-                            <button
-                                key={s.step}
-                                className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
-                                    isActive
-                                        ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
-                                        : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
-                                }`}
-                                type="button"
-                                onClick={() => handleStepClick(s.step)}
-                            >
-                                <span
-                                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
-                                        isActive
-                                            ? 'bg-brand-600 text-white'
-                                            : isDone
-                                            ? 'bg-emerald-500 text-white'
-                                            : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
-                                    }`}
-                                >
-                                    {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
-                                </span>
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                    <span
-                                        className={`text-xs font-semibold truncate ${
-                                            isActive
-                                                ? 'text-brand-600 dark:text-brand-400'
-                                                : 'text-slate-700 dark:text-slate-300'
-                                        }`}
-                                    >
-                                        {s.title}
-                                    </span>
-                                    <span onClick={(e) => e.stopPropagation()}>
-                                        <CommonInfoTooltip content={s.subtitle} size={14} />
-                                    </span>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Mobile Stepper Header (< 768px) */}
-                <div className="block md:hidden">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <span>Step {currentStep} of 3: {currentStepConfig?.title}</span>
-                            {currentStepConfig?.subtitle && (
-                                <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
-                            )}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">
-                            {Math.round((currentStep / 3) * 100)}%
-                        </span>
-                    </div>
-                    {/* Progress Bar Line */}
-                    <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
-                        <div
-                            className="bg-brand-600 h-full transition-all duration-300 rounded-full"
-                            style={{ width: `${(currentStep / 3) * 100}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
+            {/* Stepper Progress Bar Header */}
+            <ModalStepperHeader
+                steps={COURSE_FORM_STEPS.map((s) => ({
+                    step: s.step,
+                    title: s.title,
+                    subtitle: s.subtitle
+                }))}
+                currentStep={currentStep}
+                onStepClick={handleStepClick}
+                readOnly={readOnly}
+            />
 
             {/* Stepper Step Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
