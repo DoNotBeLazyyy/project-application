@@ -81,7 +81,8 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 return { data: null, error: res.error };
             }
 
-            const rows: CommunicationListRow[] = (res.data?.data ?? []).map((a) => ({
+            const rows: CommunicationListRow[] = (res.data?.content ?? []).map((a) => ({
+                attachment_count: a.attachment_count ?? 0,
                 author_name: a.author_name,
                 content: a.content,
                 created_at: a.created_at,
@@ -91,19 +92,37 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 item_type: 'Announcement',
                 section_count: a.section_count,
                 target_audience: a.target_audience,
-                total_count: a.total_count
+                title: a.title,
+                total_count: a.total_count ?? res.data?.totalElements ?? 0
             }));
 
             for (const r of rows) {
                 rowMapRef.current.set(r.id, r);
             }
 
+            const totalCount = res.data?.totalElements ?? rows.length;
+            const totalPages = res.data?.totalPages ?? Math.ceil(totalCount / size);
+
             return {
                 data: {
-                    data: rows,
-                    page: res.data?.page ?? page,
+                    content: rows,
+                    empty: rows.length === 0,
+                    first: res.data?.first ?? (page === 1),
+                    last: res.data?.last ?? (page >= totalPages),
+                    number: res.data?.number ?? (page - 1),
+                    numberOfElements: rows.length,
+                    pageable: res.data?.pageable ?? {
+                        offset: (page - 1) * size,
+                        pageNumber: page - 1,
+                        pageSize: size,
+                        paged: true,
+                        sort: { empty: true, sorted: false, unsorted: true },
+                        unpaged: false
+                    },
                     size: res.data?.size ?? size,
-                    total_count: res.data?.total_count ?? rows.length
+                    sort: res.data?.sort ?? { empty: true, sorted: false, unsorted: true },
+                    totalElements: totalCount,
+                    totalPages
                 },
                 error: null
             };
@@ -116,31 +135,51 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 return { data: null, error: res.error };
             }
 
-            const rows: CommunicationListRow[] = (res.data?.data ?? []).map((e) => ({
+            const rows: CommunicationListRow[] = (res.data?.content ?? []).map((e) => ({
+                attachment_count: e.attachment_count ?? 0,
                 author_name: e.author_name ?? null,
                 content: e.description || '',
                 created_at: e.created_at,
                 date: e.start_at || e.created_at,
                 end_at: e.end_at,
                 id: e.id,
+                is_pinned: false,
                 item_type: 'Event',
                 location: e.location,
                 section_count: e.section_count,
                 start_at: e.start_at,
                 target_audience: e.target_audience,
-                total_count: e.total_count
+                title: e.title,
+                total_count: e.total_count ?? res.data?.totalElements ?? 0
             }));
 
             for (const r of rows) {
                 rowMapRef.current.set(r.id, r);
             }
 
+            const totalCount = res.data?.totalElements ?? rows.length;
+            const totalPages = res.data?.totalPages ?? Math.ceil(totalCount / size);
+
             return {
                 data: {
-                    data: rows,
-                    page: res.data?.page ?? page,
+                    content: rows,
+                    empty: rows.length === 0,
+                    first: res.data?.first ?? (page === 1),
+                    last: res.data?.last ?? (page >= totalPages),
+                    number: res.data?.number ?? (page - 1),
+                    numberOfElements: rows.length,
+                    pageable: res.data?.pageable ?? {
+                        offset: (page - 1) * size,
+                        pageNumber: page - 1,
+                        pageSize: size,
+                        paged: true,
+                        sort: { empty: true, sorted: false, unsorted: true },
+                        unpaged: false
+                    },
                     size: res.data?.size ?? size,
-                    total_count: res.data?.total_count ?? rows.length
+                    sort: res.data?.sort ?? { empty: true, sorted: false, unsorted: true },
+                    totalElements: totalCount,
+                    totalPages
                 },
                 error: null
             };
@@ -154,7 +193,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         const [annRes, evtRes] = await Promise.all([
             listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned),
             isPinned === true
-                ? Promise.resolve({ data: { data: [], page: 1, size: 0, total_count: 0 }, error: null })
+                ? Promise.resolve({ data: null, error: null })
                 : listEvents(1, fetchLimit, search, evtSort, audience, false)
         ]);
 
@@ -162,7 +201,8 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             return { data: null, error: annRes.error || evtRes.error };
         }
 
-        const annRows: CommunicationListRow[] = (annRes.data?.data ?? []).map((a) => ({
+        const annRows: CommunicationListRow[] = (annRes.data?.content ?? []).map((a) => ({
+            attachment_count: a.attachment_count ?? 0,
             author_name: a.author_name,
             content: a.content,
             created_at: a.created_at,
@@ -172,22 +212,26 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             item_type: 'Announcement',
             section_count: a.section_count,
             target_audience: a.target_audience,
-            total_count: a.total_count
+            title: a.title,
+            total_count: a.total_count ?? annRes.data?.totalElements ?? 0
         }));
 
-        const evtRows: CommunicationListRow[] = (evtRes.data?.data ?? []).map((e) => ({
+        const evtRows: CommunicationListRow[] = (evtRes.data?.content ?? []).map((e) => ({
+            attachment_count: e.attachment_count ?? 0,
             author_name: e.author_name ?? null,
             content: e.description || '',
             created_at: e.created_at,
             date: e.start_at || e.created_at,
             end_at: e.end_at,
             id: e.id,
+            is_pinned: false,
             item_type: 'Event',
             location: e.location,
             section_count: e.section_count,
             start_at: e.start_at,
             target_audience: e.target_audience,
-            total_count: e.total_count
+            title: e.title,
+            total_count: e.total_count ?? evtRes.data?.totalElements ?? 0
         }));
 
         const combined = [...annRows, ...evtRows];
@@ -220,16 +264,31 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             return 0;
         });
 
-        const totalCount = (annRes.data?.total_count ?? 0) + (evtRes.data?.total_count ?? 0);
+        const totalCount = (annRes.data?.totalElements ?? 0) + (evtRes.data?.totalElements ?? 0);
         const startIdx = (page - 1) * size;
         const paginatedRows = combined.slice(startIdx, startIdx + size);
+        const totalPages = Math.ceil(totalCount / size);
 
         return {
             data: {
-                data: paginatedRows,
-                page,
+                content: paginatedRows,
+                empty: paginatedRows.length === 0,
+                first: page === 1,
+                last: page >= totalPages,
+                number: page - 1,
+                numberOfElements: paginatedRows.length,
+                pageable: {
+                    offset: startIdx,
+                    pageNumber: page - 1,
+                    pageSize: size,
+                    paged: true,
+                    sort: { empty: true, sorted: false, unsorted: true },
+                    unpaged: false
+                },
                 size,
-                total_count: totalCount
+                sort: { empty: true, sorted: false, unsorted: true },
+                totalElements: totalCount,
+                totalPages
             },
             error: null
         };

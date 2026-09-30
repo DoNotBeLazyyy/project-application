@@ -150,7 +150,7 @@ export default function AnnouncementViewerCard({ values }: AnnouncementViewerCar
                     </h3>
                     <FileAttachmentList
                         attachments={values.attachments!}
-                        bucket="announcements"
+                        bucket="materials"
                     />
                 </div>
             )}

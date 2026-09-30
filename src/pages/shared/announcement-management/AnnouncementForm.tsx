@@ -293,6 +293,7 @@ export default function AnnouncementForm({
 
             <FileAttachmentUploader
                 attachments={attachments ?? []}
+                bucket="materials"
                 disabled={disabled}
                 folderPrefix={itemType === 'Event' ? 'events' : 'announcements'}
                 onChange={setAttachments}

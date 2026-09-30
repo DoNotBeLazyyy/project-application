@@ -199,7 +199,7 @@ export default function EventViewerCard({ values }: EventViewerCardProps) {
                     </h3>
                     <FileAttachmentList
                         attachments={values.attachments!}
-                        bucket="events"
+                        bucket="materials"
                     />
                 </div>
             )}

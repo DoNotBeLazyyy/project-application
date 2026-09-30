@@ -68,7 +68,10 @@ export default function CommunicationGridCard({
                 {
                     label: row.item_type === 'Event' ? 'Starts' : 'Posted',
                     value: formatShortDate(row.date || row.created_at)
-                }
+                },
+                ...(row.attachment_count && row.attachment_count > 0
+                    ? [{ label: 'Attachments', value: `${row.attachment_count}` }]
+                    : [])
             ]}
             selectVariant="button"
             status={status}

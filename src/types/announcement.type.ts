@@ -12,6 +12,7 @@ export interface AnnouncementListRow {
     created_by: string | null;
     author_name: string | null;
     section_count: number;
+    attachment_count?: number;
     total_count: number;
 }
 
@@ -97,6 +98,8 @@ export interface AnnouncementFeedRow {
     published_at: string | null;
     created_at: string;
     author_name: string | null;
+    attachment_count?: number;
+    attachments?: AttachmentInputDto[];
     total_count: number;
 }
 
@@ -113,6 +116,7 @@ export interface AnnouncementFilterValues {
 }
 
 export interface CommunicationListRow {
+    attachment_count?: number;
     author_name: string | null;
     content: string;
     created_at: string;
@@ -125,5 +129,6 @@ export interface CommunicationListRow {
     section_count: number;
     start_at?: string;
     target_audience: AnnouncementAudience;
+    title: string;
     total_count: number;
 }

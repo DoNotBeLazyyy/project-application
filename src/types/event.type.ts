@@ -21,6 +21,7 @@ export interface EventListRow {
     created_by: string | null;
     author_name: string | null;
     section_count: number;
+    attachment_count?: number;
     total_count: number;
 }
 
@@ -65,6 +66,8 @@ export interface EventFeedRow {
     start_at: string;
     end_at: string | null;
     all_day: boolean;
+    attachment_count?: number;
+    attachments?: AttachmentInputDto[];
 }
 
 export interface EventFilterValues {

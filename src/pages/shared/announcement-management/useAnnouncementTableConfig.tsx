@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { PushPinIcon } from '@phosphor-icons/react';
+import { PaperclipIcon, PushPinIcon } from '@phosphor-icons/react';
 import { AnnouncementAudience, CommunicationListRow } from '@type/announcement.type';
 import { BadgeStatusVariant } from '@type/common/badge.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -57,6 +57,15 @@ export function useAnnouncementTableConfig({
                         <span className="text-(--mui-palette-text-primary) text-sm font-medium truncate">
                             {params.data.title}
                         </span>
+                        {Boolean(params.data.attachment_count && params.data.attachment_count > 0) && (
+                            <span
+                                className="inline-flex items-center gap-0.5 text-(--mui-palette-text-secondary) text-xs shrink-0"
+                                title={`${params.data.attachment_count} attachment(s)`}
+                            >
+                                <PaperclipIcon size={13} weight="bold" />
+                                <span>{params.data.attachment_count}</span>
+                            </span>
+                        )}
                     </div>
                 ),
                 field: 'title',
