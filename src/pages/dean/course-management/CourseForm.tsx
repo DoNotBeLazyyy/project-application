@@ -3,6 +3,7 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonStepperInput from '@components/input/CommonStepperInput';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
@@ -12,6 +13,7 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     BookOpenIcon,
+    CheckCircleIcon,
     FileTextIcon,
     GitForkIcon,
     PlusIcon,
@@ -314,6 +316,8 @@ export default function CourseForm({
     const totalUnits = courseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0);
     const totalCreditHours = courseTypes.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0);
 
+    const currentStepConfig = STEPS.find((s) => s.id === activeStep) || STEPS[0];
+
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
             disabled,
@@ -399,40 +403,76 @@ export default function CourseForm({
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Stepper Header Navigation */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2 overflow-x-auto py-1">
-                    {STEPS.map((step) => {
-                        const Icon = step.icon;
-                        const isActive = activeStep === step.id;
+            {/* Standard Academic Year Modal Stepper Progress Bar Header */}
+            <div className="border border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3 rounded-xl shrink-0">
+                {/* Desktop Stepper (>= 768px) */}
+                <div className="hidden md:grid grid-cols-3 gap-2">
+                    {STEPS.map((s) => {
+                        const isActive = activeStep === s.id;
+                        const isDone = activeStep > s.id;
 
                         return (
                             <button
-                                key={step.id}
-                                type="button"
-                                onClick={() => setActiveStep(step.id)}
-                                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                                key={s.id}
+                                className={`flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all ${
                                     isActive
-                                        ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                        ? 'bg-white dark:bg-zinc-800 shadow-xs border border-blue-300 dark:border-blue-700/60'
+                                        : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
                                 }`}
+                                type="button"
+                                onClick={() => setActiveStep(s.id)}
                             >
-                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                                    isActive
-                                        ? 'bg-white text-blue-600'
-                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                                }`}>
-                                    {step.id}
+                                <span
+                                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
+                                        isActive
+                                            ? 'bg-blue-600 text-white'
+                                            : isDone
+                                            ? 'bg-emerald-500 text-white'
+                                            : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
+                                    }`}
+                                >
+                                    {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.id}
                                 </span>
-                                <Icon className="w-4 h-4" />
-                                <span>{step.label}</span>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <span
+                                        className={`text-xs font-semibold truncate ${
+                                            isActive
+                                                ? 'text-blue-600 dark:text-blue-400'
+                                                : 'text-slate-700 dark:text-slate-300'
+                                        }`}
+                                    >
+                                        {s.title}
+                                    </span>
+                                    <span onClick={(e) => e.stopPropagation()}>
+                                        <CommonInfoTooltip content={s.subtitle} size={14} />
+                                    </span>
+                                </div>
                             </button>
                         );
                     })}
                 </div>
-                <span className="text-xs text-slate-400 font-medium shrink-0 ml-2">
-                    Step {activeStep} of {STEPS.length}
-                </span>
+
+                {/* Mobile Stepper Header (< 768px) */}
+                <div className="block md:hidden">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1.5">
+                            <span>Step {activeStep} of 3: {currentStepConfig?.title}</span>
+                            {currentStepConfig?.subtitle && (
+                                <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
+                            )}
+                        </span>
+                        <span className="text-xs text-slate-400 font-medium">
+                            {Math.round((activeStep / 3) * 100)}%
+                        </span>
+                    </div>
+                    {/* Progress Bar Line */}
+                    <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
+                        <div
+                            className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+                            style={{ width: `${(activeStep / 3) * 100}%` }}
+                        />
+                    </div>
+                </div>
             </div>
 
             {/* Step 1: Overview Data */}
@@ -702,31 +742,33 @@ export default function CourseForm({
                 </div>
             </div>
 
-            {/* Stepper Footer / Navigation Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-                <div>
-                    {activeStep > 1 && (
-                        <CommonButton
-                            color="secondary"
-                            size="small"
-                            startIcon={<ArrowLeftIcon weight="bold" />}
-                            variant="outlined"
-                            onClick={() => setActiveStep((prev) => prev - 1)}
-                        >
-                            Back: {STEPS[activeStep - 2].title}
-                        </CommonButton>
-                    )}
+            {/* Stepper Footer / Navigation Controls (Academic Year Modal Format) */}
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                <CommonButton
+                    color="inherit"
+                    disabled={activeStep === 1}
+                    size="medium"
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                    variant="outlined"
+                    onClick={() => setActiveStep((prev) => prev - 1)}
+                >
+                    Back
+                </CommonButton>
+
+                <div className="hidden sm:block text-xs font-medium text-slate-500">
+                    Step {activeStep} of 3 — {currentStepConfig?.title}
                 </div>
+
                 <div>
                     {activeStep < 3 && (
                         <CommonButton
                             color="primary"
-                            endIcon={<ArrowRightIcon weight="bold" />}
-                            size="small"
-                            variant="outlined"
+                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                            size="medium"
+                            variant="contained"
                             onClick={() => setActiveStep((prev) => prev + 1)}
                         >
-                            Next: {STEPS[activeStep].title}
+                            Next Step
                         </CommonButton>
                     )}
                 </div>
