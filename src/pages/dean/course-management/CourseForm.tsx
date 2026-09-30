@@ -670,77 +670,89 @@ export default function CourseForm({
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
-                            {prereqFields.map((field, index) => (
-                                <div
-                                    key={field.id}
-                                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
-                                >
-                                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                            <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
-                                                {index + 1}
-                                            </span>
-                                            Prerequisite #{index + 1}
-                                        </span>
-                                        {!disabled && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemovePrerequisite(index)}
-                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                                                title="Remove Prerequisite"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Remove</span>
-                                            </button>
-                                        )}
-                                    </div>
+                            {prereqFields.map((field, index) => {
+                                const currentKind = prerequisites?.[index]?.prerequisite_kind ?? 'course';
+                                const isCourseKind = currentKind === 'course';
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                        <div>
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Kind
-                                            </label>
-                                            <PrerequisiteKindCell
-                                                control={control}
-                                                disabled={disabled}
-                                                rowIndex={index}
-                                            />
+                                return (
+                                    <div
+                                        className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
+                                        key={field.id}
+                                    >
+                                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                                <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
+                                                    {index + 1}
+                                                </span>
+                                                Prerequisite #{index + 1}
+                                            </span>
+                                            {!disabled && (
+                                                <button
+                                                    className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                                                    title="Remove Prerequisite"
+                                                    type="button"
+                                                    onClick={() => handleRemovePrerequisite(index)}
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">Remove</span>
+                                                </button>
+                                            )}
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Course / Year Level
-                                            </label>
-                                            <PrerequisiteTargetCell
-                                                control={control}
-                                                courseOptions={allCourseOptions}
-                                                disabled={disabled}
-                                                rowIndex={index}
-                                            />
+
+                                        {/* Row 1: Kind & Course / Year Level */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                    Kind
+                                                </label>
+                                                <PrerequisiteKindCell
+                                                    control={control}
+                                                    disabled={disabled}
+                                                    rowIndex={index}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                    Course / Year Level
+                                                </label>
+                                                <PrerequisiteTargetCell
+                                                    control={control}
+                                                    courseOptions={allCourseOptions}
+                                                    disabled={disabled}
+                                                    rowIndex={index}
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Type
-                                            </label>
-                                            <PrerequisiteTypeCell
-                                                control={control}
-                                                disabled={disabled}
-                                                rowIndex={index}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Min Grade
-                                            </label>
-                                            <PrerequisiteMinGradeCell
-                                                control={control}
-                                                disabled={disabled}
-                                                minimumGradeOptions={minimumGradeOptions}
-                                                rowIndex={index}
-                                            />
+
+                                        {/* Row 2: Type & Min Grade (Min Grade shown only when Kind is Course) */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                    Type
+                                                </label>
+                                                <PrerequisiteTypeCell
+                                                    control={control}
+                                                    disabled={disabled}
+                                                    rowIndex={index}
+                                                />
+                                            </div>
+                                            {isCourseKind && (
+                                                <div>
+                                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                        Min Grade
+                                                    </label>
+                                                    <PrerequisiteMinGradeCell
+                                                        control={control}
+                                                        disabled={disabled}
+                                                        minimumGradeOptions={minimumGradeOptions}
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
