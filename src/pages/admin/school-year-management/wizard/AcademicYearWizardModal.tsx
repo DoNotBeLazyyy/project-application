@@ -7,6 +7,7 @@ import {
     CalendarDotsIcon,
     CheckCircleIcon,
     ClockCounterClockwiseIcon,
+    EyeIcon,
     FastForwardIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
@@ -26,9 +27,11 @@ import {
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import AcademicYearHistoryModal from '../history/AcademicYearHistoryModal';
+import AcademicYearSchedulePreviewModal from './AcademicYearSchedulePreviewModal';
 import Step1SchoolYearInfo from './Step1SchoolYearInfo';
 import Step2TermsConfig from './Step2TermsConfig';
 import Step3GradingPeriodsConfig from './Step3GradingPeriodsConfig';
+import Step4HolidaysConfig from './Step4HolidaysConfig';
 import Step4TransmutationConfig from './Step4TransmutationConfig';
 import Step5ThresholdsConfig from './Step5ThresholdsConfig';
 import {
@@ -41,6 +44,7 @@ import {
     isSpecialGradeRow,
     shiftDateByOneYear,
     SourceSchoolYearInfo,
+    validateCalendarExceptions,
     validateGradingPeriods,
     validateStep1SchoolYear,
     validateTerms,
@@ -70,6 +74,7 @@ export default function AcademicYearWizardModal({
     const [isSaving, setIsSaving] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
     const [sourceSchoolYear, setSourceSchoolYear] = useState<SourceSchoolYearInfo | null>(null);
     const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
@@ -239,8 +244,20 @@ export default function AcademicYearWizardModal({
         return true;
     }
 
-    // Validation for Step 4
+    // Validation for Step 4 (Holidays & Exceptions)
     function validateStep4(): boolean {
+        const values = getValues();
+        const holidays = values.holidays || [];
+        const result = validateCalendarExceptions(holidays);
+        if (!result.isValid && result.error) {
+            useToastStore.getState().showToast(result.error, 'error');
+            return false;
+        }
+        return true;
+    }
+
+    // Validation for Step 5 (Grade Schema)
+    function validateStep5(): boolean {
         const values = getValues();
         const rows = values.transmutation_rows || [];
         const result = validateTransmutationRows(rows);
@@ -251,8 +268,8 @@ export default function AcademicYearWizardModal({
         return true;
     }
 
-    // Validation for Step 5
-    function validateStep5(): boolean {
+    // Validation for Step 6 (Academic Thresholds)
+    function validateStep6(): boolean {
         const values = getValues();
         const thresholds = values.thresholds || [];
 
@@ -336,6 +353,9 @@ export default function AcademicYearWizardModal({
         } else if (currentStep === 4) {
             if (!validateStep4()) return;
             setCurrentStep(5);
+        } else if (currentStep === 5) {
+            if (!validateStep5()) return;
+            setCurrentStep(6);
         }
     }
 
@@ -361,6 +381,7 @@ export default function AcademicYearWizardModal({
         if (currentStep === 2 && !validateStep2()) return;
         if (currentStep === 3 && !validateStep3()) return;
         if (currentStep === 4 && !validateStep4()) return;
+        if (currentStep === 5 && !validateStep5()) return;
 
         setCurrentStep(stepNumber);
     }
@@ -371,7 +392,8 @@ export default function AcademicYearWizardModal({
             !validateStep2() ||
             !validateStep3() ||
             !validateStep4() ||
-            !validateStep5()
+            !validateStep5() ||
+            !validateStep6()
         ) {
             return;
         }
@@ -523,8 +545,18 @@ export default function AcademicYearWizardModal({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                        {/* Desktop Actions (Roll Forward, History, Edit) */}
+                        {/* Desktop Actions (Preview, Roll Forward, History, Edit) */}
                         <div className="hidden sm:flex items-center gap-2">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                startIcon={<EyeIcon className="w-4 h-4" />}
+                                variant="outlined"
+                                onClick={() => setIsPreviewModalOpen(true)}
+                            >
+                                Preview
+                            </CommonButton>
+
                             {!isReadOnly && (
                                 <CommonButton
                                     color="inherit"
@@ -574,51 +606,59 @@ export default function AcademicYearWizardModal({
                 </div>
 
                 {/* Mobile Actions: placed below label and description to prevent vertical narrowing */}
-                {(!isReadOnly || schoolYearId) && (
-                    <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 overflow-x-auto">
-                        {!isReadOnly && (
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<FastForwardIcon className="w-4 h-4" />}
-                                variant="outlined"
-                                onClick={handleRollForwardOneYear}
-                            >
-                                Roll Forward +1 Year
-                            </CommonButton>
-                        )}
+                <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 overflow-x-auto">
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        startIcon={<EyeIcon className="w-4 h-4" />}
+                        variant="outlined"
+                        onClick={() => setIsPreviewModalOpen(true)}
+                    >
+                        Preview
+                    </CommonButton>
 
-                        {schoolYearId && (
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
-                                variant="outlined"
-                                onClick={() => setIsHistoryModalOpen(true)}
-                            >
-                                History
-                            </CommonButton>
-                        )}
+                    {!isReadOnly && (
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            startIcon={<FastForwardIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={handleRollForwardOneYear}
+                        >
+                            Roll Forward +1 Year
+                        </CommonButton>
+                    )}
 
-                        {isReadOnly && (
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                variant="outlined"
-                                onClick={() => setIsReadOnly(false)}
-                            >
-                                Edit
-                            </CommonButton>
-                        )}
-                    </div>
-                )}
+                    {schoolYearId && (
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={() => setIsHistoryModalOpen(true)}
+                        >
+                            History
+                        </CommonButton>
+                    )}
+
+                    {isReadOnly && (
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={() => setIsReadOnly(false)}
+                        >
+                            Edit
+                        </CommonButton>
+                    )}
+                </div>
             </div>
 
             {/* Stepper Progress Bar */}
             <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0">
                 {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-5 gap-2">
+                <div className="hidden md:grid grid-cols-6 gap-2">
                     {WIZARD_STEPS.map((s) => {
                         const isActive = currentStep === s.step;
                         const isDone = currentStep > s.step;
@@ -668,20 +708,20 @@ export default function AcademicYearWizardModal({
                 <div className="block md:hidden">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <span>Step {currentStep} of 5: {currentStepConfig?.title}</span>
+                            <span>Step {currentStep} of 6: {currentStepConfig?.title}</span>
                             {currentStepConfig?.subtitle && (
                                 <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
                             )}
                         </span>
                         <span className="text-xs text-slate-400 font-medium">
-                            {Math.round((currentStep / 5) * 100)}%
+                            {Math.round((currentStep / 6) * 100)}%
                         </span>
                     </div>
                     {/* Progress Bar Line */}
                     <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
                         <div
                             className="bg-brand-600 h-full transition-all duration-300 rounded-full"
-                            style={{ width: `${(currentStep / 5) * 100}%` }}
+                            style={{ width: `${(currentStep / 6) * 100}%` }}
                         />
                     </div>
                 </div>
@@ -727,13 +767,20 @@ export default function AcademicYearWizardModal({
                         )}
 
                         {currentStep === 4 && (
-                            <Step4TransmutationConfig
+                            <Step4HolidaysConfig
                                 control={control}
                                 disabled={isReadOnly}
                             />
                         )}
 
                         {currentStep === 5 && (
+                            <Step4TransmutationConfig
+                                control={control}
+                                disabled={isReadOnly}
+                            />
+                        )}
+
+                        {currentStep === 6 && (
                             <Step5ThresholdsConfig
                                 control={control}
                                 disabled={isReadOnly}
@@ -759,12 +806,12 @@ export default function AcademicYearWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 5 — {currentStepConfig?.title}
+                    Step {currentStep} of 6 — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 5 ? (
+                    {currentStep < 6 ? (
                         <CommonButton
                             color="primary"
                             disabled={isLoading}
@@ -805,6 +852,16 @@ export default function AcademicYearWizardModal({
                 schoolYearId={schoolYearId}
                 schoolYearLabel={watch('label')}
                 onClose={() => setIsHistoryModalOpen(false)}
+            />
+
+            {/* Schedule & Holiday Overlay Preview Modal */}
+            <AcademicYearSchedulePreviewModal
+                endDate={watch('end_date')}
+                holidays={watch('holidays')}
+                open={isPreviewModalOpen}
+                startDate={watch('start_date')}
+                terms={watch('terms')}
+                onClose={() => setIsPreviewModalOpen(false)}
             />
         </CommonModal>
     );

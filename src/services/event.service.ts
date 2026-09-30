@@ -29,10 +29,12 @@ export async function listEvents(
 
 export async function listMyEventsFeed(
     from: string,
-    to: string
+    to: string,
+    role?: string | null
 ): Promise<ServiceResult<EventFeedRow[]>> {
     return callRpc<EventFeedRow[]>('fn_list_my_events_feed', {
         p_from: from,
+        p_role: role || null,
         p_to: to
     }, { background: true, silent: true });
 }

@@ -36,10 +36,12 @@ export async function listAnnouncements(
 export async function listMyAnnouncementsFeed(
     page: number,
     size: number,
-    search: string
+    search: string,
+    role?: string | null
 ): Promise<ServiceResult<CommonListResDto<AnnouncementFeedRow>>> {
     return callRpc<CommonListResDto<AnnouncementFeedRow>>('fn_list_my_announcements_feed', {
         p_page: page,
+        p_role: role || null,
         p_search: search || null,
         p_size: size
     }, { background: true, silent: true });

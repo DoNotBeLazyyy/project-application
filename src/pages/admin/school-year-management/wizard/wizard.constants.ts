@@ -190,22 +190,28 @@ export const WIZARD_STEPS = [
         step: 2,
         title: 'Terms & Windows',
         subtitle:
-            'Declare unique terms running under this school year (e.g. 1st Semester, 2nd Semester, Summer). Each term holds its own enrollment window and grade submission deadline, and must have non-overlapping dates.'
+            'Declare unique terms running under this school year (e.g. 1st Semester, 2nd Semester, Summer). Each term holds its own enrollment window and grade submission deadline.'
     },
     {
         step: 3,
         title: 'Grading Periods',
         subtitle:
-            'Configure grading periods (e.g. Prelim, Midterm, Finals) for each term. The sum of weights for every term must strictly equal 100%, and period dates must be sequential and non-overlapping.'
+            'Configure grading periods (e.g. Prelim, Midterm, Finals) for each term. The sum of weights for every term must strictly equal 100%.'
     },
     {
         step: 4,
+        title: 'Holidays & Exceptions',
+        subtitle:
+            'Declare national holidays, academic breaks, emergency suspensions, and special class days. These exceptions overlay onto the academic calendar and adjust attendance expectations.'
+    },
+    {
+        step: 5,
         title: 'Grade Schema',
         subtitle:
             'Define how computed raw grade percentages map to official transmuted marks (e.g. 1.00, 1.25, 3.00, 5.00) or special marks (INC, DRP). Your institution completely controls which grades are considered passing or failing.'
     },
     {
-        step: 5,
+        step: 6,
         title: 'Academic Thresholds',
         subtitle:
             'Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean\'s List) and disadvantages (Academic Probation / Standing). These serve as official academic achievement and qualification flags for students and academic advisers.'
@@ -816,6 +822,40 @@ export function generatePresetHolidays(syStart?: string, syEnd?: string) {
             description: 'Regular National Holiday'
         }
     ];
+}
+
+export function validateCalendarExceptions(
+    holidays: { title?: string; start_date?: string; end_date?: string }[]
+): { isValid: boolean; error?: string } {
+    if (!holidays) return { isValid: true };
+    for (let i = 0; i < holidays.length; i++) {
+        const h = holidays[i];
+        if (!h.title || !h.title.trim()) {
+            return {
+                isValid: false,
+                error: `Holiday/Exception #${i + 1} must have a Title.`
+            };
+        }
+        if (!h.start_date) {
+            return {
+                isValid: false,
+                error: `Holiday/Exception "${h.title}" must specify a Start Date.`
+            };
+        }
+        if (!h.end_date) {
+            return {
+                isValid: false,
+                error: `Holiday/Exception "${h.title}" must specify an End Date.`
+            };
+        }
+        if (new Date(h.end_date) < new Date(h.start_date)) {
+            return {
+                isValid: false,
+                error: `End Date cannot be before Start Date in Holiday/Exception "${h.title}".`
+            };
+        }
+    }
+    return { isValid: true };
 }
 
 
