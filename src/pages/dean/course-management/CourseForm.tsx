@@ -13,6 +13,7 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     BookOpenIcon,
+    BroomIcon,
     CheckCircleIcon,
     FileTextIcon,
     FloppyDiskIcon,
@@ -286,7 +287,8 @@ export default function CourseForm({
     const {
         fields: courseTypeFields,
         append: appendCourseType,
-        remove: removeCourseType
+        remove: removeCourseType,
+        update: updateCourseType
     } = useFieldArray({
         control,
         name: 'course_types'
@@ -295,7 +297,8 @@ export default function CourseForm({
     const {
         fields: prereqFields,
         append: appendPrereq,
-        remove: removePrereq
+        remove: removePrereq,
+        update: updatePrereq
     } = useFieldArray({
         control,
         name: 'prerequisites'
@@ -385,12 +388,30 @@ export default function CourseForm({
         });
     }
 
+    function handleClearCourseType(index: number) {
+        updateCourseType(index, {
+            course_type_id: '',
+            units: 0,
+            credit_hours: 0
+        });
+    }
+
     function handleRemoveCourseType(index: number) {
         removeCourseType(index);
     }
 
     function handleAddPrerequisite() {
         appendPrereq({
+            course_id: '',
+            prerequisite_type: 'Required',
+            prerequisite_kind: 'course',
+            year_level_required: '',
+            minimum_grade: ''
+        });
+    }
+
+    function handleClearPrerequisite(index: number) {
+        updatePrereq(index, {
             course_id: '',
             prerequisite_type: 'Required',
             prerequisite_kind: 'course',
@@ -546,22 +567,30 @@ export default function CourseForm({
                                     className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
                                 >
                                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                            <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
-                                                {index + 1}
-                                            </span>
-                                            Course Type #{index + 1}
+                                        <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">
+                                            {index + 1}
                                         </span>
                                         {!disabled && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveCourseType(index)}
-                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                                                title="Remove Course Type"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Remove</span>
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleClearCourseType(index)}
+                                                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                                    title="Clear Course Type"
+                                                >
+                                                    <BroomIcon className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">Clear</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveCourseType(index)}
+                                                    className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                                                    title="Remove Course Type"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                    <span className="hidden sm:inline">Remove</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
 
@@ -680,22 +709,30 @@ export default function CourseForm({
                                         key={field.id}
                                     >
                                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                                <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
-                                                    {index + 1}
-                                                </span>
-                                                Prerequisite #{index + 1}
+                                            <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">
+                                                {index + 1}
                                             </span>
                                             {!disabled && (
-                                                <button
-                                                    className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
-                                                    title="Remove Prerequisite"
-                                                    type="button"
-                                                    onClick={() => handleRemovePrerequisite(index)}
-                                                >
-                                                    <TrashIcon className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Remove</span>
-                                                </button>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                                        title="Clear Prerequisite"
+                                                        type="button"
+                                                        onClick={() => handleClearPrerequisite(index)}
+                                                    >
+                                                        <BroomIcon className="w-4 h-4" />
+                                                        <span className="hidden sm:inline">Clear</span>
+                                                    </button>
+                                                    <button
+                                                        className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                                                        title="Remove Prerequisite"
+                                                        type="button"
+                                                        onClick={() => handleRemovePrerequisite(index)}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                        <span className="hidden sm:inline">Remove</span>
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
 
