@@ -71,13 +71,13 @@ export default function AcademicYearHistoryModal({
             onClose={onClose}
         >
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0">
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-start justify-between gap-3 shrink-0">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
                         <ClockCounterClockwiseIcon className="w-5 h-5" />
                     </div>
-                    <div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2 leading-snug">
                             <span>Change History</span>
                             {schoolYearLabel && (
                                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold">
@@ -85,14 +85,15 @@ export default function AcademicYearHistoryModal({
                                 </span>
                             )}
                         </h2>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                             Audit trail of configuration updates, calendar revisions, and threshold changes.
                         </p>
                     </div>
                 </div>
 
                 <button
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    aria-label="Close"
+                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                     title="Close"
                     type="button"
                     onClick={onClose}

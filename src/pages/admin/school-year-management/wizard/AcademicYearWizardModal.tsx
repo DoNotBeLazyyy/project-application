@@ -402,62 +402,97 @@ export default function AcademicYearWizardModal({
             onClose={onClose}
         >
             {/* Modal Top Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0">
-                        <CalendarDotsIcon className="w-5 h-5" />
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <CalendarDotsIcon className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1 sm:min-w-[260px]">
+                            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                {schoolYearId
+                                    ? isReadOnly
+                                        ? 'Academic Year Calendar & Criteria'
+                                        : 'Edit Academic Year & Calendar'
+                                    : sourceSchoolYear
+                                    ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
+                                    : 'Create Academic Year & Calendar'}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                {sourceSchoolYear
+                                    ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
+                                    : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
-                            {schoolYearId
-                                ? isReadOnly
-                                    ? 'Academic Year Calendar & Criteria'
-                                    : 'Edit Academic Year & Calendar'
-                                : sourceSchoolYear
-                                ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
-                                : 'Create Academic Year & Calendar'}
-                        </h2>
-                        <p className="text-xs text-slate-500">
-                            {sourceSchoolYear
-                                ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
-                                : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'}
-                        </p>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Desktop Actions (History, Edit) */}
+                        <div className="hidden sm:flex items-center gap-2">
+                            {schoolYearId && (
+                                <CommonButton
+                                    color="inherit"
+                                    size="small"
+                                    startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                                    variant="outlined"
+                                    onClick={() => setIsHistoryModalOpen(true)}
+                                >
+                                    History
+                                </CommonButton>
+                            )}
+
+                            {isReadOnly && (
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                    variant="outlined"
+                                    onClick={() => setIsReadOnly(false)}
+                                >
+                                    Edit
+                                </CommonButton>
+                            )}
+                        </div>
+
+                        <button
+                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                            title="Close"
+                            type="button"
+                            onClick={onClose}
+                        >
+                            <XIcon className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    {schoolYearId && (
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={() => setIsHistoryModalOpen(true)}
-                        >
-                            History
-                        </CommonButton>
-                    )}
+                {/* Mobile Actions: placed below label and description to prevent vertical narrowing */}
+                {(schoolYearId || isReadOnly) && (
+                    <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
+                        {schoolYearId && (
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                                variant="outlined"
+                                onClick={() => setIsHistoryModalOpen(true)}
+                            >
+                                History
+                            </CommonButton>
+                        )}
 
-                    {isReadOnly && (
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={() => setIsReadOnly(false)}
-                        >
-                            Edit
-                        </CommonButton>
-                    )}
-                    <button
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                        title="Close"
-                        type="button"
-                        onClick={onClose}
-                    >
-                        <XIcon className="w-5 h-5" />
-                    </button>
-                </div>
+                        {isReadOnly && (
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                variant="outlined"
+                                onClick={() => setIsReadOnly(false)}
+                            >
+                                Edit
+                            </CommonButton>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Stepper Progress Bar */}
