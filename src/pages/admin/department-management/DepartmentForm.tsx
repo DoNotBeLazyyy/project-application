@@ -10,13 +10,11 @@ interface DepartmentFormProps extends ComponentPropsForm {
     isCodeDisabled?: boolean;
 }
 
-export default function DepartmentForm({
-    control,
-    disabled,
-    isCodeDisabled,
-    ...formProps
-}: DepartmentFormProps) {
-    const fields: FormFieldConfig<DepartmentFormValues>[] = [
+export function getDepartmentFormFields(
+    disabled?: boolean,
+    isCodeDisabled?: boolean
+): FormFieldConfig<DepartmentFormValues>[] {
+    return [
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Short unique code, e.g. CCS' },
@@ -41,6 +39,15 @@ export default function DepartmentForm({
             type: 'text-area'
         }
     ];
+}
+
+export default function DepartmentForm({
+    control,
+    disabled,
+    isCodeDisabled,
+    ...formProps
+}: DepartmentFormProps) {
+    const fields = getDepartmentFormFields(disabled, isCodeDisabled);
 
     return (
         <CommonForm

@@ -114,7 +114,11 @@ export default function DepartmentManagement() {
     }
 
     async function handleCreateSubmit(values: DepartmentFormValues) {
-        const result = await createDepartment(values);
+        const result = await createDepartment({
+            ...values,
+            code: values.code.trim(),
+            name: values.name.trim()
+        });
 
         if (!result.error) {
             createMethods.reset(DEFAULT_FORM_VALUES);
@@ -132,7 +136,11 @@ export default function DepartmentManagement() {
             return;
         }
 
-        const result = await updateDepartment(selectedId, values);
+        const result = await updateDepartment(selectedId, {
+            ...values,
+            code: values.code.trim(),
+            name: values.name.trim()
+        });
 
         if (!result.error) {
             handleCloseUpdate();
@@ -220,7 +228,6 @@ export default function DepartmentManagement() {
                         <DepartmentForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
-                            isCodeDisabled
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError
