@@ -1,5 +1,6 @@
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
+import NotificationModalContainer from '@components/notification/NotificationModalContainer';
 import useIdleTimeout from '@hooks/useIdleTimeout';
 import { logout, refreshSession } from '@services/auth.service';
 import { useLoadingStore } from '@stores/loading.store';
@@ -48,6 +49,7 @@ export default function ProtectedLayout() {
                 onLogout={handleLogout}
                 onStayLoggedIn={handleStayLoggedIn}
             />
+            <NotificationModalContainer />
         </>
     );
 }

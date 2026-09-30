@@ -23,21 +23,36 @@ export function resolveNotificationPath(
         return null;
     }
 
-    const segments = actionUrl.split('/')
+    const cleanUrl = actionUrl.replace(/\\/g, '/');
+    const segments = cleanUrl.split('/')
         .filter(Boolean);
 
     if (segments.length === 0) {
         return null;
     }
 
-    if (isRoleHomeSegment(segments[0])) {
-        return actionUrl;
+    const firstSegment = segments[0];
+
+    if (firstSegment === 'announcements' || firstSegment === 'announcement-management') {
+        const id = segments[1];
+        const homePath = ROLE_HOME[activeRole];
+        return id ? `${homePath}?announcementId=${id}` : homePath;
     }
 
-    const alias = NOTIFICATION_SEGMENT_ALIASES[segments[0]];
+    if (firstSegment === 'events' || firstSegment === 'event-management') {
+        const id = segments[1];
+        const homePath = ROLE_HOME[activeRole];
+        return id ? `${homePath}?eventId=${id}` : homePath;
+    }
+
+    if (isRoleHomeSegment(firstSegment)) {
+        return cleanUrl;
+    }
+
+    const alias = NOTIFICATION_SEGMENT_ALIASES[firstSegment];
 
     if (!alias) {
-        return actionUrl;
+        return cleanUrl;
     }
 
     if (!ROLES_WITH_CONTENT_ROUTES.includes(activeRole)) {

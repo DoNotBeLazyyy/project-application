@@ -1,28 +1,18 @@
-import FileAttachmentList from '@components/attachment/FileAttachmentList';
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonCard from '@components/card/CommonCard';
-import RichContentReader from '@components/editor/RichContentReader';
-import CommonModal from '@components/modal/CommonModal';
+import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import {
     MegaphoneIcon,
     PaperclipIcon,
     PushPinIcon,
-    UserIcon,
-    WarningCircleIcon,
-    XIcon
+    WarningCircleIcon
 } from '@phosphor-icons/react';
-import { getAnnouncementById } from '@services/announcement.service';
-import { AnnouncementAudience, AnnouncementDetail, AnnouncementFeedRow, AttachmentInputDto } from '@type/announcement.type';
-import { useEffect, useState } from 'react';
+import { AnnouncementAudience, AnnouncementFeedRow } from '@type/announcement.type';
+import { useState } from 'react';
 
 interface AnnouncementsFeedCardProps {
     announcements: AnnouncementFeedRow[];
     error?: string | null;
-}
-
-interface AnnouncementDetailModalProps {
-    announcement: AnnouncementFeedRow | null;
-    onClose: () => void;
 }
 
 const AUDIENCE_LABELS: Record<AnnouncementAudience, string> = {
@@ -43,133 +33,7 @@ function formatPublishedAt(announcement: AnnouncementFeedRow): string {
         });
 }
 
-function formatFullDateTime(stamp: string): string {
-    return new Date(stamp)
-        .toLocaleString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-        });
-}
-
-function AnnouncementDetailModal({ announcement, onClose }: AnnouncementDetailModalProps) {
-    const [detail, setDetail] = useState<AnnouncementDetail | null>(null);
-
-    useEffect(() => {
-        if (!announcement?.id) {
-            setDetail(null);
-            return;
-        }
-
-        let isMounted = true;
-        getAnnouncementById(announcement.id)
-            .then((res) => {
-                if (isMounted && res.data) {
-                    setDetail(res.data);
-                }
-            })
-            .catch(() => {
-                // Keep fallback row data
-            });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [announcement?.id]);
-
-    if (!announcement) return null;
-
-    const publishedDate = announcement.published_at ?? announcement.created_at;
-    const content = detail?.content || announcement.content || '';
-    const attachments: AttachmentInputDto[] = (detail?.attachments as AttachmentInputDto[]) || announcement.attachments || [];
-
-    return (
-        <CommonModal
-            cardProps={{
-                className: 'flex flex-col max-h-[85dvh] w-full max-w-2xl p-0 overflow-hidden',
-                sx: {
-                    gap: '0 !important',
-                    maxWidth: '42rem !important',
-                    p: '0 !important'
-                }
-            }}
-            fullScreen={false}
-            fullWidth
-            maxWidth="md"
-            open={Boolean(announcement)}
-            onClose={onClose}
-        >
-            <div className="border-(--mui-palette-divider) border-b flex gap-3 items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 shrink-0">
-                <div className="flex flex-col gap-2 min-w-0">
-                    <div className="flex flex-wrap gap-2 items-center">
-                        {announcement.is_pinned && (
-                            <span className="bg-(--mui-palette-warning-main)/10 flex font-medium gap-1 items-center px-2 py-0.5 rounded text-(--mui-palette-warning-main) text-xs">
-                                <PushPinIcon size={14} weight="fill" />
-                                Pinned
-                            </span>
-                        )}
-                        <CommonChip
-                            label={AUDIENCE_LABELS[announcement.target_audience]}
-                            variant="light"
-                        />
-                    </div>
-                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl break-words">
-                        {announcement.title}
-                    </h2>
-                </div>
-                <button
-                    aria-label="Close"
-                    className="hover:bg-(--mui-palette-action-hover) p-1 rounded shrink-0 text-(--mui-palette-text-secondary) transition-colors cursor-pointer"
-                    title="Close"
-                    type="button"
-                    onClick={onClose}
-                >
-                    <XIcon size={18} weight="bold" />
-                </button>
-            </div>
-
-            <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6">
-                <div className="border-(--mui-palette-divider) border-b flex flex-wrap gap-4 pb-3 text-(--mui-palette-text-secondary) text-xs">
-                    <div className="flex gap-1.5 items-center">
-                        <UserIcon size={14} />
-                        <span>Posted by <strong className="font-medium text-(--mui-palette-text-primary)">{announcement.author_name ?? 'System'}</strong></span>
-                    </div>
-                    <div>
-                        <span>{formatFullDateTime(publishedDate)}</span>
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider font-semibold">
-                        Content
-                    </span>
-                    <div className="min-h-[80px] w-full">
-                        <RichContentReader
-                            content={content}
-                            emptyPlaceholder="No announcement content provided."
-                        />
-                    </div>
-                </div>
-
-                {attachments.length > 0 && (
-                    <div className="border-(--mui-palette-divider) border-t flex flex-col gap-3 pt-4">
-                        <span className="flex font-semibold gap-1.5 items-center text-(--mui-palette-text-secondary) text-xs uppercase tracking-wider">
-                            <PaperclipIcon size={15} weight="bold" />
-                            Attachments ({attachments.length})
-                        </span>
-                        <FileAttachmentList
-                            attachments={attachments}
-                            bucket="materials"
-                        />
-                    </div>
-                )}
-            </div>
-        </CommonModal>
-    );
-}
+export { AnnouncementDetailModal };
 
 export default function AnnouncementsFeedCard({ announcements, error }: AnnouncementsFeedCardProps) {
     const [detailAnnouncement, setDetailAnnouncement] = useState<AnnouncementFeedRow | null>(null);

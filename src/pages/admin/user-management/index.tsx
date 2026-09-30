@@ -16,8 +16,9 @@ import { SortStringDto } from '@type/http.type';
 import {
     AddUserFormValues, InviteUserParams, UpdateUserFormValues, UserFilterValues, UserListRow
 } from '@type/user.type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
 
 const UPDATE_FORM_ID = 'update-user-form';
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
@@ -28,7 +29,18 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
 ];
 
 export default function UserManagement() {
-    const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>(null);
+    const [searchParams] = useSearchParams();
+    const roleParam = searchParams.get('role') || searchParams.get('role_code');
+
+    const initialRole: UserRole | 'All' = (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean')
+        ? (roleParam as UserRole)
+        : 'All';
+
+    const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>(
+        initialRole !== 'All'
+            ? { city: '', province: '', role_code: initialRole, status: 'All' }
+            : null
+    );
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -49,10 +61,25 @@ export default function UserManagement() {
         defaultValues: {
             city: '',
             province: '',
-            role_code: 'All',
+            role_code: initialRole,
             status: 'All'
         }
     });
+
+    useEffect(function() {
+        if (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean') {
+            const roleCode = roleParam as UserRole;
+            const newFilters: UserFilterValues = {
+                city: '',
+                province: '',
+                role_code: roleCode,
+                status: 'All'
+            };
+
+            setActiveFilters(newFilters);
+            filterMethods.reset(newFilters);
+        }
+    }, [roleParam, filterMethods]);
 
     const updateMethods = useForm<UpdateUserFormValues>({
         defaultValues: {
