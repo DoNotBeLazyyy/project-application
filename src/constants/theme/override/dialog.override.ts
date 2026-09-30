@@ -11,18 +11,20 @@ export const dialogOverrides: ComponentTheme = {
                 overflowY: 'auto',
                 width: '100%',
                 [theme.breakpoints.down('sm')]: {
-                    borderRadius: 'var(--mui-tokens-radius-lg)',
-                    margin: '1rem',
-                    maxHeight: 'calc(100% - 2rem)',
-                    width: 'calc(100% - 2rem)'
+                    borderRadius: 0,
+                    height: '100dvh',
+                    margin: 0,
+                    maxHeight: '100dvh',
+                    maxWidth: '100vw',
+                    width: '100vw'
                 },
                 '&.MuiDialog-paperFullScreen': {
                     borderRadius: 0,
-                    height: '100%',
+                    height: '100dvh',
                     margin: 0,
-                    maxHeight: '100%',
-                    maxWidth: '100%',
-                    width: '100%'
+                    maxHeight: '100dvh',
+                    maxWidth: '100vw',
+                    width: '100vw'
                 }
             })
         }

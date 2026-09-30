@@ -99,14 +99,12 @@ export function AnnouncementDetailModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'flex flex-col max-h-[85dvh] w-full max-w-2xl p-0 overflow-hidden',
+                className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl p-0 overflow-hidden',
                 sx: {
                     gap: '0 !important',
-                    maxWidth: '42rem !important',
                     p: '0 !important'
                 }
             }}
-            fullScreen={false}
             fullWidth
             maxWidth="md"
             open={Boolean(targetId)}

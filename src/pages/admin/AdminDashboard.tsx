@@ -27,7 +27,7 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconColor: 'text-[var(--mui-palette-primary-main)]',
         label: 'Active Students',
         statKey: 'total_students',
-        to: '/admin/users?role=Student'
+        to: '/admin/users?role=Student&status=Active'
     },
     {
         icon: <ChalkboardTeacherIcon size={24} />,
@@ -35,7 +35,7 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         iconColor: 'text-[var(--mui-palette-success-main)]',
         label: 'Active Faculty',
         statKey: 'total_faculty',
-        to: '/admin/users?role=Faculty'
+        to: '/admin/users?role=Faculty&status=Active'
     },
     {
         icon: <BookOpenIcon size={24} />,

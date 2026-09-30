@@ -31,14 +31,19 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
 export default function UserManagement() {
     const [searchParams] = useSearchParams();
     const roleParam = searchParams.get('role') || searchParams.get('role_code');
+    const statusParam = searchParams.get('status');
 
     const initialRole: UserRole | 'All' = (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean')
         ? (roleParam as UserRole)
         : 'All';
 
+    const initialStatus: 'All' | 'Active' | 'Invited' = statusParam === 'Active' || statusParam === 'Invited'
+        ? statusParam
+        : (initialRole !== 'All' ? 'Active' : 'All');
+
     const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>(
-        initialRole !== 'All'
-            ? { city: '', province: '', role_code: initialRole, status: 'All' }
+        initialRole !== 'All' || initialStatus !== 'All'
+            ? { city: '', province: '', role_code: initialRole, status: initialStatus }
             : null
     );
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
@@ -62,24 +67,31 @@ export default function UserManagement() {
             city: '',
             province: '',
             role_code: initialRole,
-            status: 'All'
+            status: initialStatus
         }
     });
 
     useEffect(function() {
-        if (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean') {
-            const roleCode = roleParam as UserRole;
+        if (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean' || statusParam) {
+            const roleCode = (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean')
+                ? (roleParam as UserRole)
+                : 'All';
+
+            const statusVal = statusParam === 'Active' || statusParam === 'Invited' || statusParam === 'All'
+                ? (statusParam as 'All' | 'Active' | 'Invited')
+                : (roleCode !== 'All' ? 'Active' : 'All');
+
             const newFilters: UserFilterValues = {
                 city: '',
                 province: '',
                 role_code: roleCode,
-                status: 'All'
+                status: statusVal
             };
 
             setActiveFilters(newFilters);
             filterMethods.reset(newFilters);
         }
-    }, [roleParam, filterMethods]);
+    }, [roleParam, statusParam, filterMethods]);
 
     const updateMethods = useForm<UpdateUserFormValues>({
         defaultValues: {

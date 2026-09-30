@@ -1,5 +1,6 @@
 import FormButtons, { FormButtonsProps } from '@components/button/FormButtons';
 import CommonModal, { CommonModalProps } from '@components/modal/CommonModal';
+import useBreakpoint from '@hooks/useBreakpoint';
 import { classMerge } from '@utils/css.util';
 import { normalizeSx } from '@utils/theme.util';
 
@@ -18,10 +19,13 @@ export default function CommonActionModal({
     hideCancel = false,
     ...props
 }: CommonActionModalProps) {
+    const { isMobile } = useBreakpoint();
+    const isFullScreen = props.fullScreen ?? isMobile;
     const { cancelProps, className } = formButtonsProps ?? {};
 
     return (
         <CommonModal
+            fullScreen={isFullScreen}
             {...props}
             cardProps={{
                 ...cardProps,
@@ -31,12 +35,16 @@ export default function CommonActionModal({
                         flexDirection: 'column',
                         // Halve the header / body / footer rhythm (medium card gap is 0.75rem).
                         gap: '0.375rem',
-                        height: 'auto',
-                        maxHeight: {
-                            xs: 'calc(100dvh - 2rem)',
-                            sm: 'calc(100dvh - 4rem)'
-                        },
-                        borderRadius: 'var(--mui-tokens-radius-lg)',
+                        height: isFullScreen ? '100dvh' : 'auto',
+                        maxHeight: isFullScreen
+                            ? '100dvh'
+                            : {
+                                xs: 'calc(100dvh - 2rem)',
+                                sm: 'calc(100dvh - 4rem)'
+                            },
+                        borderRadius: isFullScreen
+                            ? 0
+                            : 'var(--mui-tokens-radius-lg)',
                         overflow: 'hidden',
                         '& > .MuiCardHeader-root': {
                             display: 'flex',

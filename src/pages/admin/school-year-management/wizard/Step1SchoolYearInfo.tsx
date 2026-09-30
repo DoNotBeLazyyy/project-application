@@ -3,6 +3,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { EVALUATION_SCOPE_HELPER, EVALUATION_SCOPE_OPTIONS } from '@constants/evaluation.constant';
 import { CopySimpleIcon, InfoIcon, ShieldCheckIcon, SlidersIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
@@ -201,8 +202,9 @@ export default function Step1SchoolYearInfo({
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        Start Date <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                        <span>Start Date <span className="text-red-500">*</span></span>
+                        <CommonInfoTooltip content="Official start date of the academic calendar. Terms must begin on or after this date." size={14} />
                     </label>
                     <ValidCommonDatePicker
                         control={control}
@@ -239,8 +241,9 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        End Date <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                        <span>End Date <span className="text-red-500">*</span></span>
+                        <CommonInfoTooltip content="Official concluding date of this academic year. Terms must end on or before this date." size={14} />
                     </label>
                     <ValidCommonDatePicker
                         control={control}
@@ -277,8 +280,9 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        Academic Year Code <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                        <span>Academic Year Code <span className="text-red-500">*</span></span>
+                        <CommonInfoTooltip content="Unique machine-readable identifier for database queries and system references (e.g. AY-2026-2027)." size={14} />
                     </label>
                     <ValidCommonInput
                         control={control}
@@ -315,8 +319,9 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        Academic Year Label <span className="text-red-500">*</span>
+                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                        <span>Academic Year Label <span className="text-red-500">*</span></span>
+                        <CommonInfoTooltip content="Human-friendly title displayed on portal headers, report cards, and official transcripts." size={14} />
                     </label>
                     <ValidCommonInput
                         control={control}
@@ -369,8 +374,9 @@ export default function Step1SchoolYearInfo({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                            Max Units per Term <span className="text-red-500">*</span>
+                        <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                            <span>Max Units per Term <span className="text-red-500">*</span></span>
+                            <CommonInfoTooltip content="Standard maximum credit units a student can register for in any term of this academic year (1 - 60)." size={14} />
                         </label>
                         <ValidCommonInput
                             control={control}
@@ -390,8 +396,9 @@ export default function Step1SchoolYearInfo({
                     </div>
 
                     <div>
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                            Faculty Evaluation Scope <span className="text-red-500">*</span>
+                        <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+                            <span>Faculty Evaluation Scope <span className="text-red-500">*</span></span>
+                            <CommonInfoTooltip content="Determines whether student evaluation of faculty performance is conducted once per term or for each grading period." size={14} />
                         </label>
                         <ValidCommonSelect
                             control={control}
@@ -412,8 +419,9 @@ export default function Step1SchoolYearInfo({
                 <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                         <ShieldCheckIcon className="w-4 h-4 text-emerald-600" />
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                            Set as Active Academic Year
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span>Set as Active Academic Year</span>
+                            <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
                         </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
