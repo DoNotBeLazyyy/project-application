@@ -240,7 +240,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                     {period.sequence}. {period.name}
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 w-20">
+                                    <div className="flex items-center gap-1 w-40">
                                         <CommonInput
                                             disabled={disabled}
                                             size="small"
@@ -295,7 +295,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                                 }}
                                                 className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-blue-500 outline-none text-xs text-slate-700 dark:text-slate-200 font-medium"
                                             />
-                                            <div className="flex items-center gap-1 w-16">
+                                            <div className="flex items-center gap-1 w-32">
                                                 <input
                                                     type="number"
                                                     disabled={disabled}

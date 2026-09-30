@@ -294,7 +294,6 @@ export default function ProgramManagement() {
                 open={isUpdateOpen}
                 initialStep={editStep}
                 isEditing
-                isCodeDisabled
                 methods={updateMethods}
                 onClose={handleCloseUpdate}
                 onSubmit={handleUpdateSubmit}
@@ -304,7 +303,6 @@ export default function ProgramManagement() {
             <ProgramWizardModal
                 open={isViewOpen}
                 readOnly
-                isCodeDisabled
                 methods={updateMethods}
                 onClose={handleCloseView}
                 onSubmit={function() {}}
