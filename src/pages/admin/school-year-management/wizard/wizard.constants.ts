@@ -63,6 +63,35 @@ export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
     { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
 ];
 
+export const US_GPA_PRESET: WizardTransmutationRow[] = [
+    { label: 'A', min_percentage: 93, max_percentage: 100, transmuted_grade: 4.00, is_passing: true, is_conditional: false, special_code: null, description: 'Excellent (4.00)' },
+    { label: 'A-', min_percentage: 90, max_percentage: 92, transmuted_grade: 3.70, is_passing: true, is_conditional: false, special_code: null, description: 'Very Good (3.70)' },
+    { label: 'B+', min_percentage: 87, max_percentage: 89, transmuted_grade: 3.30, is_passing: true, is_conditional: false, special_code: null, description: 'Good (3.30)' },
+    { label: 'B', min_percentage: 83, max_percentage: 86, transmuted_grade: 3.00, is_passing: true, is_conditional: false, special_code: null, description: 'Above Average (3.00)' },
+    { label: 'B-', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.70, is_passing: true, is_conditional: false, special_code: null, description: 'Average (2.70)' },
+    { label: 'C+', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.30, is_passing: true, is_conditional: false, special_code: null, description: 'Satisfactory (2.30)' },
+    { label: 'C', min_percentage: 73, max_percentage: 76, transmuted_grade: 2.00, is_passing: true, is_conditional: false, special_code: null, description: 'Fair (2.00)' },
+    { label: 'D', min_percentage: 70, max_percentage: 72, transmuted_grade: 1.00, is_passing: true, is_conditional: false, special_code: null, description: 'Minimal Pass (1.00)' },
+    { label: 'F', min_percentage: 0, max_percentage: 69, transmuted_grade: 0.00, is_passing: false, is_conditional: false, special_code: null, description: 'Failure (0.00)' },
+    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete' },
+    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
+];
+
+export const PASS_FAIL_PRESET: WizardTransmutationRow[] = [
+    { label: 'PASS', min_percentage: 75, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, is_conditional: false, special_code: null, description: 'Satisfactory / Credit Granted' },
+    { label: 'FAIL', min_percentage: 0, max_percentage: 74, transmuted_grade: 5.00, is_passing: false, is_conditional: false, special_code: null, description: 'Unsatisfactory / No Credit' },
+    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete Requirements' },
+    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
+];
+
+export function shiftDateByOneYear(dateStr?: string | null): string {
+    if (!dateStr || !dateStr.trim()) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    d.setFullYear(d.getFullYear() + 1);
+    return formatDate(d);
+}
+
 export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
     {
         category: 'Honor',
@@ -283,17 +312,6 @@ export function validateTerms(
             };
         }
 
-        if (i > 0) {
-            const prevTerm = terms[i - 1];
-            const prevName = prevTerm.term_type_label || `Term #${i}`;
-            if (new Date(t.start_date) < new Date(prevTerm.end_date)) {
-                return {
-                    error: `Term #${i + 1} (${termName}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
-                    isValid: false
-                };
-            }
-        }
-
         if (syStartDate && new Date(t.start_date) < new Date(syStartDate)) {
             return {
                 error: `Term #${i + 1} (${termName}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,
@@ -389,16 +407,6 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
                     error: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
                     isValid: false
                 };
-            }
-
-            if (j > 0) {
-                const prev = periods[j - 1];
-                if (new Date(p.start_date) < new Date(prev.end_date)) {
-                    return {
-                        error: `Grading period ${periodLabel} start date (${p.start_date}) conflicts with preceding period "${prev.name}" end date (${prev.end_date}) in ${termName}. Grading periods cannot overlap.`,
-                        isValid: false
-                    };
-                }
             }
 
             if (t.start_date && new Date(p.start_date) < new Date(t.start_date)) {

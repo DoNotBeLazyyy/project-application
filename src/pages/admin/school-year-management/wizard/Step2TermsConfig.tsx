@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
+    ArrowCounterClockwiseIcon,
     CalendarPlusIcon,
     ClockIcon,
     InfoIcon,
@@ -340,16 +341,39 @@ export default function Step2TermsConfig({
                                     </h4>
                                 </div>
 
-                                {!disabled && fields.length > 1 && (
-                                    <button
-                                        className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                        title="Remove Term"
-                                        type="button"
-                                        onClick={() => remove(index)}
-                                    >
-                                        <TrashIcon className="w-4 h-4" />
-                                        <span className="hidden sm:inline">Remove</span>
-                                    </button>
+                                {!disabled && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
+                                            title="Reset Term Dates to Blank"
+                                            type="button"
+                                            onClick={() => {
+                                                update(index, {
+                                                    ...currentTerm,
+                                                    start_date: '',
+                                                    end_date: '',
+                                                    enrollment_start_date: '',
+                                                    enrollment_end_date: '',
+                                                    grading_deadline: ''
+                                                });
+                                            }}
+                                        >
+                                            <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
+                                            <span className="hidden sm:inline">Reset to Blank</span>
+                                        </button>
+
+                                        {fields.length > 1 && (
+                                            <button
+                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                title="Remove Term"
+                                                type="button"
+                                                onClick={() => remove(index)}
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Remove</span>
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 

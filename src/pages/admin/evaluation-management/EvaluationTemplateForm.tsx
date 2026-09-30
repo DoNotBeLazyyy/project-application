@@ -2,20 +2,25 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import {
     ArrowDownIcon,
+    ArrowRightIcon,
     ArrowUpIcon,
     InfoIcon,
     ListChecksIcon,
     PlusCircleIcon,
+    SlidersIcon,
     TrashIcon
 } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
+import { TabItemData } from '@type/tab-menu.type';
+import { SyntheticEvent, useState } from 'react';
 import { Control, FieldValues, useFieldArray, useWatch } from 'react-hook-form';
 
 const TARGET_MODE_OPTIONS = [
@@ -149,6 +154,8 @@ export default function EvaluationTemplateFormPanel({
     disabled = false,
     ...formProps
 }: EvaluationTemplateFormProps) {
+    const [activeTab, setActiveTab] = useState<'info' | 'questions'>('info');
+
     const { fields, append, move, remove } = useFieldArray({
         control,
         name: 'questions'
@@ -251,79 +258,121 @@ export default function EvaluationTemplateFormPanel({
         }
     ];
 
+    const tabs: TabItemData[] = [
+        {
+            label: '1. Section Details & Scope',
+            value: 'info',
+            icon: <SlidersIcon className="size-4" />
+        },
+        {
+            label: `2. Evaluation Questions (${fields.length})`,
+            value: 'questions',
+            icon: <ListChecksIcon className="size-4" />
+        }
+    ];
+
     return (
-        <div className="flex flex-col gap-6 w-full">
-            <CommonForm
-                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                control={control}
-                fields={templateFields}
-                formProps={formProps}
-                hasHelper
-            />
+        <div className="flex flex-col gap-5 w-full">
+            {/* Stepper Tabs */}
+            <div className="border-b border-(--mui-palette-divider) pb-1">
+                <CommonTabMenu
+                    menuStyle="outline"
+                    tabs={tabs}
+                    value={activeTab}
+                    onChange={(_: SyntheticEvent, val: unknown) => setActiveTab(val as 'info' | 'questions')}
+                />
+            </div>
 
-            {/* Questions Builder Section */}
-            <div className="flex flex-col gap-3 pt-4 border-t border-(--mui-palette-divider)">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <ListChecksIcon className="size-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
-                        <div>
-                            <h3 className="font-semibold text-sm text-(--mui-palette-text-primary)">
-                                Evaluation Questions ({fields.length})
-                            </h3>
-                            <p className="text-xs text-(--mui-palette-text-secondary)">
-                                Manage the questions that students will evaluate for this section.
-                            </p>
-                        </div>
-                    </div>
-
-                    {!disabled && (
+            {/* Tab 1: Section Details & Scope */}
+            {activeTab === 'info' && (
+                <div className="flex flex-col gap-4">
+                    <CommonForm
+                        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                        control={control}
+                        fields={templateFields}
+                        formProps={formProps}
+                        hasHelper
+                    />
+                    <div className="flex justify-end pt-2">
                         <CommonButton
                             color="primary"
+                            endIcon={<ArrowRightIcon weight="bold" />}
                             size="small"
-                            startIcon={<PlusCircleIcon weight="bold" />}
-                            variant="contained"
-                            onClick={handleAddRow}
+                            variant="outlined"
+                            onClick={() => setActiveTab('questions')}
                         >
-                            Add Question
+                            Next: Evaluation Questions ({fields.length})
                         </CommonButton>
-                    )}
-                </div>
-
-                {/* Question Cards List */}
-                {fields.length === 0 ? (
-                    <div className="p-8 text-center border-2 border-dashed border-(--mui-palette-divider) rounded-xl flex flex-col items-center justify-center gap-2">
-                        <InfoIcon className="size-8 text-slate-400" />
-                        <p className="font-semibold text-sm text-(--mui-palette-text-primary)">
-                            No Questions Added Yet
-                        </p>
-                        <p className="text-xs text-(--mui-palette-text-secondary)">
-                            Click "+ Add Question" above to add the first evaluation item.
-                        </p>
                     </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {fields.slice(0, visibleCount).map((fieldItem, idx) => (
-                            <EvaluationQuestionItem
-                                control={control}
-                                disabled={disabled}
-                                index={idx}
-                                key={fieldItem.id}
-                                total={fields.length}
-                                onMove={function(fromIdx, toIdx) {
-                                    move(fromIdx, toIdx);
-                                }}
-                                onRemove={function(removeIdx) {
-                                    remove(removeIdx);
-                                }}
-                            />
-                        ))}
+                </div>
+            )}
+
+            {/* Tab 2: Evaluation Questions (Sticky Header + Scrollable List) */}
+            {activeTab === 'questions' && (
+                <div className="flex flex-col gap-4">
+                    {/* Fixed / Sticky Header (Does NOT scroll) */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-slate-50/80 dark:bg-zinc-800/60 border border-(--mui-palette-divider) shrink-0 shadow-xs">
+                        <div className="flex items-center gap-2.5">
+                            <ListChecksIcon className="size-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
+                            <div>
+                                <h3 className="font-semibold text-sm text-(--mui-palette-text-primary)">
+                                    Evaluation Questions ({fields.length})
+                                </h3>
+                                <p className="text-xs text-(--mui-palette-text-secondary)">
+                                    Manage the questions that students will evaluate for this section.
+                                </p>
+                            </div>
+                        </div>
+
+                        {!disabled && (
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusCircleIcon weight="bold" />}
+                                variant="contained"
+                                onClick={handleAddRow}
+                            >
+                                Add Question
+                            </CommonButton>
+                        )}
+                    </div>
+
+                    {/* ONLY Questions List is Scrollable */}
+                    <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-320px)] sm:max-h-[520px] pr-1 sm:pr-2">
+                        {fields.length === 0 ? (
+                            <div className="p-8 text-center border-2 border-dashed border-(--mui-palette-divider) rounded-xl flex flex-col items-center justify-center gap-2">
+                                <InfoIcon className="size-8 text-slate-400" />
+                                <p className="font-semibold text-sm text-(--mui-palette-text-primary)">
+                                    No Questions Added Yet
+                                </p>
+                                <p className="text-xs text-(--mui-palette-text-secondary)">
+                                    Click "+ Add Question" above to add the first evaluation item.
+                                </p>
+                            </div>
+                        ) : (
+                            fields.slice(0, visibleCount).map((fieldItem, idx) => (
+                                <EvaluationQuestionItem
+                                    control={control}
+                                    disabled={disabled}
+                                    index={idx}
+                                    key={fieldItem.id}
+                                    total={fields.length}
+                                    onMove={function(fromIdx, toIdx) {
+                                        move(fromIdx, toIdx);
+                                    }}
+                                    onRemove={function(removeIdx) {
+                                        remove(removeIdx);
+                                    }}
+                                />
+                            ))
+                        )}
 
                         <div className="py-1 text-center text-xs text-(--mui-palette-text-secondary)" ref={sentinelRef}>
                             {hasMore ? 'Loading more questions...' : ''}
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

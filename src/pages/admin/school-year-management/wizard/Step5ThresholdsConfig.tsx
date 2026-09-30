@@ -2,15 +2,12 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
-    CheckCircleIcon,
-    GraduationCapIcon,
     InfoIcon,
     PlusIcon,
     TrashIcon
 } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
-import { useState } from 'react';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import { DEFAULT_ACADEMIC_THRESHOLDS } from './wizard.constants';
 
@@ -35,20 +32,10 @@ export default function Step5ThresholdsConfig({
     });
 
     const thresholds = useWatch({ control, name: 'thresholds' }) || [];
-    const [selectedCategory, setSelectedCategory] = useState<'All' | AcademicThresholdCategory>('All');
-
-    const honorCount = thresholds.filter((t) => t.category === 'Honor').length;
-    const scholarshipCount = thresholds.filter((t) => t.category === 'Scholarship').length;
-    const standingCount = thresholds.filter((t) => t.category === 'Standing').length;
-
-    const filteredIndices = thresholds
-        .map((t, idx) => ({ ...t, originalIndex: idx }))
-        .filter((t) => selectedCategory === 'All' || t.category === selectedCategory);
 
     function handleAddThreshold() {
-        const defaultCategory: AcademicThresholdCategory = selectedCategory === 'All' ? 'Honor' : selectedCategory;
         const newThreshold: WizardThresholdItem = {
-            category: defaultCategory,
+            category: 'Honor',
             code: `custom_threshold_${Date.now()}`,
             is_active: true,
             label: 'New Academic Threshold',
@@ -62,71 +49,56 @@ export default function Step5ThresholdsConfig({
         append(newThreshold);
     }
 
-    function handleResetDefault() {
-        replace([...DEFAULT_ACADEMIC_THRESHOLDS]);
+    function handleResetBlank() {
+        replace([]);
+    }
+
+    function handleResetThresholdBlank(idx: number) {
+        const item = thresholds[idx];
+        if (!item) return;
+        update(idx, {
+            ...item,
+            code: '',
+            label: '',
+            max_gwa: '',
+            min_gwa: null,
+            min_subject_grade: null,
+            scholarship_discount_pct: null
+        });
     }
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Filter Pills & Summary */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                    <button
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-                            selectedCategory === 'All'
-                                ? 'bg-brand-600 text-white shadow-sm'
-                                : 'bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedCategory('All')}
-                    >
-                        All ({thresholds.length})
-                    </button>
-                    <button
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-                            selectedCategory === 'Honor'
-                                ? 'bg-brand-600 text-white shadow-sm'
-                                : 'bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedCategory('Honor')}
-                    >
-                        Honors ({honorCount})
-                    </button>
-                    <button
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-                            selectedCategory === 'Scholarship'
-                                ? 'bg-brand-600 text-white shadow-sm'
-                                : 'bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedCategory('Scholarship')}
-                    >
-                        Scholarships ({scholarshipCount})
-                    </button>
-                    <button
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
-                            selectedCategory === 'Standing'
-                                ? 'bg-brand-600 text-white shadow-sm'
-                                : 'bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedCategory('Standing')}
-                    >
-                        Standing ({standingCount})
-                    </button>
+            {/* Top Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Total Academic Thresholds: <span className="text-brand-600 dark:text-brand-400 font-bold">{thresholds.length}</span>
                 </div>
 
                 {!disabled && (
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <select
+                            aria-label="Preset Thresholds"
+                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value === 'honors') {
+                                    replace([...DEFAULT_ACADEMIC_THRESHOLDS]);
+                                }
+                            }}
+                        >
+                            <option value="">-- Apply Preset Thresholds --</option>
+                            <option value="honors">Standard Honors & Scholarships</option>
+                        </select>
+
                         <CommonButton
                             color="inherit"
                             size="small"
                             startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
                             variant="outlined"
-                            onClick={handleResetDefault}
+                            onClick={handleResetBlank}
                         >
-                            Reset to Default
+                            Reset to Blank
                         </CommonButton>
                         <CommonButton
                             color="primary"
@@ -142,36 +114,37 @@ export default function Step5ThresholdsConfig({
             </div>
 
             {/* Thresholds List / Cards */}
-            <div className="flex flex-col gap-3">
-                {filteredIndices.length === 0 ? (
-                    <div className="text-center py-10 bg-slate-50/60 dark:bg-zinc-800/20 rounded-xl border border-dashed border-slate-200 dark:border-zinc-800">
-                        <InfoIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+            <div className="flex flex-col gap-4">
+                {thresholds.length === 0 ? (
+                    <div className="text-center py-10 bg-slate-50/60 dark:bg-zinc-800/20 rounded-xl border border-dashed border-slate-200 dark:border-zinc-800 space-y-2">
+                        <InfoIcon className="w-8 h-8 text-slate-400 mx-auto" />
                         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                            No thresholds found for category "{selectedCategory}".
+                            No academic thresholds defined.
                         </p>
                         {!disabled && (
-                            <button
-                                className="mt-2 text-xs font-semibold text-brand-600 hover:underline"
-                                type="button"
-                                onClick={handleAddThreshold}
-                            >
-                                + Add a threshold
-                            </button>
+                            <div className="pt-2 flex justify-center gap-2">
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    variant="contained"
+                                    onClick={() => replace([...DEFAULT_ACADEMIC_THRESHOLDS])}
+                                >
+                                    Load Standard Honors Preset
+                                </CommonButton>
+                            </div>
                         )}
                     </div>
                 ) : (
-                    filteredIndices.map((item) => {
-                        const idx = item.originalIndex;
-
+                    thresholds.map((item, idx) => {
                         return (
                             <div
-                                key={idx}
-                                className="flex flex-col gap-4 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm transition-all hover:border-slate-300 dark:hover:border-zinc-700"
+                                key={item.id || idx}
+                                className="flex flex-col gap-4 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm transition-all hover:border-slate-300 dark:hover:border-zinc-700 w-full min-w-0"
                             >
-                                {/* Top Row: Label, Code, Category, Active, Delete */}
-                                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                                {/* Mobile-First Responsive Grid Row 1: Category, Label, Code, Active, Actions */}
+                                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end w-full min-w-0">
                                     {/* Category */}
-                                    <div className="sm:col-span-3">
+                                    <div className="sm:col-span-3 min-w-0">
                                         <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                                             <span>Category <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)." size={13} />
@@ -197,7 +170,7 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Label */}
-                                    <div className="sm:col-span-4">
+                                    <div className="sm:col-span-4 min-w-0">
                                         <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                                             <span>Threshold Name / Label <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Official title revealed on student rank lists, certificates, and academic summary cards." size={13} />
@@ -213,7 +186,7 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Code */}
-                                    <div className="sm:col-span-3">
+                                    <div className="sm:col-span-3 min-w-0">
                                         <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
                                             <span>Unique Code</span>
                                             <CommonInfoTooltip content="System identifier code used for automated eligibility queries and SQL rules." size={13} />
@@ -228,8 +201,8 @@ export default function Step5ThresholdsConfig({
                                         />
                                     </div>
 
-                                    {/* Active Toggle & Delete */}
-                                    <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 sm:pt-0">
+                                    {/* Active Toggle & Actions */}
+                                    <div className="sm:col-span-2 flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 shrink-0">
                                         <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
                                             <input
                                                 checked={Boolean(item.is_active)}
@@ -239,26 +212,35 @@ export default function Step5ThresholdsConfig({
                                                 onChange={(e) => update(idx, { ...item, is_active: e.target.checked })}
                                             />
                                             <span>Active</span>
-                                            <CommonInfoTooltip content="When active, student evaluations will test against this threshold cutoff." size={13} />
                                         </label>
 
                                         {!disabled && (
-                                            <button
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                                                title="Delete Threshold"
-                                                type="button"
-                                                onClick={() => remove(idx)}
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                                                    title="Reset threshold inputs to blank"
+                                                    type="button"
+                                                    onClick={() => handleResetThresholdBlank(idx)}
+                                                >
+                                                    <ArrowCounterClockwiseIcon className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                                    title="Delete Threshold"
+                                                    type="button"
+                                                    onClick={() => remove(idx)}
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Criteria Details Row: GWA Range, Floor, Requires No Failing */}
-                                <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 items-end">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 items-end w-full min-w-0">
                                     {/* Min GWA */}
-                                    <div className="sm:col-span-3">
+                                    <div className="min-w-0">
                                         <label className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mb-1">
                                             <span>Min GWA</span>
                                             <CommonInfoTooltip content="Minimum (best) GWA required for this threshold tier (typically 1.00)." size={13} />
@@ -280,7 +262,7 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Max GWA (Cutoff) */}
-                                    <div className="sm:col-span-3">
+                                    <div className="min-w-0">
                                         <label className="flex items-center gap-1 text-[11px] font-semibold text-brand-600 dark:text-brand-400 mb-1">
                                             <span>Max GWA (Cutoff) <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified." size={13} />
@@ -297,8 +279,8 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Subject Floor (Min individual subject grade) */}
-                                    <div className="sm:col-span-3">
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mb-1" title="Worst allowed single subject grade (optional)">
+                                    <div className="min-w-0">
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mb-1">
                                             <span>Subject Floor Grade</span>
                                             <CommonInfoTooltip content="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies." size={13} />
                                         </label>
@@ -319,11 +301,11 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     {/* Requires No Failing Grade Checkbox */}
-                                    <div className="col-span-2 sm:col-span-3 pb-1">
+                                    <div className="min-w-0 pb-1">
                                         <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
                                             <input
                                                 checked={Boolean(item.requires_no_failing)}
-                                                className="w-3.5 h-3.5 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700"
+                                                className="w-3.5 h-3.5 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700 shrink-0"
                                                 disabled={disabled}
                                                 type="checkbox"
                                                 onChange={(e) => update(idx, { ...item, requires_no_failing: e.target.checked })}

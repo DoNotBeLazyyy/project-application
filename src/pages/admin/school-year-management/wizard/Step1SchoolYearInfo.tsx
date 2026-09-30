@@ -16,6 +16,7 @@ import {
     generateAcademicYearLabel,
     SourceSchoolYearInfo
 } from './wizard.constants';
+import AcademicYearTimelinePreview from './AcademicYearTimelinePreview';
 
 interface Step1SchoolYearInfoProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -46,6 +47,7 @@ export default function Step1SchoolYearInfo({
     const endDate = useWatch({ control, name: 'end_date' });
     const code = useWatch({ control, name: 'code' });
     const label = useWatch({ control, name: 'label' });
+    const terms = useWatch({ control, name: 'terms' }) || [];
 
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
@@ -183,6 +185,9 @@ export default function Step1SchoolYearInfo({
                     </div>
                 </div>
             )}
+
+            {/* Schedule Timeline Preview */}
+            <AcademicYearTimelinePreview endDate={endDate} startDate={startDate} terms={terms} />
 
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

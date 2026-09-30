@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
+    ArrowCounterClockwiseIcon,
     CheckCircleIcon,
     InfoIcon,
     PlusIcon,
@@ -513,17 +514,27 @@ export default function Step3GradingPeriodsConfig({
                                                 )}
                                             </div>
 
-                                            {/* Desktop Delete button */}
-                                            {!disabled && periods.length > 1 && (
-                                                <div className="hidden md:flex items-center pt-4">
+                                            {/* Row Actions (Reset to Blank & Remove) */}
+                                            {!disabled && (
+                                                <div className="flex items-center gap-1 pt-4">
                                                     <button
-                                                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                                        title="Remove period"
+                                                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
+                                                        title="Reset period inputs to blank"
                                                         type="button"
-                                                        onClick={() => handleRemovePeriod(tIdx, pIdx)}
+                                                        onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '' })}
                                                     >
-                                                        <TrashIcon className="w-4 h-4" />
+                                                        <ArrowCounterClockwiseIcon className="w-4 h-4" />
                                                     </button>
+                                                    {periods.length > 1 && (
+                                                        <button
+                                                            className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                            title="Remove period"
+                                                            type="button"
+                                                            onClick={() => handleRemovePeriod(tIdx, pIdx)}
+                                                        >
+                                                            <TrashIcon className="w-4 h-4" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

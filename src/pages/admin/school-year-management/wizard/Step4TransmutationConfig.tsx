@@ -3,7 +3,6 @@ import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
-    InfoIcon,
     PlusIcon,
     TrashIcon,
     WarningCircleIcon,
@@ -11,7 +10,12 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
-import { DEFAULT_TRANSMUTATION_ROWS, isSpecialGradeRow } from './wizard.constants';
+import {
+    DEFAULT_TRANSMUTATION_ROWS,
+    isSpecialGradeRow,
+    PASS_FAIL_PRESET,
+    US_GPA_PRESET
+} from './wizard.constants';
 
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -39,14 +43,28 @@ export default function Step4TransmutationConfig({
             max_percentage: 100,
             transmuted_grade: 1.00,
             is_passing: true,
+            is_conditional: false, // Default is Fixed
             special_code: null,
             description: ''
         };
         append(newRow);
     }
 
-    function handleLoadPreset() {
-        replace([...DEFAULT_TRANSMUTATION_ROWS]);
+    function handleResetBlank() {
+        replace([]);
+    }
+
+    function handleResetRowBlank(index: number) {
+        const r = rows[index];
+        if (!r) return;
+        update(index, {
+            ...r,
+            description: '',
+            label: '',
+            max_percentage: null,
+            min_percentage: null,
+            transmuted_grade: null
+        });
     }
 
     function handleUpdatePercentage(
@@ -143,15 +161,31 @@ export default function Step4TransmutationConfig({
                 </div>
 
                 {!disabled && (
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <select
+                            aria-label="Preset Transmutation Schema"
+                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value === 'ched') replace([...DEFAULT_TRANSMUTATION_ROWS]);
+                                if (e.target.value === 'us_gpa') replace([...US_GPA_PRESET]);
+                                if (e.target.value === 'pass_fail') replace([...PASS_FAIL_PRESET]);
+                            }}
+                        >
+                            <option value="">-- Apply Preset Schema --</option>
+                            <option value="ched">CHED Standard (1.00 – 5.00 Scale)</option>
+                            <option value="us_gpa">US Letter Grade (A, B, C, D, F Scale)</option>
+                            <option value="pass_fail">Pass / Fail Direct Scale</option>
+                        </select>
+
                         <CommonButton
                             color="inherit"
                             size="small"
                             startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
                             variant="outlined"
-                            onClick={handleLoadPreset}
+                            onClick={handleResetBlank}
                         >
-                            Reset to Default
+                            Reset to Blank
                         </CommonButton>
                         <CommonButton
                             color="primary"
@@ -361,14 +395,24 @@ export default function Step4TransmutationConfig({
                                     {/* Action */}
                                     {!disabled && (
                                         <td className="py-2.5 px-3 text-center">
-                                            <button
-                                                className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                                title="Delete row"
-                                                type="button"
-                                                onClick={() => remove(index)}
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-1">
+                                                <button
+                                                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
+                                                    title="Reset row to blank"
+                                                    type="button"
+                                                    onClick={() => handleResetRowBlank(index)}
+                                                >
+                                                    <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                    title="Delete row"
+                                                    type="button"
+                                                    onClick={() => remove(index)}
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     )}
                                 </tr>
@@ -389,7 +433,7 @@ export default function Step4TransmutationConfig({
                             key={field.id}
                             className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm space-y-3"
                         >
-                            {/* Card Top: Mark, Type Selector, Passing Pill, Delete */}
+                            {/* Card Top: Mark, Type Selector, Passing Pill, Reset & Delete */}
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-slate-400 font-semibold">#{index + 1}</span>
@@ -432,7 +476,7 @@ export default function Step4TransmutationConfig({
                                     </select>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                     <button
                                         className={`px-2.5 py-1 min-h-[32px] rounded-full text-xs font-bold transition-all ${
                                             row.is_passing
@@ -447,13 +491,24 @@ export default function Step4TransmutationConfig({
                                     </button>
 
                                     {!disabled && (
-                                        <button
-                                            className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
-                                            type="button"
-                                            onClick={() => remove(index)}
-                                        >
-                                            <TrashIcon className="w-4 h-4" />
-                                        </button>
+                                        <>
+                                            <button
+                                                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50"
+                                                title="Reset row to blank"
+                                                type="button"
+                                                onClick={() => handleResetRowBlank(index)}
+                                            >
+                                                <ArrowCounterClockwiseIcon className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
+                                                title="Delete row"
+                                                type="button"
+                                                onClick={() => remove(index)}
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </>
                                     )}
                                 </div>
                             </div>
