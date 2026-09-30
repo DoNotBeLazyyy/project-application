@@ -700,9 +700,9 @@ export default function CourseForm({
                                         </div>
 
                                         {/* Row 1: Kind & Course / Year Level */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                                            <div className="w-full">
+                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
                                                     Kind
                                                 </label>
                                                 <PrerequisiteKindCell
@@ -711,8 +711,8 @@ export default function CourseForm({
                                                     rowIndex={index}
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                            <div className="w-full">
+                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
                                                     Course / Year Level
                                                 </label>
                                                 <PrerequisiteTargetCell
@@ -725,9 +725,9 @@ export default function CourseForm({
                                         </div>
 
                                         {/* Row 2: Type & Min Grade (Min Grade shown only when Kind is Course) */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                                            <div className="w-full">
+                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
                                                     Type
                                                 </label>
                                                 <PrerequisiteTypeCell
@@ -737,8 +737,8 @@ export default function CourseForm({
                                                 />
                                             </div>
                                             {isCourseKind && (
-                                                <div>
-                                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                <div className="w-full">
+                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
                                                         Min Grade
                                                     </label>
                                                     <PrerequisiteMinGradeCell
