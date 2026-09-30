@@ -18,7 +18,7 @@ import { useDepartmentOptions } from '@pages/admin/department-management/useDepa
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ProgramFormValues } from '@type/program/program.type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 interface ProgramWizardModalProps {
@@ -268,7 +268,7 @@ export default function ProgramWizardModal({
             />
 
             {/* Stepper Step Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
+            <div className={`flex-1 min-h-0 ${currentStep === 2 ? 'flex flex-col p-4 sm:p-6 overflow-hidden' : 'overflow-y-auto p-4 sm:p-6'} bg-slate-50/50 dark:bg-zinc-900/40`}>
                 {currentStep === 1 && (
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">

@@ -141,9 +141,9 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
     const isTotalValid = totalPeriodWeight === 100;
 
     return (
-        <div className="flex flex-col gap-5 h-full">
-            {/* Header & Controls in dedicated rows */}
-            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm shrink-0">
+        <div className="flex flex-col h-full min-h-0">
+            {/* Fixed Form Header Block (non-scrollable header containing label, status, default/clear buttons, and total weight banner + add period button) */}
+            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm shrink-0 mb-4">
                 {/* Row 1: Title & Description */}
                 <div className="flex items-start gap-3">
                     <div className="p-2.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 shrink-0">
@@ -200,32 +200,32 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         Clear (Keep 1 Schema)
                     </CommonButton>
                 </div>
-            </div>
 
-            {/* Total Period Weight Banner */}
-            <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-semibold shrink-0 ${
-                isTotalValid
-                    ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-            }`}>
-                <div className="flex items-center gap-2">
-                    <InfoIcon className="w-4 h-4" />
-                    <span>Grading Periods Total: {totalPeriodWeight}% (Must equal 100%)</span>
+                {/* Row 4: Total Period Weight Banner & Add Period Button (part of form header) */}
+                <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-semibold shrink-0 mt-1 ${
+                    isTotalValid
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                        : 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                }`}>
+                    <div className="flex items-center gap-2">
+                        <InfoIcon className="w-4 h-4" />
+                        <span>Grading Periods Total: {totalPeriodWeight}% (Must equal 100%)</span>
+                    </div>
+                    {overrideEnabled && (
+                        <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={handleAddPeriod}
+                            className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold cursor-pointer"
+                        >
+                            <PlusCircleIcon className="w-4 h-4" /> Add Period
+                        </button>
+                    )}
                 </div>
-                {overrideEnabled && (
-                    <button
-                        type="button"
-                        disabled={disabled}
-                        onClick={handleAddPeriod}
-                        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold"
-                    >
-                        <PlusCircleIcon className="w-4 h-4" /> Add Period
-                    </button>
-                )}
             </div>
 
-            {/* Period Cards - Each entry as a row of its own */}
-            <div className="flex flex-col gap-4 flex-1 w-full">
+            {/* Scrollable Period Entries Only */}
+            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-4 w-full pr-1">
                 {activePeriods.map((period, pIdx) => {
                     const compTotal = (period.components || []).reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
                     const isCompValid = compTotal === 100;
