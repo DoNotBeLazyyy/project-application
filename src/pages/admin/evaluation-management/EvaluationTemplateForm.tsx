@@ -33,7 +33,7 @@ const DEFAULT_QUESTION: EvaluationQuestionForm = {
     is_required: true
 };
 
-export function validateUniqueQuestion(value: string, formValues: FieldValues) {
+export function validateUniqueQuestion(value: string | undefined | null, formValues: FieldValues) {
     const normalized = String(value ?? '')
         .trim()
         .toLowerCase();

@@ -51,7 +51,7 @@ const DEFAULT_QUESTION: EvaluationQuestionForm = {
     max_rating: '5'
 };
 
-export function validateUniqueQuestion(value: string, formValues: FieldValues) {
+export function validateUniqueQuestion(value: string | undefined | null, formValues: FieldValues) {
     const normalized = String(value ?? '')
         .trim()
         .toLowerCase();
