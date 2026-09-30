@@ -62,11 +62,11 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
         if (this.state.hasError) {
             return (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
-                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 max-w-md flex flex-col items-center gap-3">
-                        <h3 className="text-base font-bold text-amber-900 dark:text-amber-200">
+                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 max-w-md flex flex-col items-center gap-3">
+                        <h3 className="text-base font-bold text-blue-900 dark:text-blue-200">
                             New App Version Available
                         </h3>
-                        <p className="text-xs text-amber-700 dark:text-amber-300">
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
                             A new deployment was published. Please reload the page to load the latest components.
                         </p>
                         <button
@@ -75,7 +75,7 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                                 sessionStorage.clear();
                                 window.location.reload();
                             }}
-                            className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
+                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                         >
                             Reload Page
                         </button>

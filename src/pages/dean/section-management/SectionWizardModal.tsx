@@ -77,7 +77,7 @@ export default function SectionWizardModal({
         defaultValues: defaultFormValues
     });
 
-    const { control, getValues, reset, trigger } = methods;
+    const { control, getValues, reset, trigger, setValue } = methods;
 
     useEffect(() => {
         if (!open) {
