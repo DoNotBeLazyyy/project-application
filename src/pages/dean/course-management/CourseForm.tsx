@@ -305,11 +305,11 @@ export default function CourseForm({
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
             if (errors.title || errors.code || errors.department_id || errors.description || errors.is_active) {
-                setActiveStep(1);
+                setInternalActiveStep(1);
             } else if (errors.course_types) {
-                setActiveStep(2);
+                setInternalActiveStep(2);
             } else if (errors.prerequisites) {
-                setActiveStep(3);
+                setInternalActiveStep(3);
             }
         }
     }, [errors]);
