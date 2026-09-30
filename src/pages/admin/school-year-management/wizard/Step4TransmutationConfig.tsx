@@ -209,34 +209,34 @@ export default function Step4TransmutationConfig({
                 <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-slate-50 dark:bg-zinc-700/50 border-b border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 font-semibold">
                         <tr>
+                            <th className="py-3 px-3 w-32">
+                                <div className="flex items-center gap-1">
+                                    <span>Type</span>
+                                    <CommonInfoTooltip content="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)." size={13} />
+                                </div>
+                            </th>
                             <th className="py-3 px-4 w-28">
                                 <div className="flex items-center gap-1">
                                     <span>Mark / Grade <span className="text-red-500">*</span></span>
-                                    <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00) or special code (INC, DRP)." size={13} />
+                                    <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00) or status mark (INC, DRP)." size={13} />
                                 </div>
                             </th>
                             <th className="py-3 px-3 w-24">
                                 <div className="flex items-center gap-1">
                                     <span>Min %</span>
-                                    <CommonInfoTooltip content="Minimum raw calculated percentage required for this grade mark." size={13} />
+                                    <CommonInfoTooltip content="Minimum raw percentage required for this fixed grade mark." size={13} />
                                 </div>
                             </th>
                             <th className="py-3 px-3 w-24">
                                 <div className="flex items-center gap-1">
                                     <span>Max %</span>
-                                    <CommonInfoTooltip content="Maximum raw calculated percentage allocated to this grade mark." size={13} />
+                                    <CommonInfoTooltip content="Maximum raw percentage allocated to this fixed grade mark." size={13} />
                                 </div>
                             </th>
                             <th className="py-3 px-4 w-32 text-center">
                                 <div className="flex items-center justify-center gap-1">
                                     <span>Status</span>
                                     <CommonInfoTooltip content="Toggles whether this grade mark grants academic credit (Passing vs Failing)." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-3 w-28">
-                                <div className="flex items-center gap-1">
-                                    <span>Special Code</span>
-                                    <CommonInfoTooltip content="Optional status flag for administrative grades (INC, DRP, W, NFE)." size={13} />
                                 </div>
                             </th>
                             <th className="py-3 px-4">
@@ -251,37 +251,53 @@ export default function Step4TransmutationConfig({
                     <tbody className="divide-y divide-slate-100 dark:divide-zinc-700/60">
                         {fields.map((field, index) => {
                             const row = rows[index] || field;
-                            const isSpecial = isSpecialGradeRow(row);
+                            const isCond = Boolean(row.is_conditional || isSpecialGradeRow(row));
 
                             return (
                                 <tr
                                     key={field.id}
                                     className="hover:bg-slate-50/70 dark:hover:bg-zinc-700/30 transition-colors"
                                 >
+                                    {/* Grade Type Selector */}
+                                    <td className="py-2.5 px-3">
+                                        <select
+                                            className="w-full px-2 py-1 text-xs font-semibold rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                            disabled={disabled}
+                                            value={isCond ? 'conditional' : 'fixed'}
+                                            onChange={(e) => {
+                                                const nextCond = e.target.value === 'conditional';
+                                                const numeric = parseFloat(row.label);
+                                                update(index, {
+                                                    ...row,
+                                                    is_conditional: nextCond,
+                                                    min_percentage: nextCond ? null : (row.min_percentage ?? 0),
+                                                    max_percentage: nextCond ? null : (row.max_percentage ?? 100),
+                                                    transmuted_grade: nextCond ? null : (isNaN(numeric) ? null : numeric),
+                                                    special_code: nextCond ? row.label.trim().toUpperCase() : null
+                                                });
+                                            }}
+                                        >
+                                            <option value="fixed">Fixed Range</option>
+                                            <option value="conditional">Conditional</option>
+                                        </select>
+                                    </td>
+
                                     {/* Grade Mark / Label */}
                                     <td className="py-2.5 px-4 font-semibold">
                                         <input
                                             className="w-full px-2.5 py-1 text-sm rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                                             disabled={disabled}
-                                            placeholder="e.g. 1.21"
+                                            placeholder="e.g. 1.25, INC"
                                             type="text"
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                const upper = val.trim().toUpperCase();
                                                 const numeric = parseFloat(val);
-                                                const autoSpecialCode =
-                                                    upper === 'INC' || upper === 'DRP' || upper === 'W' || upper === 'NFE'
-                                                        ? upper
-                                                        : row.special_code;
-                                                const willBeSpecial = isSpecialGradeRow({ label: val, special_code: autoSpecialCode });
                                                 update(index, {
                                                     ...row,
                                                     label: val,
-                                                    special_code: autoSpecialCode,
-                                                    transmuted_grade: isNaN(numeric) ? null : numeric,
-                                                    min_percentage: willBeSpecial ? null : row.min_percentage,
-                                                    max_percentage: willBeSpecial ? null : row.max_percentage
+                                                    transmuted_grade: isCond ? null : (isNaN(numeric) ? null : numeric),
+                                                    special_code: isCond ? val.trim().toUpperCase() : null
                                                 });
                                             }}
                                         />
@@ -289,12 +305,9 @@ export default function Step4TransmutationConfig({
 
                                     {/* Min % */}
                                     <td className="py-2.5 px-3">
-                                        {isSpecial ? (
-                                            <span
-                                                className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-zinc-700/50 rounded border border-dashed border-slate-200 dark:border-zinc-700 select-none"
-                                                title="Special grade flag (no percentage range required)"
-                                            >
-                                                N/A
+                                        {isCond ? (
+                                            <span className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-medium text-slate-400 select-none">
+                                                —
                                             </span>
                                         ) : (
                                             <input
@@ -312,12 +325,9 @@ export default function Step4TransmutationConfig({
 
                                     {/* Max % */}
                                     <td className="py-2.5 px-3">
-                                        {isSpecial ? (
-                                            <span
-                                                className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-zinc-700/50 rounded border border-dashed border-slate-200 dark:border-zinc-700 select-none"
-                                                title="Special grade flag (no percentage range required)"
-                                            >
-                                                N/A
+                                        {isCond ? (
+                                            <span className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-medium text-slate-400 select-none">
+                                                —
                                             </span>
                                         ) : (
                                             <input
@@ -349,38 +359,12 @@ export default function Step4TransmutationConfig({
                                         </button>
                                     </td>
 
-                                    {/* Special Code */}
-                                    <td className="py-2.5 px-3">
-                                        <select
-                                            className="w-full px-2 py-1 text-xs rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            value={row.special_code || ''}
-                                            onChange={(e) => {
-                                                const code = e.target.value || null;
-                                                const willBeSpecial = isSpecialGradeRow({ label: row.label, special_code: code });
-                                                update(index, {
-                                                    ...row,
-                                                    special_code: code,
-                                                    min_percentage: willBeSpecial ? null : row.min_percentage,
-                                                    max_percentage: willBeSpecial ? null : row.max_percentage,
-                                                    transmuted_grade: willBeSpecial ? null : row.transmuted_grade
-                                                });
-                                            }}
-                                        >
-                                            <option value="">None</option>
-                                            <option value="INC">INC</option>
-                                            <option value="DRP">DRP</option>
-                                            <option value="W">W (Withdrawn)</option>
-                                            <option value="NFE">NFE (No Final Exam)</option>
-                                        </select>
-                                    </td>
-
                                     {/* Description */}
                                     <td className="py-2.5 px-4">
                                         <input
                                             className="w-full px-2.5 py-1 text-xs sm:text-sm rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                                             disabled={disabled}
-                                            placeholder="e.g. Excellent, Dropped, Failed"
+                                            placeholder="e.g. Excellent, Incomplete, Dropped"
                                             type="text"
                                             value={row.description || ''}
                                             onChange={(e) => update(index, { ...row, description: e.target.value })}
@@ -411,47 +395,59 @@ export default function Step4TransmutationConfig({
             <div className="block md:hidden space-y-3">
                 {fields.map((field, index) => {
                     const row = rows[index] || field;
-                    const isSpecial = isSpecialGradeRow(row);
+                    const isCond = Boolean(row.is_conditional || isSpecialGradeRow(row));
 
                     return (
                         <div
                             key={field.id}
                             className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm space-y-3"
                         >
-                            {/* Card Top: Mark, Passing Pill, Delete */}
-                            <div className="flex items-center justify-between gap-2">
+                            {/* Card Top: Mark, Type Selector, Passing Pill, Delete */}
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-slate-400 font-semibold">#{index + 1}</span>
                                     <input
-                                        className="w-24 px-2.5 py-1 text-sm font-bold rounded-lg border border-slate-300 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                        className="w-20 px-2 py-1 text-sm font-bold rounded-lg border border-slate-300 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                                         disabled={disabled}
                                         placeholder="Mark"
                                         type="text"
                                         value={row.label}
                                         onChange={(e) => {
                                             const val = e.target.value;
-                                            const upper = val.trim().toUpperCase();
                                             const numeric = parseFloat(val);
-                                            const autoSpecialCode =
-                                                upper === 'INC' || upper === 'DRP' || upper === 'W' || upper === 'NFE'
-                                                    ? upper
-                                                    : row.special_code;
-                                            const willBeSpecial = isSpecialGradeRow({ label: val, special_code: autoSpecialCode });
                                             update(index, {
                                                 ...row,
                                                 label: val,
-                                                special_code: autoSpecialCode,
-                                                transmuted_grade: isNaN(numeric) ? null : numeric,
-                                                min_percentage: willBeSpecial ? null : row.min_percentage,
-                                                max_percentage: willBeSpecial ? null : row.max_percentage
+                                                transmuted_grade: isCond ? null : (isNaN(numeric) ? null : numeric),
+                                                special_code: isCond ? val.trim().toUpperCase() : null
                                             });
                                         }}
                                     />
+                                    <select
+                                        className="px-2 py-1 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                        disabled={disabled}
+                                        value={isCond ? 'conditional' : 'fixed'}
+                                        onChange={(e) => {
+                                            const nextCond = e.target.value === 'conditional';
+                                            const numeric = parseFloat(row.label);
+                                            update(index, {
+                                                ...row,
+                                                is_conditional: nextCond,
+                                                min_percentage: nextCond ? null : (row.min_percentage ?? 0),
+                                                max_percentage: nextCond ? null : (row.max_percentage ?? 100),
+                                                transmuted_grade: nextCond ? null : (isNaN(numeric) ? null : numeric),
+                                                special_code: nextCond ? row.label.trim().toUpperCase() : null
+                                            });
+                                        }}
+                                    >
+                                        <option value="fixed">Fixed</option>
+                                        <option value="conditional">Conditional</option>
+                                    </select>
                                 </div>
 
                                 <div className="flex items-center gap-2">
                                     <button
-                                        className={`px-3 py-1 min-h-[36px] rounded-full text-xs font-bold transition-all ${
+                                        className={`px-2.5 py-1 min-h-[32px] rounded-full text-xs font-bold transition-all ${
                                             row.is_passing
                                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                                                 : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
@@ -465,7 +461,7 @@ export default function Step4TransmutationConfig({
 
                                     {!disabled && (
                                         <button
-                                            className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
+                                            className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
                                             type="button"
                                             onClick={() => remove(index)}
                                         >
@@ -475,13 +471,8 @@ export default function Step4TransmutationConfig({
                                 </div>
                             </div>
 
-                            {/* Card Middle: Min % & Max % (or N/A banner for special grades) */}
-                            {isSpecial ? (
-                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-dashed border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-500">
-                                    <span className="font-medium">Grade Range (Min/Max %):</span>
-                                    <span className="font-semibold text-slate-400">N/A (Flag only, no score range)</span>
-                                </div>
-                            ) : (
+                            {/* Card Middle: Min % & Max % (ONLY if Fixed Range) */}
+                            {!isCond && (
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
                                         <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
@@ -514,47 +505,19 @@ export default function Step4TransmutationConfig({
                                 </div>
                             )}
 
-                            {/* Card Bottom: Special Code & Description */}
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="col-span-1">
-                                    <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Code
-                                    </label>
-                                    <select
-                                        className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                        disabled={disabled}
-                                        value={row.special_code || ''}
-                                        onChange={(e) => {
-                                            const code = e.target.value || null;
-                                            const willBeSpecial = isSpecialGradeRow({ label: row.label, special_code: code });
-                                            update(index, {
-                                                ...row,
-                                                special_code: code,
-                                                min_percentage: willBeSpecial ? null : row.min_percentage,
-                                                max_percentage: willBeSpecial ? null : row.max_percentage,
-                                                transmuted_grade: willBeSpecial ? null : row.transmuted_grade
-                                            });
-                                        }}
-                                    >
-                                        <option value="">None</option>
-                                        <option value="INC">INC</option>
-                                        <option value="DRP">DRP</option>
-                                        <option value="W">W</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                        Description
-                                    </label>
-                                    <input
-                                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                        disabled={disabled}
-                                        placeholder="e.g. Excellent, Dropped"
-                                        type="text"
-                                        value={row.description || ''}
-                                        onChange={(e) => update(index, { ...row, description: e.target.value })}
-                                    />
-                                </div>
+                            {/* Card Bottom: Description */}
+                            <div>
+                                <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
+                                    Description
+                                </label>
+                                <input
+                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                    disabled={disabled}
+                                    placeholder="e.g. Excellent, Incomplete, Dropped"
+                                    type="text"
+                                    value={row.description || ''}
+                                    onChange={(e) => update(index, { ...row, description: e.target.value })}
+                                />
                             </div>
                         </div>
                     );

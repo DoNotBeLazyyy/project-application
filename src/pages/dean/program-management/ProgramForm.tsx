@@ -1,9 +1,12 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import { CheckCircleIcon, ListChecksIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
+import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFormValues } from '@type/program/program.type';
+import { useState } from 'react';
 import { Control } from 'react-hook-form';
 
 interface ProgramFormProps extends ComponentPropsForm {
@@ -18,6 +21,7 @@ export default function ProgramForm({
     isCodeDisabled,
     ...formProps
 }: ProgramFormProps) {
+    const [activeStep, setActiveStep] = useState<number>(1);
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
 
@@ -89,7 +93,7 @@ export default function ProgramForm({
             readOnly: disabled,
             fieldProps: {
                 resize: 'vertical',
-                rows: 4
+                rows: 3
             },
             name: 'description',
             type: 'text-area',
@@ -97,13 +101,59 @@ export default function ProgramForm({
         }
     ];
 
+    const steps = [
+        { id: 1, label: '1. Program Details', icon: ListChecksIcon },
+        { id: 2, label: '2. Grading Schema', icon: ScalesIcon }
+    ];
+
     return (
-        <CommonForm
-            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-            control={control}
-            fields={fields}
-            formProps={formProps}
-            hasHelper
-        />
+        <div className="flex flex-col gap-5">
+            {/* Stepper Header Navigation */}
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                    {steps.map((step) => {
+                        const Icon = step.icon;
+                        const isActive = activeStep === step.id;
+
+                        return (
+                            <button
+                                key={step.id}
+                                type="button"
+                                onClick={() => setActiveStep(step.id)}
+                                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                    isActive
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                <span>{step.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+                <span className="text-xs text-slate-400 font-medium">
+                    Step {activeStep} of {steps.length}
+                </span>
+            </div>
+
+            {/* Stepper Content */}
+            {activeStep === 1 && (
+                <CommonForm
+                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                    control={control}
+                    fields={fields}
+                    formProps={formProps}
+                    hasHelper
+                />
+            )}
+
+            {activeStep === 2 && (
+                <ProgramGradingSchemaStep
+                    control={control}
+                    disabled={disabled}
+                />
+            )}
+        </div>
     );
 }

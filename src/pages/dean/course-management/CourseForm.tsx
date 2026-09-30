@@ -1,16 +1,15 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import CommonStepperInput from '@components/input/CommonStepperInput';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
+import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
-import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { ComponentPropsForm } from '@type/common.type';
-import { CourseTypeOption } from '@type/course/course-type.type';
-import { CourseFormValues, PrerequisiteRow } from '@type/course/course.type';
-import { useEffect, useRef } from 'react';
+import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
 import {
     Control, FieldPath, useController, useFieldArray, useWatch
 } from 'react-hook-form';
@@ -22,22 +21,12 @@ type PrerequisiteField =
     | 'year_level_required'
     | 'minimum_grade';
 
-/**
- * A course type that already covers both halves of a split course, e.g.
- * "Lecture/Laboratory". Matched on text because course types are data the dean
- * maintains, not a fixed enum.
- *
- * @param courseType - One course type option from the database.
- * @returns
- */
-function isCombinedCourseType(courseType: CourseTypeOption): boolean {
-    const haystack = `${courseType.code} ${courseType.label}`.toLowerCase();
-
-    return haystack.includes('lec') && haystack.includes('lab');
-}
-
 function prerequisiteName(index: number, field: PrerequisiteField): FieldPath<CourseFormValues> {
     return `prerequisites.${index}.${field}` as FieldPath<CourseFormValues>;
+}
+
+function courseTypeName<T extends keyof CourseTypeRow>(index: number, field: T): FieldPath<CourseFormValues> {
+    return `course_types.${index}.${field}` as FieldPath<CourseFormValues>;
 }
 
 interface PrerequisiteCellProps {
@@ -162,6 +151,71 @@ function PrerequisiteMinGradeCell({
     );
 }
 
+// Course Type Table Components
+interface CourseTypeCellProps {
+    control: Control<CourseFormValues>;
+    disabled?: boolean;
+    rowIndex: number;
+    courseTypeOptions: CommonSelectOption[];
+}
+
+function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOptions }: CourseTypeCellProps) {
+    const courseType = useController({ control, name: courseTypeName(rowIndex, 'course_type_id') });
+    const courseTypes = useWatch({ control, name: 'course_types' }) || [];
+
+    const selectedInOtherRows = courseTypes
+        .filter((_, i) => i !== rowIndex)
+        .map((ct) => ct.course_type_id)
+        .filter(Boolean);
+
+    // Whenever a course type is selected in another row, remove it from remaining options
+    const availableOptions = courseTypeOptions.filter(
+        (option) => !selectedInOtherRows.includes(String(option.value))
+    );
+
+    return (
+        <CommonSelect
+            disabled={disabled}
+            fullWidth
+            options={availableOptions}
+            placeholder="Select Course Type"
+            size="small"
+            value={String(courseType.field.value ?? '')}
+            onChange={(e) => courseType.field.onChange(e.target.value)}
+        />
+    );
+}
+
+function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
+    const units = useController({ control, name: courseTypeName(rowIndex, 'units') });
+
+    return (
+        <CommonStepperInput
+            disabled={disabled}
+            min={0}
+            max={10}
+            step={0.5}
+            value={Number(units.field.value ?? 0)}
+            onChange={(val) => units.field.onChange(val)}
+        />
+    );
+}
+
+function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
+    const creditHours = useController({ control, name: courseTypeName(rowIndex, 'credit_hours') });
+
+    return (
+        <CommonStepperInput
+            disabled={disabled}
+            min={0}
+            max={20}
+            step={0.5}
+            value={Number(creditHours.field.value ?? 0)}
+            onChange={(val) => creditHours.field.onChange(val)}
+        />
+    );
+}
+
 interface CourseFormProps extends ComponentPropsForm {
     control: Control<CourseFormValues>;
     disabled?: boolean;
@@ -177,59 +231,36 @@ export default function CourseForm({
     ...formProps
 }: CourseFormProps) {
     const prerequisites = useWatch({ control, name: 'prerequisites' });
+    const courseTypes = useWatch({ control, name: 'course_types' }) || [];
+
     const { departmentOptions } = useDepartmentOptions();
-    const { courseTypeOptions, courseTypes } = useCourseTypeOptions();
+    const { courseTypeOptions } = useCourseTypeOptions();
     const { minimumGradeOptions } = useMinimumGradeOptions();
     const { courseOptions: allCourseOptions } = useCourseOptions({
         excludeIds: [excludeCourseId].filter((id): id is string => !!id)
     });
-    const isSplit = useWatch({ control, name: 'is_split' });
-    const courseTypeId = useWatch({ control, name: 'course_type_id' });
-    const courseTypeController = useController({ control, name: 'course_type_id' });
-    const splitController = useController({ control, name: 'is_split' });
-    const combinedCourseType = courseTypes.find(isCombinedCourseType);
-    const isCourseTypeLocked = Boolean(isSplit) && Boolean(combinedCourseType);
-    const previousSelection = useRef({ courseTypeId: '', isSplit: false });
-    const { fields, append, remove } = useFieldArray({
+
+    const {
+        fields: courseTypeFields,
+        append: appendCourseType,
+        remove: removeCourseType
+    } = useFieldArray({
+        control,
+        name: 'course_types'
+    });
+
+    const {
+        fields: prereqFields,
+        append: appendPrereq,
+        remove: removePrereq
+    } = useFieldArray({
         control,
         name: 'prerequisites'
     });
 
-    /*
-     * A split course is saved as one lecture row plus one laboratory row that share
-     * a single course type, so these two controls can never disagree. Whichever one
-     * the dean touches, the other follows.
-     */
-    useEffect(function() {
-        const previous = previousSelection.current;
-        const splitChecked = Boolean(isSplit);
-
-        previousSelection.current = { courseTypeId, isSplit: splitChecked };
-
-        if (disabled || !combinedCourseType) {
-            return;
-        }
-
-        if (previous.isSplit !== splitChecked) {
-            if (splitChecked && courseTypeId !== combinedCourseType.id) {
-                courseTypeController.field.onChange(combinedCourseType.id);
-            }
-
-            if (!splitChecked && courseTypeId === combinedCourseType.id) {
-                courseTypeController.field.onChange('');
-            }
-
-            return;
-        }
-
-        if (previous.courseTypeId !== courseTypeId) {
-            const shouldSplit = courseTypeId === combinedCourseType.id;
-
-            if (shouldSplit !== splitChecked) {
-                splitController.field.onChange(shouldSplit);
-            }
-        }
-    }, [combinedCourseType?.id, courseTypeId, disabled, isSplit]);
+    // Calculate total units dynamically as sum of selected course types' units
+    const totalUnits = courseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0);
+    const totalCreditHours = courseTypes.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0);
 
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
@@ -240,9 +271,7 @@ export default function CourseForm({
                 ? undefined
                 : { required: 'Course title is required' },
             type: 'text',
-            gridCols: isSplit
-                ? 6
-                : 2
+            gridCols: 3
         },
         {
             disabled: disabled || isCodeDisabled,
@@ -252,7 +281,7 @@ export default function CourseForm({
                 ? undefined
                 : { required: 'Course code is required' },
             type: 'text',
-            gridCols: 2
+            gridCols: 3
         },
         {
             disabled,
@@ -263,76 +292,16 @@ export default function CourseForm({
                 ? undefined
                 : { required: 'Please select a department' },
             type: 'select',
-            gridCols: 2
-        },
-        {
-            disabled: disabled || isCourseTypeLocked,
-            fieldProps: {
-                helperText: isCourseTypeLocked
-                    ? `Locked to ${combinedCourseType?.label} while split is on`
-                    : 'Type of course, e.g. Lecture or Laboratory'
-            },
-            name: 'course_type_id',
-            options: courseTypeOptions,
-            rules: disabled
-                ? undefined
-                : { required: 'Please select a course type' },
-            type: 'select',
-            gridCols: 2
-        },
-        {
-            disabled,
-            fieldProps: { helperText: 'Lecture units (0-10)' },
-            name: 'lecture_units',
-            rules: disabled
-                ? undefined
-                : {
-                    required: 'Lecture units is required',
-                    min: { value: 0, message: 'Must be at least 0' },
-                    max: { value: 10, message: 'Cannot exceed 10' }
-                },
-            type: 'number',
-            gridCols: 2
-        },
-        ...(isSplit
-            ? [{
-                disabled,
-                fieldProps: { helperText: 'Laboratory units (0-10)' },
-                name: 'laboratory_units' as const,
-                rules: disabled
-                    ? undefined
-                    : {
-                        required: 'Laboratory units is required',
-                        min: { value: 0, message: 'Must be at least 0' },
-                        max: { value: 10, message: 'Cannot exceed 10' }
-                    },
-                type: 'number' as const,
-                gridCols: 2
-            }]
-            : []
-        ),
-        {
-            disabled,
-            fieldProps: { helperText: 'Credit hours (0-20, optional)' },
-            name: 'credit_hours',
-            rules: disabled
-                ? undefined
-                : {
-                    min: { value: 0, message: 'Must be at least 0' },
-                    max: { value: 20, message: 'Cannot exceed 20' }
-                },
-            type: 'number',
-            gridCols: 2
+            gridCols: 3
         },
         {
             disabled,
             items: [
-                { name: 'is_split' as const, label: 'Split into LEC and LAB' },
-                { name: 'is_active' as const, label: 'Active' }
+                { name: 'is_active' as const, label: 'Active Course' }
             ],
-            name: 'is_split',
+            name: 'is_active',
             type: 'checkbox-group',
-            gridCols: 2
+            gridCols: 3
         },
         {
             disabled,
@@ -345,6 +314,47 @@ export default function CourseForm({
             gridCols: 6
         }
     ];
+
+    const courseTypeColumns: CommonFormTableColumn<CourseTypeRow, CourseFormValues>[] = [
+        {
+            key: 'course_type_id',
+            headerName: 'Course Type',
+            flex: 4,
+            renderCell: (params) => (
+                <CourseTypeSelectionCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
+                    courseTypeOptions={courseTypeOptions}
+                />
+            )
+        },
+        {
+            key: 'units',
+            headerName: 'Units',
+            flex: 3,
+            renderCell: (params) => (
+                <CourseTypeUnitsCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
+                />
+            )
+        },
+        {
+            key: 'credit_hours',
+            headerName: 'Credit Hours',
+            flex: 3,
+            renderCell: (params) => (
+                <CourseTypeCreditHoursCell
+                    control={params.control}
+                    disabled={params.disabled}
+                    rowIndex={params.rowIndex}
+                />
+            )
+        }
+    ];
+
     const prerequisiteColumns: CommonFormTableColumn<PrerequisiteRow, CourseFormValues>[] = [
         {
             key: 'prerequisite_kind',
@@ -397,12 +407,25 @@ export default function CourseForm({
             )
         }
     ];
+
     const courseKindCount = (prerequisites ?? []).filter(
         (prereq) => prereq.prerequisite_kind === 'course'
     ).length;
 
+    function handleAddCourseType() {
+        appendCourseType({
+            course_type_id: '',
+            units: 3,
+            credit_hours: 3
+        });
+    }
+
+    function handleRemoveCourseType(index: number) {
+        removeCourseType(index);
+    }
+
     function handleAddPrerequisite() {
-        append({
+        appendPrereq({
             course_id: '',
             prerequisite_type: 'Required',
             prerequisite_kind: 'course',
@@ -412,11 +435,11 @@ export default function CourseForm({
     }
 
     function handleRemovePrerequisite(index: number) {
-        remove(index);
+        removePrereq(index);
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
             <CommonForm
                 containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
                 control={control}
@@ -424,6 +447,43 @@ export default function CourseForm({
                 formProps={formProps}
                 hasHelper
             />
+
+            {/* Course Types Breakdown Table */}
+            <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                            Course Types Breakdown
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Configure units and credit hours for each type component.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        <span>Total Units: <strong>{totalUnits}</strong></span>
+                        <span>•</span>
+                        <span>Total Credit Hours: <strong>{totalCreditHours}</strong></span>
+                    </div>
+                </div>
+
+                <CommonFormTable<CourseTypeRow, CourseFormValues>
+                    columns={courseTypeColumns}
+                    contentClassName="min-w-[44rem] lg:min-w-full"
+                    control={control}
+                    disabled={disabled}
+                    emptyDataMessage="No course types added yet. Click Add Row below."
+                    fieldArrayName="course_types"
+                    rows={courseTypeFields as unknown as (CourseTypeRow & { id: string })[]}
+                    tableProps={{
+                        containerClassName: 'min-h-[140px]'
+                    }}
+                    title=""
+                    onAddRow={courseTypes.length < courseTypeOptions.length ? handleAddCourseType : undefined}
+                    onRemoveRow={handleRemoveCourseType}
+                />
+            </div>
+
+            {/* Prerequisites Table */}
             <CommonFormTable<PrerequisiteRow, CourseFormValues>
                 columns={prerequisiteColumns}
                 contentClassName="min-w-[44rem] lg:min-w-full"
@@ -431,9 +491,9 @@ export default function CourseForm({
                 disabled={disabled}
                 emptyDataMessage="No prerequisites added yet"
                 fieldArrayName="prerequisites"
-                rows={fields as unknown as (PrerequisiteRow & { id: string })[]}
+                rows={prereqFields as unknown as (PrerequisiteRow & { id: string })[]}
                 tableProps={{
-                    containerClassName: 'h-[180px]'
+                    containerClassName: 'min-h-[160px]'
                 }}
                 title="Prerequisites"
                 onAddRow={courseKindCount < allCourseOptions.length

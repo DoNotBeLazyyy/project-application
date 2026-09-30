@@ -167,6 +167,7 @@ export default function AcademicYearWizardModal({
                             start_date: data.start_date || '',
                             terms: (data.terms && data.terms.length > 0 ? data.terms : []).map((t) => ({
                                 ...t,
+                                max_units: t.max_units ?? 24,
                                 evaluation_scope: t.evaluation_scope || data.evaluation_scope || 'Period'
                             })),
                             thresholds: data.thresholds || [],
@@ -339,6 +340,7 @@ export default function AcademicYearWizardModal({
                 term_type_id: t.term_type_id,
                 start_date: t.start_date,
                 end_date: t.end_date,
+                max_units: t.max_units ? Number(t.max_units) : 24,
                 enrollment_start_date: t.enrollment_start_date || null,
                 enrollment_end_date: t.enrollment_end_date || null,
                 grading_deadline: t.grading_deadline || null,

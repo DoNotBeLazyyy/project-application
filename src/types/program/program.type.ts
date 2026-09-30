@@ -22,6 +22,13 @@ export interface ProgramFormValues {
     total_units: string;
     years_duration: string;
     is_active: boolean;
+    override_grading_schema?: boolean;
+    grading_periods?: {
+        name: string;
+        sequence: number;
+        weight: number;
+        components?: { name: string; weight: number }[];
+    }[];
 }
 
 export interface ProgramOption {

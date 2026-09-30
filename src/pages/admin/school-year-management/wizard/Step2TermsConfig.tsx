@@ -305,7 +305,7 @@ export default function Step2TermsConfig({
                         (t, idx) => idx !== index && t.term_type_id && t.term_type_id === currentTerm.term_type_id
                     );
 
-                    // Build options disabling already-selected term types from OTHER terms
+                    // Build options EXCLUDING already-selected term types from OTHER terms
                     const usedByOtherTerms = new Set(
                         watchedTerms
                             .filter((_, idx) => idx !== index)
@@ -313,14 +313,12 @@ export default function Step2TermsConfig({
                             .filter(Boolean)
                     );
 
-                    const filteredTypeOptions = termTypes.map((tt) => {
-                        const isTaken = usedByOtherTerms.has(tt.id);
-                        return {
-                            disabled: isTaken,
-                            label: `${tt.label} (${tt.code})${isTaken ? ' — Already used' : ''}`,
+                    const filteredTypeOptions = termTypes
+                        .filter((tt) => tt.id === currentTerm.term_type_id || !usedByOtherTerms.has(tt.id))
+                        .map((tt) => ({
+                            label: `${tt.label} (${tt.code})`,
                             value: tt.id
-                        };
-                    });
+                        }));
 
                     // Check date conflict with preceding term
                     const hasPrecedingConflict = Boolean(
@@ -468,6 +466,30 @@ export default function Step2TermsConfig({
                                     <p className="text-[11px] text-slate-500 mt-1">Classes officially conclude</p>
                                 </div>
 
+                                {/* Max Credit Units for this term */}
+                                <div>
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Max Units <span className="text-red-500">*</span></span>
+                                        <CommonInfoTooltip content="Maximum credit units a student can register for in this term (1 - 60)." size={14} />
+                                    </label>
+                                    <input
+                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        disabled={disabled}
+                                        max={60}
+                                        min={1}
+                                        placeholder="24"
+                                        type="number"
+                                        value={currentTerm.max_units ?? 24}
+                                        onChange={(e) => {
+                                            update(index, {
+                                                ...currentTerm,
+                                                max_units: Number(e.target.value) || 0
+                                            });
+                                        }}
+                                    />
+                                    <p className="text-[11px] text-slate-500 mt-1">Credit unit registration limit</p>
+                                </div>
+
                                 {/* Enrollment Start Date */}
                                 <div>
                                     <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -535,30 +557,26 @@ export default function Step2TermsConfig({
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                                     <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                                         <span>Faculty Evaluation Scope</span>
-                                        <CommonInfoTooltip content="Override schedule determining whether student evaluation of faculty is conducted per period or per term for this specific term." size={14} />
+                                        <CommonInfoTooltip content="Determines whether student evaluation of faculty is conducted per period or per term for this specific term." size={14} />
                                     </label>
                                     <CommonSelect
                                         disabled={disabled}
                                         fullWidth
                                         options={[
-                                            {
-                                                label: `Academic Year Default (${syEvaluationScope === 'Period' ? 'Per Period' : 'Per Term'})`,
-                                                value: ''
-                                            },
-                                            { label: 'Per Grading Period (Prelim, Midterm, Finals)', value: 'Period' },
-                                            { label: 'Per Term (Once at End of Term)', value: 'Term' }
+                                            { label: 'Per Grading Period', value: 'Period' },
+                                            { label: 'Per Term', value: 'Term' }
                                         ]}
                                         size="medium"
-                                        value={currentTerm.evaluation_scope || ''}
+                                        value={currentTerm.evaluation_scope || 'Period'}
                                         onChange={(e) => {
                                             update(index, {
                                                 ...currentTerm,
-                                                evaluation_scope: (e.target.value as any) || null
+                                                evaluation_scope: (e.target.value as any) || 'Period'
                                             });
                                         }}
                                     />
                                     <p className="text-[11px] text-slate-500 mt-1">
-                                        Override evaluation schedule for this term
+                                        Schedule for faculty evaluation
                                     </p>
                                 </div>
                             </div>

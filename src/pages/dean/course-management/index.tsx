@@ -46,11 +46,9 @@ const defaultFormValues: CourseFormValues = {
     title: '',
     description: '',
     department_id: '',
-    course_type_id: '',
-    is_split: false,
-    lecture_units: '',
-    laboratory_units: '',
-    credit_hours: '',
+    course_types: [
+        { course_type_id: '', units: 3, credit_hours: 3 }
+    ],
     is_active: true,
     prerequisites: []
 };
@@ -84,22 +82,23 @@ export default function CourseManagement() {
         const result = await getCourseById(id);
 
         if (result.data) {
+            const rawTypes = (result.data as { course_types?: { course_type_id: string; units: number; credit_hours: number }[] }).course_types;
+            const fallbackTypes = result.data.course_type_id ? [
+                {
+                    course_type_id: result.data.course_type_id,
+                    units: Number(result.data.lecture_units ?? 3),
+                    credit_hours: Number(result.data.credit_hours ?? result.data.lecture_units ?? 3)
+                }
+            ] : [{ course_type_id: '', units: 3, credit_hours: 3 }];
+
             updateMethods.reset({
                 code: result.data.code,
                 title: result.data.title,
                 description: result.data.description ?? '',
                 department_id: result.data.department_id,
-                course_type_id: result.data.course_type_id,
-                is_split: Number(result.data.laboratory_units) > 0 || (result.data as { is_split?: boolean }).is_split === true,
-                lecture_units: String(result.data.lecture_units ?? '0'),
-                laboratory_units: result.data.laboratory_units != null
-                    ? String(result.data.laboratory_units)
-                    : '',
-                credit_hours: result.data.credit_hours
-                    ? String(result.data.credit_hours)
-                    : '',
+                course_types: rawTypes?.length ? rawTypes : fallbackTypes,
                 is_active: result.data.is_active,
-                prerequisites: (result.data.prerequisites as PrerequisiteRow[]).map((prereq) => ({
+                prerequisites: (result.data.prerequisites as PrerequisiteRow[])?.map((prereq) => ({
                     course_id: prereq.course_id ?? '',
                     prerequisite_type: prereq.prerequisite_type,
                     prerequisite_kind: prereq.prerequisite_kind ?? 'course',

@@ -29,8 +29,10 @@ export const FOUR_PERIOD_PRESET: WizardGradingPeriodItem[] = [
 export function isSpecialGradeRow(row?: {
     label?: string;
     special_code?: string | null;
+    is_conditional?: boolean;
 } | null): boolean {
     if (!row) return false;
+    if (row.is_conditional) return true;
     const code = (row.special_code || '').trim().toUpperCase();
     const label = (row.label || '').trim().toUpperCase();
     return (
@@ -46,19 +48,19 @@ export function isSpecialGradeRow(row?: {
 }
 
 export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
-    { label: '1.00', min_percentage: 98, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, special_code: null, description: 'Excellent' },
-    { label: '1.25', min_percentage: 95, max_percentage: 97, transmuted_grade: 1.25, is_passing: true, special_code: null, description: 'Superior' },
-    { label: '1.50', min_percentage: 92, max_percentage: 94, transmuted_grade: 1.50, is_passing: true, special_code: null, description: 'Very Good' },
-    { label: '1.75', min_percentage: 89, max_percentage: 91, transmuted_grade: 1.75, is_passing: true, special_code: null, description: 'Good' },
-    { label: '2.00', min_percentage: 86, max_percentage: 88, transmuted_grade: 2.00, is_passing: true, special_code: null, description: 'Meritorious' },
-    { label: '2.25', min_percentage: 83, max_percentage: 85, transmuted_grade: 2.25, is_passing: true, special_code: null, description: 'Very Satisfactory' },
-    { label: '2.50', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.50, is_passing: true, special_code: null, description: 'Satisfactory' },
-    { label: '2.75', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.75, is_passing: true, special_code: null, description: 'Fairly Satisfactory' },
-    { label: '3.00', min_percentage: 75, max_percentage: 76, transmuted_grade: 3.00, is_passing: true, special_code: null, description: 'Passing' },
-    { label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, special_code: null, description: 'Conditional' },
-    { label: '5.00', min_percentage: 0, max_percentage: 69, transmuted_grade: 5.00, is_passing: false, special_code: null, description: 'Failed' },
-    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'INC', description: 'Incomplete Requirements' },
-    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, special_code: 'DRP', description: 'Officially Dropped' }
+    { label: '1.00', min_percentage: 98, max_percentage: 100, transmuted_grade: 1.00, is_passing: true, is_conditional: false, special_code: null, description: 'Excellent' },
+    { label: '1.25', min_percentage: 95, max_percentage: 97, transmuted_grade: 1.25, is_passing: true, is_conditional: false, special_code: null, description: 'Superior' },
+    { label: '1.50', min_percentage: 92, max_percentage: 94, transmuted_grade: 1.50, is_passing: true, is_conditional: false, special_code: null, description: 'Very Good' },
+    { label: '1.75', min_percentage: 89, max_percentage: 91, transmuted_grade: 1.75, is_passing: true, is_conditional: false, special_code: null, description: 'Good' },
+    { label: '2.00', min_percentage: 86, max_percentage: 88, transmuted_grade: 2.00, is_passing: true, is_conditional: false, special_code: null, description: 'Meritorious' },
+    { label: '2.25', min_percentage: 83, max_percentage: 85, transmuted_grade: 2.25, is_passing: true, is_conditional: false, special_code: null, description: 'Very Satisfactory' },
+    { label: '2.50', min_percentage: 80, max_percentage: 82, transmuted_grade: 2.50, is_passing: true, is_conditional: false, special_code: null, description: 'Satisfactory' },
+    { label: '2.75', min_percentage: 77, max_percentage: 79, transmuted_grade: 2.75, is_passing: true, is_conditional: false, special_code: null, description: 'Fairly Satisfactory' },
+    { label: '3.00', min_percentage: 75, max_percentage: 76, transmuted_grade: 3.00, is_passing: true, is_conditional: false, special_code: null, description: 'Passing' },
+    { label: '4.00', min_percentage: 70, max_percentage: 74, transmuted_grade: 4.00, is_passing: false, is_conditional: false, special_code: null, description: 'Conditional' },
+    { label: '5.00', min_percentage: 0, max_percentage: 69, transmuted_grade: 5.00, is_passing: false, is_conditional: false, special_code: null, description: 'Failed' },
+    { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete Requirements' },
+    { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
 ];
 
 export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
@@ -486,6 +488,7 @@ export function cloneSchoolYearForDuplication(
         grading_deadline: t.grading_deadline || '',
         status: 'Upcoming',
         evaluation_scope: t.evaluation_scope || details.evaluation_scope || 'Period',
+        max_units: t.max_units ?? details.max_units_per_term ?? 24,
         grading_periods: (t.grading_periods || []).map((gp, gIdx) => ({
             id: undefined,
             name: gp.name,
@@ -501,6 +504,7 @@ export function cloneSchoolYearForDuplication(
         return {
             id: undefined,
             label: r.label,
+            is_conditional: Boolean(r.is_conditional || isSpecial),
             min_percentage: isSpecial ? null : r.min_percentage,
             max_percentage: isSpecial ? null : r.max_percentage,
             transmuted_grade: isSpecial ? null : r.transmuted_grade,
@@ -665,17 +669,6 @@ export function validateStep1SchoolYear(
     }
     if (!values.label || !values.label.trim()) {
         return { isValid: false, error: 'Academic Year Label is required.' };
-    }
-
-    if (
-        values.max_units_per_term !== undefined &&
-        values.max_units_per_term !== null &&
-        values.max_units_per_term !== ''
-    ) {
-        const units = Number(values.max_units_per_term);
-        if (isNaN(units) || units < 1 || units > 60) {
-            return { isValid: false, error: 'Max units per term must be between 1 and 60.' };
-        }
     }
 
     const codeConflict = checkSchoolYearCodeConflict(

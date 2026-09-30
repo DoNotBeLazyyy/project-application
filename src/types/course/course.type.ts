@@ -24,18 +24,27 @@ export interface PrerequisiteRow {
     [key: string]: unknown;
 }
 
+export interface CourseTypeRow {
+    course_type_id: string;
+    units: number;
+    credit_hours: number;
+    [key: string]: unknown;
+}
+
 export interface CourseFormValues {
     code: string;
     title: string;
     description: string;
     department_id: string;
-    course_type_id: string;
-    is_split: boolean;
-    lecture_units: string;
-    laboratory_units: string;
-    credit_hours: string;
+    course_types: CourseTypeRow[];
     is_active: boolean;
     prerequisites: PrerequisiteRow[];
+    // Backward compatibility optional fields
+    course_type_id?: string;
+    is_split?: boolean;
+    lecture_units?: string;
+    laboratory_units?: string;
+    credit_hours?: string;
 }
 
 export interface CourseFilterValues {

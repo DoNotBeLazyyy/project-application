@@ -53,12 +53,14 @@ export interface WizardTermItem {
     grading_deadline?: string | null;
     status?: string;
     evaluation_scope?: EvaluationScope | null;
+    max_units?: number | string | null;
     grading_periods: WizardGradingPeriodItem[];
 }
 
 export interface WizardTransmutationRow {
     id?: string;
     label: string;
+    is_conditional?: boolean;
     min_percentage?: number | string | null;
     max_percentage?: number | string | null;
     transmuted_grade?: number | string | null;

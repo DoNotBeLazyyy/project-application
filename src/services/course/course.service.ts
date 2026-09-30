@@ -56,21 +56,20 @@ export async function getCourses(
 export async function createCourse(
     params: CourseFormValues
 ): Promise<ServiceResult<null>> {
+    const primaryType = params.course_types?.[0];
+    const firstCourseTypeId = primaryType?.course_type_id || params.course_type_id || null;
+    const totalUnits = params.course_types?.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0) ?? (params.lecture_units !== '' ? Number(params.lecture_units) : 0);
+    const totalCredit = params.course_types?.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0) ?? (params.credit_hours ? Number(params.credit_hours) : 0);
+
     return callRpc<null>('fn_create_course', {
         p_code: params.code,
         p_title: params.title,
         p_department_id: nullIfBlank(params.department_id),
-        p_course_type_id: nullIfBlank(params.course_type_id),
-        p_is_split: params.is_split,
-        p_lecture_units: params.lecture_units !== ''
-            ? Number(params.lecture_units)
-            : null,
-        p_laboratory_units: params.is_split && params.laboratory_units !== ''
-            ? Number(params.laboratory_units)
-            : null,
-        p_credit_hours: params.credit_hours
-            ? Number(params.credit_hours)
-            : null,
+        p_course_type_id: nullIfBlank(firstCourseTypeId),
+        p_is_split: false,
+        p_lecture_units: totalUnits,
+        p_laboratory_units: null,
+        p_credit_hours: totalCredit,
         p_description: params.description || null,
         p_is_active: params.is_active,
         p_prerequisites: params.prerequisites.length
@@ -95,21 +94,20 @@ export async function updateCourse(
     courseId: string,
     params: CourseFormValues
 ): Promise<ServiceResult<null>> {
+    const primaryType = params.course_types?.[0];
+    const firstCourseTypeId = primaryType?.course_type_id || params.course_type_id || null;
+    const totalUnits = params.course_types?.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0) ?? (params.lecture_units !== '' ? Number(params.lecture_units) : 0);
+    const totalCredit = params.course_types?.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0) ?? (params.credit_hours ? Number(params.credit_hours) : 0);
+
     return callRpc<null>('fn_update_course', {
         p_course_id: courseId,
         p_code: params.code,
         p_title: params.title,
         p_department_id: nullIfBlank(params.department_id),
-        p_course_type_id: nullIfBlank(params.course_type_id),
-        p_lecture_units: params.lecture_units !== ''
-            ? Number(params.lecture_units)
-            : null,
-        p_laboratory_units: params.is_split && params.laboratory_units !== ''
-            ? Number(params.laboratory_units)
-            : null,
-        p_credit_hours: params.credit_hours
-            ? Number(params.credit_hours)
-            : null,
+        p_course_type_id: nullIfBlank(firstCourseTypeId),
+        p_lecture_units: totalUnits,
+        p_laboratory_units: null,
+        p_credit_hours: totalCredit,
         p_description: params.description || null,
         p_is_active: params.is_active,
         p_prerequisites: params.prerequisites.length
