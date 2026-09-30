@@ -130,6 +130,10 @@ export async function initAuthSession(): Promise<AuthSessionStatus> {
     const { data: context, error } = await getAuthContext();
 
     if (!context || context.profile?.status === 'Suspended' || context.profile?.status === 'Inactive') {
+        if (typeof window !== 'undefined' && window.location.pathname === '/set-password') {
+            return 'unauthenticated';
+        }
+
         let msg = INCOMPLETE_PROFILE_MESSAGE;
         if (context?.profile?.status === 'Suspended' || error?.message?.includes('suspended')) {
             msg = SUSPENDED_ACCOUNT_MESSAGE;
