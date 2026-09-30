@@ -6,6 +6,7 @@ import { logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import { SetPasswordFormValues } from '@type/user.type';
+import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
 import { parseServiceError } from '@utils/error.util';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
@@ -31,6 +32,48 @@ export default function SetPasswordPage() {
     useEffect(() => {
         mountedRef.current = true;
 
+        const authErr = parseAuthUrlError();
+        if (authErr) {
+            if (mountedRef.current) {
+                setIsTimedOut(true);
+                setSubmitError(authErr.userMessage);
+            }
+            clearAuthUrlError();
+            return;
+        }
+
+        // Support token_hash from query string or hash fragment
+        if (typeof window !== 'undefined') {
+            const searchParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(
+                window.location.hash.startsWith('#')
+                    ? window.location.hash.substring(1)
+                    : window.location.hash
+            );
+            const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
+            const rawType = searchParams.get('type') || hashParams.get('type') || 'invite';
+            const tokenType = (rawType === 'recovery' ? 'recovery' : 'invite') as 'invite' | 'recovery';
+
+            if (tokenHash) {
+                supabase.auth.verifyOtp({ token_hash: tokenHash, type: tokenType })
+                    .then(({ data, error }) => {
+                        if (mountedRef.current) {
+                            if (error) {
+                                setIsTimedOut(true);
+                                setSubmitError(
+                                    error.message?.toLowerCase().includes('expired') ||
+                                    error.message?.toLowerCase().includes('invalid')
+                                        ? 'Your invite or password reset link has expired or has already been used. Please request a new link or contact your administrator.'
+                                        : error.message
+                                );
+                            } else if (data?.session) {
+                                setSessionReady(true);
+                            }
+                        }
+                    });
+            }
+        }
+
         supabase.auth.getSession()
             .then(({ data: { session } }) => {
                 if (mountedRef.current && session) {
@@ -50,7 +93,7 @@ export default function SetPasswordPage() {
             if (mountedRef.current) {
                 setIsTimedOut(true);
             }
-        }, 10000);
+        }, 8000);
 
         return () => {
             mountedRef.current = false;
@@ -90,20 +133,36 @@ export default function SetPasswordPage() {
     if (!sessionReady) {
         return (
             <div className="flex flex-col gap-4 h-full items-center justify-center p-4 text-center w-full">
-                <p className="text-(--mui-palette-text-secondary) text-sm">
-                    Verifying invite link…
-                </p>
+                {!isTimedOut && (
+                    <p className="text-(--mui-palette-text-secondary) text-sm">
+                        Verifying invite link…
+                    </p>
+                )}
                 {isTimedOut && (
-                    <div className="flex flex-col gap-2 items-center">
-                        <p className="text-(--mui-palette-error-main) text-sm">
-                            Your invite link may have expired or already been used.
+                    <div className="bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-900 flex flex-col gap-4 items-center max-w-md p-6 rounded-lg shadow-sm">
+                        <h6 className="font-semibold text-(--mui-tokens-color-red-500) text-base">
+                            Link Expired or Invalid
+                        </h6>
+                        <p className="leading-relaxed text-(--mui-palette-text-secondary) text-sm">
+                            {submitError ??
+                                'Your invite link may have expired or already been used. Please request a new setup link or contact your administrator.'}
                         </p>
-                        <CommonButton
-                            variant="outlined"
-                            onClick={handleRestart}
-                        >
-                            Restart Process
-                        </CommonButton>
+                        <div className="flex flex-col gap-2 sm:flex-row w-full">
+                            <CommonButton
+                                fullWidth
+                                variant="contained"
+                                onClick={() => navigate('/forgot-password')}
+                            >
+                                Request New Link
+                            </CommonButton>
+                            <CommonButton
+                                fullWidth
+                                variant="outlined"
+                                onClick={handleRestart}
+                            >
+                                Back to Sign In
+                            </CommonButton>
+                        </div>
                     </div>
                 )}
             </div>

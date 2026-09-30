@@ -6,6 +6,7 @@ import { login, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
 import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
+import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
 import { formErrors } from '@utils/form.util';
 import { isSessionExpiredDueToInactivity } from '@utils/session.util';
 import { useEffect, useState } from 'react';
@@ -14,6 +15,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 interface LoginLocationState {
     activationSuccess?: boolean;
+    authError?: string;
 }
 
 const ROLE_PATHS: Record<UserRole, RoleDashboardPath> = {
@@ -34,6 +36,15 @@ export default function LoginPage() {
         defaultValues: { email: '', password: '' }
     });
     const { handleSubmit, formState: { isSubmitting } } = methods;
+
+    useEffect(() => {
+        const urlErr = parseAuthUrlError();
+        const initialErr = locationState?.authError || urlErr?.userMessage;
+        if (initialErr) {
+            setLoginError(initialErr);
+            clearAuthUrlError();
+        }
+    }, [locationState?.authError]);
 
     useEffect(() => {
         if (isSessionExpiredDueToInactivity()) {
@@ -104,9 +115,9 @@ export default function LoginPage() {
                     )}
 
                     {loginError && (
-                        <p className="m-0 text-(--mui-tokens-color-red-500) text-sm">
+                        <div className="bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-900 leading-relaxed p-3 rounded-md text-(--mui-tokens-color-red-500) text-sm">
                             {loginError}
-                        </p>
+                        </div>
                     )}
 
                     <ValidCommonInput

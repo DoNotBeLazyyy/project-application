@@ -1,6 +1,7 @@
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { isSessionExpiredDueToInactivity } from '@utils/session.util';
+import { parseAuthUrlError } from '@utils/auth-error.util';
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -21,7 +22,14 @@ export default function AuthGuard() {
     }, [isExpired, isSuspendedOrInactive]);
 
     if (!session || isExpired || isSuspendedOrInactive) {
-        return <Navigate replace to="/login" />;
+        const authErr = parseAuthUrlError();
+        return (
+            <Navigate
+                replace
+                state={authErr ? { authError: authErr.userMessage } : undefined}
+                to="/login"
+            />
+        );
     }
 
     if (userProfile?.status === 'Invited' && pathname !== '/set-password') {
