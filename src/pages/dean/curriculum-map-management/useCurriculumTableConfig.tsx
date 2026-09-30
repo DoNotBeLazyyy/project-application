@@ -16,14 +16,16 @@ export function useCurriculumTableConfig({
         return [
             {
                 field: 'course_code',
-                headerName: 'Code',
                 flex: 1,
+                headerName: 'Code',
+                minWidth: 80,
                 sortable: false
             },
             {
                 field: 'course_title',
+                flex: 2.5,
                 headerName: 'Title',
-                flex: 3,
+                minWidth: 150,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => {
                     const isTotal = params.data.id === '__total__';
@@ -44,8 +46,9 @@ export function useCurriculumTableConfig({
             },
             {
                 field: 'lecture_units',
+                flex: 0.8,
                 headerName: 'Lec',
-                flex: 1,
+                minWidth: 48,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-end">
@@ -55,8 +58,9 @@ export function useCurriculumTableConfig({
             },
             {
                 field: 'laboratory_units',
+                flex: 0.8,
                 headerName: 'Lab',
-                flex: 1,
+                minWidth: 48,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-center">
@@ -66,8 +70,9 @@ export function useCurriculumTableConfig({
             },
             {
                 colId: 'prerequisites',
+                flex: 1.5,
                 headerName: 'Pre-req',
-                flex: 2,
+                minWidth: 85,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => {
                     if (params.data.id === '__total__') return null;
@@ -88,8 +93,8 @@ export function useCurriculumTableConfig({
             {
                 colId: 'is_elective',
                 headerName: '',
-                maxWidth: 110,
-                minWidth: 110,
+                maxWidth: 90,
+                minWidth: 70,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-center">
@@ -107,8 +112,8 @@ export function useCurriculumTableConfig({
             {
                 colId: 'actions',
                 headerName: '',
-                maxWidth: 64,
-                minWidth: 64,
+                maxWidth: 48,
+                minWidth: 44,
                 sortable: false,
                 cellClass: 'no-print',
                 headerClass: 'no-print',

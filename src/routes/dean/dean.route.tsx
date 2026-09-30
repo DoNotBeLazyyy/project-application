@@ -15,6 +15,14 @@ export const deanRoutes: RouteObject[] = [
                 index: true
             },
             {
+                element: <Navigate replace to="/admin/departments" />,
+                path: 'department-management'
+            },
+            {
+                element: <Navigate replace to="/admin/departments" />,
+                path: 'departments'
+            },
+            {
                 element: lazyElement(function() {
                     return import('@pages/dean/program-management/level');
                 }),
@@ -27,18 +35,16 @@ export const deanRoutes: RouteObject[] = [
                 path: 'course-type-management'
             },
             {
-                element: <Navigate replace to="/admin/departments" />,
-                path: 'department-management'
-            },
-            {
-                element: <Navigate replace to="/admin/departments" />,
-                path: 'departments'
-            },
-            {
                 element: lazyElement(function() {
                     return import('@pages/dean/program-management');
                 }),
                 path: 'program-management'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/dean/program-management/ProgramDetailPage');
+                }),
+                path: 'program-management/:programId'
             },
             {
                 element: lazyElement(function() {
@@ -47,9 +53,7 @@ export const deanRoutes: RouteObject[] = [
                 path: 'course-management'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/dean/curriculum-map-management');
-                }),
+                element: <Navigate replace to="/dean/program-management" />,
                 path: 'curriculum-map-management'
             },
             {

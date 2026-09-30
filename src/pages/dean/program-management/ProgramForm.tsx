@@ -86,7 +86,11 @@ export default function ProgramForm({
             }
         },
         {
-            disabled,
+            readOnly: disabled,
+            fieldProps: {
+                resize: 'vertical',
+                rows: 4
+            },
             name: 'description',
             type: 'text-area',
             gridCols: 2

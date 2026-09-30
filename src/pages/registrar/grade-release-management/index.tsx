@@ -31,7 +31,7 @@ import {
     SectionGradeSubmissionStatus
 } from '@type/grade-release.type';
 import { DateTime } from 'luxon';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 function formatReleaseAt(releaseAt: string): string {
     return DateTime.fromISO(releaseAt).toFormat('MMM d, yyyy · h:mm a');
@@ -103,38 +103,98 @@ export default function GradeRelease() {
     const [sectionToRelease, setSectionToRelease] = useState<SectionGradeSubmissionRow | null>(null);
     const [isReleasingSection, setIsReleasingSection] = useState(false);
 
-    const fetchPeriods = useCallback(async function(termId: string) {
-        if (!termId) return;
+    const activeTermRequestIdRef = useRef<string>('');
+    const activePeriodRequestIdRef = useRef<string>('');
 
-        const result = await listGradeReleaseSchedule(termId);
-        if (result.data) {
-            const data = result.data;
-            setPeriods(data);
-            setSelectedPeriodId((prev) => {
-                if (prev && data.some((p) => p.grading_period_id === prev)) {
-                    return prev;
-                }
-                return data[0]?.grading_period_id ?? '';
-            });
-        }
-    }, []);
-
-    const fetchSections = useCallback(async function(termId: string, periodId: string) {
-        if (!termId || !periodId) {
+    const loadTermData = useCallback(async function(termId: string) {
+        activeTermRequestIdRef.current = termId;
+        if (!termId) {
+            setPeriods([]);
+            setSelectedPeriodId('');
+            activePeriodRequestIdRef.current = '';
             setSectionRows([]);
             return;
         }
 
         setIsSectionsLoading(true);
         try {
-            const result = await listSectionGradeSubmissions(termId, periodId);
-            if (result.data) {
-                setSectionRows(result.data);
+            const periodsResult = await listGradeReleaseSchedule(termId);
+            if (activeTermRequestIdRef.current !== termId) return;
+
+            const periodsList = periodsResult.data ?? [];
+            setPeriods(periodsList);
+            const initialPeriodId = periodsList[0]?.grading_period_id ?? '';
+            setSelectedPeriodId(initialPeriodId);
+            activePeriodRequestIdRef.current = initialPeriodId;
+
+            if (initialPeriodId) {
+                const sectionsResult = await listSectionGradeSubmissions(termId, initialPeriodId);
+                if (activeTermRequestIdRef.current !== termId) return;
+                setSectionRows(sectionsResult.data ?? []);
+            } else {
+                setSectionRows([]);
+            }
+        } catch (err) {
+            if (activeTermRequestIdRef.current === termId) {
+                console.error('Failed to load term grade release data:', err);
+                setPeriods([]);
+                setSelectedPeriodId('');
+                setSectionRows([]);
             }
         } finally {
-            setIsSectionsLoading(false);
+            if (activeTermRequestIdRef.current === termId) {
+                setIsSectionsLoading(false);
+            }
         }
     }, []);
+
+    const handleSelectPeriod = useCallback(async function(periodId: string) {
+        if (periodId === selectedPeriodId) return;
+
+        setSelectedPeriodId(periodId);
+        activePeriodRequestIdRef.current = periodId;
+
+        if (!selectedTermId || !periodId) {
+            setSectionRows([]);
+            return;
+        }
+
+        setIsSectionsLoading(true);
+        try {
+            const sectionsResult = await listSectionGradeSubmissions(selectedTermId, periodId);
+            if (activePeriodRequestIdRef.current === periodId) {
+                setSectionRows(sectionsResult.data ?? []);
+            }
+        } catch (err) {
+            if (activePeriodRequestIdRef.current === periodId) {
+                console.error('Failed to load section submissions for period:', err);
+                setSectionRows([]);
+            }
+        } finally {
+            if (activePeriodRequestIdRef.current === periodId) {
+                setIsSectionsLoading(false);
+            }
+        }
+    }, [selectedTermId, selectedPeriodId]);
+
+    const refreshCurrentData = useCallback(async function() {
+        if (!selectedTermId) return;
+
+        try {
+            const periodsResult = await listGradeReleaseSchedule(selectedTermId);
+            if (periodsResult.data) {
+                setPeriods(periodsResult.data);
+            }
+            if (selectedPeriodId) {
+                const sectionsResult = await listSectionGradeSubmissions(selectedTermId, selectedPeriodId);
+                if (sectionsResult.data) {
+                    setSectionRows(sectionsResult.data);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to refresh grade release data:', err);
+        }
+    }, [selectedTermId, selectedPeriodId]);
 
     useEffect(function() {
         async function fetchTerms() {
@@ -149,26 +209,25 @@ export default function GradeRelease() {
 
                 setTermOptions(options);
                 if (options.length > 0) {
-                    setSelectedTermId(options[0].value);
+                    const initialTermId = options[0].value;
+                    setSelectedTermId(initialTermId);
+                    loadTermData(initialTermId);
                 }
             }
         }
 
         fetchTerms();
-    }, []);
-
-    useEffect(function() {
-        fetchPeriods(selectedTermId);
-    }, [selectedTermId, fetchPeriods]);
-
-    useEffect(function() {
-        if (selectedTermId && selectedPeriodId) {
-            fetchSections(selectedTermId, selectedPeriodId);
-        }
-    }, [selectedTermId, selectedPeriodId, fetchSections]);
+    }, [loadTermData]);
 
     function handleTermChange(e: ChangeEventInputTextarea) {
-        setSelectedTermId(e.target.value);
+        const newTermId = e.target.value;
+        setSelectedTermId(newTermId);
+        setReleaseTarget(null);
+        setInspectedSection(null);
+        setSectionToRelease(null);
+        setIsScheduleOpen(false);
+        setActivePeriod(null);
+        loadTermData(newTermId);
     }
 
     function handleOpenSchedule(period: GradeReleaseSchedule) {
@@ -189,7 +248,7 @@ export default function GradeRelease() {
             const result = await setGradingPeriodReleaseAt(activePeriod.grading_period_id, releaseAt);
             if (!result.error) {
                 handleCloseSchedule();
-                await fetchPeriods(selectedTermId);
+                await refreshCurrentData();
             }
         } finally {
             setIsSaving(false);
@@ -211,10 +270,7 @@ export default function GradeRelease() {
         setReleaseTarget(null);
 
         if (!result.error) {
-            await fetchPeriods(selectedTermId);
-            if (selectedPeriodId) {
-                await fetchSections(selectedTermId, selectedPeriodId);
-            }
+            await refreshCurrentData();
         }
     }
 
@@ -226,8 +282,7 @@ export default function GradeRelease() {
             const result = await approveAndReleaseSection(sectionToRelease.section_id, selectedPeriodId);
             if (result.data?.success) {
                 setSectionToRelease(null);
-                await fetchPeriods(selectedTermId);
-                await fetchSections(selectedTermId, selectedPeriodId);
+                await refreshCurrentData();
             }
         } finally {
             setIsReleasingSection(false);
@@ -332,7 +387,7 @@ export default function GradeRelease() {
                                                 ? 'bg-(--mui-palette-primary-main) text-white border-(--mui-palette-primary-main) shadow-xs'
                                                 : 'bg-(--mui-palette-background-paper) text-(--mui-palette-text-primary) border-(--mui-palette-divider) hover:border-(--mui-palette-text-secondary)/60'
                                         }`}
-                                        onClick={() => setSelectedPeriodId(period.grading_period_id)}
+                                        onClick={() => handleSelectPeriod(period.grading_period_id)}
                                     >
                                         <span>{period.grading_period_name}</span>
                                         <span
@@ -767,10 +822,7 @@ export default function GradeRelease() {
                     section={inspectedSection}
                     onClose={() => setInspectedSection(null)}
                     onReleased={async () => {
-                        await fetchPeriods(selectedTermId);
-                        if (selectedPeriodId) {
-                            await fetchSections(selectedTermId, selectedPeriodId);
-                        }
+                        await refreshCurrentData();
                     }}
                 />
             )}

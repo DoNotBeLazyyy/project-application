@@ -74,5 +74,6 @@ export const BREADCRUMB_PARAM_FALLBACKS: Record<string, string> = {
     facultyId: 'Faculty Loading Detail',
     rubricId: 'Rubric Builder',
     gradingPeriodId: 'Grading Period',
+    programId: 'Program & Curriculum',
     id: 'Detail View'
 };
