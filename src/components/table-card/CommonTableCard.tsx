@@ -14,7 +14,8 @@ import { useTableSelection } from '@components/table-card/hooks/useTableSelectio
 import TableCardControls from '@components/table-card/TableCardControls';
 import TableCardSelectionBar from '@components/table-card/TableCardSelectionBar';
 import CommonTable from '@components/table/CommonTable';
-import { ArrowUpIcon } from '@phosphor-icons/react';
+import BentoCardActionMenu, { BentoCardAction } from '@components/card/BentoCardActionMenu';
+import { ArrowUpIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.type';
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
@@ -384,8 +385,41 @@ export default function CommonTableCard<T extends FieldValues>({
             || item['department_name' as keyof T]
             || '1st Sem AY 25-26';
 
+        const defaultActions: BentoCardAction[] = [];
+        if (onRowClick) {
+            defaultActions.push({
+                key: 'edit',
+                label: 'Edit',
+                icon: <PencilSimpleIcon size={18} weight="bold" />,
+                onClick: () => onRowClick(id)
+            });
+            defaultActions.push({
+                key: 'view',
+                label: 'View',
+                icon: <EyeIcon size={18} weight="bold" />,
+                onClick: () => onRowClick(id)
+            });
+        }
+        if (onDeleteRow) {
+            defaultActions.push({
+                key: 'delete',
+                label: 'Delete',
+                icon: <TrashIcon size={18} weight="bold" />,
+                destructive: true,
+                onClick: () => onDeleteRow(id)
+            });
+        }
+
         return (
             <CommonBentoCard
+                actionMenu={defaultActions.length > 0
+                    ? (
+                        <BentoCardActionMenu
+                            actions={defaultActions}
+                            ariaLabel="Card actions"
+                        />
+                    )
+                    : undefined}
                 code={codeVal}
                 faculty={faculty}
                 footerMeta={String(footerMeta)}
