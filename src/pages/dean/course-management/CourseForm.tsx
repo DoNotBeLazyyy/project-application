@@ -3,7 +3,6 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonStepperInput from '@components/input/CommonStepperInput';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
-import CommonFormTable, { CommonFormTableColumn } from '@components/table/CommonFormTable';
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
@@ -14,7 +13,9 @@ import {
     ArrowRightIcon,
     BookOpenIcon,
     FileTextIcon,
-    GitForkIcon
+    GitForkIcon,
+    PlusIcon,
+    TrashIcon
 } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
@@ -160,7 +161,7 @@ function PrerequisiteMinGradeCell({
     );
 }
 
-// Course Type Table Components
+// Course Type Breakdown Components
 interface CourseTypeCellProps {
     control: Control<CourseFormValues>;
     disabled?: boolean;
@@ -366,99 +367,6 @@ export default function CourseForm({
         }
     ];
 
-    const courseTypeColumns: CommonFormTableColumn<CourseTypeRow, CourseFormValues>[] = [
-        {
-            key: 'course_type_id',
-            headerName: 'Course Type',
-            flex: 4,
-            renderCell: (params) => (
-                <CourseTypeSelectionCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                    courseTypeOptions={courseTypeOptions}
-                />
-            )
-        },
-        {
-            key: 'units',
-            headerName: 'Units',
-            flex: 3,
-            renderCell: (params) => (
-                <CourseTypeUnitsCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        },
-        {
-            key: 'credit_hours',
-            headerName: 'Credit Hours',
-            flex: 3,
-            renderCell: (params) => (
-                <CourseTypeCreditHoursCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        }
-    ];
-
-    const prerequisiteColumns: CommonFormTableColumn<PrerequisiteRow, CourseFormValues>[] = [
-        {
-            key: 'prerequisite_kind',
-            headerName: 'Kind',
-            flex: 2,
-            renderCell: (params) => (
-                <PrerequisiteKindCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        },
-        {
-            key: 'course_id',
-            headerName: 'Course / Year Level',
-            flex: 4,
-            renderCell: (params) => (
-                <PrerequisiteTargetCell
-                    control={params.control}
-                    courseOptions={allCourseOptions}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        },
-        {
-            key: 'prerequisite_type',
-            headerName: 'Type',
-            flex: 2,
-            renderCell: (params) => (
-                <PrerequisiteTypeCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        },
-        {
-            key: 'minimum_grade',
-            headerName: 'Min Grade',
-            flex: 3,
-            renderCell: (params) => (
-                <PrerequisiteMinGradeCell
-                    control={params.control}
-                    disabled={params.disabled}
-                    minimumGradeOptions={minimumGradeOptions}
-                    rowIndex={params.rowIndex}
-                />
-            )
-        }
-    ];
-
     const courseKindCount = (prerequisites ?? []).filter(
         (prereq) => prereq.prerequisite_kind === 'course'
     ).length;
@@ -549,70 +457,249 @@ export default function CourseForm({
 
             {/* Step 2: Course Type */}
             <div className={activeStep === 2 ? 'flex flex-col gap-4' : 'hidden'}>
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <BookOpenIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 Course Type Breakdown
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Configure units and credit hours for each type component.
+                                Configure units and credit hours for each course type component.
                             </p>
                         </div>
-                        <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 self-start sm:self-auto">
                             <span>Total Units: <strong>{totalUnits}</strong></span>
                             <span>•</span>
                             <span>Total Credit Hours: <strong>{totalCreditHours}</strong></span>
                         </div>
                     </div>
 
-                    <CommonFormTable<CourseTypeRow, CourseFormValues>
-                        columns={courseTypeColumns}
-                        contentClassName="min-w-[44rem] lg:min-w-full"
-                        control={control}
-                        disabled={disabled}
-                        emptyDataMessage="No course types added yet. Click Add Row below."
-                        fieldArrayName="course_types"
-                        rows={courseTypeFields as unknown as (CourseTypeRow & { id: string })[]}
-                        tableProps={{
-                            containerClassName: 'min-h-[140px]'
-                        }}
-                        title=""
-                        onAddRow={courseTypes.length < courseTypeOptions.length ? handleAddCourseType : undefined}
-                        onRemoveRow={handleRemoveCourseType}
-                    />
+                    {/* Course Types Card List */}
+                    {courseTypeFields.length === 0 ? (
+                        <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 flex flex-col items-center gap-2">
+                            <BookOpenIcon className="w-8 h-8 text-slate-400" />
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                No course types added yet.
+                            </p>
+                            {!disabled && (
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<PlusIcon className="w-4 h-4" />}
+                                    variant="outlined"
+                                    onClick={handleAddCourseType}
+                                >
+                                    Add Course Type
+                                </CommonButton>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            {courseTypeFields.map((field, index) => (
+                                <div
+                                    key={field.id}
+                                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
+                                >
+                                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                            <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">
+                                                {index + 1}
+                                            </span>
+                                            Course Type #{index + 1}
+                                        </span>
+                                        {!disabled && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveCourseType(index)}
+                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                                title="Remove Course Type"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Remove</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Course Type
+                                            </label>
+                                            <CourseTypeSelectionCell
+                                                control={control}
+                                                courseTypeOptions={courseTypeOptions}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Units
+                                            </label>
+                                            <CourseTypeUnitsCell
+                                                control={control}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Credit Hours
+                                            </label>
+                                            <CourseTypeCreditHoursCell
+                                                control={control}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {!disabled && courseTypes.length < courseTypeOptions.length && (
+                                <div className="flex justify-end pt-1">
+                                    <CommonButton
+                                        color="primary"
+                                        size="small"
+                                        startIcon={<PlusIcon className="w-4 h-4" />}
+                                        variant="outlined"
+                                        onClick={handleAddCourseType}
+                                    >
+                                        Add Course Type
+                                    </CommonButton>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Step 3: Prerequisite */}
             <div className={activeStep === 3 ? 'flex flex-col gap-4' : 'hidden'}>
-                <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <GitForkIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        Prerequisites
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Set prerequisite courses, co-requisites, standing requirements, and minimum passing grades.
-                    </p>
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div>
+                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <GitForkIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                Prerequisites
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Configure course prerequisites, corequisites, and year level standing requirements.
+                            </p>
+                        </div>
+                        {!disabled && courseKindCount < allCourseOptions.length && (
+                            <CommonButton
+                                className="self-start sm:self-auto"
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusIcon className="w-4 h-4" />}
+                                variant="outlined"
+                                onClick={handleAddPrerequisite}
+                            >
+                                Add Prerequisite
+                            </CommonButton>
+                        )}
+                    </div>
+
+                    {/* Prerequisites Card List */}
+                    {prereqFields.length === 0 ? (
+                        <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 flex flex-col items-center gap-2">
+                            <GitForkIcon className="w-8 h-8 text-slate-400" />
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                No prerequisites added yet.
+                            </p>
+                            <p className="text-xs text-slate-500 max-w-sm">
+                                This course will not require any previous subjects or year level standing.
+                            </p>
+                            {!disabled && (
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<PlusIcon className="w-4 h-4" />}
+                                    variant="outlined"
+                                    onClick={handleAddPrerequisite}
+                                >
+                                    Add First Prerequisite
+                                </CommonButton>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            {prereqFields.map((field, index) => (
+                                <div
+                                    key={field.id}
+                                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
+                                >
+                                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                            <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">
+                                                {index + 1}
+                                            </span>
+                                            Prerequisite #{index + 1}
+                                        </span>
+                                        {!disabled && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemovePrerequisite(index)}
+                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                                title="Remove Prerequisite"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Remove</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Kind
+                                            </label>
+                                            <PrerequisiteKindCell
+                                                control={control}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Course / Year Level
+                                            </label>
+                                            <PrerequisiteTargetCell
+                                                control={control}
+                                                courseOptions={allCourseOptions}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Type
+                                            </label>
+                                            <PrerequisiteTypeCell
+                                                control={control}
+                                                disabled={disabled}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                Min Grade
+                                            </label>
+                                            <PrerequisiteMinGradeCell
+                                                control={control}
+                                                disabled={disabled}
+                                                minimumGradeOptions={minimumGradeOptions}
+                                                rowIndex={index}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-                <CommonFormTable<PrerequisiteRow, CourseFormValues>
-                    columns={prerequisiteColumns}
-                    contentClassName="min-w-[44rem] lg:min-w-full"
-                    control={control}
-                    disabled={disabled}
-                    emptyDataMessage="No prerequisites added yet"
-                    fieldArrayName="prerequisites"
-                    rows={prereqFields as unknown as (PrerequisiteRow & { id: string })[]}
-                    tableProps={{
-                        containerClassName: 'min-h-[160px]'
-                    }}
-                    title=""
-                    onAddRow={courseKindCount < allCourseOptions.length
-                        ? handleAddPrerequisite
-                        : undefined}
-                    onRemoveRow={handleRemovePrerequisite}
-                />
             </div>
 
             {/* Stepper Footer / Navigation Controls */}
