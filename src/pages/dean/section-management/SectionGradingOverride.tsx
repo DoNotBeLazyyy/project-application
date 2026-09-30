@@ -242,66 +242,180 @@ export default function SectionGradingOverride({
 
             {/* Always Visible Schema Configuration */}
             <div className="flex flex-col gap-4 pt-1">
-                {/* Mode Toggle Buttons */}
-                {!disabled && (
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                            Override Mode:
-                        </span>
-                        <button
-                            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
-                                overrideMode === 'copy_section'
-                                    ? 'bg-brand-600 text-white shadow-sm'
-                                    : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
-                            }`}
-                            type="button"
-                            onClick={() => handleModeChange('copy_section')}
-                        >
-                            <CopyIcon className="w-3.5 h-3.5" weight="bold" />
-                            Copy from Existing Section
-                        </button>
-                        <button
-                            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
-                                overrideMode === 'custom'
-                                    ? 'bg-brand-600 text-white shadow-sm'
-                                    : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
-                            }`}
-                            type="button"
-                            onClick={() => handleModeChange('custom')}
-                        >
-                            <SlidersIcon className="w-3.5 h-3.5" weight="bold" />
-                            Custom Schema by Period
-                        </button>
-                    </div>
-                )}
-
-                {/* Mode 1: Copy from Section */}
-                {overrideMode === 'copy_section' && (
-                    <div className="flex flex-col gap-2 p-3 rounded-lg bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
-                        <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
-                            <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-                            <span>
-                                Select an existing section below. Its grading components will be cloned into this section matched period by period.
-                            </span>
+                {disabled ? (
+                    /* Read-Only Mode: Show Inherited / Section Grading Schema Breakdown */
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-800 dark:text-blue-200">
+                            <InfoIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <div>
+                                <span className="font-bold">
+                                    {overrideEnabled
+                                        ? 'Custom Section Grading Schema'
+                                        : 'Inherited Academic Year Grading Schema'}
+                                </span>
+                                <p className="mt-0.5 text-blue-700 dark:text-blue-300">
+                                    {overrideEnabled
+                                        ? 'This section uses a custom section-level grading override.'
+                                        : 'Below are the active inherited grading period components and weight settings.'}
+                                </p>
+                            </div>
                         </div>
 
-                        <ValidCommonSelect
-                            control={control}
-                            disabled={disabled}
-                            hasHelper
-                            helperText="Source section to copy grading components from"
-                            label="Source Section"
-                            name="source_section_id"
-                            options={availableSectionOptions}
-                            placeholder="Select source section"
-                            rules={
-                                !disabled && overrideEnabled && overrideMode === 'copy_section'
-                                    ? { required: 'Please select a source section' }
-                                    : undefined
-                            }
-                        />
+                        <div className="flex flex-col gap-3">
+                            {periods.map((period, pIdx) => {
+                                const totalCompWeight = (period.components || []).reduce(
+                                    (sum, c) => sum + (Number(c.weight) || 0),
+                                    0
+                                );
+                                return (
+                                    <div
+                                        className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
+                                        key={period.id || pIdx}
+                                    >
+                                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700 pb-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-6 h-6 rounded-md bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
+                                                    #{period.sequence}
+                                                </span>
+                                                <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                                                    {period.name} Period
+                                                </span>
+                                            </div>
+                                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                Total Weight: {totalCompWeight}%
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                                            {period.components.map((comp, cIdx) => (
+                                                <div
+                                                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-700/60"
+                                                    key={cIdx}
+                                                >
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <span
+                                                            className="rounded-sm shrink-0 size-2.5"
+                                                            style={{ background: componentRailColor(cIdx) }}
+                                                        />
+                                                        <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
+                                                            {comp.name}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-brand-600 dark:text-brand-400 shrink-0 ml-2">
+                                                        {comp.weight}%
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                )}
+                ) : (
+                    /* Edit Mode */
+                    <>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                Override Mode:
+                            </span>
+                            <button
+                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
+                                    overrideMode === 'copy_section'
+                                        ? 'bg-brand-600 text-white shadow-sm'
+                                        : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
+                                }`}
+                                type="button"
+                                onClick={() => handleModeChange('copy_section')}
+                            >
+                                <CopyIcon className="w-3.5 h-3.5" weight="bold" />
+                                Copy from Existing Section
+                            </button>
+                            <button
+                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
+                                    overrideMode === 'custom'
+                                        ? 'bg-brand-600 text-white shadow-sm'
+                                        : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
+                                }`}
+                                type="button"
+                                onClick={() => handleModeChange('custom')}
+                            >
+                                <SlidersIcon className="w-3.5 h-3.5" weight="bold" />
+                                Custom Schema by Period
+                            </button>
+                        </div>
+
+                        {/* Mode 1: Copy from Section */}
+                        {overrideMode === 'copy_section' && (
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2 p-3 rounded-lg bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+                                    <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                        <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
+                                        <span>
+                                            Select an existing section below. Its grading components will be cloned into this section matched period by period.
+                                        </span>
+                                    </div>
+
+                                    <ValidCommonSelect
+                                        control={control}
+                                        disabled={disabled}
+                                        hasHelper
+                                        helperText="Source section to copy grading components from"
+                                        label="Source Section"
+                                        name="source_section_id"
+                                        options={availableSectionOptions}
+                                        placeholder="Select source section"
+                                        rules={
+                                            !disabled && overrideEnabled && overrideMode === 'copy_section'
+                                                ? { required: 'Please select a source section' }
+                                                : undefined
+                                        }
+                                    />
+                                </div>
+
+                                {/* Active Schema Breakdown in Copy Mode */}
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                                        Active Section Grading Schema
+                                    </span>
+                                    <div className="grid grid-cols-1 gap-2.5">
+                                        {periods.map((period, pIdx) => (
+                                            <div
+                                                className="p-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 flex flex-col gap-2"
+                                                key={period.id || pIdx}
+                                            >
+                                                <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/60 pb-1.5">
+                                                    <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                                                        #{period.sequence} {period.name} Period
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                    {period.components.map((comp, cIdx) => (
+                                                        <div
+                                                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-700/60 text-xs"
+                                                            key={cIdx}
+                                                        >
+                                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                                <span
+                                                                    className="rounded-sm shrink-0 size-2"
+                                                                    style={{ background: componentRailColor(cIdx) }}
+                                                                />
+                                                                <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
+                                                                    {comp.name}
+                                                                </span>
+                                                            </div>
+                                                            <span className="font-bold text-brand-600 dark:text-brand-400 shrink-0 ml-1">
+                                                                {comp.weight}%
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                 {/* Mode 2: Custom Grading Periods Schema */}
                 {overrideMode === 'custom' && (
@@ -454,7 +568,9 @@ export default function SectionGradingOverride({
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
+            </>
+        )}
+    </div>
+</div>
     );
 }
