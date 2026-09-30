@@ -11,7 +11,7 @@ import CurriculumTermTable from '@pages/dean/curriculum-map-management/Curriculu
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import CloneCurriculumModal, { CurriculumVersionOption } from '@pages/dean/program-management/CloneCurriculumModal';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
-import ProgramForm from '@pages/dean/program-management/ProgramForm';
+import ProgramWizardModal from '@pages/dean/program-management/ProgramWizardModal';
 import {
     ArrowLeftIcon,
     BookOpenTextIcon,
@@ -786,48 +786,14 @@ export default function ProgramDetailPage() {
             />
 
             {/* Modal: Edit Program Details */}
-            <CommonModal
-                cardProps={{
-                    cardHeaderProps: {
-                        subheader: 'Update basic information and academic requirements for this program.',
-                        title: 'Edit Program'
-                    }
-                }}
-                maxWidth="md"
+            <ProgramWizardModal
+                isCodeDisabled
+                isEditing
+                methods={editProgramMethods}
                 open={isEditProgramOpen}
                 onClose={() => setIsEditProgramOpen(false)}
-            >
-                <div className="flex flex-col gap-4 max-h-[calc(85vh-140px)] overflow-y-auto pr-2">
-                    <ProgramForm
-                        control={editProgramMethods.control}
-                        id={UPDATE_PROGRAM_FORM_ID}
-                        isCodeDisabled
-                        onSubmit={editProgramMethods.handleSubmit(
-                            handleEditProgramSubmit,
-                            handleEditProgramFormError
-                        )}
-                    />
-                    <div className="sticky bottom-0 bg-(--mui-palette-background-paper) py-2 -mb-2 flex gap-2 justify-end border-t border-(--mui-palette-divider)">
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            variant="outlined"
-                            onClick={() => setIsEditProgramOpen(false)}
-                        >
-                            Cancel
-                        </CommonButton>
-                        <CommonButton
-                            disabled={!editProgramMethods.formState.isDirty}
-                            form={UPDATE_PROGRAM_FORM_ID}
-                            size="small"
-                            type="submit"
-                            variant="contained"
-                        >
-                            Save Program
-                        </CommonButton>
-                    </div>
-                </div>
-            </CommonModal>
+                onSubmit={handleEditProgramSubmit}
+            />
 
             {/* Bulk Import CSV Modal */}
             <BulkImportModal<CurriculumMapBulkRow>
