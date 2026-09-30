@@ -10,6 +10,16 @@ interface AnnouncementFilterFormProps extends ComponentPropsForm {
 
 const FIELDS: FormFieldConfig<AnnouncementFilterValues>[] = [
     {
+        label: 'Type',
+        name: 'type',
+        options: [
+            { label: 'All (Announcements & Events)', value: 'All' },
+            { label: 'Announcement', value: 'Announcement' },
+            { label: 'Event', value: 'Event' }
+        ],
+        type: 'select'
+    },
+    {
         label: 'Audience',
         name: 'audience',
         options: [

@@ -109,4 +109,21 @@ export interface AnnouncementSectionOption {
 export interface AnnouncementFilterValues {
     audience: 'All' | AnnouncementAudience;
     is_pinned: 'All' | 'true' | 'false';
+    type: 'All' | CommunicationItemType;
+}
+
+export interface CommunicationListRow {
+    author_name: string | null;
+    content: string;
+    created_at: string;
+    date: string;
+    end_at?: string;
+    id: string;
+    is_pinned?: boolean;
+    item_type: CommunicationItemType;
+    location?: string | null;
+    section_count: number;
+    start_at?: string;
+    target_audience: AnnouncementAudience;
+    total_count: number;
 }

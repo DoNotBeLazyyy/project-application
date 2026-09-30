@@ -1,73 +1,46 @@
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
-import AnnouncementGridCard from '@pages/shared/announcement-management/AnnouncementGridCard';
+import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
-import EventFilterForm from '@pages/shared/event-management/EventFilterForm';
-import EventGridCard from '@pages/shared/event-management/EventGridCard';
-import { useEventTableConfig } from '@pages/shared/event-management/useEventTableConfig';
 import { bulkDeleteAnnouncements, deleteAnnouncement, listAnnouncements } from '@services/announcement.service';
 import { bulkDeleteEvents, deleteEvent, listEvents } from '@services/event.service';
-import { AnnouncementFilterValues, AnnouncementListRow } from '@type/announcement.type';
-import { EventFilterValues, EventListRow } from '@type/event.type';
-import { SortStringDto } from '@type/http.type';
-import { useState } from 'react';
+import { AnnouncementFilterValues, CommunicationListRow } from '@type/announcement.type';
+import { CommonListResDto, SortStringDto } from '@type/http.type';
+import { ServiceResult } from '@type/service.type';
+import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const ANNOUNCEMENT_SORT_COLUMNS: SortColumn[] = [
-    { field: 'title', label: 'Title' },
-    { field: 'created_at', label: 'Posted On' }
+const COMMUNICATION_SORT_COLUMNS: SortColumn[] = [
+    { field: 'date', label: 'Date' },
+    { field: 'title', label: 'Title' }
 ];
 
-const EVENT_SORT_COLUMNS: SortColumn[] = [
-    { field: 'title', label: 'Title' },
-    { field: 'start_at', label: 'Start Date' }
-];
-
-const FILTER_ANNOUNCEMENT_FORM_ID = 'filter-announcement-form';
-const FILTER_EVENT_FORM_ID = 'filter-event-form';
-
-const MANAGEMENT_TABS = [
-    { label: 'Announcements', value: 'announcements' },
-    { label: 'Events', value: 'events' }
-];
+const FILTER_COMMUNICATION_FORM_ID = 'filter-communication-form';
 
 interface AnnouncementManagementProps {
     defaultTab?: 'announcements' | 'events';
 }
 
-export default function AnnouncementManagement({ defaultTab = 'announcements' }: AnnouncementManagementProps) {
+export default function AnnouncementManagement({ defaultTab: _defaultTab }: AnnouncementManagementProps = {}) {
     const navigate = useNavigate();
     const basePath = useAnnouncementBasePath();
-    const [searchParams, setSearchParams] = useSearchParams();
 
-    const currentTab = (searchParams.get('tab') || defaultTab) === 'events' ? 'events' : 'announcements';
+    const [activeFilters, setActiveFilters] = useState<AnnouncementFilterValues | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    // Announcement state
-    const [activeAnnouncementFilters, setActiveAnnouncementFilters] = useState<AnnouncementFilterValues | null>(null);
-    const [isAnnouncementFilterOpen, setIsAnnouncementFilterOpen] = useState(false);
-    const announcementFilterMethods = useForm<AnnouncementFilterValues>({
-        defaultValues: { audience: 'All', is_pinned: 'All' }
+    const filterMethods = useForm<AnnouncementFilterValues>({
+        defaultValues: {
+            audience: 'All',
+            is_pinned: 'All',
+            type: 'All'
+        }
     });
 
-    // Event state
-    const [activeEventFilters, setActiveEventFilters] = useState<EventFilterValues | null>(null);
-    const [isEventFilterOpen, setIsEventFilterOpen] = useState(false);
-    const eventFilterMethods = useForm<EventFilterValues>({
-        defaultValues: { audience: 'All', upcoming_only: 'All' }
-    });
-
-    function handleTabChange(_event: unknown, newTab: string) {
-        setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.set('tab', newTab);
-            return next;
-        });
-    }
+    const rowMapRef = useRef<Map<string, CommunicationListRow>>(new Map());
 
     function handleOpenDetail(id: string) {
         navigate(`${basePath}/${id}`);
@@ -78,212 +51,302 @@ export default function AnnouncementManagement({ defaultTab = 'announcements' }:
     }
 
     const {
-        columnDefs: announcementColumnDefs,
-        tableActionConfig: announcementActionConfig
+        columnDefs,
+        tableActionConfig
     } = useAnnouncementTableConfig({
         onEdit: handleOpenEdit,
         onView: handleOpenDetail
     });
 
-    const {
-        columnDefs: eventColumnDefs,
-        tableActionConfig: eventActionConfig
-    } = useEventTableConfig({
-        onEdit: handleOpenEdit,
-        onView: handleOpenDetail
-    });
-
-    async function fetchAnnouncements(
+    const fetchCommunications = useCallback(async function(
         page: number,
         size: number,
         search: string,
         sort: SortStringDto[]
-    ) {
-        const audience = activeAnnouncementFilters && activeAnnouncementFilters.audience !== 'All'
-            ? activeAnnouncementFilters.audience
+    ): Promise<ServiceResult<CommonListResDto<CommunicationListRow>>> {
+        const filterType = activeFilters?.type ?? 'All';
+        const audience = activeFilters && activeFilters.audience !== 'All'
+            ? activeFilters.audience
             : null;
-        const isPinned = activeAnnouncementFilters?.is_pinned === 'true'
+        const isPinned = activeFilters?.is_pinned === 'true'
             ? true
-            : activeAnnouncementFilters?.is_pinned === 'false'
+            : activeFilters?.is_pinned === 'false'
                 ? false
                 : null;
 
-        return listAnnouncements(page, size, search, sort, audience, isPinned);
+        if (filterType === 'Announcement') {
+            const annSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'created_at' } : s);
+            const res = await listAnnouncements(page, size, search, annSort, audience, isPinned);
+            if (res.error) {
+                return { data: null, error: res.error };
+            }
+
+            const rows: CommunicationListRow[] = (res.data?.data ?? []).map((a) => ({
+                author_name: a.author_name,
+                content: a.content,
+                created_at: a.created_at,
+                date: a.published_at || a.created_at,
+                id: a.id,
+                is_pinned: a.is_pinned,
+                item_type: 'Announcement',
+                section_count: a.section_count,
+                target_audience: a.target_audience,
+                total_count: a.total_count
+            }));
+
+            for (const r of rows) {
+                rowMapRef.current.set(r.id, r);
+            }
+
+            return {
+                data: {
+                    data: rows,
+                    page: res.data?.page ?? page,
+                    size: res.data?.size ?? size,
+                    total_count: res.data?.total_count ?? rows.length
+                },
+                error: null
+            };
+        }
+
+        if (filterType === 'Event') {
+            const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
+            const res = await listEvents(page, size, search, evtSort, audience, false);
+            if (res.error) {
+                return { data: null, error: res.error };
+            }
+
+            const rows: CommunicationListRow[] = (res.data?.data ?? []).map((e) => ({
+                author_name: e.author_name ?? null,
+                content: e.description || '',
+                created_at: e.created_at,
+                date: e.start_at || e.created_at,
+                end_at: e.end_at,
+                id: e.id,
+                item_type: 'Event',
+                location: e.location,
+                section_count: e.section_count,
+                start_at: e.start_at,
+                target_audience: e.target_audience,
+                total_count: e.total_count
+            }));
+
+            for (const r of rows) {
+                rowMapRef.current.set(r.id, r);
+            }
+
+            return {
+                data: {
+                    data: rows,
+                    page: res.data?.page ?? page,
+                    size: res.data?.size ?? size,
+                    total_count: res.data?.total_count ?? rows.length
+                },
+                error: null
+            };
+        }
+
+        // filterType === 'All'
+        const fetchLimit = Math.max(page * size, 50);
+        const annSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'created_at' } : s);
+        const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
+
+        const [annRes, evtRes] = await Promise.all([
+            listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned),
+            isPinned === true
+                ? Promise.resolve({ data: { data: [], page: 1, size: 0, total_count: 0 }, error: null })
+                : listEvents(1, fetchLimit, search, evtSort, audience, false)
+        ]);
+
+        if (annRes.error && evtRes.error) {
+            return { data: null, error: annRes.error || evtRes.error };
+        }
+
+        const annRows: CommunicationListRow[] = (annRes.data?.data ?? []).map((a) => ({
+            author_name: a.author_name,
+            content: a.content,
+            created_at: a.created_at,
+            date: a.published_at || a.created_at,
+            id: a.id,
+            is_pinned: a.is_pinned,
+            item_type: 'Announcement',
+            section_count: a.section_count,
+            target_audience: a.target_audience,
+            total_count: a.total_count
+        }));
+
+        const evtRows: CommunicationListRow[] = (evtRes.data?.data ?? []).map((e) => ({
+            author_name: e.author_name ?? null,
+            content: e.description || '',
+            created_at: e.created_at,
+            date: e.start_at || e.created_at,
+            end_at: e.end_at,
+            id: e.id,
+            item_type: 'Event',
+            location: e.location,
+            section_count: e.section_count,
+            start_at: e.start_at,
+            target_audience: e.target_audience,
+            total_count: e.total_count
+        }));
+
+        const combined = [...annRows, ...evtRows];
+
+        for (const r of combined) {
+            rowMapRef.current.set(r.id, r);
+        }
+
+        const activeSortField = sort[0]?.field || 'date';
+        const activeSortOrder = sort[0]?.order || 'desc';
+
+        combined.sort((a, b) => {
+            let valA: string | number = '';
+            let valB: string | number = '';
+
+            if (activeSortField === 'title') {
+                valA = (a.title || '').toLowerCase();
+                valB = (b.title || '').toLowerCase();
+            } else {
+                if (activeSortOrder === 'desc') {
+                    if (a.is_pinned && !b.is_pinned) return -1;
+                    if (!a.is_pinned && b.is_pinned) return 1;
+                }
+                valA = new Date(a.date || a.created_at).getTime() || 0;
+                valB = new Date(b.date || b.created_at).getTime() || 0;
+            }
+
+            if (valA < valB) return activeSortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return activeSortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        const totalCount = (annRes.data?.total_count ?? 0) + (evtRes.data?.total_count ?? 0);
+        const startIdx = (page - 1) * size;
+        const paginatedRows = combined.slice(startIdx, startIdx + size);
+
+        return {
+            data: {
+                data: paginatedRows,
+                page,
+                size,
+                total_count: totalCount
+            },
+            error: null
+        };
+    }, [activeFilters]);
+
+    async function handleDeleteRow(id: string) {
+        const item = rowMapRef.current.get(id);
+        if (item?.item_type === 'Event') {
+            return deleteEvent(id);
+        }
+        return deleteAnnouncement(id);
     }
 
-    async function fetchEvents(
-        page: number,
-        size: number,
-        search: string,
-        sort: SortStringDto[]
-    ) {
-        const audience = activeEventFilters && activeEventFilters.audience !== 'All'
-            ? activeEventFilters.audience
-            : null;
-        const upcomingOnly = activeEventFilters?.upcoming_only === 'true';
+    async function handleBulkDelete(ids: string[]) {
+        const annIds: string[] = [];
+        const evtIds: string[] = [];
 
-        return listEvents(page, size, search, sort, audience, upcomingOnly);
+        for (const id of ids) {
+            if (rowMapRef.current.get(id)?.item_type === 'Event') {
+                evtIds.push(id);
+            } else {
+                annIds.push(id);
+            }
+        }
+
+        const promises = [];
+        if (annIds.length > 0) {
+            promises.push(bulkDeleteAnnouncements(annIds));
+        }
+        if (evtIds.length > 0) {
+            promises.push(bulkDeleteEvents(evtIds));
+        }
+
+        const results = await Promise.all(promises);
+        const err = results.find((r) => r.error);
+        if (err) {
+            return { data: null, error: err.error };
+        }
+        return { data: true, error: null };
     }
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <CommonTabMenu
-                tabs={MANAGEMENT_TABS}
-                value={currentTab}
-                onChange={handleTabChange}
+            <CommonTableCard<CommunicationListRow>
+                cardHeaderProps={{
+                    subheader: 'Publish announcements and schedule campus events for your community.',
+                    title: 'Announcements & Events'
+                }}
+                controls={{
+                    tableButtonsProps: {
+                        createButtonProps: {
+                            label: 'Create Post',
+                            onClick: function() {
+                                navigate(`${basePath}/new`);
+                            }
+                        }
+                    },
+                    tableInputProps: {
+                        searchHints: SEARCH_HINTS.announcements
+                    }
+                }}
+                dependencies={[activeFilters]}
+                filterModalProps={{
+                    cardProps: {
+                        cardHeaderProps: {
+                            subheader: 'Narrow the list by type, audience, or pinned status.',
+                            title: 'Filter Announcements & Events'
+                        }
+                    },
+                    confirmText: 'Apply Filters',
+                    formContent: (
+                        <AnnouncementFilterForm
+                            control={filterMethods.control}
+                            id={FILTER_COMMUNICATION_FORM_ID}
+                            onSubmit={filterMethods.handleSubmit((values) => {
+                                setActiveFilters(values);
+                                setIsFilterOpen(false);
+                            })}
+                        />
+                    ),
+                    formId: FILTER_COMMUNICATION_FORM_ID,
+                    onClose: function() {
+                        setIsFilterOpen(false);
+                    },
+                    onReset: function() {
+                        filterMethods.reset();
+                        setActiveFilters(null);
+                    },
+                    open: isFilterOpen
+                }}
+                renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
+                    return (
+                        <CommunicationGridCard
+                            isSelected={isSelected}
+                            row={item}
+                            onEdit={handleOpenEdit}
+                            onRequestDelete={onRequestDeleteRow}
+                            onToggleSelect={onToggleSelect}
+                            onView={handleOpenDetail}
+                        />
+                    );
+                }}
+                sortColumns={COMMUNICATION_SORT_COLUMNS}
+                tableActionConfig={tableActionConfig}
+                tableProps={{
+                    hasCheckbox: true,
+                    leadingColumnDefs: columnDefs
+                }}
+                uniqueIdKey="id"
+                onDelete={handleBulkDelete}
+                onDeleteRow={handleDeleteRow}
+                onFetch={fetchCommunications}
+                onFilter={function() {
+                    setIsFilterOpen(true);
+                }}
+                onRowClick={handleOpenDetail}
             />
-
-            {currentTab === 'announcements' ? (
-                <CommonTableCard<AnnouncementListRow>
-                    cardHeaderProps={{
-                        subheader: 'Post announcements and share news with your campus community.',
-                        title: 'Announcements & Events'
-                    }}
-                    controls={{
-                        tableInputProps: {
-                            searchHints: SEARCH_HINTS.announcements
-                        },
-                        tableButtonsProps: {
-                            createButtonProps: {
-                                label: 'Post Announcement',
-                                onClick: function() {
-                                    navigate(`${basePath}/new?type=Announcement`);
-                                }
-                            }
-                        }
-                    }}
-                    dependencies={[activeAnnouncementFilters]}
-                    filterModalProps={{
-                        cardProps: {
-                            cardHeaderProps: {
-                                subheader: 'Narrow the list by audience or pinned status.',
-                                title: 'Filter Announcements'
-                            }
-                        },
-                        confirmText: 'Apply Filters',
-                        formContent: (
-                            <AnnouncementFilterForm
-                                control={announcementFilterMethods.control}
-                                id={FILTER_ANNOUNCEMENT_FORM_ID}
-                                onSubmit={announcementFilterMethods.handleSubmit((values) => {
-                                    setActiveAnnouncementFilters(values);
-                                    setIsAnnouncementFilterOpen(false);
-                                })}
-                            />
-                        ),
-                        formId: FILTER_ANNOUNCEMENT_FORM_ID,
-                        onClose: function() {
-                            setIsAnnouncementFilterOpen(false);
-                        },
-                        onReset: function() {
-                            announcementFilterMethods.reset();
-                            setActiveAnnouncementFilters(null);
-                        },
-                        open: isAnnouncementFilterOpen
-                    }}
-                    renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
-                        return (
-                            <AnnouncementGridCard
-                                isSelected={isSelected}
-                                row={item}
-                                onEdit={handleOpenEdit}
-                                onRequestDelete={onRequestDeleteRow}
-                                onToggleSelect={onToggleSelect}
-                                onView={handleOpenDetail}
-                            />
-                        );
-                    }}
-                    sortColumns={ANNOUNCEMENT_SORT_COLUMNS}
-                    tableActionConfig={announcementActionConfig}
-                    tableProps={{
-                        hasCheckbox: true,
-                        leadingColumnDefs: announcementColumnDefs
-                    }}
-                    uniqueIdKey="id"
-                    onDelete={bulkDeleteAnnouncements}
-                    onDeleteRow={deleteAnnouncement}
-                    onFetch={fetchAnnouncements}
-                    onFilter={function() {
-                        setIsAnnouncementFilterOpen(true);
-                    }}
-                    onRowClick={handleOpenDetail}
-                />
-            ) : (
-                <CommonTableCard<EventListRow>
-                    cardHeaderProps={{
-                        subheader: 'Schedule campus events and keep everyone informed.',
-                        title: 'Announcements & Events'
-                    }}
-                    controls={{
-                        tableInputProps: {
-                            searchHints: SEARCH_HINTS.events
-                        },
-                        tableButtonsProps: {
-                            createButtonProps: {
-                                label: 'Schedule Event',
-                                onClick: function() {
-                                    navigate(`${basePath}/new?type=Event`);
-                                }
-                            }
-                        }
-                    }}
-                    dependencies={[activeEventFilters]}
-                    filterModalProps={{
-                        cardProps: {
-                            cardHeaderProps: {
-                                subheader: 'Narrow the list by audience or timeframe.',
-                                title: 'Filter Events'
-                            }
-                        },
-                        confirmText: 'Apply Filters',
-                        formContent: (
-                            <EventFilterForm
-                                control={eventFilterMethods.control}
-                                id={FILTER_EVENT_FORM_ID}
-                                onSubmit={eventFilterMethods.handleSubmit((values) => {
-                                    setActiveEventFilters(values);
-                                    setIsEventFilterOpen(false);
-                                })}
-                            />
-                        ),
-                        formId: FILTER_EVENT_FORM_ID,
-                        onClose: function() {
-                            setIsEventFilterOpen(false);
-                        },
-                        onReset: function() {
-                            eventFilterMethods.reset();
-                            setActiveEventFilters(null);
-                        },
-                        open: isEventFilterOpen
-                    }}
-                    renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
-                        return (
-                            <EventGridCard
-                                isSelected={isSelected}
-                                row={item}
-                                onEdit={handleOpenEdit}
-                                onRequestDelete={onRequestDeleteRow}
-                                onToggleSelect={onToggleSelect}
-                                onView={handleOpenDetail}
-                            />
-                        );
-                    }}
-                    sortColumns={EVENT_SORT_COLUMNS}
-                    tableActionConfig={eventActionConfig}
-                    tableProps={{
-                        hasCheckbox: true,
-                        leadingColumnDefs: eventColumnDefs
-                    }}
-                    uniqueIdKey="id"
-                    onDelete={bulkDeleteEvents}
-                    onDeleteRow={deleteEvent}
-                    onFetch={fetchEvents}
-                    onFilter={function() {
-                        setIsEventFilterOpen(true);
-                    }}
-                    onRowClick={handleOpenDetail}
-                />
-            )}
         </div>
     );
 }

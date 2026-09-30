@@ -1,5 +1,6 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import EvaluationTemplateFormPanel from '@pages/admin/evaluation-management/EvaluationTemplateForm';
+import EvaluationTemplateViewPanel from '@pages/admin/evaluation-management/EvaluationTemplateViewPanel';
 import { createEvaluationTemplate, getEvaluationTemplateById, updateEvaluationTemplate } from '@services/evaluation.service';
 import { EvaluationTemplateForm } from '@type/evaluation.type';
 import { ServiceResult } from '@type/service.type';
@@ -89,6 +90,9 @@ export default function EvaluationTemplateDetailPage() {
                 create: 'Add Evaluation Section',
                 edit: 'Edit Evaluation Section',
                 view: 'View Evaluation Section'
+            }}
+            renderView={function(values) {
+                return <EvaluationTemplateViewPanel values={values} />;
             }}
             onCreate={createEvaluationTemplate}
             onUpdate={updateEvaluationTemplate}
