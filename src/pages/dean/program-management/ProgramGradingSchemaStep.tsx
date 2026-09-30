@@ -141,9 +141,9 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
     const isTotalValid = totalPeriodWeight === 100;
 
     return (
-        <div className="flex flex-col h-full min-h-0">
-            {/* Fixed Form Header Block (non-scrollable header containing label, status, default/clear buttons, and total weight banner + add period button) */}
-            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm shrink-0 mb-4">
+        <div className="flex flex-col gap-4 w-full">
+            {/* Form Header Block (part of scrollable content containing label, status, default/clear buttons, and total weight banner + add period button) */}
+            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                 {/* Row 1: Title & Description */}
                 <div className="flex items-start gap-3">
                     <div className="p-2.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 shrink-0">
@@ -224,8 +224,8 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                 </div>
             </div>
 
-            {/* Scrollable Period Entries Only */}
-            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-4 w-full pr-1">
+            {/* Period Entries */}
+            <div className="flex flex-col gap-4 w-full">
                 {activePeriods.map((period, pIdx) => {
                     const compTotal = (period.components || []).reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
                     const isCompValid = compTotal === 100;
