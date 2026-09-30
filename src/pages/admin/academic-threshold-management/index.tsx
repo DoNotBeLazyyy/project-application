@@ -41,7 +41,7 @@ const HEADER_SX: SxProps<Theme> = {
     }
 };
 
-const CATEGORIES: ('All' | AcademicThresholdCategory)[] = ['All', 'Honor', 'Scholarship', 'Standing'];
+
 
 function toDraft(item: AcademicThreshold): AcademicThresholdDraft {
     return {
@@ -194,7 +194,7 @@ export default function AcademicThresholdManagement() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [selectedCategory, setSelectedCategory] = useState<'All' | AcademicThresholdCategory>('All');
+
 
     const fetchThresholds = useCallback(async function() {
         setIsLoading(true);
@@ -276,9 +276,9 @@ export default function AcademicThresholdManagement() {
     }
 
     function handleAddThreshold() {
-        const newCategory: AcademicThresholdCategory = selectedCategory !== 'All'
-            ? selectedCategory
-            : 'Honor';
+        const newCategory: AcademicThresholdCategory = 'Honor';
+
+
         const tempId = `temp-${Date.now()}-${Math.random()
             .toString(36)
             .substring(2, 7)}`;
@@ -367,9 +367,9 @@ export default function AcademicThresholdManagement() {
     const filteredDrafts = useMemo(() => {
         let list = [...drafts];
 
-        if (selectedCategory !== 'All') {
-            list = list.filter((item) => item.category === selectedCategory);
-        }
+
+
+
 
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase()
@@ -384,7 +384,7 @@ export default function AcademicThresholdManagement() {
         }
 
         return list;
-    }, [drafts, selectedCategory, searchQuery]);
+    }, [drafts, searchQuery]);
 
     const subheader = isLoading
         ? 'Loading...'
@@ -457,8 +457,8 @@ export default function AcademicThresholdManagement() {
                     <div className="flex flex-col gap-4 p-4">
                         {/* Filter toolbar: Search and Category Pills */}
                         <div className="flex flex-wrap gap-3 items-center justify-between">
-                            <div className="flex flex-wrap gap-1.5 items-center">
-                                {CATEGORIES.map((cat) => {
+                            <div className="hidden">
+                                {null && CATEGORIES.map((cat) => {
                                     const isSelected = selectedCategory === cat;
                                     const count = cat === 'All'
                                         ? drafts.length

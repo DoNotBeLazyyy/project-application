@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
@@ -209,17 +210,41 @@ export default function Step4TransmutationConfig({
                     <thead className="bg-slate-50 dark:bg-zinc-700/50 border-b border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 font-semibold">
                         <tr>
                             <th className="py-3 px-4 w-28">
-                                Mark / Grade <span className="text-red-500">*</span>
+                                <div className="flex items-center gap-1">
+                                    <span>Mark / Grade <span className="text-red-500">*</span></span>
+                                    <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00) or special code (INC, DRP)." size={13} />
+                                </div>
                             </th>
                             <th className="py-3 px-3 w-24">
-                                Min %
+                                <div className="flex items-center gap-1">
+                                    <span>Min %</span>
+                                    <CommonInfoTooltip content="Minimum raw calculated percentage required for this grade mark." size={13} />
+                                </div>
                             </th>
                             <th className="py-3 px-3 w-24">
-                                Max %
+                                <div className="flex items-center gap-1">
+                                    <span>Max %</span>
+                                    <CommonInfoTooltip content="Maximum raw calculated percentage allocated to this grade mark." size={13} />
+                                </div>
                             </th>
-                            <th className="py-3 px-4 w-32 text-center">Status</th>
-                            <th className="py-3 px-3 w-28">Special Code</th>
-                            <th className="py-3 px-4">Description</th>
+                            <th className="py-3 px-4 w-32 text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                    <span>Status</span>
+                                    <CommonInfoTooltip content="Toggles whether this grade mark grants academic credit (Passing vs Failing)." size={13} />
+                                </div>
+                            </th>
+                            <th className="py-3 px-3 w-28">
+                                <div className="flex items-center gap-1">
+                                    <span>Special Code</span>
+                                    <CommonInfoTooltip content="Optional status flag for administrative grades (INC, DRP, W, NFE)." size={13} />
+                                </div>
+                            </th>
+                            <th className="py-3 px-4">
+                                <div className="flex items-center gap-1">
+                                    <span>Description</span>
+                                    <CommonInfoTooltip content="Human-readable descriptor appearing on report cards and evaluation transcripts." size={13} />
+                                </div>
+                            </th>
                             {!disabled && <th className="py-3 px-3 w-16 text-center">Action</th>}
                         </tr>
                     </thead>

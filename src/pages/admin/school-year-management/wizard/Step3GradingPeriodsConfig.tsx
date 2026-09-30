@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CheckCircleIcon,
     InfoIcon,
@@ -429,8 +430,9 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* Name input */}
                                             <div className="flex-1 min-w-[130px]">
-                                                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    Period Name <span className="text-red-500">*</span>
+                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
+                                                    <span>Period Name <span className="text-red-500">*</span></span>
+                                                    <CommonInfoTooltip content="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)." size={13} />
                                                 </label>
                                                 <input
                                                     className={`w-full px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
@@ -453,8 +455,9 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* Weight input */}
                                             <div className="w-full md:w-28">
-                                                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    Weight (%) <span className="text-red-500">*</span>
+                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
+                                                    <span>Weight (%) <span className="text-red-500">*</span></span>
+                                                    <CommonInfoTooltip content="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%." size={13} />
                                                 </label>
                                                 <div className="relative">
                                                     <input
@@ -475,8 +478,9 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* Start Date */}
                                             <div className="w-full md:w-36">
-                                                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    Start Date <span className="text-red-500">*</span>
+                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
+                                                    <span>Start Date <span className="text-red-500">*</span></span>
+                                                    <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
                                                 </label>
                                                 <input
                                                     required
@@ -499,8 +503,9 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* End Date */}
                                             <div className="w-full md:w-36">
-                                                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
-                                                    End Date <span className="text-red-500">*</span>
+                                                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-0.5">
+                                                    <span>End Date <span className="text-red-500">*</span></span>
+                                                    <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
                                                 </label>
                                                 <input
                                                     required

@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -556,8 +557,8 @@ export default function AcademicYearWizardModal({
                                 >
                                     {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
                                 </span>
-                                <div className="truncate">
-                                    <p
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <span
                                         className={`text-xs font-semibold truncate ${
                                             isActive
                                                 ? 'text-brand-600 dark:text-brand-400'
@@ -565,8 +566,10 @@ export default function AcademicYearWizardModal({
                                         }`}
                                     >
                                         {s.title}
-                                    </p>
-                                    <p className="text-[10px] text-slate-400 truncate">{s.subtitle}</p>
+                                    </span>
+                                    <span onClick={(e) => e.stopPropagation()}>
+                                        <CommonInfoTooltip content={s.subtitle} size={14} />
+                                    </span>
                                 </div>
                             </button>
                         );
@@ -576,8 +579,11 @@ export default function AcademicYearWizardModal({
                 {/* Mobile Stepper Header (< 768px) */}
                 <div className="block md:hidden">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
-                            Step {currentStep} of 5: {currentStepConfig?.title}
+                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
+                            <span>Step {currentStep} of 5: {currentStepConfig?.title}</span>
+                            {currentStepConfig?.subtitle && (
+                                <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
+                            )}
                         </span>
                         <span className="text-xs text-slate-400 font-medium">
                             {Math.round((currentStep / 5) * 100)}%

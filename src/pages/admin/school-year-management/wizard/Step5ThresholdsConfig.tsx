@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
@@ -184,8 +185,9 @@ export default function Step5ThresholdsConfig({
                                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                                     {/* Category */}
                                     <div className="sm:col-span-3">
-                                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                            Category <span className="text-red-500">*</span>
+                                        <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                            <span>Category <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)." size={13} />
                                         </label>
                                         <select
                                             className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -209,8 +211,9 @@ export default function Step5ThresholdsConfig({
 
                                     {/* Label */}
                                     <div className="sm:col-span-4">
-                                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                            Threshold Name / Label <span className="text-red-500">*</span>
+                                        <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                            <span>Threshold Name / Label <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Official title revealed on student rank lists, certificates, and academic summary cards." size={13} />
                                         </label>
                                         <input
                                             className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -224,8 +227,9 @@ export default function Step5ThresholdsConfig({
 
                                     {/* Code */}
                                     <div className="sm:col-span-3">
-                                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                            Unique Code
+                                        <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                            <span>Unique Code</span>
+                                            <CommonInfoTooltip content="System identifier code used for automated eligibility queries and SQL rules." size={13} />
                                         </label>
                                         <input
                                             className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-mono text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -248,6 +252,7 @@ export default function Step5ThresholdsConfig({
                                                 onChange={(e) => update(idx, { ...item, is_active: e.target.checked })}
                                             />
                                             <span>Active</span>
+                                            <CommonInfoTooltip content="When active, student evaluations will test against this threshold cutoff." size={13} />
                                         </label>
 
                                         {!disabled && (
@@ -267,8 +272,9 @@ export default function Step5ThresholdsConfig({
                                 <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 items-end">
                                     {/* Min GWA */}
                                     <div className="sm:col-span-3">
-                                        <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                                            Min GWA
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mb-1">
+                                            <span>Min GWA</span>
+                                            <CommonInfoTooltip content="Minimum (best) GWA required for this threshold tier (typically 1.00)." size={13} />
                                         </label>
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -288,8 +294,9 @@ export default function Step5ThresholdsConfig({
 
                                     {/* Max GWA (Cutoff) */}
                                     <div className="sm:col-span-3">
-                                        <label className="block text-[11px] font-semibold text-brand-600 dark:text-brand-400 mb-1">
-                                            Max GWA (Cutoff) <span className="text-red-500">*</span>
+                                        <label className="flex items-center gap-1 text-[11px] font-semibold text-brand-600 dark:text-brand-400 mb-1">
+                                            <span>Max GWA (Cutoff) <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified." size={13} />
                                         </label>
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-brand-300 dark:border-brand-700/60 bg-white dark:bg-zinc-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -304,8 +311,9 @@ export default function Step5ThresholdsConfig({
 
                                     {/* Subject Floor (Min individual subject grade) */}
                                     <div className="sm:col-span-3">
-                                        <label className="block text-[11px] font-medium text-slate-500 mb-1" title="Worst allowed single subject grade (optional)">
-                                            Subject Floor Grade
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mb-1" title="Worst allowed single subject grade (optional)">
+                                            <span>Subject Floor Grade</span>
+                                            <CommonInfoTooltip content="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies." size={13} />
                                         </label>
                                         <input
                                             className="w-full h-8 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
@@ -334,6 +342,7 @@ export default function Step5ThresholdsConfig({
                                                 onChange={(e) => update(idx, { ...item, requires_no_failing: e.target.checked })}
                                             />
                                             <span className="truncate">No failing grades permitted</span>
+                                            <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
                                         </label>
                                     </div>
                                 </div>

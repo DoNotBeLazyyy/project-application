@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonSelect from '@components/select/CommonSelect';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CalendarPlusIcon,
     ClockIcon,
@@ -401,8 +402,9 @@ export default function Step2TermsConfig({
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {/* Term Type Selector */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Term Type <span className="text-red-500">*</span>
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Term Type <span className="text-red-500">*</span></span>
+                                        <CommonInfoTooltip content="Each term must be a unique type (e.g. 1st Semester, 2nd Semester, Summer)." size={14} />
                                     </label>
                                     <CommonSelect
                                         disabled={disabled || isLoadingTypes}
@@ -428,8 +430,9 @@ export default function Step2TermsConfig({
 
                                 {/* Term Start Date */}
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Term Start Date <span className="text-red-500">*</span>
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Term Start Date <span className="text-red-500">*</span></span>
+                                        <CommonInfoTooltip content="Official date when classes begin for this term." size={14} />
                                     </label>
                                     <input
                                         className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
@@ -447,8 +450,9 @@ export default function Step2TermsConfig({
 
                                 {/* Term End Date */}
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Term End Date <span className="text-red-500">*</span>
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Term End Date <span className="text-red-500">*</span></span>
+                                        <CommonInfoTooltip content="Official date when classes conclude for this term." size={14} />
                                     </label>
                                     <input
                                         className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
@@ -466,8 +470,9 @@ export default function Step2TermsConfig({
 
                                 {/* Enrollment Start Date */}
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Enrollment Opens
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Enrollment Opens</span>
+                                        <CommonInfoTooltip content="Date when student course registration and online enrollment opens." size={14} />
                                     </label>
                                     <input
                                         className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
@@ -486,8 +491,9 @@ export default function Step2TermsConfig({
 
                                 {/* Enrollment End Date */}
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Enrollment Closes
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Enrollment Closes</span>
+                                        <CommonInfoTooltip content="Final date for student course registration, late enrollment, and add-drop requests." size={14} />
                                     </label>
                                     <input
                                         className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
@@ -506,8 +512,9 @@ export default function Step2TermsConfig({
 
                                 {/* Grading Submission Deadline */}
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Grading Deadline
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Grading Deadline</span>
+                                        <CommonInfoTooltip content="Final deadline for faculty to encode and submit final grades." size={14} />
                                     </label>
                                     <input
                                         className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
@@ -526,8 +533,9 @@ export default function Step2TermsConfig({
 
                                 {/* Evaluation Scope for this term */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        Faculty Evaluation Scope
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        <span>Faculty Evaluation Scope</span>
+                                        <CommonInfoTooltip content="Override schedule determining whether student evaluation of faculty is conducted per period or per term for this specific term." size={14} />
                                     </label>
                                     <CommonSelect
                                         disabled={disabled}
