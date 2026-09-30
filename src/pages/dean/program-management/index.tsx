@@ -89,7 +89,9 @@ export default function ProgramManagement() {
                 total_units: result.data.total_units ?? '',
                 years_duration: result.data.years_duration ?? '',
                 is_active: result.data.is_active ?? false,
-                description: result.data.description ?? ''
+                description: result.data.description ?? '',
+                override_grading_schema: (result.data as any).override_grading_schema ?? false,
+                grading_periods: (result.data as any).grading_periods ?? []
             });
         }
     }

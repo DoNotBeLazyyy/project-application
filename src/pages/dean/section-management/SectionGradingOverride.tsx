@@ -5,7 +5,6 @@ import { useSectionOptions } from '@pages/dean/section-management/useSectionOpti
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
-    CopyIcon,
     InfoIcon,
     PlusCircleIcon,
     ScalesIcon,
@@ -14,6 +13,7 @@ import {
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { getGradingPeriodTemplates } from '@services/grading-config.service';
+import { getSectionById } from '@services/section.service';
 import { SectionFormValues, SectionGradingPeriodOverride } from '@type/section.type';
 import { componentRailColor } from '@utils/period-allocation.util';
 import { useEffect } from 'react';
@@ -66,15 +66,10 @@ export default function SectionGradingOverride({
     const { sectionOptions } = useSectionOptions();
 
     const overrideEnabled = useWatch({ control, name: 'override_grading_schema' });
-    const overrideMode = useWatch({ control, name: 'grading_override_mode' }) || 'copy_section';
 
     const {
         field: { onChange: onOverrideChange }
     } = useController({ control, name: 'override_grading_schema' });
-
-    const {
-        field: { onChange: onModeChange }
-    } = useController({ control, name: 'grading_override_mode' });
 
     const {
         field: { value: periodsValue, onChange: onPeriodsChange }
@@ -83,6 +78,11 @@ export default function SectionGradingOverride({
     const availableSectionOptions = sectionOptions.filter(
         (option) => option.value !== currentSectionId
     );
+
+    const hasPresets = availableSectionOptions.length > 0;
+    const presetOptions = hasPresets
+        ? availableSectionOptions
+        : [{ label: 'No preset available', value: '' }];
 
     // Initialize default periods whenever empty
     useEffect(function() {
@@ -122,9 +122,13 @@ export default function SectionGradingOverride({
         onPeriodsChange([]);
     }
 
-    function handleModeChange(mode: 'copy_section' | 'custom') {
+    async function handlePresetChange(selectedId: string) {
+        if (!selectedId) return;
         enableOverrideIfNeeded();
-        onModeChange(mode);
+        const res = await getSectionById(selectedId);
+        if (res.data?.grading_periods && res.data.grading_periods.length > 0) {
+            onPeriodsChange(res.data.grading_periods);
+        }
     }
 
     function handleAddComponent(periodIndex: number) {
@@ -202,7 +206,7 @@ export default function SectionGradingOverride({
 
     return (
         <div className="col-span-1 md:col-span-2 flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30">
-            {/* Header & Status */}
+            {/* Header & Status (Indicates if overridden or inheriting academic year defaults) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2.5">
                     <SlidersIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
@@ -222,7 +226,7 @@ export default function SectionGradingOverride({
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
                                 ? 'Custom grading schema override active for this section.'
-                                : 'Default: Inheriting system-wide grading schema. Modifying any value will set section override.'}
+                                : 'Default: Inheriting system-wide grading schema. Modifying any value or selecting a preset will set section override.'}
                         </p>
                     </div>
                 </div>
@@ -240,7 +244,7 @@ export default function SectionGradingOverride({
                 )}
             </div>
 
-            {/* Always Visible Schema Configuration */}
+            {/* Schema Configuration */}
             <div className="flex flex-col gap-4 pt-1">
                 {disabled ? (
                     /* Read-Only Mode: Show Inherited / Section Grading Schema Breakdown */
@@ -313,120 +317,43 @@ export default function SectionGradingOverride({
                         </div>
                     </div>
                 ) : (
-                    /* Edit Mode */
-                    <>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                                Override Mode:
-                            </span>
-                            <button
-                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
-                                    overrideMode === 'copy_section'
-                                        ? 'bg-brand-600 text-white shadow-sm'
-                                        : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
-                                }`}
-                                type="button"
-                                onClick={() => handleModeChange('copy_section')}
-                            >
-                                <CopyIcon className="w-3.5 h-3.5" weight="bold" />
-                                Copy from Existing Section
-                            </button>
-                            <button
-                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
-                                    overrideMode === 'custom'
-                                        ? 'bg-brand-600 text-white shadow-sm'
-                                        : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
-                                }`}
-                                type="button"
-                                onClick={() => handleModeChange('custom')}
-                            >
-                                <SlidersIcon className="w-3.5 h-3.5" weight="bold" />
-                                Custom Schema by Period
-                            </button>
+                    /* Edit Mode: Preset Dropdown & Component Weights */
+                    <div className="flex flex-col gap-4">
+                        {/* Preset Selection Dropdown */}
+                        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 shadow-xs">
+                            <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
+                                <span>
+                                    {hasPresets
+                                        ? 'Select a grading schema preset from an existing section to apply its configuration.'
+                                        : 'No preset available for section grading schemas.'}
+                                </span>
+                            </div>
+
+                            <ValidCommonSelect
+                                control={control}
+                                disabled={disabled || !hasPresets}
+                                hasHelper
+                                helperText={hasPresets ? 'Select a section preset to apply its grading schema' : 'No preset available'}
+                                label="Preset Grading Schema"
+                                name="source_section_id"
+                                options={presetOptions}
+                                placeholder={hasPresets ? 'Select a grading schema preset' : 'No preset available'}
+                                onChange={(e) => {
+                                    handlePresetChange(e.target.value);
+                                }}
+                            />
                         </div>
 
-                        {/* Mode 1: Copy from Section */}
-                        {overrideMode === 'copy_section' && (
-                            <div className="flex flex-col gap-3">
-                                <div className="flex flex-col gap-2 p-3 rounded-lg bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
-                                    <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                        <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-                                        <span>
-                                            Select an existing section below. Its grading components will be cloned into this section matched period by period.
-                                        </span>
-                                    </div>
-
-                                    <ValidCommonSelect
-                                        control={control}
-                                        disabled={disabled}
-                                        hasHelper
-                                        helperText="Source section to copy grading components from"
-                                        label="Source Section"
-                                        name="source_section_id"
-                                        options={availableSectionOptions}
-                                        placeholder="Select source section"
-                                        rules={
-                                            !disabled && overrideEnabled && overrideMode === 'copy_section'
-                                                ? { required: 'Please select a source section' }
-                                                : undefined
-                                        }
-                                    />
-                                </div>
-
-                                {/* Active Schema Breakdown in Copy Mode */}
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                                        Active Section Grading Schema
-                                    </span>
-                                    <div className="grid grid-cols-1 gap-2.5">
-                                        {periods.map((period, pIdx) => (
-                                            <div
-                                                className="p-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 flex flex-col gap-2"
-                                                key={period.id || pIdx}
-                                            >
-                                                <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/60 pb-1.5">
-                                                    <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                                                        #{period.sequence} {period.name} Period
-                                                    </span>
-                                                </div>
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                                    {period.components.map((comp, cIdx) => (
-                                                        <div
-                                                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-700/60 text-xs"
-                                                            key={cIdx}
-                                                        >
-                                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                                <span
-                                                                    className="rounded-sm shrink-0 size-2"
-                                                                    style={{ background: componentRailColor(cIdx) }}
-                                                                />
-                                                                <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
-                                                                    {comp.name}
-                                                                </span>
-                                                            </div>
-                                                            <span className="font-bold text-brand-600 dark:text-brand-400 shrink-0 ml-1">
-                                                                {comp.weight}%
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                {/* Mode 2: Custom Grading Periods Schema */}
-                {overrideMode === 'custom' && (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        {/* Component Weight Configuration Header */}
+                        <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
                             <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
                             <span>
                                 Configure grading components per grading period. Each period's component weights must strictly total <strong>100%</strong>.
                             </span>
                         </div>
 
+                        {/* Period Breakdown Cards */}
                         <div className="flex flex-col gap-4">
                             {periods.map((period, pIdx) => {
                                 const totalCompWeight = (period.components || []).reduce(
@@ -568,9 +495,8 @@ export default function SectionGradingOverride({
                         </div>
                     </div>
                 )}
-            </>
-        )}
-    </div>
-</div>
+            </div>
+        </div>
     );
 }
+

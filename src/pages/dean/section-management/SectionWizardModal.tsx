@@ -337,6 +337,7 @@ export default function SectionWizardModal({
                                 control={control}
                                 disabled={isReadOnly}
                                 isCreate={!sectionId}
+                                setValue={setValue}
                             />
                         )}
 
