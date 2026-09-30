@@ -7,6 +7,7 @@ import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
+    BroomIcon,
     CheckCircleIcon,
     FloppyDiskIcon,
     GraduationCapIcon,
@@ -51,13 +52,23 @@ export default function ProgramWizardModal({
     onSwitchToEdit
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
-    const { control, handleSubmit, trigger } = methods;
+    const { control, handleSubmit, setValue, trigger } = methods;
 
     useEffect(() => {
         if (open) {
             setCurrentStep(initialStep);
         }
     }, [open, initialStep]);
+
+    function handleClearProgramDetails() {
+        setValue('code', '', { shouldDirty: true });
+        setValue('name', '', { shouldDirty: true });
+        setValue('department_id', '', { shouldDirty: true });
+        setValue('program_level_id', '', { shouldDirty: true });
+        setValue('total_units', '', { shouldDirty: true });
+        setValue('years_duration', '', { shouldDirty: true });
+        setValue('description', '', { shouldDirty: true });
+    }
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
@@ -259,12 +270,37 @@ export default function ProgramWizardModal({
             {/* Stepper Step Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
                 {currentStep === 1 && (
-                    <CommonForm
-                        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                        control={control}
-                        fields={fields}
-                        hasHelper
-                    />
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <GraduationCapIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                                    Program Details
+                                </h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    Basic identity & academic duration
+                                </p>
+                            </div>
+                            {!readOnly && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearProgramDetails}
+                                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer self-start sm:self-auto"
+                                    title="Clear Program Details"
+                                >
+                                    <BroomIcon className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Clear</span>
+                                </button>
+                            )}
+                        </div>
+
+                        <CommonForm
+                            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                            control={control}
+                            fields={fields}
+                            hasHelper
+                        />
+                    </div>
                 )}
 
                 {currentStep === 2 && (
