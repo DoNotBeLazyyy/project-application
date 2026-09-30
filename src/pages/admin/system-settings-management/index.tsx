@@ -3,7 +3,7 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { CameraIcon, HardDrivesIcon, TrashIcon } from '@phosphor-icons/react';
+import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
@@ -24,16 +24,6 @@ const MONTH_OPTIONS = [
     { label: 'October', value: '10' },
     { label: 'November', value: '11' },
     { label: 'December', value: '12' }
-];
-
-const BUCKET_ROWS: { bucket: string; label: string; use: string }[] = [
-    { bucket: 'materials', label: 'Materials', use: 'Faculty learning materials (slides, PDFs)' },
-    { bucket: 'submissions', label: 'Submissions', use: 'Student homework & assessment file answers' },
-    { bucket: 'discussions', label: 'Discussions', use: 'Attachments on discussion thread posts' },
-    { bucket: 'announcements', label: 'Announcements', use: 'Images & documents on announcements' },
-    { bucket: 'events', label: 'Events', use: 'Cover images on campus events' },
-    { bucket: 'avatars', label: 'Avatars', use: 'User profile photos' },
-    { bucket: 'logos', label: 'Logos', use: 'Institution logo (managed above)' }
 ];
 
 const SETTINGS_FORM_ID = 'system-settings-form';
@@ -338,41 +328,6 @@ export default function SystemSettings() {
                         hasHelper
                     />
                 </form>
-
-                <div className="border border-(--mui-palette-divider) rounded-lg">
-                    <div className="border-b border-(--mui-palette-divider) flex gap-3 items-center px-4 py-3">
-                        <HardDrivesIcon
-                            className="shrink-0 text-(--mui-palette-text-secondary)"
-                            size={18}
-                        />
-                        <div className="flex flex-col">
-                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                                Storage Buckets
-                            </h2>
-                            <p className="text-(--mui-palette-text-secondary) text-xs">
-                                Read-only reference — shows each bucket and what it stores. Manage
-                                bucket size limits and file-type rules in Supabase Storage settings.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="divide-y divide-(--mui-palette-divider)">
-                        {BUCKET_ROWS.map(function(row) {
-                            return (
-                                <div
-                                    className="flex items-center gap-3 px-4 py-2.5"
-                                    key={row.bucket}
-                                >
-                                    <span className="bg-(--mui-palette-primary-50) font-mono px-2 py-0.5 rounded text-(--mui-palette-primary-main) text-xs w-28 shrink-0">
-                                        {row.bucket}
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        {row.use}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
             </div>
         </CommonCard>
     );
