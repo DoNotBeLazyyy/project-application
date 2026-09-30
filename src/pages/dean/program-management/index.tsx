@@ -3,8 +3,8 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import ProgramFilterForm from '@pages/dean/program-management/ProgramFilterForm';
-import ProgramForm from '@pages/dean/program-management/ProgramForm';
 import ProgramGridCard from '@pages/dean/program-management/ProgramGridCard';
+import ProgramWizardModal from '@pages/dean/program-management/ProgramWizardModal';
 import { useProgramTableConfig } from '@pages/dean/program-management/useProgramTableConfig';
 import {
     bulkCreatePrograms, bulkDeletePrograms, createProgram, deleteProgram, getProgramById, listPrograms, updateProgram
@@ -182,30 +182,6 @@ export default function ProgramManagement() {
                         }
                     }
                 }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Fill in the details to create a new program.',
-                            title: 'Create Program'
-                        }
-                    },
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <ProgramForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            onSubmit={createMethods.handleSubmit(
-                                handleCreateSubmit,
-                                handleCreateFormError
-                            )}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
-                    }
-                }}
                 dependencies={[activeFilters]}
                 filterModalProps={{
                     cardProps: {
@@ -248,36 +224,6 @@ export default function ProgramManagement() {
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update the details of this program.',
-                            title: 'Edit Program'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
-                        <ProgramForm
-                            control={updateMethods.control}
-                            id={UPDATE_FORM_ID}
-                            isCodeDisabled
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                handleUpdateFormError
-                            )}
-                        />
-                    ),
-                    isDirty: updateMethods.formState.isDirty,
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
-                }}
-
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
@@ -310,6 +256,27 @@ export default function ProgramManagement() {
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
                 }}
+            />
+
+            {/* Create Program Wizard Modal */}
+            <ProgramWizardModal
+                open={isCreateOpen}
+                methods={createMethods}
+                onClose={() => {
+                    createMethods.reset(defaultFormValues);
+                    setIsCreateOpen(false);
+                }}
+                onSubmit={handleCreateSubmit}
+            />
+
+            {/* Edit Program Wizard Modal */}
+            <ProgramWizardModal
+                open={isUpdateOpen}
+                isEditing
+                isCodeDisabled
+                methods={updateMethods}
+                onClose={handleCloseUpdate}
+                onSubmit={handleUpdateSubmit}
             />
         </div>
     );

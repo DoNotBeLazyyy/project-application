@@ -237,25 +237,19 @@ interface CourseFormProps extends ComponentPropsForm {
 
 export const COURSE_FORM_STEPS = [
     {
-        id: 1,
+        step: 1,
         title: 'Overview Data',
-        label: 'Overview Data',
-        subtitle: 'General info, course title, code & department',
-        icon: FileTextIcon
+        subtitle: 'General info, course title, code, and department ownership.'
     },
     {
-        id: 2,
+        step: 2,
         title: 'Course Type',
-        label: 'Course Type',
-        subtitle: 'Course type units & credit hours breakdown',
-        icon: BookOpenIcon
+        subtitle: 'Course type units and credit hours breakdown.'
     },
     {
-        id: 3,
+        step: 3,
         title: 'Prerequisite',
-        label: 'Prerequisite',
-        subtitle: 'Required subjects & standing prerequisites',
-        icon: GitForkIcon
+        subtitle: 'Required subjects, co-requisite subjects, and standing requirements.'
     }
 ];
 
@@ -316,7 +310,7 @@ export default function CourseForm({
     const totalUnits = courseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0);
     const totalCreditHours = courseTypes.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0);
 
-    const currentStepConfig = STEPS.find((s) => s.id === activeStep) || STEPS[0];
+    const currentStepConfig = STEPS.find((s) => s.step === activeStep);
 
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
@@ -403,41 +397,41 @@ export default function CourseForm({
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Standard Academic Year Modal Stepper Progress Bar Header */}
-            <div className="border border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 p-3 rounded-xl shrink-0">
+            {/* Stepper Progress Bar Header (Academic Year Wizard Layout & Design) */}
+            <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0 -mx-6 -mt-6 mb-2">
                 {/* Desktop Stepper (>= 768px) */}
                 <div className="hidden md:grid grid-cols-3 gap-2">
                     {STEPS.map((s) => {
-                        const isActive = activeStep === s.id;
-                        const isDone = activeStep > s.id;
+                        const isActive = activeStep === s.step;
+                        const isDone = activeStep > s.step;
 
                         return (
                             <button
-                                key={s.id}
-                                className={`flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all ${
+                                key={s.step}
+                                className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
                                     isActive
-                                        ? 'bg-white dark:bg-zinc-800 shadow-xs border border-blue-300 dark:border-blue-700/60'
+                                        ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
                                         : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
                                 }`}
                                 type="button"
-                                onClick={() => setActiveStep(s.id)}
+                                onClick={() => setActiveStep(s.step)}
                             >
                                 <span
                                     className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
                                         isActive
-                                            ? 'bg-blue-600 text-white'
+                                            ? 'bg-brand-600 text-white'
                                             : isDone
                                             ? 'bg-emerald-500 text-white'
                                             : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
                                     }`}
                                 >
-                                    {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.id}
+                                    {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
                                 </span>
                                 <div className="flex items-center gap-1.5 min-w-0">
                                     <span
                                         className={`text-xs font-semibold truncate ${
                                             isActive
-                                                ? 'text-blue-600 dark:text-blue-400'
+                                                ? 'text-brand-600 dark:text-brand-400'
                                                 : 'text-slate-700 dark:text-slate-300'
                                         }`}
                                     >
@@ -455,7 +449,7 @@ export default function CourseForm({
                 {/* Mobile Stepper Header (< 768px) */}
                 <div className="block md:hidden">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
                             <span>Step {activeStep} of 3: {currentStepConfig?.title}</span>
                             {currentStepConfig?.subtitle && (
                                 <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
@@ -468,7 +462,7 @@ export default function CourseForm({
                     {/* Progress Bar Line */}
                     <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
                         <div
-                            className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+                            className="bg-brand-600 h-full transition-all duration-300 rounded-full"
                             style={{ width: `${(activeStep / 3) * 100}%` }}
                         />
                     </div>
@@ -479,7 +473,7 @@ export default function CourseForm({
             <div className={activeStep === 1 ? 'flex flex-col gap-4' : 'hidden'}>
                 <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <FileTextIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <FileTextIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                         Overview Data
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -501,14 +495,14 @@ export default function CourseForm({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <BookOpenIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <BookOpenIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                 Course Type Breakdown
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                                 Configure units and credit hours for each course type component.
                             </p>
                         </div>
-                        <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 self-start sm:self-auto">
+                        <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800 self-start sm:self-auto">
                             <span>Total Units: <strong>{totalUnits}</strong></span>
                             <span>•</span>
                             <span>Total Credit Hours: <strong>{totalCreditHours}</strong></span>
@@ -543,7 +537,7 @@ export default function CourseForm({
                                 >
                                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                            <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">
+                                            <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
                                                 {index + 1}
                                             </span>
                                             Course Type #{index + 1}
@@ -621,7 +615,7 @@ export default function CourseForm({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div>
                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <GitForkIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <GitForkIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                 Prerequisites
                             </h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -673,7 +667,7 @@ export default function CourseForm({
                                 >
                                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                            <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px]">
+                                            <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">
                                                 {index + 1}
                                             </span>
                                             Prerequisite #{index + 1}
@@ -742,8 +736,8 @@ export default function CourseForm({
                 </div>
             </div>
 
-            {/* Stepper Footer / Navigation Controls (Academic Year Modal Format) */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+            {/* Sticky Bottom Action Bar (Academic Year Modal Layout & Design) */}
+            <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10 -mx-6 -mb-6 mt-4">
                 <CommonButton
                     color="inherit"
                     disabled={activeStep === 1}
@@ -759,7 +753,7 @@ export default function CourseForm({
                     Step {activeStep} of 3 — {currentStepConfig?.title}
                 </div>
 
-                <div>
+                <div className="flex items-center gap-2">
                     {activeStep < 3 && (
                         <CommonButton
                             color="primary"
