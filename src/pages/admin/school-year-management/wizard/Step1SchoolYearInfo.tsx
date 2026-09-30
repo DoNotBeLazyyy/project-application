@@ -3,10 +3,19 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { CopySimpleIcon, InfoIcon, ShieldCheckIcon } from '@phosphor-icons/react';
-import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
+import {
+    ArrowCounterClockwiseIcon,
+    CopySimpleIcon,
+    InfoIcon,
+    PlusIcon,
+    ShieldCheckIcon,
+    SparkleIcon,
+    SunIcon,
+    TrashIcon
+} from '@phosphor-icons/react';
+import { AcademicYearWizardFormValues, CalendarExceptionType, SchoolYearOption, WizardCalendarExceptionItem } from '@type/school-year.type';
 import { useEffect, useRef } from 'react';
-import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
+import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
     checkSchoolYearCodeConflict,
     checkSchoolYearDateConflict,
@@ -14,6 +23,7 @@ import {
     ExistingSchoolYearComparison,
     generateAcademicYearCode,
     generateAcademicYearLabel,
+    generatePresetHolidays,
     SourceSchoolYearInfo
 } from './wizard.constants';
 import AcademicYearTimelinePreview from './AcademicYearTimelinePreview';
@@ -48,6 +58,28 @@ export default function Step1SchoolYearInfo({
     const code = useWatch({ control, name: 'code' });
     const label = useWatch({ control, name: 'label' });
     const terms = useWatch({ control, name: 'terms' }) || [];
+
+    const { fields: holidayFields, append: appendHoliday, remove: removeHoliday, update: updateHoliday } = useFieldArray({
+        control,
+        name: 'holidays'
+    });
+    const watchedHolidays = useWatch({ control, name: 'holidays' }) || [];
+
+    function handleAddHoliday() {
+        appendHoliday({
+            title: '',
+            exception_type: 'Holiday',
+            start_date: startDate || '',
+            end_date: startDate || '',
+            affects_attendance: true,
+            description: ''
+        });
+    }
+
+    function handleLoadPresetHolidays() {
+        const presets = generatePresetHolidays(startDate, endDate);
+        setValue('holidays', presets, { shouldDirty: true });
+    }
 
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
@@ -186,8 +218,8 @@ export default function Step1SchoolYearInfo({
                 </div>
             )}
 
-            {/* Schedule Timeline Preview */}
-            <AcademicYearTimelinePreview endDate={endDate} startDate={startDate} terms={terms} />
+            {/* Schedule & Holiday Overlay Timeline Preview */}
+            <AcademicYearTimelinePreview endDate={endDate} holidays={watchedHolidays} startDate={startDate} terms={terms} />
 
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -352,6 +384,158 @@ export default function Step1SchoolYearInfo({
                     disabled={disabled}
                     name="is_active"
                 />
+            </div>
+
+            {/* Calendar Exceptions & Holiday Overlays Section */}
+            <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/80 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
+                            <SunIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                            <span>Calendar Exceptions & Holiday Overlays</span>
+                            <CommonInfoTooltip content="Declare national holidays, academic breaks, emergency suspensions, and special class days. These exceptions overlay onto the academic year schedule and adjust attendance expectations." size={14} />
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Manage institution holidays, holiday breaks, special non-working days, and class suspensions.
+                        </p>
+                    </div>
+
+                    {!disabled && (
+                        <div className="flex items-center gap-2 shrink-0">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                startIcon={<SparkleIcon className="w-3.5 h-3.5 text-amber-500" />}
+                                variant="outlined"
+                                onClick={handleLoadPresetHolidays}
+                            >
+                                Load Standard Holidays
+                            </CommonButton>
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                variant="contained"
+                                onClick={handleAddHoliday}
+                            >
+                                Add Exception
+                            </CommonButton>
+                        </div>
+                    )}
+                </div>
+
+                {/* Holiday Cards Grid */}
+                {holidayFields.length === 0 ? (
+                    <div className="p-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-zinc-700/60 bg-slate-50/40 dark:bg-zinc-900/20 text-slate-500 text-xs">
+                        No calendar exceptions or holidays added yet. Click &quot;Load Standard Holidays&quot; to auto-populate default national holidays and academic breaks.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {holidayFields.map((item, idx) => {
+                            const currentH = watchedHolidays[idx] || item;
+                            return (
+                                <div
+                                    key={item.id}
+                                    className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700/70 bg-slate-50/50 dark:bg-zinc-900/40 space-y-3 relative group"
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <input
+                                            className="font-semibold text-xs text-slate-900 dark:text-slate-100 bg-transparent border-b border-slate-300 dark:border-zinc-700 focus:outline-none focus:border-brand-500 px-1 py-0.5 w-full"
+                                            disabled={disabled}
+                                            placeholder="Holiday / Exception Title (e.g. Independence Day)"
+                                            type="text"
+                                            value={currentH.title || ''}
+                                            onChange={(e) => {
+                                                updateHoliday(idx, { ...currentH, title: e.target.value });
+                                            }}
+                                        />
+
+                                        {!disabled && (
+                                            <button
+                                                className="text-slate-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shrink-0"
+                                                title="Remove Holiday"
+                                                type="button"
+                                                onClick={() => removeHoliday(idx)}
+                                            >
+                                                <TrashIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-500 block mb-0.5">Type</label>
+                                            <select
+                                                aria-label="Select exception type"
+                                                className="w-full h-8 px-2 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                                disabled={disabled}
+                                                value={currentH.exception_type || 'Holiday'}
+                                                onChange={(e) => {
+                                                    updateHoliday(idx, {
+                                                        ...currentH,
+                                                        exception_type: e.target.value as CalendarExceptionType
+                                                    });
+                                                }}
+                                            >
+                                                <option value="Holiday">Holiday</option>
+                                                <option value="Break">Break</option>
+                                                <option value="Suspension">Suspension</option>
+                                                <option value="Special Class">Special Class</option>
+                                                <option value="Exam Day">Exam Day</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-500 block mb-0.5">Affects Attendance</label>
+                                            <label className="flex items-center gap-1.5 h-8 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                                <input
+                                                    checked={Boolean(currentH.affects_attendance)}
+                                                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                                                    disabled={disabled}
+                                                    type="checkbox"
+                                                    onChange={(e) => {
+                                                        updateHoliday(idx, {
+                                                            ...currentH,
+                                                            affects_attendance: e.target.checked
+                                                        });
+                                                    }}
+                                                />
+                                                <span>Class Suspended</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-500 block mb-0.5">Start Date</label>
+                                            <input
+                                                className="w-full h-8 px-2 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                                disabled={disabled}
+                                                type="date"
+                                                value={currentH.start_date || ''}
+                                                onChange={(e) => {
+                                                    updateHoliday(idx, { ...currentH, start_date: e.target.value });
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-500 block mb-0.5">End Date</label>
+                                            <input
+                                                className="w-full h-8 px-2 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                                disabled={disabled}
+                                                type="date"
+                                                value={currentH.end_date || ''}
+                                                onChange={(e) => {
+                                                    updateHoliday(idx, { ...currentH, end_date: e.target.value });
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

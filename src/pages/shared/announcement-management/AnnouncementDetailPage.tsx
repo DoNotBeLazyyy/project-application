@@ -8,6 +8,7 @@ import { createEvent, getEventById, updateEvent } from '@services/event.service'
 import { CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
+import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
@@ -159,6 +160,7 @@ export default function AnnouncementDetailPage() {
     async function handleCreate(values: CommunicationFormValues) {
         const audience = values.target_audience || 'Global';
         const sectionIds = audience === 'Section' ? sanitizeUuidArray(values.section_ids ?? []) : [];
+        const currentRole = getRoleFromPath(pathname);
 
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';
@@ -173,7 +175,7 @@ export default function AnnouncementDetailPage() {
                 target_audience: audience,
                 title: values.title
             };
-            return createEvent(eventPayload);
+            return createEvent(eventPayload, currentRole);
         }
 
         const body = values.content || values.description || '';
@@ -185,7 +187,7 @@ export default function AnnouncementDetailPage() {
             section_ids: sectionIds,
             target_audience: audience,
             title: values.title
-        });
+        }, currentRole);
     }
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {

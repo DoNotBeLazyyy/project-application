@@ -1,5 +1,4 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { AnnouncementAudience } from '@type/announcement.type';
 import { EventDetail, EventFeedRow, EventFormValues, EventListRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -11,12 +10,14 @@ export async function listEvents(
     search: string,
     sort: SortStringDto[],
     audience: string | null,
-    upcomingOnly: boolean
+    upcomingOnly: boolean,
+    role?: string | null
 ): Promise<ServiceResult<CommonListResDto<EventListRow>>> {
     return callRpc<CommonListResDto<EventListRow>>('fn_list_events_json', {
         p_audience: audience || null,
         p_mine_only: false,
         p_page: page,
+        p_role: role || null,
         p_search: search || null,
         p_size: size,
         p_sort: sort.length > 0
@@ -45,7 +46,8 @@ export async function getEventById(
 }
 
 export async function createEvent(
-    params: EventFormValues
+    params: EventFormValues,
+    role?: string | null
 ): Promise<ServiceResult<null>> {
     const audience = params.target_audience || 'Global';
     const sectionIds = audience === 'Section' && params.section_ids && params.section_ids.length > 0
@@ -61,6 +63,7 @@ export async function createEvent(
         p_description: params.description || null,
         p_end_at: params.end_at || null,
         p_location: params.location || null,
+        p_role: role || null,
         p_section_ids: sectionIds,
         p_start_at: nullIfBlank(params.start_at),
         p_title: params.title

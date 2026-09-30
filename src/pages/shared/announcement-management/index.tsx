@@ -12,7 +12,8 @@ import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getRoleFromPath } from '@utils/role-path.util';
 
 const COMMUNICATION_SORT_COLUMNS: SortColumn[] = [
     { field: 'date', label: 'Date' },
@@ -58,6 +59,8 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         onView: handleOpenDetail
     });
 
+    const currentRole = getRoleFromPath(pathname);
+
     const fetchCommunications = useCallback(async function(
         page: number,
         size: number,
@@ -76,7 +79,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
 
         if (filterType === 'Announcement') {
             const annSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'created_at' } : s);
-            const res = await listAnnouncements(page, size, search, annSort, audience, isPinned);
+            const res = await listAnnouncements(page, size, search, annSort, audience, isPinned, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
             }
@@ -130,7 +133,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
 
         if (filterType === 'Event') {
             const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
-            const res = await listEvents(page, size, search, evtSort, audience, false);
+            const res = await listEvents(page, size, search, evtSort, audience, false, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
             }
@@ -191,10 +194,10 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
 
         const [annRes, evtRes] = await Promise.all([
-            listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned),
+            listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned, currentRole),
             isPinned === true
                 ? Promise.resolve({ data: null, error: null })
-                : listEvents(1, fetchLimit, search, evtSort, audience, false)
+                : listEvents(1, fetchLimit, search, evtSort, audience, false, currentRole)
         ]);
 
         if (annRes.error && evtRes.error) {

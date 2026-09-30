@@ -762,4 +762,60 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
     return `Academic Year ${startYear}-${endYear}`;
 }
 
+export function generatePresetHolidays(syStart?: string, syEnd?: string) {
+    const startYear = parseYearFromDate(syStart || '') || new Date().getFullYear();
+    const endYear = parseYearFromDate(syEnd || '') || startYear + 1;
+
+    return [
+        {
+            title: 'All Saints & Souls Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-11-01`,
+            end_date: `${startYear}-11-02`,
+            affects_attendance: true,
+            description: 'National Regular & Special Non-Working Holidays'
+        },
+        {
+            title: 'Bonifacio Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${startYear}-11-30`,
+            end_date: `${startYear}-11-30`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Christmas & Year-End Academic Break',
+            exception_type: 'Break' as const,
+            start_date: `${startYear}-12-20`,
+            end_date: `${endYear}-01-03`,
+            affects_attendance: true,
+            description: 'Institutional Holiday Recess & New Year Break'
+        },
+        {
+            title: 'Maundy Thursday & Good Friday',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-04-09`,
+            end_date: `${endYear}-04-10`,
+            affects_attendance: true,
+            description: 'Holy Week Regular National Holidays'
+        },
+        {
+            title: 'Labor Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-05-01`,
+            end_date: `${endYear}-05-01`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        },
+        {
+            title: 'Independence Day',
+            exception_type: 'Holiday' as const,
+            start_date: `${endYear}-06-12`,
+            end_date: `${endYear}-06-12`,
+            affects_attendance: true,
+            description: 'Regular National Holiday'
+        }
+    ];
+}
+
 

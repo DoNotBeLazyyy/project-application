@@ -79,6 +79,7 @@ export default function AcademicYearWizardModal({
         code: '',
         end_date: '',
         evaluation_scope: 'Period',
+        holidays: [],
         id: null,
         is_active: false,
         label: '',
@@ -164,6 +165,7 @@ export default function AcademicYearWizardModal({
                             code: data.code || '',
                             end_date: data.end_date || '',
                             evaluation_scope: data.evaluation_scope || 'Period',
+                            holidays: data.holidays || [],
                             id: data.id,
                             is_active: Boolean(data.is_active),
                             label: data.label || '',
@@ -302,14 +304,21 @@ export default function AcademicYearWizardModal({
             }))
         }));
 
+        const updatedHolidays = (values.holidays || []).map((h) => ({
+            ...h,
+            start_date: shiftDateByOneYear(h.start_date),
+            end_date: shiftDateByOneYear(h.end_date)
+        }));
+
         setValue('start_date', newStart, { shouldDirty: true });
         setValue('end_date', newEnd, { shouldDirty: true });
         setValue('code', newCode, { shouldDirty: true });
         setValue('label', newLabel, { shouldDirty: true });
         setValue('terms', updatedTerms, { shouldDirty: true });
+        setValue('holidays', updatedHolidays, { shouldDirty: true });
 
         useToastStore.getState().showToast(
-            'Rolled forward all dates (School Year, Terms, Enrollment Windows, Grading Periods) by +1 Year.',
+            'Rolled forward all dates (School Year, Terms, Enrollment Windows, Grading Periods, Holidays & Exceptions) by +1 Year.',
             'success'
         );
     }
@@ -455,7 +464,16 @@ export default function AcademicYearWizardModal({
                     special_code: r.special_code ? r.special_code.trim() : null,
                     description: r.description ? r.description.trim() : null
                 };
-            })
+            }),
+            p_holidays: (values.holidays || []).map((h) => ({
+                id: h.id,
+                title: (h.title || '').trim(),
+                exception_type: h.exception_type || 'Holiday',
+                start_date: h.start_date,
+                end_date: h.end_date,
+                affects_attendance: Boolean(h.affects_attendance),
+                description: h.description ? h.description.trim() : null
+            }))
         };
 
         const res = await saveAcademicYearCalendar(payload);

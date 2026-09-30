@@ -16,13 +16,15 @@ export async function listAnnouncements(
     search: string,
     sort: SortStringDto[],
     audience: string | null,
-    isPinned: boolean | null
+    isPinned: boolean | null,
+    role?: string | null
 ): Promise<ServiceResult<CommonListResDto<AnnouncementListRow>>> {
     return callRpc<CommonListResDto<AnnouncementListRow>>('fn_list_announcements_json', {
         p_audience: audience || null,
         p_is_pinned: isPinned,
         p_mine_only: false,
         p_page: page,
+        p_role: role || null,
         p_search: search || null,
         p_size: size,
         p_sort: sort.length > 0
@@ -68,7 +70,8 @@ export async function getAnnouncementSectionOptions(): Promise<ServiceResult<Ann
 }
 
 export async function createAnnouncement(
-    params: AnnouncementFormValues
+    params: AnnouncementFormValues,
+    role?: string | null
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_announcement', {
         p_attachments: params.attachments && params.attachments.length > 0
@@ -78,6 +81,7 @@ export async function createAnnouncement(
         p_content: params.content,
         p_expires_at: params.expires_at || null,
         p_is_pinned: params.is_pinned,
+        p_role: role || null,
         p_section_ids: params.target_audience === 'Section'
             ? sanitizeUuidArray(params.section_ids)
             : null,

@@ -83,6 +83,18 @@ export interface WizardThresholdItem {
     is_active: boolean;
 }
 
+export type CalendarExceptionType = 'Holiday' | 'Break' | 'Suspension' | 'Special Class' | 'Exam Day';
+
+export interface WizardCalendarExceptionItem {
+    id?: string;
+    title: string;
+    exception_type: CalendarExceptionType;
+    start_date: string;
+    end_date: string;
+    affects_attendance: boolean;
+    description?: string | null;
+}
+
 export interface AcademicYearCalendarDetails {
     id: string;
     code: string;
@@ -95,6 +107,7 @@ export interface AcademicYearCalendarDetails {
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
     thresholds: WizardThresholdItem[];
+    holidays?: WizardCalendarExceptionItem[];
 }
 
 export interface SaveAcademicYearCalendarPayload {
@@ -109,6 +122,7 @@ export interface SaveAcademicYearCalendarPayload {
     p_thresholds?: WizardThresholdItem[];
     p_max_units_per_term?: number;
     p_evaluation_scope?: EvaluationScope;
+    p_holidays?: WizardCalendarExceptionItem[];
 }
 
 export interface AcademicYearWizardFormValues {
@@ -123,6 +137,7 @@ export interface AcademicYearWizardFormValues {
     terms: WizardTermItem[];
     transmutation_rows: WizardTransmutationRow[];
     thresholds: WizardThresholdItem[];
+    holidays?: WizardCalendarExceptionItem[];
 }
 
 export interface AcademicYearHistoryItem {
@@ -147,9 +162,11 @@ export interface AcademicYearHistoryItem {
         terms_count?: number;
         transmutation_rows_count?: number;
         thresholds_count?: number;
+        holidays_count?: number;
         terms?: WizardTermItem[];
         transmutation_rows?: WizardTransmutationRow[];
         thresholds?: WizardThresholdItem[];
+        holidays?: WizardCalendarExceptionItem[];
     };
     changes?: Record<string, any> | null;
 }
