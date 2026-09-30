@@ -101,7 +101,7 @@ export default function RegistrarDashboard() {
                 title="Dashboard"
             />
 
-            <div className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                 {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}

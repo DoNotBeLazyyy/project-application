@@ -154,7 +154,7 @@ export default function StudentDashboard() {
                 </div>
             )}
 
-            <div className="gap-4 grid grid-cols-1 md:grid-cols-3">
+            <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-3">
                 {STAT_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}

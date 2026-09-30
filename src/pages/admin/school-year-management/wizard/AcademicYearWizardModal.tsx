@@ -7,6 +7,7 @@ import {
     CalendarDotsIcon,
     CheckCircleIcon,
     ClockCounterClockwiseIcon,
+    FastForwardIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
     XIcon
@@ -35,8 +36,11 @@ import {
     DEFAULT_ACADEMIC_THRESHOLDS,
     DEFAULT_TRANSMUTATION_ROWS,
     ExistingSchoolYearComparison,
-    SourceSchoolYearInfo,
+    generateAcademicYearCode,
+    generateAcademicYearLabel,
     isSpecialGradeRow,
+    shiftDateByOneYear,
+    SourceSchoolYearInfo,
     validateGradingPeriods,
     validateStep1SchoolYear,
     validateTerms,
@@ -270,6 +274,46 @@ export default function AcademicYearWizardModal({
         return true;
     }
 
+    function handleRollForwardOneYear() {
+        const values = getValues();
+        const newStart = shiftDateByOneYear(values.start_date);
+        const newEnd = shiftDateByOneYear(values.end_date);
+
+        let newCode = values.code;
+        let newLabel = values.label;
+        if (newStart && newEnd) {
+            const autoCode = generateAcademicYearCode(newStart, newEnd);
+            const autoLabel = generateAcademicYearLabel(newStart, newEnd);
+            if (autoCode) newCode = autoCode;
+            if (autoLabel) newLabel = autoLabel;
+        }
+
+        const updatedTerms = (values.terms || []).map((t) => ({
+            ...t,
+            start_date: shiftDateByOneYear(t.start_date),
+            end_date: shiftDateByOneYear(t.end_date),
+            enrollment_start_date: t.enrollment_start_date ? shiftDateByOneYear(t.enrollment_start_date) : null,
+            enrollment_end_date: t.enrollment_end_date ? shiftDateByOneYear(t.enrollment_end_date) : null,
+            grading_deadline: t.grading_deadline ? shiftDateByOneYear(t.grading_deadline) : null,
+            grading_periods: (t.grading_periods || []).map((gp) => ({
+                ...gp,
+                start_date: gp.start_date ? shiftDateByOneYear(gp.start_date) : null,
+                end_date: gp.end_date ? shiftDateByOneYear(gp.end_date) : null
+            }))
+        }));
+
+        setValue('start_date', newStart, { shouldDirty: true });
+        setValue('end_date', newEnd, { shouldDirty: true });
+        setValue('code', newCode, { shouldDirty: true });
+        setValue('label', newLabel, { shouldDirty: true });
+        setValue('terms', updatedTerms, { shouldDirty: true });
+
+        useToastStore.getState().showToast(
+            'Rolled forward all dates (School Year, Terms, Enrollment Windows, Grading Periods) by +1 Year.',
+            'success'
+        );
+    }
+
     function handleNext() {
         if (currentStep === 1) {
             if (!validateStep1()) return;
@@ -461,8 +505,20 @@ export default function AcademicYearWizardModal({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                        {/* Desktop Actions (History, Edit) */}
+                        {/* Desktop Actions (Roll Forward, History, Edit) */}
                         <div className="hidden sm:flex items-center gap-2">
+                            {!isReadOnly && (
+                                <CommonButton
+                                    color="inherit"
+                                    size="small"
+                                    startIcon={<FastForwardIcon className="w-4 h-4" />}
+                                    variant="outlined"
+                                    onClick={handleRollForwardOneYear}
+                                >
+                                    Roll Forward +1 Year
+                                </CommonButton>
+                            )}
+
                             {schoolYearId && (
                                 <CommonButton
                                     color="inherit"
@@ -500,8 +556,20 @@ export default function AcademicYearWizardModal({
                 </div>
 
                 {/* Mobile Actions: placed below label and description to prevent vertical narrowing */}
-                {(schoolYearId || isReadOnly) && (
-                    <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
+                {(!isReadOnly || schoolYearId) && (
+                    <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 overflow-x-auto">
+                        {!isReadOnly && (
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                startIcon={<FastForwardIcon className="w-4 h-4" />}
+                                variant="outlined"
+                                onClick={handleRollForwardOneYear}
+                            >
+                                Roll Forward +1 Year
+                            </CommonButton>
+                        )}
+
                         {schoolYearId && (
                             <CommonButton
                                 color="inherit"

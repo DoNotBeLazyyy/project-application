@@ -762,3 +762,4 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
     return `Academic Year ${startYear}-${endYear}`;
 }
 
+
