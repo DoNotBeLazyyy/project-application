@@ -5,7 +5,8 @@ import { BadgeStatusVariantElementMap, CommonBadgeStatusProps } from '@type/comm
 export function CommonBadgeStatus({
     label = 'info',
     size = 'small',
-    variant = 'info'
+    variant = 'info',
+    ...restProps
 }: CommonBadgeStatusProps) {
     const iconMap: BadgeStatusVariantElementMap = {
         error: <XCircleIcon weight="fill" />,
@@ -19,5 +20,6 @@ export function CommonBadgeStatus({
         icon={iconMap[variant]}
         label={label}
         size={size}
+        {...restProps}
     />;
 }
