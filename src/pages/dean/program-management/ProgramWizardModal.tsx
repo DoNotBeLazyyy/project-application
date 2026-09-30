@@ -15,6 +15,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
+import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ProgramFormValues } from '@type/program/program.type';
@@ -28,6 +29,7 @@ interface ProgramWizardModalProps {
     isEditing?: boolean;
     isCodeDisabled?: boolean;
     isSaving?: boolean;
+    programId?: string;
     methods: UseFormReturn<ProgramFormValues>;
     onClose: () => void;
     onSubmit: (values: ProgramFormValues) => void;
@@ -36,7 +38,8 @@ interface ProgramWizardModalProps {
 
 export const PROGRAM_WIZARD_STEPS = [
     { step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration' },
-    { step: 2, title: 'Grading Schema', subtitle: 'Inherit defaults or set custom schema' }
+    { step: 2, title: 'Grading Schema', subtitle: 'Inherit defaults or set custom schema' },
+    { step: 3, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term' }
 ];
 
 export default function ProgramWizardModal({
@@ -46,6 +49,7 @@ export default function ProgramWizardModal({
     isEditing = false,
     isCodeDisabled = false,
     isSaving = false,
+    programId,
     methods,
     onClose,
     onSubmit,
@@ -148,6 +152,8 @@ export default function ProgramWizardModal({
             const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
             if (!isValid) return;
             setCurrentStep(2);
+        } else if (currentStep === 2) {
+            setCurrentStep(3);
         }
     }
 
@@ -206,8 +212,8 @@ export default function ProgramWizardModal({
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 {readOnly
-                                    ? 'Viewing program identity, department ownership, and grading schema override.'
-                                    : 'Unified setup for program identity, department ownership, and grading schema override.'}
+                                    ? 'Viewing program identity, department ownership, grading schema override, and curriculum map.'
+                                    : 'Unified setup for program identity, department ownership, grading schema override, and curriculum map.'}
                             </p>
                         </div>
                     </div>
@@ -309,6 +315,13 @@ export default function ProgramWizardModal({
                         disabled={readOnly}
                     />
                 )}
+
+                {currentStep === 3 && (
+                    <CurriculumMapManagement
+                        programId={programId}
+                        readOnly={readOnly}
+                    />
+                )}
             </div>
 
             {/* Sticky Bottom Action Bar (Exactly matching Academic Year Stepper Modal Footer) */}
@@ -327,12 +340,12 @@ export default function ProgramWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 2 — {currentStepConfig?.title}
+                    Step {currentStep} of 3 — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 2 ? (
+                    {currentStep < 3 ? (
                         <CommonButton
                             color="primary"
                             disabled={isSaving}

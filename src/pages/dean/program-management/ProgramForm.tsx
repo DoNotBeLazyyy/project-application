@@ -1,8 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, ListChecksIcon, ScalesIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, ListChecksIcon, MapTrifoldIcon, ScalesIcon } from '@phosphor-icons/react';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
+import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ComponentPropsForm } from '@type/common.type';
@@ -14,12 +15,14 @@ interface ProgramFormProps extends ComponentPropsForm {
     control: Control<ProgramFormValues>;
     disabled?: boolean;
     isCodeDisabled?: boolean;
+    programId?: string;
 }
 
 export default function ProgramForm({
     control,
     disabled,
     isCodeDisabled,
+    programId,
     ...formProps
 }: ProgramFormProps) {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -104,7 +107,8 @@ export default function ProgramForm({
 
     const steps = [
         { id: 1, label: '1. Program Details', icon: ListChecksIcon },
-        { id: 2, label: '2. Grading Schema', icon: ScalesIcon }
+        { id: 2, label: '2. Grading Schema', icon: ScalesIcon },
+        { id: 3, label: '3. Curriculum Map', icon: MapTrifoldIcon }
     ];
 
     return (
@@ -159,6 +163,13 @@ export default function ProgramForm({
                         disabled={disabled}
                     />
                 )}
+
+                {activeStep === 3 && (
+                    <CurriculumMapManagement
+                        programId={programId}
+                        readOnly={disabled}
+                    />
+                )}
             </div>
 
             {/* Stepper Footer Action Bar (Back / Next Navigation) */}
@@ -168,7 +179,7 @@ export default function ProgramForm({
                     variant="outlined"
                     color="inherit"
                     disabled={activeStep === 1}
-                    onClick={() => setActiveStep(1)}
+                    onClick={() => setActiveStep((prev) => Math.max(1, prev - 1))}
                     startIcon={<ArrowLeftIcon className="w-4 h-4" />}
                     size="small"
                 >
@@ -180,11 +191,11 @@ export default function ProgramForm({
                         type="button"
                         variant="contained"
                         color="primary"
-                        onClick={() => setActiveStep(2)}
+                        onClick={() => setActiveStep((prev) => Math.min(steps.length, prev + 1))}
                         endIcon={<ArrowRightIcon className="w-4 h-4" />}
                         size="small"
                     >
-                        Next: Grading Schema
+                        {activeStep === 1 ? 'Next: Grading Schema' : 'Next: Curriculum Map'}
                     </CommonButton>
                 ) : (
                     <span className="text-xs text-slate-500 font-medium italic flex items-center gap-1.5">

@@ -9,7 +9,7 @@ import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumM
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { PrinterIcon } from '@phosphor-icons/react';
+import { MapTrifoldIcon, PrinterIcon } from '@phosphor-icons/react';
 import {
     bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
@@ -39,8 +39,16 @@ const defaultFormValues: CurriculumMapFormValues = {
     is_elective: false
 };
 
-export default function CurriculumMapManagement() {
-    const [selectedProgramId, setSelectedProgramId] = useState('');
+interface CurriculumMapManagementProps {
+    programId?: string;
+    readOnly?: boolean;
+}
+
+export default function CurriculumMapManagement({
+    programId = '',
+    readOnly = false
+}: CurriculumMapManagementProps = {}) {
+    const [selectedProgramId, setSelectedProgramId] = useState(programId);
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
     const [entries, setEntries] = useState<CurriculumMapEntry[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +57,12 @@ export default function CurriculumMapManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
+
+    useEffect(() => {
+        if (programId) {
+            setSelectedProgramId(programId);
+        }
+    }, [programId]);
 
     const { programOptions } = useProgramOptions();
     const { schoolYearOptions } = useSchoolYearOptions();
