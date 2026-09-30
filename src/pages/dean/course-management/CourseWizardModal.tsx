@@ -13,7 +13,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { CourseFormValues } from '@type/course/course.type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 interface CourseWizardModalProps {

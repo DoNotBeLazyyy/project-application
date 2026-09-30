@@ -23,7 +23,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Control, FieldValues, useFieldArray, UseFormReturn, useWatch } from 'react-hook-form';
 
 export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
