@@ -37,7 +37,7 @@ export interface SectionFormValues {
     term_id: string;
     course_id: string;
     faculty_id: string;
-    section_code: string;
+    section_code?: string;
     room: string;
     max_slots: string;
     status: SectionStatus;
@@ -64,7 +64,7 @@ export interface SectionBulkRow {
     term_label: string;
     course_code: string;
     faculty_email: string;
-    section_code: string;
+    section_code?: string;
     room: string;
     max_slots: string;
 }

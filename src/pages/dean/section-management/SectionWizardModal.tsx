@@ -125,8 +125,8 @@ export default function SectionWizardModal({
     async function validateStep1(): Promise<boolean> {
         const isValid = await trigger(
             sectionId
-                ? ['section_code', 'term_id', 'course_id', 'max_slots', 'status']
-                : ['section_code', 'term_id', 'course_id', 'max_slots']
+                ? ['term_id', 'course_id', 'max_slots', 'status']
+                : ['term_id', 'course_id', 'max_slots']
         );
         return isValid;
     }

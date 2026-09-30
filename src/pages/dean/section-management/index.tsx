@@ -33,7 +33,6 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester 2024-2025' },
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
     { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. jdoe@university.edu (optional)' },
-    { key: 'section_code', label: 'Section Code', hint: 'e.g. BSCS3-A' },
     { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)' },
     { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' }
 ];
@@ -224,7 +223,7 @@ export default function SectionManagement() {
                     term_label: row.term_label,
                     course_code: row.course_code,
                     faculty_email: row.faculty_email,
-                    section_code: row.section_code,
+                    section_code: row.section_code || '',
                     room: row.room,
                     max_slots: row.max_slots
                 })}

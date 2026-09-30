@@ -70,11 +70,15 @@ export async function getFacultyOptions(): Promise<ServiceResult<FacultyOption[]
 export async function createSection(
     params: SectionFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.section_code && params.section_code.trim() !== ''
+        ? params.section_code
+        : `SEC-${Math.floor(1000 + Math.random() * 9000)}`;
+
     return callRpc<null>('fn_create_section', {
         p_term_id: nullIfBlank(params.term_id),
         p_course_id: nullIfBlank(params.course_id),
         p_faculty_id: nullIfBlank(params.faculty_id),
-        p_section_code: params.section_code,
+        p_section_code: code,
         p_room: params.room || null,
         p_max_slots: Number(params.max_slots),
         p_status: 'Open'
@@ -90,7 +94,7 @@ export async function updateSection(
         p_term_id: nullIfBlank(params.term_id),
         p_course_id: nullIfBlank(params.course_id),
         p_faculty_id: nullIfBlank(params.faculty_id),
-        p_section_code: params.section_code,
+        p_section_code: params.section_code || '',
         p_room: params.room || null,
         p_max_slots: Number(params.max_slots),
         p_status: params.status
@@ -126,10 +130,20 @@ export async function copySectionSetupToSections(
 export async function bulkCreateSections(
     sections: SectionBulkRow[]
 ): Promise<BulkImportResult> {
+    const mappedSections = sections.map((row, idx) => {
+        const code = row.section_code && row.section_code.trim() !== ''
+            ? row.section_code
+            : `${row.course_code ? row.course_code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : 'SEC'}-${Math.floor(100 + Math.random() * 900)}${idx + 1}`;
+        return {
+            ...row,
+            section_code: code
+        };
+    });
+
     const result = await callRpc<{
         provisioned_count: number;
         errors: { row: number; code: string; message: string }[];
-    }>('fn_bulk_create_sections', { p_sections: sections });
+    }>('fn_bulk_create_sections', { p_sections: mappedSections });
 
     if (result.error) {
         return { provisioned_count: 0, errors: [result.error.message] };

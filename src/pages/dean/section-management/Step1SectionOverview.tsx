@@ -68,7 +68,6 @@ export default function Step1SectionOverview({
 
     function handleClearOverview() {
         if (!setValue) return;
-        setValue('section_code', '', { shouldValidate: false, shouldDirty: true });
         setValue('term_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('course_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('faculty_id', '', { shouldValidate: false, shouldDirty: true });
@@ -80,16 +79,15 @@ export default function Step1SectionOverview({
     }
 
     const fields: FormFieldConfig<SectionFormValues>[] = [
-        {
-            disabled,
-            fieldProps: { helperText: 'Section identifier, e.g. BSCS-1A' },
-            name: 'section_code',
-            rules: disabled
-                ? undefined
-                : { required: 'Section code is required' },
-            type: 'text',
-            gridCols: 2
-        },
+        ...(disabled
+            ? [{
+                disabled: true,
+                fieldProps: { helperText: 'Auto-generated section identifier' },
+                name: 'section_code' as const,
+                type: 'text' as const,
+                gridCols: 2
+            }]
+            : []),
         {
             disabled,
             fieldProps: { helperText: 'Term this section runs in' },
