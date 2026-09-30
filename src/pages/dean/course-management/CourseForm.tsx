@@ -256,6 +256,8 @@ export const COURSE_FORM_STEPS = [
     }
 ];
 
+const STEPS = COURSE_FORM_STEPS;
+
 export default function CourseForm({
     control,
     disabled,
