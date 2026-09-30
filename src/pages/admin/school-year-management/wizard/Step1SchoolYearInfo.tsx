@@ -184,19 +184,6 @@ export default function Step1SchoolYearInfo({
                 </div>
             )}
 
-            {/* Banner info */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-brand-50/60 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-900/40 text-sm">
-                <InfoIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                <div className="space-y-1 text-slate-700 dark:text-slate-300">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
-                        Academic Year Identity & Operational Span
-                    </p>
-                    <p className="text-xs sm:text-sm">
-                        Define the overarching school year. Terms, enrollment windows, grading periods, and grade transmutation rules declared in the subsequent steps will be irrevocably anchored to this academic year for historical audit integrity.
-                    </p>
-                </div>
-            </div>
-
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
@@ -235,7 +222,6 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
-                    <p className="text-xs text-slate-500 mt-1">Official start date of the academic calendar.</p>
                 </div>
 
                 <div>
@@ -274,7 +260,6 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
-                    <p className="text-xs text-slate-500 mt-1">Official concluding date of this academic year.</p>
                 </div>
 
                 <div>
@@ -305,13 +290,9 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
-                    {sourceSchoolYear ? (
+                    {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                             Required to change from: &quot;{sourceSchoolYear.code}&quot;
-                        </p>
-                    ) : (
-                        <p className="text-xs text-slate-500 mt-1">
-                            Unique machine-readable identifier (e.g. AY-2026-2027).
                         </p>
                     )}
                 </div>
@@ -344,33 +325,22 @@ export default function Step1SchoolYearInfo({
                             }
                         }}
                     />
-                    {sourceSchoolYear ? (
+                    {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                             Required to change from: &quot;{sourceSchoolYear.label}&quot;
-                        </p>
-                    ) : (
-                        <p className="text-xs text-slate-500 mt-1">
-                            Human-friendly title displayed on transcripts and portals.
                         </p>
                     )}
                 </div>
             </div>
 
-
-
             {/* Active Status Card */}
             <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                        <ShieldCheckIcon className="w-4 h-4 text-emerald-600" />
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                            <span>Set as Active Academic Year</span>
-                            <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
-                        </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year. Setting this active will deactivate any previous active year.
-                    </p>
+                <div className="flex items-center gap-2">
+                    <ShieldCheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>Set as Active Academic Year</span>
+                        <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
+                    </span>
                 </div>
                 <ValidCommonCheckbox
                     control={control}

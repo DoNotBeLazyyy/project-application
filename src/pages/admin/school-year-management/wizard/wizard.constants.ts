@@ -151,11 +151,36 @@ export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
 ];
 
 export const WIZARD_STEPS = [
-    { step: 1, title: 'Identity & Dates', subtitle: 'Academic year code & dates' },
-    { step: 2, title: 'Terms & Windows', subtitle: 'Terms & enrollment schedules' },
-    { step: 3, title: 'Grading Periods', subtitle: 'Periods and 100% weights' },
-    { step: 4, title: 'Grade Schema', subtitle: 'Transmutation & passing marks' },
-    { step: 5, title: 'Academic Thresholds', subtitle: 'Honors, scholarships & standing' }
+    {
+        step: 1,
+        title: 'Identity & Dates',
+        subtitle:
+            'Define the overarching school year. Terms, enrollment windows, grading periods, and grade transmutation rules declared in the subsequent steps will be irrevocably anchored to this academic year for historical audit integrity.'
+    },
+    {
+        step: 2,
+        title: 'Terms & Windows',
+        subtitle:
+            'Declare unique terms running under this school year (e.g. 1st Semester, 2nd Semester, Summer). Each term holds its own enrollment window and grade submission deadline, and must have non-overlapping dates.'
+    },
+    {
+        step: 3,
+        title: 'Grading Periods',
+        subtitle:
+            'Configure grading periods (e.g. Prelim, Midterm, Finals) for each term. The sum of weights for every term must strictly equal 100%, and period dates must be sequential and non-overlapping.'
+    },
+    {
+        step: 4,
+        title: 'Grade Schema',
+        subtitle:
+            'Define percentage ranges, passing status, and transmuted grade equivalents. Ranges must be contiguous and non-overlapping from 0% to 100%.'
+    },
+    {
+        step: 5,
+        title: 'Academic Thresholds',
+        subtitle:
+            'Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean\'s List) and disadvantages (Academic Probation / Standing).'
+    }
 ];
 
 export function distributeDatesAcrossPeriods(

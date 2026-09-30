@@ -421,9 +421,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">
-                                        Each term must be a unique type (e.g. 1st Semester, 2nd Semester, Summer)
-                                    </p>
                                 </div>
 
                                 {/* Term Start Date */}
@@ -443,7 +440,6 @@ export default function Step2TermsConfig({
                                         value={currentTerm.start_date || ''}
                                         onChange={(e) => handleUpdateTermDate(index, 'start_date', e.target.value)}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Classes officially begin</p>
                                 </div>
 
                                 {/* Term End Date */}
@@ -463,7 +459,6 @@ export default function Step2TermsConfig({
                                         value={currentTerm.end_date || ''}
                                         onChange={(e) => handleUpdateTermDate(index, 'end_date', e.target.value)}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Classes officially conclude</p>
                                 </div>
 
                                 {/* Max Credit Units for this term */}
@@ -487,7 +482,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Credit unit registration limit</p>
                                 </div>
 
                                 {/* Enrollment Start Date */}
@@ -508,7 +502,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Portal opens for registration</p>
                                 </div>
 
                                 {/* Enrollment End Date */}
@@ -529,7 +522,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Last day of late enrollment/add-drop</p>
                                 </div>
 
                                 {/* Grading Submission Deadline */}
@@ -550,7 +542,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">Cut-off for final grade encoding</p>
                                 </div>
 
                                 {/* Evaluation Scope for this term */}
@@ -575,9 +566,6 @@ export default function Step2TermsConfig({
                                             });
                                         }}
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1">
-                                        Schedule for faculty evaluation
-                                    </p>
                                 </div>
                             </div>
                         </div>
