@@ -9,10 +9,13 @@ import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdenti
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getStudentInsight } from '@services/analytics.service';
+import { getMyProfile } from '@services/profile.service';
 import { getStudentDashboard } from '@services/student-portal.service';
 import { StudentInsight } from '@type/analytics.type';
 import { AssessmentType } from '@type/assessment.type';
+import { MyProfile } from '@type/profile.type';
 import { StudentDashboard as StudentDashboardData, UpcomingAssessment } from '@type/student-portal.type';
 import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
@@ -91,6 +94,13 @@ export default function StudentDashboard() {
     } = useDashboardFeeds();
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
     const [insight, setInsight] = useState<StudentInsight | null>(null);
+    const [profile, setProfile] = useState<MyProfile | null>(null);
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+    async function loadProfile() {
+        const result = await getMyProfile();
+        if (result.data) setProfile(result.data);
+    }
 
     useEffect(function() {
         async function fetchDashboard() {
@@ -105,6 +115,7 @@ export default function StudentDashboard() {
 
         fetchDashboard();
         fetchInsight();
+        loadProfile();
     }, []);
 
     function handleViewInsight() {
@@ -117,6 +128,31 @@ export default function StudentDashboard() {
                 subtitle="Your classes, assessments, and grades at a glance."
                 title="Dashboard"
             />
+
+            {profile?.student && !profile.student.program_id && (
+                <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                        <GraduationCapIcon size={28} className="text-(--mui-palette-warning-main)" />
+                        <div>
+                            <p className="font-semibold text-(--mui-palette-text-primary) text-sm m-0">
+                                Academic Program Not Assigned
+                            </p>
+                            <p className="text-(--mui-palette-text-secondary) text-xs m-0">
+                                You have not selected an academic program yet. Assign your program to generate your curriculum checklist and track your degree progress.
+                            </p>
+                        </div>
+                    </div>
+                    <CommonButton
+                        size="small"
+                        variant="contained"
+                        onClick={function() {
+                            setIsAssignModalOpen(true);
+                        }}
+                    >
+                        Assign Program
+                    </CommonButton>
+                </div>
+            )}
 
             <div className="gap-4 grid grid-cols-1 md:grid-cols-3">
                 {STAT_CARDS.map((card) => (
@@ -199,6 +235,16 @@ export default function StudentDashboard() {
             </div>
 
             <InstitutionalIdentityCard />
+
+            <AssignProgramModal
+                currentProgramId={profile?.student?.program_id}
+                currentYearLevel={profile?.student?.year_level}
+                open={isAssignModalOpen}
+                onClose={function() {
+                    setIsAssignModalOpen(false);
+                }}
+                onSuccess={loadProfile}
+            />
         </div>
     );
 }

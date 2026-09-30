@@ -1,6 +1,8 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { CopyIcon, EnvelopeSimpleIcon } from '@phosphor-icons/react';
+import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
@@ -102,9 +104,45 @@ export function useEnrollmentStudentTableConfig({
             onEditClick: (row: EnrollmentStudentRow) => () => onManage(row.id),
             menuOptions: (row: EnrollmentStudentRow): MenuOption[] => [
                 {
+                    preset: 'edit',
+                    onClick: () => onManage(row.id)
+                },
+                {
                     preset: 'view',
                     onClick: () => onManage(row.id)
-                }
+                },
+                {
+                    children: (
+                        <div className="flex gap-2 items-center">
+                            <CopyIcon size={18} weight="bold" />
+                            <span>Copy Student No.</span>
+                        </div>
+                    ),
+                    onClick: () => {
+                        if (navigator?.clipboard?.writeText) {
+                            navigator.clipboard.writeText(row.student_number);
+                            useToastStore.getState().showToast('Student number copied to clipboard', 'success');
+                        }
+                    }
+                },
+                ...(row.email
+                    ? [
+                        {
+                            children: (
+                                <div className="flex gap-2 items-center">
+                                    <EnvelopeSimpleIcon size={18} weight="bold" />
+                                    <span>Copy Email</span>
+                                </div>
+                            ),
+                            onClick: () => {
+                                if (navigator?.clipboard?.writeText) {
+                                    navigator.clipboard.writeText(row.email);
+                                    useToastStore.getState().showToast('Email copied to clipboard', 'success');
+                                }
+                            }
+                        }
+                    ]
+                    : [])
             ]
         };
     }, [onManage]);

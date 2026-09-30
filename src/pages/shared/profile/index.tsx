@@ -2,7 +2,8 @@ import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { GraduationCapIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
 import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
@@ -57,6 +58,7 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('details');
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
 
     const profileMethods = useForm<ProfileFormValues>({ defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
@@ -183,6 +185,50 @@ export default function ProfilePage() {
                                 onChanged={handleAvatarChanged}
                             />
                         )}
+                        {Boolean(profile?.student || profile?.role_labels?.includes('Student')) && (
+                            <div className="border border-(--mui-palette-divider) flex flex-col gap-4 p-4 rounded-lg bg-(--mui-palette-background-paper)">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <GraduationCapIcon size={22} className="text-(--mui-palette-primary-main)" />
+                                        <h2 className="font-semibold text-base text-(--mui-palette-text-primary)">
+                                            Academic Information
+                                        </h2>
+                                    </div>
+                                    <CommonButton
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={function() {
+                                            setIsProgramModalOpen(true);
+                                        }}
+                                    >
+                                        {profile?.student?.program_id ? 'Change Program' : 'Assign Program'}
+                                    </CommonButton>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Student Number</span>
+                                        <span className="font-medium text-(--mui-palette-text-primary)">
+                                            {profile?.student?.student_number || '—'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Academic Program</span>
+                                        <span className="font-medium text-(--mui-palette-text-primary)">
+                                            {profile?.student?.program_name
+                                                ? `${profile.student.program_code} · ${profile.student.program_name}`
+                                                : <span className="text-(--mui-palette-warning-main)">Not assigned yet</span>}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Year Level</span>
+                                        <span className="font-medium text-(--mui-palette-text-primary)">
+                                            {profile?.student?.year_level ? `Year ${profile.student.year_level}` : '—'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <ProfileDetailsForm
                             control={profileMethods.control}
                             id={PROFILE_FORM_ID}
@@ -235,6 +281,21 @@ export default function ProfilePage() {
                     </div>
                 )}
             </div>
+
+            <AssignProgramModal
+                currentProgramId={profile?.student?.program_id}
+                currentProgramName={profile?.student?.program_name ? `${profile.student.program_code} · ${profile.student.program_name}` : undefined}
+                currentYearLevel={profile?.student?.year_level}
+                open={isProgramModalOpen}
+                onClose={function() {
+                    setIsProgramModalOpen(false);
+                }}
+                onSuccess={function() {
+                    setRefreshKey(function(previous) {
+                        return previous + 1;
+                    });
+                }}
+            />
         </CommonCard>
     );
 }

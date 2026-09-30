@@ -41,16 +41,33 @@ export async function changeStudentStatus(
 }
 
 export async function shiftStudentProgram(
-    studentId: string,
-    values: ProgramShiftFormValues
+    studentId: string | null | undefined,
+    values: {
+        program_id: string;
+        year_level?: string | number | null;
+        effective_date?: string | null;
+        reason?: string | null;
+    }
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_shift_student_program', {
         p_effective_date: values.effective_date || null,
         p_program_id: values.program_id,
         p_reason: values.reason || null,
-        p_student_id: studentId,
+        p_student_id: studentId || null,
         p_year_level: values.year_level
             ? Number(values.year_level)
+            : null
+    });
+}
+
+export async function assignMyProgram(
+    programId: string,
+    yearLevel?: number | string | null
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_assign_my_program', {
+        p_program_id: programId,
+        p_year_level: yearLevel
+            ? Number(yearLevel)
             : null
     });
 }

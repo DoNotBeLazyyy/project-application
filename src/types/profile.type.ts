@@ -1,3 +1,13 @@
+export interface MyStudentInfo {
+    id: string;
+    student_number: string;
+    year_level: number;
+    status: string;
+    program_id: string | null;
+    program_code: string | null;
+    program_name: string | null;
+}
+
 export interface MyProfile {
     id: string;
     first_name: string;
@@ -19,6 +29,7 @@ export interface MyProfile {
     avatar_url: string | null;
     status: string;
     role_labels: string[];
+    student?: MyStudentInfo | null;
 }
 
 export interface ProfileFormValues {

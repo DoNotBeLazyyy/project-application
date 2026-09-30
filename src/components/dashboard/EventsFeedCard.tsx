@@ -1,5 +1,4 @@
 import FileAttachmentList from '@components/attachment/FileAttachmentList';
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonCard from '@components/card/CommonCard';
 import RichContentReader from '@components/editor/RichContentReader';
 import CommonModal from '@components/modal/CommonModal';
@@ -171,17 +170,9 @@ function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             onClose={onClose}
         >
             <div className="border-(--mui-palette-divider) border-b flex gap-3 items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 shrink-0">
-                <div className="flex flex-col gap-2 min-w-0">
-                    <CommonBadgeStatus
-                        label={event.all_day
-                            ? 'All Day'
-                            : 'Scheduled'}
-                        variant="info"
-                    />
-                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl break-words">
-                        {event.title}
-                    </h2>
-                </div>
+                <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg sm:text-xl break-words min-w-0 flex-1">
+                    {event.title}
+                </h2>
                 <button
                     aria-label="Close"
                     className="hover:bg-(--mui-palette-action-hover) p-1 rounded shrink-0 text-(--mui-palette-text-secondary) transition-colors cursor-pointer"

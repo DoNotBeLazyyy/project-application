@@ -1,9 +1,13 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
+import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import Tooltip from '@mui/material/Tooltip';
-import { PrinterIcon } from '@phosphor-icons/react';
-import { getCurriculumAudit } from '@services/records.service';
+import { GraduationCapIcon, PencilSimpleIcon, PrinterIcon } from '@phosphor-icons/react';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
+import { getPrograms } from '@services/program/program.service';
+import { assignMyProgram, getCurriculumAudit } from '@services/records.service';
+import { useToastStore } from '@stores/toast.store';
 import { CurriculumAudit, CurriculumCourse, CurriculumCourseStatus, CurriculumYearLevel } from '@type/records.type';
 import { useEffect, useState } from 'react';
 
@@ -15,6 +19,15 @@ const STATUS_VARIANT_MAP: Record<CurriculumCourseStatus, 'success' | 'error' | '
 };
 
 const YEAR_LABELS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
+
+const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
+    { label: '1st Year', value: 1 },
+    { label: '2nd Year', value: 2 },
+    { label: '3rd Year', value: 3 },
+    { label: '4th Year', value: 4 },
+    { label: '5th Year', value: 5 },
+    { label: '6th Year', value: 6 }
+];
 
 interface CurriculumAuditViewProps {
     studentId?: string;
@@ -154,19 +167,65 @@ function YearBlock({ yearLevel }: YearBlockProps) {
 export default function CurriculumAuditView({ studentId }: CurriculumAuditViewProps) {
     const [audit, setAudit] = useState<CurriculumAudit | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
+    const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
+    const [selectedProgramId, setSelectedProgramId] = useState<string>('');
+    const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
+
+    async function fetchAudit() {
+        setIsLoaded(false);
+        const result = await getCurriculumAudit(studentId);
+        if (result.data) {
+            setAudit(result.data);
+        } else {
+            setAudit(null);
+        }
+        setIsLoaded(true);
+    }
 
     useEffect(function() {
-        async function fetchAudit() {
-            const result = await getCurriculumAudit(studentId);
-            if (result.data) setAudit(result.data);
-            setIsLoaded(true);
-        }
-
         fetchAudit();
     }, [studentId]);
 
+    useEffect(function() {
+        if (!isLoaded || (audit && audit.success)) return;
+
+        async function fetchPrograms() {
+            setIsLoadingPrograms(true);
+            const result = await getPrograms();
+            if (result.data) {
+                setProgramOptions(
+                    result.data.map(function(program) {
+                        return {
+                            label: `${program.code} · ${program.label}`,
+                            value: program.id
+                        };
+                    })
+                );
+            }
+            setIsLoadingPrograms(false);
+        }
+
+        fetchPrograms();
+    }, [isLoaded, audit]);
+
     function handlePrint() {
         window.print();
+    }
+
+    async function handleAssignProgram() {
+        if (!selectedProgramId) return;
+
+        setIsAssigning(true);
+        const result = await assignMyProgram(selectedProgramId, selectedYearLevel);
+        setIsAssigning(false);
+
+        if (!result.error) {
+            useToastStore.getState().showToast('Program assigned successfully.', 'success');
+            await fetchAudit();
+        }
     }
 
     if (!isLoaded) {
@@ -179,9 +238,56 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
 
     if (!audit || !audit.success) {
         return (
-            <p className="text-(--mui-palette-text-secondary) text-sm">
-                {audit?.message ?? 'Curriculum checklist is not available.'}
-            </p>
+            <div className="flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto">
+                <div className="border border-(--mui-palette-divider) flex flex-col items-center p-8 rounded-xl shadow-xs w-full bg-(--mui-palette-background-paper) gap-5">
+                    <div className="p-4 bg-(--mui-palette-primary-light) text-(--mui-palette-primary-main) rounded-full">
+                        <GraduationCapIcon size={40} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                            Assign Your Academic Program
+                        </h2>
+                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                            {audit?.message ?? 'Select your degree program and year level to generate your curriculum checklist and track your degree progress.'}
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col gap-3 w-full text-left">
+                        <CommonSelect
+                            disabled={isAssigning || isLoadingPrograms}
+                            fullWidth
+                            label="Academic Program"
+                            options={programOptions}
+                            placeholder="Select your program"
+                            size="small"
+                            value={selectedProgramId}
+                            onChange={function(e) {
+                                setSelectedProgramId(e.target.value as string);
+                            }}
+                        />
+                        <CommonSelect
+                            disabled={isAssigning}
+                            fullWidth
+                            label="Year Level"
+                            options={YEAR_LEVEL_OPTIONS}
+                            size="small"
+                            value={selectedYearLevel}
+                            onChange={function(e) {
+                                setSelectedYearLevel(Number(e.target.value));
+                            }}
+                        />
+                        <CommonButton
+                            className="w-full mt-2"
+                            disabled={isAssigning || !selectedProgramId}
+                            size="medium"
+                            variant="contained"
+                            onClick={handleAssignProgram}
+                        >
+                            {isAssigning ? 'Assigning Program...' : 'Assign Program'}
+                        </CommonButton>
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -196,14 +302,26 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                         {audit.program.code} · {audit.program.name}
                     </span>
                 </div>
-                <CommonButton
-                    size="small"
-                    startIcon={<PrinterIcon size={16} />}
-                    variant="outlined"
-                    onClick={handlePrint}
-                >
-                    Print Checklist
-                </CommonButton>
+                <div className="flex gap-2">
+                    <CommonButton
+                        size="small"
+                        startIcon={<PencilSimpleIcon size={16} />}
+                        variant="outlined"
+                        onClick={function() {
+                            setIsChangeModalOpen(true);
+                        }}
+                    >
+                        Change Program
+                    </CommonButton>
+                    <CommonButton
+                        size="small"
+                        startIcon={<PrinterIcon size={16} />}
+                        variant="outlined"
+                        onClick={handlePrint}
+                    >
+                        Print Checklist
+                    </CommonButton>
+                </div>
             </div>
 
             <div className="flex flex-col gap-4 print-area">
@@ -261,6 +379,18 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                     );
                 })}
             </div>
+
+            <AssignProgramModal
+                currentProgramId={audit.program.id}
+                currentProgramName={`${audit.program.code} · ${audit.program.name}`}
+                currentYearLevel={audit.student.year_level}
+                open={isChangeModalOpen}
+                studentId={studentId}
+                onClose={function() {
+                    setIsChangeModalOpen(false);
+                }}
+                onSuccess={fetchAudit}
+            />
         </div>
     );
 }
