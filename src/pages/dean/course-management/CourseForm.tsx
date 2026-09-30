@@ -26,7 +26,7 @@ import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
 import { useEffect, useState } from 'react';
 import {
-    Control, FieldPath, useController, useFieldArray, useFormState, useWatch
+    Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
 
 type PrerequisiteField =
@@ -237,7 +237,8 @@ interface CourseFormProps extends ComponentPropsForm {
     disabled?: boolean;
     excludeCourseId?: string;
     isCodeDisabled?: boolean;
-    onSwitchToEdit?: () => void;
+    setValue?: UseFormSetValue<CourseFormValues>;
+    onSwitchToEdit?: (step?: number) => void;
 }
 
 export const COURSE_FORM_STEPS = [
@@ -266,6 +267,7 @@ export default function CourseForm({
     disabled,
     excludeCourseId,
     isCodeDisabled,
+    setValue,
     onSwitchToEdit,
     ...formProps
 }: CourseFormProps) {
@@ -335,10 +337,10 @@ export default function CourseForm({
             gridCols: 3
         },
         {
-            disabled: disabled || isCodeDisabled,
+            disabled,
             fieldProps: { helperText: 'Unique course code, e.g. CS101' },
             name: 'code',
-            rules: disabled || isCodeDisabled
+            rules: disabled
                 ? undefined
                 : { required: 'Course code is required' },
             type: 'text',
@@ -379,6 +381,16 @@ export default function CourseForm({
     const courseKindCount = (prerequisites ?? []).filter(
         (prereq) => prereq.prerequisite_kind === 'course'
     ).length;
+
+    function handleClearOverview() {
+        if (setValue) {
+            setValue('title', '', { shouldDirty: true });
+            setValue('code', '', { shouldDirty: true });
+            setValue('department_id', '', { shouldDirty: true });
+            setValue('is_active', true, { shouldDirty: true });
+            setValue('description', '', { shouldDirty: true });
+        }
+    }
 
     function handleAddCourseType() {
         appendCourseType({
@@ -502,14 +514,27 @@ export default function CourseForm({
 
             {/* Step 1: Overview Data */}
             <div className={activeStep === 1 ? 'flex flex-col gap-4' : 'hidden'}>
-                <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <FileTextIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                        Overview Data
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Enter the basic details, title, code, and department for this course.
-                    </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <FileTextIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                            Overview Data
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Enter the basic details, title, code, and department for this course.
+                        </p>
+                    </div>
+                    {!disabled && (
+                        <button
+                            type="button"
+                            onClick={handleClearOverview}
+                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer self-start sm:self-auto"
+                            title="Clear Overview Data"
+                        >
+                            <BroomIcon className="w-4 h-4" />
+                            <span className="hidden sm:inline">Clear</span>
+                        </button>
+                    )}
                 </div>
                 <CommonForm
                     containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
@@ -831,7 +856,7 @@ export default function CourseForm({
                                     size="medium"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="contained"
-                                    onClick={onSwitchToEdit}
+                                    onClick={() => onSwitchToEdit(activeStep)}
                                 >
                                     Edit Course
                                 </CommonButton>

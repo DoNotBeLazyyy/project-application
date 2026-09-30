@@ -165,17 +165,19 @@ function EvaluationQuestionItem({
 interface EvaluationWizardModalProps {
     open: boolean;
     readOnly?: boolean;
+    initialStep?: number;
     templateId?: string | null;
     isSaving?: boolean;
     methods: UseFormReturn<EvaluationTemplateForm>;
     onClose: () => void;
     onSubmit: (values: EvaluationTemplateForm) => void;
-    onSwitchToEdit?: () => void;
+    onSwitchToEdit?: (step?: number) => void;
 }
 
 export default function EvaluationWizardModal({
     open,
     readOnly = false,
+    initialStep = 1,
     templateId,
     isSaving = false,
     methods,
@@ -183,8 +185,14 @@ export default function EvaluationWizardModal({
     onSubmit,
     onSwitchToEdit
 }: EvaluationWizardModalProps) {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, trigger } = methods;
+
+    useEffect(() => {
+        if (open) {
+            setCurrentStep(initialStep);
+        }
+    }, [open, initialStep]);
 
     const { fields, append, move, remove } = useFieldArray({
         control,
@@ -366,7 +374,7 @@ export default function EvaluationWizardModal({
                                     size="small"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="outlined"
-                                    onClick={onSwitchToEdit}
+                                    onClick={() => onSwitchToEdit(currentStep)}
                                 >
                                     Edit
                                 </CommonButton>
@@ -392,7 +400,7 @@ export default function EvaluationWizardModal({
                             size="small"
                             startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                             variant="outlined"
-                            onClick={onSwitchToEdit}
+                            onClick={() => onSwitchToEdit(currentStep)}
                         >
                             Edit
                         </CommonButton>

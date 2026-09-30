@@ -59,6 +59,7 @@ export default function ProgramManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
+    const [editStep, setEditStep] = useState<number>(1);
 
     const createMethods = useForm<ProgramFormValues>({
         defaultValues: defaultFormValues
@@ -107,12 +108,14 @@ export default function ProgramManagement() {
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
+        setEditStep(1);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
-    async function handleSwitchToEdit(id: string) {
+    async function handleSwitchToEdit(id: string, step: number = 1) {
         setIsViewOpen(false);
+        setEditStep(step);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
@@ -287,6 +290,7 @@ export default function ProgramManagement() {
             {/* Edit Program Wizard Modal */}
             <ProgramWizardModal
                 open={isUpdateOpen}
+                initialStep={editStep}
                 isEditing
                 isCodeDisabled
                 methods={updateMethods}
@@ -302,9 +306,9 @@ export default function ProgramManagement() {
                 methods={updateMethods}
                 onClose={handleCloseView}
                 onSubmit={function() {}}
-                onSwitchToEdit={function() {
+                onSwitchToEdit={function(step) {
                     if (selectedId) {
-                        handleSwitchToEdit(selectedId);
+                        handleSwitchToEdit(selectedId, step);
                     }
                 }}
             />

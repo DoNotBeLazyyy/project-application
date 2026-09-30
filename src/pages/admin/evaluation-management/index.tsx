@@ -79,6 +79,7 @@ export default function EvaluationManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [editStep, setEditStep] = useState<number>(1);
 
     const { programOptions } = useProgramOptions();
 
@@ -159,12 +160,14 @@ export default function EvaluationManagement() {
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
+        setEditStep(1);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
-    async function handleSwitchToEdit(id: string) {
+    async function handleSwitchToEdit(id: string, step: number = 1) {
         setIsViewOpen(false);
+        setEditStep(step);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
@@ -371,6 +374,7 @@ export default function EvaluationManagement() {
 
             {/* Edit Evaluation Section Wizard Modal */}
             <EvaluationWizardModal
+                initialStep={editStep}
                 isSaving={isSaving}
                 methods={updateMethods}
                 open={isUpdateOpen}
@@ -387,9 +391,9 @@ export default function EvaluationManagement() {
                 templateId={selectedId}
                 onClose={handleCloseView}
                 onSubmit={function() {}}
-                onSwitchToEdit={function() {
+                onSwitchToEdit={function(step) {
                     if (selectedId) {
-                        handleSwitchToEdit(selectedId);
+                        handleSwitchToEdit(selectedId, step);
                     }
                 }}
             />

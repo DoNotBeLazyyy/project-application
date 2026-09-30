@@ -62,6 +62,7 @@ export default function CourseManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [editStep, setEditStep] = useState<number>(1);
 
     const createMethods = useForm<CourseFormValues>({
         defaultValues: defaultFormValues
@@ -126,12 +127,14 @@ export default function CourseManagement() {
 
     async function handleOpenUpdate(id: string) {
         setSelectedId(id);
+        setEditStep(1);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
-    async function handleSwitchToEdit(id: string) {
+    async function handleSwitchToEdit(id: string, step: number = 1) {
         setIsViewOpen(false);
+        setEditStep(step);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
@@ -306,6 +309,7 @@ export default function CourseManagement() {
             {/* Edit Course Wizard Modal */}
             <CourseWizardModal
                 courseId={selectedId}
+                initialStep={editStep}
                 isCodeDisabled
                 methods={updateMethods}
                 open={isUpdateOpen}
@@ -321,9 +325,9 @@ export default function CourseManagement() {
                 readOnly
                 onClose={handleCloseView}
                 onSubmit={function() {}}
-                onSwitchToEdit={function() {
+                onSwitchToEdit={function(step) {
                     if (selectedId) {
-                        handleSwitchToEdit(selectedId);
+                        handleSwitchToEdit(selectedId, step);
                     }
                 }}
             />

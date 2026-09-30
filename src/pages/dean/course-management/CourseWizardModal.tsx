@@ -19,18 +19,20 @@ import { UseFormReturn } from 'react-hook-form';
 interface CourseWizardModalProps {
     open: boolean;
     readOnly?: boolean;
+    initialStep?: number;
     courseId?: string | null;
     isCodeDisabled?: boolean;
     isSaving?: boolean;
     methods: UseFormReturn<CourseFormValues>;
     onClose: () => void;
     onSubmit: (values: CourseFormValues) => void;
-    onSwitchToEdit?: () => void;
+    onSwitchToEdit?: (step?: number) => void;
 }
 
 export default function CourseWizardModal({
     open,
     readOnly = false,
+    initialStep = 1,
     courseId,
     isCodeDisabled = false,
     isSaving = false,
@@ -39,8 +41,14 @@ export default function CourseWizardModal({
     onSubmit,
     onSwitchToEdit
 }: CourseWizardModalProps) {
-    const [currentStep, setCurrentStep] = useState(1);
-    const { control, handleSubmit, trigger } = methods;
+    const [currentStep, setCurrentStep] = useState(initialStep);
+    const { control, handleSubmit, setValue, trigger } = methods;
+
+    useEffect(() => {
+        if (open) {
+            setCurrentStep(initialStep);
+        }
+    }, [open, initialStep]);
 
     const currentStepConfig = COURSE_FORM_STEPS.find((s) => s.step === currentStep);
 
@@ -124,7 +132,7 @@ export default function CourseWizardModal({
                                     size="small"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="outlined"
-                                    onClick={onSwitchToEdit}
+                                    onClick={() => onSwitchToEdit(currentStep)}
                                 >
                                     Edit
                                 </CommonButton>
@@ -150,7 +158,7 @@ export default function CourseWizardModal({
                             size="small"
                             startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                             variant="outlined"
-                            onClick={onSwitchToEdit}
+                            onClick={() => onSwitchToEdit(currentStep)}
                         >
                             Edit
                         </CommonButton>
@@ -178,6 +186,8 @@ export default function CourseWizardModal({
                     disabled={readOnly}
                     excludeCourseId={courseId ?? undefined}
                     isCodeDisabled={isCodeDisabled}
+                    setValue={setValue}
+                    onSwitchToEdit={onSwitchToEdit ? () => onSwitchToEdit(currentStep) : undefined}
                 />
             </div>
 
@@ -220,7 +230,7 @@ export default function CourseWizardModal({
                                 size="medium"
                                 startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                 variant="contained"
-                                onClick={onSwitchToEdit}
+                                onClick={() => onSwitchToEdit(currentStep)}
                             >
                                 Edit Course
                             </CommonButton>

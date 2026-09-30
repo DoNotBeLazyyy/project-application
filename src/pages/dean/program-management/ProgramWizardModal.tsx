@@ -23,13 +23,14 @@ import { UseFormReturn } from 'react-hook-form';
 interface ProgramWizardModalProps {
     open: boolean;
     readOnly?: boolean;
+    initialStep?: number;
     isEditing?: boolean;
     isCodeDisabled?: boolean;
     isSaving?: boolean;
     methods: UseFormReturn<ProgramFormValues>;
     onClose: () => void;
     onSubmit: (values: ProgramFormValues) => void;
-    onSwitchToEdit?: () => void;
+    onSwitchToEdit?: (step?: number) => void;
 }
 
 export const PROGRAM_WIZARD_STEPS = [
@@ -40,6 +41,7 @@ export const PROGRAM_WIZARD_STEPS = [
 export default function ProgramWizardModal({
     open,
     readOnly = false,
+    initialStep = 1,
     isEditing = false,
     isCodeDisabled = false,
     isSaving = false,
@@ -48,8 +50,14 @@ export default function ProgramWizardModal({
     onSubmit,
     onSwitchToEdit
 }: ProgramWizardModalProps) {
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, trigger } = methods;
+
+    useEffect(() => {
+        if (open) {
+            setCurrentStep(initialStep);
+        }
+    }, [open, initialStep]);
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
@@ -202,7 +210,7 @@ export default function ProgramWizardModal({
                                     size="small"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="outlined"
-                                    onClick={onSwitchToEdit}
+                                    onClick={() => onSwitchToEdit(currentStep)}
                                 >
                                     Edit
                                 </CommonButton>
@@ -228,7 +236,7 @@ export default function ProgramWizardModal({
                             size="small"
                             startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                             variant="outlined"
-                            onClick={onSwitchToEdit}
+                            onClick={() => onSwitchToEdit(currentStep)}
                         >
                             Edit
                         </CommonButton>
@@ -306,7 +314,7 @@ export default function ProgramWizardModal({
                                 size="medium"
                                 startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                 variant="contained"
-                                onClick={onSwitchToEdit}
+                                onClick={() => onSwitchToEdit(currentStep)}
                             >
                                 Edit Program
                             </CommonButton>
