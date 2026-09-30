@@ -310,3 +310,27 @@ export function validateStep1SchoolYear(
     return { isValid: true };
 }
 
+export function parseYearFromDate(dateStr: string): number | null {
+    if (!dateStr) return null;
+    const match = dateStr.match(/^(\d{4})/);
+    if (match) {
+        return parseInt(match[1], 10);
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getFullYear()) ? null : d.getFullYear();
+}
+
+export function generateAcademicYearCode(startDate: string, endDate: string): string | null {
+    const startYear = parseYearFromDate(startDate);
+    const endYear = parseYearFromDate(endDate);
+    if (!startYear || !endYear) return null;
+    return `AY-${startYear}-${endYear}`;
+}
+
+export function generateAcademicYearLabel(startDate: string, endDate: string): string | null {
+    const startYear = parseYearFromDate(startDate);
+    const endYear = parseYearFromDate(endDate);
+    if (!startYear || !endYear) return null;
+    return `Academic Year ${startYear}-${endYear}`;
+}
+

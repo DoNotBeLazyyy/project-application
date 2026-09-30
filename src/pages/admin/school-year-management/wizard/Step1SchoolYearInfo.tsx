@@ -4,7 +4,12 @@ import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker'
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { CopySimpleIcon, InfoIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
+import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
+import {
+    generateAcademicYearCode,
+    generateAcademicYearLabel
+} from './wizard.constants';
 
 interface Step1SchoolYearInfoProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -30,10 +35,80 @@ export default function Step1SchoolYearInfo({
     isNew = true,
     onClearSourceYear,
     onSelectSourceYear,
+    setValue,
     sourceSchoolYear
 }: Step1SchoolYearInfoProps) {
     const startDate = useWatch({ control, name: 'start_date' });
     const endDate = useWatch({ control, name: 'end_date' });
+    const code = useWatch({ control, name: 'code' });
+    const label = useWatch({ control, name: 'label' });
+
+    const userEditedCodeRef = useRef(false);
+    const userEditedLabelRef = useRef(false);
+
+    useEffect(() => {
+        userEditedCodeRef.current = false;
+        userEditedLabelRef.current = false;
+    }, [sourceSchoolYear]);
+
+    useEffect(() => {
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        const autoCode = generateAcademicYearCode(startDate, endDate);
+        const autoLabel = generateAcademicYearLabel(startDate, endDate);
+
+        if (!autoCode || !autoLabel) {
+            return;
+        }
+
+        // In pure edit mode (existing school year not being duplicated), only populate if fields are blank
+        if (!isNew && !sourceSchoolYear) {
+            if (!code || !code.trim()) {
+                setValue('code', autoCode, { shouldValidate: true });
+            }
+            if (!label || !label.trim()) {
+                setValue('label', autoLabel, { shouldValidate: true });
+            }
+            return;
+        }
+
+        // When creating fresh or duplicating from another school year:
+        const isDuplicatedSourceCode = Boolean(
+            sourceSchoolYear &&
+            code &&
+            code.trim().toLowerCase() === sourceSchoolYear.code.trim().toLowerCase()
+        );
+
+        const shouldPopulateCode =
+            !userEditedCodeRef.current ||
+            !code ||
+            !code.trim() ||
+            /^AY-\d{4}-\d{4}$/i.test(code.trim()) ||
+            isDuplicatedSourceCode;
+
+        if (shouldPopulateCode && code !== autoCode) {
+            setValue('code', autoCode, { shouldValidate: true });
+        }
+
+        const isDuplicatedSourceLabel = Boolean(
+            sourceSchoolYear &&
+            label &&
+            label.trim().toLowerCase() === sourceSchoolYear.label.trim().toLowerCase()
+        );
+
+        const shouldPopulateLabel =
+            !userEditedLabelRef.current ||
+            !label ||
+            !label.trim() ||
+            /^Academic Year \d{4}-\d{4}$/i.test(label.trim()) ||
+            isDuplicatedSourceLabel;
+
+        if (shouldPopulateLabel && label !== autoLabel) {
+            setValue('label', autoLabel, { shouldValidate: true });
+        }
+    }, [startDate, endDate, isNew, sourceSchoolYear, setValue, code, label]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -183,6 +258,9 @@ export default function Step1SchoolYearInfo({
                         disabled={disabled}
                         name="code"
                         placeholder="e.g. AY-2026-2027"
+                        onChange={() => {
+                            userEditedCodeRef.current = true;
+                        }}
                         rules={{
                             required: 'Academic year code is required',
                             validate: (val) => {
@@ -217,6 +295,9 @@ export default function Step1SchoolYearInfo({
                         disabled={disabled}
                         name="label"
                         placeholder="e.g. Academic Year 2026-2027"
+                        onChange={() => {
+                            userEditedLabelRef.current = true;
+                        }}
                         rules={{
                             required: 'Academic year label is required',
                             validate: (val) => {

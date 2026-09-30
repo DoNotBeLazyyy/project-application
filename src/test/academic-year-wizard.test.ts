@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     cloneSchoolYearForDuplication,
+    generateAcademicYearCode,
+    generateAcademicYearLabel,
+    parseYearFromDate,
     SourceSchoolYearInfo,
     validateGradingPeriods,
     validateStep1SchoolYear
@@ -261,6 +264,29 @@ describe('Academic Year Wizard - Duplication & Required Field Change Validation'
         });
         expect(res.isValid).toBe(false);
         expect(res.error).toContain('End Date must be strictly after Start Date.');
+    });
+});
+
+describe('Academic Year Code & Label Auto-Population Helpers', () => {
+    it('should correctly parse the 4-digit year from ISO date strings without timezone drift', () => {
+        expect(parseYearFromDate('2026-08-15')).toBe(2026);
+        expect(parseYearFromDate('2027-01-01')).toBe(2027);
+        expect(parseYearFromDate('2028-12-31')).toBe(2028);
+        expect(parseYearFromDate('')).toBeNull();
+    });
+
+    it('should generate standard Academic Year Code when start and end dates are provided', () => {
+        expect(generateAcademicYearCode('2026-08-15', '2027-05-30')).toBe('AY-2026-2027');
+        expect(generateAcademicYearCode('2025-09-01', '2026-06-30')).toBe('AY-2025-2026');
+        expect(generateAcademicYearCode('', '2027-05-30')).toBeNull();
+        expect(generateAcademicYearCode('2026-08-15', '')).toBeNull();
+    });
+
+    it('should generate standard Academic Year Label when start and end dates are provided', () => {
+        expect(generateAcademicYearLabel('2026-08-15', '2027-05-30')).toBe('Academic Year 2026-2027');
+        expect(generateAcademicYearLabel('2025-09-01', '2026-06-30')).toBe('Academic Year 2025-2026');
+        expect(generateAcademicYearLabel('', '2027-05-30')).toBeNull();
+        expect(generateAcademicYearLabel('2026-08-15', '')).toBeNull();
     });
 });
 
