@@ -3,8 +3,6 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { getFacultyOptions, getTerms } from '@services/section.service';
-import SectionGradingOverride from '@pages/dean/section-management/SectionGradingOverride';
-import { ComponentPropsForm } from '@type/common.type';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
 import { useEffect, useState } from 'react';
 import { Control } from 'react-hook-form';
@@ -17,20 +15,17 @@ const STATUS_OPTIONS: { label: string; value: SectionStatus }[] = [
     { label: 'Cancelled', value: 'Cancelled' }
 ];
 
-interface SectionFormProps extends ComponentPropsForm {
+interface Step1SectionOverviewProps {
     control: Control<SectionFormValues>;
-    currentSectionId?: string;
     disabled?: boolean;
     isCreate?: boolean;
 }
 
-export default function SectionForm({
+export default function Step1SectionOverview({
     control,
-    currentSectionId,
     disabled,
-    isCreate,
-    ...formProps
-}: SectionFormProps) {
+    isCreate
+}: Step1SectionOverviewProps) {
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
     const { courseOptions } = useCourseOptions({});
@@ -147,18 +142,14 @@ export default function SectionForm({
 
     return (
         <div className="flex flex-col gap-4">
-            <CommonForm
-                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                control={control}
-                fields={fields}
-                formProps={formProps}
-                hasHelper
-            />
-            <SectionGradingOverride
-                control={control}
-                currentSectionId={currentSectionId}
-                disabled={disabled}
-            />
+            <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col gap-4">
+                <CommonForm
+                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                    control={control}
+                    fields={fields}
+                    hasHelper
+                />
+            </div>
         </div>
     );
 }

@@ -5,25 +5,19 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CopySectionSetupModal from '@pages/dean/section-management/CopySectionSetupModal';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
-import SectionForm from '@pages/dean/section-management/SectionForm';
+import SectionWizardModal from '@pages/dean/section-management/SectionWizardModal';
 import { useSectionTableConfig } from '@pages/dean/section-management/useSectionTableConfig';
 import {
     bulkCreateSections,
     bulkDeleteSections,
-    copySectionSetupToSections,
-    createSection,
     deleteSection,
-    getSectionById,
-    getSections,
-    listSections,
-    updateSection
+    listSections
 } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
-import { SectionBulkRow, SectionFilterValues, SectionFormValues, SectionListRow } from '@type/section.type';
-import { formErrors } from '@utils/form.util';
+import { SectionBulkRow, SectionFilterValues, SectionListRow } from '@type/section.type';
 import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'section_code', label: 'Section Code' },
@@ -33,8 +27,6 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'faculty_name', label: 'Faculty' }
 ];
 
-const CREATE_FORM_ID = 'create-section-form';
-const UPDATE_FORM_ID = 'update-section-form';
 const FILTER_FORM_ID = 'filter-section-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
@@ -46,20 +38,6 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' }
 ];
 
-const defaultFormValues: SectionFormValues = {
-    term_id: '',
-    course_id: '',
-    faculty_id: '',
-    section_code: '',
-    room: '',
-    max_slots: '40',
-    status: 'Open',
-    override_grading_schema: false,
-    grading_override_mode: 'copy_section',
-    source_section_id: '',
-    grading_periods: []
-};
-
 export default function SectionManagement() {
     const [activeFilters, setActiveFilters] = useState<SectionFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -68,12 +46,7 @@ export default function SectionManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [selectedIsEditable, setSelectedIsEditable] = useState(true);
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
-
-    const createMethods = useForm<SectionFormValues>({
-        defaultValues: defaultFormValues
-    });
 
     const filterMethods = useForm<SectionFilterValues>({
         defaultValues: {
@@ -83,63 +56,24 @@ export default function SectionManagement() {
         }
     });
 
-    const updateMethods = useForm<SectionFormValues>({
-        defaultValues: defaultFormValues
-    });
-
-    async function loadIntoForm(id: string) {
-        const result = await getSectionById(id);
-
-        if (result.data) {
-            setSelectedIsEditable(result.data.is_active_academic_year !== false);
-            updateMethods.reset({
-                term_id: result.data.term_id,
-                course_id: result.data.course_id,
-                faculty_id: result.data.faculty_id ?? '',
-                section_code: result.data.section_code,
-                room: result.data.room ?? '',
-                max_slots: String(result.data.max_slots),
-                status: result.data.status,
-                is_active_academic_year: result.data.is_active_academic_year,
-                override_grading_schema: false,
-                grading_override_mode: 'copy_section',
-                source_section_id: '',
-                grading_periods: []
-            });
-        }
-    }
-
-    async function handleOpenView(id: string) {
+    function handleOpenView(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
         setIsViewOpen(true);
     }
 
     function handleCloseView() {
         setIsViewOpen(false);
         setSelectedId(null);
-        setSelectedIsEditable(true);
-        updateMethods.reset(defaultFormValues);
     }
 
-    async function handleOpenUpdate(id: string) {
+    function handleOpenUpdate(id: string) {
         setSelectedId(id);
-        await loadIntoForm(id);
-        setIsUpdateOpen(true);
-    }
-
-    async function handleSwitchToEdit(id: string) {
-        if (!selectedIsEditable) return;
-        setIsViewOpen(false);
-        await loadIntoForm(id);
         setIsUpdateOpen(true);
     }
 
     function handleCloseUpdate() {
         setIsUpdateOpen(false);
         setSelectedId(null);
-        setSelectedIsEditable(true);
-        updateMethods.reset(defaultFormValues);
     }
 
     function handleOpenCopySetup(id: string) {
@@ -162,33 +96,6 @@ export default function SectionManagement() {
         return listSections(page, size, search, sort, activeFilters);
     }
 
-    async function handleCreateSubmit(values: SectionFormValues) {
-        const result = await createSection(values);
-
-        if (!result.error) {
-            if (
-                values.override_grading_schema &&
-                values.grading_override_mode === 'copy_section' &&
-                values.source_section_id
-            ) {
-                const sectionsRes = await getSections();
-                const newSection = sectionsRes.data?.find(
-                    (s) => s.section_code === values.section_code
-                );
-                if (newSection?.id) {
-                    await copySectionSetupToSections(values.source_section_id, [newSection.id]);
-                }
-            }
-            createMethods.reset(defaultFormValues);
-            setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
-        }
-    }
-
-    function handleCreateFormError(errors: FieldErrors<SectionFormValues>) {
-        formErrors(errors, createMethods);
-    }
-
     function handleFilterSubmit(values: SectionFilterValues) {
         setActiveFilters(values);
         setIsFilterOpen(false);
@@ -197,28 +104,6 @@ export default function SectionManagement() {
     function handleFilterReset() {
         filterMethods.reset();
         setActiveFilters(null);
-    }
-
-    async function handleUpdateSubmit(values: SectionFormValues) {
-        if (!selectedId) return;
-
-        const result = await updateSection(selectedId, values);
-
-        if (!result.error) {
-            if (
-                values.override_grading_schema &&
-                values.grading_override_mode === 'copy_section' &&
-                values.source_section_id
-            ) {
-                await copySectionSetupToSections(values.source_section_id, [selectedId]);
-            }
-            handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
-        }
-    }
-
-    function handleUpdateFormError(errors: FieldErrors<SectionFormValues>) {
-        formErrors(errors, updateMethods);
     }
 
     return (
@@ -238,31 +123,6 @@ export default function SectionManagement() {
                                 setIsBulkImportOpen(true);
                             }
                         }
-                    }
-                }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Fill in the details to create a new section.',
-                            title: 'Create Section'
-                        }
-                    },
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <SectionForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            isCreate
-                            onSubmit={createMethods.handleSubmit(
-                                handleCreateSubmit,
-                                handleCreateFormError
-                            )}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
                     }
                 }}
                 dependencies={[activeFilters]}
@@ -308,70 +168,6 @@ export default function SectionManagement() {
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update the details of this section.',
-                            title: 'Edit Section'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
-                        <SectionForm
-                            control={updateMethods.control}
-                            currentSectionId={selectedId ?? undefined}
-                            id={UPDATE_FORM_ID}
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                handleUpdateFormError
-                            )}
-                        />
-                    ),
-                    isDirty: updateMethods.formState.isDirty,
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
-                }}
-                viewModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: selectedIsEditable
-                                ? 'Viewing section details.'
-                                : 'Viewing section details (Read-Only: Inactive Academic Year).',
-                            title: 'View Section'
-                        }
-                    },
-                    confirmText: selectedIsEditable ? 'Edit' : undefined,
-                    formContent: (
-                        <SectionForm
-                            control={updateMethods.control}
-                            currentSectionId={selectedId ?? undefined}
-                            disabled
-                        />
-                    ),
-                    formButtonsProps: selectedIsEditable
-                        ? {
-                            confirmProps: {
-                                onClick: function() {
-                                    if (selectedId) {
-                                        handleSwitchToEdit(selectedId);
-                                    }
-                                }
-                            }
-                        }
-                        : {
-                            confirmProps: {
-                                sx: { display: 'none' }
-                            }
-                        },
-                    open: isViewOpen,
-                    onClose: handleCloseView
-                }}
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
@@ -383,6 +179,39 @@ export default function SectionManagement() {
                 }}
                 onRowClick={handleOpenView}
             />
+
+            {/* Create Wizard Modal */}
+            <SectionWizardModal
+                open={isCreateOpen}
+                onClose={function() {
+                    setIsCreateOpen(false);
+                }}
+                onSuccess={function() {
+                    setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
+                }}
+            />
+
+            {/* Edit Wizard Modal */}
+            <SectionWizardModal
+                open={isUpdateOpen}
+                sectionId={selectedId}
+                onClose={handleCloseUpdate}
+                onSuccess={function() {
+                    setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
+                }}
+            />
+
+            {/* View Wizard Modal */}
+            <SectionWizardModal
+                open={isViewOpen}
+                readOnly
+                sectionId={selectedId}
+                onClose={handleCloseView}
+                onSuccess={function() {
+                    setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
+                }}
+            />
+
             <BulkImportModal<SectionBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
@@ -403,6 +232,7 @@ export default function SectionManagement() {
                     setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
                 }}
             />
+
             <CopySectionSetupModal
                 open={copySourceId !== null}
                 sourceSectionId={copySourceId}

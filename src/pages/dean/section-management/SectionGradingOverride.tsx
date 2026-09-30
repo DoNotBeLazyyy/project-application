@@ -367,10 +367,9 @@ export default function SectionGradingOverride({
                                                             <CommonInput
                                                                 containerClassName="w-full"
                                                                 disabled={disabled}
-                                                                max={100}
-                                                                min={0}
                                                                 placeholder="Weight"
                                                                 size="small"
+                                                                slotProps={{ htmlInput: { min: 0, max: 100 } }}
                                                                 type="number"
                                                                 value={String(comp.weight ?? '')}
                                                                 onChange={(e) =>

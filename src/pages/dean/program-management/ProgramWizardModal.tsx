@@ -43,7 +43,7 @@ export default function ProgramWizardModal({
     onSubmit
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
-    const { control, handleSubmit } = methods;
+    const { control, handleSubmit, trigger } = methods;
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
@@ -112,9 +112,11 @@ export default function ProgramWizardModal({
 
     const currentStepConfig = PROGRAM_WIZARD_STEPS.find((s) => s.step === currentStep);
 
-    function handleNext() {
-        if (currentStep < PROGRAM_WIZARD_STEPS.length) {
-            setCurrentStep((prev) => prev + 1);
+    async function handleNext() {
+        if (currentStep === 1) {
+            const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
+            if (!isValid) return;
+            setCurrentStep(2);
         }
     }
 
@@ -122,6 +124,15 @@ export default function ProgramWizardModal({
         if (currentStep > 1) {
             setCurrentStep((prev) => prev - 1);
         }
+    }
+
+    function handleStepClick(stepNumber: number) {
+        if (stepNumber === currentStep) return;
+        if (stepNumber < currentStep) {
+            setCurrentStep(stepNumber);
+            return;
+        }
+        handleNext();
     }
 
     function handleCloseModal() {
@@ -186,7 +197,7 @@ export default function ProgramWizardModal({
                                         : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
                                 }`}
                                 type="button"
-                                onClick={() => setCurrentStep(s.step)}
+                                onClick={() => handleStepClick(s.step)}
                             >
                                 <span
                                     className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${

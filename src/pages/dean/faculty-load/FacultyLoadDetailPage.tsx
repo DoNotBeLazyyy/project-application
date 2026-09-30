@@ -35,7 +35,6 @@ export default function FacultyLoadDetailPage() {
     const totalStudents = sections.reduce((sum, section) => sum + section.enrolled_count, 0);
 
     return (
-    return (
         <CommonCard className="h-full w-full">
             <div className="flex flex-col gap-6 h-full p-6 overflow-hidden">
                 <div className="flex flex-col gap-4 shrink-0">
