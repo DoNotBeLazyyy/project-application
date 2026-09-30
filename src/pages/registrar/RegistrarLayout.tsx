@@ -48,15 +48,9 @@ export default function RegistrarLayout() {
             items: [
                 {
                     icon: <MegaphoneIcon size={18} />,
-                    isActive: pathname.startsWith('/registrar/announcement-management'),
-                    label: 'Announcements',
+                    isActive: pathname.startsWith('/registrar/announcement-management') || pathname.startsWith('/registrar/event-management'),
+                    label: 'Announcements & Events',
                     onClick: () => navigate('/registrar/announcement-management')
-                },
-                {
-                    icon: <CalendarIcon size={18} />,
-                    isActive: pathname.startsWith('/registrar/event-management'),
-                    label: 'Events',
-                    onClick: () => navigate('/registrar/event-management')
                 }
             ]
         }

@@ -65,6 +65,29 @@ export interface AnnouncementFormValues {
     sections?: AnnouncementSectionRef[];
 }
 
+export type CommunicationItemType = 'Announcement' | 'Event';
+
+export interface CommunicationFormValues {
+    all_day?: boolean;
+    attachments?: AttachmentInputDto[];
+    author_name?: string;
+    content: string;
+    created_at?: string;
+    description: string;
+    end_at: string;
+    expires_at: string;
+    id?: string;
+    is_pinned: boolean;
+    item_type: CommunicationItemType;
+    location: string;
+    posted_on?: string;
+    section_ids: string[];
+    sections?: AnnouncementSectionRef[];
+    start_at: string;
+    target_audience: AnnouncementAudience;
+    title: string;
+}
+
 export interface AnnouncementFeedRow {
     id: string;
     title: string;

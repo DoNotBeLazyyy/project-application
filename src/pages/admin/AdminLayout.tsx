@@ -51,15 +51,9 @@ export default function AdminLayout() {
                 items: [
                     {
                         icon: <MegaphoneIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/announcement-management'),
-                        label: 'Announcements',
+                        isActive: pathname.startsWith('/admin/announcement-management') || pathname.startsWith('/admin/event-management'),
+                        label: 'Announcements & Events',
                         onClick: () => navigate('/admin/announcement-management')
-                    },
-                    {
-                        icon: <CalendarIcon size={18} />,
-                        isActive: pathname.startsWith('/admin/event-management'),
-                        label: 'Events',
-                        onClick: () => navigate('/admin/event-management')
                     },
                     {
                         icon: <ClipboardTextIcon size={18} />,

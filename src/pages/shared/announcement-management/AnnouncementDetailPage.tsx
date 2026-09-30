@@ -1,40 +1,19 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
+import { ALL_SECTIONS_VALUE } from '@constants/event.constant';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
+import EventViewerCard from '@pages/shared/event-management/EventViewerCard';
 import { createAnnouncement, getAnnouncementById, updateAnnouncement } from '@services/announcement.service';
-import { AnnouncementDetail, AnnouncementFormValues } from '@type/announcement.type';
+import { createEvent, getEventById, updateEvent } from '@services/event.service';
+import { CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
+import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
-import { useCallback } from 'react';
+import { sanitizeUuidArray } from '@utils/uuid.util';
+import { useCallback, useMemo } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
-const FORM_ID = 'announcement-form';
-
-const DEFAULT_VALUES: AnnouncementFormValues = {
-    attachments: [],
-    author_name: '',
-    content: '',
-    expires_at: '',
-    is_pinned: false,
-    posted_on: '',
-    section_ids: [],
-    target_audience: 'Global',
-    title: ''
-};
-
-function toFormValues(detail: AnnouncementDetail): AnnouncementFormValues {
-    return {
-        attachments: detail.attachments ?? [],
-        author_name: detail.author_name ?? '—',
-        content: detail.content,
-        expires_at: detail.expires_at ?? '',
-        is_pinned: detail.is_pinned,
-        posted_on: formatTimestamp(detail.published_at ?? detail.created_at),
-        section_ids: detail.section_ids,
-        sections: detail.sections ?? [],
-        target_audience: detail.target_audience,
-        title: detail.title
-    };
-}
+const FORM_ID = 'communication-form';
 
 function formatTimestamp(value: string | null): string {
     if (!value) {
@@ -48,26 +27,203 @@ function formatTimestamp(value: string | null): string {
         : parsed.toLocaleString();
 }
 
+function toDateInput(value: string | null | undefined): string {
+    if (!value) {
+        return '';
+    }
+
+    return value.slice(0, 10);
+}
+
 export default function AnnouncementDetailPage() {
     const basePath = useAnnouncementBasePath();
+    const { pathname } = useLocation();
+    const [searchParams] = useSearchParams();
 
-    const fetchAnnouncement = useCallback(async function(
+    const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
+    const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
+
+    const defaultValues: CommunicationFormValues = useMemo(function() {
+        return {
+            all_day: false,
+            attachments: [],
+            author_name: '',
+            content: '',
+            created_at: '',
+            description: '',
+            end_at: '',
+            expires_at: '',
+            is_pinned: false,
+            item_type: initialType,
+            location: '',
+            posted_on: '',
+            section_ids: initialType === 'Event' ? [ALL_SECTIONS_VALUE] : [],
+            start_at: '',
+            target_audience: 'Global',
+            title: ''
+        };
+    }, [initialType]);
+
+    const fetchCommunicationItem = useCallback(async function(
         id: string
-    ): Promise<ServiceResult<AnnouncementFormValues>> {
-        const result = await getAnnouncementById(id);
-
-        if (!result.data) {
-            return { data: null, error: result.error };
+    ): Promise<ServiceResult<CommunicationFormValues>> {
+        // If coming from an event path, check event first, otherwise check announcement first
+        if (pathname.includes('/event-management')) {
+            const eventRes = await getEventById(id);
+            if (eventRes.data) {
+                const d = eventRes.data;
+                return {
+                    data: {
+                        all_day: d.all_day,
+                        attachments: d.attachments ?? [],
+                        author_name: d.author_name ?? 'Staff',
+                        content: d.description ?? '',
+                        created_at: d.created_at,
+                        description: d.description ?? '',
+                        end_at: toDateInput(d.end_at),
+                        expires_at: '',
+                        id: d.id,
+                        is_pinned: false,
+                        item_type: 'Event',
+                        location: d.location ?? '',
+                        posted_on: formatTimestamp(d.created_at),
+                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [ALL_SECTIONS_VALUE],
+                        sections: d.sections ?? [],
+                        start_at: toDateInput(d.start_at),
+                        target_audience: d.target_audience,
+                        title: d.title
+                    },
+                    error: null
+                };
+            }
         }
 
-        return { data: toFormValues(result.data), error: null };
-    }, []);
+        const annResult = await getAnnouncementById(id);
+        if (annResult.data) {
+            const d = annResult.data;
+            return {
+                data: {
+                    all_day: false,
+                    attachments: d.attachments ?? [],
+                    author_name: d.author_name ?? '—',
+                    content: d.content,
+                    created_at: d.created_at,
+                    description: d.content,
+                    end_at: '',
+                    expires_at: d.expires_at ?? '',
+                    id: d.id,
+                    is_pinned: d.is_pinned,
+                    item_type: 'Announcement',
+                    location: '',
+                    posted_on: formatTimestamp(d.published_at ?? d.created_at),
+                    section_ids: d.section_ids ?? [],
+                    sections: d.sections ?? [],
+                    start_at: '',
+                    target_audience: d.target_audience,
+                    title: d.title
+                },
+                error: null
+            };
+        }
+
+        const evtResult = await getEventById(id);
+        if (evtResult.data) {
+            const d = evtResult.data;
+            return {
+                data: {
+                    all_day: d.all_day,
+                    attachments: d.attachments ?? [],
+                    author_name: d.author_name ?? 'Staff',
+                    content: d.description ?? '',
+                    created_at: d.created_at,
+                    description: d.description ?? '',
+                    end_at: toDateInput(d.end_at),
+                    expires_at: '',
+                    id: d.id,
+                    is_pinned: false,
+                    item_type: 'Event',
+                    location: d.location ?? '',
+                    posted_on: formatTimestamp(d.created_at),
+                    section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [ALL_SECTIONS_VALUE],
+                    sections: d.sections ?? [],
+                    start_at: toDateInput(d.start_at),
+                    target_audience: d.target_audience,
+                    title: d.title
+                },
+                error: null
+            };
+        }
+
+        return { data: null, error: annResult.error || evtResult.error };
+    }, [pathname]);
+
+    async function handleCreate(values: CommunicationFormValues) {
+        if (values.item_type === 'Event') {
+            const body = values.description || values.content || '';
+            const isAll = values.section_ids?.includes(ALL_SECTIONS_VALUE);
+            const audience = isAll ? 'Global' : 'Section';
+            const eventPayload: EventFormValues = {
+                all_day: values.all_day ?? false,
+                attachments: values.attachments,
+                description: body,
+                end_at: values.end_at || '',
+                location: values.location || '',
+                section_ids: isAll ? [] : sanitizeUuidArray(values.section_ids ?? []),
+                start_at: values.start_at || '',
+                target_audience: audience,
+                title: values.title
+            };
+            return createEvent(eventPayload);
+        }
+
+        const body = values.content || values.description || '';
+        return createAnnouncement({
+            attachments: values.attachments,
+            content: body,
+            expires_at: values.expires_at || '',
+            is_pinned: values.is_pinned ?? false,
+            section_ids: values.target_audience === 'Section' ? (values.section_ids ?? []) : [],
+            target_audience: values.target_audience || 'Global',
+            title: values.title
+        });
+    }
+
+    async function handleUpdate(id: string, values: CommunicationFormValues) {
+        if (values.item_type === 'Event') {
+            const body = values.description || values.content || '';
+            const isAll = values.section_ids?.includes(ALL_SECTIONS_VALUE);
+            const audience = isAll ? 'Global' : 'Section';
+            const eventPayload: EventFormValues = {
+                all_day: values.all_day ?? false,
+                attachments: values.attachments,
+                description: body,
+                end_at: values.end_at || '',
+                location: values.location || '',
+                section_ids: isAll ? [] : sanitizeUuidArray(values.section_ids ?? []),
+                start_at: values.start_at || '',
+                target_audience: audience,
+                title: values.title
+            };
+            return updateEvent(id, eventPayload);
+        }
+
+        const body = values.content || values.description || '';
+        return updateAnnouncement(id, {
+            attachments: values.attachments,
+            content: body,
+            expires_at: values.expires_at || '',
+            is_pinned: values.is_pinned ?? false,
+            section_ids: values.target_audience === 'Section' ? (values.section_ids ?? []) : [],
+            target_audience: values.target_audience || 'Global',
+            title: values.title
+        });
+    }
 
     return (
-        <EntityFormPage<AnnouncementFormValues>
+        <EntityFormPage<CommunicationFormValues>
             backTo={basePath}
-            defaultValues={DEFAULT_VALUES}
-            fetchById={fetchAnnouncement}
+            defaultValues={defaultValues}
+            fetchById={fetchCommunicationItem}
             formId={FORM_ID}
             renderForm={function({ control, disabled, id, onSubmit }) {
                 return (
@@ -80,20 +236,55 @@ export default function AnnouncementDetailPage() {
                 );
             }}
             renderView={function(values) {
-                return <AnnouncementViewerCard values={values} />;
+                if (values.item_type === 'Event') {
+                    return (
+                        <EventViewerCard
+                            values={{
+                                all_day: values.all_day,
+                                attachments: values.attachments,
+                                author_name: values.author_name,
+                                created_at: values.created_at,
+                                description: values.description || values.content || '',
+                                end_at: values.end_at,
+                                location: values.location,
+                                section_ids: values.section_ids,
+                                sections: values.sections,
+                                start_at: values.start_at,
+                                target_audience: values.target_audience,
+                                title: values.title
+                            }}
+                        />
+                    );
+                }
+                return (
+                    <AnnouncementViewerCard
+                        values={{
+                            attachments: values.attachments,
+                            author_name: values.author_name,
+                            content: values.content || values.description || '',
+                            expires_at: values.expires_at,
+                            is_pinned: values.is_pinned,
+                            posted_on: values.posted_on,
+                            section_ids: values.section_ids,
+                            sections: values.sections,
+                            target_audience: values.target_audience,
+                            title: values.title
+                        }}
+                    />
+                );
             }}
             subheader={{
-                create: 'Compose a new announcement and choose who receives it.',
-                edit: 'Update the details of this announcement.',
-                view: 'Preview how this announcement appears to students and faculty.'
+                create: 'Compose an announcement or schedule an event for your community.',
+                edit: 'Update the details of this item.',
+                view: 'Preview how this item appears to your audience.'
             }}
             title={{
-                create: 'Post Announcement',
-                edit: 'Edit Announcement',
-                view: 'Announcement Details'
+                create: 'Post Announcement or Event',
+                edit: 'Edit Announcement or Event',
+                view: 'Post Details'
             }}
-            onCreate={createAnnouncement}
-            onUpdate={updateAnnouncement}
+            onCreate={handleCreate}
+            onUpdate={handleUpdate}
         />
     );
 }

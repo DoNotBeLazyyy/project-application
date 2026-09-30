@@ -57,8 +57,8 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
     result: 'Results Breakdown',
 
     // Shared Pages
-    'announcement-management': 'Announcements',
-    'event-management': 'Events',
+    'announcement-management': 'Announcements & Events',
+    'event-management': 'Announcements & Events',
     profile: 'My Profile',
     new: 'New'
 };

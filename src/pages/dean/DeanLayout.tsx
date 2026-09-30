@@ -83,15 +83,9 @@ export default function DeanLayout() {
             items: [
                 {
                     icon: <MegaphoneIcon size={18} />,
-                    isActive: pathname.startsWith('/dean/announcement-management'),
-                    label: 'Announcements',
+                    isActive: pathname.startsWith('/dean/announcement-management') || pathname.startsWith('/dean/event-management'),
+                    label: 'Announcements & Events',
                     onClick: () => navigate('/dean/announcement-management')
-                },
-                {
-                    icon: <CalendarIcon size={18} />,
-                    isActive: pathname.startsWith('/dean/event-management'),
-                    label: 'Events',
-                    onClick: () => navigate('/dean/event-management')
                 }
             ]
         }
