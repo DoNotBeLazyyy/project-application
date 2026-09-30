@@ -231,6 +231,7 @@ function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseT
 }
 
 interface CourseFormProps extends ComponentPropsForm {
+    activeStep?: number;
     control: Control<CourseFormValues>;
     disabled?: boolean;
     excludeCourseId?: string;
@@ -259,6 +260,7 @@ export const COURSE_FORM_STEPS = [
 const STEPS = COURSE_FORM_STEPS;
 
 export default function CourseForm({
+    activeStep: externalActiveStep,
     control,
     disabled,
     excludeCourseId,
@@ -266,7 +268,9 @@ export default function CourseForm({
     onSwitchToEdit,
     ...formProps
 }: CourseFormProps) {
-    const [activeStep, setActiveStep] = useState<number>(1);
+    const [internalActiveStep, setInternalActiveStep] = useState<number>(1);
+    const activeStep = externalActiveStep ?? internalActiveStep;
+    const isControlledStep = externalActiveStep !== undefined;
     const { errors } = useFormState({ control });
 
     const prerequisites = useWatch({ control, name: 'prerequisites' });
@@ -402,76 +406,78 @@ export default function CourseForm({
     return (
         <div className="flex flex-col gap-5">
             {/* Stepper Progress Bar Header (Academic Year Wizard Layout & Design) */}
-            <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0 -mx-6 -mt-6 mb-2">
-                {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-3 gap-2">
-                    {STEPS.map((s) => {
-                        const isActive = activeStep === s.step;
-                        const isDone = activeStep > s.step;
+            {!isControlledStep && (
+                <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0 -mx-6 -mt-6 mb-2">
+                    {/* Desktop Stepper (>= 768px) */}
+                    <div className="hidden md:grid grid-cols-3 gap-2">
+                        {STEPS.map((s) => {
+                            const isActive = activeStep === s.step;
+                            const isDone = activeStep > s.step;
 
-                        return (
-                            <button
-                                key={s.step}
-                                className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
-                                    isActive
-                                        ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
-                                        : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
-                                }`}
-                                type="button"
-                                onClick={() => setActiveStep(s.step)}
-                            >
-                                <span
-                                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
+                            return (
+                                <button
+                                    key={s.step}
+                                    className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${
                                         isActive
-                                            ? 'bg-brand-600 text-white'
-                                            : isDone
-                                            ? 'bg-emerald-500 text-white'
-                                            : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
+                                            ? 'bg-white dark:bg-zinc-800 shadow-sm border border-brand-300 dark:border-brand-700/60'
+                                            : 'hover:bg-white/60 dark:hover:bg-zinc-800/40 opacity-80'
                                     }`}
+                                    type="button"
+                                    onClick={() => setInternalActiveStep(s.step)}
                                 >
-                                    {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
-                                </span>
-                                <div className="flex items-center gap-1.5 min-w-0">
                                     <span
-                                        className={`text-xs font-semibold truncate ${
+                                        className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
                                             isActive
-                                                ? 'text-brand-600 dark:text-brand-400'
-                                                : 'text-slate-700 dark:text-slate-300'
+                                                ? 'bg-brand-600 text-white'
+                                                : isDone
+                                                ? 'bg-emerald-500 text-white'
+                                                : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-300'
                                         }`}
                                     >
-                                        {s.title}
+                                        {isDone ? <CheckCircleIcon className="w-4 h-4" /> : s.step}
                                     </span>
-                                    <span onClick={(e) => e.stopPropagation()}>
-                                        <CommonInfoTooltip content={s.subtitle} size={14} />
-                                    </span>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span
+                                            className={`text-xs font-semibold truncate ${
+                                                isActive
+                                                    ? 'text-brand-600 dark:text-brand-400'
+                                                    : 'text-slate-700 dark:text-slate-300'
+                                            }`}
+                                        >
+                                            {s.title}
+                                        </span>
+                                        <span onClick={(e) => e.stopPropagation()}>
+                                            <CommonInfoTooltip content={s.subtitle} size={14} />
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                {/* Mobile Stepper Header (< 768px) */}
-                <div className="block md:hidden">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <span>Step {activeStep} of 3: {currentStepConfig?.title}</span>
-                            {currentStepConfig?.subtitle && (
-                                <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
-                            )}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">
-                            {Math.round((activeStep / 3) * 100)}%
-                        </span>
-                    </div>
-                    {/* Progress Bar Line */}
-                    <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
-                        <div
-                            className="bg-brand-600 h-full transition-all duration-300 rounded-full"
-                            style={{ width: `${(activeStep / 3) * 100}%` }}
-                        />
+                    {/* Mobile Stepper Header (< 768px) */}
+                    <div className="block md:hidden">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
+                                <span>Step {activeStep} of 3: {currentStepConfig?.title}</span>
+                                {currentStepConfig?.subtitle && (
+                                    <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
+                                )}
+                            </span>
+                            <span className="text-xs text-slate-400 font-medium">
+                                {Math.round((activeStep / 3) * 100)}%
+                            </span>
+                        </div>
+                        {/* Progress Bar Line */}
+                        <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
+                            <div
+                                className="bg-brand-600 h-full transition-all duration-300 rounded-full"
+                                style={{ width: `${(activeStep / 3) * 100}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Step 1: Overview Data */}
             <div className={activeStep === 1 ? 'flex flex-col gap-4' : 'hidden'}>
@@ -741,59 +747,61 @@ export default function CourseForm({
             </div>
 
             {/* Sticky Bottom Action Bar (Academic Year Modal Layout & Design) */}
-            <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10 -mx-6 -mb-6 mt-4">
-                <CommonButton
-                    color="inherit"
-                    disabled={activeStep === 1}
-                    size="medium"
-                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
-                    variant="outlined"
-                    onClick={() => setActiveStep((prev) => prev - 1)}
-                >
-                    Back
-                </CommonButton>
+            {!isControlledStep && (
+                <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10 -mx-6 -mb-6 mt-4">
+                    <CommonButton
+                        color="inherit"
+                        disabled={activeStep === 1}
+                        size="medium"
+                        startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                        variant="outlined"
+                        onClick={() => setInternalActiveStep((prev) => prev - 1)}
+                    >
+                        Back
+                    </CommonButton>
 
-                <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {activeStep} of 3 — {currentStepConfig?.title}
-                </div>
+                    <div className="hidden sm:block text-xs font-medium text-slate-500">
+                        Step {activeStep} of 3 — {currentStepConfig?.title}
+                    </div>
 
-                <div className="flex items-center gap-2">
-                    {activeStep < 3 ? (
-                        <CommonButton
-                            color="primary"
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={() => setActiveStep((prev) => prev + 1)}
-                        >
-                            Next Step
-                        </CommonButton>
-                    ) : disabled ? (
-                        onSwitchToEdit ? (
+                    <div className="flex items-center gap-2">
+                        {activeStep < 3 ? (
                             <CommonButton
                                 color="primary"
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
                                 size="medium"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                 variant="contained"
-                                onClick={onSwitchToEdit}
+                                onClick={() => setInternalActiveStep((prev) => prev + 1)}
                             >
-                                Edit Course
+                                Next Step
                             </CommonButton>
-                        ) : null
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            form={formProps.id}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            type="submit"
-                            variant="contained"
-                        >
-                            {isCodeDisabled ? 'Save Changes' : 'Save Course'}
-                        </CommonButton>
-                    )}
+                        ) : disabled ? (
+                            onSwitchToEdit ? (
+                                <CommonButton
+                                    color="primary"
+                                    size="medium"
+                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={onSwitchToEdit}
+                                >
+                                    Edit Course
+                                </CommonButton>
+                            ) : null
+                        ) : (
+                            <CommonButton
+                                color="primary"
+                                form={formProps.id}
+                                size="medium"
+                                startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                type="submit"
+                                variant="contained"
+                            >
+                                {isCodeDisabled ? 'Save Changes' : 'Save Course'}
+                            </CommonButton>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

@@ -33,7 +33,7 @@ export const SECTION_WIZARD_STEPS = [
     {
         step: 2,
         title: 'Grading Schema Settings',
-        subtitle: 'Override system default grading schema and configure component weights'
+        subtitle: 'Configure section grading schema and component weights'
     }
 ];
 
@@ -156,6 +156,7 @@ export default function SectionWizardModal({
     }
 
     async function handleStepClick(stepNumber: number) {
+        if (stepNumber === currentStep) return;
         if (isReadOnly) {
             setCurrentStep(stepNumber);
             return;
@@ -241,7 +242,7 @@ export default function SectionWizardModal({
             open={open}
             onClose={onClose}
         >
-            {/* Modal Top Header */}
+            {/* Modal Top Header (Exactly matching Academic Year Stepper Modal Header) */}
             <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -309,10 +310,10 @@ export default function SectionWizardModal({
                 )}
             </div>
 
-            {/* Stepper Progress Bar */}
+            {/* Stepper Progress Bar Header (Exactly matching Academic Year Stepper Modal Step Tracker) */}
             <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0">
                 {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-2 gap-3">
+                <div className="hidden md:grid grid-cols-2 gap-2">
                     {SECTION_WIZARD_STEPS.map((s) => {
                         const isActive = currentStep === s.step;
                         const isDone = currentStep > s.step;
@@ -409,7 +410,7 @@ export default function SectionWizardModal({
                 )}
             </div>
 
-            {/* Sticky Bottom Action Bar */}
+            {/* Sticky Bottom Action Bar (Exactly matching Academic Year Stepper Modal Footer) */}
             <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shrink-0 flex items-center justify-between gap-3 safe-bottom z-10">
                 {/* Back Button */}
                 <CommonButton
@@ -423,44 +424,45 @@ export default function SectionWizardModal({
                     Back
                 </CommonButton>
 
-                <div className="flex items-center gap-2">
-                    <CommonButton
-                        color="inherit"
-                        disabled={isSaving}
-                        size="medium"
-                        variant="outlined"
-                        onClick={onClose}
-                    >
-                        {isReadOnly ? 'Close' : 'Cancel'}
-                    </CommonButton>
+                {/* Step indicator on desktop */}
+                <div className="hidden sm:block text-xs font-medium text-slate-500">
+                    Step {currentStep} of 2 — {currentStepConfig?.title}
+                </div>
 
-                    {!isReadOnly && (
-                        <>
-                            {currentStep === 1 ? (
-                                <CommonButton
-                                    color="primary"
-                                    disabled={isLoading || isSaving}
-                                    endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                                    size="medium"
-                                    variant="contained"
-                                    onClick={handleNext}
-                                >
-                                    Next
-                                </CommonButton>
-                            ) : (
-                                <CommonButton
-                                    color="primary"
-                                    disabled={isLoading || isSaving}
-                                    loading={isSaving}
-                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                                    size="medium"
-                                    variant="contained"
-                                    onClick={handleSave}
-                                >
-                                    {sectionId ? 'Save Changes' : 'Create Section'}
-                                </CommonButton>
-                            )}
-                        </>
+                {/* Next / Save Action */}
+                <div className="flex items-center gap-2">
+                    {currentStep < 2 ? (
+                        <CommonButton
+                            color="primary"
+                            disabled={isLoading || isSaving}
+                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                            size="medium"
+                            variant="contained"
+                            onClick={handleNext}
+                        >
+                            Next Step
+                        </CommonButton>
+                    ) : isReadOnly ? (
+                        <CommonButton
+                            color="primary"
+                            size="medium"
+                            variant="contained"
+                            onClick={onClose}
+                        >
+                            Close
+                        </CommonButton>
+                    ) : (
+                        <CommonButton
+                            color="primary"
+                            disabled={isLoading || isSaving}
+                            loading={isSaving}
+                            size="medium"
+                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                            variant="contained"
+                            onClick={handleSave}
+                        >
+                            {isSaving ? 'Saving Section...' : sectionId ? 'Save Changes' : 'Create Section'}
+                        </CommonButton>
                     )}
                 </div>
             </div>

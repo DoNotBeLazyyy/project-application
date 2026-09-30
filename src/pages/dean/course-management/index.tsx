@@ -5,6 +5,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
 import CourseForm from '@pages/dean/course-management/CourseForm';
 import CourseGridCard from '@pages/dean/course-management/CourseGridCard';
+import CourseWizardModal from '@pages/dean/course-management/CourseWizardModal';
 import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
 import {
     bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse
@@ -213,31 +214,6 @@ export default function CourseManagement() {
                         }
                     }
                 }}
-                createModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Fill in the details to create a new course.',
-                            title: 'Create Course'
-                        }
-                    },
-                    formButtonsProps: { className: '!hidden' },
-                    formId: CREATE_FORM_ID,
-                    formContent: (
-                        <CourseForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            onSubmit={createMethods.handleSubmit(
-                                handleCreateSubmit,
-                                handleCreateFormError
-                            )}
-                        />
-                    ),
-                    open: isCreateOpen,
-                    onClose: function() {
-                        createMethods.reset(defaultFormValues);
-                        setIsCreateOpen(false);
-                    }
-                }}
                 dependencies={[activeFilters]}
                 filterModalProps={{
                     cardProps: {
@@ -280,59 +256,6 @@ export default function CourseManagement() {
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
-                updateModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Update the details of this course.',
-                            title: 'Edit Course'
-                        }
-                    },
-                    confirmText: 'Save',
-                    formButtonsProps: { className: '!hidden' },
-                    formId: UPDATE_FORM_ID,
-                    formContent: (
-                        <CourseForm
-                            control={updateMethods.control}
-                            excludeCourseId={selectedId ?? undefined}
-                            id={UPDATE_FORM_ID}
-                            isCodeDisabled
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                handleUpdateFormError
-                            )}
-                        />
-                    ),
-                    isDirty: updateMethods.formState.isDirty,
-                    onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
-                    },
-                    open: isUpdateOpen,
-                    onClose: handleCloseUpdate
-                }}
-                viewModalProps={{
-                    cardProps: {
-                        cardHeaderProps: {
-                            subheader: 'Viewing course details.',
-                            title: 'View Course'
-                        }
-                    },
-                    formButtonsProps: { className: '!hidden' },
-                    formContent: (
-                        <CourseForm
-                            control={updateMethods.control}
-                            disabled
-                            onSwitchToEdit={function() {
-                                if (selectedId) {
-                                    handleSwitchToEdit(selectedId);
-                                }
-                            }}
-                        />
-                    ),
-                    open: isViewOpen,
-                    onClose: handleCloseView
-                }}
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
@@ -366,6 +289,42 @@ export default function CourseManagement() {
                 })}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
+                }}
+            />
+
+            {/* Create Course Wizard Modal */}
+            <CourseWizardModal
+                methods={createMethods}
+                open={isCreateOpen}
+                onClose={function() {
+                    createMethods.reset(defaultFormValues);
+                    setIsCreateOpen(false);
+                }}
+                onSubmit={handleCreateSubmit}
+            />
+
+            {/* Edit Course Wizard Modal */}
+            <CourseWizardModal
+                courseId={selectedId}
+                isCodeDisabled
+                methods={updateMethods}
+                open={isUpdateOpen}
+                onClose={handleCloseUpdate}
+                onSubmit={handleUpdateSubmit}
+            />
+
+            {/* View Course Wizard Modal */}
+            <CourseWizardModal
+                courseId={selectedId}
+                methods={updateMethods}
+                open={isViewOpen}
+                readOnly
+                onClose={handleCloseView}
+                onSubmit={function() {}}
+                onSwitchToEdit={function() {
+                    if (selectedId) {
+                        handleSwitchToEdit(selectedId);
+                    }
                 }}
             />
         </div>

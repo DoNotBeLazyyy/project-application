@@ -1,133 +1,55 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonForm from '@components/form/CommonForm';
-import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import CourseForm, { COURSE_FORM_STEPS } from '@pages/dean/course-management/CourseForm';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
+    BookOpenIcon,
     CheckCircleIcon,
     FloppyDiskIcon,
-    GraduationCapIcon,
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
-import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
-import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
-import { ProgramFormValues } from '@type/program/program.type';
+import { CourseFormValues } from '@type/course/course.type';
 import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
-interface ProgramWizardModalProps {
+interface CourseWizardModalProps {
     open: boolean;
     readOnly?: boolean;
-    isEditing?: boolean;
+    courseId?: string | null;
     isCodeDisabled?: boolean;
     isSaving?: boolean;
-    methods: UseFormReturn<ProgramFormValues>;
+    methods: UseFormReturn<CourseFormValues>;
     onClose: () => void;
-    onSubmit: (values: ProgramFormValues) => void;
+    onSubmit: (values: CourseFormValues) => void;
     onSwitchToEdit?: () => void;
 }
 
-export const PROGRAM_WIZARD_STEPS = [
-    { step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration' },
-    { step: 2, title: 'Grading Schema', subtitle: 'Inherit defaults or set custom schema' }
-];
-
-export default function ProgramWizardModal({
+export default function CourseWizardModal({
     open,
     readOnly = false,
-    isEditing = false,
+    courseId,
     isCodeDisabled = false,
     isSaving = false,
     methods,
     onClose,
     onSubmit,
     onSwitchToEdit
-}: ProgramWizardModalProps) {
+}: CourseWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const { control, handleSubmit, trigger } = methods;
 
-    const { departmentOptions } = useDepartmentOptions();
-    const { programLevelOptions } = useProgramLevelOptions();
-
-    const fields: FormFieldConfig<ProgramFormValues>[] = [
-        {
-            disabled: readOnly || isCodeDisabled,
-            fieldProps: { helperText: 'Unique program code, e.g. BSCS' },
-            name: 'code',
-            rules: readOnly || isCodeDisabled
-                ? undefined
-                : { required: 'Program code is required' },
-            type: 'text',
-            gridCols: 1
-        },
-        {
-            disabled: readOnly,
-            fieldProps: { helperText: 'Full program name, e.g. Bachelor of Science in Computer Science' },
-            name: 'name',
-            rules: readOnly ? undefined : { required: 'Program name is required' },
-            type: 'text',
-            gridCols: 1
-        },
-        {
-            disabled: readOnly,
-            fieldProps: { helperText: 'Department that owns this program' },
-            name: 'department_id',
-            options: departmentOptions,
-            rules: readOnly ? undefined : { required: 'Please select a department' },
-            type: 'select'
-        },
-        {
-            disabled: readOnly,
-            fieldProps: { helperText: 'Academic level of the program' },
-            name: 'program_level_id',
-            options: programLevelOptions,
-            rules: readOnly ? undefined : { required: 'Please select a program level' },
-            type: 'select'
-        },
-        {
-            disabled: readOnly,
-            fieldProps: { helperText: 'Total units across the whole program (optional)' },
-            name: 'total_units',
-            type: 'number'
-        },
-        {
-            disabled: readOnly,
-            name: 'years_duration',
-            rules: readOnly ? undefined : {
-                required: 'Number of years is required',
-                min: { value: 1, message: 'Must be at least 1 year' },
-                max: { value: 8, message: 'Cannot exceed 8 years' }
-            },
-            type: 'number',
-            fieldProps: {
-                helperText: 'Standard duration in years (1-8)',
-                min: 2,
-                max: 8
-            }
-        },
-        {
-            disabled: readOnly,
-            fieldProps: {
-                resize: 'vertical',
-                rows: 3
-            },
-            name: 'description',
-            type: 'text-area',
-            gridCols: 2
-        }
-    ];
-
-    const currentStepConfig = PROGRAM_WIZARD_STEPS.find((s) => s.step === currentStep);
+    const currentStepConfig = COURSE_FORM_STEPS.find((s) => s.step === currentStep);
 
     async function handleNext() {
         if (currentStep === 1) {
-            const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
+            const isValid = await trigger(['title', 'code', 'department_id']);
             if (!isValid) return;
             setCurrentStep(2);
+        } else if (currentStep === 2) {
+            setCurrentStep(3);
         }
     }
 
@@ -148,7 +70,7 @@ export default function ProgramWizardModal({
             return;
         }
         if (currentStep === 1) {
-            const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
+            const isValid = await trigger(['title', 'code', 'department_id']);
             if (!isValid) return;
         }
         setCurrentStep(stepNumber);
@@ -174,20 +96,20 @@ export default function ProgramWizardModal({
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                            <GraduationCapIcon className="w-5 h-5" />
+                            <BookOpenIcon className="w-5 h-5" />
                         </div>
                         <div className="min-w-0 flex-1 sm:min-w-[260px]">
                             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
                                 {readOnly
-                                    ? 'View Academic Program'
-                                    : isEditing
-                                    ? 'Edit Academic Program'
-                                    : 'Create Academic Program'}
+                                    ? 'View Course Details'
+                                    : courseId
+                                    ? 'Edit Course Details'
+                                    : 'Create New Course'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 {readOnly
-                                    ? 'Viewing program identity, department ownership, and grading schema override.'
-                                    : 'Unified setup for program identity, department ownership, and grading schema override.'}
+                                    ? 'Viewing course details, course type breakdown, and prerequisites.'
+                                    : 'Unified setup for course identity, course type breakdown, and prerequisites.'}
                             </p>
                         </div>
                     </div>
@@ -238,8 +160,8 @@ export default function ProgramWizardModal({
             {/* Stepper Progress Bar Header (Exactly matching Academic Year Stepper Modal Step Tracker) */}
             <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 px-4 py-3 shrink-0">
                 {/* Desktop Stepper (>= 768px) */}
-                <div className="hidden md:grid grid-cols-2 gap-2">
-                    {PROGRAM_WIZARD_STEPS.map((s) => {
+                <div className="hidden md:grid grid-cols-3 gap-2">
+                    {COURSE_FORM_STEPS.map((s) => {
                         const isActive = currentStep === s.step;
                         const isDone = currentStep > s.step;
 
@@ -288,20 +210,20 @@ export default function ProgramWizardModal({
                 <div className="block md:hidden">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide flex items-center gap-1.5">
-                            <span>Step {currentStep} of 2: {currentStepConfig?.title}</span>
+                            <span>Step {currentStep} of 3: {currentStepConfig?.title}</span>
                             {currentStepConfig?.subtitle && (
                                 <CommonInfoTooltip content={currentStepConfig.subtitle} size={14} />
                             )}
                         </span>
                         <span className="text-xs text-slate-400 font-medium">
-                            {Math.round((currentStep / 2) * 100)}%
+                            {Math.round((currentStep / 3) * 100)}%
                         </span>
                     </div>
                     {/* Progress Bar Line */}
                     <div className="w-full bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden flex">
                         <div
                             className="bg-brand-600 h-full transition-all duration-300 rounded-full"
-                            style={{ width: `${(currentStep / 2) * 100}%` }}
+                            style={{ width: `${(currentStep / 3) * 100}%` }}
                         />
                     </div>
                 </div>
@@ -309,21 +231,13 @@ export default function ProgramWizardModal({
 
             {/* Stepper Step Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                {currentStep === 1 && (
-                    <CommonForm
-                        containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-                        control={control}
-                        fields={fields}
-                        hasHelper
-                    />
-                )}
-
-                {currentStep === 2 && (
-                    <ProgramGradingSchemaStep
-                        control={control}
-                        disabled={readOnly}
-                    />
-                )}
+                <CourseForm
+                    activeStep={currentStep}
+                    control={control}
+                    disabled={readOnly}
+                    excludeCourseId={courseId ?? undefined}
+                    isCodeDisabled={isCodeDisabled}
+                />
             </div>
 
             {/* Sticky Bottom Action Bar (Exactly matching Academic Year Stepper Modal Footer) */}
@@ -342,12 +256,12 @@ export default function ProgramWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 2 — {currentStepConfig?.title}
+                    Step {currentStep} of 3 — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 2 ? (
+                    {currentStep < 3 ? (
                         <CommonButton
                             color="primary"
                             disabled={isSaving}
@@ -367,7 +281,7 @@ export default function ProgramWizardModal({
                                 variant="contained"
                                 onClick={onSwitchToEdit}
                             >
-                                Edit Program
+                                Edit Course
                             </CommonButton>
                         ) : (
                             <CommonButton
@@ -389,7 +303,7 @@ export default function ProgramWizardModal({
                             variant="contained"
                             onClick={handleSubmit(onSubmit)}
                         >
-                            {isSaving ? 'Saving Program...' : 'Save Program'}
+                            {isSaving ? 'Saving Course...' : isCodeDisabled ? 'Save Changes' : 'Save Course'}
                         </CommonButton>
                     )}
                 </div>
