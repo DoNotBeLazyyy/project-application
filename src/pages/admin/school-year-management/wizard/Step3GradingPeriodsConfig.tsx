@@ -232,19 +232,6 @@ export default function Step3GradingPeriodsConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Header info */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200 dark:border-zinc-800 text-sm">
-                <InfoIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                <div className="space-y-1 text-slate-700 dark:text-slate-300">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
-                        Grading Periods & Percentage Weights
-                    </p>
-                    <p className="text-xs sm:text-sm">
-                        Configure grading periods (e.g. Prelim, Midterm, Finals) for each term. The sum of weights for every term must strictly equal <strong>100%</strong>, and period dates must be sequential and non-overlapping.
-                    </p>
-                </div>
-            </div>
-
             {/* List of terms and their grading periods */}
             <div className="space-y-6">
                 {terms.map((term, tIdx) => {

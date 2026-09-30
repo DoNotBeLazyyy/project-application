@@ -68,19 +68,6 @@ export default function Step5ThresholdsConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Header info */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200 dark:border-zinc-800 text-sm">
-                <GraduationCapIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                <div className="space-y-1 text-slate-700 dark:text-slate-300">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
-                        Academic Thresholds & Qualification Flags
-                    </p>
-                    <p className="text-xs sm:text-sm">
-                        Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean&apos;s List) and disadvantages (Academic Probation / Standing). These serve as official academic achievement and qualification flags for students and academic advisers.
-                    </p>
-                </div>
-            </div>
-
             {/* Filter Pills & Summary */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
                 <div className="flex flex-wrap items-center gap-2">

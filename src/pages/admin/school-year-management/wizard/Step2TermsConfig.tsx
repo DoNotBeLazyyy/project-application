@@ -227,46 +227,31 @@ export default function Step2TermsConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Header / Info Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200 dark:border-zinc-800">
-                <div className="flex items-start gap-3 text-sm">
-                    <InfoIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">
-                            Academic Terms & Enrollment Windows
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Declare unique terms running under this school year (e.g. 1st Semester, 2nd Semester, Summer). Each term holds its own enrollment window and grade submission deadline, and must have non-overlapping dates.
-                        </p>
-                    </div>
-                </div>
-
-                {!disabled && (
-                    <div className="flex items-center gap-2 shrink-0">
-                        {fields.length === 0 && (
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<CalendarPlusIcon className="w-4 h-4" />}
-                                variant="outlined"
-                                onClick={handleAutoPopulateSemesters}
-                            >
-                                Preset 2 Semesters
-                            </CommonButton>
-                        )}
+            {!disabled && (
+                <div className="flex justify-end items-center gap-2">
+                    {fields.length === 0 && (
                         <CommonButton
-                            color="primary"
-                            disabled={allTypesUsed}
+                            color="inherit"
                             size="small"
-                            startIcon={<PlusIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleAddTerm}
+                            startIcon={<CalendarPlusIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={handleAutoPopulateSemesters}
                         >
-                            {allTypesUsed ? 'All Terms Added' : 'Add Term'}
+                            Preset 2 Semesters
                         </CommonButton>
-                    </div>
-                )}
-            </div>
+                    )}
+                    <CommonButton
+                        color="primary"
+                        disabled={allTypesUsed}
+                        size="small"
+                        startIcon={<PlusIcon className="w-4 h-4" />}
+                        variant="contained"
+                        onClick={handleAddTerm}
+                    >
+                        {allTypesUsed ? 'All Terms Added' : 'Add Term'}
+                    </CommonButton>
+                </div>
+            )}
 
             {/* Empty State if no terms */}
             {fields.length === 0 && (

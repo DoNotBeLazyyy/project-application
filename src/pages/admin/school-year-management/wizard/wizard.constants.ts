@@ -173,13 +173,13 @@ export const WIZARD_STEPS = [
         step: 4,
         title: 'Grade Schema',
         subtitle:
-            'Define percentage ranges, passing status, and transmuted grade equivalents. Ranges must be contiguous and non-overlapping from 0% to 100%.'
+            'Define how computed raw grade percentages map to official transmuted marks (e.g. 1.00, 1.25, 3.00, 5.00) or special marks (INC, DRP). Your institution completely controls which grades are considered passing or failing.'
     },
     {
         step: 5,
         title: 'Academic Thresholds',
         subtitle:
-            'Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean\'s List) and disadvantages (Academic Probation / Standing).'
+            'Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean\'s List) and disadvantages (Academic Probation / Standing). These serve as official academic achievement and qualification flags for students and academic advisers.'
     }
 ];
 

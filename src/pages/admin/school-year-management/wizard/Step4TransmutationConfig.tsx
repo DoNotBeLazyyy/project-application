@@ -126,19 +126,6 @@ export default function Step4TransmutationConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Header info */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200 dark:border-zinc-800 text-sm">
-                <InfoIcon className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
-                <div className="space-y-1 text-slate-700 dark:text-slate-300">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
-                        Academic Year Transmutation Schema & Passing Marks
-                    </p>
-                    <p className="text-xs sm:text-sm">
-                        Define how computed raw grade percentages map to official transmuted marks (e.g. 1.00, 1.21, 3.00, 5.00) or special marks (INC, DRP). Your institution completely controls which grades are considered passing or failing.
-                    </p>
-                </div>
-            </div>
-
             {/* Top Toolbar / Summary Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
                 <div className="flex flex-wrap items-center gap-2">
