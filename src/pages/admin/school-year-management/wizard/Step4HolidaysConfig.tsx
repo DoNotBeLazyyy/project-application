@@ -70,7 +70,7 @@ export default function Step4HolidaysConfig({
     return (
         <div className="space-y-6">
             {/* Top Toolbar / Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-xs">
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-3">
                 <div className="space-y-0.5">
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
                         <SunIcon className="w-5 h-5 text-amber-500 shrink-0" />
@@ -88,7 +88,7 @@ export default function Step4HolidaysConfig({
                 </div>
 
                 {!disabled && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-700/40">
                         <CommonButton
                             color="inherit"
                             size="small"
@@ -122,7 +122,7 @@ export default function Step4HolidaysConfig({
                 )}
             </div>
 
-            {/* Holiday Exception Cards Grid */}
+            {/* Holiday Exception Cards List (Full Width) */}
             {fields.length === 0 ? (
                 <div className="p-8 text-center rounded-2xl border border-dashed border-slate-200 dark:border-zinc-700/60 bg-slate-50/40 dark:bg-zinc-900/20 space-y-3">
                     <SunIcon className="w-8 h-8 text-amber-500/70 mx-auto" />
@@ -136,21 +136,21 @@ export default function Step4HolidaysConfig({
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     {fields.map((item, idx) => {
                         const current = holidays[idx] || item;
                         return (
                             <div
                                 key={item.id}
-                                className="p-4 rounded-2xl border border-slate-200 dark:border-zinc-700/70 bg-white dark:bg-zinc-800/80 shadow-xs space-y-3 relative group"
+                                className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-zinc-700/70 bg-white dark:bg-zinc-800/80 shadow-xs space-y-4 w-full"
                             >
-                                <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-zinc-700/60 pb-2.5">
+                                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[11px] font-bold flex items-center justify-center shrink-0">
-                                            {idx + 1}
+                                        <span className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center shrink-0">
+                                            #{idx + 1}
                                         </span>
                                         <input
-                                            className="font-semibold text-sm text-slate-900 dark:text-slate-100 bg-transparent border-b border-transparent focus:border-brand-500 hover:border-slate-300 dark:hover:border-zinc-700 focus:outline-none px-1 py-0.5 w-full transition-colors"
+                                            className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 bg-transparent border-b border-transparent focus:border-brand-500 hover:border-slate-300 dark:hover:border-zinc-700 focus:outline-none px-1 py-0.5 w-full transition-colors"
                                             disabled={disabled}
                                             placeholder="Holiday / Exception Title (e.g. Independence Day)"
                                             type="text"
@@ -162,35 +162,39 @@ export default function Step4HolidaysConfig({
                                     </div>
 
                                     {!disabled && (
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            <button
-                                                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
-                                                title="Reset Row to Blank"
-                                                type="button"
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <CommonButton
+                                                color="inherit"
+                                                size="small"
+                                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                                                variant="outlined"
                                                 onClick={() => handleResetRowBlank(idx)}
+                                                title="Reset row to blank"
                                             >
-                                                <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                                                title="Remove Exception"
-                                                type="button"
+                                                <span className="hidden sm:inline">Clear</span>
+                                            </CommonButton>
+                                            <CommonButton
+                                                color="error"
+                                                size="small"
+                                                startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                variant="outlined"
                                                 onClick={() => remove(idx)}
+                                                title="Remove Exception"
                                             >
-                                                <TrashIcon className="w-3.5 h-3.5" />
-                                            </button>
+                                                <span className="hidden sm:inline">Remove</span>
+                                            </CommonButton>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                                     <div>
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             Exception Type
                                         </label>
                                         <select
                                             aria-label="Select exception type"
-                                            className="w-full h-9 px-2.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
                                             disabled={disabled}
                                             value={current.exception_type || 'Holiday'}
                                             onChange={(e) => {
@@ -212,7 +216,7 @@ export default function Step4HolidaysConfig({
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             Class Impact
                                         </label>
-                                        <label className="flex items-center gap-2 h-9 px-2.5 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                                             <input
                                                 checked={Boolean(current.affects_attendance)}
                                                 className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
@@ -228,15 +232,13 @@ export default function Step4HolidaysConfig({
                                             <span className="font-medium">Class Suspended</span>
                                         </label>
                                     </div>
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-3 text-xs">
                                     <div>
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             Start Date
                                         </label>
                                         <input
-                                            className="w-full h-9 px-2.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
                                             disabled={disabled}
                                             type="date"
                                             value={current.start_date || ''}
@@ -251,7 +253,7 @@ export default function Step4HolidaysConfig({
                                             End Date
                                         </label>
                                         <input
-                                            className="w-full h-9 px-2.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
                                             disabled={disabled}
                                             type="date"
                                             value={current.end_date || ''}
@@ -267,7 +269,7 @@ export default function Step4HolidaysConfig({
                                         Description / Note (Optional)
                                     </label>
                                     <input
-                                        className="w-full h-8 px-2.5 text-xs rounded-lg border border-slate-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                        className="w-full h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
                                         disabled={disabled}
                                         placeholder="e.g. Regular National Non-Working Holiday"
                                         type="text"
