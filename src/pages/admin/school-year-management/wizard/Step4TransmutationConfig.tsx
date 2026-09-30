@@ -54,6 +54,10 @@ export default function Step4TransmutationConfig({
         replace([]);
     }
 
+    function handleLoadPreset() {
+        replace([...DEFAULT_TRANSMUTATION_ROWS]);
+    }
+
     function handleResetRowBlank(index: number) {
         const r = rows[index];
         if (!r) return;
@@ -225,205 +229,8 @@ export default function Step4TransmutationConfig({
                 </div>
             )}
 
-            {/* Desktop Table View (>= 768px) */}
-            <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm">
-                <table className="w-full text-left text-xs sm:text-sm">
-                    <thead className="bg-slate-50 dark:bg-zinc-700/50 border-b border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 font-semibold">
-                        <tr>
-                            <th className="py-3 px-3 w-32">
-                                <div className="flex items-center gap-1">
-                                    <span>Type</span>
-                                    <CommonInfoTooltip content="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-4 w-28">
-                                <div className="flex items-center gap-1">
-                                    <span>Mark / Grade <span className="text-red-500">*</span></span>
-                                    <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00) or status mark (INC, DRP)." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-3 w-24">
-                                <div className="flex items-center gap-1">
-                                    <span>Min %</span>
-                                    <CommonInfoTooltip content="Minimum raw percentage required for this fixed grade mark." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-3 w-24">
-                                <div className="flex items-center gap-1">
-                                    <span>Max %</span>
-                                    <CommonInfoTooltip content="Maximum raw percentage allocated to this fixed grade mark." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-4 w-32 text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                    <span>Status</span>
-                                    <CommonInfoTooltip content="Toggles whether this grade mark grants academic credit (Passing vs Failing)." size={13} />
-                                </div>
-                            </th>
-                            <th className="py-3 px-4">
-                                <div className="flex items-center gap-1">
-                                    <span>Description</span>
-                                    <CommonInfoTooltip content="Human-readable descriptor appearing on report cards and evaluation transcripts." size={13} />
-                                </div>
-                            </th>
-                            {!disabled && <th className="py-3 px-3 w-16 text-center">Action</th>}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-700/60">
-                        {fields.map((field, index) => {
-                            const row = rows[index] || field;
-                            const isCond = Boolean(row.is_conditional || isSpecialGradeRow(row));
-
-                            return (
-                                <tr
-                                    key={field.id}
-                                    className="hover:bg-slate-50/70 dark:hover:bg-zinc-700/30 transition-colors"
-                                >
-                                    {/* Grade Type Selector */}
-                                    <td className="py-2.5 px-3">
-                                        <select
-                                            className="w-full px-2 py-1 text-xs font-semibold rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            value={isCond ? 'conditional' : 'fixed'}
-                                            onChange={(e) => {
-                                                const nextCond = e.target.value === 'conditional';
-                                                const numeric = parseFloat(row.label);
-                                                update(index, {
-                                                    ...row,
-                                                    is_conditional: nextCond,
-                                                    min_percentage: nextCond ? null : (row.min_percentage ?? 0),
-                                                    max_percentage: nextCond ? null : (row.max_percentage ?? 100),
-                                                    transmuted_grade: nextCond ? null : (isNaN(numeric) ? null : numeric),
-                                                    special_code: nextCond ? row.label.trim().toUpperCase() : null
-                                                });
-                                            }}
-                                        >
-                                            <option value="fixed">Fixed Range</option>
-                                            <option value="conditional">Conditional</option>
-                                        </select>
-                                    </td>
-
-                                    {/* Grade Mark / Label */}
-                                    <td className="py-2.5 px-4 font-semibold">
-                                        <input
-                                            className="w-full px-2.5 py-1 text-sm rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            placeholder="e.g. 1.25, INC"
-                                            type="text"
-                                            value={row.label}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                const numeric = parseFloat(val);
-                                                update(index, {
-                                                    ...row,
-                                                    label: val,
-                                                    transmuted_grade: isCond ? null : (isNaN(numeric) ? null : numeric),
-                                                    special_code: isCond ? val.trim().toUpperCase() : null
-                                                });
-                                            }}
-                                        />
-                                    </td>
-
-                                    {/* Min % */}
-                                    <td className="py-2.5 px-3">
-                                        {isCond ? (
-                                            <span className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-medium text-slate-400 select-none">
-                                                —
-                                            </span>
-                                        ) : (
-                                            <input
-                                                className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                                disabled={disabled}
-                                                max={100}
-                                                min={0}
-                                                step={0.5}
-                                                type="number"
-                                                value={row.min_percentage ?? ''}
-                                                onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
-                                            />
-                                        )}
-                                    </td>
-
-                                    {/* Max % */}
-                                    <td className="py-2.5 px-3">
-                                        {isCond ? (
-                                            <span className="inline-flex items-center justify-center w-full px-2 py-1 text-xs font-medium text-slate-400 select-none">
-                                                —
-                                            </span>
-                                        ) : (
-                                            <input
-                                                className="w-full px-2 py-1 text-sm text-right rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                                disabled={disabled}
-                                                max={100}
-                                                min={0}
-                                                step={0.5}
-                                                type="number"
-                                                value={row.max_percentage ?? ''}
-                                                onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
-                                            />
-                                        )}
-                                    </td>
-
-                                    {/* Passing / Failing toggle */}
-                                    <td className="py-2.5 px-4 text-center">
-                                        <button
-                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                                                row.is_passing
-                                                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                                    : 'bg-rose-100 text-rose-800 hover:bg-rose-200 dark:bg-rose-950/60 dark:text-rose-300'
-                                            } disabled:opacity-60`}
-                                            disabled={disabled}
-                                            type="button"
-                                            onClick={() => update(index, { ...row, is_passing: !row.is_passing })}
-                                        >
-                                            {row.is_passing ? '✓ Passing' : '✕ Failing'}
-                                        </button>
-                                    </td>
-
-                                    {/* Description */}
-                                    <td className="py-2.5 px-4">
-                                        <input
-                                            className="w-full px-2.5 py-1 text-xs sm:text-sm rounded border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                            disabled={disabled}
-                                            placeholder="e.g. Excellent, Incomplete, Dropped"
-                                            type="text"
-                                            value={row.description || ''}
-                                            onChange={(e) => update(index, { ...row, description: e.target.value })}
-                                        />
-                                    </td>
-
-                                    {/* Action */}
-                                    {!disabled && (
-                                        <td className="py-2.5 px-3 text-center">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <button
-                                                    className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
-                                                    title="Reset row to blank"
-                                                    type="button"
-                                                    onClick={() => handleResetRowBlank(index)}
-                                                >
-                                                    <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                                    title="Delete row"
-                                                    type="button"
-                                                    onClick={() => remove(index)}
-                                                >
-                                                    <TrashIcon className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Mobile Touch Cards (< 768px) */}
-            <div className="block md:hidden space-y-3">
+            {/* Grade Rung Cards List */}
+            <div className="space-y-4">
                 {fields.map((field, index) => {
                     const row = rows[index] || field;
                     const isCond = Boolean(row.is_conditional || isSpecialGradeRow(row));
@@ -431,31 +238,55 @@ export default function Step4TransmutationConfig({
                     return (
                         <div
                             key={field.id}
-                            className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-sm space-y-3"
+                            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-4 transition-all"
                         >
-                            {/* Card Top: Mark, Type Selector, Passing Pill, Reset & Delete */}
-                            <div className="flex flex-wrap items-center justify-between gap-2">
+                            {/* Row 1: Header with Action Buttons */}
+                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-3">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-400 font-semibold">#{index + 1}</span>
-                                    <input
-                                        className="w-20 px-2 py-1 text-sm font-bold rounded-lg border border-slate-300 dark:border-zinc-600 bg-slate-50 dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                        disabled={disabled}
-                                        placeholder="Mark"
-                                        type="text"
-                                        value={row.label}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            const numeric = parseFloat(val);
-                                            update(index, {
-                                                ...row,
-                                                label: val,
-                                                transmuted_grade: isCond ? null : (isNaN(numeric) ? null : numeric),
-                                                special_code: isCond ? val.trim().toUpperCase() : null
-                                            });
-                                        }}
-                                    />
+                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                        #{index + 1}
+                                    </span>
+                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                                        Grade Rung #{index + 1}
+                                    </h4>
+                                </div>
+
+                                {!disabled && (
+                                    <div className="flex items-center gap-1.5">
+                                        <CommonButton
+                                            color="inherit"
+                                            size="small"
+                                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                                            variant="outlined"
+                                            onClick={() => handleResetRowBlank(index)}
+                                            title="Reset grade rung fields to blank"
+                                        >
+                                            <span className="hidden sm:inline">Clear</span>
+                                        </CommonButton>
+                                        <CommonButton
+                                            color="error"
+                                            size="small"
+                                            startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                            variant="outlined"
+                                            onClick={() => remove(index)}
+                                            title="Delete grade rung"
+                                        >
+                                            <span className="hidden sm:inline">Delete</span>
+                                        </CommonButton>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Row 2: Type, Description, and Status */}
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                                {/* Type Selector */}
+                                <div className="sm:col-span-4 md:col-span-3">
+                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <span>Grade Type</span>
+                                        <CommonInfoTooltip content="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)." size={13} />
+                                    </label>
                                     <select
-                                        className="px-2 py-1 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                        className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
                                         disabled={disabled}
                                         value={isCond ? 'conditional' : 'fixed'}
                                         onChange={(e) => {
@@ -471,17 +302,38 @@ export default function Step4TransmutationConfig({
                                             });
                                         }}
                                     >
-                                        <option value="fixed">Fixed</option>
+                                        <option value="fixed">Fixed Range</option>
                                         <option value="conditional">Conditional</option>
                                     </select>
                                 </div>
 
-                                <div className="flex items-center gap-1.5">
+                                {/* Description */}
+                                <div className="sm:col-span-5 md:col-span-6">
+                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <span>Description</span>
+                                        <CommonInfoTooltip content="Human-readable descriptor appearing on report cards and evaluation transcripts." size={13} />
+                                    </label>
+                                    <input
+                                        className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        disabled={disabled}
+                                        placeholder="e.g. Excellent, Incomplete, Dropped"
+                                        type="text"
+                                        value={row.description || ''}
+                                        onChange={(e) => update(index, { ...row, description: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Academic Status Toggle */}
+                                <div className="sm:col-span-3">
+                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                        <span>Status</span>
+                                        <CommonInfoTooltip content="Toggles whether this grade mark grants academic credit (Passing vs Failing)." size={13} />
+                                    </label>
                                     <button
-                                        className={`px-2.5 py-1 min-h-[32px] rounded-full text-xs font-bold transition-all ${
+                                        className={`w-full h-9 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                                             row.is_passing
-                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                                : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                                : 'bg-rose-100 text-rose-800 hover:bg-rose-200 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
                                         } disabled:opacity-60`}
                                         disabled={disabled}
                                         type="button"
@@ -489,78 +341,109 @@ export default function Step4TransmutationConfig({
                                     >
                                         {row.is_passing ? '✓ Passing' : '✕ Failing'}
                                     </button>
-
-                                    {!disabled && (
-                                        <>
-                                            <button
-                                                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50"
-                                                title="Reset row to blank"
-                                                type="button"
-                                                onClick={() => handleResetRowBlank(index)}
-                                            >
-                                                <ArrowCounterClockwiseIcon className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20"
-                                                title="Delete row"
-                                                type="button"
-                                                onClick={() => remove(index)}
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </>
-                                    )}
                                 </div>
                             </div>
 
-                            {/* Card Middle: Min % & Max % (ONLY if Fixed Range) */}
-                            {!isCond && (
-                                <div className="grid grid-cols-2 gap-2">
+                            {/* Row 3: Mark, Min and Max (when Fixed Range) vs Mark only (when Conditional) */}
+                            {isCond ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
-                                        <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                            Min % <span className="text-red-500">*</span>
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Mark / Grade <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Status grade code (e.g. INC, DRP, W, NFE)." size={13} />
                                         </label>
                                         <input
-                                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                            className="w-full h-9 px-3 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
                                             disabled={disabled}
-                                            max={100}
-                                            min={0}
-                                            type="number"
-                                            value={row.min_percentage ?? ''}
-                                            onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
+                                            placeholder="e.g. INC, DRP"
+                                            type="text"
+                                            value={row.label}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                update(index, {
+                                                    ...row,
+                                                    label: val,
+                                                    transmuted_grade: null,
+                                                    special_code: val.trim().toUpperCase()
+                                                });
+                                            }}
                                         />
                                     </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {/* Mark / Grade */}
                                     <div>
-                                        <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                            Max % <span className="text-red-500">*</span>
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Mark / Grade <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)." size={13} />
                                         </label>
                                         <input
-                                            className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                            className="w-full h-9 px-3 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
                                             disabled={disabled}
-                                            max={100}
-                                            min={0}
-                                            type="number"
-                                            value={row.max_percentage ?? ''}
-                                            onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
+                                            placeholder="e.g. 1.25, 3.00"
+                                            type="text"
+                                            value={row.label}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                const numeric = parseFloat(val);
+                                                update(index, {
+                                                    ...row,
+                                                    label: val,
+                                                    transmuted_grade: isNaN(numeric) ? null : numeric,
+                                                    special_code: null
+                                                });
+                                            }}
                                         />
+                                    </div>
+
+                                    {/* Min % */}
+                                    <div>
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Min % <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Minimum raw percentage required for this fixed grade mark." size={13} />
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                className="w-full h-9 px-3 pr-7 text-sm text-right rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                                disabled={disabled}
+                                                max={100}
+                                                min={0}
+                                                step={0.5}
+                                                type="number"
+                                                value={row.min_percentage ?? ''}
+                                                onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
+                                            />
+                                            <span className="absolute right-2.5 top-2 text-xs text-slate-400 font-bold pointer-events-none">
+                                                %
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Max % */}
+                                    <div>
+                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Max % <span className="text-red-500">*</span></span>
+                                            <CommonInfoTooltip content="Maximum raw percentage allocated to this fixed grade mark." size={13} />
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                className="w-full h-9 px-3 pr-7 text-sm text-right rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                                disabled={disabled}
+                                                max={100}
+                                                min={0}
+                                                step={0.5}
+                                                type="number"
+                                                value={row.max_percentage ?? ''}
+                                                onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
+                                            />
+                                            <span className="absolute right-2.5 top-2 text-xs text-slate-400 font-bold pointer-events-none">
+                                                %
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
-
-                            {/* Card Bottom: Description */}
-                            <div>
-                                <label className="block text-[11px] text-slate-500 font-medium mb-0.5">
-                                    Description
-                                </label>
-                                <input
-                                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
-                                    disabled={disabled}
-                                    placeholder="e.g. Excellent, Incomplete, Dropped"
-                                    type="text"
-                                    value={row.description || ''}
-                                    onChange={(e) => update(index, { ...row, description: e.target.value })}
-                                />
-                            </div>
                         </div>
                     );
                 })}
