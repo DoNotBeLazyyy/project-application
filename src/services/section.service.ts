@@ -10,6 +10,7 @@ import { nullIfBlank } from '@utils/uuid.util';
 export interface TermOption {
     id: string;
     label: string;
+    is_active_academic_year?: boolean;
 }
 
 export interface FacultyOption {

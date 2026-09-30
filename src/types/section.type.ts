@@ -15,7 +15,22 @@ export interface SectionListRow {
     /** Seats currently taken. Optional: only present when the list RPC aggregates it. */
     enrolled_count?: number;
     status: SectionStatus;
+    is_active_academic_year?: boolean;
     total_count: number;
+}
+
+export interface SectionGradingComponentOverride {
+    id?: string;
+    name: string;
+    weight: number;
+}
+
+export interface SectionGradingPeriodOverride {
+    id?: string;
+    name: string;
+    sequence: number;
+    weight?: number;
+    components: SectionGradingComponentOverride[];
 }
 
 export interface SectionFormValues {
@@ -26,6 +41,11 @@ export interface SectionFormValues {
     room: string;
     max_slots: string;
     status: SectionStatus;
+    is_active_academic_year?: boolean;
+    override_grading_schema?: boolean;
+    grading_override_mode?: 'copy_section' | 'custom';
+    source_section_id?: string;
+    grading_periods?: SectionGradingPeriodOverride[];
 }
 
 export interface SectionFilterValues {

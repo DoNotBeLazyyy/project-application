@@ -3,6 +3,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { getFacultyOptions, getTerms } from '@services/section.service';
+import SectionGradingOverride from '@pages/dean/section-management/SectionGradingOverride';
 import { ComponentPropsForm } from '@type/common.type';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
 import { useEffect, useState } from 'react';
@@ -18,12 +19,14 @@ const STATUS_OPTIONS: { label: string; value: SectionStatus }[] = [
 
 interface SectionFormProps extends ComponentPropsForm {
     control: Control<SectionFormValues>;
+    currentSectionId?: string;
     disabled?: boolean;
     isCreate?: boolean;
 }
 
 export default function SectionForm({
     control,
+    currentSectionId,
     disabled,
     isCreate,
     ...formProps
@@ -40,8 +43,12 @@ export default function SectionForm({
             ]);
 
             if (termsResult.data) {
+                const availableTerms = isCreate
+                    ? termsResult.data.filter((term) => term.is_active_academic_year !== false)
+                    : termsResult.data;
+
                 setTermOptions(
-                    termsResult.data.map((term) => ({
+                    availableTerms.map((term) => ({
                         label: term.label,
                         value: term.id
                     }))
@@ -59,7 +66,7 @@ export default function SectionForm({
         }
 
         fetchOptions();
-    }, []);
+    }, [isCreate]);
 
     const fields: FormFieldConfig<SectionFormValues>[] = [
         {
@@ -139,12 +146,19 @@ export default function SectionForm({
     ];
 
     return (
-        <CommonForm
-            containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
-            control={control}
-            fields={fields}
-            formProps={formProps}
-            hasHelper
-        />
+        <div className="flex flex-col gap-4">
+            <CommonForm
+                containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                control={control}
+                fields={fields}
+                formProps={formProps}
+                hasHelper
+            />
+            <SectionGradingOverride
+                control={control}
+                currentSectionId={currentSectionId}
+                disabled={disabled}
+            />
+        </div>
     );
 }

@@ -32,38 +32,45 @@ export default function SectionGridCard({
     onRequestDelete
 }: SectionGridCardProps) {
     const hasFaculty = Boolean(row.faculty_id && row.faculty_name);
+    const isEditable = row.is_active_academic_year !== false;
+
+    const actions = [
+        {
+            key: 'view',
+            label: 'View',
+            icon: <EyeIcon size={18} weight="bold" />,
+            onClick: () => onView(row.id)
+        },
+        ...(isEditable
+            ? [
+                {
+                    key: 'edit',
+                    label: 'Edit',
+                    icon: <PencilSimpleIcon size={18} weight="bold" />,
+                    onClick: () => onEdit(row.id)
+                },
+                {
+                    key: 'delete',
+                    label: 'Delete',
+                    icon: <TrashIcon size={18} weight="bold" />,
+                    destructive: true,
+                    onClick: () => onRequestDelete(row.id)
+                }
+            ]
+            : []),
+        {
+            key: 'copy',
+            label: 'Copy Grading Setup',
+            icon: <CopyIcon size={18} weight="bold" />,
+            onClick: () => onCopySetup(row.id)
+        }
+    ];
 
     return (
         <CommonBentoCard
             actionMenu={(
                 <BentoCardActionMenu
-                    actions={[
-                        {
-                            key: 'view',
-                            label: 'View',
-                            icon: <EyeIcon size={18} weight="bold" />,
-                            onClick: () => onView(row.id)
-                        },
-                        {
-                            key: 'edit',
-                            label: 'Edit',
-                            icon: <PencilSimpleIcon size={18} weight="bold" />,
-                            onClick: () => onEdit(row.id)
-                        },
-                        {
-                            key: 'copy',
-                            label: 'Copy Grading Setup',
-                            icon: <CopyIcon size={18} weight="bold" />,
-                            onClick: () => onCopySetup(row.id)
-                        },
-                        {
-                            key: 'delete',
-                            label: 'Delete',
-                            icon: <TrashIcon size={18} weight="bold" />,
-                            destructive: true,
-                            onClick: () => onRequestDelete(row.id)
-                        }
-                    ]}
+                    actions={actions}
                     ariaLabel="Section actions"
                 />
             )}
@@ -84,7 +91,7 @@ export default function SectionGridCard({
             }}
             selectVariant="button"
             status=""
-            subtitle={`${row.section_code} · ${row.status}`}
+            subtitle={`${row.section_code} · ${row.status}${!isEditable ? ' · Read-Only' : ''}`}
             title={row.course_title}
             onClick={() => onView(row.id)}
             onToggleSelect={onToggleSelect}

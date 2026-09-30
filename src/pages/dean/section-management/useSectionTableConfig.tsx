@@ -93,30 +93,40 @@ export function useSectionTableConfig({
     const tableActionConfig = useMemo(function() {
         return function(onDelete: (id: string) => void): TableActionConfig<SectionListRow> {
             return {
-                onEditClick: (row: SectionListRow) => () => onEdit(row.id),
-                menuOptions: (row: SectionListRow): MenuOption[] => [
-                    {
-                        preset: 'view',
-                        onClick: () => onView(row.id)
-                    },
-                    {
-                        preset: 'edit',
-                        onClick: () => onEdit(row.id)
-                    },
-                    {
-                        preset: 'delete',
-                        onClick: () => onDelete(row.id)
-                    },
-                    {
-                        children: (
-                            <div className="flex gap-2 items-center">
-                                <CopyIcon size={18} />
-                                <span>Copy Grading Setup</span>
-                            </div>
-                        ),
-                        onClick: () => onCopySetup(row.id)
-                    }
-                ]
+                onEditClick: (row: SectionListRow) => (row.is_active_academic_year !== false
+                    ? () => onEdit(row.id)
+                    : undefined),
+                menuOptions: (row: SectionListRow): MenuOption[] => {
+                    const isEditable = row.is_active_academic_year !== false;
+
+                    return [
+                        {
+                            preset: 'view',
+                            onClick: () => onView(row.id)
+                        },
+                        ...(isEditable
+                            ? [
+                                {
+                                    preset: 'edit' as const,
+                                    onClick: () => onEdit(row.id)
+                                },
+                                {
+                                    preset: 'delete' as const,
+                                    onClick: () => onDelete(row.id)
+                                }
+                            ]
+                            : []),
+                        {
+                            children: (
+                                <div className="flex gap-2 items-center">
+                                    <CopyIcon size={18} />
+                                    <span>Copy Grading Setup</span>
+                                </div>
+                            ),
+                            onClick: () => onCopySetup(row.id)
+                        }
+                    ];
+                }
             };
         };
     }, [onCopySetup, onEdit, onView]);

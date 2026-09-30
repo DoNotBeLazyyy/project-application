@@ -8,7 +8,15 @@ import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
 import SectionForm from '@pages/dean/section-management/SectionForm';
 import { useSectionTableConfig } from '@pages/dean/section-management/useSectionTableConfig';
 import {
-    bulkCreateSections, bulkDeleteSections, createSection, deleteSection, getSectionById, listSections, updateSection
+    bulkCreateSections,
+    bulkDeleteSections,
+    copySectionSetupToSections,
+    createSection,
+    deleteSection,
+    getSectionById,
+    getSections,
+    listSections,
+    updateSection
 } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
@@ -45,7 +53,11 @@ const defaultFormValues: SectionFormValues = {
     section_code: '',
     room: '',
     max_slots: '40',
-    status: 'Open'
+    status: 'Open',
+    override_grading_schema: false,
+    grading_override_mode: 'copy_section',
+    source_section_id: '',
+    grading_periods: []
 };
 
 export default function SectionManagement() {
@@ -56,6 +68,7 @@ export default function SectionManagement() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [selectedIsEditable, setSelectedIsEditable] = useState(true);
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
 
     const createMethods = useForm<SectionFormValues>({
@@ -78,6 +91,7 @@ export default function SectionManagement() {
         const result = await getSectionById(id);
 
         if (result.data) {
+            setSelectedIsEditable(result.data.is_active_academic_year !== false);
             updateMethods.reset({
                 term_id: result.data.term_id,
                 course_id: result.data.course_id,
@@ -85,7 +99,12 @@ export default function SectionManagement() {
                 section_code: result.data.section_code,
                 room: result.data.room ?? '',
                 max_slots: String(result.data.max_slots),
-                status: result.data.status
+                status: result.data.status,
+                is_active_academic_year: result.data.is_active_academic_year,
+                override_grading_schema: false,
+                grading_override_mode: 'copy_section',
+                source_section_id: '',
+                grading_periods: []
             });
         }
     }
@@ -99,6 +118,7 @@ export default function SectionManagement() {
     function handleCloseView() {
         setIsViewOpen(false);
         setSelectedId(null);
+        setSelectedIsEditable(true);
         updateMethods.reset(defaultFormValues);
     }
 
@@ -109,6 +129,7 @@ export default function SectionManagement() {
     }
 
     async function handleSwitchToEdit(id: string) {
+        if (!selectedIsEditable) return;
         setIsViewOpen(false);
         await loadIntoForm(id);
         setIsUpdateOpen(true);
@@ -117,6 +138,7 @@ export default function SectionManagement() {
     function handleCloseUpdate() {
         setIsUpdateOpen(false);
         setSelectedId(null);
+        setSelectedIsEditable(true);
         updateMethods.reset(defaultFormValues);
     }
 
@@ -144,6 +166,19 @@ export default function SectionManagement() {
         const result = await createSection(values);
 
         if (!result.error) {
+            if (
+                values.override_grading_schema &&
+                values.grading_override_mode === 'copy_section' &&
+                values.source_section_id
+            ) {
+                const sectionsRes = await getSections();
+                const newSection = sectionsRes.data?.find(
+                    (s) => s.section_code === values.section_code
+                );
+                if (newSection?.id) {
+                    await copySectionSetupToSections(values.source_section_id, [newSection.id]);
+                }
+            }
             createMethods.reset(defaultFormValues);
             setIsCreateOpen(false);
             setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
@@ -170,6 +205,13 @@ export default function SectionManagement() {
         const result = await updateSection(selectedId, values);
 
         if (!result.error) {
+            if (
+                values.override_grading_schema &&
+                values.grading_override_mode === 'copy_section' &&
+                values.source_section_id
+            ) {
+                await copySectionSetupToSections(values.source_section_id, [selectedId]);
+            }
             handleCloseUpdate();
             setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
         }
@@ -278,6 +320,7 @@ export default function SectionManagement() {
                     formContent: (
                         <SectionForm
                             control={updateMethods.control}
+                            currentSectionId={selectedId ?? undefined}
                             id={UPDATE_FORM_ID}
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
@@ -297,26 +340,35 @@ export default function SectionManagement() {
                 viewModalProps={{
                     cardProps: {
                         cardHeaderProps: {
-                            subheader: 'Viewing section details.',
+                            subheader: selectedIsEditable
+                                ? 'Viewing section details.'
+                                : 'Viewing section details (Read-Only: Inactive Academic Year).',
                             title: 'View Section'
                         }
                     },
-                    confirmText: 'Edit',
+                    confirmText: selectedIsEditable ? 'Edit' : undefined,
                     formContent: (
                         <SectionForm
                             control={updateMethods.control}
+                            currentSectionId={selectedId ?? undefined}
                             disabled
                         />
                     ),
-                    formButtonsProps: {
-                        confirmProps: {
-                            onClick: function() {
-                                if (selectedId) {
-                                    handleSwitchToEdit(selectedId);
+                    formButtonsProps: selectedIsEditable
+                        ? {
+                            confirmProps: {
+                                onClick: function() {
+                                    if (selectedId) {
+                                        handleSwitchToEdit(selectedId);
+                                    }
                                 }
                             }
                         }
-                    },
+                        : {
+                            confirmProps: {
+                                sx: { display: 'none' }
+                            }
+                        },
                     open: isViewOpen,
                     onClose: handleCloseView
                 }}
