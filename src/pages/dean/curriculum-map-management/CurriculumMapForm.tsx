@@ -109,6 +109,18 @@ export default function CurriculumMapForm({
         },
         {
             disabled,
+            fieldProps: { helperText: 'Lecture units for this program (override default if needed)' },
+            name: 'lecture_units',
+            type: 'number'
+        },
+        {
+            disabled,
+            fieldProps: { helperText: 'Laboratory units for this program (override default if needed)' },
+            name: 'laboratory_units',
+            type: 'number'
+        },
+        {
+            disabled,
             fieldProps: { helperText: 'Display order within the term (starts at 1)' },
             name: 'sequence',
             rules: disabled
