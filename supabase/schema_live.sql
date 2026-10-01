@@ -6784,7 +6784,7 @@ BEGIN
 
     PERFORM public.fn_seed_section_grading(v_section_id);
 
-    RETURN jsonb_build_object('success', true, 'message', 'Section created successfully.');
+    RETURN jsonb_build_object('success', true, 'message', 'Section created successfully.', 'id', v_section_id);
 END;
 $function$
 ;

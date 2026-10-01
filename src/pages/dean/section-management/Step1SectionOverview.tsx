@@ -2,6 +2,7 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
+import SectionScheduleConfig from '@pages/dean/section-management/SectionScheduleConfig';
 import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
 import { getFacultyOptions, getTerms } from '@services/section.service';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
@@ -190,6 +191,8 @@ export default function Step1SectionOverview({
                     hasHelper
                 />
             </div>
+
+            <SectionScheduleConfig control={control} disabled={disabled} />
         </div>
     );
 }

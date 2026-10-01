@@ -33,6 +33,24 @@ export interface SectionGradingPeriodOverride {
     components: SectionGradingComponentOverride[];
 }
 
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
+export interface SectionScheduleSlot {
+    id?: string;
+    day_of_week: DayOfWeek;
+    time_start: string;
+    time_end: string;
+    room?: string | null;
+}
+
+export interface SectionScheduleBlock {
+    id?: string;
+    days: DayOfWeek[];
+    time_start: string;
+    time_end: string;
+    room?: string;
+}
+
 export interface SectionFormValues {
     term_id: string;
     course_id: string;
@@ -46,6 +64,7 @@ export interface SectionFormValues {
     grading_override_mode?: 'copy_section' | 'custom';
     source_section_id?: string;
     grading_periods?: SectionGradingPeriodOverride[];
+    schedules?: SectionScheduleBlock[];
 }
 
 export interface SectionFilterValues {

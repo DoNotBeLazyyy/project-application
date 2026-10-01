@@ -2,10 +2,73 @@ import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
-    SectionBulkRow, SectionFilterValues, SectionFormValues, SectionListRow, SectionOption
+    SectionBulkRow, SectionFilterValues, SectionFormValues, SectionListRow, SectionOption, SectionScheduleBlock, SectionScheduleSlot
 } from '@type/section.type';
 import { ServiceResult } from '@type/service.type';
 import { nullIfBlank } from '@utils/uuid.util';
+
+export function groupScheduleSlotsToBlocks(slots: SectionScheduleSlot[]): SectionScheduleBlock[] {
+    if (!slots || slots.length === 0) return [];
+
+    const map = new Map<string, SectionScheduleBlock>();
+
+    for (const slot of slots) {
+        const start = (slot.time_start || '').slice(0, 5);
+        const end = (slot.time_end || '').slice(0, 5);
+        const room = slot.room || '';
+        const key = `${start}_${end}_${room}`;
+
+        if (map.has(key)) {
+            const existing = map.get(key)!;
+            if (!existing.days.includes(slot.day_of_week)) {
+                existing.days.push(slot.day_of_week);
+            }
+        } else {
+            map.set(key, {
+                days: [slot.day_of_week],
+                room,
+                time_end: end,
+                time_start: start
+            });
+        }
+    }
+
+    return Array.from(map.values());
+}
+
+export function flattenScheduleBlocksToSlots(blocks: SectionScheduleBlock[]): SectionScheduleSlot[] {
+    if (!blocks || blocks.length === 0) return [];
+
+    const slots: SectionScheduleSlot[] = [];
+
+    for (const block of blocks) {
+        const start = (block.time_start || '').slice(0, 5);
+        const end = (block.time_end || '').slice(0, 5);
+
+        if (!start || !end || !block.days || block.days.length === 0) continue;
+
+        for (const day of block.days) {
+            slots.push({
+                day_of_week: day,
+                room: block.room || null,
+                time_end: end,
+                time_start: start
+            });
+        }
+    }
+
+    return slots;
+}
+
+export async function saveSectionSchedules(
+    sectionId: string,
+    schedules: SectionScheduleSlot[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_save_section_schedules', {
+        p_section_id: sectionId,
+        p_schedules: schedules
+    });
+}
 
 export interface TermOption {
     id: string;
@@ -69,12 +132,12 @@ export async function getFacultyOptions(): Promise<ServiceResult<FacultyOption[]
 
 export async function createSection(
     params: SectionFormValues
-): Promise<ServiceResult<null>> {
+): Promise<ServiceResult<{ id?: string }>> {
     const code = params.section_code && params.section_code.trim() !== ''
         ? params.section_code
         : `SEC-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    return callRpc<null>('fn_create_section', {
+    return callRpc<{ id?: string }>('fn_create_section', {
         p_term_id: nullIfBlank(params.term_id),
         p_course_id: nullIfBlank(params.course_id),
         p_faculty_id: nullIfBlank(params.faculty_id),

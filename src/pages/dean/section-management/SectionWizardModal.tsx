@@ -16,8 +16,11 @@ import {
 import {
     copySectionSetupToSections,
     createSection,
+    flattenScheduleBlocksToSlots,
     getSectionById,
     getSections,
+    groupScheduleSlotsToBlocks,
+    saveSectionSchedules,
     updateSection
 } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
@@ -29,7 +32,7 @@ export const SECTION_WIZARD_STEPS = [
     {
         step: 1,
         title: 'Overview',
-        subtitle: 'Basic section identity, term, course, instructor, room, and capacity'
+        subtitle: 'Basic section identity, term, course, instructor, room, capacity, and schedule'
     },
     {
         step: 2,
@@ -49,7 +52,15 @@ const defaultFormValues: SectionFormValues = {
     override_grading_schema: false,
     grading_override_mode: 'copy_section',
     source_section_id: '',
-    grading_periods: []
+    grading_periods: [],
+    schedules: [
+        {
+            days: ['Monday', 'Wednesday'],
+            room: '',
+            time_end: '10:00',
+            time_start: '08:00'
+        }
+    ]
 };
 
 interface SectionWizardModalProps {
@@ -97,6 +108,7 @@ export default function SectionWizardModal({
                     if (res.data) {
                         const data = res.data;
                         setIsEditable(data.is_active_academic_year !== false);
+                        const scheduleBlocks = groupScheduleSlotsToBlocks(data.schedules || []);
                         reset({
                             term_id: data.term_id || '',
                             course_id: data.course_id || '',
@@ -109,7 +121,8 @@ export default function SectionWizardModal({
                             override_grading_schema: false,
                             grading_override_mode: 'copy_section',
                             source_section_id: '',
-                            grading_periods: []
+                            grading_periods: [],
+                            schedules: scheduleBlocks.length > 0 ? scheduleBlocks : defaultFormValues.schedules
                         });
                     }
                 })
@@ -189,43 +202,46 @@ export default function SectionWizardModal({
 
         setIsSaving(true);
         const values = getValues();
+        const flatSlots = flattenScheduleBlocksToSlots(values.schedules || []);
 
         try {
+            let targetSectionId = sectionId;
+
             if (sectionId) {
                 const result = await updateSection(sectionId, values);
-                if (!result.error) {
-                    if (
-                        values.override_grading_schema &&
-                        values.grading_override_mode === 'copy_section' &&
-                        values.source_section_id
-                    ) {
-                        await copySectionSetupToSections(values.source_section_id, [sectionId]);
-                    }
-                    useToastStore.getState().showToast('Section updated successfully.', 'success');
-                    onSuccess();
-                    onClose();
-                }
+                if (result.error) return;
             } else {
                 const result = await createSection(values);
-                if (!result.error) {
-                    if (
-                        values.override_grading_schema &&
-                        values.grading_override_mode === 'copy_section' &&
-                        values.source_section_id
-                    ) {
-                        const sectionsRes = await getSections();
-                        const newSection = sectionsRes.data?.find(
-                            (s) => s.section_code === values.section_code
-                        );
-                        if (newSection?.id) {
-                            await copySectionSetupToSections(values.source_section_id, [newSection.id]);
-                        }
-                    }
-                    useToastStore.getState().showToast('Section created successfully.', 'success');
-                    onSuccess();
-                    onClose();
+                if (result.error) return;
+                targetSectionId = result.data?.id;
+
+                if (!targetSectionId) {
+                    const sectionsRes = await getSections();
+                    const newSection = sectionsRes.data?.find(
+                        (s) => s.section_code === values.section_code
+                    );
+                    targetSectionId = newSection?.id;
                 }
             }
+
+            if (targetSectionId) {
+                await saveSectionSchedules(targetSectionId, flatSlots);
+
+                if (
+                    values.override_grading_schema &&
+                    values.grading_override_mode === 'copy_section' &&
+                    values.source_section_id
+                ) {
+                    await copySectionSetupToSections(values.source_section_id, [targetSectionId]);
+                }
+            }
+
+            useToastStore.getState().showToast(
+                sectionId ? 'Section updated successfully.' : 'Section created successfully.',
+                'success'
+            );
+            onSuccess();
+            onClose();
         } finally {
             setIsSaving(false);
         }
