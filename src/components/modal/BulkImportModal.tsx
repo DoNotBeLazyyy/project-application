@@ -99,8 +99,98 @@ function escapeCsvValue(value: string): string {
     return value;
 }
 
+function DefaultPreviewCard({
+    columns,
+    index,
+    row
+}: {
+    columns: CsvTemplateColumn[];
+    index: number;
+    row: ParsedRow;
+}) {
+    const codeVal = row.code || row.section_code || row.course_code || row.department_code || row.term_label || '';
+    const titleVal = row.title || row.label || row.name || '';
+    const primaryHeading = codeVal && titleVal ? `${codeVal} — ${titleVal}` : codeVal || titleVal || `Row #${index + 1}`;
+
+    const longFieldKeys = new Set(['description', 'prerequisites', 'notes', 'comments', 'details']);
+    const shortColumns = columns.filter((col) => !longFieldKeys.has(col.key.toLowerCase()));
+    const longColumns = columns.filter((col) => longFieldKeys.has(col.key.toLowerCase()));
+
+    return (
+        <div className="p-4 rounded-xl border border-(--mui-palette-divider) bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3 transition-all hover:border-brand-300 dark:hover:border-brand-700">
+            {/* Header row */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-(--mui-palette-divider) pb-2.5">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-6 h-6 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 font-bold text-xs flex items-center justify-center shrink-0">
+                        #{index + 1}
+                    </span>
+                    <h4 className="font-semibold text-sm text-(--mui-palette-text-primary) truncate">
+                        {primaryHeading}
+                    </h4>
+                </div>
+
+                {row.is_active !== undefined && row.is_active !== '' && (
+                    <span
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                            String(row.is_active).toLowerCase() === 'true' || row.is_active === '1'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : 'bg-slate-100 text-slate-600 dark:bg-zinc-700 dark:text-slate-300'
+                        }`}
+                    >
+                        {String(row.is_active).toLowerCase() === 'true' || row.is_active === '1' ? 'Active' : 'Inactive'}
+                    </span>
+                )}
+            </div>
+
+            {/* Short fields grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs">
+                {shortColumns.map((col) => {
+                    const val = row[col.key];
+                    if (col.key === 'is_active') return null;
+
+                    return (
+                        <div key={col.key} className="flex flex-col gap-0.5">
+                            <span className="text-(--mui-palette-text-secondary) font-medium text-[11px] uppercase tracking-wide">
+                                {col.label}
+                            </span>
+                            <span className="text-(--mui-palette-text-primary) font-semibold break-words">
+                                {val && val.trim() !== '' ? val : '—'}
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Long fields (full width cards inside entry) */}
+            {longColumns.length > 0 && (
+                <div className="flex flex-col gap-2 pt-1 border-t border-(--mui-palette-divider)">
+                    {longColumns.map((col) => {
+                        const val = row[col.key];
+                        return (
+                            <div key={col.key} className="flex flex-col gap-1 text-xs">
+                                <span className="text-(--mui-palette-text-secondary) font-medium text-[11px] uppercase tracking-wide">
+                                    {col.label}
+                                </span>
+                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-(--mui-palette-divider) text-(--mui-palette-text-primary) font-medium text-xs whitespace-pre-wrap leading-relaxed">
+                                    {val && val.trim() !== '' ? val : <span className="text-(--mui-palette-text-secondary) italic">None</span>}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
 interface BulkImportModalProps<TPayload> {
     open: boolean;
+    previewLayout?: 'table' | 'card';
+    renderPreviewCard?: (
+        row: ParsedRow,
+        index: number,
+        columns: CsvTemplateColumn[]
+    ) => React.ReactNode;
     templateColumns: CsvTemplateColumn[];
     title?: string;
     onClose: () => void;
@@ -111,6 +201,8 @@ interface BulkImportModalProps<TPayload> {
 
 export default function BulkImportModal<TPayload>({
     open,
+    previewLayout = 'card',
+    renderPreviewCard,
     templateColumns,
     title = 'Bulk Import',
     onClose,
@@ -353,6 +445,8 @@ export default function BulkImportModal<TPayload>({
     }
 
     function renderPreviewStep() {
+        const isCardLayout = previewLayout === 'card' || Boolean(renderPreviewCard);
+
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
@@ -376,12 +470,30 @@ export default function BulkImportModal<TPayload>({
                         <span className="text-xs">{parseWarning}</span>
                     </div>
                 )}
-                <div className="h-64">
-                    <CommonTable<ParsedRow>
-                        leadingColumnDefs={previewColumnDefs}
-                        rowData={parsedRows}
-                    />
-                </div>
+                {isCardLayout ? (
+                    <div className="max-h-[60vh] overflow-y-auto pr-1 flex flex-col gap-3">
+                        {parsedRows.map((row, index) => {
+                            if (renderPreviewCard) {
+                                return renderPreviewCard(row, index, templateColumns);
+                            }
+                            return (
+                                <DefaultPreviewCard
+                                    columns={templateColumns}
+                                    index={index}
+                                    key={index}
+                                    row={row}
+                                />
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="h-64">
+                        <CommonTable<ParsedRow>
+                            leadingColumnDefs={previewColumnDefs}
+                            rowData={parsedRows}
+                        />
+                    </div>
+                )}
                 <CommonButton
                     disabled={isLoading}
                     size="small"

@@ -1,5 +1,6 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { CourseTypeFormValues, CourseTypeListRow, CourseTypeOption } from '@type/course/course-type.type';
+import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
+import { CourseTypeBulkRow, CourseTypeFormValues, CourseTypeListRow, CourseTypeOption } from '@type/course/course-type.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -59,4 +60,54 @@ export async function deleteCourseType(
     return callRpc<null>('fn_delete_course_type', {
         p_course_type_id: courseTypeId
     });
+}
+
+export async function bulkCreateCourseTypes(
+    courseTypes: CourseTypeBulkRow[]
+): Promise<DetailedBulkImportResult> {
+    const result = await callRpc<{
+        provisioned_count: number;
+        errors: BulkImportError[];
+    }>('fn_bulk_create_course_types', {
+        p_course_types: courseTypes
+    });
+
+    if (!result.error && result.data) {
+        const structuredErrors = result.data.errors ?? [];
+        return {
+            provisioned_count: result.data.provisioned_count ?? 0,
+            errors: structuredErrors.map((error) =>
+                `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
+            structuredErrors
+        };
+    }
+
+    let provisionedCount = 0;
+    const structuredErrors: BulkImportError[] = [];
+
+    for (let i = 0; i < courseTypes.length; i++) {
+        const row = courseTypes[i];
+        const res = await createCourseType({
+            code: row.code,
+            description: row.description || '',
+            label: row.label
+        });
+
+        if (res.error) {
+            structuredErrors.push({
+                code: row.code,
+                message: res.error.message,
+                row: i + 1
+            });
+        }
+        else {
+            provisionedCount++;
+        }
+    }
+
+    return {
+        errors: structuredErrors.map((e) => `Row ${e.row} (${e.code || 'unknown'}): ${e.message}`),
+        provisioned_count: provisionedCount,
+        structuredErrors
+    };
 }

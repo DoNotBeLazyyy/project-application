@@ -1,3 +1,4 @@
+import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
@@ -5,11 +6,13 @@ import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelF
 import ProgramLevelGridCard from '@pages/dean/program-management/level/ProgramLevelGridCard';
 import { useProgramLevelTableConfig } from '@pages/dean/program-management/level/useProgramLevelTableConfig';
 import {
+    bulkCreateProgramLevels,
     createProgramLevel, deleteProgramLevel, getProgramLevelById, listProgramLevels, updateProgramLevel
 } from '@services/program/program-level.service';
 import { useToastStore } from '@stores/toast.store';
+import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
-import { ProgramLevelFormValues, ProgramLevelListRow } from '@type/program/program-level.type';
+import { ProgramLevelBulkRow, ProgramLevelFormValues, ProgramLevelListRow } from '@type/program/program-level.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
@@ -22,6 +25,12 @@ const SORT_COLUMNS: SortColumn[] = [
 const CREATE_FORM_ID = 'create-program-level-form';
 const UPDATE_FORM_ID = 'update-program-level-form';
 
+const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'code', label: 'Code', hint: 'e.g. UG' },
+    { key: 'label', label: 'Label', hint: 'e.g. Undergraduate' },
+    { key: 'description', label: 'Description', hint: 'e.g. Undergraduate programs (optional)' }
+];
+
 const defaultFormValues: ProgramLevelFormValues = {
     code: '',
     description: '',
@@ -29,6 +38,7 @@ const defaultFormValues: ProgramLevelFormValues = {
 };
 
 export default function ProgramLevelManagement() {
+    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
@@ -152,6 +162,13 @@ export default function ProgramLevelManagement() {
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.programLevels
+                    },
+                    tableButtonsProps: {
+                        uploadCsvButtonProps: {
+                            onClick: function() {
+                                setIsBulkImportOpen(true);
+                            }
+                        }
                     }
                 }}
                 createModalProps={{
@@ -257,6 +274,23 @@ export default function ProgramLevelManagement() {
                 onDeleteRow={deleteProgramLevel}
                 onFetch={fetchProgramLevels}
                 onRowClick={handleOpenView}
+            />
+            <BulkImportModal<ProgramLevelBulkRow>
+                open={isBulkImportOpen}
+                templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                title="Bulk Import Program Levels"
+                onBulkImport={bulkCreateProgramLevels}
+                onClose={function() {
+                    setIsBulkImportOpen(false);
+                }}
+                onMapRow={function(row) {
+                    return {
+                        code: row.code,
+                        description: row.description,
+                        label: row.label
+                    };
+                }}
+                onSuccess={triggerRefresh}
             />
         </div>
     );

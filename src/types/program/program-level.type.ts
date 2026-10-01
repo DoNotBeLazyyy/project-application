@@ -17,3 +17,9 @@ export interface ProgramLevelOption {
     code: string;
     label: string;
 }
+
+export interface ProgramLevelBulkRow {
+    code: string;
+    label: string;
+    description?: string;
+}

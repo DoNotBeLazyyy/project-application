@@ -17,3 +17,9 @@ export interface CourseTypeOption {
     code: string;
     label: string;
 }
+
+export interface CourseTypeBulkRow {
+    code: string;
+    label: string;
+    description?: string;
+}

@@ -272,6 +272,7 @@ export default function CourseManagement() {
             />
             <BulkImportModal<CourseBulkRow>
                 open={isBulkImportOpen}
+                previewLayout="card"
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
                 title="Bulk Import Courses"
                 onBulkImport={bulkCreateCourses}

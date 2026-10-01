@@ -1,3 +1,4 @@
+import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
@@ -5,9 +6,11 @@ import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
 import CourseTypeGridCard from '@pages/dean/course-management/type/CourseTypeGridCard';
 import { useCourseTypeTableConfig } from '@pages/dean/course-management/type/useCourseTypeTableConfig';
 import {
+    bulkCreateCourseTypes,
     createCourseType, deleteCourseType, getCourseTypeById, listCourseTypes, updateCourseType
 } from '@services/course/course-type.service';
-import { CourseTypeFormValues, CourseTypeListRow } from '@type/course/course-type.type';
+import { CsvTemplateColumn } from '@type/bulk-import.type';
+import { CourseTypeBulkRow, CourseTypeFormValues, CourseTypeListRow } from '@type/course/course-type.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
@@ -21,6 +24,12 @@ const SORT_COLUMNS: SortColumn[] = [
 const CREATE_FORM_ID = 'create-course-type-form';
 const UPDATE_FORM_ID = 'update-course-type-form';
 
+const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'code', label: 'Code', hint: 'e.g. LEC' },
+    { key: 'label', label: 'Label', hint: 'e.g. Lecture' },
+    { key: 'description', label: 'Description', hint: 'e.g. Lecture component (optional)' }
+];
+
 const defaultFormValues: CourseTypeFormValues = {
     code: '',
     description: '',
@@ -28,6 +37,7 @@ const defaultFormValues: CourseTypeFormValues = {
 };
 
 export default function CourseTypeManagement() {
+    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
@@ -142,6 +152,13 @@ export default function CourseTypeManagement() {
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.courseTypes
+                    },
+                    tableButtonsProps: {
+                        uploadCsvButtonProps: {
+                            onClick: function() {
+                                setIsBulkImportOpen(true);
+                            }
+                        }
                     }
                 }}
                 createModalProps={{
@@ -247,6 +264,23 @@ export default function CourseTypeManagement() {
                 onDeleteRow={deleteCourseType}
                 onFetch={fetchCourseTypes}
                 onRowClick={handleOpenView}
+            />
+            <BulkImportModal<CourseTypeBulkRow>
+                open={isBulkImportOpen}
+                templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                title="Bulk Import Course Types"
+                onBulkImport={bulkCreateCourseTypes}
+                onClose={function() {
+                    setIsBulkImportOpen(false);
+                }}
+                onMapRow={function(row) {
+                    return {
+                        code: row.code,
+                        description: row.description,
+                        label: row.label
+                    };
+                }}
+                onSuccess={triggerRefresh}
             />
         </div>
     );
