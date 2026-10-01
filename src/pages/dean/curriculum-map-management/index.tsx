@@ -49,6 +49,7 @@ const defaultFormValues: CurriculumMapFormValues = {
 
 interface CurriculumMapManagementProps {
     programId?: string;
+    schoolYearId?: string;
     readOnly?: boolean;
     hideProgramSelect?: boolean;
     onChangeEntries?: (entries: CurriculumMapEntry[]) => void;
@@ -56,12 +57,13 @@ interface CurriculumMapManagementProps {
 
 export default function CurriculumMapManagement({
     programId = '',
+    schoolYearId = '',
     readOnly = false,
     hideProgramSelect = false,
     onChangeEntries
 }: CurriculumMapManagementProps = {}) {
     const [selectedProgramId, setSelectedProgramId] = useState(programId);
-    const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
+    const [selectedSchoolYearId, setSelectedSchoolYearId] = useState(schoolYearId);
     const [selectedTermTypeId, setSelectedTermTypeId] = useState('');
     const [entries, setEntries] = useState<CurriculumMapEntry[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +76,12 @@ export default function CurriculumMapManagement({
     const { programOptions } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
     const { termTypeOptions } = useTermTypeOptions();
+
+    useEffect(() => {
+        if (termTypeOptions.length > 0 && !selectedTermTypeId) {
+            setSelectedTermTypeId(String(termTypeOptions[0].value));
+        }
+    }, [termTypeOptions, selectedTermTypeId]);
 
     const filteredEntries = useMemo(() => {
         if (!selectedTermTypeId) return entries;
@@ -94,10 +102,12 @@ export default function CurriculumMapManagement({
     }, [programId]);
 
     useEffect(() => {
-        if (activeSchoolYearId && !selectedSchoolYearId) {
+        if (schoolYearId) {
+            setSelectedSchoolYearId(schoolYearId);
+        } else if (activeSchoolYearId && !selectedSchoolYearId) {
             setSelectedSchoolYearId(activeSchoolYearId);
         }
-    }, [activeSchoolYearId]);
+    }, [schoolYearId, activeSchoolYearId]);
 
     function updateEntriesState(newEntries: CurriculumMapEntry[]) {
         setEntries(newEntries);
@@ -425,15 +435,7 @@ export default function CurriculumMapManagement({
                         )}
                         <CommonSelect
                             fullWidth={false}
-                            options={[{ label: 'All School Years', value: '' }, ...schoolYearOptions]}
-                            size="large"
-                            sx={{ minWidth: 200 }}
-                            value={selectedSchoolYearId}
-                            onChange={(e) => setSelectedSchoolYearId(String(e.target.value))}
-                        />
-                        <CommonSelect
-                            fullWidth={false}
-                            options={[{ label: 'All Terms', value: '' }, ...termTypeOptions]}
+                            options={termTypeOptions}
                             size="large"
                             sx={{ minWidth: 180 }}
                             value={selectedTermTypeId}

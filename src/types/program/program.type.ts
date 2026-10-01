@@ -19,6 +19,7 @@ export interface ProgramFormValues {
     description: string;
     department_id: string;
     program_level_id: string;
+    school_year_id?: string;
     total_units: string;
     years_duration: string;
     is_active: boolean;

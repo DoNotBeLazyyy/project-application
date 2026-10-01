@@ -14,13 +14,14 @@ import {
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ProgramFormValues } from '@type/program/program.type';
 import { useEffect, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
 
 interface ProgramWizardModalProps {
     open: boolean;
@@ -57,6 +58,7 @@ export default function ProgramWizardModal({
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, setValue, trigger } = methods;
+    const selectedSchoolYearId = useWatch({ control, name: 'school_year_id' });
 
     useEffect(() => {
         if (open) {
@@ -69,6 +71,7 @@ export default function ProgramWizardModal({
         setValue('name', '', { shouldDirty: true });
         setValue('department_id', '', { shouldDirty: true });
         setValue('program_level_id', '', { shouldDirty: true });
+        setValue('school_year_id', '', { shouldDirty: true });
         setValue('total_units', '', { shouldDirty: true });
         setValue('years_duration', '', { shouldDirty: true });
         setValue('description', '', { shouldDirty: true });
@@ -76,6 +79,7 @@ export default function ProgramWizardModal({
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
+    const { schoolYearOptions } = useSchoolYearOptions();
 
     const fields: FormFieldConfig<ProgramFormValues>[] = [
         {
@@ -110,6 +114,14 @@ export default function ProgramWizardModal({
             name: 'program_level_id',
             options: programLevelOptions,
             rules: readOnly ? undefined : { required: 'Please select a program level' },
+            type: 'select'
+        },
+        {
+            disabled: readOnly,
+            fieldProps: { helperText: 'Academic / School Year for this program' },
+            name: 'school_year_id',
+            options: schoolYearOptions,
+            rules: readOnly ? undefined : { required: 'Please select an academic year' },
             type: 'select'
         },
         {
@@ -320,6 +332,7 @@ export default function ProgramWizardModal({
                     <CurriculumMapManagement
                         hideProgramSelect
                         programId={programId}
+                        schoolYearId={selectedSchoolYearId}
                         readOnly={readOnly}
                         onChangeEntries={(newEntries) => {
                             setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
