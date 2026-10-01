@@ -1,5 +1,5 @@
 Term Label,Program Code,Course Code,Section Code,Faculty Email,Room,Max Slots,Status,Schedule Days,Schedule Start Time,Schedule End Time,Schedule Room,Preset Section (Code or Label),Override Grading Schema,Grading Periods Schema
-1st Semester - Academic Year 2025-2026,BSCS,CS 101LEC,BSCS 1-A,juliustolentino.diamond@gmail.com,CLAB-101,40,Open,"Monday, Wednesday",08:00,10:00,CLAB-101,,false,
+1st Semester - Academic Year 2025-2026,BSCS,CS 101LEC,BSCS 1-A,juliustolentino.diamond@gmail.com,CLAB-101,40,Open,"Wednesday",08:00,10:00,CLAB-101,,false,
 1st Semester - Academic Year 2025-2026,BSCS,CS 101LAB,BSCS 1-A (LAB),juliustolentino.diamond@gmail.com,CLAB-101,40,Open,Friday,08:00,11:00,CLAB-101,,false,
 1st Semester - Academic Year 2025-2026,BSCS,CS 102LEC,BSCS 1-B,juliusexample@gmail.com,CLAB-102,40,Open,"Tuesday, Thursday",13:00,15:00,CLAB-102,,false,
 1st Semester - Academic Year 2025-2026,BSCS,CS 201LEC,BSCS 2-A,luna.akirapogi@gmail.com,CLAB-201,40,Open,"Monday, Wednesday",13:00,15:00,CLAB-201,,true,"Prelim:30(Quizzes:25,Class Standing:35,Major Exam:40); Midterm:30(Quizzes:25,Class Standing:35,Major Exam:40); Final:40(Quizzes:25,Class Standing:35,Major Exam:40)"

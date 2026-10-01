@@ -6717,7 +6717,7 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.fn_create_section(p_term_id uuid, p_course_id uuid, p_faculty_id uuid, p_section_code text, p_room text, p_max_slots smallint, p_status section_status_type DEFAULT 'Open'::section_status_type)
+CREATE OR REPLACE FUNCTION public.fn_create_section(p_term_id uuid, p_course_id uuid, p_faculty_id uuid, p_section_code text, p_room text, p_max_slots smallint, p_status section_status_type DEFAULT 'Open'::section_status_type, p_program_id uuid DEFAULT NULL)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -6725,14 +6725,36 @@ CREATE OR REPLACE FUNCTION public.fn_create_section(p_term_id uuid, p_course_id 
 AS $function$
 DECLARE
     v_section_id UUID;
+    v_existing_id UUID;
 BEGIN
-    IF EXISTS (
-        SELECT 1 FROM public.sections
-        WHERE term_id = p_term_id
-        AND section_code = p_section_code
-        AND deleted_at IS NULL
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.terms t
+        INNER JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
+        WHERE t.id = p_term_id
+          AND t.deleted_at IS NULL
+          AND sy.is_active = true
     ) THEN
-        RETURN jsonb_build_object('success', false, 'message', 'A section with this code already exists for the selected term.');
+        RETURN jsonb_build_object('success', false, 'message', 'Sections can only be created for the active academic year.');
+    END IF;
+
+    -- Duplicate Check Rule: check if section for term, course, and faculty (or section_code) already exists
+    SELECT id INTO v_existing_id
+    FROM public.sections
+    WHERE term_id = p_term_id
+      AND course_id = p_course_id
+      AND (
+          section_code = p_section_code
+          OR (p_faculty_id IS NOT NULL AND faculty_id = p_faculty_id)
+      )
+      AND deleted_at IS NULL
+    LIMIT 1;
+
+    IF v_existing_id IS NOT NULL THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'message', 'A section offering for this Term, Course, and Faculty already exists.'
+        );
     END IF;
 
     INSERT INTO public.sections (
@@ -6758,7 +6780,7 @@ BEGIN
 
     PERFORM public.fn_seed_section_grading(v_section_id);
 
-    RETURN jsonb_build_object('success', true, 'message', 'Section created successfully.');
+    RETURN jsonb_build_object('success', true, 'message', 'Section created successfully.', 'id', v_section_id);
 END;
 $function$
 ;
