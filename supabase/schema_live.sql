@@ -3821,19 +3821,38 @@ DECLARE
     v_section_code TEXT;
     v_course_prefix TEXT;
     v_seq INTEGER;
+    v_term_input TEXT;
 BEGIN
     FOR v_row IN SELECT * FROM jsonb_array_elements(p_sections)
     LOOP
         v_index := v_index + 1;
 
         BEGIN
-            SELECT t.id, COALESCE(sy.is_active, false) INTO v_term_id, v_is_active
-            FROM public.terms t
-            INNER JOIN public.term_types tt ON tt.id = t.term_type_id AND tt.deleted_at IS NULL
-            INNER JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
-            WHERE (tt.label || ' - ' || sy.label) = trim(v_row->>'term_label')
-            AND t.deleted_at IS NULL
-            LIMIT 1;
+            v_term_input := trim(COALESCE(v_row->>'term_label', ''));
+            v_term_id := NULL;
+            v_is_active := FALSE;
+
+            IF v_term_input = '' THEN
+                SELECT t.id, COALESCE(sy.is_active, false) INTO v_term_id, v_is_active
+                FROM public.terms t
+                INNER JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
+                WHERE sy.is_active = TRUE AND t.deleted_at IS NULL
+                ORDER BY t.created_at ASC
+                LIMIT 1;
+            ELSE
+                SELECT t.id, COALESCE(sy.is_active, false) INTO v_term_id, v_is_active
+                FROM public.terms t
+                INNER JOIN public.term_types tt ON tt.id = t.term_type_id AND tt.deleted_at IS NULL
+                INNER JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
+                WHERE t.deleted_at IS NULL AND (
+                    (tt.label || ' - ' || sy.label) = v_term_input
+                    OR (tt.label || ' ' || sy.label) = v_term_input
+                    OR (tt.label || ' - ' || replace(sy.label, 'Academic Year ', '')) = v_term_input
+                    OR (tt.label || ' ' || replace(sy.label, 'Academic Year ', '')) = v_term_input
+                    OR LOWER(tt.label || ' - ' || sy.label) = LOWER(v_term_input)
+                )
+                LIMIT 1;
+            END IF;
 
             IF v_term_id IS NULL THEN
                 v_errors := v_errors || jsonb_build_object(
@@ -3901,18 +3920,6 @@ BEGIN
                     v_seq := v_seq + 1;
                     v_section_code := v_course_prefix || '-' || lpad(v_seq::text, 3, '0');
                 END LOOP;
-            ELSIF EXISTS (
-                SELECT 1 FROM public.sections
-                WHERE term_id = v_term_id
-                AND section_code = v_section_code
-                AND deleted_at IS NULL
-            ) THEN
-                v_errors := v_errors || jsonb_build_object(
-                    'row', v_index,
-                    'code', 'DUPLICATE_SECTION_CODE',
-                    'message', 'Section code "' || v_section_code || '" already exists in this term.'
-                );
-                CONTINUE;
             END IF;
 
             v_max_slots := 40;
@@ -3928,28 +3935,46 @@ BEGIN
                 END IF;
             END IF;
 
-            INSERT INTO public.sections (
-                term_id,
-                course_id,
-                faculty_id,
-                section_code,
-                room,
-                max_slots,
-                status,
-                created_by
-            ) VALUES (
-                v_term_id,
-                v_course_id,
-                v_faculty_id,
-                v_section_code,
-                nullif(trim(v_row->>'room'), ''),
-                v_max_slots,
-                'Open'::public.section_status_type,
-                auth.uid()
-            )
-            RETURNING id INTO v_section_id;
+            SELECT id INTO v_section_id
+            FROM public.sections
+            WHERE term_id = v_term_id
+            AND section_code = v_section_code
+            AND deleted_at IS NULL
+            LIMIT 1;
 
-            PERFORM public.fn_seed_section_grading(v_section_id);
+            IF v_section_id IS NOT NULL THEN
+                UPDATE public.sections
+                SET course_id = v_course_id,
+                    faculty_id = COALESCE(v_faculty_id, faculty_id),
+                    room = COALESCE(nullif(trim(v_row->>'room'), ''), room),
+                    max_slots = v_max_slots,
+                    updated_at = NOW(),
+                    updated_by = auth.uid()
+                WHERE id = v_section_id;
+            ELSE
+                INSERT INTO public.sections (
+                    term_id,
+                    course_id,
+                    faculty_id,
+                    section_code,
+                    room,
+                    max_slots,
+                    status,
+                    created_by
+                ) VALUES (
+                    v_term_id,
+                    v_course_id,
+                    v_faculty_id,
+                    v_section_code,
+                    nullif(trim(v_row->>'room'), ''),
+                    v_max_slots,
+                    'Open'::public.section_status_type,
+                    auth.uid()
+                )
+                RETURNING id INTO v_section_id;
+
+                PERFORM public.fn_seed_section_grading(v_section_id);
+            END IF;
 
             v_provisioned := v_provisioned + 1;
 
