@@ -298,8 +298,8 @@ export default function BulkImportModal<TPayload>({
 
         const headers = records[0];
         const matchedColumns = headers.map((header) => (activeColumns || []).find(
-            (col) => col.label.trim()
-                .toLowerCase() === header.toLowerCase()
+            (col) => col.label.trim().toLowerCase() === header.trim().toLowerCase()
+                || col.key.trim().toLowerCase() === header.trim().toLowerCase()
         ) ?? null);
 
         const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);

@@ -1,4 +1,4 @@
-term_label,program_code,course_code,section_code,faculty_email,room,max_slots,status,schedule_days,schedule_time_start,schedule_time_end,schedule_room,preset_section,override_grading_schema,grading_periods
+Term Label,Program Code,Course Code,Section Code,Faculty Email,Room,Max Slots,Status,Schedule Days,Schedule Start Time,Schedule End Time,Schedule Room,Preset Section (Code or Label),Override Grading Schema,Grading Periods Schema
 1st Semester - Academic Year 2025-2026,BSCS,CS 101LEC,BSCS 1-A,juliustolentino.diamond@gmail.com,CLAB-101,40,Open,"Monday, Wednesday",08:00,10:00,CLAB-101,,false,
 1st Semester - Academic Year 2025-2026,BSCS,CS 101LAB,BSCS 1-A (LAB),juliustolentino.diamond@gmail.com,CLAB-101,40,Open,Friday,08:00,11:00,CLAB-101,,false,
 1st Semester - Academic Year 2025-2026,BSCS,CS 102LEC,BSCS 1-B,juliusexample@gmail.com,CLAB-102,40,Open,"Tuesday, Thursday",13:00,15:00,CLAB-102,,false,
