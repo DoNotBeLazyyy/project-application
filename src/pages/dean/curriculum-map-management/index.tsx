@@ -212,47 +212,33 @@ export default function CurriculumMapManagement({
     }
 
     async function handleCreateSubmit(values: CurriculumMapFormValues) {
-        if (selectedProgramId) {
-            const result = await createCurriculumMapEntry(
-                selectedProgramId,
-                values,
-                selectedSchoolYearId || undefined
-            );
+        const listRes = await listCourses(1, 1000, '', [], null);
+        const courses = listRes.data?.items ?? [];
+        const course = courses.find((c) => c.id === values.course_id);
+        const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
-            if (!result.error) {
-                setIsCreateOpen(false);
-                createMethods.reset(defaultFormValues);
-                fetchCurriculum();
-            }
-        } else {
-            const listRes = await listCourses(1, 1000, '', [], null);
-            const courses = listRes.data?.items ?? [];
-            const course = courses.find((c) => c.id === values.course_id);
-            const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+        const newEntry: CurriculumMapEntry = {
+            id: `temp-${Date.now()}-${Math.random()}`,
+            course_id: values.course_id,
+            course_code: course?.code ?? '',
+            course_title: course?.title ?? '',
+            lecture_units: course?.lecture_units ?? 0,
+            laboratory_units: course?.laboratory_units ?? 0,
+            total_units: course?.total_units ?? 0,
+            year_level: Number(values.year_level),
+            term_type_id: values.term_type_id,
+            term_type_label: termTypeObj?.label ?? '',
+            term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? '',
+            term_type_sequence: 1,
+            school_year_id: selectedSchoolYearId || null,
+            sequence: Number(values.sequence),
+            is_elective: values.is_elective,
+            prerequisites: []
+        };
 
-            const newEntry: CurriculumMapEntry = {
-                id: `temp-${Date.now()}-${Math.random()}`,
-                course_id: values.course_id,
-                course_code: course?.code ?? '',
-                course_title: course?.title ?? '',
-                lecture_units: course?.lecture_units ?? 0,
-                laboratory_units: course?.laboratory_units ?? 0,
-                total_units: course?.total_units ?? 0,
-                year_level: Number(values.year_level),
-                term_type_id: values.term_type_id,
-                term_type_label: termTypeObj?.label ?? '',
-                term_type_code: termTypeObj?.label ?? '',
-                term_type_sequence: 1,
-                school_year_id: selectedSchoolYearId || null,
-                sequence: Number(values.sequence),
-                is_elective: values.is_elective,
-                prerequisites: []
-            };
-
-            updateEntriesState([...entries, newEntry]);
-            setIsCreateOpen(false);
-            createMethods.reset(defaultFormValues);
-        }
+        updateEntriesState([...entries, newEntry]);
+        setIsCreateOpen(false);
+        createMethods.reset(defaultFormValues);
     }
 
     function handleCreateFormError(errors: FieldErrors<CurriculumMapFormValues>) {
@@ -262,45 +248,32 @@ export default function CurriculumMapManagement({
     async function handleUpdateSubmit(values: CurriculumMapFormValues) {
         if (!selectedEntry) return;
 
-        if (selectedProgramId) {
-            const result = await updateCurriculumMapEntry(
-                selectedEntry.id,
-                values,
-                selectedSchoolYearId || undefined
-            );
+        const listRes = await listCourses(1, 1000, '', [], null);
+        const courses = listRes.data?.items ?? [];
+        const course = courses.find((c) => c.id === values.course_id);
+        const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
-            if (!result.error) {
-                handleCloseUpdate();
-                fetchCurriculum();
-            }
-        } else {
-            const listRes = await listCourses(1, 1000, '', [], null);
-            const courses = listRes.data?.items ?? [];
-            const course = courses.find((c) => c.id === values.course_id);
-            const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+        const updatedEntries = entries.map((entry) => {
+            if (entry.id !== selectedEntry.id) return entry;
+            return {
+                ...entry,
+                course_id: values.course_id,
+                course_code: course?.code ?? entry.course_code,
+                course_title: course?.title ?? entry.course_title,
+                lecture_units: course?.lecture_units ?? entry.lecture_units,
+                laboratory_units: course?.laboratory_units ?? entry.laboratory_units,
+                total_units: course?.total_units ?? entry.total_units,
+                year_level: Number(values.year_level),
+                term_type_id: values.term_type_id,
+                term_type_label: termTypeObj?.label ?? entry.term_type_label,
+                term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? entry.term_type_code,
+                sequence: Number(values.sequence),
+                is_elective: values.is_elective
+            };
+        });
 
-            const updatedEntries = entries.map((entry) => {
-                if (entry.id !== selectedEntry.id) return entry;
-                return {
-                    ...entry,
-                    course_id: values.course_id,
-                    course_code: course?.code ?? entry.course_code,
-                    course_title: course?.title ?? entry.course_title,
-                    lecture_units: course?.lecture_units ?? entry.lecture_units,
-                    laboratory_units: course?.laboratory_units ?? entry.laboratory_units,
-                    total_units: course?.total_units ?? entry.total_units,
-                    year_level: Number(values.year_level),
-                    term_type_id: values.term_type_id,
-                    term_type_label: termTypeObj?.label ?? entry.term_type_label,
-                    term_type_code: termTypeObj?.label ?? entry.term_type_code,
-                    sequence: Number(values.sequence),
-                    is_elective: values.is_elective
-                };
-            });
-
-            updateEntriesState(updatedEntries);
-            handleCloseUpdate();
-        }
+        updateEntriesState(updatedEntries);
+        handleCloseUpdate();
     }
 
     function handleUpdateFormError(errors: FieldErrors<CurriculumMapFormValues>) {
@@ -314,37 +287,6 @@ export default function CurriculumMapManagement({
     async function handleBulkImportCurriculum(
         rows: CurriculumMapCsvRow[]
     ): Promise<BulkImportResult> {
-        if (selectedProgramId) {
-            const programObj = programOptions.find((p) => p.value === selectedProgramId);
-            const programCode = (programObj as { code?: string })?.code || selectedProgramId;
-            const schoolYearObj = schoolYearOptions.find((s) => s.value === selectedSchoolYearId);
-            const schoolYearCode = schoolYearObj?.label || '';
-
-            const bulkEntries: CurriculumMapBulkRow[] = rows.map((row) => {
-                const matchedTermType = termTypeOptions.find(
-                    (t) =>
-                        t.label.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
-                        t.code?.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
-                        String(t.value).trim().toLowerCase() === row.term_type_code?.trim().toLowerCase()
-                );
-                const termTypeCode = matchedTermType?.code || row.term_type_code || '';
-
-                return {
-                    program_code: programCode,
-                    course_code: row.course_code,
-                    year_level: String(row.year_level),
-                    term_type_code: termTypeCode,
-                    school_year_code: schoolYearCode,
-                    sequence: String(row.sequence || '1'),
-                    is_elective: String(row.is_elective ?? 'false')
-                };
-            });
-
-            const result = await bulkCreateCurriculumMap(bulkEntries);
-            fetchCurriculum();
-            return result;
-        }
-
         const [listRes, optionsRes] = await Promise.all([
             listCourses(1, 1000, '', [], null),
             getCourses()
@@ -460,59 +402,34 @@ export default function CurriculumMapManagement({
             });
         }
 
-        if (selectedProgramId) {
-            const results = await Promise.all(
-                validRows.map(async ({ rowNum, formValues }) => {
-                    const res = await createCurriculumMapEntry(
-                        selectedProgramId,
-                        formValues,
-                        selectedSchoolYearId || undefined
-                    );
-                    return { rowNum, res };
-                })
-            );
-
-            for (const { rowNum, res } of results) {
-                if (res.error) {
-                    errors.push(`Row ${rowNum}: ${res.error.message}`);
-                }
-            }
-        } else {
-            for (const { course, termTypeObj, formValues } of validRows) {
-                const newEntry: CurriculumMapEntry = {
-                    id: `temp-${Date.now()}-${Math.random()}`,
-                    course_id: course.id,
-                    course_code: course.code,
-                    course_title: course.title,
-                    lecture_units: course.lecture_units ?? 0,
-                    laboratory_units: course.laboratory_units ?? 0,
-                    total_units: course.total_units ?? 0,
-                    year_level: Number(formValues.year_level),
-                    term_type_id: formValues.term_type_id,
-                    term_type_label: termTypeObj?.label ?? '',
-                    term_type_code: termTypeObj?.label ?? '',
-                    term_type_sequence: 1,
-                    school_year_id: selectedSchoolYearId || null,
-                    sequence: Number(formValues.sequence || 1),
-                    is_elective: formValues.is_elective,
-                    prerequisites: []
-                };
-                provisionedEntries.push(newEntry);
-            }
+        for (const { course, termTypeObj, formValues } of validRows) {
+            const newEntry: CurriculumMapEntry = {
+                id: `temp-${Date.now()}-${Math.random()}`,
+                course_id: course.id,
+                course_code: course.code,
+                course_title: course.title,
+                lecture_units: course.lecture_units ?? 0,
+                laboratory_units: course.laboratory_units ?? 0,
+                total_units: course.total_units ?? 0,
+                year_level: Number(formValues.year_level),
+                term_type_id: formValues.term_type_id,
+                term_type_label: termTypeObj?.label ?? '',
+                term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? '',
+                term_type_sequence: 1,
+                school_year_id: selectedSchoolYearId || null,
+                sequence: Number(formValues.sequence || 1),
+                is_elective: formValues.is_elective,
+                prerequisites: []
+            };
+            provisionedEntries.push(newEntry);
         }
 
-        if (selectedProgramId) {
-            fetchCurriculum();
-        } else if (provisionedEntries.length > 0) {
+        if (provisionedEntries.length > 0) {
             updateEntriesState([...entries, ...provisionedEntries]);
         }
 
-        const successCount = selectedProgramId
-            ? rows.length - errors.length
-            : provisionedEntries.length;
-
         return {
-            provisioned_count: successCount,
+            provisioned_count: provisionedEntries.length,
             errors
         };
     }

@@ -65,24 +65,37 @@ export async function createProgram(
         p_years_duration: Number(params.years_duration)
     });
 
-    if (!result.error && params.curriculum_entries && params.curriculum_entries.length > 0) {
+    if (!result.error) {
         const programId = result.data?.id || result.data?.program_id;
         if (programId) {
-            await Promise.allSettled(
-                params.curriculum_entries.map((entry) =>
-                    createCurriculumMapEntry(
-                        programId,
-                        {
-                            course_id: entry.course_id,
-                            is_elective: Boolean(entry.is_elective),
-                            sequence: String(entry.sequence ?? 1),
-                            term_type_id: entry.term_type_id,
-                            year_level: String(entry.year_level)
-                        },
-                        entry.school_year_id
+            // STEP 1: Delete any pending deleted curriculum map entries first
+            if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
+                const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
+                if (realDeletedIds.length > 0) {
+                    await Promise.allSettled(
+                        realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
+                    );
+                }
+            }
+
+            // STEP 2: Create all curriculum entries after deletion completes
+            if (params.curriculum_entries && params.curriculum_entries.length > 0) {
+                await Promise.allSettled(
+                    params.curriculum_entries.map((entry) =>
+                        createCurriculumMapEntry(
+                            programId,
+                            {
+                                course_id: entry.course_id,
+                                is_elective: Boolean(entry.is_elective),
+                                sequence: String(entry.sequence ?? 1),
+                                term_type_id: entry.term_type_id,
+                                year_level: String(entry.year_level)
+                            },
+                            entry.school_year_id || params.school_year_id
+                        )
                     )
-                )
-            );
+                );
+            }
         }
     }
 
@@ -107,10 +120,48 @@ export async function updateProgram(
         p_years_duration: Number(params.years_duration)
     });
 
-    if (!result.error && params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
-        await Promise.allSettled(
-            params.pending_deleted_curriculum_ids.map((id) => deleteCurriculumMapEntry(id))
-        );
+    if (!result.error) {
+        // STEP 1: Delete all pending deleted curriculum map entries FIRST
+        if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
+            const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
+            if (realDeletedIds.length > 0) {
+                await Promise.allSettled(
+                    realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
+                );
+            }
+        }
+
+        // STEP 2: Create new entries and update existing entries AFTER deletion completes
+        if (params.curriculum_entries && params.curriculum_entries.length > 0) {
+            await Promise.allSettled(
+                params.curriculum_entries.map((entry) => {
+                    if (entry.id.startsWith('temp-')) {
+                        return createCurriculumMapEntry(
+                            programId,
+                            {
+                                course_id: entry.course_id,
+                                is_elective: Boolean(entry.is_elective),
+                                sequence: String(entry.sequence ?? 1),
+                                term_type_id: entry.term_type_id,
+                                year_level: String(entry.year_level)
+                            },
+                            entry.school_year_id || params.school_year_id
+                        );
+                    }
+                    return updateCurriculumMapEntry(
+                        entry.id,
+                        {
+                            course_id: entry.course_id,
+                            is_elective: Boolean(entry.is_elective),
+                            sequence: String(entry.sequence ?? 1),
+                            term_type_id: entry.term_type_id,
+                            year_level: String(entry.year_level)
+                        },
+                        entry.school_year_id || params.school_year_id
+                    );
+                })
+            );
+        }
     }
 
     return result;
