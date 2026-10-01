@@ -5,6 +5,9 @@ export interface SectionListRow {
     section_code: string;
     term_id: string;
     term_label: string;
+    program_id?: string | null;
+    program_code?: string | null;
+    program_name?: string | null;
     course_id: string;
     course_code: string;
     course_title: string;
@@ -53,6 +56,7 @@ export interface SectionScheduleBlock {
 
 export interface SectionFormValues {
     term_id: string;
+    program_id?: string;
     course_id: string;
     faculty_id: string;
     section_code?: string;
@@ -69,6 +73,7 @@ export interface SectionFormValues {
 
 export interface SectionFilterValues {
     term_ids: string[];
+    program_ids?: string[];
     course_ids: string[];
     statuses: SectionStatus[];
 }
@@ -82,6 +87,7 @@ export interface SectionOption {
 export interface SectionBulkRow {
     section_code?: string;
     term_label: string;
+    program_code?: string;
     course_code: string;
     faculty_email?: string;
     room?: string;

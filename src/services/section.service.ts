@@ -100,6 +100,9 @@ export async function listSections(
         p_term_ids: filters?.term_ids?.length
             ? filters.term_ids
             : null,
+        p_program_ids: filters?.program_ids?.length
+            ? filters.program_ids
+            : null,
         p_course_ids: filters?.course_ids?.length
             ? filters.course_ids
             : null,
@@ -140,6 +143,7 @@ export async function createSection(
 
     return callRpc<{ id?: string }>('fn_create_section', {
         p_term_id: nullIfBlank(params.term_id),
+        p_program_id: nullIfBlank(params.program_id),
         p_course_id: nullIfBlank(params.course_id),
         p_faculty_id: nullIfBlank(params.faculty_id),
         p_section_code: code,
@@ -156,6 +160,7 @@ export async function updateSection(
     return callRpc<null>('fn_update_section', {
         p_section_id: sectionId,
         p_term_id: nullIfBlank(params.term_id),
+        p_program_id: nullIfBlank(params.program_id),
         p_course_id: nullIfBlank(params.course_id),
         p_faculty_id: nullIfBlank(params.faculty_id),
         p_section_code: params.section_code || '',

@@ -1,6 +1,7 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
+import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { getTerms } from '@services/section.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { SectionFilterValues, SectionStatus } from '@type/section.type';
@@ -24,6 +25,7 @@ export default function SectionFilterForm({
     ...formProps
 }: SectionFilterFormProps) {
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
+    const { programOptions } = useProgramOptions();
 
     useEffect(function() {
         async function fetchTerms() {
@@ -46,6 +48,11 @@ export default function SectionFilterForm({
         {
             name: 'term_ids',
             options: termOptions,
+            type: 'multi-select'
+        },
+        {
+            name: 'program_ids',
+            options: programOptions,
             type: 'multi-select'
         },
         {

@@ -40,7 +40,7 @@ export const SEARCH_HINTS: Record<string, readonly string[]> = {
         'Last name',
         'Email'
     ],
-    sections: ['Section code', 'Course code', 'Course title'],
+    sections: ['Section code', 'Course code', 'Course title', 'Program code'],
     specialGrades: ['Code', 'Label', 'Description'],
     students: [
         'Student number',

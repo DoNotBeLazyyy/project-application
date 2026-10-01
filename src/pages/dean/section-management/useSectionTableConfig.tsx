@@ -42,6 +42,12 @@ export function useSectionTableConfig({
                 sortable: true
             },
             {
+                field: 'program_code',
+                flex: 1,
+                headerName: 'Program',
+                sortable: true
+            },
+            {
                 field: 'course_code',
                 flex: 1,
                 headerName: 'Course Code',

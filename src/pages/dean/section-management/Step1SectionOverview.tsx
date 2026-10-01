@@ -2,6 +2,7 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
+import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import SectionScheduleConfig from '@pages/dean/section-management/SectionScheduleConfig';
 import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
 import { getFacultyOptions, getTerms } from '@services/section.service';
@@ -33,6 +34,7 @@ export default function Step1SectionOverview({
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
     const { courseOptions } = useCourseOptions({});
+    const { programOptions } = useProgramOptions();
 
     useEffect(function() {
         async function fetchOptions() {
@@ -70,6 +72,7 @@ export default function Step1SectionOverview({
     function handleClearOverview() {
         if (!setValue) return;
         setValue('term_id', '', { shouldValidate: false, shouldDirty: true });
+        setValue('program_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('course_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('faculty_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('room', '', { shouldValidate: false, shouldDirty: true });
@@ -97,6 +100,14 @@ export default function Step1SectionOverview({
             rules: disabled
                 ? undefined
                 : { required: 'Please select a term' },
+            type: 'select',
+            gridCols: 2
+        },
+        {
+            disabled,
+            fieldProps: { helperText: 'Academic program this section belongs to (optional)' },
+            name: 'program_id',
+            options: programOptions,
             type: 'select',
             gridCols: 2
         },
