@@ -318,6 +318,7 @@ export default function ProgramWizardModal({
 
                 {currentStep === 3 && (
                     <CurriculumMapManagement
+                        hideProgramSelect
                         programId={programId}
                         readOnly={readOnly}
                     />

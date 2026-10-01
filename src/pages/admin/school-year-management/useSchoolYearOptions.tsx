@@ -1,27 +1,35 @@
 import { CommonSelectOption } from '@components/select/CommonSelect';
-import { getSchoolYears } from '@services/school-year.service';
+import { getSchoolYears, listSchoolYears } from '@services/school-year.service';
 import { SchoolYearOption } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
 
 export function useSchoolYearOptions() {
     const [schoolYearOptions, setSchoolYearOptions] = useState<CommonSelectOption[]>([]);
+    const [activeSchoolYearId, setActiveSchoolYearId] = useState<string>('');
 
     useEffect(function() {
         async function fetchSchoolYears() {
-            const result = await getSchoolYears();
+            const [yearsResult, activeResult] = await Promise.all([
+                getSchoolYears(),
+                listSchoolYears(1, 100, '', [], { is_active: 'true', year: '' })
+            ]);
 
-            if (result.data) {
+            if (yearsResult.data) {
                 setSchoolYearOptions(
-                    result.data.map((schoolYear: SchoolYearOption) => ({
+                    yearsResult.data.map((schoolYear: SchoolYearOption) => ({
                         label: schoolYear.label,
                         value: schoolYear.id
                     }))
                 );
+            }
+
+            if (activeResult.data?.items && activeResult.data.items.length > 0) {
+                setActiveSchoolYearId(activeResult.data.items[0].id);
             }
         }
 
         fetchSchoolYears();
     }, []);
 
-    return { schoolYearOptions };
+    return { activeSchoolYearId, schoolYearOptions };
 }

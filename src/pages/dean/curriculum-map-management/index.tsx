@@ -9,7 +9,7 @@ import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumM
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { MapTrifoldIcon, PrinterIcon } from '@phosphor-icons/react';
+import { MapTrifoldIcon } from '@phosphor-icons/react';
 import {
     bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
@@ -42,11 +42,13 @@ const defaultFormValues: CurriculumMapFormValues = {
 interface CurriculumMapManagementProps {
     programId?: string;
     readOnly?: boolean;
+    hideProgramSelect?: boolean;
 }
 
 export default function CurriculumMapManagement({
     programId = '',
-    readOnly = false
+    readOnly = false,
+    hideProgramSelect = false
 }: CurriculumMapManagementProps = {}) {
     const [selectedProgramId, setSelectedProgramId] = useState(programId);
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
@@ -65,8 +67,14 @@ export default function CurriculumMapManagement({
     }, [programId]);
 
     const { programOptions } = useProgramOptions();
-    const { schoolYearOptions } = useSchoolYearOptions();
+    const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
     const grouped = useCurriculumMapGrouped(entries);
+
+    useEffect(() => {
+        if (activeSchoolYearId && !selectedSchoolYearId) {
+            setSelectedSchoolYearId(activeSchoolYearId);
+        }
+    }, [activeSchoolYearId, selectedSchoolYearId]);
 
     const createMethods = useForm<CurriculumMapFormValues>({
         defaultValues: defaultFormValues
@@ -193,19 +201,24 @@ export default function CurriculumMapManagement({
             />
         );
     }
+
+    const shouldHideProgramSelect = hideProgramSelect || Boolean(programId);
+
     return (
         <CommonCard className="h-full">
             <div className="flex flex-col gap-4 h-full">
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2 items-center">
-                        <CommonSelect
-                            fullWidth={false}
-                            options={[{ label: 'Select Program', value: '' }, ...programOptions]}
-                            size="large"
-                            sx={{ minWidth: 280 }}
-                            value={selectedProgramId}
-                            onChange={(e) => setSelectedProgramId(String(e.target.value))}
-                        />
+                        {!shouldHideProgramSelect && (
+                            <CommonSelect
+                                fullWidth={false}
+                                options={[{ label: 'Select Program', value: '' }, ...programOptions]}
+                                size="large"
+                                sx={{ minWidth: 280 }}
+                                value={selectedProgramId}
+                                onChange={(e) => setSelectedProgramId(String(e.target.value))}
+                            />
+                        )}
                         <CommonSelect
                             fullWidth={false}
                             options={[{ label: 'All School Years', value: '' }, ...schoolYearOptions]}
@@ -215,30 +228,25 @@ export default function CurriculumMapManagement({
                             onChange={(e) => setSelectedSchoolYearId(String(e.target.value))}
                         />
                     </div>
-                    <TableCardControls
-                        tableButtonsProps={{
-                            createButtonProps: selectedProgramId
-                                ? { onClick: handleOpenCreate }
-                                : undefined,
-                            uploadCsvButtonProps: {
-                                onClick: function() {
-                                    setIsBulkImportOpen(true);
+                    {!readOnly && (
+                        <TableCardControls
+                            hasInput={false}
+                            tableButtonsProps={{
+                                createButtonProps: {
+                                    children: 'Add Entry',
+                                    onClick: handleOpenCreate
+                                },
+                                uploadCsvButtonProps: {
+                                    onClick: function() {
+                                        setIsBulkImportOpen(true);
+                                    }
                                 }
-                            },
-                            extraOptions: [{
-                                children: 'Print',
-                                disabled: !selectedProgramId || !entries.length,
-                                icon: <PrinterIcon size={20} weight="bold" />,
-                                key: 'print',
-                                onClick: function() {
-                                    window.print();
-                                }
-                            }]
-                        }}
-                    />
+                            }}
+                        />
+                    )}
                 </div>
 
-                {!selectedProgramId
+                {!selectedProgramId && !shouldHideProgramSelect
                     ? (
                         <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-2 items-center justify-center rounded-lg">
                             <span className="font-medium text-(--mui-palette-text-primary) text-sm">
