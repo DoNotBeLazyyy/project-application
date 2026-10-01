@@ -538,46 +538,115 @@ export default function BulkImportModal<TPayload>({
         const hasStructuredErrors = result?.structuredErrors && result.structuredErrors.length > 0;
         const hasStringErrors = result?.errors && result.errors.length > 0;
         const hasErrors = hasStructuredErrors || hasStringErrors;
+        const hasConflicts = result?.structuredConflicts && result.structuredConflicts.length > 0;
+
+        const createdCount = result?.created_count ?? result?.provisioned_count ?? 0;
+        const updatedCount = result?.updated_count ?? 0;
+        const blockedCount = result?.structuredErrors?.length ?? result?.errors?.length ?? 0;
+        const conflictsCount = result?.structuredConflicts?.length ?? result?.conflicts_count ?? 0;
 
         return (
             <div className="flex flex-col gap-4">
-                <div
-                    className={classMerge(
-                        'flex gap-3 items-start p-4 rounded-lg',
-                        hasErrors
-                            ? 'bg-(--mui-palette-warning-light)'
-                            : 'bg-(--mui-palette-success-light)'
-                    )}>
-                    {hasErrors
-                        ? <WarningCircleIcon className="shrink-0 text-(--mui-palette-warning-main)" size={20} weight="bold" />
-                        : <CheckCircleIcon className="shrink-0 text-(--mui-palette-success-main)" size={20} weight="bold" />
-                    }
-                    <div className="flex flex-col gap-1">
-                        <p className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                            {result?.provisioned_count} row{result?.provisioned_count !== 1
-                                ? 's'
-                                : ''} imported successfully
-                        </p>
-                        {hasErrors && (
-                            <p className="text-(--mui-palette-text-secondary) text-xs">
-                                {(result?.structuredErrors?.length ?? result?.errors.length ?? 0)} row{(result?.structuredErrors?.length ?? result?.errors.length ?? 0) !== 1
-                                    ? 's'
-                                    : ''} failed
-                            </p>
-                        )}
+                {/* User-Friendly Summary Stats Badges */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col gap-1">
+                        <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-400">
+                            Created
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                                {createdCount}
+                            </span>
+                            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                                new
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex flex-col gap-1">
+                        <span className="text-[11px] font-bold tracking-wider uppercase text-blue-700 dark:text-blue-400">
+                            Updated
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-blue-800 dark:text-blue-300">
+                                {updatedCount}
+                            </span>
+                            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                existing
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex flex-col gap-1">
+                        <span className="text-[11px] font-bold tracking-wider uppercase text-rose-700 dark:text-rose-400">
+                            Blocked / Failed
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-rose-800 dark:text-rose-300">
+                                {blockedCount}
+                            </span>
+                            <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                                errors
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col gap-1">
+                        <span className="text-[11px] font-bold tracking-wider uppercase text-amber-700 dark:text-amber-400">
+                            Schedule Conflicts
+                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-amber-800 dark:text-amber-300">
+                                {conflictsCount}
+                            </span>
+                            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                                flagged
+                            </span>
+                        </div>
                     </div>
                 </div>
 
+                {/* Structured Errors Section */}
                 {hasStructuredErrors && (
-                    <div className="flex flex-col gap-2">
-                        <p className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Failed Rows
-                        </p>
-                        <div className="h-48">
+                    <div className="flex flex-col gap-2 border border-rose-200 dark:border-rose-900 rounded-xl p-3 bg-rose-50/50 dark:bg-rose-950/20">
+                        <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300">
+                            <XCircleIcon size={18} weight="bold" />
+                            <p className="font-bold text-sm">
+                                Blocked / Failed Rows ({result.structuredErrors.length})
+                            </p>
+                        </div>
+                        <div className="h-44">
                             <CommonTable<BulkImportError>
                                 leadingColumnDefs={errorColumnDefs}
                                 rowData={result?.structuredErrors ?? []}
                             />
+                        </div>
+                    </div>
+                )}
+
+                {/* Schedule Conflicts Section */}
+                {hasConflicts && (
+                    <div className="flex flex-col gap-2 border border-amber-200 dark:border-amber-900 rounded-xl p-3 bg-amber-50/50 dark:bg-amber-950/20">
+                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                            <WarningCircleIcon size={18} weight="bold" />
+                            <p className="font-bold text-sm">
+                                Flagged Schedule Conflicts ({result.structuredConflicts.length})
+                            </p>
+                        </div>
+                        <div className="max-h-36 overflow-y-auto flex flex-col gap-1.5 pr-1">
+                            {result.structuredConflicts.map((conf, idx) => (
+                                <div
+                                    className="p-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-xs text-slate-800 dark:text-slate-200"
+                                    key={idx}
+                                >
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold shrink-0">
+                                        Row #{conf.row}
+                                    </span>
+                                    <span className="font-medium leading-relaxed">
+                                        {conf.message}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -596,7 +665,7 @@ export default function BulkImportModal<TPayload>({
                     </div>
                 )}
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end pt-2 border-t border-(--mui-palette-divider)">
                     {hasErrors && (
                         <CommonButton
                             color="inherit"
