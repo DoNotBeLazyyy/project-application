@@ -319,6 +319,7 @@ export default function CurriculumMapManagement({
                         <CurriculumMapForm
                             control={createMethods.control}
                             id={CREATE_FORM_ID}
+                            selectedSchoolYearId={selectedSchoolYearId}
                             onSubmit={createMethods.handleSubmit(
                                 handleCreateSubmit,
                                 handleCreateFormError
@@ -362,6 +363,7 @@ export default function CurriculumMapManagement({
                         <CurriculumMapForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
+                            selectedSchoolYearId={selectedSchoolYearId}
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError
@@ -403,6 +405,7 @@ export default function CurriculumMapManagement({
                         <CurriculumMapForm
                             control={updateMethods.control}
                             disabled
+                            selectedSchoolYearId={selectedSchoolYearId}
                         />
                         <div className="flex gap-2 justify-end">
                             <CommonButton
