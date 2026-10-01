@@ -100,11 +100,11 @@ function escapeCsvValue(value: string): string {
 }
 
 function DefaultPreviewCard({
-    columns,
+    columns = [],
     index,
     row
 }: {
-    columns: CsvTemplateColumn[];
+    columns?: CsvTemplateColumn[];
     index: number;
     row: ParsedRow;
 }) {
@@ -113,8 +113,9 @@ function DefaultPreviewCard({
     const primaryHeading = codeVal && titleVal ? `${codeVal} — ${titleVal}` : codeVal || titleVal || `Row #${index + 1}`;
 
     const longFieldKeys = new Set(['description', 'prerequisites', 'notes', 'comments', 'details']);
-    const shortColumns = columns.filter((col) => !longFieldKeys.has(col.key.toLowerCase()));
-    const longColumns = columns.filter((col) => longFieldKeys.has(col.key.toLowerCase()));
+    const safeCols = (columns || []).filter(Boolean);
+    const shortColumns = safeCols.filter((col) => col?.key && !longFieldKeys.has(col.key.toLowerCase()));
+    const longColumns = safeCols.filter((col) => col?.key && longFieldKeys.has(col.key.toLowerCase()));
 
     return (
         <div className="p-4 rounded-xl border border-(--mui-palette-divider) bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3 transition-all hover:border-brand-300 dark:hover:border-brand-700">
@@ -191,11 +192,14 @@ interface BulkImportModalProps<TPayload> {
         index: number,
         columns: CsvTemplateColumn[]
     ) => React.ReactNode;
-    templateColumns: CsvTemplateColumn[];
+    templateColumns?: CsvTemplateColumn[];
+    columns?: CsvTemplateColumn[];
     title?: string;
+    entityName?: string;
     onClose: () => void;
-    onBulkImport: (rows: TPayload[]) => Promise<DetailedBulkImportResult>;
-    onMapRow: (row: ParsedRow) => TPayload;
+    onBulkImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
+    onImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
+    onMapRow?: (row: ParsedRow) => TPayload;
     onSuccess?: () => void;
 }
 
@@ -204,12 +208,18 @@ export default function BulkImportModal<TPayload>({
     previewLayout = 'card',
     renderPreviewCard,
     templateColumns,
-    title = 'Bulk Import',
+    columns,
+    title,
+    entityName,
     onClose,
     onBulkImport,
+    onImport,
     onMapRow,
     onSuccess
 }: BulkImportModalProps<TPayload>) {
+    const activeColumns = useMemo(() => (templateColumns || columns || []).filter(Boolean), [templateColumns, columns]);
+    const modalTitle = title || (entityName ? `Bulk Import ${entityName}` : 'Bulk Import');
+
     const [step, setStep] = useState<BulkImportStep>('upload');
     const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
     const [result, setResult] = useState<DetailedBulkImportResult | null>(null);
@@ -219,7 +229,7 @@ export default function BulkImportModal<TPayload>({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const previewColumnDefs = useMemo<ColDef<ParsedRow>[]>(function() {
-        return templateColumns.map((col) => ({
+        return (activeColumns || []).map((col) => ({
             field: col.key,
             flex: 1,
             headerName: col.label,
@@ -227,7 +237,7 @@ export default function BulkImportModal<TPayload>({
             sortable: false,
             valueFormatter: (params) => params.value || '—'
         }));
-    }, [templateColumns]);
+    }, [activeColumns]);
 
     const errorColumnDefs = useMemo<ColDef<BulkImportError>[]>(function() {
         return [
@@ -268,8 +278,8 @@ export default function BulkImportModal<TPayload>({
     }
 
     function downloadTemplate() {
-        const headers = templateColumns.map((col) => escapeCsvValue(col.label));
-        const hints = templateColumns.map((col) => escapeCsvValue(col.hint ?? ''));
+        const headers = (activeColumns || []).map((col) => escapeCsvValue(col.label || ''));
+        const hints = (activeColumns || []).map((col) => escapeCsvValue(col.hint ?? ''));
         const csvContent = [headers.join(','), hints.join(',')].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -287,13 +297,13 @@ export default function BulkImportModal<TPayload>({
         }
 
         const headers = records[0];
-        const matchedColumns = headers.map((header) => templateColumns.find(
+        const matchedColumns = headers.map((header) => (activeColumns || []).find(
             (col) => col.label.trim()
                 .toLowerCase() === header.toLowerCase()
         ) ?? null);
 
         const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
-        const missingHeaders = templateColumns.filter(
+        const missingHeaders = (activeColumns || []).filter(
             (col) => !matchedColumns.some((matched) => matched?.key === col.key)
         )
             .map((col) => col.label);
@@ -377,11 +387,27 @@ export default function BulkImportModal<TPayload>({
     async function handleConfirmImport() {
         setIsLoading(true);
         try {
-            const payload = parsedRows.map(onMapRow);
-            const importResult = await onBulkImport(payload);
+            const mapper = onMapRow || ((row: ParsedRow) => row as unknown as TPayload);
+            const payload = parsedRows.map(mapper);
+            const importFn = onBulkImport || onImport;
+            if (!importFn) return;
+
+            const rawResult = await importFn(payload);
+            const importResult: DetailedBulkImportResult = 'structuredErrors' in rawResult
+                ? rawResult
+                : {
+                    provisioned_count: rawResult.provisioned_count,
+                    errors: rawResult.errors,
+                    structuredErrors: rawResult.errors.map((err, i) => ({
+                        row: i + 1,
+                        code: 'IMPORT_ERROR',
+                        message: err
+                    }))
+                };
+
             setResult(importResult);
             setStep('results');
-            if (!importResult.errors.length && !importResult.structuredErrors?.length) {
+            if (!importResult.errors?.length && !importResult.structuredErrors?.length) {
                 onSuccess?.();
             }
         }
@@ -474,11 +500,11 @@ export default function BulkImportModal<TPayload>({
                     <div className="max-h-[60vh] overflow-y-auto pr-1 flex flex-col gap-3">
                         {parsedRows.map((row, index) => {
                             if (renderPreviewCard) {
-                                return renderPreviewCard(row, index, templateColumns);
+                                return renderPreviewCard(row, index, activeColumns);
                             }
                             return (
                                 <DefaultPreviewCard
-                                    columns={templateColumns}
+                                    columns={activeColumns}
                                     index={index}
                                     key={index}
                                     row={row}
@@ -594,9 +620,9 @@ export default function BulkImportModal<TPayload>({
     }
 
     const stepTitles: Record<BulkImportStep, string> = {
-        preview: `${title} — Preview`,
-        results: `${title} — Results`,
-        upload: title
+        preview: `${modalTitle} — Preview`,
+        results: `${modalTitle} — Results`,
+        upload: modalTitle
     };
 
     return (

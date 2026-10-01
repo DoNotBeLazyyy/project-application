@@ -652,11 +652,12 @@ export default function CurriculumMapManagement({
                 </CommonModal>
 
                 <BulkImportModal<CurriculumMapCsvRow>
-                    columns={CURRICULUM_MAP_CSV_COLUMNS}
-                    entityName="Curriculum Map Entry"
                     open={isBulkImportOpen}
+                    templateColumns={CURRICULUM_MAP_CSV_COLUMNS}
+                    title="Bulk Import Curriculum Map"
+                    onBulkImport={handleBulkImportCurriculum}
                     onClose={() => setIsBulkImportOpen(false)}
-                    onImport={handleBulkImportCurriculum}
+                    onMapRow={(row) => row as unknown as CurriculumMapCsvRow}
                 />
             </div>
         </CommonCard>
