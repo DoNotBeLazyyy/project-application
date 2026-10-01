@@ -78,23 +78,18 @@ export async function createProgram(
                 }
             }
 
-            // STEP 2: Create all curriculum entries after deletion completes
+            // STEP 2: Bulk create all curriculum entries after deletion completes via SINGLE API call
             if (params.curriculum_entries && params.curriculum_entries.length > 0) {
-                await Promise.allSettled(
-                    params.curriculum_entries.map((entry) =>
-                        createCurriculumMapEntry(
-                            programId,
-                            {
-                                course_id: entry.course_id,
-                                is_elective: Boolean(entry.is_elective),
-                                sequence: String(entry.sequence ?? 1),
-                                term_type_id: entry.term_type_id,
-                                year_level: String(entry.year_level)
-                            },
-                            entry.school_year_id || params.school_year_id
-                        )
-                    )
-                );
+                const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
+                    program_code: params.code,
+                    course_code: entry.course_code,
+                    year_level: String(entry.year_level),
+                    term_type_code: entry.term_type_code || entry.term_type_label || '',
+                    school_year_code: '',
+                    sequence: String(entry.sequence ?? 1),
+                    is_elective: String(Boolean(entry.is_elective))
+                }));
+                await bulkCreateCurriculumMap(bulkEntries);
             }
         }
     }
@@ -131,13 +126,28 @@ export async function updateProgram(
             }
         }
 
-        // STEP 2: Create new entries and update existing entries AFTER deletion completes
+        // STEP 2: Bulk create all new/imported entries in ONE SINGLE API call AFTER deletion completes
         if (params.curriculum_entries && params.curriculum_entries.length > 0) {
-            await Promise.allSettled(
-                params.curriculum_entries.map((entry) => {
-                    if (entry.id.startsWith('temp-')) {
-                        return createCurriculumMapEntry(
-                            programId,
+            const tempEntries = params.curriculum_entries.filter((entry) => entry.id.startsWith('temp-'));
+            if (tempEntries.length > 0) {
+                const bulkEntries: CurriculumMapBulkRow[] = tempEntries.map((entry) => ({
+                    program_code: params.code,
+                    course_code: entry.course_code,
+                    year_level: String(entry.year_level),
+                    term_type_code: entry.term_type_code || entry.term_type_label || '',
+                    school_year_code: '',
+                    sequence: String(entry.sequence ?? 1),
+                    is_elective: String(Boolean(entry.is_elective))
+                }));
+                await bulkCreateCurriculumMap(bulkEntries);
+            }
+
+            const existingEntries = params.curriculum_entries.filter((entry) => !entry.id.startsWith('temp-'));
+            if (existingEntries.length > 0) {
+                await Promise.allSettled(
+                    existingEntries.map((entry) =>
+                        updateCurriculumMapEntry(
+                            entry.id,
                             {
                                 course_id: entry.course_id,
                                 is_elective: Boolean(entry.is_elective),
@@ -146,21 +156,10 @@ export async function updateProgram(
                                 year_level: String(entry.year_level)
                             },
                             entry.school_year_id || params.school_year_id
-                        );
-                    }
-                    return updateCurriculumMapEntry(
-                        entry.id,
-                        {
-                            course_id: entry.course_id,
-                            is_elective: Boolean(entry.is_elective),
-                            sequence: String(entry.sequence ?? 1),
-                            term_type_id: entry.term_type_id,
-                            year_level: String(entry.year_level)
-                        },
-                        entry.school_year_id || params.school_year_id
-                    );
-                })
-            );
+                        )
+                    )
+                );
+            }
         }
     }
 
