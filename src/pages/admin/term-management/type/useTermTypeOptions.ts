@@ -4,7 +4,7 @@ import { TermTypeOption } from '@type/term/term-type.type';
 import { useEffect, useState } from 'react';
 
 export function useTermTypeOptions() {
-    const [termTypeOptions, setTermTypeOptions] = useState<CommonSelectOption[]>([]);
+    const [termTypeOptions, setTermTypeOptions] = useState<(CommonSelectOption & { code?: string })[]>([]);
 
     useEffect(() => {
         async function fetchTermTypes() {
@@ -15,7 +15,8 @@ export function useTermTypeOptions() {
                     result.data.map((termType: TermTypeOption) => {
                         return {
                             label: termType.label,
-                            value: termType.id
+                            value: termType.id,
+                            code: termType.code
                         };
                     })
                 );

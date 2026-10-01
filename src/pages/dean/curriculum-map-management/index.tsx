@@ -320,15 +320,25 @@ export default function CurriculumMapManagement({
             const schoolYearObj = schoolYearOptions.find((s) => s.value === selectedSchoolYearId);
             const schoolYearCode = schoolYearObj?.label || '';
 
-            const bulkEntries: CurriculumMapBulkRow[] = rows.map((row) => ({
-                program_code: programCode,
-                course_code: row.course_code,
-                year_level: String(row.year_level),
-                term_type_code: row.term_type_code || '',
-                school_year_code: schoolYearCode,
-                sequence: String(row.sequence || '1'),
-                is_elective: String(row.is_elective ?? 'false')
-            }));
+            const bulkEntries: CurriculumMapBulkRow[] = rows.map((row) => {
+                const matchedTermType = termTypeOptions.find(
+                    (t) =>
+                        t.label.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
+                        t.code?.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
+                        String(t.value).trim().toLowerCase() === row.term_type_code?.trim().toLowerCase()
+                );
+                const termTypeCode = matchedTermType?.code || row.term_type_code || '';
+
+                return {
+                    program_code: programCode,
+                    course_code: row.course_code,
+                    year_level: String(row.year_level),
+                    term_type_code: termTypeCode,
+                    school_year_code: schoolYearCode,
+                    sequence: String(row.sequence || '1'),
+                    is_elective: String(row.is_elective ?? 'false')
+                };
+            });
 
             const result = await bulkCreateCurriculumMap(bulkEntries);
             fetchCurriculum();
@@ -417,6 +427,7 @@ export default function CurriculumMapManagement({
                 const matchedTermType = termTypeOptions.find(
                     (t) =>
                         t.label.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
+                        t.code?.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
                         String(t.value).trim().toLowerCase() === row.term_type_code?.trim().toLowerCase()
                 );
                 if (matchedTermType) {
