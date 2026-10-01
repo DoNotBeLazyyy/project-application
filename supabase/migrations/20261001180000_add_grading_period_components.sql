@@ -518,7 +518,7 @@ BEGIN
                 is_active
             ) VALUES (
                 v_sy_id,
-                (v_thresh_elem->>'category')::public.academic_threshold_category_type,
+                (v_thresh_elem->>'category')::public.academic_threshold_category,
                 btrim(v_thresh_elem->>'code'),
                 btrim(v_thresh_elem->>'label'),
                 NULLIF(v_thresh_elem->>'min_gwa', '')::numeric,
