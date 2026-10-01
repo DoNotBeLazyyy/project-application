@@ -11,21 +11,6 @@ import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
-const MONTH_OPTIONS = [
-    { label: 'January', value: '1' },
-    { label: 'February', value: '2' },
-    { label: 'March', value: '3' },
-    { label: 'April', value: '4' },
-    { label: 'May', value: '5' },
-    { label: 'June', value: '6' },
-    { label: 'July', value: '7' },
-    { label: 'August', value: '8' },
-    { label: 'September', value: '9' },
-    { label: 'October', value: '10' },
-    { label: 'November', value: '11' },
-    { label: 'December', value: '12' }
-];
-
 const SETTINGS_FORM_ID = 'system-settings-form';
 
 export default function SystemSettings() {
@@ -43,7 +28,6 @@ export default function SystemSettings() {
             institution_mobile: '',
             institution_website: '',
             institution_logo_url: '',
-            academic_year_start_month: '6',
             max_upload_size_mb: '25',
             allowed_upload_types: 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
         }
@@ -63,7 +47,6 @@ export default function SystemSettings() {
                     institution_mobile: result.data.institution_mobile ?? '',
                     institution_website: result.data.institution_website,
                     institution_logo_url: result.data.institution_logo_url,
-                    academic_year_start_month: String(result.data.academic_year_start_month),
                     max_upload_size_mb: String(result.data.max_upload_size_mb ?? 25),
                     allowed_upload_types: result.data.allowed_upload_types ?? 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
                 });
@@ -178,12 +161,6 @@ export default function SystemSettings() {
                 }
             },
             type: 'text'
-        },
-        {
-            name: 'academic_year_start_month',
-            options: MONTH_OPTIONS,
-            rules: { required: 'Academic year start month is required' },
-            type: 'select'
         },
         {
             label: 'Max Upload Size (MB)',

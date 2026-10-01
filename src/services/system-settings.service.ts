@@ -11,7 +11,7 @@ export async function updateSystemSettings(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_system_settings', {
         p_allowed_upload_types: params.allowed_upload_types,
-        p_academic_year_start_month: Number(params.academic_year_start_month),
+        p_academic_year_start_month: params.academic_year_start_month ? Number(params.academic_year_start_month) : 6,
         p_institution_address: params.institution_address,
         p_institution_email: params.institution_email,
         p_institution_logo_url: params.institution_logo_url,
