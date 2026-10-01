@@ -1,8 +1,6 @@
-import { bulkCreateCourses } from '@services/course/course.service';
 import { bulkCreateCurriculumMap, createCurriculumMapEntry } from '@services/curriculum-map.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
-import { CourseBulkRow } from '@type/course/course.type';
 import { CurriculumMapBulkRow } from '@type/curriculum-map.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
@@ -131,7 +129,6 @@ export async function bulkCreatePrograms(
 ): Promise<BulkImportResult> {
     const uniqueProgramsMap = new Map<string, ProgramBulkRow>();
     const curriculumRows: CurriculumMapBulkRow[] = [];
-    const courseCodesMap = new Map<string, { code: string; departmentCode: string }>();
 
     for (const row of programs) {
         const codeKey = row.code?.trim().toUpperCase();
@@ -150,13 +147,6 @@ export async function bulkCreatePrograms(
                 sequence: String(row.sequence || '1'),
                 is_elective: String(row.is_elective ?? 'false')
             });
-
-            if (!courseCodesMap.has(cCode.toUpperCase())) {
-                courseCodesMap.set(cCode.toUpperCase(), {
-                    code: cCode,
-                    departmentCode: row.department_code?.trim() || 'CCS'
-                });
-            }
         }
     }
 
@@ -175,24 +165,6 @@ export async function bulkCreatePrograms(
     );
 
     const provisionedCount = result.data?.provisioned_count ?? 0;
-
-    // Auto-provision referenced courses first so curriculum map insertion does not fail with "course not found"
-    if (courseCodesMap.size > 0) {
-        const courseBulkRows: CourseBulkRow[] = Array.from(courseCodesMap.values()).map(item => ({
-            code: item.code,
-            title: item.code,
-            department_code: item.departmentCode,
-            course_type_code: 'LEC',
-            lecture_units: '3',
-            laboratory_units: '0',
-            credit_hours: '3',
-            description: `Auto-provisioned course ${item.code}`,
-            is_active: 'true',
-            prerequisites: ''
-        }));
-
-        await bulkCreateCourses(courseBulkRows);
-    }
 
     if (curriculumRows.length > 0) {
         const currResult = await bulkCreateCurriculumMap(curriculumRows);
