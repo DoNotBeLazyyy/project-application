@@ -104,10 +104,11 @@ export default function CurriculumTermTable({
 
                                     {/* Units Breakdown Footer */}
                                     <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
-                                        <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                            <span>Lec: <strong className="text-slate-700 dark:text-slate-200">{lec}</strong></span>
-                                            <span>•</span>
-                                            <span>Lab: <strong className="text-slate-700 dark:text-slate-200">{lab}</strong></span>
+                                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                                            {lec > 0 && <span>Lec: <strong className="text-slate-700 dark:text-slate-200">{lec}</strong></span>}
+                                            {lec > 0 && lab > 0 && <span>•</span>}
+                                            {lab > 0 && <span>Lab: <strong className="text-slate-700 dark:text-slate-200">{lab}</strong></span>}
+                                            {lec === 0 && lab === 0 && <span>Units: <strong className="text-slate-700 dark:text-slate-200">{sumUnits}</strong></span>}
                                         </div>
                                         <span className="font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[11px]">
                                             {sumUnits.toFixed(1)} Units
