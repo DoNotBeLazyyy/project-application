@@ -2,14 +2,13 @@ import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { GraduationCapIcon, HourglassIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { HourglassIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
 import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
 import ProfileDetailsForm from '@pages/shared/profile/ProfileDetailsForm';
 import PendingChangesModal from '@pages/shared/profile/PendingChangesModal';
-import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { initAuthSession } from '@services/auth.service';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
 import { cancelMyProfileRequest } from '@services/registrar-verification.service';
@@ -65,7 +64,6 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
-    const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
     const [isStudentPromptOpen, setIsStudentPromptOpen] = useState(false);
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
@@ -111,6 +109,7 @@ export default function ProfilePage() {
                     gender: profileRes.data.gender,
                     civil_status: profileRes.data.civil_status,
                     nationality: profileRes.data.nationality,
+                    student_number: profileRes.data.student?.student_number ?? 'System Generated',
                     program_id: profileRes.data.student?.program_id ?? '',
                     year_level: profileRes.data.student?.year_level ?? 1
                 });
@@ -256,68 +255,6 @@ export default function ProfilePage() {
                                 onChanged={handleAvatarChanged}
                             />
                         )}
-                        {Boolean(profile?.student || profile?.role_labels?.includes('Student')) && (
-                            <div className="border border-(--mui-palette-divider) flex flex-col gap-4 p-4 rounded-lg bg-(--mui-palette-background-paper)">
-                                {!profile?.student && (
-                                    <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-center justify-between flex-wrap gap-2 text-xs text-(--mui-palette-text-primary)">
-                                        <span>You do not have a student profile yet. Fill in your student information to activate your academic record.</span>
-                                        <CommonButton
-                                            size="small"
-                                            variant="contained"
-                                            onClick={function() {
-                                                setIsStudentPromptOpen(true);
-                                            }}
-                                        >
-                                            Set Up Student Profile
-                                        </CommonButton>
-                                    </div>
-                                )}
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <GraduationCapIcon size={22} className="text-(--mui-palette-primary-main)" />
-                                        <h2 className="font-semibold text-base text-(--mui-palette-text-primary)">
-                                            Academic Information
-                                        </h2>
-                                    </div>
-                                    <CommonButton
-                                        size="small"
-                                        variant="outlined"
-                                        onClick={function() {
-                                            if (!profile?.student) {
-                                                setIsStudentPromptOpen(true);
-                                            } else {
-                                                setIsProgramModalOpen(true);
-                                            }
-                                        }}
-                                    >
-                                        {profile?.student ? (profile?.student?.program_id ? 'Change Program' : 'Assign Program') : 'Create Student Profile'}
-                                    </CommonButton>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Student Number</span>
-                                        <span className="font-medium text-(--mui-palette-text-primary)">
-                                            {profile?.student?.student_number || <span className="text-(--mui-palette-text-secondary) italic">System Generated upon creation</span>}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Academic Program</span>
-                                        <span className="font-medium text-(--mui-palette-text-primary)">
-                                            {profile?.student?.program_name
-                                                ? `${profile.student.program_code} · ${profile.student.program_name}`
-                                                : <span className="text-(--mui-palette-warning-main)">Not assigned yet</span>}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="text-xs text-(--mui-palette-text-secondary) block">Year Level</span>
-                                        <span className="font-medium text-(--mui-palette-text-primary)">
-                                            {profile?.student?.year_level ? `Year ${profile.student.year_level}` : '—'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                         <ProfileDetailsForm
                             control={profileMethods.control}
                             id={PROFILE_FORM_ID}
@@ -379,21 +316,6 @@ export default function ProfilePage() {
                     </div>
                 )}
             </div>
-
-            <AssignProgramModal
-                currentProgramId={profile?.student?.program_id}
-                currentProgramName={profile?.student?.program_name ? `${profile.student.program_code} · ${profile.student.program_name}` : undefined}
-                currentYearLevel={profile?.student?.year_level}
-                open={isProgramModalOpen}
-                onClose={function() {
-                    setIsProgramModalOpen(false);
-                }}
-                onSuccess={function() {
-                    setRefreshKey(function(previous) {
-                        return previous + 1;
-                    });
-                }}
-            />
 
             <StudentProfilePromptModal
                 currentProfile={profile}

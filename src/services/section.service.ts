@@ -367,6 +367,8 @@ export async function bulkCreateSections(
         end: string;
     }[] = [];
 
+    const conflictRows: any[] = [];
+
     if (provisionedCount > 0) {
         const sectionsRes = await getSections();
         const allSections = sectionsRes.data || [];
@@ -406,6 +408,17 @@ export async function bulkCreateSections(
                             code: 'FACULTY_SCHEDULE_CONFLICT',
                             message: `Faculty ${row.faculty_email} double-booked across ${row.course_code} (${row.section_code}) and Row ${conflict.row} (${conflict.course_code}) on ${row.schedule_days} ${start}-${end}`,
                             row: i + 1
+                        });
+                        conflictRows.push({
+                            conflict_with: `Row #${conflict.row} (${conflict.course_code} - ${conflict.section_code})`,
+                            course_code: row.course_code,
+                            days: row.schedule_days,
+                            faculty_email: row.faculty_email,
+                            message: `Faculty double-booked with Row #${conflict.row} (${conflict.section_code}) on ${row.schedule_days} ${start}-${end}`,
+                            room: row.schedule_room || row.room || '—',
+                            row: i + 1,
+                            section_code: row.section_code,
+                            time: `${start} - ${end}`
                         });
                     }
 
@@ -470,13 +483,17 @@ export async function bulkCreateSections(
         }
     }
 
+    const conflictingRowNumbers = new Set(structuredConflicts.map((c) => c.row));
+    const nonConflictingCreatedRows = createdRows.filter((r) => !conflictingRowNumbers.has(r.row));
+
     return {
+        conflictRows,
         conflicts_count: structuredConflicts.length,
-        created_count: createdCount,
-        createdRows,
+        created_count: nonConflictingCreatedRows.length,
+        createdRows: nonConflictingCreatedRows,
         errors: structuredErrors.map((error) =>
             `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
-        provisioned_count: provisionedCount,
+        provisioned_count: nonConflictingCreatedRows.length + updatedCount,
         structuredConflicts,
         structuredErrors,
         updated_count: updatedCount,

@@ -59,6 +59,7 @@ export interface ProfileFormValues {
     gender: string;
     civil_status: string;
     nationality: string;
+    student_number?: string;
     program_id?: string;
     program_code?: string;
     program_name?: string;

@@ -20,6 +20,9 @@ export interface BulkImportRowItem {
     faculty_email?: string;
     room?: string;
     message?: string;
+    days?: string;
+    time?: string;
+    conflict_with?: string;
     changes?: { field: string; previous: string; changed: string }[];
 }
 
@@ -29,6 +32,7 @@ export interface DetailedBulkImportResult extends BulkImportResult {
     conflicts_count?: number;
     createdRows?: BulkImportRowItem[];
     updatedRows?: BulkImportRowItem[];
+    conflictRows?: BulkImportRowItem[];
     structuredErrors?: BulkImportError[];
     structuredConflicts?: BulkImportError[];
 }
