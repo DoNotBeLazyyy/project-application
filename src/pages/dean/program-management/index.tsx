@@ -13,6 +13,7 @@ import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow } from '@type/program/program.type';
 import { formErrors } from '@utils/form.util';
+import { useToastStore } from '@stores/toast.store';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -151,13 +152,18 @@ export default function ProgramManagement() {
         return listPrograms(page, size, search, sort, activeFilters);
     }
 
+    const showToast = useToastStore((state) => state.showToast);
+
     async function handleCreateSubmit(values: ProgramFormValues) {
         const result = await createProgram(values);
 
         if (!result.error) {
+            showToast('Program and curriculum map saved successfully!', 'success');
             createMethods.reset(defaultFormValues);
             setIsCreateOpen(false);
             setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+        } else {
+            showToast(result.error.message || 'Failed to save program', 'error');
         }
     }
 
@@ -182,8 +188,11 @@ export default function ProgramManagement() {
         const result = await updateProgram(selectedId, values);
 
         if (!result.error) {
+            showToast('Program and curriculum map updated successfully!', 'success');
             handleCloseUpdate();
             setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
+        } else {
+            showToast(result.error.message || 'Failed to update program', 'error');
         }
     }
 
