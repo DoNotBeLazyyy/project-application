@@ -80,10 +80,17 @@ export interface SectionOption {
 }
 
 export interface SectionBulkRow {
+    section_code?: string;
     term_label: string;
     course_code: string;
-    faculty_email: string;
-    section_code?: string;
-    room: string;
-    max_slots: string;
+    faculty_email?: string;
+    room?: string;
+    max_slots?: string;
+    status?: string;
+    schedule_days?: string;
+    schedule_time_start?: string;
+    schedule_time_end?: string;
+    schedule_room?: string;
+    override_grading_schema?: string;
+    source_section_code?: string;
 }

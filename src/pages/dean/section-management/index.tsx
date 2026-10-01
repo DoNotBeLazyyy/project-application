@@ -30,11 +30,19 @@ const SORT_COLUMNS: SortColumn[] = [
 const FILTER_FORM_ID = 'filter-section-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'section_code', label: 'Section Code', hint: 'e.g. CS101-A (optional, auto-generated if blank)' },
     { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester 2024-2025' },
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
     { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. jdoe@university.edu (optional)' },
     { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)' },
-    { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' }
+    { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' },
+    { key: 'status', label: 'Status', hint: 'e.g. Open (optional: Open, Full, Ongoing, Closed, Cancelled)' },
+    { key: 'schedule_days', label: 'Schedule Days', hint: 'e.g. Monday, Wednesday (optional)' },
+    { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)' },
+    { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)' },
+    { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)' },
+    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)' },
+    { key: 'source_section_code', label: 'Source Section Code', hint: 'e.g. SEC-100 (preset section code to copy grading schema from, optional)' }
 ];
 
 export default function SectionManagement() {
@@ -220,12 +228,19 @@ export default function SectionManagement() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={(row) => ({
-                    term_label: row.term_label,
                     course_code: row.course_code,
                     faculty_email: row.faculty_email,
-                    section_code: row.section_code || '',
+                    max_slots: row.max_slots,
+                    override_grading_schema: row.override_grading_schema,
                     room: row.room,
-                    max_slots: row.max_slots
+                    schedule_days: row.schedule_days,
+                    schedule_room: row.schedule_room,
+                    schedule_time_end: row.schedule_time_end,
+                    schedule_time_start: row.schedule_time_start,
+                    section_code: row.section_code || '',
+                    source_section_code: row.source_section_code,
+                    status: row.status,
+                    term_label: row.term_label
                 })}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
