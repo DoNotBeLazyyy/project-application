@@ -1,6 +1,7 @@
-import { createCurriculumMapEntry } from '@services/curriculum-map.service';
+import { bulkCreateCurriculumMap, createCurriculumMapEntry } from '@services/curriculum-map.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
+import { CurriculumMapBulkRow } from '@type/curriculum-map.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
     ProgramBulkImportResult, ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow, ProgramOption
@@ -126,17 +127,53 @@ export async function bulkDeletePrograms(
 export async function bulkCreatePrograms(
     programs: ProgramBulkRow[]
 ): Promise<BulkImportResult> {
+    const uniqueProgramsMap = new Map<string, ProgramBulkRow>();
+    const curriculumRows: CurriculumMapBulkRow[] = [];
+
+    for (const row of programs) {
+        const codeKey = row.code?.trim().toUpperCase();
+        if (codeKey && !uniqueProgramsMap.has(codeKey)) {
+            uniqueProgramsMap.set(codeKey, row);
+        }
+
+        if (row.course_code?.trim()) {
+            curriculumRows.push({
+                program_code: row.code?.trim() || '',
+                course_code: row.course_code.trim(),
+                year_level: String(row.year_level || '1'),
+                term_type_code: String(row.term_type_code || '1ST_SEM'),
+                school_year_code: String(row.school_year_code || ''),
+                sequence: String(row.sequence || '1'),
+                is_elective: String(row.is_elective ?? 'false')
+            });
+        }
+    }
+
+    const uniqueProgramRows = Array.from(uniqueProgramsMap.values());
+
     const result = await callRpc<ProgramBulkImportResult>('fn_bulk_create_programs', {
-        p_programs: programs
+        p_programs: uniqueProgramRows
     });
 
     if (result.error) {
         return { provisioned_count: 0, errors: [result.error.message] };
     }
 
+    const errors: string[] = (result.data?.errors ?? []).map((error) =>
+        `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`
+    );
+
+    const provisionedCount = result.data?.provisioned_count ?? 0;
+
+    if (curriculumRows.length > 0) {
+        const currResult = await bulkCreateCurriculumMap(curriculumRows);
+        if (currResult.errors && currResult.errors.length > 0) {
+            errors.push(...currResult.errors);
+        }
+    }
+
     return {
-        provisioned_count: result.data?.provisioned_count ?? 0,
-        errors: (result.data?.errors ?? []).map((error) =>
-            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`)
+        provisioned_count: provisionedCount,
+        errors
     };
 }

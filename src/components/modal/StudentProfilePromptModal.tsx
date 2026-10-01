@@ -124,7 +124,7 @@ export default function StudentProfilePromptModal({
                 }
             }}
         >
-            <div className="flex flex-col gap-5 p-4 pt-0">
+            <div className="flex flex-col gap-5 p-4 pt-0 max-h-[75vh] overflow-y-auto">
                 <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                     <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
                     <div>
