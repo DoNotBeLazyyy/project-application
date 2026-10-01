@@ -44,9 +44,12 @@ export default function CurriculumTermTable({
                         rowData={entries}
                         suppressRowVirtualisation
                         onRowClicked={(params) => {
-                            if (params.data.id !== '__total__') {
-                                onView(params.data);
+                            if (params.data.id === '__total__') return;
+                            const target = params.event?.target as HTMLElement | undefined;
+                            if (target?.closest('button') || target?.closest('.no-print')) {
+                                return;
                             }
+                            onView(params.data);
                         }}
                     />
                 </div>

@@ -126,6 +126,7 @@ export function useCurriculumTableConfig({
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
+                                    e.nativeEvent?.stopImmediatePropagation?.();
                                     onDelete(params.data.id);
                                 }}
                             >
