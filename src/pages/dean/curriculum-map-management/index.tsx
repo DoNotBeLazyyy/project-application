@@ -4,7 +4,7 @@ import CommonModal from '@components/modal/CommonModal';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonSelect from '@components/select/CommonSelect';
 import TableCardControls from '@components/table-card/TableCardControls';
-import { PrinterIcon } from '@phosphor-icons/react';
+import { PrinterIcon, TrashIcon } from '@phosphor-icons/react';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
@@ -72,7 +72,21 @@ export default function CurriculumMapManagement({
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+    const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
+
+    async function handleConfirmClear() {
+        setIsClearing(true);
+        if (selectedProgramId && entries.length > 0) {
+            await Promise.all(entries.map((entry) => deleteCurriculumMapEntry(entry.id)));
+            fetchCurriculum();
+        } else {
+            updateEntriesState([]);
+        }
+        setIsClearing(false);
+        setIsClearModalOpen(false);
+    }
 
     const { programOptions } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
@@ -531,20 +545,33 @@ export default function CurriculumMapManagement({
                             Print Curriculum
                         </CommonButton>
                         {!readOnly && (
-                            <TableCardControls
-                                hasInput={false}
-                                tableButtonsProps={{
-                                    createButtonProps: {
-                                        children: 'Add Entry',
-                                        onClick: handleOpenCreate
-                                    },
-                                    uploadCsvButtonProps: {
-                                        onClick: function() {
-                                            setIsBulkImportOpen(true);
+                            <div className="flex items-center gap-2">
+                                {entries.length > 0 && (
+                                    <CommonButton
+                                        color="error"
+                                        size="small"
+                                        startIcon={<TrashIcon className="w-4 h-4" />}
+                                        variant="outlined"
+                                        onClick={() => setIsClearModalOpen(true)}
+                                    >
+                                        Clear Curriculum
+                                    </CommonButton>
+                                )}
+                                <TableCardControls
+                                    hasInput={false}
+                                    tableButtonsProps={{
+                                        createButtonProps: {
+                                            children: 'Add Entry',
+                                            onClick: handleOpenCreate
+                                        },
+                                        uploadCsvButtonProps: {
+                                            onClick: function() {
+                                                setIsBulkImportOpen(true);
+                                            }
                                         }
-                                    }
-                                }}
-                            />
+                                    }}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -750,6 +777,45 @@ export default function CurriculumMapManagement({
                     onClose={() => setIsBulkImportOpen(false)}
                     onMapRow={(row) => row as unknown as CurriculumMapCsvRow}
                 />
+
+                <CommonModal
+                    cardProps={{
+                        cardHeaderProps: {
+                            subheader: 'This action will remove all courses from the curriculum map.',
+                            title: 'Clear Curriculum Map'
+                        }
+                    }}
+                    maxWidth="xs"
+                    open={isClearModalOpen}
+                    onClose={() => setIsClearModalOpen(false)}
+                >
+                    <div className="flex flex-col gap-4">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
+                            Are you sure you want to clear/reset all curriculum entries? This will delete all course mappings from this curriculum map.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <CommonButton
+                                color="inherit"
+                                disabled={isClearing}
+                                size="small"
+                                variant="outlined"
+                                onClick={() => setIsClearModalOpen(false)}
+                            >
+                                Cancel
+                            </CommonButton>
+                            <CommonButton
+                                color="error"
+                                disabled={isClearing}
+                                size="small"
+                                startIcon={<TrashIcon className="w-4 h-4" />}
+                                variant="contained"
+                                onClick={handleConfirmClear}
+                            >
+                                {isClearing ? 'Clearing...' : 'Clear All Entries'}
+                            </CommonButton>
+                        </div>
+                    </div>
+                </CommonModal>
             </div>
         </CommonCard>
     );
