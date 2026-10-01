@@ -534,6 +534,8 @@ export default function BulkImportModal<TPayload>({
         );
     }
 
+    const [activeResultTab, setActiveResultTab] = useState<'created' | 'updated' | 'blocked' | 'conflicts'>('created');
+
     function renderResultsStep() {
         const hasStructuredErrors = result?.structuredErrors && result.structuredErrors.length > 0;
         const hasStringErrors = result?.errors && result.errors.length > 0;
@@ -545,13 +547,27 @@ export default function BulkImportModal<TPayload>({
         const blockedCount = result?.structuredErrors?.length ?? result?.errors?.length ?? 0;
         const conflictsCount = result?.structuredConflicts?.length ?? result?.conflicts_count ?? 0;
 
+        const createdRows = result?.createdRows ?? [];
+        const updatedRows = result?.updatedRows ?? [];
+        const structuredErrors = result?.structuredErrors ?? [];
+        const structuredConflicts = result?.structuredConflicts ?? [];
+
         return (
             <div className="flex flex-col gap-4">
-                {/* User-Friendly Summary Stats Badges */}
+                {/* User-Friendly Interactive Summary Stats Tabs */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col gap-1">
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'p-3.5 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer',
+                            activeResultTab === 'created'
+                                ? 'bg-emerald-100/80 dark:bg-emerald-950/80 border-emerald-500 dark:border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm'
+                                : 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 hover:border-emerald-300'
+                        )}
+                        onClick={() => setActiveResultTab('created')}
+                    >
                         <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-400">
-                            Created
+                            Created ({createdCount})
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
@@ -561,11 +577,20 @@ export default function BulkImportModal<TPayload>({
                                 new
                             </span>
                         </div>
-                    </div>
+                    </button>
 
-                    <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex flex-col gap-1">
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'p-3.5 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer',
+                            activeResultTab === 'updated'
+                                ? 'bg-blue-100/80 dark:bg-blue-950/80 border-blue-500 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
+                                : 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/60 hover:border-blue-300'
+                        )}
+                        onClick={() => setActiveResultTab('updated')}
+                    >
                         <span className="text-[11px] font-bold tracking-wider uppercase text-blue-700 dark:text-blue-400">
-                            Updated
+                            Updated ({updatedCount})
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-black text-blue-800 dark:text-blue-300">
@@ -575,11 +600,20 @@ export default function BulkImportModal<TPayload>({
                                 existing
                             </span>
                         </div>
-                    </div>
+                    </button>
 
-                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex flex-col gap-1">
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'p-3.5 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer',
+                            activeResultTab === 'blocked'
+                                ? 'bg-rose-100/80 dark:bg-rose-950/80 border-rose-500 dark:border-rose-500 ring-2 ring-rose-500/20 shadow-sm'
+                                : 'bg-rose-50/60 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 hover:border-rose-300'
+                        )}
+                        onClick={() => setActiveResultTab('blocked')}
+                    >
                         <span className="text-[11px] font-bold tracking-wider uppercase text-rose-700 dark:text-rose-400">
-                            Blocked / Failed
+                            Blocked / Failed ({blockedCount})
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-black text-rose-800 dark:text-rose-300">
@@ -589,11 +623,20 @@ export default function BulkImportModal<TPayload>({
                                 errors
                             </span>
                         </div>
-                    </div>
+                    </button>
 
-                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col gap-1">
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'p-3.5 rounded-xl border flex flex-col gap-1 text-left transition-all cursor-pointer',
+                            activeResultTab === 'conflicts'
+                                ? 'bg-amber-100/80 dark:bg-amber-950/80 border-amber-500 dark:border-amber-500 ring-2 ring-amber-500/20 shadow-sm'
+                                : 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60 hover:border-amber-300'
+                        )}
+                        onClick={() => setActiveResultTab('conflicts')}
+                    >
                         <span className="text-[11px] font-bold tracking-wider uppercase text-amber-700 dark:text-amber-400">
-                            Schedule Conflicts
+                            Conflicts ({conflictsCount})
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-black text-amber-800 dark:text-amber-300">
@@ -603,51 +646,135 @@ export default function BulkImportModal<TPayload>({
                                 flagged
                             </span>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
-                {/* Structured Errors Section */}
-                {hasStructuredErrors && (
-                    <div className="flex flex-col gap-2 border border-rose-200 dark:border-rose-900 rounded-xl p-3 bg-rose-50/50 dark:bg-rose-950/20">
-                        <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300">
-                            <XCircleIcon size={18} weight="bold" />
-                            <p className="font-bold text-sm">
-                                Blocked / Failed Rows ({result.structuredErrors.length})
-                            </p>
+                {/* Tab Content 1: Created Rows */}
+                {activeResultTab === 'created' && (
+                    <div className="flex flex-col gap-2 border border-emerald-200 dark:border-emerald-900 rounded-xl p-3.5 bg-emerald-50/40 dark:bg-emerald-950/20">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
+                                <CheckCircleIcon size={18} weight="bold" />
+                                <span>Newly Created Section Offerings ({createdRows.length})</span>
+                            </div>
                         </div>
-                        <div className="h-44">
-                            <CommonTable<BulkImportError>
-                                leadingColumnDefs={errorColumnDefs}
-                                rowData={result?.structuredErrors ?? []}
-                            />
-                        </div>
+                        {createdRows.length === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No new sections were created.</p>
+                        ) : (
+                            <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
+                                {createdRows.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-emerald-800/60 flex flex-col gap-1 text-xs"
+                                    >
+                                        <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100">
+                                            <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[11px]">
+                                                Row #{item.row}
+                                            </span>
+                                            <span>{item.section_code}</span>
+                                        </div>
+                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1 mt-0.5">
+                                            <span>Course: <strong>{item.course_code || '—'}</strong></span>
+                                            <span>Room: <strong>{item.room || '—'}</strong></span>
+                                        </div>
+                                        {item.faculty_email && (
+                                            <div className="text-[11px] text-slate-500 truncate">
+                                                Faculty: {item.faculty_email}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Schedule Conflicts Section */}
-                {hasConflicts && (
-                    <div className="flex flex-col gap-2 border border-amber-200 dark:border-amber-900 rounded-xl p-3 bg-amber-50/50 dark:bg-amber-950/20">
-                        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                {/* Tab Content 2: Updated Rows */}
+                {activeResultTab === 'updated' && (
+                    <div className="flex flex-col gap-2 border border-blue-200 dark:border-blue-900 rounded-xl p-3.5 bg-blue-50/40 dark:bg-blue-950/20">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 font-bold text-sm">
+                                <ArrowLineUpIcon size={18} weight="bold" />
+                                <span>Updated Existing Section Offerings ({updatedRows.length})</span>
+                            </div>
+                        </div>
+                        {updatedRows.length === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No existing sections were updated.</p>
+                        ) : (
+                            <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
+                                {updatedRows.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-blue-200 dark:border-blue-800/60 flex flex-col gap-1 text-xs"
+                                    >
+                                        <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100">
+                                            <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 text-[11px]">
+                                                Row #{item.row}
+                                            </span>
+                                            <span>{item.section_code}</span>
+                                        </div>
+                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1 mt-0.5">
+                                            <span>Course: <strong>{item.course_code || '—'}</strong></span>
+                                            <span>Room: <strong>{item.room || '—'}</strong></span>
+                                        </div>
+                                        {item.faculty_email && (
+                                            <div className="text-[11px] text-slate-500 truncate">
+                                                Faculty: {item.faculty_email}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Tab Content 3: Blocked / Failed Rows */}
+                {activeResultTab === 'blocked' && (
+                    <div className="flex flex-col gap-2 border border-rose-200 dark:border-rose-900 rounded-xl p-3.5 bg-rose-50/40 dark:bg-rose-950/20">
+                        <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-sm">
+                            <XCircleIcon size={18} weight="bold" />
+                            <span>Blocked / Failed Rows ({structuredErrors.length})</span>
+                        </div>
+                        {structuredErrors.length === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No rows were blocked or failed.</p>
+                        ) : (
+                            <div className="h-48">
+                                <CommonTable<BulkImportError>
+                                    leadingColumnDefs={errorColumnDefs}
+                                    rowData={structuredErrors}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Tab Content 4: Schedule Conflicts */}
+                {activeResultTab === 'conflicts' && (
+                    <div className="flex flex-col gap-2 border border-amber-200 dark:border-amber-900 rounded-xl p-3.5 bg-amber-50/40 dark:bg-amber-950/20">
+                        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-sm">
                             <WarningCircleIcon size={18} weight="bold" />
-                            <p className="font-bold text-sm">
-                                Flagged Schedule Conflicts ({result.structuredConflicts.length})
-                            </p>
+                            <span>Flagged Schedule Conflicts ({structuredConflicts.length})</span>
                         </div>
-                        <div className="max-h-36 overflow-y-auto flex flex-col gap-1.5 pr-1">
-                            {result.structuredConflicts.map((conf, idx) => (
-                                <div
-                                    className="p-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-xs text-slate-800 dark:text-slate-200"
-                                    key={idx}
-                                >
-                                    <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold shrink-0">
-                                        Row #{conf.row}
-                                    </span>
-                                    <span className="font-medium leading-relaxed">
-                                        {conf.message}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                        {structuredConflicts.length === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No schedule conflicts were detected.</p>
+                        ) : (
+                            <div className="max-h-48 overflow-y-auto flex flex-col gap-2 pr-1">
+                                {structuredConflicts.map((conf, idx) => (
+                                    <div
+                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-xs text-slate-800 dark:text-slate-200"
+                                        key={idx}
+                                    >
+                                        <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold shrink-0">
+                                            Row #{conf.row}
+                                        </span>
+                                        <span className="font-medium leading-relaxed">
+                                            {conf.message}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 

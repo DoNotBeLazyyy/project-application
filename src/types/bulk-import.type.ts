@@ -13,10 +13,21 @@ export interface BulkImportError {
     message: string;
 }
 
+export interface BulkImportRowItem {
+    row: number;
+    section_code?: string;
+    course_code?: string;
+    faculty_email?: string;
+    room?: string;
+    message?: string;
+}
+
 export interface DetailedBulkImportResult extends BulkImportResult {
     created_count?: number;
     updated_count?: number;
     conflicts_count?: number;
+    createdRows?: BulkImportRowItem[];
+    updatedRows?: BulkImportRowItem[];
     structuredErrors?: BulkImportError[];
     structuredConflicts?: BulkImportError[];
 }

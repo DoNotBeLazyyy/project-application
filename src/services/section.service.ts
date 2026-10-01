@@ -329,12 +329,16 @@ export async function bulkCreateSections(
         provisioned_count: number;
         created_count?: number;
         updated_count?: number;
+        created_rows?: any[];
+        updated_rows?: any[];
         errors: BulkImportError[];
     }>('fn_bulk_create_sections', { p_sections: mappedSections });
 
     let provisionedCount = 0;
     let createdCount = 0;
     let updatedCount = 0;
+    let createdRows: any[] = [];
+    let updatedRows: any[] = [];
     let structuredErrors: BulkImportError[] = [];
     const structuredConflicts: BulkImportError[] = [];
 
@@ -342,6 +346,8 @@ export async function bulkCreateSections(
         provisionedCount = result.data.provisioned_count ?? 0;
         createdCount = result.data.created_count ?? provisionedCount;
         updatedCount = result.data.updated_count ?? 0;
+        createdRows = result.data.created_rows ?? [];
+        updatedRows = result.data.updated_rows ?? [];
         structuredErrors = result.data.errors ?? [];
     }
     else if (result.error) {
@@ -467,11 +473,13 @@ export async function bulkCreateSections(
     return {
         conflicts_count: structuredConflicts.length,
         created_count: createdCount,
+        createdRows,
         errors: structuredErrors.map((error) =>
             `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
         provisioned_count: provisionedCount,
         structuredConflicts,
         structuredErrors,
-        updated_count: updatedCount
+        updated_count: updatedCount,
+        updatedRows
     };
 }
