@@ -31,7 +31,6 @@ const SORT_COLUMNS: SortColumn[] = [
 const FILTER_FORM_ID = 'filter-section-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'section_code', label: 'Section Code', hint: 'e.g. CS101-A (optional, auto-generated if blank)' },
     { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester 2024-2025' },
     { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS (optional)' },
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
@@ -244,7 +243,6 @@ export default function SectionManagement() {
                     schedule_room: row.schedule_room,
                     schedule_time_end: row.schedule_time_end,
                     schedule_time_start: row.schedule_time_start,
-                    section_code: row.section_code || '',
                     source_section_code: row.source_section_code || row.preset_section,
                     status: row.status,
                     term_label: row.term_label
