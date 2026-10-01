@@ -62,18 +62,38 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
                 </div>
             </div>
 
-            {/* Details */}
-            <div className="border border-(--mui-palette-divider) p-3 rounded-lg">
-                <span className="text-(--mui-palette-text-secondary) block text-[11px] font-semibold mb-1">Details & Remarks</span>
+            {/* Details & Rejection Warning */}
+            <div className={`border p-3 rounded-lg flex flex-col gap-2 ${
+                row.action.includes('REJECTED') || row.metadata?.is_false_info
+                    ? 'border-(--mui-palette-error-main) bg-(--mui-palette-error-light)/30'
+                    : row.action.includes('APPROVED')
+                        ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/20'
+                        : 'border-(--mui-palette-divider)'
+            }`}>
+                <div className="flex items-center justify-between">
+                    <span className="text-(--mui-palette-text-secondary) text-[11px] font-semibold">Details & Status</span>
+                    {row.metadata?.is_false_info && (
+                        <CommonChip label="Flagged: False Information" size="small" variant="light" color="error" />
+                    )}
+                </div>
                 <p className="m-0 text-(--mui-palette-text-primary) text-xs">
                     {row.details || 'No additional remarks.'}
                 </p>
+
+                {row.metadata?.rejection_reason && (
+                    <div className="mt-1 p-2.5 rounded bg-(--mui-palette-error-light)/50 border border-(--mui-palette-error-main)">
+                        <span className="font-semibold text-(--mui-palette-error-main) block text-[11px]">Official Rejection Reason</span>
+                        <p className="m-0 text-(--mui-palette-text-primary) text-xs mt-0.5">
+                            {String(row.metadata.rejection_reason)}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Metadata if present */}
             {row.metadata && Object.keys(row.metadata).length > 0 && (
                 <div className="border border-(--mui-palette-divider) p-3 rounded-lg bg-(--mui-palette-background-default)">
-                    <span className="text-(--mui-palette-text-secondary) block text-[11px] font-semibold mb-1">Event Metadata</span>
+                    <span className="text-(--mui-palette-text-secondary) block text-[11px] font-semibold mb-1">Event Audit Metadata</span>
                     <div className="space-y-1">
                         {Object.entries(row.metadata).map(([key, val]) => (
                             <div key={key} className="flex gap-2">

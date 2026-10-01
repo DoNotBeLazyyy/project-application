@@ -20,6 +20,7 @@ export interface BulkImportRowItem {
     faculty_email?: string;
     room?: string;
     message?: string;
+    changes?: { field: string; previous: string; changed: string }[];
 }
 
 export interface DetailedBulkImportResult extends BulkImportResult {
