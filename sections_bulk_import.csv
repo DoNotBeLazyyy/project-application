@@ -49,3 +49,6 @@ Term Label,Program Code,Course Code,Section Code,Faculty Email,Room,Max Slots,St
 1st Semester - Academic Year 2025-2026,BSCS,INVALID_CS999,BSCS-ERR1,juliustolentino.diamond@gmail.com,CLAB-999,40,Open,"Monday, Wednesday",08:00,10:00,CLAB-999,,false,
 1st Semester - Academic Year 2025-2026,BSN,NURS 101LEC,BSN-ERR2,nonexistent_prof@university.edu,NLAB-999,40,Open,"Monday, Wednesday",08:00,10:00,NLAB-999,,false,
 1st Semester - Academic Year 2025-2026,BSMLS,MEDT 101,BSMLS-ERR3,juliusexample@gmail.com,MLAB-999,9999,Open,"Monday, Wednesday",08:00,10:00,MLAB-999,,false,
+1st Semester - Academic Year 2025-2026,BSIT,CS 102LEC,BSIT 1-C,juliustolentino.diamond@gmail.com,CLAB-105,40,Open,"Wednesday",08:00,10:00,CLAB-105,,false,
+1st Semester - Academic Year 2025-2026,BSIT,CS 201LEC,BSIT 2-C,juliusexample@gmail.com,CLAB-106,40,Open,"Tuesday, Thursday",08:00,10:00,CLAB-106,,false,
+1st Semester - Academic Year 2025-2026,BSN,NURS 102,BSN 1-C,luna.akirapogi@gmail.com,NLAB-103,35,Open,"Monday, Wednesday",13:00,15:00,NLAB-103,,false,
