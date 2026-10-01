@@ -73,9 +73,7 @@ export const deanRoutes: RouteObject[] = [
                 path: 'faculty-load/:facultyId'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/dean/schedule-conflicts');
-                }),
+                element: <Navigate replace to="/dean/faculty-load?tab=conflicts" />,
                 path: 'schedule-conflicts'
             },
             {

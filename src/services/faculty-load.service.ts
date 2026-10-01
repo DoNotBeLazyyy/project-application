@@ -53,3 +53,13 @@ export async function getFacultyLoadDetail(
         p_term_id: termId || null
     });
 }
+
+export async function assignSectionFaculty(
+    sectionId: string,
+    facultyId: string | null
+): Promise<ServiceResult<{ success: boolean; message: string }>> {
+    return callRpc<{ success: boolean; message: string }>('fn_assign_section_faculty', {
+        p_faculty_id: facultyId || null,
+        p_section_id: sectionId
+    });
+}

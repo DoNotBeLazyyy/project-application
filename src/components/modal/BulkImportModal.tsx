@@ -545,12 +545,12 @@ export default function BulkImportModal<TPayload>({
         const createdCount = result?.created_count ?? result?.provisioned_count ?? 0;
         const updatedCount = result?.updated_count ?? 0;
         const blockedCount = result?.structuredErrors?.length ?? result?.errors?.length ?? 0;
-        const conflictsCount = result?.structuredConflicts?.length ?? result?.conflicts_count ?? 0;
-
         const createdRows = result?.createdRows ?? [];
         const updatedRows = result?.updatedRows ?? [];
+        const conflictRows = result?.conflictRows ?? [];
         const structuredErrors = result?.structuredErrors ?? [];
         const structuredConflicts = result?.structuredConflicts ?? [];
+        const conflictsCount = conflictRows.length > 0 ? conflictRows.length : (result?.structuredConflicts?.length ?? result?.conflicts_count ?? 0);
 
         return (
             <div className="flex flex-col gap-4">
@@ -773,10 +773,48 @@ export default function BulkImportModal<TPayload>({
                     <div className="flex flex-col gap-2 border border-amber-200 dark:border-amber-900 rounded-xl p-3.5 bg-amber-50/40 dark:bg-amber-950/20">
                         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-sm">
                             <WarningCircleIcon size={18} weight="bold" />
-                            <span>Flagged Schedule Conflicts ({structuredConflicts.length})</span>
+                            <span>Flagged Schedule Conflicts ({conflictsCount})</span>
                         </div>
-                        {structuredConflicts.length === 0 ? (
+                        {conflictsCount === 0 ? (
                             <p className="text-xs text-slate-500 italic py-2">No schedule conflicts were detected.</p>
+                        ) : conflictRows.length > 0 ? (
+                            <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
+                                {conflictRows.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-800/80 flex flex-col gap-1.5 text-xs shadow-xs"
+                                    >
+                                        <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100 border-b border-amber-100 dark:border-zinc-700/60 pb-1.5">
+                                            <span className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 text-[11px]">
+                                                Row #{item.row}
+                                            </span>
+                                            <span className="font-mono text-amber-800 dark:text-amber-300">{item.section_code}</span>
+                                        </div>
+                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1">
+                                            <span>Course: <strong>{item.course_code || '—'}</strong></span>
+                                            <span>Room: <strong>{item.room || '—'}</strong></span>
+                                        </div>
+                                        {item.faculty_email && (
+                                            <div className="text-[11px] text-slate-500 truncate">
+                                                Faculty: <strong>{item.faculty_email}</strong>
+                                            </div>
+                                        )}
+                                        {item.days && item.time && (
+                                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                                                Schedule: {item.days} ({item.time})
+                                            </div>
+                                        )}
+                                        <div className="mt-1 pt-1.5 border-t border-amber-100 dark:border-zinc-700/50 flex flex-col gap-0.5">
+                                            <span className="text-[10px] uppercase font-bold tracking-wider text-rose-500 dark:text-rose-400">
+                                                Double-Booked With:
+                                            </span>
+                                            <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 p-1 rounded border border-rose-200/60 dark:border-rose-900/50">
+                                                {item.conflict_with || item.message}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
                             <div className="max-h-48 overflow-y-auto flex flex-col gap-2 pr-1">
                                 {structuredConflicts.map((conf, idx) => (
