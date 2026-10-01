@@ -29,11 +29,13 @@ interface UserInvitePayload {
 }
 
 interface RequestBody {
-    action: 'invite_single_user' | 'bulk_provision_users' | 'resend_invite' | 'reset_password';
+    action: 'invite_single_user' | 'bulk_provision_users' | 'resend_invite' | 'reset_password' | 'update_user';
     email?: string;
     first_name?: string;
     last_name?: string;
     role_code?: string;
+    role_codes?: string[];
+    user_id?: string;
     users?: UserInvitePayload[];
     redirect_to?: string;
 }
@@ -227,6 +229,44 @@ Deno.serve(async (request: Request): Promise<Response> => {
             provisioned_count: provisionedCount,
             errors: [...errors, ...rpcErrors]
         }, `Provisioned ${provisionedCount} user(s).`);
+    }
+
+    // 4. Update User Flow
+    if (action === 'update_user') {
+        const { user_id, email, first_name, last_name, role_codes } = body;
+        if (!user_id || !first_name || !last_name || !role_codes) {
+            return failure('Missing required user fields for update.', 400);
+        }
+
+        if (email) {
+            const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(user_id, {
+                email: email.trim(),
+                email_confirm: true
+            });
+
+            if (updateAuthError) {
+                return failure(updateAuthError.message, 400);
+            }
+        }
+
+        const { data: updateData, error: updateError } = await userClient.rpc('fn_update_user', {
+            p_user_id: user_id,
+            p_first_name: first_name,
+            p_last_name: last_name,
+            p_role_codes: role_codes,
+            p_email: email ? email.trim() : null
+        });
+
+        if (updateError) {
+            return failure(updateError.message, 400);
+        }
+
+        const resObj = updateData as { success?: boolean; message?: string } | null;
+        if (resObj && resObj.success === false) {
+            return failure(resObj.message || 'Failed to update user.', 400);
+        }
+
+        return success({ data: updateData }, 'User updated successfully.');
     }
 
     return failure(`Unknown action: ${action}`, 400);

@@ -52,8 +52,8 @@ export default function CurriculumMapForm({
                 }
             }
 
-            if (listRes.data?.items) {
-                for (const t of listRes.data.items) {
+            if (listRes.data?.content) {
+                for (const t of listRes.data.content) {
                     if (t.term_type_id) {
                         availableIds.add(t.term_type_id);
                     }

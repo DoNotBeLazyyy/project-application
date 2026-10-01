@@ -214,8 +214,8 @@ export default function AttendanceSessionWizardModal({
                 // Fetch default generated records to get record IDs
                 const recordsRes = await getAttendanceRecords(createdSession.id);
                 if (recordsRes.data && recordsRes.data.length > 0) {
-                    const updates: AttendanceRecordUpdate[] = recordsRes.data.map((r) => {
-                        const customDraft = studentDrafts[r.student_id];
+                    const updates: AttendanceRecordUpdate[] = recordsRes.data.map((r: any) => {
+                        const customDraft = studentDrafts[r.student_id || r.enrollment_id];
                         return {
                             id: r.id,
                             remarks: customDraft?.remarks || '',
@@ -241,10 +241,8 @@ export default function AttendanceSessionWizardModal({
 
     return (
         <CommonModal
-            dialogProps={{
-                fullWidth: true,
-                maxWidth: 'md'
-            }}
+            fullWidth
+            maxWidth="md"
             open={open}
             onClose={onClose}
         >

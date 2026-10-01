@@ -10454,6 +10454,8 @@ BEGIN
             c.code AS course_code,
             c.title AS course_title,
             c.total_units AS units,
+            COALESCE(cm.lecture_units, c.lecture_units, 0) AS lecture_units,
+            COALESCE(cm.laboratory_units, c.laboratory_units, 0) AS laboratory_units,
             cm.term_type_id AS term_type_id,
             COALESCE(tt.label, 'Unassigned') AS term_type_label,
             COALESCE(tt.sequence, 99) AS term_type_sequence,
@@ -10493,6 +10495,8 @@ BEGIN
                     'course_code', r.course_code,
                     'course_title', r.course_title,
                     'units', r.units,
+                    'lecture_units', r.lecture_units,
+                    'laboratory_units', r.laboratory_units,
                     'is_elective', r.is_elective,
                     'status', r.status,
                     'grade', r.grade,
@@ -22963,7 +22967,7 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.fn_update_user(p_user_id uuid, p_first_name text, p_last_name text, p_role_codes text[])
+CREATE OR REPLACE FUNCTION public.fn_update_user(p_user_id uuid, p_first_name text, p_last_name text, p_role_codes text[], p_email text DEFAULT NULL)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -22971,6 +22975,7 @@ CREATE OR REPLACE FUNCTION public.fn_update_user(p_user_id uuid, p_first_name te
 AS $function$
 DECLARE
     v_result JSONB;
+    v_trimmed_email TEXT;
 BEGIN
     PERFORM public.fn_assert_role('Admin');
 
@@ -22981,11 +22986,44 @@ BEGIN
         );
     END IF;
 
-    UPDATE public.users
+    v_trimmed_email := NULLIF(btrim(p_email), '');
+
+    IF v_trimmed_email IS NOT NULL THEN
+        IF EXISTS (
+            SELECT 1 FROM public.users
+            WHERE lower(email) = lower(v_trimmed_email)
+              AND id <> p_user_id
+              AND deleted_at IS NULL
+        ) OR EXISTS (
+            SELECT 1 FROM auth.users
+            WHERE lower(email) = lower(v_trimmed_email)
+              AND id <> p_user_id
+        ) THEN
+            RETURN jsonb_build_object(
+                'success', false,
+                'message', 'The email address "' || v_trimmed_email || '" is already in use by another account.'
+            );
+        END IF;
+
+        UPDATE auth.users
+        SET email = v_trimmed_email,
+            updated_at = now()
+        WHERE id = p_user_id;
+
+        UPDATE public.users
+        SET first_name = btrim(p_first_name),
+            last_name = btrim(p_last_name),
+            email = v_trimmed_email,
+            updated_at = now()
+        WHERE id = p_user_id
+          AND deleted_at IS NULL;
+    ELSE
+        UPDATE public.users
     SET first_name = btrim(p_first_name),
         last_name = btrim(p_last_name)
     WHERE id = p_user_id
       AND deleted_at IS NULL;
+    END IF;
 
     IF NOT FOUND THEN
         RETURN jsonb_build_object('success', false, 'message', 'User not found.');

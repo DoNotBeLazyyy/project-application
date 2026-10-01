@@ -344,7 +344,7 @@ export default function GradeRelease() {
                         <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
                             Flagged to be Published Soon
                         </span>
-                        <CommonBadgeStatus color="warning" label="Published Soon" size="small" />
+                        <CommonBadgeStatus label="Published Soon" variant="warning" />
                     </div>
                     <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
                         Grade release is currently hidden from standard operations and flagged to be published soon. All grade review tools, schedules, and sections remain accessible here for preview and testing.
@@ -359,7 +359,7 @@ export default function GradeRelease() {
                         <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl">
                             Grade Release &amp; Submission Verification
                         </h1>
-                        <CommonBadgeStatus color="warning" label="Published Soon" size="small" />
+                        <CommonBadgeStatus label="Published Soon" variant="warning" />
                     </div>
                     <p className="text-(--mui-palette-text-secondary) text-xs hidden sm:block">
                         Track faculty term grade submissions by section, inspect student grade sheets, and publish official grades.

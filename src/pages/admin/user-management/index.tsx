@@ -187,6 +187,7 @@ export default function UserManagement() {
         }
 
         const result = await updateUser(selectedUserId, {
+            email: values.email,
             first_name: values.first_name,
             last_name: values.last_name,
             role_codes: values.role_codes

@@ -32,6 +32,7 @@ export interface UpdateUserFormValues {
 }
 
 export interface UpdateUserParams {
+    email: string;
     first_name: string;
     last_name: string;
     role_codes: UserRole[];

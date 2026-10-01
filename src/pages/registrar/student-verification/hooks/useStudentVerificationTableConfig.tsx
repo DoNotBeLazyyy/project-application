@@ -1,5 +1,5 @@
-import { CommonChip } from '@components/badge/CommonChip';
-import { ICellRendererParams } from 'ag-grid-community';
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import { MobileCardColDef } from '@type/table.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
 import { useMemo } from 'react';
@@ -12,7 +12,7 @@ export function useStudentVerificationTableConfig() {
                 flex: 1.5,
                 headerName: 'Student No.',
                 minWidth: 130,
-                mobileCard: 'code',
+                mobileCard: 'meta',
                 sortable: true
             },
             {
@@ -42,21 +42,19 @@ export function useStudentVerificationTableConfig() {
                 cellRenderer: function(params: ICellRendererParams<StudentProfileRequestRow>) {
                     if (!params.value) return null;
                     const status = params.value as string;
-                    const color =
+                    const variant =
                         status === 'Pending'
                             ? 'warning'
-                            : status === 'Approved'
+                            : status === 'Approved' || status === 'Approved with Edits'
                                 ? 'success'
-                                : status === 'Approved with Edits'
-                                    ? 'primary'
-                                    : 'error';
-                    return <CommonChip color={color} label={status} size="small" variant="light" />;
+                                : 'error';
+                    return <CommonBadgeStatus label={status} variant={variant} />;
                 },
                 field: 'status',
                 flex: 1.5,
                 headerName: 'Status',
                 minWidth: 140,
-                mobileCard: 'status',
+                mobileCard: 'meta',
                 sortable: true
             },
             {
@@ -65,7 +63,7 @@ export function useStudentVerificationTableConfig() {
                 headerName: 'Submitted On',
                 minWidth: 170,
                 sortable: true,
-                valueFormatter: (params) =>
+                valueFormatter: (params: any) =>
                     params.value
                         ? new Date(params.value as string).toLocaleString('en-PH', {
                             day: 'numeric',

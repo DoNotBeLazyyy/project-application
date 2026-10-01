@@ -7,6 +7,7 @@ export interface CourseListRow {
     department_id: string;
     department_name: string;
     course_type_id: string;
+    course_type_code?: string;
     course_type_label: string;
     lecture_units: number;
     laboratory_units: number;

@@ -1,4 +1,4 @@
-import { CommonChip } from '@components/badge/CommonChip';
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { ICellRendererParams } from 'ag-grid-community';
 import { MobileCardColDef } from '@type/table.type';
 import { RegistrarLogRow } from '@type/registrar-verification.type';
@@ -34,21 +34,14 @@ export function useRegistrarLogTableConfig() {
                 cellRenderer: function(params: ICellRendererParams<RegistrarLogRow>) {
                     if (!params.value) return null;
                     const action = params.value as string;
-                    const color = action.includes('APPROVED')
-                        ? 'success'
-                        : action.includes('REJECTED') || action.includes('FALSE_INFO')
-                            ? 'error'
-                            : action.includes('REQUESTED')
-                                ? 'warning'
-                                : 'primary';
 
-                    return <CommonChip color={color} label={formatActionLabel(action)} size="small" variant="light" />;
+                    return <CommonBadgeStatus label={formatActionLabel(action)} size="small" variant="info" />;
                 },
                 field: 'action',
                 flex: 2,
                 headerName: 'Action',
                 minWidth: 170,
-                mobileCard: 'status',
+                mobileCard: 'meta',
                 sortable: true
             },
             {
@@ -64,7 +57,7 @@ export function useRegistrarLogTableConfig() {
                 flex: 1.5,
                 headerName: 'Student No.',
                 minWidth: 130,
-                mobileCard: 'code',
+                mobileCard: 'meta',
                 sortable: true
             },
             {

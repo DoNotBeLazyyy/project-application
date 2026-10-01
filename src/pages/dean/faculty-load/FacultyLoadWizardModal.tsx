@@ -234,7 +234,7 @@ export default function FacultyLoadWizardModal({
         try {
             const res = await getSectionById(selectedAssignSectionId);
             if (res.data) {
-                const s = res.data;
+                const s = res.data as any;
                 const newSection: FacultyLoadSection = {
                     section_id: s.id,
                     section_code: s.section_code,
@@ -257,7 +257,7 @@ export default function FacultyLoadWizardModal({
                     lecture_units: Number(s.lecture_units) || 0,
                     lab_units: Number(s.laboratory_units) || 0,
                     units: Number(s.units) || Number(s.total_units) || 3,
-                    schedules: (s.schedules || []).map((sch) => ({
+                    schedules: (s.schedules || []).map((sch: any) => ({
                         day_of_week: sch.day_of_week,
                         time_start: sch.time_start,
                         time_end: sch.time_end,
@@ -565,9 +565,13 @@ export default function FacultyLoadWizardModal({
                         children: 'Yes, Remove Section'
                     }
                 }}
+                mainContent={{
+                    title: 'Remove Section Assignment'
+                }}
                 open={confirmDeleteTarget !== null}
-                subtitle={`Are you sure you want to remove section "${confirmDeleteTarget?.section_code} - ${confirmDeleteTarget?.course_code}" from ${detail?.faculty.faculty_name}'s teaching load? This change will be applied upon saving.`}
-                title="Remove Section Assignment"
+                subContent={{
+                    title: `Are you sure you want to remove section "${confirmDeleteTarget?.section_code} - ${confirmDeleteTarget?.course_code}" from ${detail?.faculty.faculty_name}'s teaching load? This change will be applied upon saving.`
+                }}
                 onClose={() => setConfirmDeleteTarget(null)}
                 onSubmit={handleConfirmRemoveSection}
             />

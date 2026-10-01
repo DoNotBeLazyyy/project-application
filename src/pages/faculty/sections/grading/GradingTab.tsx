@@ -406,6 +406,7 @@ export default function GradingTab({
                         courseTitle={courseTitle}
                         gradeSheet={gradeSheet}
                         gradingPeriodId={activePeriodId}
+                        isEncodingOpen={isEncodingOpen}
                         isFlagBusy={isFlagBusy}
                         isSubmittingGrades={isSubmittingGrades}
                         periodName={periods.find((p) => p.id === activePeriodId)?.name}

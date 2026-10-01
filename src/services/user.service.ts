@@ -62,11 +62,13 @@ export async function updateUser(
     userId: string,
     params: UpdateUserParams
 ): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_update_user', {
-        p_user_id: userId,
-        p_first_name: params.first_name,
-        p_last_name: params.last_name,
-        p_role_codes: params.role_codes
+    return callFunction<null>('admin-user-provision', {
+        action: 'update_user',
+        email: params.email,
+        first_name: params.first_name,
+        last_name: params.last_name,
+        role_codes: params.role_codes,
+        user_id: userId
     });
 }
 

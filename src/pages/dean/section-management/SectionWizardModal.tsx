@@ -108,7 +108,7 @@ export default function SectionWizardModal({
                     if (res.data) {
                         const data = res.data;
                         setIsEditable(data.is_active_academic_year !== false);
-                        const scheduleBlocks = groupScheduleSlotsToBlocks(data.schedules || []);
+                        const scheduleBlocks = groupScheduleSlotsToBlocks((data.schedules || []) as any);
                         reset({
                             term_id: data.term_id || '',
                             course_id: data.course_id || '',

@@ -34,7 +34,7 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-4 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                     <span className="text-(--mui-palette-text-secondary) block text-[11px]">Action</span>
-                    <CommonChip color={actionColor} label={formatActionLabel(row.action)} size="small" variant="light" />
+                    <CommonChip label={formatActionLabel(row.action)} size="small" variant="light" />
                 </div>
                 <div>
                     <span className="text-(--mui-palette-text-secondary) block text-[11px]">Timestamp</span>
@@ -64,7 +64,7 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
 
             {/* Details & Rejection Warning */}
             <div className={`border p-3 rounded-lg flex flex-col gap-2 ${
-                row.action.includes('REJECTED') || row.metadata?.is_false_info
+                row.action.includes('REJECTED') || (row.metadata as any)?.is_false_info
                     ? 'border-(--mui-palette-error-main) bg-(--mui-palette-error-light)/30'
                     : row.action.includes('APPROVED')
                         ? 'border-(--mui-palette-success-main) bg-(--mui-palette-success-light)/20'
@@ -72,19 +72,19 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
             }`}>
                 <div className="flex items-center justify-between">
                     <span className="text-(--mui-palette-text-secondary) text-[11px] font-semibold">Details & Status</span>
-                    {row.metadata?.is_false_info && (
-                        <CommonChip label="Flagged: False Information" size="small" variant="light" color="error" />
+                    {(row.metadata as any)?.is_false_info && (
+                        <CommonChip label="Flagged: False Information" size="small" variant="light" />
                     )}
                 </div>
                 <p className="m-0 text-(--mui-palette-text-primary) text-xs">
                     {row.details || 'No additional remarks.'}
                 </p>
 
-                {row.metadata?.rejection_reason && (
+                {(row.metadata as any)?.rejection_reason && (
                     <div className="mt-1 p-2.5 rounded bg-(--mui-palette-error-light)/50 border border-(--mui-palette-error-main)">
                         <span className="font-semibold text-(--mui-palette-error-main) block text-[11px]">Official Rejection Reason</span>
                         <p className="m-0 text-(--mui-palette-text-primary) text-xs mt-0.5">
-                            {String(row.metadata.rejection_reason)}
+                            {String((row.metadata as any).rejection_reason)}
                         </p>
                     </div>
                 )}

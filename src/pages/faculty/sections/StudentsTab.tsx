@@ -56,7 +56,7 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
             },
             {
                 cellRenderer: (params: { data: SectionStudent }) => {
-                    const student = params.data;
+                    const student = params.data as any;
                     if (student.has_pending_verification) {
                         return (
                             <CommonBadgeStatus
@@ -127,7 +127,6 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                         searchHints: SEARCH_HINTS.sectionStudents
                     }
                 }}
-                defaultViewMode="grid"
                 sortColumns={SORT_COLUMNS}
                 tableProps={{
                     leadingColumnDefs: columnDefs

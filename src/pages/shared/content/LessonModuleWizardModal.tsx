@@ -235,7 +235,7 @@ export default function LessonModuleWizardModal({
 
         setIsSaving(true);
         try {
-            let moduleId = initialModule?.id;
+            let moduleId: string | undefined = initialModule?.id;
 
             // Compute final title with period tag if not already included
             let finalTitle = title.trim();
@@ -252,8 +252,8 @@ export default function LessonModuleWizardModal({
             } else {
                 const res = await createModule(sectionId, finalTitle, description.trim() || null);
                 if (res.error || !res.data) return;
-                moduleId = res.data.id;
-                if (!isPublished) {
+                moduleId = (res.data as any).id || (res.data as any).module_id;
+                if (!isPublished && moduleId) {
                     await setModulePublished(moduleId, false);
                 }
             }

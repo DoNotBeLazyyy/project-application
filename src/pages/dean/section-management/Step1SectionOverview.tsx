@@ -203,7 +203,7 @@ export default function Step1SectionOverview({
                 />
             </div>
 
-            <SectionScheduleConfig control={control} disabled={disabled} />
+            <SectionScheduleConfig control={control as any} disabled={disabled} />
         </div>
     );
 }

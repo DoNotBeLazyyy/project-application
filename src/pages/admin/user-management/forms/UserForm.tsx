@@ -36,8 +36,17 @@ export default function UserForm({
             type: 'text'
         },
         {
-            disabled: true,
+            disabled,
             name: 'email',
+            rules: disabled
+                ? undefined
+                : {
+                    required: 'Required',
+                    pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Invalid email address'
+                    }
+                },
             type: 'email'
         },
         {

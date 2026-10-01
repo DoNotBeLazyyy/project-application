@@ -1,5 +1,6 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { CommonChip } from '@components/badge/CommonChip';
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
@@ -28,7 +29,7 @@ interface StudentProfileVerificationModalProps {
     onSuccess?: () => void;
 }
 
-const FIELD_LABELS: Record<keyof ProfileFormValues, string> = {
+const FIELD_LABELS: Record<string, string> = {
     first_name: 'First Name',
     middle_name: 'Middle Name',
     last_name: 'Last Name',
@@ -86,9 +87,9 @@ export default function StudentProfileVerificationModal({
 
     useEffect(() => {
         if (!request) return;
-        const requested = request.requested_changes || {};
-        const approved = request.approved_changes || {};
-        const baseValues = request.status === 'Approved with Edits' ? approved : requested;
+        const requested = (request.requested_changes || {}) as Record<string, any>;
+        const approved = (request.approved_changes || {}) as Record<string, any>;
+        const baseValues: Record<string, any> = request.status === 'Approved with Edits' ? approved : requested;
 
         setEditableValues({
             address_line1: baseValues.address_line1 || '',
@@ -241,18 +242,15 @@ export default function StudentProfileVerificationModal({
 
                             <div>
                                 <span className="text-(--mui-palette-text-secondary) block text-[11px]">Status</span>
-                                <CommonChip
+                                <CommonBadgeStatus
                                     label={request.status}
                                     size="small"
-                                    variant="light"
-                                    color={
+                                    variant={
                                         request.status === 'Pending'
                                             ? 'warning'
-                                            : request.status === 'Approved'
+                                            : request.status === 'Approved' || request.status === 'Approved with Edits'
                                                 ? 'success'
-                                                : request.status === 'Approved with Edits'
-                                                    ? 'primary'
-                                                    : 'error'
+                                                : 'error'
                                     }
                                 />
                             </div>
@@ -262,8 +260,8 @@ export default function StudentProfileVerificationModal({
                         <div className="flex items-center gap-2">
                             <CommonButton
                                 color="warning"
-                                icon={<BellIcon size={16} />}
                                 size="small"
+                                startIcon={<BellIcon size={16} />}
                                 variant="outlined"
                                 onClick={() => setIsNotifyOpen(true)}
                             >
@@ -331,10 +329,10 @@ export default function StudentProfileVerificationModal({
                                         <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
                                             <span>{FIELD_LABELS[field]}</span>
                                             {isModifiedByStudent && (
-                                                <CommonChip label="Changed" size="small" variant="light" color="warning" />
+                                                <CommonChip label="Changed" size="small" variant="light" />
                                             )}
                                             {isPending && isEditedByRegistrar && (
-                                                <CommonChip label="Registrar Edited" size="small" variant="light" color="primary" />
+                                                <CommonChip label="Registrar Edited" size="small" variant="light" />
                                             )}
                                         </div>
 
@@ -349,7 +347,7 @@ export default function StudentProfileVerificationModal({
                                                         fullWidth
                                                         options={GENDER_OPTIONS}
                                                         size="small"
-                                                        value={editVal}
+                                                        value={String(editVal)}
                                                         onChange={(e) => handleFieldChange('gender', e.target.value as string)}
                                                     />
                                                 ) : field === 'civil_status' ? (
@@ -357,19 +355,19 @@ export default function StudentProfileVerificationModal({
                                                         fullWidth
                                                         options={CIVIL_STATUS_OPTIONS}
                                                         size="small"
-                                                        value={editVal}
+                                                        value={String(editVal)}
                                                         onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
                                                     />
                                                 ) : field === 'date_of_birth' ? (
                                                     <CommonDatePicker
-                                                        value={editVal}
+                                                        value={String(editVal || '')}
                                                         onChange={(val) => handleFieldChange('date_of_birth', val)}
                                                     />
                                                 ) : (
                                                     <CommonInput
                                                         fullWidth
                                                         size="small"
-                                                        value={editVal}
+                                                        value={String(editVal)}
                                                         onChange={(e) => handleFieldChange(field, e.target.value)}
                                                     />
                                                 )
@@ -477,8 +475,8 @@ export default function StudentProfileVerificationModal({
                                 <CommonButton
                                     color="error"
                                     disabled={isSubmitting}
-                                    icon={<XCircleIcon size={16} />}
                                     size="small"
+                                    startIcon={<XCircleIcon size={16} />}
                                     variant="outlined"
                                     onClick={() => setIsRejectOpen(true)}
                                 >
@@ -486,8 +484,8 @@ export default function StudentProfileVerificationModal({
                                 </CommonButton>
                                 <CommonButton
                                     disabled={isSubmitting}
-                                    icon={<CheckCircleIcon size={16} />}
                                     size="small"
+                                    startIcon={<CheckCircleIcon size={16} />}
                                     variant="contained"
                                     onClick={handleApprove}
                                 >

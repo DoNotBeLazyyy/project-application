@@ -159,7 +159,7 @@ export default function AnnouncementDetailPage() {
 
     async function handleCreate(values: CommunicationFormValues) {
         const audience = values.target_audience || 'Global';
-        const sectionIds = audience === 'Section' ? sanitizeUuidArray(values.section_ids ?? []) : [];
+        const sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
         const currentRole = getRoleFromPath(pathname);
 
         if (values.item_type === 'Event') {
@@ -192,7 +192,7 @@ export default function AnnouncementDetailPage() {
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
         const audience = values.target_audience || 'Global';
-        const sectionIds = audience === 'Section' ? sanitizeUuidArray(values.section_ids ?? []) : [];
+        const sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
 
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';

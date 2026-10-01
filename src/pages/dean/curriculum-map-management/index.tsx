@@ -21,6 +21,7 @@ import {
 } from '@services/curriculum-map.service';
 import { getCourses, listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
+import { CourseListRow } from '@type/course/course.type';
 import { CurriculumMapBulkRow, CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -240,8 +241,8 @@ export default function CurriculumMapManagement({
 
     async function handleCreateSubmit(values: CurriculumMapFormValues) {
         const listRes = await listCourses(1, 1000, '', [], null);
-        const courses = listRes.data?.items ?? [];
-        const course = courses.find((c) => c.id === values.course_id);
+        const courses = listRes.data?.content ?? [];
+        const course = courses.find((c: any) => c.id === values.course_id);
         const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
@@ -358,8 +359,8 @@ export default function CurriculumMapManagement({
         if (!selectedEntry) return;
 
         const listRes = await listCourses(1, 1000, '', [], null);
-        const courses = listRes.data?.items ?? [];
-        const course = courses.find((c) => c.id === values.course_id);
+        const courses = listRes.data?.content ?? [];
+        const course = courses.find((c: any) => c.id === values.course_id);
         const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
@@ -446,8 +447,8 @@ export default function CurriculumMapManagement({
 
         const coursesMap = new Map<string, { id: string; code: string; title: string; lecture_units?: number; laboratory_units?: number; total_units?: number }>();
 
-        if (listRes.data?.items) {
-            for (const item of listRes.data.items) {
+        if (listRes.data?.content) {
+            for (const item of listRes.data.content) {
                 if (item.code) {
                     coursesMap.set(item.code.trim().toLowerCase(), {
                         id: item.id,

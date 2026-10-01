@@ -1,4 +1,5 @@
 import CommonBentoCard from '@components/card/CommonBentoCard';
+import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import RegistrarLogDetailContent from '@pages/registrar/registrar-logs/components/RegistrarLogDetailContent';
 import FilterRegistrarLogForm from '@pages/registrar/registrar-logs/forms/FilterRegistrarLogForm';
@@ -16,11 +17,11 @@ const EMPTY_FILTERS: RegistrarLogFilterValues = {
     date_to: ''
 };
 
-const SORT_COLUMNS = [
-    { label: 'Timestamp', value: 'rl.created_at' },
-    { label: 'Action', value: 'rl.action' },
-    { label: 'Student Name', value: 'rl.student_name' },
-    { label: 'Student Number', value: 'rl.student_number' }
+const SORT_COLUMNS: SortColumn[] = [
+    { field: 'rl.created_at', label: 'Timestamp' },
+    { field: 'rl.action', label: 'Action' },
+    { field: 'rl.student_name', label: 'Student Name' },
+    { field: 'rl.student_number', label: 'Student Number' }
 ];
 
 function formatActionLabel(action: string): string {

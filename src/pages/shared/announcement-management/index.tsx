@@ -79,7 +79,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 : null;
 
         if (filterType === 'Announcement') {
-            const annSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'created_at' } : s);
+            const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'created_at', isAsc: s.isAsc ?? true } : s));
             const res = await listAnnouncements(page, size, search, annSort, audience, isPinned, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
@@ -133,7 +133,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         }
 
         if (filterType === 'Event') {
-            const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
+            const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'start_at', isAsc: s.isAsc ?? true } : s));
             const res = await listEvents(page, size, search, evtSort, audience, false, currentRole);
             if (res.error) {
                 return { data: null, error: res.error };
@@ -145,7 +145,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 content: e.description || '',
                 created_at: e.created_at,
                 date: e.start_at || e.created_at,
-                end_at: e.end_at,
+                end_at: e.end_at ? e.end_at : undefined,
                 id: e.id,
                 is_pinned: false,
                 item_type: 'Event',
@@ -191,8 +191,8 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
 
         // filterType === 'All'
         const fetchLimit = Math.max(page * size, 50);
-        const annSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'created_at' } : s);
-        const evtSort = sort.map((s) => s.field === 'date' ? { ...s, field: 'start_at' } : s);
+        const annSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'created_at', isAsc: s.isAsc ?? true } : s));
+        const evtSort = sort.map((s: any) => ((s.sortKey || s.field) === 'date' ? { sortKey: 'start_at', isAsc: s.isAsc ?? true } : s));
 
         const [annRes, evtRes] = await Promise.all([
             listAnnouncements(1, fetchLimit, search, annSort, audience, isPinned, currentRole),
@@ -226,7 +226,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             content: e.description || '',
             created_at: e.created_at,
             date: e.start_at || e.created_at,
-            end_at: e.end_at,
+            end_at: e.end_at ? e.end_at : undefined,
             id: e.id,
             is_pinned: false,
             item_type: 'Event',

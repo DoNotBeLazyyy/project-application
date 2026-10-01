@@ -457,40 +457,7 @@ export default function AcademicThresholdManagement() {
                     <div className="flex flex-col gap-4 p-4">
                         {/* Filter toolbar: Search and Category Pills */}
                         <div className="flex flex-wrap gap-3 items-center justify-between">
-                            <div className="hidden">
-                                {null && CATEGORIES.map((cat) => {
-                                    const isSelected = selectedCategory === cat;
-                                    const count = cat === 'All'
-                                        ? drafts.length
-                                        : drafts.filter((d) => d.category === cat).length;
 
-                                    return (
-                                        <button
-                                            className={`cursor-pointer flex font-semibold gap-1.5 items-center px-3 py-1.5 rounded-(--mui-tokens-radius-full) text-xs transition-colors ${
-                                                isSelected
-                                                    ? 'bg-(--mui-tokens-color-brand-900) text-(--mui-tokens-color-common-white)'
-                                                    : 'bg-(--mui-palette-grey-100) hover:bg-(--mui-palette-grey-200) text-(--mui-palette-text-secondary)'
-                                            }`}
-                                            key={cat}
-                                            type="button"
-                                            onClick={function() {
-                                                setSelectedCategory(cat);
-                                            }}
-                                        >
-                                            <span>{cat}</span>
-                                            <span
-                                                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                                                    isSelected
-                                                        ? 'bg-white/20 text-white'
-                                                        : 'bg-black/5 text-(--mui-palette-text-secondary)'
-                                                }`}
-                                            >
-                                                {count}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
 
                             <div className="flex flex-wrap gap-2 items-center justify-end max-w-md w-full sm:w-auto">
                                 <div className="max-w-xs min-w-[12rem] flex-1">

@@ -26,6 +26,7 @@ interface GradeSheetPanelProps {
     courseCode?: string;
     courseTitle?: string;
     gradingPeriodId?: string;
+    isEncodingOpen?: boolean;
     isFlagBusy?: boolean;
     isSubmittingGrades?: boolean;
     periodName?: string;
@@ -45,6 +46,7 @@ export default function GradeSheetPanel({
     courseCode,
     courseTitle,
     gradingPeriodId,
+    isEncodingOpen = true,
     isFlagBusy,
     isSubmittingGrades,
     periodName,
@@ -123,7 +125,7 @@ export default function GradeSheetPanel({
                     </CommonButton>
 
                     <CommonButton
-                        disabled={components.length === 0 || isSubmitted}
+                        disabled={components.length === 0 || isSubmitted || !isEncodingOpen}
                         size="small"
                         startIcon={<CalculatorIcon size={14} weight="bold" />}
                         variant="outlined"
@@ -134,7 +136,7 @@ export default function GradeSheetPanel({
 
                     {onSubmitGrades && (
                         <CommonButton
-                            disabled={gradeSheet.length === 0 || isSubmitted || isSubmittingGrades}
+                            disabled={gradeSheet.length === 0 || isSubmitted || isSubmittingGrades || !isEncodingOpen}
                             size="small"
                             startIcon={<PaperPlaneTiltIcon size={14} weight="bold" />}
                             variant="contained"
@@ -145,6 +147,16 @@ export default function GradeSheetPanel({
                     )}
                 </div>
             </div>
+
+            {/* Lockout Banner */}
+            {!isEncodingOpen && (
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex gap-2.5 items-center p-3 rounded-2xl text-amber-900 dark:text-amber-200">
+                    <LockKeyIcon size={20} weight="fill" className="shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span className="font-medium text-xs sm:text-sm">
+                        Grade encoding for <strong>{periodName ?? 'this period'}</strong> is currently locked per the Academic Year Calendar schedule.
+                    </span>
+                </div>
+            )}
 
             {/* Submission Status Banner */}
             {isSubmitted && (

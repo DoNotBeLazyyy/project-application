@@ -137,7 +137,7 @@ function validateFloor(
 
     return floor > nextFloor
         ? true
-        : `Must exceed ${toGradeLabel(next.transmuted_grade)}'s floor (${nextFloor})`;
+        : `Must exceed ${toGradeLabel(next.transmuted_grade ?? '')}'s floor (${nextFloor})`;
 }
 
 /**

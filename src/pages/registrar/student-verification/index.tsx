@@ -1,4 +1,5 @@
 import CommonBentoCard from '@components/card/CommonBentoCard';
+import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import StudentProfileVerificationModal from '@pages/registrar/student-verification/components/StudentProfileVerificationModal';
 import FilterStudentVerificationForm from '@pages/registrar/student-verification/forms/FilterStudentVerificationForm';
@@ -17,11 +18,11 @@ const EMPTY_FILTERS: StudentProfileRequestFilterValues = {
     status: 'All'
 };
 
-const SORT_COLUMNS = [
-    { label: 'Submitted Date', value: 'req.created_at' },
-    { label: 'Student Number', value: 's.student_number' },
-    { label: 'Student Name', value: 'u.last_name' },
-    { label: 'Status', value: 'req.status' }
+const SORT_COLUMNS: SortColumn[] = [
+    { field: 'req.created_at', label: 'Submitted Date' },
+    { field: 's.student_number', label: 'Student Number' },
+    { field: 'u.last_name', label: 'Student Name' },
+    { field: 'req.status', label: 'Status' }
 ];
 
 export default function StudentVerificationPage() {

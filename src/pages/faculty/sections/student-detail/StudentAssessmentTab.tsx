@@ -104,9 +104,9 @@ export default function StudentAssessmentTab({ assessments }: StudentAssessmentT
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4">
-                        {filtered.map((item) => (
+                        {filtered.map((item: any) => (
                             <div
-                                key={item.assessment_id}
+                                key={item.assessment_id || item.id}
                                 onClick={() => setDetailItem(item)}
                                 className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer flex flex-col justify-between gap-2.5"
                             >
@@ -149,7 +149,7 @@ export default function StudentAssessmentTab({ assessments }: StudentAssessmentT
             </div>
 
             <SubmissionDetailModal
-                item={detailItem}
+                assessment={detailItem as any}
                 onClose={() => setDetailItem(null)}
             />
         </div>

@@ -9,7 +9,7 @@ import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGrad
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFormValues } from '@type/program/program.type';
 import { useState } from 'react';
-import { Control } from 'react-hook-form';
+import { Control, useFormContext } from 'react-hook-form';
 
 interface ProgramFormProps extends ComponentPropsForm {
     control: Control<ProgramFormValues>;
@@ -25,6 +25,7 @@ export default function ProgramForm({
     programId,
     ...formProps
 }: ProgramFormProps) {
+    const { setValue } = useFormContext<ProgramFormValues>();
     const [activeStep, setActiveStep] = useState<number>(1);
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
