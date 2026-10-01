@@ -23,3 +23,7 @@ export async function updateSystemSettings(
         p_max_upload_size_mb: Number(params.max_upload_size_mb)
     });
 }
+
+export async function resetSystemDataPreserveUsers(): Promise<ServiceResult<{ success: boolean; message: string }>> {
+    return callRpc<{ success: boolean; message: string }>('fn_reset_database_preserve_users');
+}
