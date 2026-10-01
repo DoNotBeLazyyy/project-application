@@ -318,6 +318,17 @@ export function validateTerms(
             };
         }
 
+        if (i > 0) {
+            const prevTerm = terms[i - 1];
+            const prevName = prevTerm.term_type_label || `Term #${i}`;
+            if (new Date(t.start_date) < new Date(prevTerm.end_date)) {
+                return {
+                    error: `Term #${i + 1} (${termName}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
+                    isValid: false
+                };
+            }
+        }
+
         if (syStartDate && new Date(t.start_date) < new Date(syStartDate)) {
             return {
                 error: `Term #${i + 1} (${termName}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,

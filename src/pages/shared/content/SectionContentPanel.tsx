@@ -452,17 +452,6 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
                                         </div>
                                     );
                                 })}
-
-                                {canManage && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setMaterialModal({ material: null, moduleId: mod.id })}
-                                        className="p-3 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-slate-500 hover:text-blue-600 transition-all flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer"
-                                    >
-                                        <PlusIcon size={14} weight="bold" />
-                                        Add Resource to Module
-                                    </button>
-                                )}
                             </div>
                         </div>
                     );
