@@ -1,7 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { SlidersHorizontalIcon } from '@phosphor-icons/react';
+import { ScalesIcon, SlidersHorizontalIcon } from '@phosphor-icons/react';
 import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
+import TransmutationScaleModal from '@pages/faculty/sections/grading/TransmutationScaleModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
 import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
@@ -21,6 +22,7 @@ import {
     submitSectionGrades,
     updateGradingComponent
 } from '@services/faculty.service';
+import { getSectionById } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
 import {
     GradeCalculationFailure,

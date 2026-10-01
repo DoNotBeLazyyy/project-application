@@ -2,19 +2,16 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
-import TransmutationScaleModal from '@pages/faculty/sections/grading/TransmutationScaleModal';
 import {
     ArrowsClockwiseIcon,
     ChartPieSliceIcon,
     LockIcon,
     PencilSimpleIcon,
     PlusIcon,
-    ScalesIcon,
     TrashIcon
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
 import { formErrors } from '@utils/form.util';
-import { componentRailColor } from '@utils/period-allocation.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -66,7 +63,6 @@ export default function GradingComponentPanel({
 }: GradingComponentPanelProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [isTransmutationOpen, setIsTransmutationOpen] = useState(false);
     const [selectedId, setSelectedId] = useState('');
 
     const createMethods = useForm<GradingComponentFormValues>({ defaultValues: defaultFormValues });
@@ -104,7 +100,7 @@ export default function GradingComponentPanel({
     return (
         <div className="flex flex-col flex-shrink-0 gap-3.5 w-full md:w-80 h-full min-h-0">
             {/* Header & Add Button */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
                 <div className="flex flex-col">
                     <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                         Grading Components
@@ -123,56 +119,6 @@ export default function GradingComponentPanel({
                 >
                     Add
                 </CommonButton>
-            </div>
-
-            {/* Academic Year & Program Schema Alignment Card */}
-            <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-2xs">
-                <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                        Weight Allocation
-                    </span>
-                    <span
-                        className={`font-mono font-bold text-xs px-2 py-0.5 rounded-md ${
-                            totalWeight === 100
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                        }`}
-                    >
-                        {totalWeight}% / 100%
-                    </span>
-                </div>
-
-                {/* Multi-segment Allocation Rail matching Academic Year Schema */}
-                <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden flex">
-                    {components.map((comp, idx) => (
-                        <div
-                            key={comp.id}
-                            style={{
-                                width: `${comp.weight}%`,
-                                backgroundColor: componentRailColor(idx)
-                            }}
-                            title={`${comp.name}: ${comp.weight}%`}
-                            className="h-full transition-all"
-                        />
-                    ))}
-                </div>
-
-                {/* Schema Source & Transmutation Scale link */}
-                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800/80">
-                    <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                        Program Schema
-                    </span>
-
-                    <button
-                        type="button"
-                        onClick={() => setIsTransmutationOpen(true)}
-                        className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                        <ScalesIcon size={13} weight="bold" />
-                        Transmutation Scale
-                    </button>
-                </div>
             </div>
 
             {locked && (
@@ -208,67 +154,52 @@ export default function GradingComponentPanel({
                         </p>
                     </div>
                 ) : (
-                    components.map((component, idx) => {
-                        const railColor = componentRailColor(idx);
-                        return (
-                            <div
-                                key={component.id}
-                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
-                            >
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                        <div
-                                            className="w-3 h-3 rounded-full shrink-0"
-                                            style={{ backgroundColor: railColor }}
-                                        />
-                                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
-                                            {component.name}
-                                        </span>
-                                    </div>
-                                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
-                                        {component.weight}%
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
-                                    <span>
-                                        {periodWeight !== undefined
-                                            ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
-                                            : 'Period Component'}
-                                    </span>
-
-                                    {!locked && (
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                type="button"
-                                                title="Edit Component"
-                                                onClick={() => handleOpenUpdate(component)}
-                                                className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                                            >
-                                                <PencilSimpleIcon size={14} weight="bold" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                title="Delete Component"
-                                                onClick={() => onDelete(component.id)}
-                                                className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                                            >
-                                                <TrashIcon size={14} weight="bold" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                    components.map((component) => (
+                        <div
+                            key={component.id}
+                            className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
+                        >
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                                    {component.name}
+                                </span>
+                                <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                    {component.weight}%
+                                </span>
                             </div>
-                        );
-                    })
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
+                                <span className="text-[11px] text-slate-500">
+                                    {periodWeight !== undefined
+                                        ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
+                                        : 'Period Component'}
+                                </span>
+
+                                {!locked && (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            type="button"
+                                            title="Edit Component"
+                                            onClick={() => handleOpenUpdate(component)}
+                                            className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                                        >
+                                            <PencilSimpleIcon size={14} weight="bold" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            title="Delete Component"
+                                            onClick={() => onDelete(component.id)}
+                                            className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                        >
+                                            <TrashIcon size={14} weight="bold" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))
                 )}
             </div>
-
-            {/* Transmutation Scale Modal */}
-            <TransmutationScaleModal
-                open={isTransmutationOpen}
-                onClose={() => setIsTransmutationOpen(false)}
-            />
 
             {/* Create Component Modal */}
             <CommonModal

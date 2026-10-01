@@ -1,0 +1,9 @@
+student_number,term_label,section_codes,allow_conflict,override_prerequisites,conflict_reason
+"2026-0001","1st Semester - Academic Year 2027-2028","AB-POLSCI 3-POLS305|AB-POLSCI 3-POLS306|AB-POLSCI 3-POLS307|AB-POLSCI 3-POLS308","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0002","1st Semester - Academic Year 2027-2028","BSCS 3-CS303","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0003","1st Semester - Academic Year 2027-2028","BSN 3-NURS301LAB|BSN 3-NURS301LEC|BSN 3-NURS303","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0005","1st Semester - Academic Year 2027-2028","BSMLS 3-MEDT301LAB|BSMLS 3-MEDT301LEC|BSMLS 3-MEDT302LAB|BSMLS 3-MEDT302LEC|BSMLS 3-MEDT303LAB|BSMLS 3-MEDT303LEC","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0006","1st Semester - Academic Year 2027-2028","AB-POLSCI 3-POLS305|AB-POLSCI 3-POLS306|AB-POLSCI 3-POLS307|AB-POLSCI 3-POLS308","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0007","1st Semester - Academic Year 2027-2028","AB-PAG 3-POLS411","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0008","1st Semester - Academic Year 2027-2028","BSMLS 3-MEDT301LAB|BSMLS 3-MEDT301LEC","true","true","Year 3 1st Term mandatory section enrollment"
+"2026-0009","1st Semester - Academic Year 2027-2028","AB-PAG 3-POLS411","true","true","Year 3 1st Term mandatory section enrollment"
