@@ -10,6 +10,50 @@ export async function getMyProfile(): Promise<ServiceResult<MyProfile>> {
     return callRpc<MyProfile>('fn_get_my_profile');
 }
 
+export interface CreateStudentProfileParams {
+    program_id?: string | null;
+    year_level?: number;
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+    suffix?: string;
+    preferred_name?: string;
+    mobile_number?: string;
+    address_line1?: string;
+    address_line2?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
+    date_of_birth?: string;
+    gender?: string;
+    civil_status?: string;
+    nationality?: string;
+}
+
+export async function createMyStudentProfile(
+    params: CreateStudentProfileParams
+): Promise<ServiceResult<{ student_number: string }>> {
+    return callRpc<{ student_number: string }>('fn_create_my_student_profile', {
+        p_program_id: params.program_id || null,
+        p_year_level: params.year_level || 1,
+        p_first_name: params.first_name || null,
+        p_middle_name: params.middle_name || null,
+        p_last_name: params.last_name || null,
+        p_suffix: params.suffix || null,
+        p_preferred_name: params.preferred_name || null,
+        p_mobile_number: params.mobile_number || null,
+        p_address_line1: params.address_line1 || null,
+        p_address_line2: params.address_line2 || null,
+        p_city: params.city || null,
+        p_province: params.province || null,
+        p_postal_code: params.postal_code || null,
+        p_date_of_birth: params.date_of_birth || null,
+        p_gender: params.gender || null,
+        p_civil_status: params.civil_status || null,
+        p_nationality: params.nationality || null
+    });
+}
+
 export async function updateMyProfile(
     params: ProfileFormValues
 ): Promise<ServiceResult<null>> {

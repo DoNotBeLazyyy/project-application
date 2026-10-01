@@ -3,13 +3,14 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import { GraduationCapIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
-import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
+import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
 import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
 import ProfileDetailsForm from '@pages/shared/profile/ProfileDetailsForm';
-import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { initAuthSession } from '@services/auth.service';
+import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { formErrors } from '@utils/form.util';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -59,6 +60,7 @@ export default function ProfilePage() {
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
+    const [isStudentPromptOpen, setIsStudentPromptOpen] = useState(false);
 
     const profileMethods = useForm<ProfileFormValues>({ defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
@@ -187,6 +189,20 @@ export default function ProfilePage() {
                         )}
                         {Boolean(profile?.student || profile?.role_labels?.includes('Student')) && (
                             <div className="border border-(--mui-palette-divider) flex flex-col gap-4 p-4 rounded-lg bg-(--mui-palette-background-paper)">
+                                {!profile?.student && (
+                                    <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-center justify-between flex-wrap gap-2 text-xs text-(--mui-palette-text-primary)">
+                                        <span>You do not have a student profile yet. Fill in your student information to activate your academic record.</span>
+                                        <CommonButton
+                                            size="small"
+                                            variant="contained"
+                                            onClick={function() {
+                                                setIsStudentPromptOpen(true);
+                                            }}
+                                        >
+                                            Set Up Student Profile
+                                        </CommonButton>
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <GraduationCapIcon size={22} className="text-(--mui-palette-primary-main)" />
@@ -198,10 +214,14 @@ export default function ProfilePage() {
                                         size="small"
                                         variant="outlined"
                                         onClick={function() {
-                                            setIsProgramModalOpen(true);
+                                            if (!profile?.student) {
+                                                setIsStudentPromptOpen(true);
+                                            } else {
+                                                setIsProgramModalOpen(true);
+                                            }
                                         }}
                                     >
-                                        {profile?.student?.program_id ? 'Change Program' : 'Assign Program'}
+                                        {profile?.student ? (profile?.student?.program_id ? 'Change Program' : 'Assign Program') : 'Create Student Profile'}
                                     </CommonButton>
                                 </div>
 
@@ -209,7 +229,7 @@ export default function ProfilePage() {
                                     <div>
                                         <span className="text-xs text-(--mui-palette-text-secondary) block">Student Number</span>
                                         <span className="font-medium text-(--mui-palette-text-primary)">
-                                            {profile?.student?.student_number || '—'}
+                                            {profile?.student?.student_number || <span className="text-(--mui-palette-text-secondary) italic">System Generated upon creation</span>}
                                         </span>
                                     </div>
                                     <div>
@@ -289,6 +309,19 @@ export default function ProfilePage() {
                 open={isProgramModalOpen}
                 onClose={function() {
                     setIsProgramModalOpen(false);
+                }}
+                onSuccess={function() {
+                    setRefreshKey(function(previous) {
+                        return previous + 1;
+                    });
+                }}
+            />
+
+            <StudentProfilePromptModal
+                currentProfile={profile}
+                open={isStudentPromptOpen}
+                onClose={function() {
+                    setIsStudentPromptOpen(false);
                 }}
                 onSuccess={function() {
                     setRefreshKey(function(previous) {

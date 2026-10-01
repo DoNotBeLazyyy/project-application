@@ -1,14 +1,36 @@
 import RoleShell from '@components/layout/RoleShell';
+import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import {
     BooksIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon
 } from '@phosphor-icons/react';
+import { getMyProfile } from '@services/profile.service';
+import { MyProfile } from '@type/profile.type';
 import { SideBarSection } from '@type/sidebar.types';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function StudentLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const [profile, setProfile] = useState<MyProfile | null>(null);
+    const [isPromptOpen, setIsPromptOpen] = useState(false);
+
+    const loadProfile = useCallback(async function() {
+        const result = await getMyProfile();
+        if (result.data) {
+            setProfile(result.data);
+            if (!result.data.student) {
+                setIsPromptOpen(true);
+            } else {
+                setIsPromptOpen(false);
+            }
+        }
+    }, []);
+
+    useEffect(function() {
+        loadProfile();
+    }, [loadProfile]);
+
     const navSections = useMemo((): SideBarSection[] => [
         {
             sectionLabel: 'OVERVIEW',
@@ -75,10 +97,21 @@ export default function StudentLayout() {
     ], [pathname, navigate]);
 
     return (
-        <RoleShell
-            fallbackRoleLabel="Student"
-            navSections={navSections}
-            profilePath="/student/profile"
-        />
+        <>
+            <RoleShell
+                fallbackRoleLabel="Student"
+                navSections={navSections}
+                profilePath="/student/profile"
+            />
+            <StudentProfilePromptModal
+                currentProfile={profile}
+                isMandatory={!profile?.student}
+                open={isPromptOpen}
+                onClose={function() {
+                    setIsPromptOpen(false);
+                }}
+                onSuccess={loadProfile}
+            />
+        </>
     );
 }

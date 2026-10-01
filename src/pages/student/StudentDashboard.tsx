@@ -7,8 +7,9 @@ import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdentityCard';
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
+import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
-import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon, UserFocusIcon } from '@phosphor-icons/react';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getStudentInsight } from '@services/analytics.service';
 import { getMyProfile } from '@services/profile.service';
@@ -96,6 +97,7 @@ export default function StudentDashboard() {
     const [insight, setInsight] = useState<StudentInsight | null>(null);
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
     async function loadProfile() {
         const result = await getMyProfile();
@@ -128,6 +130,31 @@ export default function StudentDashboard() {
                 subtitle="Your classes, assessments, and grades at a glance."
                 title="Dashboard"
             />
+
+            {!profile?.student && (
+                <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                        <UserFocusIcon size={28} className="text-(--mui-palette-warning-main)" />
+                        <div>
+                            <p className="font-semibold text-(--mui-palette-text-primary) text-sm m-0">
+                                Student Profile Missing
+                            </p>
+                            <p className="text-(--mui-palette-text-secondary) text-xs m-0">
+                                You do not have an active student profile. Please fill in your student information to generate your student number and activate your account.
+                            </p>
+                        </div>
+                    </div>
+                    <CommonButton
+                        size="small"
+                        variant="contained"
+                        onClick={function() {
+                            setIsPromptModalOpen(true);
+                        }}
+                    >
+                        Set Up Student Profile
+                    </CommonButton>
+                </div>
+            )}
 
             {profile?.student && !profile.student.program_id && (
                 <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex items-center justify-between flex-wrap gap-3">
@@ -242,6 +269,15 @@ export default function StudentDashboard() {
                 open={isAssignModalOpen}
                 onClose={function() {
                     setIsAssignModalOpen(false);
+                }}
+                onSuccess={loadProfile}
+            />
+
+            <StudentProfilePromptModal
+                currentProfile={profile}
+                open={isPromptModalOpen}
+                onClose={function() {
+                    setIsPromptModalOpen(false);
                 }}
                 onSuccess={loadProfile}
             />
