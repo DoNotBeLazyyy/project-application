@@ -4,7 +4,7 @@ import { ProgramOption } from '@type/program/program.type';
 import { useEffect, useState } from 'react';
 
 export function useProgramOptions() {
-    const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
+    const [programOptions, setProgramOptions] = useState<(CommonSelectOption & { code?: string })[]>([]);
 
     useEffect(function() {
         async function fetchPrograms() {
@@ -14,7 +14,8 @@ export function useProgramOptions() {
                 setProgramOptions(
                     result.data.map((program: ProgramOption) => ({
                         label: program.label,
-                        value: program.id
+                        value: program.id,
+                        code: program.code
                     }))
                 );
             }

@@ -12,11 +12,11 @@ import CurriculumTermTable from '@pages/dean/curriculum-map-management/Curriculu
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import {
-    createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
+    bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
 import { getCourses, listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
-import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
+import { CurriculumMapBulkRow, CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -281,6 +281,27 @@ export default function CurriculumMapManagement({
     async function handleBulkImportCurriculum(
         rows: CurriculumMapCsvRow[]
     ): Promise<BulkImportResult> {
+        if (selectedProgramId) {
+            const programObj = programOptions.find((p) => p.value === selectedProgramId);
+            const programCode = (programObj as { code?: string })?.code || selectedProgramId;
+            const schoolYearObj = schoolYearOptions.find((s) => s.value === selectedSchoolYearId);
+            const schoolYearCode = schoolYearObj?.label || '';
+
+            const bulkEntries: CurriculumMapBulkRow[] = rows.map((row) => ({
+                program_code: programCode,
+                course_code: row.course_code,
+                year_level: String(row.year_level),
+                term_type_code: row.term_type_code || '',
+                school_year_code: schoolYearCode,
+                sequence: String(row.sequence || '1'),
+                is_elective: String(row.is_elective ?? 'false')
+            }));
+
+            const result = await bulkCreateCurriculumMap(bulkEntries);
+            fetchCurriculum();
+            return result;
+        }
+
         const [listRes, optionsRes] = await Promise.all([
             listCourses(1, 1000, '', [], null),
             getCourses()
@@ -321,6 +342,13 @@ export default function CurriculumMapManagement({
         const courses = Array.from(coursesMap.values());
         const provisionedEntries: CurriculumMapEntry[] = [];
         const errors: string[] = [];
+
+        const validRows: {
+            rowNum: number;
+            course: typeof courses[0];
+            formValues: CurriculumMapFormValues;
+            termTypeObj?: typeof termTypeOptions[0];
+        }[] = [];
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -374,24 +402,39 @@ export default function CurriculumMapManagement({
                 continue;
             }
 
-            const formValues: CurriculumMapFormValues = {
-                course_id: course.id,
-                year_level: String(row.year_level),
-                term_type_id: termTypeId,
-                sequence: row.sequence || '1',
-                is_elective: String(row.is_elective).toLowerCase() === 'true'
-            };
+            validRows.push({
+                rowNum,
+                course,
+                termTypeObj,
+                formValues: {
+                    course_id: course.id,
+                    year_level: String(row.year_level),
+                    term_type_id: termTypeId,
+                    sequence: row.sequence || '1',
+                    is_elective: String(row.is_elective).toLowerCase() === 'true'
+                }
+            });
+        }
 
-            if (selectedProgramId) {
-                const res = await createCurriculumMapEntry(
-                    selectedProgramId,
-                    formValues,
-                    selectedSchoolYearId || undefined
-                );
+        if (selectedProgramId) {
+            const results = await Promise.all(
+                validRows.map(async ({ rowNum, formValues }) => {
+                    const res = await createCurriculumMapEntry(
+                        selectedProgramId,
+                        formValues,
+                        selectedSchoolYearId || undefined
+                    );
+                    return { rowNum, res };
+                })
+            );
+
+            for (const { rowNum, res } of results) {
                 if (res.error) {
                     errors.push(`Row ${rowNum}: ${res.error.message}`);
                 }
-            } else {
+            }
+        } else {
+            for (const { course, termTypeObj, formValues } of validRows) {
                 const newEntry: CurriculumMapEntry = {
                     id: `temp-${Date.now()}-${Math.random()}`,
                     course_id: course.id,
@@ -400,14 +443,14 @@ export default function CurriculumMapManagement({
                     lecture_units: course.lecture_units ?? 0,
                     laboratory_units: course.laboratory_units ?? 0,
                     total_units: course.total_units ?? 0,
-                    year_level: Number(row.year_level),
-                    term_type_id: termTypeId,
+                    year_level: Number(formValues.year_level),
+                    term_type_id: formValues.term_type_id,
                     term_type_label: termTypeObj?.label ?? '',
                     term_type_code: termTypeObj?.label ?? '',
                     term_type_sequence: 1,
                     school_year_id: selectedSchoolYearId || null,
-                    sequence: Number(row.sequence || 1),
-                    is_elective: String(row.is_elective).toLowerCase() === 'true',
+                    sequence: Number(formValues.sequence || 1),
+                    is_elective: formValues.is_elective,
                     prerequisites: []
                 };
                 provisionedEntries.push(newEntry);
