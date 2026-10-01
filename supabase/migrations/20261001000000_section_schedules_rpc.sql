@@ -63,12 +63,12 @@ BEGIN
         'room',        s.room,
         'max_slots',   s.max_slots,
         'status',      s.status,
-        'is_active_academic_year', (
-            SELECT ay.is_active
+        'is_active_academic_year', COALESCE((
+            SELECT sy.is_active
             FROM public.terms t
-            JOIN public.academic_years ay ON ay.id = t.academic_year_id AND ay.deleted_at IS NULL
+            JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
             WHERE t.id = s.term_id AND t.deleted_at IS NULL
-        ),
+        ), false),
         'schedules', COALESCE((
             SELECT jsonb_agg(jsonb_build_object(
                 'id', sch.id,
