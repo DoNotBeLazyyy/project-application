@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { SlidersHorizontalIcon } from '@phosphor-icons/react';
+import { CalendarCheckIcon, CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
@@ -31,7 +31,7 @@ import {
     GradingPeriod
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.type';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 interface GradingTabProps {
     courseCode?: string;
@@ -269,6 +269,16 @@ export default function GradingTab({
         await fetchPeriodData();
     }
 
+    const currentPeriod = useMemo(() => {
+        return periods.find((p) => p.id === activePeriodId);
+    }, [periods, activePeriodId]);
+
+    const isEncodingOpen = useMemo(() => {
+        if (!currentPeriod?.grade_encoding_start_date || !currentPeriod?.grade_encoding_end_date) return true;
+        const todayStr = new Date().toISOString().split('T')[0];
+        return todayStr >= currentPeriod.grade_encoding_start_date && todayStr <= currentPeriod.grade_encoding_end_date;
+    }, [currentPeriod]);
+
     if (periods.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center p-8">
@@ -323,7 +333,6 @@ export default function GradingTab({
                         </button>
                     </div>
 
-
                     {overridableRules.length > 0 && (
                         <CommonButton
                             size="small"
@@ -337,13 +346,47 @@ export default function GradingTab({
                 </div>
             </div>
 
+            {/* Step 3 Period Schedule & Encoding Window Banner */}
+            {currentPeriod && (currentPeriod.major_exam_start_date || currentPeriod.grade_encoding_start_date) && (
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-4">
+                        {currentPeriod.major_exam_start_date && (
+                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">Major Examination Window:</span>
+                                <span>{currentPeriod.major_exam_start_date} {currentPeriod.major_exam_end_date ? `to ${currentPeriod.major_exam_end_date}` : ''}</span>
+                            </div>
+                        )}
+                        {currentPeriod.grade_encoding_start_date && (
+                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">Grade Encoding Range:</span>
+                                <span>{currentPeriod.grade_encoding_start_date} {currentPeriod.grade_encoding_end_date ? `to ${currentPeriod.grade_encoding_end_date}` : ''}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {currentPeriod.grade_encoding_start_date && (
+                        <div className="flex items-center gap-1.5">
+                            {isEncodingOpen ? (
+                                <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] flex items-center gap-1">
+                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Encoding Open
+                                </span>
+                            ) : (
+                                <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 font-semibold text-[11px] flex items-center gap-1">
+                                    <WarningCircleIcon className="w-3.5 h-3.5" /> Outside Encoding Window
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Split layout: Components & Grade Sheet */}
             <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
                 {/* Grading Components Panel */}
                 <div className={`h-full min-h-0 ${mobileGradingView === 'sheet' ? 'hidden md:flex' : 'flex'}`}>
                     <GradingComponentPanel
                         components={components}
-                        locked={isLocked}
+                        locked={isLocked || !isEncodingOpen}
                         periodName={periods.find((p) => p.id === activePeriodId)?.name}
                         periodWeight={periods.find((p) => p.id === activePeriodId)?.weight}
                         onBatchSave={handleBatchSave}

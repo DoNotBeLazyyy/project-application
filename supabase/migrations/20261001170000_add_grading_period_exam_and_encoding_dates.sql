@@ -601,3 +601,38 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.fn_save_academic_year_calendar(uuid, text, text, date, date, boolean, jsonb, jsonb, jsonb, smallint, text, jsonb) TO authenticated, anon, service_role;
+
+-- Update fn_list_grading_periods_by_section to include major_exam and grade_encoding dates
+CREATE OR REPLACE FUNCTION public.fn_list_grading_periods_by_section(p_section_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $$
+BEGIN
+    PERFORM public.fn_assert_section_staff(p_section_id);
+
+    RETURN (
+        SELECT COALESCE(jsonb_agg(
+            jsonb_build_object(
+                'id',                        gp.id,
+                'name',                      gp.name,
+                'sequence',                  gp.sequence,
+                'weight',                    gp.weight,
+                'start_date',                gp.start_date,
+                'end_date',                  gp.end_date,
+                'major_exam_start_date',     gp.major_exam_start_date,
+                'major_exam_end_date',       gp.major_exam_end_date,
+                'grade_encoding_start_date', gp.grade_encoding_start_date,
+                'grade_encoding_end_date',   gp.grade_encoding_end_date
+            )
+            ORDER BY gp.sequence ASC
+        ), '[]'::JSONB)
+        FROM public.grading_periods gp
+        INNER JOIN public.sections s ON s.term_id = gp.term_id
+        WHERE s.id = p_section_id
+        AND s.deleted_at IS NULL
+        AND gp.deleted_at IS NULL
+    );
+END;
+$$;

@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -421,16 +422,11 @@ export default function Step2TermsConfig({
                                         <span>Term Start Date <span className="text-red-500">*</span></span>
                                         <CommonInfoTooltip content="Official date when classes begin for this term." size={14} />
                                     </label>
-                                    <input
-                                        className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                            hasPrecedingConflict
-                                                ? 'border-amber-500 focus:ring-amber-500'
-                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                        }`}
+                                    <CommonDatePicker
                                         disabled={disabled}
-                                        type="date"
+                                        error={hasPrecedingConflict}
                                         value={currentTerm.start_date || ''}
-                                        onChange={(e) => handleUpdateTermDate(index, 'start_date', e.target.value)}
+                                        onChange={(val) => handleUpdateTermDate(index, 'start_date', val)}
                                     />
                                 </div>
 
@@ -440,16 +436,11 @@ export default function Step2TermsConfig({
                                         <span>Term End Date <span className="text-red-500">*</span></span>
                                         <CommonInfoTooltip content="Official date when classes conclude for this term." size={14} />
                                     </label>
-                                    <input
-                                        className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                            hasDateOrderError
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                        }`}
+                                    <CommonDatePicker
                                         disabled={disabled}
-                                        type="date"
+                                        error={hasDateOrderError}
                                         value={currentTerm.end_date || ''}
-                                        onChange={(e) => handleUpdateTermDate(index, 'end_date', e.target.value)}
+                                        onChange={(val) => handleUpdateTermDate(index, 'end_date', val)}
                                     />
                                 </div>
 
@@ -482,15 +473,13 @@ export default function Step2TermsConfig({
                                         <span>Enrollment Opens</span>
                                         <CommonInfoTooltip content="Date when student course registration and online enrollment opens." size={14} />
                                     </label>
-                                    <input
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonDatePicker
                                         disabled={disabled}
-                                        type="date"
                                         value={currentTerm.enrollment_start_date || ''}
-                                        onChange={(e) => {
+                                        onChange={(val) => {
                                             update(index, {
                                                 ...currentTerm,
-                                                enrollment_start_date: e.target.value
+                                                enrollment_start_date: val
                                             });
                                         }}
                                     />
@@ -502,15 +491,13 @@ export default function Step2TermsConfig({
                                         <span>Enrollment Closes</span>
                                         <CommonInfoTooltip content="Final date for student course registration, late enrollment, and add-drop requests." size={14} />
                                     </label>
-                                    <input
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonDatePicker
                                         disabled={disabled}
-                                        type="date"
                                         value={currentTerm.enrollment_end_date || ''}
-                                        onChange={(e) => {
+                                        onChange={(val) => {
                                             update(index, {
                                                 ...currentTerm,
-                                                enrollment_end_date: e.target.value
+                                                enrollment_end_date: val
                                             });
                                         }}
                                     />
@@ -522,15 +509,13 @@ export default function Step2TermsConfig({
                                         <span>Grading Deadline</span>
                                         <CommonInfoTooltip content="Final deadline for faculty to encode and submit final grades." size={14} />
                                     </label>
-                                    <input
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonDatePicker
                                         disabled={disabled}
-                                        type="date"
                                         value={currentTerm.grading_deadline || ''}
-                                        onChange={(e) => {
+                                        onChange={(val) => {
                                             update(index, {
                                                 ...currentTerm,
-                                                grading_deadline: e.target.value
+                                                grading_deadline: val
                                             });
                                         }}
                                     />

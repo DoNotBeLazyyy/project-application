@@ -1,5 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { AcademicThreshold, AcademicThresholdUpdate } from '@type/academic-threshold.type';
+import { AcademicStandingEvaluation, AcademicThreshold, AcademicThresholdUpdate } from '@type/academic-threshold.type';
 import { ServiceResult } from '@type/service.type';
 
 export async function getAcademicThresholds(): Promise<ServiceResult<AcademicThreshold[]>> {
@@ -27,5 +27,15 @@ export async function updateAcademicThresholds(
             scholarship_discount_pct: t.scholarship_discount_pct,
             sort_order: t.sort_order
         }))
+    });
+}
+
+export async function evaluateStudentAcademicStanding(
+    studentId: string,
+    schoolYearId?: string
+): Promise<ServiceResult<AcademicStandingEvaluation>> {
+    return callRpc<AcademicStandingEvaluation>('fn_evaluate_student_academic_standing', {
+        p_student_id: studentId,
+        p_school_year_id: schoolYearId || null
     });
 }

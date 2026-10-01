@@ -16,6 +16,145 @@ export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | '
 export type ValidCommonDatePickerProps<T extends FieldValues = FieldValues> =
     CommonDatePickerProps & UseControllerProps<T>;
 
+export interface StandaloneCommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
+    value?: string | null;
+    onChange: (dateStr: string) => void;
+    error?: boolean;
+    helperText?: string;
+    fullWidth?: boolean;
+    hasHelper?: boolean;
+    disabled?: boolean;
+    readOnly?: boolean;
+}
+
+export function CommonDatePicker({
+    value,
+    onChange,
+    error: errorProp,
+    hasHelper = false,
+    helperText: helperTextProp,
+    fullWidth = true,
+    disabled,
+    readOnly,
+    ...props
+}: StandaloneCommonDatePickerProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const isClosing = useRef(false);
+    const resolvedValue = value
+        ? DateTime.fromISO(value)
+        : null;
+
+    const isNonInteractive = Boolean(disabled || readOnly);
+
+    function handleChange(date: DateTime | null) {
+        if (isNonInteractive) {
+            return;
+        }
+        onChange(
+            date
+                ? date.toISODate() || ''
+                : ''
+        );
+    }
+
+    function handleClose() {
+        isClosing.current = true;
+        setIsOpen(false);
+        setTimeout(() => {
+            isClosing.current = false;
+        }, 300);
+    }
+
+    function handleOpen() {
+        if (isNonInteractive) {
+            return;
+        }
+        setIsOpen(true);
+    }
+
+    function handleFocus() {
+        if (isNonInteractive) {
+            return;
+        }
+        if (!isOpen && !isClosing.current) {
+            setIsOpen(true);
+        }
+    }
+
+    const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
+        ? props.slotProps.textField
+        : undefined;
+    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
+
+    return (
+        <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <DatePicker
+                {...props}
+                disabled={disabled}
+                open={isNonInteractive ? false : isOpen}
+                readOnly={readOnly}
+                slotProps={{
+                    ...props.slotProps,
+                    openPickerButton: {
+                        disabled: isNonInteractive,
+                        ...(typeof props.slotProps?.openPickerButton === 'object'
+                            ? props.slotProps.openPickerButton
+                            : {})
+                    },
+                    textField: {
+                        className: classMerge(
+                            externalClassName,
+                            isNonInteractive && 'common_input_readonly'
+                        ),
+                        disabled,
+                        error: errorProp,
+                        fullWidth,
+                        helperText: hasHelper ? helperTextProp : undefined,
+                        size: 'small',
+                        variant: 'outlined' as const,
+                        ...restTextFieldProps,
+                        onFocus: () => {
+                            if (isNonInteractive) {
+                                return;
+                            }
+                            handleFocus();
+                        },
+                        sx: [
+                            ...(disabled
+                                ? [{
+                                    pointerEvents: 'none' as const
+                                }]
+                                : []),
+                            ...(readOnly
+                                ? [{
+                                    '& .MuiInputBase-root': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputBase-input': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputAdornment-root': {
+                                        pointerEvents: 'none' as const
+                                    }
+                                }]
+                                : []),
+                            ...(externalTextFieldProps?.sx
+                                ? (Array.isArray(externalTextFieldProps.sx)
+                                    ? externalTextFieldProps.sx
+                                    : [externalTextFieldProps.sx])
+                                : [])
+                        ]
+                    }
+                }}
+                value={resolvedValue}
+                onChange={handleChange}
+                onClose={handleClose}
+                onOpen={handleOpen}
+            />
+        </LocalizationProvider>
+    );
+}
+
 export default function ValidCommonDatePicker<T extends FieldValues = FieldValues>({
     control,
     name,

@@ -197,10 +197,8 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
 
             {/* Write Modal: Create Section Announcement */}
             <CommonModal
-                dialogProps={{
-                    fullWidth: true,
-                    maxWidth: 'sm'
-                }}
+                fullWidth
+                maxWidth="sm"
                 open={isCreateOpen}
                 onClose={resetComposer}
             >

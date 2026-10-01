@@ -1,3 +1,4 @@
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
@@ -360,12 +361,9 @@ export default function StudentProfileVerificationModal({
                                                         onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
                                                     />
                                                 ) : field === 'date_of_birth' ? (
-                                                    <CommonInput
-                                                        fullWidth
-                                                        size="small"
-                                                        type="date"
+                                                    <CommonDatePicker
                                                         value={editVal}
-                                                        onChange={(e) => handleFieldChange('date_of_birth', e.target.value)}
+                                                        onChange={(val) => handleFieldChange('date_of_birth', val)}
                                                     />
                                                 ) : (
                                                     <CommonInput

@@ -1,3 +1,4 @@
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -277,13 +278,11 @@ export default function Step4HolidaysConfig({
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             Start Date
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                        <CommonDatePicker
                                             disabled={disabled}
-                                            type="date"
                                             value={current.start_date || ''}
-                                            onChange={(e) => {
-                                                update(idx, { ...current, start_date: e.target.value });
+                                            onChange={(val) => {
+                                                update(idx, { ...current, start_date: val });
                                             }}
                                         />
                                     </div>
@@ -292,13 +291,11 @@ export default function Step4HolidaysConfig({
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             End Date
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                        <CommonDatePicker
                                             disabled={disabled}
-                                            type="date"
                                             value={current.end_date || ''}
-                                            onChange={(e) => {
-                                                update(idx, { ...current, end_date: e.target.value });
+                                            onChange={(val) => {
+                                                update(idx, { ...current, end_date: val });
                                             }}
                                         />
                                     </div>

@@ -244,8 +244,8 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             rowMapRef.current.set(r.id, r);
         }
 
-        const activeSortField = sort[0]?.field || 'date';
-        const activeSortOrder = sort[0]?.order || 'desc';
+        const activeSortField = sort[0]?.sortKey || (sort[0] as unknown as Record<string, string>)?.field || 'date';
+        const activeSortOrder = sort[0] ? (sort[0].isAsc ? 'asc' : 'desc') : 'desc';
 
         combined.sort((a, b) => {
             let valA: string | number = '';
@@ -344,7 +344,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 controls={{
                     tableButtonsProps: {
                         createButtonProps: {
-                            label: 'Create Post',
+                            children: 'Create Post',
                             onClick: function() {
                                 navigate(`${basePath}/new`);
                             }

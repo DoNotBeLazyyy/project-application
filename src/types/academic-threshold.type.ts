@@ -42,3 +42,13 @@ export interface AcademicThresholdFilterValues {
     category: 'All' | AcademicThresholdCategory;
     is_active: 'All' | 'Active' | 'Inactive';
 }
+
+export interface AcademicStandingEvaluation {
+    student_id: string;
+    school_year_id?: string;
+    cumulative_gwa: number;
+    failing_count: number;
+    academic_standing: string;
+    qualified_honors: { code: string; label: string; min_gwa: number; max_gwa: number }[];
+    qualified_scholarships: { code: string; label: string; discount_pct: number | null }[];
+}

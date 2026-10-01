@@ -237,10 +237,8 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
             {/* Read Modal: DiscussionThreadModal */}
             <CommonModal
-                dialogProps={{
-                    fullWidth: true,
-                    maxWidth: 'md'
-                }}
+                fullWidth
+                maxWidth="md"
                 open={Boolean(selectedThreadId)}
                 onClose={() => {
                     setSelectedThreadId(null);
@@ -266,10 +264,8 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
 
             {/* Write Modal: Create Discussion */}
             <CommonModal
-                dialogProps={{
-                    fullWidth: true,
-                    maxWidth: 'sm'
-                }}
+                fullWidth
+                maxWidth="sm"
                 open={isCreateOpen}
                 onClose={resetComposer}
             >

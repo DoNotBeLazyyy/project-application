@@ -31,12 +31,21 @@ export interface ProgramFormValues {
         components?: { name: string; weight: number }[];
     }[];
     curriculum_entries?: {
+        id?: string;
         course_id: string;
+        course_code?: string;
         year_level: number;
         term_type_id: string;
+        term_type_code?: string;
+        term_type_label?: string;
         school_year_id?: string;
         sequence?: number;
         is_elective?: boolean;
+        lecture_units?: number;
+        laboratory_units?: number;
+        units?: number;
+        total_units?: number;
+        type_units?: string;
     }[];
     pending_deleted_curriculum_ids?: string[];
 }

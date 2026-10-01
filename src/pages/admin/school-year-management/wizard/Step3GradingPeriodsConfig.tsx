@@ -1,16 +1,21 @@
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     BroomIcon,
     CheckCircleIcon,
+    ClipboardTextIcon,
+    CopySimpleIcon,
     ListPlusIcon,
     PlusIcon,
     ScalesIcon,
+    ShareNetworkIcon,
     TrashIcon,
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
+import { useState } from 'react';
 import { Control, useWatch } from 'react-hook-form';
 import {
     DEFAULT_GRADING_COMPONENTS,
@@ -32,6 +37,55 @@ export default function Step3GradingPeriodsConfig({
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
+    const [copiedComponents, setCopiedComponents] = useState<WizardGradingPeriodComponentItem[] | null>(null);
+    const [copiedSourceLabel, setCopiedSourceLabel] = useState<string>('');
+
+    function handleCopyBreakdown(components: WizardGradingPeriodComponentItem[], periodName: string, termName: string) {
+        if (!components || components.length === 0) {
+            useToastStore.getState().showToast('No component breakdown declared to copy.', 'warning');
+            return;
+        }
+        const cloned = components.map((c, i) => ({
+            ...c,
+            id: `comp_copy_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
+        }));
+        setCopiedComponents(cloned);
+        const label = `${termName} - ${periodName}`;
+        setCopiedSourceLabel(label);
+        useToastStore.getState().showToast(`Copied breakdown from "${label}". You can now paste it into any grading period.`, 'info');
+    }
+
+    function handlePasteBreakdown(termIndex: number, periodIndex: number) {
+        if (!copiedComponents) return;
+        const cloned = copiedComponents.map((c, i) => ({
+            ...c,
+            id: `comp_paste_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
+        }));
+        handleUpdatePeriod(termIndex, periodIndex, { components: cloned });
+        useToastStore.getState().showToast('Component breakdown pasted successfully.', 'success');
+    }
+
+    function handleApplyBreakdownToAllTermPeriods(termIndex: number, components: WizardGradingPeriodComponentItem[]) {
+        const targetTerm = terms[termIndex];
+        if (!targetTerm || !targetTerm.grading_periods) return;
+
+        const updatedPeriods = targetTerm.grading_periods.map((period) => ({
+            ...period,
+            components: components.map((c, i) => ({
+                ...c,
+                id: `comp_all_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
+            }))
+        }));
+
+        const updatedTerms = [...terms];
+        updatedTerms[termIndex] = {
+            ...targetTerm,
+            grading_periods: updatedPeriods
+        };
+
+        onChangeTerms(updatedTerms);
+        useToastStore.getState().showToast('Component breakdown applied to all grading periods in this term.', 'success');
+    }
 
     // Clear all grading periods in a term down to 1 blank period
     function handleClearTermPeriods(termIndex: number) {
@@ -598,17 +652,11 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Period Start Date <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
                                                     </label>
-                                                    <input
-                                                        required
-                                                        className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                            hasPrecedingConflict
-                                                                ? 'border-amber-500 focus:ring-amber-500'
-                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                        }`}
+                                                    <CommonDatePicker
                                                         disabled={disabled}
-                                                        type="date"
+                                                        error={hasPrecedingConflict}
                                                         value={period.start_date || ''}
-                                                        onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', e.target.value)}
+                                                        onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', val)}
                                                     />
                                                     {hasPrecedingConflict && (
                                                         <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
@@ -622,17 +670,11 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Period End Date <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
                                                     </label>
-                                                    <input
-                                                        required
-                                                        className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                            hasDateOrderError
-                                                                ? 'border-red-500 focus:ring-red-500'
-                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                        }`}
+                                                    <CommonDatePicker
                                                         disabled={disabled}
-                                                        type="date"
+                                                        error={hasDateOrderError}
                                                         value={period.end_date || ''}
-                                                        onChange={(e) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', e.target.value)}
+                                                        onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', val)}
                                                     />
                                                     {hasDateOrderError && (
                                                         <p className="text-[10px] text-red-500 font-semibold mt-0.5">
@@ -653,22 +695,18 @@ export default function Step3GradingPeriodsConfig({
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Exam Start</span>
-                                                            <input
-                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                            <CommonDatePicker
                                                                 disabled={disabled}
-                                                                type="date"
                                                                 value={period.major_exam_start_date || ''}
-                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { major_exam_start_date: e.target.value })}
+                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_start_date: val })}
                                                             />
                                                         </div>
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Exam End</span>
-                                                            <input
-                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                            <CommonDatePicker
                                                                 disabled={disabled}
-                                                                type="date"
                                                                 value={period.major_exam_end_date || ''}
-                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { major_exam_end_date: e.target.value })}
+                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_end_date: val })}
                                                             />
                                                         </div>
                                                     </div>
@@ -683,22 +721,18 @@ export default function Step3GradingPeriodsConfig({
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Encoding Start</span>
-                                                            <input
-                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                            <CommonDatePicker
                                                                 disabled={disabled}
-                                                                type="date"
                                                                 value={period.grade_encoding_start_date || ''}
-                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_start_date: e.target.value })}
+                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_start_date: val })}
                                                             />
                                                         </div>
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Encoding End</span>
-                                                            <input
-                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                            <CommonDatePicker
                                                                 disabled={disabled}
-                                                                type="date"
                                                                 value={period.grade_encoding_end_date || ''}
-                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_end_date: e.target.value })}
+                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_end_date: val })}
                                                             />
                                                         </div>
                                                     </div>
@@ -733,7 +767,43 @@ export default function Step3GradingPeriodsConfig({
                                                         </span>
 
                                                         {!disabled && (
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                                                {components.length > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
+                                                                        onClick={() => handleCopyBreakdown(components, period.name || `Period #${pIdx + 1}`, term.term_type_label || `Term #${tIdx + 1}`)}
+                                                                        title="Copy this component breakdown"
+                                                                    >
+                                                                        <CopySimpleIcon className="w-3 h-3" />
+                                                                        Copy Breakdown
+                                                                    </button>
+                                                                )}
+
+                                                                {copiedComponents && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-semibold transition-colors flex items-center gap-1"
+                                                                        onClick={() => handlePasteBreakdown(tIdx, pIdx)}
+                                                                        title={`Paste copied breakdown from ${copiedSourceLabel}`}
+                                                                    >
+                                                                        <ClipboardTextIcon className="w-3 h-3" />
+                                                                        Paste Breakdown
+                                                                    </button>
+                                                                )}
+
+                                                                {components.length > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-[11px] px-2 py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1"
+                                                                        onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
+                                                                        title="Apply this breakdown to all grading periods in this term"
+                                                                    >
+                                                                        <ShareNetworkIcon className="w-3 h-3" />
+                                                                        Apply to All
+                                                                    </button>
+                                                                )}
+
                                                                 <button
                                                                     type="button"
                                                                     className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors"

@@ -175,6 +175,10 @@ export interface GradingPeriod {
     weight: number;
     start_date: string | null;
     end_date: string | null;
+    major_exam_start_date?: string | null;
+    major_exam_end_date?: string | null;
+    grade_encoding_start_date?: string | null;
+    grade_encoding_end_date?: string | null;
 }
 
 export interface GradingComponent {
@@ -185,7 +189,7 @@ export interface GradingComponent {
 
 export interface GradingComponentFormValues {
     name: string;
-    weight: string;
+    weight: string | number;
 }
 
 export type GradeStatus = 'Draft' | 'Submitted' | 'Approved' | 'Released';

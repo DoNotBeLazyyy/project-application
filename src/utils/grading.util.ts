@@ -227,9 +227,14 @@ export function calculateTermFinalGrade(
     const transmutedFinalGrade = transmutationLadder
         ? transmuteGrade(rawFinalGrade, transmutationLadder)
         : null;
-    const isPassing = transmutedFinalGrade !== null
-        ? transmutedFinalGrade <= 3.00
-        : rawFinalGrade >= 75;
+    const isPassing = (function() {
+        if (transmutationLadder && transmutedFinalGrade !== null) {
+            const matchingRung = transmutationLadder.find((r) => r.transmuted_grade !== null && r.transmuted_grade !== undefined ? Number(r.transmuted_grade) === Number(transmutedFinalGrade) : r.label === String(transmutedFinalGrade));
+            if (matchingRung && typeof matchingRung.is_passing === 'boolean') return matchingRung.is_passing;
+            return transmutedFinalGrade <= 3.00;
+        }
+        return transmutedFinalGrade !== null ? transmutedFinalGrade <= 3.00 : rawFinalGrade >= 75;
+    })();
 
     return {
         rawFinalGrade,

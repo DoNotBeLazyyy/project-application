@@ -1,3 +1,4 @@
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
@@ -198,15 +199,16 @@ export default function StudentProfilePromptModal({
                         onChange={(e) => setMobileNumber(e.target.value)}
                     />
 
-                    <CommonInput
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Date of Birth (Optional)"
-                        size="small"
-                        type="date"
-                        value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                    />
+                    <div>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            <span>Date of Birth (Optional)</span>
+                        </label>
+                        <CommonDatePicker
+                            disabled={isSubmitting}
+                            value={dateOfBirth}
+                            onChange={(val) => setDateOfBirth(val)}
+                        />
+                    </div>
 
                     <CommonSelect
                         disabled={isSubmitting}

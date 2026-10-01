@@ -530,11 +530,15 @@ export default function CommonTableCard<T extends FieldValues>({
                                     showViewToggle={showViewToggle}
                                     tableButtonsProps={{
                                         ...controls?.tableButtonsProps,
-                                        createButtonProps: (createModalProps || onCreate)
+                                        createButtonProps: (createModalProps || onCreate || controls?.tableButtonsProps?.createButtonProps?.onClick)
                                             ? {
                                                 ...controls?.tableButtonsProps?.createButtonProps,
                                                 onClick: function() {
-                                                    onCreate?.();
+                                                    if (controls?.tableButtonsProps?.createButtonProps?.onClick) {
+                                                        controls.tableButtonsProps.createButtonProps.onClick();
+                                                    } else {
+                                                        onCreate?.();
+                                                    }
                                                 }
                                             }
                                             : controls?.tableButtonsProps?.createButtonProps,
@@ -584,17 +588,21 @@ export default function CommonTableCard<T extends FieldValues>({
                                     Clear Search
                                 </CommonButton>
                             )
-                            : (createModalProps || onCreate
+                            : ((onCreate || createModalProps || controls?.tableButtonsProps?.createButtonProps?.onClick)
                                 ? (
                                     <CommonButton
                                         color="primary"
                                         size="small"
                                         variant="contained"
                                         onClick={function() {
-                                            onCreate?.();
+                                            if (controls?.tableButtonsProps?.createButtonProps?.onClick) {
+                                                controls.tableButtonsProps.createButtonProps.onClick();
+                                            } else {
+                                                onCreate?.();
+                                            }
                                         }}
                                     >
-                                        Add New Record
+                                        {controls?.tableButtonsProps?.createButtonProps?.children || 'Add New Record'}
                                     </CommonButton>
                                 )
                                 : undefined)}

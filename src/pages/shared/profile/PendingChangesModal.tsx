@@ -88,7 +88,7 @@ export default function PendingChangesModal({
                                     <div key={key} className="grid grid-cols-12 px-3 py-2.5 items-center bg-(--mui-palette-warning-light)/20">
                                         <div className="col-span-4 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5">
                                             <span>{FIELD_LABELS[key] || key}</span>
-                                            <CommonChip label="Changed" size="small" variant="light" color="warning" />
+                                            <CommonChip label="Changed" size="small" variant="light" />
                                         </div>
                                         <div className="col-span-4 text-(--mui-palette-text-secondary) break-words pr-2">
                                             {currVal}

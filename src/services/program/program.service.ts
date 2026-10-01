@@ -1,4 +1,4 @@
-import { bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry } from '@services/curriculum-map.service';
+import { bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, updateCurriculumMapEntry } from '@services/curriculum-map.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CurriculumMapBulkRow } from '@type/curriculum-map.type';
@@ -82,7 +82,7 @@ export async function createProgram(
             if (params.curriculum_entries && params.curriculum_entries.length > 0) {
                 const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
                     program_code: params.code,
-                    course_code: entry.course_code,
+                    course_code: entry.course_code || '',
                     year_level: String(entry.year_level),
                     term_type_code: entry.term_type_code || entry.term_type_label || '',
                     school_year_code: '',
@@ -130,11 +130,11 @@ export async function updateProgram(
 
         // STEP 2: Bulk create all new/imported entries in ONE SINGLE API call AFTER deletion completes
         if (params.curriculum_entries && params.curriculum_entries.length > 0) {
-            const tempEntries = params.curriculum_entries.filter((entry) => entry.id.startsWith('temp-'));
+            const tempEntries = params.curriculum_entries.filter((entry) => entry.id && entry.id.startsWith('temp-'));
             if (tempEntries.length > 0) {
                 const bulkEntries: CurriculumMapBulkRow[] = tempEntries.map((entry) => ({
                     program_code: params.code,
-                    course_code: entry.course_code,
+                    course_code: entry.course_code || '',
                     year_level: String(entry.year_level),
                     term_type_code: entry.term_type_code || entry.term_type_label || '',
                     school_year_code: '',
@@ -146,12 +146,12 @@ export async function updateProgram(
                 await bulkCreateCurriculumMap(bulkEntries);
             }
 
-            const existingEntries = params.curriculum_entries.filter((entry) => !entry.id.startsWith('temp-'));
+            const existingEntries = params.curriculum_entries.filter((entry) => entry.id && !entry.id.startsWith('temp-'));
             if (existingEntries.length > 0) {
                 await Promise.allSettled(
                     existingEntries.map((entry) =>
                         updateCurriculumMapEntry(
-                            entry.id,
+                            entry.id || '',
                             {
                                 course_id: entry.course_id,
                                 is_elective: Boolean(entry.is_elective),
@@ -161,7 +161,7 @@ export async function updateProgram(
                                 lecture_units: String(entry.lecture_units ?? 0),
                                 laboratory_units: String(entry.laboratory_units ?? 0),
                                 units: String(entry.units ?? entry.total_units ?? 0),
-                                type_units: entry.type_units
+                                type_units: typeof entry.type_units === 'string' ? JSON.parse(entry.type_units) : entry.type_units
                             },
                             entry.school_year_id || params.school_year_id
                         )

@@ -1,8 +1,12 @@
 export interface TransmutationRow {
     id?: string;
-    min_percentage: string | number;
-    max_percentage?: string | number;
-    transmuted_grade: string | number;
+    label?: string;
+    is_passing?: boolean;
+    is_conditional?: boolean;
+    special_code?: string | null;
+    min_percentage: string | number | null;
+    max_percentage?: string | number | null;
+    transmuted_grade: string | number | null;
     description: string;
 }
 

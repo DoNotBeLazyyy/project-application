@@ -43,6 +43,8 @@ export interface SectionDetails {
     courseId: string;
     courseCode: string;
     termId: string;
+    enrollmentStartDate?: string | null;
+    enrollmentEndDate?: string | null;
     status: SectionStatus;
     maxSlots: number;
     currentSlotsTaken: number;
@@ -57,7 +59,7 @@ export interface SectionDetails {
 
 export interface EnrollmentClearanceOutcome {
     canEnroll: boolean;
-    errorCode?: 'STUDENT_NOT_FOUND' | 'STUDENT_INACTIVE' | 'NO_PROGRAM' | 'SECTION_UNAVAILABLE' | 'NOT_IN_CURRICULUM' | 'ALREADY_TAKEN' | 'SECTION_FULL' | 'PREREQUISITE_UNMET' | 'SCHEDULE_CONFLICT';
+    errorCode?: 'STUDENT_NOT_FOUND' | 'STUDENT_INACTIVE' | 'NO_PROGRAM' | 'SECTION_UNAVAILABLE' | 'ENROLLMENT_WINDOW_CLOSED' | 'NOT_IN_CURRICULUM' | 'ALREADY_TAKEN' | 'SECTION_FULL' | 'PREREQUISITE_UNMET' | 'SCHEDULE_CONFLICT';
     message: string;
     unmetPrerequisites?: string[];
     conflictingSections?: string[];
@@ -135,6 +137,25 @@ export function evaluateEnrollmentClearance(
             errorCode: 'SECTION_UNAVAILABLE',
             message: `${section.sectionCode} is ${section.status.toLowerCase()} and cannot accept enrollments.`
         };
+    }
+
+    // 3.5 Term Enrollment Window Check
+    if (section.enrollmentStartDate || section.enrollmentEndDate) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (section.enrollmentStartDate && todayStr < section.enrollmentStartDate && !options?.overridePrerequisites) {
+            return {
+                canEnroll: false,
+                errorCode: 'ENROLLMENT_WINDOW_CLOSED',
+                message: `Enrollment window for ${section.sectionCode} has not opened yet. Starts on ${section.enrollmentStartDate}.`
+            };
+        }
+        if (section.enrollmentEndDate && todayStr > section.enrollmentEndDate && !options?.overridePrerequisites) {
+            return {
+                canEnroll: false,
+                errorCode: 'ENROLLMENT_WINDOW_CLOSED',
+                message: `Enrollment window for ${section.sectionCode} closed on ${section.enrollmentEndDate}.`
+            };
+        }
     }
 
     // 4. Curriculum Alignment Check
