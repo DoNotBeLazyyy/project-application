@@ -294,7 +294,6 @@ export default function CourseManagement() {
                             control={updateMethods.control}
                             excludeCourseId={selectedId ?? undefined}
                             id={UPDATE_FORM_ID}
-                            isCodeDisabled
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError

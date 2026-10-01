@@ -25,7 +25,7 @@ export async function listSections(
     sort: SortStringDto[],
     filters: SectionFilterValues | null
 ): Promise<ServiceResult<CommonListResDto<SectionListRow>>> {
-    return callRpc<CommonListResDto<SectionListRow>>('fn_list_sections_json', {
+    return callRpc<CommonListResDto<SectionListRow>>('fn_list_sections_json_dummy', {
         p_page: page,
         p_search: search || null,
         p_size: size,

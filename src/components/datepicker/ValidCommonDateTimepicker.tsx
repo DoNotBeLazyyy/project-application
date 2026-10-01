@@ -77,8 +77,10 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         }
     }
 
-    const externalTextFieldProps = typeof props.slotProps?.textField === 'object' ? props.slotProps.textField : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
+        ? props.slotProps.textField
+        : undefined;
+    const { className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
 
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
@@ -87,13 +89,17 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                 {...props}
                 disabled={disabled}
                 inputRef={ref}
-                open={isNonInteractive ? false : isOpen}
+                open={isNonInteractive
+                    ? false
+                    : isOpen}
                 readOnly={readOnly}
                 slotProps={{
                     ...props.slotProps,
                     openPickerButton: {
                         disabled: isNonInteractive,
-                        ...(typeof props.slotProps?.openPickerButton === 'object' ? props.slotProps.openPickerButton : {})
+                        ...(typeof props.slotProps?.openPickerButton === 'object'
+                            ? props.slotProps.openPickerButton
+                            : {})
                     },
                     textField: {
                         className: classMerge(
@@ -107,8 +113,8 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                             ? fieldState.error?.message ?? helperTextProp
                             : undefined,
                         size: 'medium',
-                        variant: 'outlined' as const,
                         ...restTextFieldProps,
+                        variant: 'outlined' as const,
                         onFocus: () => {
                             if (isNonInteractive) {
                                 return;
@@ -116,20 +122,24 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                             handleFocus();
                         },
                         sx: [
-                            ...(disabled ? [{
-                                pointerEvents: 'none' as const
-                            }] : []),
-                            ...(readOnly ? [{
-                                '& .MuiInputBase-root': {
-                                    cursor: 'default'
-                                },
-                                '& .MuiInputBase-input': {
-                                    cursor: 'default'
-                                },
-                                '& .MuiInputAdornment-root': {
+                            ...(disabled
+                                ? [{
                                     pointerEvents: 'none' as const
-                                }
-                            }] : []),
+                                }]
+                                : []),
+                            ...(readOnly
+                                ? [{
+                                    '& .MuiInputBase-root': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputBase-input': {
+                                        cursor: 'default'
+                                    },
+                                    '& .MuiInputAdornment-root': {
+                                        pointerEvents: 'none' as const
+                                    }
+                                }]
+                                : []),
                             ...(externalTextFieldProps?.sx
                                 ? (Array.isArray(externalTextFieldProps.sx)
                                     ? externalTextFieldProps.sx

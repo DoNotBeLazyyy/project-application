@@ -28,6 +28,23 @@ export async function getGradingPeriodTemplates(): Promise<ServiceResult<Grading
     return callRpc<GradingPeriodTemplate[]>('fn_get_grading_period_templates');
 }
 
+export async function saveGradingPeriodTemplates(
+    periods: GradingPeriodTemplate[]
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_save_grading_period_templates_dummy', {
+        p_periods: periods.map((period, index) => ({
+            id: period.id || null,
+            name: period.name.trim(),
+            sequence: Number(period.sequence ?? index + 1),
+            weight: Number(period.weight),
+            components: period.components.map((component) => ({
+                name: component.name.trim(),
+                weight: Number(component.weight)
+            }))
+        }))
+    });
+}
+
 export async function createGradingPeriodTemplate(
     period: GradingPeriodTemplate
 ): Promise<ServiceResult<null>> {

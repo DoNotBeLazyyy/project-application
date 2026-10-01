@@ -274,7 +274,6 @@ export default function ProgramManagement() {
                         <ProgramForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
-                            isCodeDisabled
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError

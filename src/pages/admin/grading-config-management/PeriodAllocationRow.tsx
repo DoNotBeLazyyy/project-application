@@ -84,6 +84,7 @@ export default function PeriodAllocationRow({
                 <CommonInput
                     containerClassName="min-w-0 w-full"
                     fullWidth
+                    hasClearButton={false}
                     placeholder="Period name"
                     size="small"
                     value={period.name}

@@ -1,4 +1,7 @@
-import { createGradingPeriodTemplate, deleteGradingPeriodTemplate, getGradingPeriodTemplates, updateGradingPeriodTemplate } from '@services/grading-config.service';
+import {
+    getGradingPeriodTemplates,
+    saveGradingPeriodTemplates
+} from '@services/grading-config.service';
 import { useToastStore } from '@stores/toast.store';
 import { GradingComponentDraft, GradingPeriodDraft, GradingPeriodTemplate } from '@type/grading-config.type';
 import {
@@ -325,51 +328,22 @@ export function usePeriodComposer() {
         ));
     }
 
-    /**
-     * The service layer exposes one call per period, so saving the structure is
-     * a diff: drop what was removed, update what survived (sequence included,
-     * since array order is the sequence) and create what is new. Deletes run
-     * first so a freed sequence number is never briefly taken twice.
-     */
     async function handleSave() {
         setIsSaving(true);
 
-        const liveIds = periods
-            .map((period) => period.id)
-            .filter((id): id is string => Boolean(id));
-        const removedIds = savedPeriods
-            .map((period) => period.id)
-            .filter((id): id is string => Boolean(id) && !liveIds.includes(id as string));
+        const payload = periods.map((period, index) => toPayload(period, index + 1));
+        const result = await saveGradingPeriodTemplates(payload);
 
-        for (const id of removedIds) {
-            const result = await deleteGradingPeriodTemplate(id);
-
-            if (result.error) {
-                setIsSaving(false);
-
-                return;
-            }
-        }
-
-        for (const [index, period] of periods.entries()) {
-            const payload = toPayload(period, index + 1);
-            const result = period.id
-                ? await updateGradingPeriodTemplate(period.id, payload)
-                : await createGradingPeriodTemplate(payload);
-
-            if (result.error) {
-                setIsSaving(false);
-                await load();
-
-                return;
-            }
+        if (result.error) {
+            setIsSaving(false);
+            return;
         }
 
         useToastStore.getState()
             .showToast('Grading structure saved.', 'success');
 
-        setIsSaving(false);
         await load();
+        setIsSaving(false);
     }
 
     return {

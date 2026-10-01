@@ -119,6 +119,7 @@ export default function StudentSubjects() {
                 leadingColumnDefs: columnDefs
             }}
             uniqueIdKey="enrollment_id"
+            viewMode="table"
             onFetch={fetchSubjects}
             onRowClick={function(id) {
                 navigate(`/student/subjects/${id}`);

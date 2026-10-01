@@ -107,6 +107,7 @@ export default function FacultySectionManagement() {
                     leadingColumnDefs: columnDefs
                 }}
                 uniqueIdKey="id"
+                viewMode="table"
                 onFetch={fetchSections}
                 onRowClick={function(id) {
                     navigate(`/faculty/sections/${id}`);

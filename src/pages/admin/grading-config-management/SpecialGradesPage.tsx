@@ -449,7 +449,7 @@ export default function SpecialGradesPage() {
                 hasCheckbox: false,
                 leadingColumnDefs: columnDefs
             }}
-            uniqueIdKey="code"
+            uniqueIdKey="id"
             updateModalProps={{
                 cardProps: {
                     cardHeaderProps: {
@@ -462,7 +462,6 @@ export default function SpecialGradesPage() {
                     <SpecialGradeForm
                         control={updateMethods.control}
                         id={UPDATE_FORM_ID}
-                        isCodeDisabled
                         onSubmit={updateMethods.handleSubmit(
                             handleUpdateSubmit,
                             (errs: FieldErrors<SpecialGradeFormValues>) => formErrors(errs, updateMethods)

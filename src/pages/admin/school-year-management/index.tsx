@@ -257,7 +257,6 @@ export default function SchoolYearManagement() {
                         <SchoolYearForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
-                            isCodeDisabled
                             setValue={updateMethods.setValue}
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,

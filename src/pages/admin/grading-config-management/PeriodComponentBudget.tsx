@@ -108,6 +108,7 @@ export default function PeriodComponentBudget({
                         <CommonInput
                             containerClassName="grow min-w-0"
                             fullWidth
+                            hasClearButton={false}
                             placeholder="Component name"
                             size="small"
                             value={component.name}

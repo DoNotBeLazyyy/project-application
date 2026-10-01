@@ -244,7 +244,6 @@ export default function DepartmentManagement() {
                         <DepartmentForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
-                            isCodeDisabled
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError
