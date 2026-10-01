@@ -281,15 +281,32 @@ export default function CurriculumMapManagement({
     async function handleBulkImportCurriculum(
         rows: CurriculumMapCsvRow[]
     ): Promise<BulkImportResult> {
-        const listRes = await listCourses(1, 1000, '', [], null);
-        let courses: { id: string; code: string; title: string; lecture_units?: number; laboratory_units?: number; total_units?: number }[] = listRes.data?.items ?? [];
+        const [listRes, optionsRes] = await Promise.all([
+            listCourses(1, 1000, '', [], null),
+            getCourses()
+        ]);
 
-        const optionsRes = await getCourses();
+        const coursesMap = new Map<string, { id: string; code: string; title: string; lecture_units?: number; laboratory_units?: number; total_units?: number }>();
+
+        if (listRes.data?.items) {
+            for (const item of listRes.data.items) {
+                if (item.code) {
+                    coursesMap.set(item.code.trim().toLowerCase(), {
+                        id: item.id,
+                        code: item.code,
+                        title: item.title,
+                        lecture_units: item.lecture_units ?? 0,
+                        laboratory_units: item.laboratory_units ?? 0,
+                        total_units: item.total_units ?? 0
+                    });
+                }
+            }
+        }
+
         if (optionsRes.data) {
-            const existingCodes = new Set(courses.map((c) => c.code.trim().toLowerCase()));
             for (const opt of optionsRes.data) {
-                if (!existingCodes.has(opt.code.trim().toLowerCase())) {
-                    courses.push({
+                if (opt.code && !coursesMap.has(opt.code.trim().toLowerCase())) {
+                    coursesMap.set(opt.code.trim().toLowerCase(), {
                         id: opt.id,
                         code: opt.code,
                         title: opt.label,
@@ -301,6 +318,7 @@ export default function CurriculumMapManagement({
             }
         }
 
+        const courses = Array.from(coursesMap.values());
         const provisionedEntries: CurriculumMapEntry[] = [];
         const errors: string[] = [];
 
@@ -318,13 +336,13 @@ export default function CurriculumMapManagement({
             }
 
             const targetCode = row.course_code.trim().toLowerCase();
-            const normalizedTarget = targetCode.replace(/\s+/g, '');
+            const normalizedTarget = targetCode.replace(/[\s\-_]+/g, '');
 
-            const course = courses.find(
-                (c) =>
-                    c.code.trim().toLowerCase() === targetCode ||
-                    c.code.replace(/\s+/g, '').toLowerCase() === normalizedTarget
-            );
+            const course = courses.find((c) => {
+                const cCode = c.code.trim().toLowerCase();
+                const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
+                return cCode === targetCode || normalizedCCode === normalizedTarget;
+            });
 
             if (!course) {
                 errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
