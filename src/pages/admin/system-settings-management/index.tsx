@@ -3,16 +3,13 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import DeletePromptModal from '@components/modal/DeletePromptModal';
-import { ArrowsCounterClockwiseIcon, CameraIcon, TrashIcon, WarningIcon } from '@phosphor-icons/react';
+import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
-import { getSystemSettings, resetSystemDataPreserveUsers, updateSystemSettings } from '@services/system-settings.service';
-import { useToastStore } from '@stores/toast.store';
+import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
-
 
 const MONTH_OPTIONS = [
     { label: 'January', value: '1' },
@@ -32,14 +29,10 @@ const MONTH_OPTIONS = [
 const SETTINGS_FORM_ID = 'system-settings-form';
 
 export default function SystemSettings() {
-    const showToast = useToastStore((state) => state.showToast);
     const [isLoading, setIsLoading] = useState(true);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-    const [isResetting, setIsResetting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
     const methods = useForm<SystemSettingsFormValues>({
         defaultValues: {
             institution_name: '',
@@ -129,23 +122,9 @@ export default function SystemSettings() {
         }
     }
 
-    async function handleResetConfirm() {
-        setIsResetting(true);
-        const result = await resetSystemDataPreserveUsers();
-        setIsResetting(false);
-        setIsResetModalOpen(false);
-
-        if (result.error) {
-            showToast(result.error.message || 'Failed to reset database operational data', 'error');
-        } else {
-            showToast('System operational and academic data successfully reset. All user accounts were preserved.', 'success');
-        }
-    }
-
     function handleFormError(errors: FieldErrors<SystemSettingsFormValues>) {
         formErrors(errors, methods);
     }
-
 
     const fields: FormFieldConfig<SystemSettingsFormValues>[] = [
         {
@@ -349,61 +328,7 @@ export default function SystemSettings() {
                         hasHelper
                     />
                 </form>
-
-                {/* System Maintenance & Data Reset Section */}
-                <div className="mt-8 border-t border-(--mui-palette-divider) pt-6 flex flex-col gap-4">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="font-semibold text-slate-900 dark:text-zinc-100 text-sm flex items-center gap-2">
-                            <ArrowsCounterClockwiseIcon className="text-red-500" size={18} />
-                            <span>System Maintenance & Data Management</span>
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400">
-                            Administrative actions for wiping test environment records without re-deploying or writing scripts.
-                        </p>
-                    </div>
-
-                    <div className="border border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/20 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-semibold text-sm">
-                                <WarningIcon size={18} />
-                                <span>Reset System Data (Keep Users)</span>
-                            </div>
-                            <p className="text-xs text-slate-600 dark:text-zinc-400 max-w-2xl">
-                                Truncates all operational and academic test records (sections, programs, courses, curriculum maps, enrollments, gradebooks, announcements, audit logs) while <strong>strictly preserving all registered user accounts, profiles, and roles</strong>.
-                            </p>
-                        </div>
-                        <CommonButton
-                            color="error"
-                            size="small"
-                            variant="contained"
-                            onClick={() => setIsResetModalOpen(true)}
-                        >
-                            Reset Data
-                        </CommonButton>
-                    </div>
-                </div>
-
-                <DeletePromptModal
-                    formButtonsProps={{
-                        confirmProps: {
-                            children: 'Yes, Reset Database',
-                            color: 'error',
-                            loading: isResetting,
-                            onClick: handleResetConfirm
-                        }
-                    }}
-                    mainContent={{
-                        title: 'Confirm System Database Reset'
-                    }}
-                    open={isResetModalOpen}
-                    subContent={{
-                        title: 'This will permanently delete all operational test records (sections, courses, programs, curriculum maps, enrollments, gradebooks, attendance, announcements, and audit logs). Registered user accounts, profiles, and roles will be PRESERVED. Are you sure you want to proceed?'
-                    }}
-                    onClose={() => setIsResetModalOpen(false)}
-                />
             </div>
         </CommonCard>
     );
-}
-
-
+}

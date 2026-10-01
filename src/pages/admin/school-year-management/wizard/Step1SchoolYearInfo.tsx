@@ -301,34 +301,23 @@ export default function Step1SchoolYearInfo({
                 <div>
                     <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                         <span>Academic Year Code <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Unique system identifier for this academic year (e.g. AY-2026-2027)." size={14} />
+                        <CommonInfoTooltip content="Auto-generated unique system identifier for this academic year based on Start and End dates (e.g. AY-2026-2027)." size={14} />
                     </label>
                     <ValidCommonInput
                         control={control}
-                        disabled={disabled}
+                        disabled={true}
                         name="code"
                         placeholder="e.g. AY-2026-2027"
                         onChange={() => {
                             userEditedCodeRef.current = true;
                         }}
                         rules={{
-                            required: 'Academic year code is required',
-                            validate: (val) => {
-                                if (!val || !(val as string).trim()) return 'Academic year code is required';
-                                const codeConflict = checkSchoolYearCodeConflict(
-                                    val as string,
-                                    existingSchoolYears,
-                                    currentSchoolYearId,
-                                    sourceSchoolYear
-                                );
-                                if (codeConflict) return codeConflict;
-                                return true;
-                            }
+                            required: 'Academic year code is required'
                         }}
                     />
                     {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                            Required to change from: &quot;{sourceSchoolYear.code}&quot;
+                            Auto-updated from duplicated year: &quot;{sourceSchoolYear.code}&quot;
                         </p>
                     )}
                 </div>
@@ -336,34 +325,23 @@ export default function Step1SchoolYearInfo({
                 <div>
                     <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                         <span>Academic Year Label <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Human-friendly title displayed on portal headers, report cards, and official transcripts." size={14} />
+                        <CommonInfoTooltip content="Auto-generated title displayed on portal headers, report cards, and official transcripts based on Start and End dates." size={14} />
                     </label>
                     <ValidCommonInput
                         control={control}
-                        disabled={disabled}
+                        disabled={true}
                         name="label"
                         placeholder="e.g. Academic Year 2026-2027"
                         onChange={() => {
                             userEditedLabelRef.current = true;
                         }}
                         rules={{
-                            required: 'Academic year label is required',
-                            validate: (val) => {
-                                if (!val || !(val as string).trim()) return 'Academic year label is required';
-                                const labelConflict = checkSchoolYearLabelConflict(
-                                    val as string,
-                                    existingSchoolYears,
-                                    currentSchoolYearId,
-                                    sourceSchoolYear
-                                );
-                                if (labelConflict) return labelConflict;
-                                return true;
-                            }
+                            required: 'Academic year label is required'
                         }}
                     />
                     {sourceSchoolYear && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                            Required to change from: &quot;{sourceSchoolYear.label}&quot;
+                            Auto-updated from duplicated year: &quot;{sourceSchoolYear.label}&quot;
                         </p>
                     )}
                 </div>

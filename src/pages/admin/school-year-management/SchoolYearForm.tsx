@@ -57,21 +57,17 @@ export default function SchoolYearForm({
             }
         },
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Auto-filled from the dates. Must be unique — edit it if this pair of years already exists.' },
+            disabled: true,
+            fieldProps: { helperText: 'Auto-generated based on Start Date and End Date.' },
             name: 'code',
-            rules: (disabled || isCodeDisabled)
-                ? undefined
-                : { required: 'Required' },
+            rules: undefined,
             type: 'text'
         },
         {
-            disabled,
-            fieldProps: { helperText: 'Display name shown across the system.' },
+            disabled: true,
+            fieldProps: { helperText: 'Auto-generated based on Start Date and End Date.' },
             name: 'label',
-            rules: disabled
-                ? undefined
-                : { required: 'Required' },
+            rules: undefined,
             type: 'text'
         },
         {

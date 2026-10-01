@@ -23,8 +23,8 @@ export function useSchoolYearOptions() {
                 );
             }
 
-            if (activeResult.data?.items && activeResult.data.items.length > 0) {
-                setActiveSchoolYearId(activeResult.data.items[0].id);
+            if (activeResult.data?.content && activeResult.data.content.length > 0) {
+                setActiveSchoolYearId(activeResult.data.content[0].id);
             }
         }
 

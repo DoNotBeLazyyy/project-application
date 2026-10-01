@@ -1,5 +1,6 @@
-import { CalendarDotsIcon, SunIcon } from '@phosphor-icons/react';
+import { CalendarDotsIcon, CalendarIcon, SunIcon } from '@phosphor-icons/react';
 import { WizardCalendarExceptionItem, WizardTermItem } from '@type/school-year.type';
+import { useMemo } from 'react';
 
 interface AcademicYearTimelinePreviewProps {
     startDate?: string;
@@ -8,121 +9,235 @@ interface AcademicYearTimelinePreviewProps {
     holidays?: WizardCalendarExceptionItem[];
 }
 
+interface TimelineEvent {
+    id: string;
+    date: string;
+    formattedDate: string;
+    label: string;
+    category: 'school_year' | 'term' | 'enrollment' | 'exam' | 'grading' | 'holiday';
+}
+
+function formatTimelineDate(dateStr?: string | null): string {
+    if (!dateStr) return '';
+    // Append T00:00:00 to avoid timezone offset shifts
+    const cleanDate = dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`;
+    const d = new Date(cleanDate);
+    if (isNaN(d.getTime())) return dateStr;
+
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[d.getDay()];
+
+    return `${mm}/${dd}/${yy} (${dayName})`;
+}
+
 export default function AcademicYearTimelinePreview({
     startDate,
     endDate,
     terms = [],
     holidays = []
 }: AcademicYearTimelinePreviewProps) {
-    if (!startDate || !endDate) return null;
+    const timelineEvents = useMemo(() => {
+        const events: TimelineEvent[] = [];
 
-    const startMs = new Date(startDate).getTime();
-    const endMs = new Date(endDate).getTime();
-    const totalDuration = endMs - startMs;
+        if (startDate) {
+            events.push({
+                id: `sy-start-${startDate}`,
+                date: startDate,
+                formattedDate: formatTimelineDate(startDate),
+                label: 'Academic Year Start',
+                category: 'school_year'
+            });
+        }
 
-    if (totalDuration <= 0 || isNaN(totalDuration)) return null;
+        if (endDate) {
+            events.push({
+                id: `sy-end-${endDate}`,
+                date: endDate,
+                formattedDate: formatTimelineDate(endDate),
+                label: 'Academic Year End',
+                category: 'school_year'
+            });
+        }
+
+        terms.forEach((t, tIdx) => {
+            const termLabel = t.term_type_label || `Term #${tIdx + 1}`;
+
+            if (t.enrollment_start_date) {
+                events.push({
+                    id: `term-${tIdx}-enroll-start`,
+                    date: t.enrollment_start_date,
+                    formattedDate: formatTimelineDate(t.enrollment_start_date),
+                    label: `${termLabel} Enrollment Start`,
+                    category: 'enrollment'
+                });
+            }
+
+            if (t.enrollment_end_date) {
+                events.push({
+                    id: `term-${tIdx}-enroll-end`,
+                    date: t.enrollment_end_date,
+                    formattedDate: formatTimelineDate(t.enrollment_end_date),
+                    label: `${termLabel} Enrollment End`,
+                    category: 'enrollment'
+                });
+            }
+
+            if (t.start_date) {
+                events.push({
+                    id: `term-${tIdx}-start`,
+                    date: t.start_date,
+                    formattedDate: formatTimelineDate(t.start_date),
+                    label: `${termLabel} Start`,
+                    category: 'term'
+                });
+            }
+
+            (t.grading_periods || []).forEach((gp, gpIdx) => {
+                const gpName = gp.name || `Period #${gpIdx + 1}`;
+
+                if (gp.major_exam_start_date) {
+                    events.push({
+                        id: `term-${tIdx}-gp-${gpIdx}-exam-start`,
+                        date: gp.major_exam_start_date,
+                        formattedDate: formatTimelineDate(gp.major_exam_start_date),
+                        label: `${termLabel} — ${gpName} Major Examination Start`,
+                        category: 'exam'
+                    });
+                }
+
+                if (gp.major_exam_end_date && gp.major_exam_end_date !== gp.major_exam_start_date) {
+                    events.push({
+                        id: `term-${tIdx}-gp-${gpIdx}-exam-end`,
+                        date: gp.major_exam_end_date,
+                        formattedDate: formatTimelineDate(gp.major_exam_end_date),
+                        label: `${termLabel} — ${gpName} Major Examination End`,
+                        category: 'exam'
+                    });
+                }
+
+                if (gp.grade_encoding_start_date) {
+                    events.push({
+                        id: `term-${tIdx}-gp-${gpIdx}-encoding-start`,
+                        date: gp.grade_encoding_start_date,
+                        formattedDate: formatTimelineDate(gp.grade_encoding_start_date),
+                        label: `${termLabel} — ${gpName} Grade Encoding Start`,
+                        category: 'grading'
+                    });
+                }
+
+                if (gp.grade_encoding_end_date && gp.grade_encoding_end_date !== gp.grade_encoding_start_date) {
+                    events.push({
+                        id: `term-${tIdx}-gp-${gpIdx}-encoding-end`,
+                        date: gp.grade_encoding_end_date,
+                        formattedDate: formatTimelineDate(gp.grade_encoding_end_date),
+                        label: `${termLabel} — ${gpName} Grade Encoding End`,
+                        category: 'grading'
+                    });
+                }
+            });
+
+            if (t.grading_deadline) {
+                events.push({
+                    id: `term-${tIdx}-grading-deadline`,
+                    date: t.grading_deadline,
+                    formattedDate: formatTimelineDate(t.grading_deadline),
+                    label: `${termLabel} Final Grade Submission Deadline`,
+                    category: 'grading'
+                });
+            }
+
+            if (t.end_date) {
+                events.push({
+                    id: `term-${tIdx}-end`,
+                    date: t.end_date,
+                    formattedDate: formatTimelineDate(t.end_date),
+                    label: `${termLabel} End`,
+                    category: 'term'
+                });
+            }
+        });
+
+        holidays.forEach((h, hIdx) => {
+            if (h.start_date) {
+                events.push({
+                    id: `holiday-${hIdx}-start`,
+                    date: h.start_date,
+                    formattedDate: formatTimelineDate(h.start_date),
+                    label: `${h.title} (${h.exception_type})`,
+                    category: 'holiday'
+                });
+            }
+
+            if (h.end_date && h.end_date !== h.start_date) {
+                events.push({
+                    id: `holiday-${hIdx}-end`,
+                    date: h.end_date,
+                    formattedDate: formatTimelineDate(h.end_date),
+                    label: `${h.title} (${h.exception_type}) Concludes`,
+                    category: 'holiday'
+                });
+            }
+        });
+
+        // Sort chronologically by date
+        return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [startDate, endDate, terms, holidays]);
+
+    if (!startDate || !endDate) {
+        return (
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-zinc-800 text-xs text-slate-500 text-center">
+                Please set Academic Year Start Date and End Date to view the chronological schedule.
+            </div>
+        );
+    }
+
+    const categoryBadges: Record<TimelineEvent['category'], { bg: string; text: string }> = {
+        school_year: { bg: 'bg-brand-100 dark:bg-brand-950/60', text: 'text-brand-700 dark:text-brand-300' },
+        term: { bg: 'bg-emerald-100 dark:bg-emerald-950/60', text: 'text-emerald-700 dark:text-emerald-300' },
+        enrollment: { bg: 'bg-blue-100 dark:bg-blue-950/60', text: 'text-blue-700 dark:text-blue-300' },
+        exam: { bg: 'bg-purple-100 dark:bg-purple-950/60', text: 'text-purple-700 dark:text-purple-300' },
+        grading: { bg: 'bg-amber-100 dark:bg-amber-950/60', text: 'text-amber-700 dark:text-amber-300' },
+        holiday: { bg: 'bg-rose-100 dark:bg-rose-950/60', text: 'text-rose-700 dark:text-rose-300' }
+    };
 
     return (
-        <div className="p-3.5 sm:p-4 rounded-xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 shadow-sm space-y-3 min-w-0">
-            <div className="flex items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-                    <CalendarDotsIcon className="w-4 h-4 text-brand-600 shrink-0" />
-                    <span>Academic Calendar Schedule & Holiday Overlay</span>
+        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 shadow-sm space-y-4 min-w-0">
+            <div className="flex items-center justify-between gap-2 text-xs border-b border-slate-100 dark:border-zinc-700/50 pb-3">
+                <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
+                    <CalendarDotsIcon className="w-4 h-4 text-brand-600 shrink-0" weight="bold" />
+                    <span>Academic Year Schedule & Key Happenings</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-mono">
-                    {startDate} — {endDate}
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {formatTimelineDate(startDate)} — {formatTimelineDate(endDate)}
                 </div>
             </div>
 
-            {/* Timeline Progress Bar Container */}
-            <div className="relative w-full h-10 bg-slate-100 dark:bg-zinc-700/60 rounded-lg overflow-hidden flex items-center px-1">
-                {terms.map((t, idx) => {
-                    if (!t.start_date || !t.end_date) return null;
-                    const tStart = new Date(t.start_date).getTime();
-                    const tEnd = new Date(t.end_date).getTime();
-
-                    const leftPct = Math.max(0, Math.min(100, ((tStart - startMs) / totalDuration) * 100));
-                    const widthPct = Math.max(2, Math.min(100 - leftPct, ((tEnd - tStart) / totalDuration) * 100));
-
-                    const termLabel = t.term_type_label || `Term #${idx + 1}`;
-                    const colors = [
-                        'bg-brand-600 text-white',
-                        'bg-emerald-600 text-white',
-                        'bg-amber-600 text-white',
-                        'bg-indigo-600 text-white'
-                    ];
-                    const barBg = colors[idx % colors.length];
-
-                    return (
-                        <div
-                            key={t.id || idx}
-                            className={`absolute h-7 rounded-md ${barBg} text-[10px] font-bold flex items-center justify-center px-1 truncate shadow-xs transition-all opacity-90`}
-                            style={{
-                                left: `${leftPct}%`,
-                                width: `${widthPct}%`
-                            }}
-                            title={`${termLabel}: ${t.start_date} to ${t.end_date}`}
-                        >
-                            <span className="truncate">{termLabel}</span>
-                        </div>
-                    );
-                })}
-
-                {/* Holiday & Calendar Exception Overlays */}
-                {holidays.map((h, hIdx) => {
-                    if (!h.start_date || !h.end_date) return null;
-                    const hStart = new Date(h.start_date).getTime();
-                    const hEnd = new Date(h.end_date).getTime();
-
-                    const leftPct = Math.max(0, Math.min(100, ((hStart - startMs) / totalDuration) * 100));
-                    const widthPct = Math.max(1, Math.min(100 - leftPct, Math.max(1.5, ((hEnd - hStart) / totalDuration) * 100)));
-
-                    const badgeColors: Record<string, string> = {
-                        Holiday: 'bg-red-500 text-white ring-1 ring-red-400',
-                        Break: 'bg-amber-400 text-slate-900 ring-1 ring-amber-300 font-bold',
-                        Suspension: 'bg-purple-600 text-white ring-1 ring-purple-400',
-                        'Special Class': 'bg-blue-500 text-white ring-1 ring-blue-300',
-                        'Exam Day': 'bg-rose-600 text-white ring-1 ring-rose-400'
-                    };
-                    const overlayStyle = badgeColors[h.exception_type] || 'bg-slate-700 text-white';
-
-                    return (
-                        <div
-                            key={h.id || hIdx}
-                            className={`absolute h-8 rounded-xs ${overlayStyle} text-[9px] font-extrabold flex items-center justify-center px-0.5 truncate z-10 opacity-95 border-x border-white/60 shadow-xs`}
-                            style={{
-                                left: `${leftPct}%`,
-                                width: `${widthPct}%`
-                            }}
-                            title={`[${h.exception_type}] ${h.title}: ${h.start_date} to ${h.end_date}${h.description ? ` (${h.description})` : ''}`}
-                        >
-                            <span className="truncate hidden sm:inline">{h.title}</span>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Legend */}
-            {holidays.length > 0 && (
-                <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-slate-600 dark:text-slate-400">
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                        <SunIcon className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Holidays & Overlays ({holidays.length}):</span>
-                    </span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-red-500" /> Holiday
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-amber-500" /> Break
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-purple-600" /> Suspension
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-blue-500" /> Special Class
-                        </span>
-                    </div>
+            {/* Chronological Text List */}
+            {timelineEvents.length === 0 ? (
+                <p className="text-xs text-slate-500 text-center py-4">No events or terms configured yet.</p>
+            ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    {timelineEvents.map((evt) => {
+                        const style = categoryBadges[evt.category];
+                        return (
+                            <div
+                                key={evt.id}
+                                className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-100 dark:border-zinc-700/50 bg-slate-50/50 dark:bg-zinc-800/40 text-xs hover:bg-slate-100/70 dark:hover:bg-zinc-700/40 transition-colors"
+                            >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className={`px-2 py-0.5 rounded-md font-mono font-bold text-[11px] shrink-0 ${style.bg} ${style.text}`}>
+                                        {evt.formattedDate}
+                                    </span>
+                                    <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                        {evt.label}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

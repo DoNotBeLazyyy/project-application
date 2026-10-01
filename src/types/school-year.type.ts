@@ -94,7 +94,14 @@ export interface WizardThresholdItem {
     is_active: boolean;
 }
 
-export type CalendarExceptionType = 'Holiday' | 'Break' | 'Suspension' | 'Special Class' | 'Exam Day';
+export type CalendarExceptionType = 'Holiday' | 'Break' | 'Suspension' | 'Special Class' | 'Exam Day' | string;
+
+export interface ExceptionTypeOptionItem {
+    id?: string;
+    label: string;
+    is_active: boolean;
+    is_default?: boolean;
+}
 
 export interface WizardCalendarExceptionItem {
     id?: string;

@@ -18,6 +18,7 @@ import {
     getSchoolYears,
     saveAcademicYearCalendar
 } from '@services/school-year.service';
+import { createTermType, getTermTypes } from '@services/term/term-type.service';
 import { useToastStore } from '@stores/toast.store';
 import {
     AcademicYearWizardFormValues,
@@ -406,6 +407,46 @@ export default function AcademicYearWizardModal({
         setIsSaving(true);
         const values = getValues();
 
+        // Ensure all typed term types have a corresponding DB term_type_id
+        const termTypesRes = await getTermTypes();
+        const existingTermTypes = termTypesRes.data || [];
+        const termTypeMap = new Map<string, string>();
+        existingTermTypes.forEach((tt) => {
+            termTypeMap.set(tt.label.trim().toLowerCase(), tt.id);
+        });
+
+        const mappedTerms = await Promise.all(
+            (values.terms || []).map(async (t, tIdx) => {
+                const cleanLabel = (t.term_type_label || `Term #${tIdx + 1}`).trim();
+                let typeId = t.term_type_id || termTypeMap.get(cleanLabel.toLowerCase());
+
+                if (!typeId) {
+                    const cleanCode = (t.term_type_code || cleanLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')).trim();
+                    const createRes = await createTermType({
+                        code: cleanCode,
+                        description: '',
+                        label: cleanLabel,
+                        sequence: String(tIdx + 1)
+                    });
+                    if (createRes.data !== null || !createRes.error) {
+                        const refreshed = await getTermTypes();
+                        const matched = (refreshed.data || []).find(
+                            (item) => item.label.trim().toLowerCase() === cleanLabel.toLowerCase()
+                        );
+                        if (matched) {
+                            typeId = matched.id;
+                        }
+                    }
+                }
+
+                return {
+                    ...t,
+                    term_type_id: typeId || '00000000-0000-0000-0000-000000000000',
+                    term_type_label: cleanLabel
+                };
+            })
+        );
+
         const payload: SaveAcademicYearCalendarPayload = {
             p_code: values.code.trim(),
             p_end_date: values.end_date,
@@ -415,7 +456,7 @@ export default function AcademicYearWizardModal({
             p_max_units_per_term: values.max_units_per_term ? Number(values.max_units_per_term) : 24,
             p_school_year_id: values.id || null,
             p_start_date: values.start_date,
-            p_terms: (values.terms || []).map((t) => ({
+            p_terms: mappedTerms.map((t) => ({
                 id: t.id,
                 term_type_id: t.term_type_id,
                 start_date: t.start_date,

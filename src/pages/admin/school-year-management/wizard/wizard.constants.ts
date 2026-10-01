@@ -275,26 +275,27 @@ export function validateTerms(
         };
     }
 
-    const seenTypeIds = new Set<string>();
+    const seenLabels = new Set<string>();
 
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
-        const termName = t.term_type_label || `Term #${i + 1}`;
+        const termName = (t.term_type_label || '').trim();
 
-        if (!t.term_type_id) {
+        if (!termName) {
             return {
-                error: `Please select a Term Type for ${termName}.`,
+                error: `Please specify a Term Type / Name for Term #${i + 1}.`,
                 isValid: false
             };
         }
 
-        if (seenTypeIds.has(t.term_type_id)) {
+        const cleanKey = termName.toLowerCase();
+        if (seenLabels.has(cleanKey)) {
             return {
-                error: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique term type (e.g. cannot have two Summer terms).`,
+                error: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique name.`,
                 isValid: false
             };
         }
-        seenTypeIds.add(t.term_type_id);
+        seenLabels.add(cleanKey);
 
         if (!t.start_date) {
             return {

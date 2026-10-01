@@ -61,15 +61,10 @@ export default function Step2TermsConfig({
 
     // Helper to add a new default term with non-conflicting type and distributed dates
     function handleAddTerm() {
-        const usedTypeIds = new Set(watchedTerms.map((t) => t.term_type_id));
-        const availableType = termTypes.find((t) => !usedTypeIds.has(t.id));
-
-        if (!availableType && termTypes.length > 0) {
-            return;
-        }
-
-        const selectedTypeId = availableType ? availableType.id : (termTypes[0]?.id || '');
-        const matchedType = availableType || termTypes[0];
+        const termIndex = watchedTerms.length;
+        const defaultNames = ['1st Semester', '2nd Semester', 'Summer Term', '3rd Semester', 'Trimester 1', 'Trimester 2'];
+        const suggestedLabel = defaultNames[termIndex] || `Term #${termIndex + 1}`;
+        const matchedType = termTypes.find((t) => t.label.toLowerCase() === suggestedLabel.toLowerCase());
 
         let termStart = syStartDate || '';
         let termEnd = syEndDate || '';
@@ -104,9 +99,9 @@ export default function Step2TermsConfig({
             })),
             start_date: termStart,
             status: 'Upcoming',
-            term_type_code: matchedType?.code || '',
-            term_type_id: selectedTypeId,
-            term_type_label: matchedType?.label || ''
+            term_type_code: matchedType?.code || suggestedLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+            term_type_id: matchedType?.id || '',
+            term_type_label: suggestedLabel
         };
 
         append(newTerm);
@@ -114,13 +109,11 @@ export default function Step2TermsConfig({
 
     // Helper to auto-populate standard terms if list is empty
     function handleAutoPopulateSemesters() {
-        if (termTypes.length === 0) return;
+        const sYear = syStartDate ? new Date(syStartDate).getFullYear() : 2026;
+        const eYear = syEndDate ? new Date(syEndDate).getFullYear() : 2027;
 
         const sem1 = termTypes.find((t) => t.code.toLowerCase().includes('1') || t.label.toLowerCase().includes('1st'));
         const sem2 = termTypes.find((t) => t.code.toLowerCase().includes('2') || t.label.toLowerCase().includes('2nd'));
-
-        const sYear = syStartDate ? new Date(syStartDate).getFullYear() : 2026;
-        const eYear = syEndDate ? new Date(syEndDate).getFullYear() : 2027;
 
         const term1Start = syStartDate || `${sYear}-08-15`;
         const term1End = `${sYear}-12-20`;
@@ -137,9 +130,9 @@ export default function Step2TermsConfig({
             })),
             start_date: term1Start,
             status: 'Upcoming',
-            term_type_code: sem1 ? sem1.code : termTypes[0].code,
-            term_type_id: sem1 ? sem1.id : termTypes[0].id,
-            term_type_label: sem1 ? sem1.label : termTypes[0].label
+            term_type_code: sem1 ? sem1.code : '1st_semester',
+            term_type_id: sem1 ? sem1.id : '',
+            term_type_label: sem1 ? sem1.label : '1st Semester'
         };
 
         const term2Start = `${eYear}-01-10`;
@@ -157,9 +150,9 @@ export default function Step2TermsConfig({
             })),
             start_date: term2Start,
             status: 'Upcoming',
-            term_type_code: sem2 ? sem2.code : (termTypes[1]?.code || termTypes[0].code),
-            term_type_id: sem2 ? sem2.id : (termTypes[1]?.id || termTypes[0].id),
-            term_type_label: sem2 ? sem2.label : (termTypes[1]?.label || termTypes[0].label)
+            term_type_code: sem2 ? sem2.code : '2nd_semester',
+            term_type_id: sem2 ? sem2.id : '',
+            term_type_label: sem2 ? sem2.label : '2nd Semester'
         };
 
         if (fields.length === 0) {
@@ -224,8 +217,6 @@ export default function Step2TermsConfig({
         update(index, current);
     }
 
-    const allTypesUsed = termTypes.length > 0 && watchedTerms.length >= termTypes.length;
-
     return (
         <div className="flex flex-col gap-6">
             {!disabled && (
@@ -243,13 +234,12 @@ export default function Step2TermsConfig({
                     )}
                     <CommonButton
                         color="primary"
-                        disabled={allTypesUsed}
                         size="small"
                         startIcon={<PlusIcon className="w-4 h-4" />}
                         variant="contained"
                         onClick={handleAddTerm}
                     >
-                        {allTypesUsed ? 'All Terms Added' : 'Add Term'}
+                        Add Term
                     </CommonButton>
                 </div>
             )}
@@ -286,25 +276,12 @@ export default function Step2TermsConfig({
                     const currentTerm = watchedTerms[index] || field;
                     const prevTerm = index > 0 ? watchedTerms[index - 1] : null;
 
-                    // Check for duplicate term type selection across other terms
+                    // Check for duplicate term name selection across other terms
                     const otherTermsHaveThisType = watchedTerms.some(
-                        (t, idx) => idx !== index && t.term_type_id && t.term_type_id === currentTerm.term_type_id
+                        (t, idx) =>
+                            idx !== index &&
+                            (t.term_type_label || '').trim().toLowerCase() === (currentTerm.term_type_label || '').trim().toLowerCase()
                     );
-
-                    // Build options EXCLUDING already-selected term types from OTHER terms
-                    const usedByOtherTerms = new Set(
-                        watchedTerms
-                            .filter((_, idx) => idx !== index)
-                            .map((t) => t.term_type_id)
-                            .filter(Boolean)
-                    );
-
-                    const filteredTypeOptions = termTypes
-                        .filter((tt) => tt.id === currentTerm.term_type_id || !usedByOtherTerms.has(tt.id))
-                        .map((tt) => ({
-                            label: `${tt.label} (${tt.code})`,
-                            value: tt.id
-                        }));
 
                     // Check date conflict with preceding term
                     const hasPrecedingConflict = Boolean(
@@ -382,7 +359,7 @@ export default function Step2TermsConfig({
                                 <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
                                     <WarningCircleIcon className="w-4 h-4 shrink-0" />
                                     <span>
-                                        Duplicate Term Type: &quot;{currentTerm.term_type_label || 'This term'}&quot; is already selected in another term. Each term must have a unique type (e.g. you cannot have two Summer terms).
+                                        Duplicate Term Type: &quot;{currentTerm.term_type_label || 'This term'}&quot; is already declared in another term. Each term in an academic year must have a unique name.
                                     </span>
                                 </div>
                             )}
@@ -407,29 +384,35 @@ export default function Step2TermsConfig({
 
                             {/* Term Inputs Responsive Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {/* Term Type Selector */}
+                                {/* Term Type Input */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                                     <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Term Type <span className="text-red-500">*</span></span>
-                                        <CommonInfoTooltip content="Each term must be a unique type (e.g. 1st Semester, 2nd Semester, Summer)." size={14} />
+                                        <span>Term Type / Name <span className="text-red-500">*</span></span>
+                                        <CommonInfoTooltip content="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)." size={14} />
                                     </label>
-                                    <CommonSelect
-                                        disabled={disabled || isLoadingTypes}
-                                        fullWidth
-                                        options={filteredTypeOptions}
-                                        size="medium"
-                                        value={currentTerm.term_type_id || ''}
+                                    <input
+                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        disabled={disabled}
+                                        list="term-type-suggestions"
+                                        placeholder="e.g. 1st Semester"
+                                        type="text"
+                                        value={currentTerm.term_type_label || ''}
                                         onChange={(e) => {
-                                            const selectedId = String(e.target.value);
-                                            const matched = termTypes.find((t) => t.id === selectedId);
+                                            const newLabel = e.target.value;
+                                            const matched = termTypes.find((t) => t.label.toLowerCase() === newLabel.trim().toLowerCase());
                                             update(index, {
                                                 ...currentTerm,
-                                                term_type_code: matched?.code || '',
-                                                term_type_id: selectedId,
-                                                term_type_label: matched?.label || ''
+                                                term_type_code: matched?.code || newLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                                                term_type_id: matched?.id || '',
+                                                term_type_label: newLabel
                                             });
                                         }}
                                     />
+                                    <datalist id="term-type-suggestions">
+                                        {termTypes.map((tt) => (
+                                            <option key={tt.id} value={tt.label} />
+                                        ))}
+                                    </datalist>
                                 </div>
 
                                 {/* Term Start Date */}

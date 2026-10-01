@@ -2,13 +2,21 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
+    GearIcon,
     PlusIcon,
     SparkleIcon,
     SunIcon,
     TrashIcon
 } from '@phosphor-icons/react';
-import { AcademicYearWizardFormValues, CalendarExceptionType, WizardCalendarExceptionItem } from '@type/school-year.type';
+import {
+    AcademicYearWizardFormValues,
+    CalendarExceptionType,
+    ExceptionTypeOptionItem,
+    WizardCalendarExceptionItem
+} from '@type/school-year.type';
+import { useState } from 'react';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import ManageExceptionTypesModal from './ManageExceptionTypesModal';
 import { generatePresetHolidays } from './wizard.constants';
 
 interface Step4HolidaysConfigProps {
@@ -16,10 +24,21 @@ interface Step4HolidaysConfigProps {
     disabled?: boolean;
 }
 
+const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = [
+    { is_active: true, is_default: true, label: 'Holiday' },
+    { is_active: true, is_default: true, label: 'Break' },
+    { is_active: true, is_default: true, label: 'Suspension' },
+    { is_active: true, is_default: true, label: 'Special Class' },
+    { is_active: true, is_default: true, label: 'Exam Day' }
+];
+
 export default function Step4HolidaysConfig({
     control,
     disabled = false
 }: Step4HolidaysConfigProps) {
+    const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
+    const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
+
     const { fields, append, remove, replace, update } = useFieldArray({
         control,
         name: 'holidays'
@@ -30,9 +49,10 @@ export default function Step4HolidaysConfig({
     const syEndDate = useWatch({ control, name: 'end_date' });
 
     function handleAddHoliday() {
+        const activeDefault = exceptionTypeOptions.find((t) => t.is_active)?.label || 'Holiday';
         const newHoliday: WizardCalendarExceptionItem = {
             title: '',
-            exception_type: 'Holiday',
+            exception_type: activeDefault as CalendarExceptionType,
             start_date: syStartDate || '',
             end_date: syStartDate || '',
             affects_attendance: true,
@@ -110,6 +130,16 @@ export default function Step4HolidaysConfig({
                         </CommonButton>
 
                         <CommonButton
+                            color="inherit"
+                            size="small"
+                            startIcon={<GearIcon className="w-3.5 h-3.5 text-slate-500" />}
+                            variant="outlined"
+                            onClick={() => setIsManageTypesOpen(true)}
+                        >
+                            Configure Types
+                        </CommonButton>
+
+                        <CommonButton
                             color="primary"
                             size="small"
                             startIcon={<PlusIcon className="w-3.5 h-3.5" />}
@@ -139,6 +169,16 @@ export default function Step4HolidaysConfig({
                 <div className="flex flex-col gap-4">
                     {fields.map((item, idx) => {
                         const current = holidays[idx] || item;
+
+                        const activeOptions = exceptionTypeOptions.filter((t) => t.is_active);
+                        const currentTypeItem = exceptionTypeOptions.find(
+                            (t) => t.label.toLowerCase() === (current.exception_type || '').toLowerCase()
+                        );
+                        const optionsToRender = [...activeOptions];
+                        if (currentTypeItem && !currentTypeItem.is_active) {
+                            optionsToRender.push(currentTypeItem);
+                        }
+
                         return (
                             <div
                                 key={item.id}
@@ -196,7 +236,7 @@ export default function Step4HolidaysConfig({
                                             aria-label="Select exception type"
                                             className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
                                             disabled={disabled}
-                                            value={current.exception_type || 'Holiday'}
+                                            value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                             onChange={(e) => {
                                                 update(idx, {
                                                     ...current,
@@ -204,11 +244,11 @@ export default function Step4HolidaysConfig({
                                                 });
                                             }}
                                         >
-                                            <option value="Holiday">Holiday</option>
-                                            <option value="Break">Break</option>
-                                            <option value="Suspension">Suspension</option>
-                                            <option value="Special Class">Special Class</option>
-                                            <option value="Exam Day">Exam Day</option>
+                                            {optionsToRender.map((opt) => (
+                                                <option key={opt.label} value={opt.label}>
+                                                    {opt.label} {!opt.is_active ? '(Deprecated)' : ''}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
@@ -284,6 +324,15 @@ export default function Step4HolidaysConfig({
                     })}
                 </div>
             )}
+
+            {/* Modal to configure exception type options with soft deprecation */}
+            <ManageExceptionTypesModal
+                exceptionTypes={exceptionTypeOptions}
+                open={isManageTypesOpen}
+                usedTypes={Array.from(new Set(holidays.map((h) => h.exception_type).filter(Boolean)))}
+                onClose={() => setIsManageTypesOpen(false)}
+                onSave={(updated) => setExceptionTypeOptions(updated)}
+            />
         </div>
     );
 }
