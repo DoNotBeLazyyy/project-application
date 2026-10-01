@@ -1,5 +1,6 @@
 import { ROLE_HOME } from '@constants/role.constant';
 import { useAppStore } from '@stores/app.store';
+import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
@@ -10,27 +11,25 @@ interface RoleGateProps {
 
 export default function RoleGate({ allowedRoles }: RoleGateProps) {
     const activeRole = useAppStore((s) => s.activeRole);
-    const availableRoles = useAppStore((s) => s.availableRoles);
-    const setActiveRole = useAppStore((s) => s.setActiveRole);
 
-    const matchingRole = availableRoles.find((r) => allowedRoles.includes(r.code));
+    const isCurrentActiveRoleAllowed = Boolean(activeRole && allowedRoles.includes(activeRole));
 
     useEffect(() => {
-        if (activeRole && !allowedRoles.includes(activeRole) && matchingRole) {
-            setActiveRole(matchingRole.code);
+        if (activeRole && !allowedRoles.includes(activeRole)) {
+            useToastStore.getState().showToast(
+                'Access Denied: You do not have permission to access this page.',
+                'error'
+            );
         }
-    }, [activeRole, allowedRoles, matchingRole, setActiveRole]);
+    }, [activeRole, allowedRoles]);
 
     if (!activeRole) {
         return <Navigate replace to="/unauthorized" />;
     }
 
-    if (!allowedRoles.includes(activeRole)) {
-        if (matchingRole) {
-            return <Outlet />;
-        }
-
-        return <Navigate replace to={ROLE_HOME[activeRole]} />;
+    if (!isCurrentActiveRoleAllowed) {
+        const fallbackHome = ROLE_HOME[activeRole] || '/unauthorized';
+        return <Navigate replace to={fallbackHome} />;
     }
 
     return <Outlet />;
