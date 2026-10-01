@@ -57,6 +57,7 @@ export default function GradingTab({
     const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
     const [isThresholdOpen, setIsThresholdOpen] = useState(false);
     const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
+    const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
 
     useEffect(function() {
         async function fetchPeriods() {
@@ -117,10 +118,7 @@ export default function GradingTab({
 
     async function handleCalculate() {
         const result = await calculateAllGradesForPeriod(sectionId, activePeriodId);
-
-        if (result.error) {
-            return;
-        }
+        if (result.error) return;
 
         setCalculationFailures(result.data?.failures ?? []);
         await fetchPeriodData();
@@ -136,15 +134,12 @@ export default function GradingTab({
         setIsFlagBusy(false);
 
         const message = result.error?.message ?? result.data?.message;
-
         if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'The special grade could not be applied.', 'warning');
+            useToastStore.getState().showToast(message ?? 'The special grade could not be applied.', 'warning');
             return;
         }
 
-        useToastStore.getState()
-            .showToast(message ?? `Applied ${flag.code}.`, 'success');
+        useToastStore.getState().showToast(message ?? `Applied ${flag.code}.`, 'success');
         await fetchPeriodData();
     }
 
@@ -160,16 +155,13 @@ export default function GradingTab({
         setIsFlagBusy(false);
 
         const message = result.error?.message ?? result.data?.message;
-
         if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'The flag could not be dismissed.', 'warning');
+            useToastStore.getState().showToast(message ?? 'The flag could not be dismissed.', 'warning');
             return;
         }
 
         setFlagPendingDismissal(null);
-        useToastStore.getState()
-            .showToast(message ?? 'Flag dismissed.', 'success');
+        useToastStore.getState().showToast(message ?? 'Flag dismissed.', 'success');
         await fetchPeriodData();
     }
 
@@ -184,22 +176,19 @@ export default function GradingTab({
         setIsSubmittingGrades(false);
 
         const message = result.error?.message ?? result.data?.message;
-
         if (result.error || !result.data?.success) {
-            useToastStore.getState()
-                .showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
+            useToastStore.getState().showToast(message ?? 'Grades could not be submitted to the Registrar.', 'warning');
             return;
         }
 
-        useToastStore.getState()
-            .showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
+        useToastStore.getState().showToast(message ?? 'Grades officially submitted to the Registrar.', 'success');
         await fetchPeriodData();
     }
 
     if (periods.length === 0) {
         return (
-            <div className="flex flex-1 items-center justify-center">
-                <p className="text-(--mui-palette-text-secondary) text-sm">
+            <div className="flex flex-1 items-center justify-center p-8">
+                <p className="text-slate-500 text-sm">
                     No grading periods found for this section&apos;s term.
                 </p>
             </div>
@@ -207,57 +196,101 @@ export default function GradingTab({
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-wrap gap-2 items-center justify-between">
-                <CommonTabMenu
-                    menuStyle="outline"
-                    size="small"
-                    tabs={periods.map((p) => ({ label: p.name, value: p.id }))}
-                    value={activePeriodId}
-                    onChange={handleTabChange}
-                />
+        <div className="flex flex-col gap-4 h-full min-h-0">
+            {/* Periods Bar + Thresholds Button */}
+            <div className="flex flex-wrap gap-2 items-center justify-between pb-1 border-b border-slate-200 dark:border-zinc-800">
+                <div className="flex items-center gap-2 overflow-x-auto py-1">
+                    <CommonTabMenu
+                        menuStyle="outline"
+                        size="small"
+                        tabs={periods.map((p) => ({
+                            label: p.weight ? `${p.name} (${p.weight}%)` : p.name,
+                            value: p.id
+                        }))}
+                        value={activePeriodId}
+                        onChange={handleTabChange}
+                    />
+                </div>
 
-                {overridableRules.length > 0
-                    ? (
+                <div className="flex items-center gap-2">
+                    {/* Mobile View Switcher (Components vs Grade Sheet) */}
+                    <div className="flex md:hidden items-center bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200 dark:border-zinc-700">
+                        <button
+                            type="button"
+                            onClick={() => setMobileGradingView('sheet')}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                                mobileGradingView === 'sheet'
+                                    ? 'bg-white dark:bg-zinc-900 text-blue-600 shadow-xs'
+                                    : 'text-slate-600 dark:text-slate-400'
+                            }`}
+                        >
+                            Grade Sheet ({gradeSheet.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setMobileGradingView('components')}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                                mobileGradingView === 'components'
+                                    ? 'bg-white dark:bg-zinc-900 text-blue-600 shadow-xs'
+                                    : 'text-slate-600 dark:text-slate-400'
+                            }`}
+                        >
+                            Components ({components.length})
+                        </button>
+                    </div>
+
+                    {overridableRules.length > 0 && (
                         <CommonButton
                             size="small"
                             startIcon={<SlidersHorizontalIcon size={14} weight="bold" />}
                             variant="outlined"
                             onClick={() => setIsThresholdOpen(true)}
                         >
-                            Section thresholds
+                            Thresholds
                         </CommonButton>
-                    )
-                    : null}
+                    )}
+                </div>
             </div>
-            <div className="flex gap-4 flex-1 min-h-0">
-                <GradingComponentPanel
-                    components={components}
-                    locked={isLocked}
-                    onCreate={handleCreate}
-                    onDelete={handleDelete}
-                    onReseed={handleReseed}
-                    onUpdate={handleUpdate}
-                />
-                <GradeSheetPanel
-                    calculationFailures={calculationFailures}
-                    components={components}
-                    courseCode={courseCode}
-                    courseTitle={courseTitle}
-                    gradeSheet={gradeSheet}
-                    gradingPeriodId={activePeriodId}
-                    isFlagBusy={isFlagBusy}
-                    isSubmittingGrades={isSubmittingGrades}
-                    periodName={periods.find((p) => p.id === activePeriodId)?.name}
-                    sectionCode={sectionCode}
-                    specialGradeFlags={specialGradeFlags}
-                    onApplyFlag={handleApplyFlag}
-                    onCalculate={handleCalculate}
-                    onDismissFailures={handleDismissFailures}
-                    onDismissFlag={handleRequestDismissFlag}
-                    onSubmitGrades={handleSubmitGrades}
-                />
+
+            {/* Split layout: Components & Grade Sheet */}
+            <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+                {/* Grading Components Panel */}
+                <div className={`h-full min-h-0 ${mobileGradingView === 'sheet' ? 'hidden md:flex' : 'flex'}`}>
+                    <GradingComponentPanel
+                        components={components}
+                        locked={isLocked}
+                        periodName={periods.find((p) => p.id === activePeriodId)?.name}
+                        periodWeight={periods.find((p) => p.id === activePeriodId)?.weight}
+                        onCreate={handleCreate}
+                        onDelete={handleDelete}
+                        onReseed={handleReseed}
+                        onUpdate={handleUpdate}
+                    />
+                </div>
+
+                {/* Grade Sheet Panel */}
+                <div className={`flex-1 h-full min-h-0 ${mobileGradingView === 'components' ? 'hidden md:flex' : 'flex'}`}>
+                    <GradeSheetPanel
+                        calculationFailures={calculationFailures}
+                        components={components}
+                        courseCode={courseCode}
+                        courseTitle={courseTitle}
+                        gradeSheet={gradeSheet}
+                        gradingPeriodId={activePeriodId}
+                        isFlagBusy={isFlagBusy}
+                        isSubmittingGrades={isSubmittingGrades}
+                        periodName={periods.find((p) => p.id === activePeriodId)?.name}
+                        sectionCode={sectionCode}
+                        specialGradeFlags={specialGradeFlags}
+                        onApplyFlag={handleApplyFlag}
+                        onCalculate={handleCalculate}
+                        onDismissFailures={handleDismissFailures}
+                        onDismissFlag={handleRequestDismissFlag}
+                        onSubmitGrades={handleSubmitGrades}
+                    />
+                </div>
             </div>
+
             <SectionThresholdModal
                 open={isThresholdOpen}
                 rules={overridableRules}
@@ -265,6 +298,7 @@ export default function GradingTab({
                 onClose={() => setIsThresholdOpen(false)}
                 onSaved={fetchOverridableRules}
             />
+
             <SpecialGradeFlagModal
                 flag={flagPendingDismissal}
                 isBusy={isFlagBusy}

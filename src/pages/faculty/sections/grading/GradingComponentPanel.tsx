@@ -2,14 +2,20 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
-import CommonTable from '@components/table/CommonTable';
+import TransmutationScaleModal from '@pages/faculty/sections/grading/TransmutationScaleModal';
 import {
-    ArrowsClockwiseIcon, LockIcon, PencilIcon, PlusIcon, TrashIcon
+    ArrowsClockwiseIcon,
+    ChartPieSliceIcon,
+    LockIcon,
+    PencilSimpleIcon,
+    PlusIcon,
+    ScalesIcon,
+    TrashIcon
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
 import { formErrors } from '@utils/form.util';
-import { ColDef } from 'ag-grid-community';
-import { useMemo, useState } from 'react';
+import { componentRailColor } from '@utils/period-allocation.util';
+import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-component-form';
@@ -40,6 +46,8 @@ const componentFields: FormFieldConfig<GradingComponentFormValues>[] = [
 interface GradingComponentPanelProps {
     components: GradingComponent[];
     locked: boolean;
+    periodName?: string;
+    periodWeight?: number;
     onCreate: (values: GradingComponentFormValues) => Promise<void>;
     onDelete: (componentId: string) => Promise<void>;
     onReseed: () => Promise<void>;
@@ -49,6 +57,8 @@ interface GradingComponentPanelProps {
 export default function GradingComponentPanel({
     components,
     locked,
+    periodName,
+    periodWeight,
     onCreate,
     onDelete,
     onReseed,
@@ -56,6 +66,7 @@ export default function GradingComponentPanel({
 }: GradingComponentPanelProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isTransmutationOpen, setIsTransmutationOpen] = useState(false);
     const [selectedId, setSelectedId] = useState('');
 
     const createMethods = useForm<GradingComponentFormValues>({ defaultValues: defaultFormValues });
@@ -90,131 +101,187 @@ export default function GradingComponentPanel({
         formErrors(errors, updateMethods);
     }
 
-    const columnDefs = useMemo<ColDef<GradingComponent>[]>(function() {
-        return [
-            {
-                field: 'name',
-                flex: 3,
-                headerName: 'Component',
-                sortable: false
-            },
-            {
-                field: 'weight',
-                flex: 1,
-                headerName: 'Weight (%)',
-                sortable: false,
-                valueFormatter: (params) => `${params.value}%`
-            },
-            {
-                headerName: '',
-                maxWidth: 80,
-                minWidth: 80,
-                sortable: false,
-                cellRenderer: (params: { data: GradingComponent }) => (
-                    <div className="flex gap-1 h-full items-center justify-center">
-                        <CommonButton
-                            color="primary"
-                            disabled={locked}
-                            size="small"
-                            onClick={function() {
-                                handleOpenUpdate(params.data);
-                            }}
-                        >
-                            <PencilIcon size={14} weight="bold" />
-                        </CommonButton>
-                        <CommonButton
-                            color="error"
-                            disabled={locked}
-                            size="small"
-                            onClick={function() {
-                                onDelete(params.data.id);
-                            }}
-                        >
-                            <TrashIcon size={14} weight="bold" />
-                        </CommonButton>
-                    </div>
-                )
-            }
-        ];
-    }, [locked, onDelete]);
-
     return (
-        <div className="flex flex-col flex-shrink-0 gap-3 w-72">
+        <div className="flex flex-col flex-shrink-0 gap-3.5 w-full md:w-80 h-full min-h-0">
+            {/* Header & Add Button */}
             <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Components
+                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                        Grading Components
                     </span>
-                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                        Total: {totalWeight}%
+                    <span className="text-[11px] text-slate-500">
+                        {periodName ? `${periodName} Period` : 'Active Period'}{' '}
+                        {periodWeight !== undefined ? `(${periodWeight}% of Final Grade)` : ''}
                     </span>
-                    {!locked && totalWeight >= 100
-                        ? (
-                            <span className="text-(--mui-palette-warning-main) text-xs">
-                                Components already total 100%.
-                            </span>
-                        )
-                        : null}
                 </div>
                 <CommonButton
                     disabled={locked || totalWeight >= 100}
                     size="small"
                     startIcon={<PlusIcon size={14} weight="bold" />}
                     variant="contained"
-                    onClick={function() {
-                        setIsCreateOpen(true);
-                    }}
+                    onClick={() => setIsCreateOpen(true)}
                 >
                     Add
                 </CommonButton>
             </div>
-            {locked
-                ? (
-                    <div className="bg-(--mui-palette-action-hover) flex gap-2 items-start p-2 rounded-md">
-                        <LockIcon
-                            className="mt-0.5 text-(--mui-palette-text-secondary)"
-                            size={14}
-                            weight="bold"
-                        />
-                        <span className="text-(--mui-palette-text-secondary) text-xs">
-                        Locked: grades have been recorded for this period, so components can no longer be changed.
-                        </span>
-                    </div>
-                )
-                : null}
-            {!locked && components.length === 0
-                ? (
-                    <CommonButton
-                        size="small"
-                        startIcon={<ArrowsClockwiseIcon size={14} weight="bold" />}
-                        variant="outlined"
-                        onClick={onReseed}
+
+            {/* Academic Year & Program Schema Alignment Card */}
+            <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-2xs">
+                <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                        Weight Allocation
+                    </span>
+                    <span
+                        className={`font-mono font-bold text-xs px-2 py-0.5 rounded-md ${
+                            totalWeight === 100
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                        }`}
                     >
-                    Reset to institutional template
-                    </CommonButton>
-                )
-                : null}
-            <div className="flex-1 min-h-0">
-                <CommonTable<GradingComponent>
-                    leadingColumnDefs={columnDefs}
-                    rowData={components}
-                />
+                        {totalWeight}% / 100%
+                    </span>
+                </div>
+
+                {/* Multi-segment Allocation Rail matching Academic Year Schema */}
+                <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden flex">
+                    {components.map((comp, idx) => (
+                        <div
+                            key={comp.id}
+                            style={{
+                                width: `${comp.weight}%`,
+                                backgroundColor: componentRailColor(idx)
+                            }}
+                            title={`${comp.name}: ${comp.weight}%`}
+                            className="h-full transition-all"
+                        />
+                    ))}
+                </div>
+
+                {/* Schema Source & Transmutation Scale link */}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800/80">
+                    <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                        Program Schema
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => setIsTransmutationOpen(true)}
+                        className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                        <ScalesIcon size={13} weight="bold" />
+                        Transmutation Scale
+                    </button>
+                </div>
             </div>
 
+            {locked && (
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex gap-2 items-start p-2.5 rounded-xl text-amber-800 dark:text-amber-300">
+                    <LockIcon className="mt-0.5 shrink-0" size={14} weight="bold" />
+                    <span className="text-[11px] leading-tight">
+                        Locked: grades have been recorded for this period, so components can no longer be edited.
+                    </span>
+                </div>
+            )}
+
+            {!locked && components.length === 0 && (
+                <CommonButton
+                    size="small"
+                    startIcon={<ArrowsClockwiseIcon size={14} weight="bold" />}
+                    variant="outlined"
+                    onClick={onReseed}
+                >
+                    Reseed from Schema Defaults
+                </CommonButton>
+            )}
+
+            {/* Bento Card Grid for Components */}
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2.5 pr-1">
+                {components.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900/40">
+                        <ChartPieSliceIcon size={32} className="text-slate-400 mb-2" />
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            No Components Configured
+                        </span>
+                        <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">
+                            Add assessment components (e.g. Quizzes, Exams) to calculate student grades.
+                        </p>
+                    </div>
+                ) : (
+                    components.map((component, idx) => {
+                        const railColor = componentRailColor(idx);
+                        return (
+                            <div
+                                key={component.id}
+                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs flex flex-col justify-between gap-2.5 group hover:border-slate-300 dark:hover:border-zinc-700 transition-all"
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div
+                                            className="w-3 h-3 rounded-full shrink-0"
+                                            style={{ backgroundColor: railColor }}
+                                        />
+                                        <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                                            {component.name}
+                                        </span>
+                                    </div>
+                                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                        {component.weight}%
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 text-[11px] text-slate-500">
+                                    <span>
+                                        {periodWeight !== undefined
+                                            ? `${((component.weight * periodWeight) / 100).toFixed(1)}% of course`
+                                            : 'Period Component'}
+                                    </span>
+
+                                    {!locked && (
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                title="Edit Component"
+                                                onClick={() => handleOpenUpdate(component)}
+                                                className="p-1 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                                            >
+                                                <PencilSimpleIcon size={14} weight="bold" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                title="Delete Component"
+                                                onClick={() => onDelete(component.id)}
+                                                className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                            >
+                                                <TrashIcon size={14} weight="bold" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+
+            {/* Transmutation Scale Modal */}
+            <TransmutationScaleModal
+                open={isTransmutationOpen}
+                onClose={() => setIsTransmutationOpen(false)}
+            />
+
+            {/* Create Component Modal */}
             <CommonModal
                 cardProps={{
                     cardHeaderProps: {
-                        subheader: 'Add a grading component for this period.',
-                        title: 'Add Grading Component'
+                        subheader: 'Add a new grading component to this period.',
+                        title: 'New Component'
                     }
                 }}
                 open={isCreateOpen}
-                onClose={function() {
-                    createMethods.reset(defaultFormValues);
-                    setIsCreateOpen(false);
-                }}
+                onClose={() => setIsCreateOpen(false)}
             >
-                <div className="flex flex-col gap-4 max-w-full sm:w-80 w-full">
+                <div className="flex flex-col gap-4 max-w-full sm:w-96 w-full">
                     <CommonForm
                         containerClassName="flex flex-col gap-4"
                         control={createMethods.control}
@@ -229,35 +296,34 @@ export default function GradingComponentPanel({
                             color="inherit"
                             size="small"
                             variant="outlined"
-                            onClick={function() {
-                                createMethods.reset(defaultFormValues);
-                                setIsCreateOpen(false);
-                            }}
+                            onClick={() => setIsCreateOpen(false)}
                         >
                             Cancel
                         </CommonButton>
-                        <CommonButton form={CREATE_FORM_ID} size="small" type="submit" variant="contained">
-                            Add
+                        <CommonButton
+                            form={CREATE_FORM_ID}
+                            size="small"
+                            type="submit"
+                            variant="contained"
+                        >
+                            Create
                         </CommonButton>
                     </div>
                 </div>
             </CommonModal>
 
+            {/* Update Component Modal */}
             <CommonModal
                 cardProps={{
                     cardHeaderProps: {
                         subheader: 'Update this grading component.',
-                        title: 'Edit Grading Component'
+                        title: 'Edit Component'
                     }
                 }}
                 open={isUpdateOpen}
-                onClose={function() {
-                    updateMethods.reset(defaultFormValues);
-                    setIsUpdateOpen(false);
-                    setSelectedId('');
-                }}
+                onClose={() => setIsUpdateOpen(false)}
             >
-                <div className="flex flex-col gap-4 max-w-full sm:w-80 w-full">
+                <div className="flex flex-col gap-4 max-w-full sm:w-96 w-full">
                     <CommonForm
                         containerClassName="flex flex-col gap-4"
                         control={updateMethods.control}
@@ -272,22 +338,17 @@ export default function GradingComponentPanel({
                             color="inherit"
                             size="small"
                             variant="outlined"
-                            onClick={function() {
-                                updateMethods.reset(defaultFormValues);
-                                setIsUpdateOpen(false);
-                                setSelectedId('');
-                            }}
+                            onClick={() => setIsUpdateOpen(false)}
                         >
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!updateMethods.formState.isDirty}
                             form={UPDATE_FORM_ID}
                             size="small"
                             type="submit"
                             variant="contained"
                         >
-                            Save
+                            Update
                         </CommonButton>
                     </div>
                 </div>

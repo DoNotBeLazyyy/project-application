@@ -8,8 +8,15 @@ import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnounce
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon,
-    GraduationCapIcon, MegaphoneIcon, NotepadIcon
+    BookOpenIcon,
+    CalendarCheckIcon,
+    ChatCircleTextIcon,
+    ChalkboardTeacherIcon,
+    DoorIcon,
+    GraduationCapIcon,
+    MegaphoneIcon,
+    NotepadIcon,
+    StudentIcon
 } from '@phosphor-icons/react';
 import { getSectionDetail } from '@services/faculty.service';
 import { useBreadcrumbStore } from '@stores/breadcrumb.store';
@@ -34,9 +41,7 @@ export default function SectionDetailPage() {
         : 'content';
 
     useEffect(function() {
-        if (!sectionId) {
-            return;
-        }
+        if (!sectionId) return;
 
         async function fetchData() {
             const sectionResult = await getSectionDetail(sectionId);
@@ -62,73 +67,86 @@ export default function SectionDetailPage() {
     if (!sectionId) return null;
 
     return (
-        <CommonCard className="h-full w-full">
-            <div className="flex flex-col gap-4 h-full">
-                <div className="flex flex-col gap-1">
-                    <div className="flex gap-2 items-center">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
+        <CommonCard className="h-full w-full p-3 sm:p-5 flex flex-col">
+            <div className="flex flex-col gap-3.5 h-full min-h-0">
+                {/* Mobile-First Section Detail Header */}
+                <div className="flex flex-col gap-2 pb-2 border-b border-slate-200/80 dark:border-zinc-800">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono font-bold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
                             {section?.section_code ?? '—'}
+                        </span>
+                        <span className="text-slate-400 text-sm hidden sm:inline">
+                            /
+                        </span>
+                        <h1 className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg tracking-tight leading-snug">
+                            {section?.course_code ? `${section.course_code} — ` : ''}{section?.course_title ?? 'Loading Course...'}
                         </h1>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                        /
-                        </span>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            {section?.course_code} — {section?.course_title}
-                        </span>
                     </div>
-                    <div className="flex gap-4 items-center">
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            {section?.term_label}
-                        </span>
+
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+                        {section?.term_label && (
+                            <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                {section.term_label}
+                            </span>
+                        )}
                         {section?.room && (
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
+                            <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                <DoorIcon size={14} className="text-slate-400" />
                                 {section.room}
                             </span>
                         )}
                     </div>
                 </div>
-                <CommonTabMenu
-                    menuStyle="outline"
-                    tabs={[
-                        {
-                            icon: <BookOpenIcon />,
-                            label: 'Lessons & Syllabus',
-                            value: 'content'
-                        },
-                        {
-                            icon: <NotepadIcon />,
-                            label: 'Assessments',
-                            value: 'assessments'
-                        },
-                        {
-                            icon: <ClipboardTextIcon />,
-                            label: 'Gradebook',
-                            value: 'grading'
-                        },
-                        {
-                            icon: <CalendarCheckIcon />,
-                            label: 'Attendance',
-                            value: 'attendance'
-                        },
-                        {
-                            icon: <GraduationCapIcon />,
-                            label: 'Class Roster',
-                            value: 'students'
-                        },
-                        {
-                            icon: <ChatCircleTextIcon />,
-                            label: 'Discussions',
-                            value: 'discussion'
-                        },
-                        {
-                            icon: <MegaphoneIcon />,
-                            label: 'Announcements',
-                            value: 'announcements'
-                        }
-                    ]}
-                    value={activeTab}
-                    onChange={handleTabChange}
-                />
+
+                {/* Horizontal Scrollable Tabs on Mobile */}
+                <div className="overflow-x-auto no-scrollbar pb-1 shrink-0 -mx-1 px-1">
+                    <div className="min-w-max">
+                        <CommonTabMenu
+                            menuStyle="outline"
+                            tabs={[
+                                {
+                                    icon: <BookOpenIcon size={16} />,
+                                    label: 'Lessons & Syllabus',
+                                    value: 'content'
+                                },
+                                {
+                                    icon: <NotepadIcon size={16} />,
+                                    label: 'Assessments',
+                                    value: 'assessments'
+                                },
+                                {
+                                    icon: <ChalkboardTeacherIcon size={16} />,
+                                    label: 'Gradebook',
+                                    value: 'grading'
+                                },
+                                {
+                                    icon: <CalendarCheckIcon size={16} />,
+                                    label: 'Attendance',
+                                    value: 'attendance'
+                                },
+                                {
+                                    icon: <StudentIcon size={16} />,
+                                    label: 'Class Roster',
+                                    value: 'students'
+                                },
+                                {
+                                    icon: <ChatCircleTextIcon size={16} />,
+                                    label: 'Discussions',
+                                    value: 'discussion'
+                                },
+                                {
+                                    icon: <MegaphoneIcon size={16} />,
+                                    label: 'Announcements',
+                                    value: 'announcements'
+                                }
+                            ]}
+                            value={activeTab}
+                            onChange={handleTabChange}
+                        />
+                    </div>
+                </div>
+
+                {/* Tab Content Panes */}
                 <div className="flex-1 min-h-0">
                     {activeTab === 'content' && (
                         <SectionContentPanel sectionId={sectionId} />

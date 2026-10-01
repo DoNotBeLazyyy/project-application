@@ -1,3 +1,4 @@
+import CommonBentoCard from '@components/card/CommonBentoCard';
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
@@ -118,6 +119,7 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                         searchHints: SEARCH_HINTS.sectionStudents
                     }
                 }}
+                defaultViewMode="grid"
                 sortColumns={SORT_COLUMNS}
                 tableProps={{
                     leadingColumnDefs: columnDefs
@@ -125,6 +127,52 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
                 uniqueIdKey="enrollment_id"
                 onFetch={fetchStudents}
                 onRowClick={setSelectedEnrollmentId}
+                renderGridCard={(student, isSelected, onToggleSelect) => {
+                    const isDeansList = student.gwa !== null && student.gwa !== undefined && student.gwa <= 1.75;
+                    const isAtRisk = student.risk_level === 'High' || student.risk_level === 'Moderate';
+
+                    const statusLabel = isAtRisk
+                        ? `At Risk (${student.risk_level})`
+                        : isDeansList
+                        ? "Dean's List Candidate"
+                        : student.status ?? 'Enrolled';
+
+                    const enrolledDate = student.enrolled_at
+                        ? new Date(student.enrolled_at).toLocaleDateString()
+                        : '—';
+
+                    return (
+                        <CommonBentoCard
+                            code={student.student_number}
+                            hasCheckbox={false}
+                            isSelected={isSelected}
+                            onClick={() => setSelectedEnrollmentId(student.enrollment_id)}
+                            onToggleSelect={onToggleSelect}
+                            status={statusLabel}
+                            subtitle={student.email}
+                            title={student.full_name}
+                            facts={[
+                                { label: 'Year Level', value: `Year ${student.year_level}` },
+                                { label: 'Enrolled', value: enrolledDate }
+                            ]}
+                            metrics={[
+                                { label: 'Current GWA', value: student.gwa != null ? String(student.gwa) : 'N/A' },
+                                {
+                                    label: 'Academic Standing',
+                                    value: isAtRisk
+                                        ? `At Risk (${student.risk_level})`
+                                        : isDeansList
+                                        ? 'Dean’s List Standing'
+                                        : 'Good Standing'
+                                }
+                            ]}
+                            primaryAction={{
+                                label: 'View Evaluation',
+                                onClick: () => setSelectedEnrollmentId(student.enrollment_id)
+                            }}
+                        />
+                    );
+                }}
             />
             <StudentEvaluationModal
                 enrollmentId={selectedEnrollmentId}

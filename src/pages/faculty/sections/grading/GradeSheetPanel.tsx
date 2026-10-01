@@ -1,14 +1,20 @@
 import CommonButton from '@components/button/CommonButton';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
-import CommonTable from '@components/table/CommonTable';
 import StudentGradeBreakdownModal from '@pages/faculty/sections/grading/StudentGradeBreakdownModal';
 import {
-    CalculatorIcon, ChartLineUpIcon, DownloadSimpleIcon, LockKeyIcon, PaperPlaneTiltIcon, WarningCircleIcon, XIcon
+    CalculatorIcon,
+    ChartLineUpIcon,
+    DownloadSimpleIcon,
+    LockKeyIcon,
+    MagnifyingGlassIcon,
+    PaperPlaneTiltIcon,
+    UserCircleIcon,
+    WarningCircleIcon,
+    XIcon
 } from '@phosphor-icons/react';
 import SpecialGradeFlagBanner from '@pages/faculty/sections/grading/SpecialGradeFlagBanner';
 import { GradeCalculationFailure, GradeSheetRow, GradingComponent } from '@type/faculty.type';
 import { SpecialGradeFlag } from '@type/grading-config.type';
-import { MobileCardColDef } from '@type/table.type';
 import { exportCsvFile } from '@utils/file.util';
 import { generateGradeSheetCsv } from '@utils/grading.util';
 import { useMemo, useState } from 'react';
@@ -52,9 +58,14 @@ export default function GradeSheetPanel({
 }: GradeSheetPanelProps) {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [auditEnrollmentId, setAuditEnrollmentId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const isSubmitted = gradeSheet.length > 0 && gradeSheet.some((r) =>
-        r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released');
+    const isSubmitted =
+        gradeSheet.length > 0 &&
+        gradeSheet.some(
+            (r) => r.status === 'Submitted' || r.status === 'Approved' || r.status === 'Released'
+        );
+
     function handleExportCsv() {
         if (gradeSheet.length === 0) return;
 
@@ -71,90 +82,36 @@ export default function GradeSheetPanel({
         exportCsvFile(filename, csvContent);
     }
 
-    const columnDefs = useMemo<MobileCardColDef[]>(function() {
-        return [
-            {
-                field: 'student_number',
-                flex: 1,
-                headerName: 'Student No.',
-                mobileCard: 'subtitle',
-                sortable: false
-            },
-            {
-                field: 'full_name',
-                flex: 2,
-                headerName: 'Full Name',
-                mobileCard: 'title',
-                sortable: false
-            },
-            {
-                field: 'raw_grade',
-                flex: 1,
-                headerName: 'Raw Grade',
-                sortable: false,
-                valueFormatter: (params) => params.value != null
-                    ? `${params.value}%`
-                    : '—'
-            },
-            {
-                field: 'transmuted_grade',
-                flex: 1,
-                headerName: 'Transmuted',
-                sortable: false,
-                valueFormatter: (params) => params.value != null
-                    ? String(params.value)
-                    : '—'
-            },
-            {
-                field: 'special_grade',
-                flex: 1,
-                headerName: 'Special',
-                sortable: false,
-                valueFormatter: (params) => params.value ?? '—'
-            },
-            {
-                field: 'status',
-                flex: 1,
-                headerName: 'Status',
-                sortable: false,
-                valueFormatter: (params) => params.value ?? '—'
-            },
-            {
-                cellRenderer: (params: { data: GradeSheetRow }) => (
-                    <button
-                        className="cursor-pointer flex font-medium gap-1 items-center text-(--mui-palette-primary-main) text-xs hover:underline"
-                        type="button"
-                        onClick={function() {
-                            setAuditEnrollmentId(params.data.enrollment_id);
-                        }}
-                    >
-                        <ChartLineUpIcon size={14} /> Audit Math
-                    </button>
-                ),
-                field: 'audit',
-                flex: 1,
-                headerName: 'Audit',
-                sortable: false
-            }
-        ];
-    }, []);
+    const filteredRows = useMemo(() => {
+        if (!searchQuery.trim()) return gradeSheet;
+        const q = searchQuery.toLowerCase();
+        return gradeSheet.filter((row) => {
+            const name = (row.full_name ?? '').toLowerCase();
+            const studentNo = (row.student_number ?? '').toLowerCase();
+            return name.includes(q) || studentNo.includes(q);
+        });
+    }, [gradeSheet, searchQuery]);
 
     return (
-        <div className="flex flex-col flex-1 gap-3 min-w-0">
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Grade Sheet
+        <div className="flex flex-col flex-1 gap-3.5 min-w-0 h-full">
+            {/* Header Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-2xs">
+                <div className="flex flex-col min-w-0">
+                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                        Official Grade Sheet ({gradeSheet.length} students)
                     </span>
-                    {components.length === 0
-                        ? (
-                            <span className="text-(--mui-palette-warning-main) text-xs">
-                                Add at least one grading component before grades can be calculated.
-                            </span>
-                        )
-                        : null}
+                    {components.length === 0 ? (
+                        <span className="text-amber-600 dark:text-amber-400 text-xs mt-0.5">
+                            Add at least one grading component before grades can be computed.
+                        </span>
+                    ) : (
+                        <span className="text-xs text-slate-500 mt-0.5">
+                            Grading period: <strong>{periodName ?? 'Active Period'}</strong>
+                        </span>
+                    )}
                 </div>
-                <div className="flex gap-2 items-center">
+
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <CommonButton
                         disabled={gradeSheet.length === 0}
                         size="small"
@@ -164,6 +121,7 @@ export default function GradeSheetPanel({
                     >
                         Export CSV
                     </CommonButton>
+
                     <CommonButton
                         disabled={components.length === 0 || isSubmitted}
                         size="small"
@@ -171,8 +129,9 @@ export default function GradeSheetPanel({
                         variant="outlined"
                         onClick={onCalculate}
                     >
-                        Calculate Grades
+                        Calculate
                     </CommonButton>
+
                     {onSubmitGrades && (
                         <CommonButton
                             disabled={gradeSheet.length === 0 || isSubmitted || isSubmittingGrades}
@@ -181,31 +140,33 @@ export default function GradeSheetPanel({
                             variant="contained"
                             onClick={() => setIsConfirmOpen(true)}
                         >
-                            {isSubmitted
-                                ? 'Submitted to Registrar'
-                                : 'Submit Grades'}
+                            {isSubmitted ? 'Submitted' : 'Submit to Registrar'}
                         </CommonButton>
                     )}
                 </div>
             </div>
+
+            {/* Submission Status Banner */}
             {isSubmitted && (
-                <div className="bg-(--mui-palette-success-main)/10 border border-(--mui-palette-success-main) flex gap-2 items-center p-3 rounded-lg text-(--mui-palette-success-main)">
-                    <LockKeyIcon size={18} weight="fill" />
-                    <span className="font-medium text-sm">
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex gap-2.5 items-center p-3 rounded-2xl text-emerald-800 dark:text-emerald-300">
+                    <LockKeyIcon size={20} weight="fill" className="shrink-0 text-emerald-600" />
+                    <span className="font-medium text-xs sm:text-sm">
                         Grades for {periodName ?? 'this period'} have been officially submitted to the Registrar and are locked for review.
                     </span>
                 </div>
             )}
+
+            {/* Calculation Failures Banner */}
             {calculationFailures && calculationFailures.length > 0 && (
-                <div className="bg-(--mui-palette-error-main)/10 border border-(--mui-palette-error-main) flex flex-col gap-2 max-h-40 overflow-y-auto p-3 rounded-lg">
-                    <div className="flex gap-2 items-center text-(--mui-palette-error-main)">
-                        <WarningCircleIcon size={16} weight="fill" />
-                        <p className="font-semibold text-sm">
-                            {calculationFailures.length} student(s) could not be calculated
+                <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex flex-col gap-2 max-h-40 overflow-y-auto p-3.5 rounded-2xl">
+                    <div className="flex gap-2 items-center text-rose-700 dark:text-rose-300">
+                        <WarningCircleIcon size={18} weight="fill" />
+                        <p className="font-bold text-xs sm:text-sm">
+                            {calculationFailures.length} student grade(s) could not be calculated
                         </p>
                         {onDismissFailures && (
                             <button
-                                className="cursor-pointer ml-auto shrink-0"
+                                className="cursor-pointer ml-auto shrink-0 p-1 text-rose-500 hover:text-rose-700"
                                 title="Dismiss"
                                 type="button"
                                 onClick={onDismissFailures}
@@ -215,39 +176,136 @@ export default function GradeSheetPanel({
                         )}
                     </div>
                     <ul className="flex flex-col gap-1">
-                        {calculationFailures.map(function(failure) {
-                            return (
-                                <li
-                                    className="text-(--mui-palette-text-secondary) text-xs"
-                                    key={failure.enrollment_id}
-                                >
-                                    <span className="font-medium text-(--mui-palette-text-primary)">
-                                        {failure.full_name ?? failure.student_number ?? failure.enrollment_id}
-                                    </span>
-                                    {' — '}
-                                    {failure.reason ?? 'No reason was returned.'}
-                                </li>
-                            );
-                        })}
+                        {calculationFailures.map((failure) => (
+                            <li className="text-xs text-rose-600 dark:text-rose-400" key={failure.enrollment_id}>
+                                <strong>{failure.full_name ?? failure.student_number ?? failure.enrollment_id}</strong>: {failure.reason ?? 'Calculation issue.'}
+                            </li>
+                        ))}
                     </ul>
                 </div>
             )}
-            {specialGradeFlags && onApplyFlag && onDismissFlag
-                ? (
-                    <SpecialGradeFlagBanner
-                        flags={specialGradeFlags}
-                        isBusy={isFlagBusy}
-                        onApply={onApplyFlag}
-                        onDismiss={onDismissFlag}
-                    />
-                )
-                : null}
-            <div className="flex-1 min-h-0">
-                <CommonTable<GradeSheetRow>
-                    leadingColumnDefs={columnDefs}
-                    rowData={gradeSheet}
+
+            {/* Special Grade Flags Banner */}
+            {specialGradeFlags && onApplyFlag && onDismissFlag && (
+                <SpecialGradeFlagBanner
+                    flags={specialGradeFlags}
+                    isBusy={isFlagBusy}
+                    onApply={onApplyFlag}
+                    onDismiss={onDismissFlag}
+                />
+            )}
+
+            {/* Quick Student Search */}
+            <div className="relative">
+                <MagnifyingGlassIcon
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    size={16}
+                />
+                <input
+                    type="text"
+                    placeholder="Search student by name or student number in grade sheet..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
             </div>
+
+            {/* Bento Cards Grid for Grade Sheet */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+                {filteredRows.length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 text-xs border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900">
+                        {gradeSheet.length === 0
+                            ? 'No grade records generated for this period yet. Click "Calculate" to compute.'
+                            : `No students match "${searchQuery}".`}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-6">
+                        {filteredRows.map((row) => (
+                            <div
+                                key={row.enrollment_id}
+                                className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between gap-3"
+                            >
+                                <div>
+                                    {/* Student Header */}
+                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0">
+                                                {row.full_name
+                                                    ?.split(' ')
+                                                    .map((n) => n[0])
+                                                    .slice(0, 2)
+                                                    .join('') || <UserCircleIcon size={18} />}
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate leading-snug">
+                                                    {row.full_name}
+                                                </span>
+                                                <span className="text-[11px] font-mono text-slate-400">
+                                                    {row.student_number}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${
+                                                row.status === 'Submitted' || row.status === 'Approved'
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                    : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-zinc-800 dark:text-slate-300'
+                                            }`}
+                                        >
+                                            {row.status ?? 'Draft'}
+                                        </span>
+                                    </div>
+
+                                    {/* Metrics Grid */}
+                                    <div className="grid grid-cols-3 gap-1.5 mt-2.5">
+                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center">
+                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight">
+                                                Raw
+                                            </span>
+                                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block mt-0.5">
+                                                {row.raw_grade != null ? `${row.raw_grade}%` : '—'}
+                                            </span>
+                                        </div>
+
+                                        <div className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/60 p-2 rounded-xl text-center">
+                                            <span className="block font-bold text-[10px] text-blue-600 dark:text-blue-400 uppercase tracking-tight">
+                                                Transmuted
+                                            </span>
+                                            <span className="font-extrabold text-sm text-blue-700 dark:text-blue-300 block mt-0.5">
+                                                {row.transmuted_grade != null ? String(row.transmuted_grade) : '—'}
+                                            </span>
+                                        </div>
+
+                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center">
+                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight">
+                                                Special
+                                            </span>
+                                            <span className="font-bold text-xs text-slate-700 dark:text-slate-300 block mt-0.5">
+                                                {row.special_grade || '—'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Audit Math Button */}
+                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAuditEnrollmentId(row.enrollment_id)}
+                                        className="cursor-pointer flex font-semibold gap-1.5 items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 text-xs px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
+                                    >
+                                        <ChartLineUpIcon size={14} weight="bold" />
+                                        Audit Breakdown
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Confirm Submit Grades Modal */}
             <ConfirmPromptModal
                 formButtonsProps={{
                     cancelProps: {
@@ -273,14 +331,14 @@ export default function GradeSheetPanel({
                 }}
                 onClose={() => setIsConfirmOpen(false)}
             />
+
+            {/* Student Grade Breakdown Modal */}
             {auditEnrollmentId && gradingPeriodId && (
                 <StudentGradeBreakdownModal
                     enrollmentId={auditEnrollmentId}
                     gradingPeriodId={gradingPeriodId}
                     open={Boolean(auditEnrollmentId && gradingPeriodId)}
-                    onClose={function() {
-                        setAuditEnrollmentId(null);
-                    }}
+                    onClose={() => setAuditEnrollmentId(null)}
                 />
             )}
         </div>

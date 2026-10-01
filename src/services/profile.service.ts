@@ -3,7 +3,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
-import { ServiceResult } from '@type/service.type';
+import { ServiceErrorProps, ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
 export async function getMyProfile(): Promise<ServiceResult<MyProfile>> {
@@ -75,6 +75,18 @@ export async function updateMyProfile(
         p_nationality: params.nationality || null
     };
 
+    const isMissingRpcSignature = (err: ServiceErrorProps | null): boolean => {
+        if (!err) return false;
+        return (
+            err.code === 'PGRST202' ||
+            Boolean(err.message && (
+                err.message.includes('PGRST202') ||
+                err.message.includes('schema cache') ||
+                err.message.includes('Could not find the function')
+            ))
+        );
+    };
+
     // Attempt 1: 17 parameters (includes program_id and year_level)
     const res17 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
         'fn_update_my_profile',
@@ -86,10 +98,15 @@ export async function updateMyProfile(
         { silent: true }
     );
 
-    if (!res17.error || res17.error.code !== 'PGRST202') {
-        if (res17.error) {
-            useToastStore.getState().showToast(res17.error.message, 'error');
+    if (!res17.error) {
+        if (res17.data?.message) {
+            useToastStore.getState().showToast(res17.data.message, 'success');
         }
+        return res17;
+    }
+
+    if (!isMissingRpcSignature(res17.error)) {
+        useToastStore.getState().showToast(res17.error.message, 'error');
         return res17;
     }
 
@@ -103,10 +120,15 @@ export async function updateMyProfile(
         { silent: true }
     );
 
-    if (!res16.error || res16.error.code !== 'PGRST202') {
-        if (res16.error) {
-            useToastStore.getState().showToast(res16.error.message, 'error');
+    if (!res16.error) {
+        if (res16.data?.message) {
+            useToastStore.getState().showToast(res16.data.message, 'success');
         }
+        return res16;
+    }
+
+    if (!isMissingRpcSignature(res16.error)) {
+        useToastStore.getState().showToast(res16.error.message, 'error');
         return res16;
     }
 

@@ -34,12 +34,6 @@ export const facultyRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
-                    return import('@pages/faculty/sections/assessments/builder/AssessmentBuilderPage');
-                }),
-                path: 'sections/:sectionId/assessments/:assessmentId/builder'
-            },
-            {
-                element: lazyElement(function() {
                     return import('@pages/faculty/sections/assessments/submissions/SubmissionsPage');
                 }),
                 path: 'sections/:sectionId/assessments/:assessmentId/submissions'
