@@ -705,21 +705,40 @@ export default function BulkImportModal<TPayload>({
                                 {updatedRows.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-blue-200 dark:border-blue-800/60 flex flex-col gap-1 text-xs"
+                                        className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-blue-200 dark:border-blue-800/60 flex flex-col gap-1.5 text-xs shadow-xs"
                                     >
-                                        <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100">
+                                        <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-zinc-700/60 pb-1.5">
                                             <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 text-[11px]">
                                                 Row #{item.row}
                                             </span>
-                                            <span>{item.section_code}</span>
+                                            <span className="font-mono text-blue-700 dark:text-blue-300">{item.section_code}</span>
                                         </div>
-                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1 mt-0.5">
+                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1">
                                             <span>Course: <strong>{item.course_code || '—'}</strong></span>
                                             <span>Room: <strong>{item.room || '—'}</strong></span>
                                         </div>
                                         {item.faculty_email && (
                                             <div className="text-[11px] text-slate-500 truncate">
                                                 Faculty: {item.faculty_email}
+                                            </div>
+                                        )}
+                                        {item.changes && item.changes.length > 0 ? (
+                                            <div className="mt-1 flex flex-col gap-1 pt-1.5 border-t border-slate-100 dark:border-zinc-700/50">
+                                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                                                    Modified Fields:
+                                                </span>
+                                                {item.changes.map((change, cIdx) => (
+                                                    <div key={cIdx} className="flex flex-wrap items-center gap-1 text-[11px] bg-slate-50 dark:bg-zinc-900/60 px-2 py-1 rounded border border-slate-200/60 dark:border-zinc-700/40">
+                                                        <span className="font-semibold text-slate-700 dark:text-slate-300">{change.field}:</span>
+                                                        <span className="line-through text-rose-500 font-medium px-1 bg-rose-50 dark:bg-rose-950/40 rounded">{change.previous}</span>
+                                                        <span className="text-slate-400">→</span>
+                                                        <span className="text-emerald-700 dark:text-emerald-400 font-bold px-1 bg-emerald-50 dark:bg-emerald-950/40 rounded">{change.changed}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-blue-600 dark:text-blue-400 italic">
+                                                Updated existing section record
                                             </div>
                                         )}
                                     </div>
