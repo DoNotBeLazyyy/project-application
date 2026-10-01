@@ -42,10 +42,32 @@ const FIELD_LABELS: Record<keyof ProfileFormValues, string> = {
     address_line2: 'Address Line 2',
     city: 'City / Municipality',
     province: 'Province',
-    postal_code: 'Postal Code'
+    postal_code: 'Postal Code',
+    program_name: 'Academic Program',
+    year_level: 'Year Level',
+    program_id: 'Program ID',
+    program_code: 'Program Code'
 };
 
-const ALL_FIELDS = Object.keys(FIELD_LABELS) as (keyof ProfileFormValues)[];
+const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
+    'first_name',
+    'middle_name',
+    'last_name',
+    'suffix',
+    'preferred_name',
+    'mobile_number',
+    'date_of_birth',
+    'gender',
+    'civil_status',
+    'nationality',
+    'address_line1',
+    'address_line2',
+    'city',
+    'province',
+    'postal_code',
+    'program_name',
+    'year_level'
+];
 
 export default function StudentProfileVerificationModal({
     open,
@@ -82,7 +104,11 @@ export default function StudentProfileVerificationModal({
             postal_code: baseValues.postal_code || '',
             preferred_name: baseValues.preferred_name || '',
             province: baseValues.province || '',
-            suffix: baseValues.suffix || ''
+            suffix: baseValues.suffix || '',
+            program_id: baseValues.program_id || '',
+            program_code: baseValues.program_code || '',
+            program_name: baseValues.program_name || '',
+            year_level: baseValues.year_level ? String(baseValues.year_level) : ''
         });
 
         setRegistrarNotes(request.registrar_notes || '');
@@ -98,7 +124,7 @@ export default function StudentProfileVerificationModal({
     const requested = request.requested_changes || {};
 
     // Detect if registrar made edits to the student's requested values
-    const hasRegistrarEdits = ALL_FIELDS.some(
+    const hasRegistrarEdits = DISPLAY_FIELDS.some(
         (key) => (editableValues[key] || '') !== (requested[key] || '')
     );
 
@@ -283,7 +309,7 @@ export default function StudentProfileVerificationModal({
                         </div>
 
                         <div className="divide-y divide-(--mui-palette-divider) text-xs">
-                            {ALL_FIELDS.map((field) => {
+                            {DISPLAY_FIELDS.map((field) => {
                                 const currVal = current[field] || '—';
                                 const reqVal = requested[field] || '—';
                                 const editVal = editableValues[field] || '';

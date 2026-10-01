@@ -59,6 +59,10 @@ export interface ProfileFormValues {
     gender: string;
     civil_status: string;
     nationality: string;
+    program_id?: string;
+    program_code?: string;
+    program_name?: string;
+    year_level?: number | string;
 }
 
 export interface ChangePasswordFormValues {
