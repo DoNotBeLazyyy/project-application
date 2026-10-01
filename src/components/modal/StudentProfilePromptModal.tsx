@@ -115,16 +115,19 @@ export default function StudentProfilePromptModal({
 
     return (
         <CommonModal
+            fullWidth
+            maxWidth="md"
             open={open}
             onClose={isMandatory ? undefined : onClose}
             cardProps={{
+                className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl overflow-hidden',
                 cardHeaderProps: {
                     title: 'Complete Your Student Profile',
                     subheader: 'Please fill in your student information to activate your student account.'
                 }
             }}
         >
-            <div className="flex flex-col gap-5 p-4 pt-0 max-h-[75vh] overflow-y-auto">
+            <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6 pt-0 sm:pt-0 pb-6">
                 <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                     <GraduationCapIcon size={24} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
                     <div>
