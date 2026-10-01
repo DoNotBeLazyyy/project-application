@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonModal from '@components/modal/CommonModal';
 import CommonSelect from '@components/select/CommonSelect';
 import TableCardControls from '@components/table-card/TableCardControls';
@@ -11,25 +10,15 @@ import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/u
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import { MapTrifoldIcon } from '@phosphor-icons/react';
 import {
-    bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
+    createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
-import { CsvTemplateColumn } from '@type/bulk-import.type';
-import { CurriculumMapBulkRow, CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
+import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
 import { useCallback, useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-curriculum-map-form';
 const UPDATE_FORM_ID = 'update-curriculum-map-form';
-const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS' },
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
-    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1' },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM' },
-    { key: 'school_year_code', label: 'School Year Code', hint: 'e.g. SY2024-2025 (optional)' },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1' },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false' }
-];
 
 const defaultFormValues: CurriculumMapFormValues = {
     course_id: '',
@@ -57,7 +46,6 @@ export default function CurriculumMapManagement({
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
-    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
 
     const { programOptions } = useProgramOptions();
@@ -438,26 +426,6 @@ export default function CurriculumMapManagement({
                         </div>
                     </div>
                 </CommonModal>
-
-                <BulkImportModal<CurriculumMapBulkRow>
-                    open={isBulkImportOpen}
-                    templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
-                    title="Bulk Import Curriculum Map"
-                    onBulkImport={bulkCreateCurriculumMap}
-                    onClose={function() {
-                        setIsBulkImportOpen(false);
-                    }}
-                    onMapRow={(row) => ({
-                        program_code: row.program_code,
-                        course_code: row.course_code,
-                        year_level: row.year_level,
-                        term_type_code: row.term_type_code,
-                        school_year_code: row.school_year_code,
-                        sequence: row.sequence,
-                        is_elective: row.is_elective
-                    })}
-                    onSuccess={fetchCurriculum}
-                />
             </div>
         </CommonCard>
     );

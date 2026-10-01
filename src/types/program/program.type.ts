@@ -52,6 +52,14 @@ export interface ProgramBulkRow {
     total_units: string;
     description: string;
     is_active: string;
+    override_grading_schema?: string;
+    grading_periods?: string;
+    course_code?: string;
+    year_level?: string;
+    term_type_code?: string;
+    school_year_code?: string;
+    sequence?: string;
+    is_elective?: string;
 }
 
 export interface ProgramBulkImportResult {

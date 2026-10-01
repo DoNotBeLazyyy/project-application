@@ -47,7 +47,15 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'years_duration', label: 'Years Duration', hint: 'e.g. 4' },
     { key: 'total_units', label: 'Total Units', hint: 'e.g. 170 (optional)' },
     { key: 'description', label: 'Description', hint: 'optional' },
-    { key: 'is_active', label: 'Is Active', hint: 'true or false' }
+    { key: 'is_active', label: 'Is Active', hint: 'true or false' },
+    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'true or false (optional)' },
+    { key: 'grading_periods', label: 'Grading Periods', hint: 'e.g. Prelim:30,Midterm:30,Final:40 (optional)' },
+    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101 (optional)' },
+    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1 (optional)' },
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)' },
+    { key: 'school_year_code', label: 'School Year Code', hint: 'e.g. SY2024-2025 (optional)' },
+    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)' },
+    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)' }
 ];
 
 export default function ProgramManagement() {
@@ -271,7 +279,15 @@ export default function ProgramManagement() {
                     years_duration: row.years_duration,
                     total_units: row.total_units,
                     description: row.description,
-                    is_active: row.is_active
+                    is_active: row.is_active,
+                    override_grading_schema: row.override_grading_schema,
+                    grading_periods: row.grading_periods,
+                    course_code: row.course_code,
+                    year_level: row.year_level,
+                    term_type_code: row.term_type_code,
+                    school_year_code: row.school_year_code,
+                    sequence: row.sequence,
+                    is_elective: row.is_elective
                 })}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as ProgramFilterValues));
