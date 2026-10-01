@@ -1,0 +1,46 @@
+Code,Title,Department Code,Course Type Code,Lecture Units,Laboratory Units,Credit Hours,Description,Is Active,Prerequisites
+GCAS 01,Art Appreciation,CITE,LECTURE,3,0,3,General education art appreciation and aesthetic study,true,
+GCAS 02,Ethics,CITE,LECTURE,3,0,3,Moral philosophy and professional ethical principles,true,
+GCAS 03,Purposive Communication,CITE,LECTURE,3,0,3,Multimodal communication and academic writing,true,
+GCAS 04,Readings in Philippine History,CITE,LECTURE,3,0,3,Critical analysis of Philippine historical records,true,
+GCAS 05,The Contemporary World,CITE,LECTURE,3,0,3,Globalization and contemporary global structures,true,
+GCAS 06,Science Technology and Society,CITE,LECTURE,3,0,3,Interactions between scientific advancements and human society,true,
+GCAS 07,Mathematics in the Modern World,CITE,LECTURE,3,0,3,Nature of mathematics and practical applications,true,
+GCAS 08,Understanding the Self,CITE,LECTURE,3,0,3,Personal identity and psychological self-awareness,true,
+GCAS 09,Life and Works of Rizal,CITE,LECTURE,3,0,3,Biography and literary works of Jose Rizal,true,
+GCAS 15,PE-1 Physical Fitness and Health,CITE,PE,2,0,2,Physical wellness and fitness fundamental movements,true,
+GCAS 16,PE-2 Fitness Exercises,CITE,PE,2,0,2,Rhythmic activities and motor skill development,true,
+GCAS 17,PE-3 Individual and Dual Sports,CITE,PE,2,0,2,Rules and techniques of individual sports,true,
+GCAS 18,PE-4 Team Sports,CITE,PE,2,0,2,Team sports strategies and physical education,true,
+GCAS 19,NSTP 1,CITE,NSTP,3,0,3,Civic welfare and national service training phase 1,true,
+GCAS 20,NSTP 2,CITE,NSTP,3,0,3,Community literacy and national service training phase 2,true,GCAS 19:Required:3.0
+CS 101LEC,Computer Programming 1 (LEC),CITE,LECTURE,2,0,2,Introduction to algorithmic thinking and procedural programming,true,
+CS 101LAB,Computer Programming 1 (LAB),CITE,LABORATORY,0,1,1,Practical coding lab for programming fundamentals,true,
+CS 102LEC,Computer Programming 2 (LEC),CITE,LECTURE,2,0,2,Advanced procedural and modular programming techniques,true,CS 101LEC:Required:2.0
+CS 102LAB,Computer Programming 2 (LAB),CITE,LABORATORY,0,1,1,Coding laboratory for intermediate programming,true,CS 101LAB:Required:2.0
+CS 103,Discrete Structures 1,CITE,LECTURE,3,0,3,Sets logic functions mathematical reasoning and proof techniques,true,GCAS 07:Required:3.0
+CS 104,Discrete Structures 2,CITE,LECTURE,3,0,3,Combinatorics graph theory trees and algebraic structures,true,CS 103:Required:3.0
+CS 105LEC,Data Structures and Algorithms (LEC),CITE,LECTURE,2,0,2,Arrays linked lists stacks queues trees and graphs,true,CS 102LEC:Required:2.0
+CS 105LAB,Data Structures and Algorithms (LAB),CITE,LABORATORY,0,1,1,Implementation of linear and non-linear data structures,true,CS 102LAB:Required:2.0
+CS 106LEC,Object-Oriented Programming (LEC),CITE,LECTURE,2,0,2,Encapsulation inheritance polymorphism and design principles,true,CS 102LEC:Required:2.0
+CS 106LAB,Object-Oriented Programming (LAB),CITE,LABORATORY,0,1,1,Object-oriented software development lab,true,CS 102LAB:Required:2.0
+CS 201,Algorithms and Complexity,CITE,LECTURE,3,0,3,Asymptotic analysis dynamic programming and greedy strategies,true,CS 105LEC:Required:2.0
+CS 202LEC,Computer Architecture and Organization (LEC),CITE,LECTURE,2,0,2,Digital logic CPU design instruction sets and memory hierarchy,true,CS 102LEC:Required:2.0
+CS 202LAB,Computer Architecture and Organization (LAB),CITE,LABORATORY,0,1,1,Assembly language programming and logic circuit simulation,true,CS 102LAB:Required:2.0
+CS 203LEC,Operating Systems (LEC),CITE,LECTURE,2,0,2,Process management memory allocation and file systems,true,CS 202LEC:Required:2.0
+CS 203LAB,Operating Systems (LAB),CITE,LABORATORY,0,1,1,OS system calls shell scripting and process synchronization,true,CS 202LAB:Required:2.0
+CS 204LEC,Information Management (LEC),CITE,LECTURE,2,0,2,Database models relational algebra SQL and normalization,true,CS 105LEC:Required:2.0
+CS 204LAB,Information Management (LAB),CITE,LABORATORY,0,1,1,Database query design indexing and backend connectivity,true,CS 105LAB:Required:2.0
+CS 301LEC,Software Engineering 1 (LEC),CITE,LECTURE,2,0,2,Software development lifecycle requirement engineering and UML,true,CS 204LEC:Required:2.0
+CS 301LAB,Software Engineering 1 (LAB),CITE,LABORATORY,0,1,1,Software modeling and version control group project,true,CS 204LAB:Required:2.0
+CS 302,Automata Theory and Formal Languages,CITE,LECTURE,3,0,3,Finite automata regular expressions context-free grammars and Turing machines,true,CS 104:Required:3.0
+CS 303LEC,Networks and Communications (LEC),CITE,LECTURE,2,0,2,OSI model TCP IP socket programming and routing protocols,true,CS 203LEC:Required:2.0
+CS 303LAB,Networks and Communications (LAB),CITE,LABORATORY,0,1,1,Network configuration and packet analysis practical lab,true,CS 203LAB:Required:2.0
+CS 304LEC,Web Systems and Technologies (LEC),CITE,LECTURE,2,0,2,Frontend and backend web technologies web APIs and REST architecture,true,CS 204LEC:Required:2.0
+CS 304LAB,Web Systems and Technologies (LAB),CITE,LABORATORY,0,1,1,Full-stack web application development lab,true,CS 204LAB:Required:2.0
+CS 305,Programming Languages Paradigms,CITE,LECTURE,3,0,3,Comparative evaluation of functional imperative and logic paradigms,true,CS 106LEC:Required:2.0
+CS 401,Artificial Intelligence,CITE,LECTURE,3,0,3,Search strategies knowledge representation machine learning and neural networks,true,CS 201:Required:3.0
+CS 402,Information Assurance and Security,CITE,LECTURE,3,0,3,Cryptography threat analysis network defense and security policies,true,CS 303LEC:Required:2.0
+CS 403,CS Thesis 1,CITE,THESIS,3,0,3,Research proposal and theoretical framework for Computer Science thesis,true,CS 301LEC:Required:2.0
+CS 404,CS Thesis 2,CITE,THESIS,3,0,3,Implementation experimental evaluation and defense of CS thesis,true,CS 403:Required:3.0
+CS 405,Practicum / Industry Internship,CITE,OJT,0,6,6,On-the-job training in software development and industry projects,true,

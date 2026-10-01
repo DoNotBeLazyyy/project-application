@@ -14,7 +14,7 @@ import { useProgramOptions } from '@pages/dean/program-management/useProgramOpti
 import {
     createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
-import { listCourses } from '@services/course/course.service';
+import { getCourses, listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
@@ -282,7 +282,24 @@ export default function CurriculumMapManagement({
         rows: CurriculumMapCsvRow[]
     ): Promise<BulkImportResult> {
         const listRes = await listCourses(1, 1000, '', [], null);
-        const courses = listRes.data?.items ?? [];
+        let courses: { id: string; code: string; title: string; lecture_units?: number; laboratory_units?: number; total_units?: number }[] = listRes.data?.items ?? [];
+
+        const optionsRes = await getCourses();
+        if (optionsRes.data) {
+            const existingCodes = new Set(courses.map((c) => c.code.trim().toLowerCase()));
+            for (const opt of optionsRes.data) {
+                if (!existingCodes.has(opt.code.trim().toLowerCase())) {
+                    courses.push({
+                        id: opt.id,
+                        code: opt.code,
+                        title: opt.label,
+                        lecture_units: 0,
+                        laboratory_units: 0,
+                        total_units: 0
+                    });
+                }
+            }
+        }
 
         const provisionedEntries: CurriculumMapEntry[] = [];
         const errors: string[] = [];
@@ -300,8 +317,13 @@ export default function CurriculumMapManagement({
                 continue;
             }
 
+            const targetCode = row.course_code.trim().toLowerCase();
+            const normalizedTarget = targetCode.replace(/\s+/g, '');
+
             const course = courses.find(
-                (c) => c.code.trim().toLowerCase() === row.course_code.trim().toLowerCase()
+                (c) =>
+                    c.code.trim().toLowerCase() === targetCode ||
+                    c.code.replace(/\s+/g, '').toLowerCase() === normalizedTarget
             );
 
             if (!course) {
