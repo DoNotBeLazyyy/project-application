@@ -1,5 +1,5 @@
 Code,Title,Department Code,Course Type Code,Lecture Units,Laboratory Units,Credit Hours,Description,Is Active,Prerequisites
-"GCAS 01","Art Appreciation","CITE","LECTURE",3,0,3,"General education art appreciation and aesthetic study",true,""
+"GCAS 01","TEST XXArt Appreciation","CITE","LECTURE",3,0,3,"General education art appreciation and aesthetic study",true,""
 "GCAS 02","Ethics","CITE","LECTURE",3,0,3,"Moral philosophy and professional ethical principles",true,""
 "GCAS 03","Purposive Communication","CITE","LECTURE",3,0,3,"Multimodal communication and academic writing",true,""
 "GCAS 04","Readings in Philippine History","CITE","LECTURE",3,0,3,"Critical analysis of Philippine historical records",true,""

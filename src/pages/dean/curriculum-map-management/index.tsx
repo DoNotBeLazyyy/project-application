@@ -3,8 +3,13 @@ import CommonCard from '@components/card/CommonCard';
 import CommonModal from '@components/modal/CommonModal';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonSelect from '@components/select/CommonSelect';
-import TableCardControls from '@components/table-card/TableCardControls';
-import { PrinterIcon, TrashIcon } from '@phosphor-icons/react';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon } from '@phosphor-icons/react';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
@@ -88,6 +93,15 @@ export default function CurriculumMapManagement({
     const [deleteTargetEntry, setDeleteTargetEntry] = useState<CurriculumMapEntry | null>(null);
     const [pendingDeletedIds, setPendingDeletedIds] = useState<string[]>([]);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+
+    function handleOpenMenu(event: React.MouseEvent<HTMLElement>) {
+        setMenuAnchorEl(event.currentTarget);
+    }
+
+    function handleCloseMenu() {
+        setMenuAnchorEl(null);
+    }
 
     function updateEntriesState(newEntries: CurriculumMapEntry[], nextPending?: string[]) {
         setEntries(newEntries);
@@ -601,15 +615,15 @@ export default function CurriculumMapManagement({
 
     return (
         <CommonCard className="h-full">
-            <div className="flex flex-col gap-4 h-full">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-4 h-full min-h-0 overflow-hidden">
+                <div className="flex-none flex items-center justify-between gap-3 pb-3 border-b border-(--mui-palette-divider)">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
                         {!shouldHideProgramSelect && (
                             <CommonSelect
                                 fullWidth={false}
                                 options={[{ label: 'Select Program', value: '' }, ...programOptions]}
                                 size="large"
-                                sx={{ minWidth: 280 }}
+                                sx={{ minWidth: 200, maxWidth: 280 }}
                                 value={selectedProgramId}
                                 onChange={(e) => setSelectedProgramId(String(e.target.value))}
                             />
@@ -618,117 +632,135 @@ export default function CurriculumMapManagement({
                             fullWidth={false}
                             options={[{ label: 'All Terms', value: '' }, ...termTypeOptions]}
                             size="large"
-                            sx={{ minWidth: 180 }}
+                            sx={{ minWidth: 140, maxWidth: 180 }}
                             value={selectedTermTypeId}
                             onChange={(e) => setSelectedTermTypeId(String(e.target.value))}
                         />
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <CommonButton
-                            color="secondary"
+                    <div className="flex-none flex items-center">
+                        <IconButton
+                            aria-label="Curriculum menu options"
                             size="small"
-                            startIcon={<PrinterIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={() => window.print()}
+                            onClick={handleOpenMenu}
                         >
-                            Print Curriculum
-                        </CommonButton>
-                        {!readOnly && (
-                            <div className="flex flex-wrap items-center gap-2">
-                                {entries.length > 0 && (
-                                    <CommonButton
-                                        color="error"
-                                        size="small"
-                                        startIcon={<TrashIcon className="w-4 h-4" />}
-                                        variant="outlined"
-                                        onClick={() => setIsClearModalOpen(true)}
-                                    >
-                                        Clear Curriculum
-                                    </CommonButton>
-                                )}
-                                <TableCardControls
-                                    hasInput={false}
-                                    tableButtonsProps={{
-                                        createButtonProps: {
-                                            children: 'Add Entry',
-                                            onClick: handleOpenCreate
-                                        },
-                                        uploadCsvButtonProps: {
-                                            onClick: function() {
-                                                setIsBulkImportOpen(true);
-                                            }
-                                        }
-                                    }}
-                                />
-                            </div>
-                        )}
+                            <DotsThreeVerticalIcon size={22} weight="bold" />
+                        </IconButton>
+                        <Menu
+                            anchorEl={menuAnchorEl}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            open={Boolean(menuAnchorEl)}
+                            slotProps={{
+                                paper: { sx: { minWidth: 180 } }
+                            }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            onClose={handleCloseMenu}
+                        >
+                            {!readOnly && (
+                                <MenuItem onClick={() => { handleCloseMenu(); handleOpenCreate(); }}>
+                                    <ListItemIcon>
+                                        <PlusIcon size={18} />
+                                    </ListItemIcon>
+                                    <ListItemText>Add Entry</ListItemText>
+                                </MenuItem>
+                            )}
+                            {!readOnly && (
+                                <MenuItem onClick={() => { handleCloseMenu(); setIsBulkImportOpen(true); }}>
+                                    <ListItemIcon>
+                                        <UploadSimpleIcon size={18} />
+                                    </ListItemIcon>
+                                    <ListItemText>Upload CSV</ListItemText>
+                                </MenuItem>
+                            )}
+                            <MenuItem onClick={() => { handleCloseMenu(); window.print(); }}>
+                                <ListItemIcon>
+                                    <PrinterIcon size={18} />
+                                </ListItemIcon>
+                                <ListItemText>Print Curriculum</ListItemText>
+                            </MenuItem>
+                            {!readOnly && entries.length > 0 && [
+                                <Divider key="clear-divider" />,
+                                <MenuItem
+                                    key="clear-action"
+                                    sx={{ color: 'error.main' }}
+                                    onClick={() => { handleCloseMenu(); setIsClearModalOpen(true); }}
+                                >
+                                    <ListItemIcon sx={{ color: 'error.main' }}>
+                                        <TrashIcon size={18} />
+                                    </ListItemIcon>
+                                    <ListItemText>Clear Curriculum</ListItemText>
+                                </MenuItem>
+                            ]}
+                        </Menu>
                     </div>
                 </div>
 
-                {!selectedProgramId && !shouldHideProgramSelect
-                    ? (
-                        <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-2 items-center justify-center rounded-lg">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            No program selected
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                            Select a program above to view its curriculum map
-                            </span>
-                        </div>
-                    )
-                    : isLoading
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    {!selectedProgramId && !shouldHideProgramSelect
                         ? (
-                            <div className="flex flex-1 items-center justify-center">
-                                <span className="text-(--mui-palette-text-secondary) text-sm">
-                                Loading curriculum...
+                            <div className="border border-(--mui-palette-divider) flex h-full min-h-[250px] flex-col gap-2 items-center justify-center rounded-lg">
+                                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                No program selected
+                                </span>
+                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                Select a program above to view its curriculum map
                                 </span>
                             </div>
                         )
-                        : entries.length === 0
+                        : isLoading
                             ? (
-                                <div className="border border-(--mui-palette-divider) flex flex-1 flex-col gap-2 items-center justify-center rounded-lg">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                    No curriculum entries found
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    Add courses to build the curriculum map
+                                <div className="flex h-full min-h-[250px] items-center justify-center">
+                                    <span className="text-(--mui-palette-text-secondary) text-sm">
+                                    Loading curriculum...
                                     </span>
                                 </div>
                             )
-                            : (
-                                <div className="flex flex-col gap-6 overflow-auto pb-8 print-area">
-                                    <div className="flex flex-col gap-1 print-only">
-                                        <p className="font-bold text-center text-sm">
-                                        Arellano University
-                                        </p>
-                                        <p className="text-center text-xs">
-                                        Jose Abad Santos Campus
-                                        </p>
-                                        <p className="font-semibold mt-2 text-center text-sm">
-                                            {selectedProgram?.label}
-                                        </p>
-                                        {selectedSchoolYear && (
-                                            <p className="text-center text-xs">
-                                            Effective SY {selectedSchoolYear.label}
-                                            </p>
-                                        )}
+                            : entries.length === 0
+                                ? (
+                                    <div className="border border-(--mui-palette-divider) flex h-full min-h-[250px] flex-col gap-2 items-center justify-center rounded-lg">
+                                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                                        No curriculum entries found
+                                        </span>
+                                        <span className="text-(--mui-palette-text-secondary) text-xs">
+                                        Add courses to build the curriculum map
+                                        </span>
                                     </div>
+                                )
+                                : (
+                                    <div className="flex flex-col gap-6 pb-8 print-area">
+                                        <div className="flex flex-col gap-1 print-only">
+                                            <p className="font-bold text-center text-sm">
+                                            Arellano University
+                                            </p>
+                                            <p className="text-center text-xs">
+                                            Jose Abad Santos Campus
+                                            </p>
+                                            <p className="font-semibold mt-2 text-center text-sm">
+                                                {selectedProgram?.label}
+                                            </p>
+                                            {selectedSchoolYear && (
+                                                <p className="text-center text-xs">
+                                                Effective SY {selectedSchoolYear.label}
+                                                </p>
+                                            )}
+                                        </div>
 
-                                    {grouped.map(function({ key, label, terms }) {
-                                        return (
-                                            <div className="flex flex-col gap-3" key={key}>
-                                                <h2 className="font-bold text-(--mui-palette-text-primary) text-center text-sm tracking-widest uppercase">
-                                                    {label}
-                                                </h2>
-                                                <div className="flex flex-col gap-4 w-full">
-                                                    {terms.map((term) => renderCurriculumTable(term))}
+                                        {grouped.map(function({ key, label, terms }) {
+                                            return (
+                                                <div className="flex flex-col gap-3" key={key}>
+                                                    <h2 className="font-bold text-(--mui-palette-text-primary) text-center text-sm tracking-widest uppercase">
+                                                        {label}
+                                                    </h2>
+                                                    <div className="flex flex-col gap-4 w-full">
+                                                        {terms.map((term) => renderCurriculumTable(term))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )
-                }
+                                            );
+                                        })}
+                                    </div>
+                                )
+                    }
+                </div>
+            </div>
 
                 <CommonModal
                     cardProps={{
@@ -946,7 +978,6 @@ export default function CurriculumMapManagement({
                         </div>
                     </div>
                 </CommonModal>
-            </div>
         </CommonCard>
     );
 }
