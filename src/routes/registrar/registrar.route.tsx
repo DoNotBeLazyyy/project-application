@@ -28,6 +28,18 @@ export const registrarRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/registrar/student-verification');
+                }),
+                path: 'student-verification'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/registrar/registrar-logs');
+                }),
+                path: 'registrar-logs'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/shared/profile');
                 }),
                 path: 'profile'

@@ -1,0 +1,6 @@
+Course Code,Year Level,Term Type Code,Lecture Units,Laboratory Units,Sequence,Is Elective
+CS 101LEC,1,1ST_SEM,3.0,0.0,1,false
+CS 101LAB,1,1ST_SEM,0.0,2.0,2,false
+GCAS 03,1,1ST_SEM,3.0,0.0,3,false
+GCAS 07,1,1ST_SEM,3.0,0.0,4,false
+CS 102LEC,1,2ND_SEM,2.0,0.0,1,false

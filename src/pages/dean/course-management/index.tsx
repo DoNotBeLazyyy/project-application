@@ -88,7 +88,7 @@ export default function CourseManagement() {
             const fallbackTypes = result.data.course_type_id ? [
                 {
                     course_type_id: result.data.course_type_id,
-                    units: Number(result.data.lecture_units ?? 3),
+                    units: Number(result.data.laboratory_units || result.data.lecture_units || 3),
                     credit_hours: Number(result.data.credit_hours ?? result.data.lecture_units ?? 3)
                 }
             ] : [{ course_type_id: '', units: 3, credit_hours: 3 }];

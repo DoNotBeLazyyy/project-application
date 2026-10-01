@@ -72,6 +72,13 @@ export async function createCourse(
         p_credit_hours: totalCredit,
         p_description: params.description || null,
         p_is_active: params.is_active,
+        p_course_types: params.course_types?.length
+            ? params.course_types.map((ct) => ({
+                course_type_id: ct.course_type_id,
+                units: Number(ct.units) || 0,
+                credit_hours: Number(ct.credit_hours) || 0
+            }))
+            : null,
         p_prerequisites: params.prerequisites.length
             ? params.prerequisites.map((prereq) => ({
                 course_id: prereq.prerequisite_kind === 'course'

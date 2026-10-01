@@ -2,15 +2,18 @@ import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { GraduationCapIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { GraduationCapIcon, HourglassIcon, LockKeyIcon, UserCircleIcon } from '@phosphor-icons/react';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import ChangePasswordForm from '@pages/shared/profile/ChangePasswordForm';
 import { PASSWORD_FORM_ID, PROFILE_FORM_ID } from '@pages/shared/profile/constants/profile.constant';
 import ProfileAvatarCard from '@pages/shared/profile/ProfileAvatarCard';
 import ProfileDetailsForm from '@pages/shared/profile/ProfileDetailsForm';
+import PendingChangesModal from '@pages/shared/profile/PendingChangesModal';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { initAuthSession } from '@services/auth.service';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profile.service';
+import { cancelMyProfileRequest } from '@services/registrar-verification.service';
+import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { formErrors } from '@utils/form.util';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -61,6 +64,10 @@ export default function ProfilePage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
     const [isStudentPromptOpen, setIsStudentPromptOpen] = useState(false);
+    const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const isStudentUser = Boolean(profile?.student || profile?.role_labels?.includes('Student'));
 
     const profileMethods = useForm<ProfileFormValues>({ defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
@@ -136,6 +143,17 @@ export default function ProfilePage() {
         formErrors(errors, passwordMethods);
     }
 
+    async function handleCancelPendingRequest() {
+        if (!profile?.pending_profile_request?.id) return;
+        setIsCancelling(true);
+        const result = await cancelMyProfileRequest(profile.pending_profile_request.id);
+        setIsCancelling(false);
+        if (!result.error) {
+            useToastStore.getState().showToast('Pending profile change request cancelled.', 'info');
+            setRefreshKey((prev) => prev + 1);
+        }
+    }
+
     return (
         <CommonCard className="h-full w-full">
             <div className="flex flex-col gap-6 h-full overflow-y-auto">
@@ -179,6 +197,38 @@ export default function ProfilePage() {
 
                 {activeTab === 'details' && (
                     <div className="flex flex-col gap-6 max-w-4xl">
+                        {profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending' && (
+                            <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-(--mui-palette-text-primary)">
+                                <div className="flex items-start gap-3">
+                                    <HourglassIcon size={24} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold m-0 text-sm">Profile Change Request Pending Registrar Verification</p>
+                                        <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
+                                            You submitted profile updates on {new Date(profile.pending_profile_request.created_at).toLocaleString()}. Changes will take effect once reviewed and approved by the Registrar.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                                    <CommonButton
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => setIsPendingModalOpen(true)}
+                                    >
+                                        View Changes
+                                    </CommonButton>
+                                    <CommonButton
+                                        color="error"
+                                        disabled={isCancelling}
+                                        size="small"
+                                        variant="text"
+                                        onClick={handleCancelPendingRequest}
+                                    >
+                                        {isCancelling ? 'Cancelling...' : 'Cancel Request'}
+                                    </CommonButton>
+                                </div>
+                            </div>
+                        )}
+
                         {profile && (
                             <ProfileAvatarCard
                                 avatarUrl={profile.avatar_url}
@@ -254,24 +304,31 @@ export default function ProfilePage() {
                             id={PROFILE_FORM_ID}
                             onSubmit={profileMethods.handleSubmit(handleProfileSubmit, handleProfileError)}
                         />
-                        <div className="flex gap-2">
-                            <CommonButton
-                                disabled={!profileMethods.formState.isDirty}
-                                size="small"
-                                variant="outlined"
-                                onClick={() => profileMethods.reset()}
-                            >
-                                Reset
-                            </CommonButton>
-                            <CommonButton
-                                disabled={!profileMethods.formState.isDirty}
-                                form={PROFILE_FORM_ID}
-                                size="small"
-                                type="submit"
-                                variant="contained"
-                            >
-                                Save Profile
-                            </CommonButton>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <CommonButton
+                                    disabled={!profileMethods.formState.isDirty}
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() => profileMethods.reset()}
+                                >
+                                    Reset
+                                </CommonButton>
+                                <CommonButton
+                                    disabled={!profileMethods.formState.isDirty}
+                                    form={PROFILE_FORM_ID}
+                                    size="small"
+                                    type="submit"
+                                    variant="contained"
+                                >
+                                    {isStudentUser ? 'Submit Profile Changes' : 'Save Profile'}
+                                </CommonButton>
+                            </div>
+                            {isStudentUser && (
+                                <p className="text-xs text-(--mui-palette-text-secondary) m-0 italic">
+                                    * Note: As an enrolled student, changes made to your profile must be reviewed and approved by the Registrar before taking effect.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
@@ -328,6 +385,12 @@ export default function ProfilePage() {
                         return previous + 1;
                     });
                 }}
+            />
+
+            <PendingChangesModal
+                open={isPendingModalOpen}
+                pendingRequest={profile?.pending_profile_request}
+                onClose={() => setIsPendingModalOpen(false)}
             />
         </CommonCard>
     );

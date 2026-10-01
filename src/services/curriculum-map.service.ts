@@ -25,7 +25,11 @@ export async function createCurriculumMapEntry(
         p_term_type_id: params.term_type_id,
         p_school_year_id: schoolYearId || null,
         p_sequence: Number(params.sequence),
-        p_is_elective: params.is_elective
+        p_is_elective: params.is_elective,
+        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== '' ? Number(params.lecture_units) : null,
+        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== '' ? Number(params.laboratory_units) : null,
+        p_units: params.units !== undefined && params.units !== '' ? Number(params.units) : null,
+        p_type_units: params.type_units || null
     });
 }
 
@@ -41,7 +45,11 @@ export async function updateCurriculumMapEntry(
         p_term_type_id: params.term_type_id,
         p_school_year_id: schoolYearId || null,
         p_sequence: Number(params.sequence),
-        p_is_elective: params.is_elective
+        p_is_elective: params.is_elective,
+        p_lecture_units: params.lecture_units !== undefined && params.lecture_units !== '' ? Number(params.lecture_units) : null,
+        p_laboratory_units: params.laboratory_units !== undefined && params.laboratory_units !== '' ? Number(params.laboratory_units) : null,
+        p_units: params.units !== undefined && params.units !== '' ? Number(params.units) : null,
+        p_type_units: params.type_units || null
     });
 }
 

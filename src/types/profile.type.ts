@@ -8,6 +8,16 @@ export interface MyStudentInfo {
     program_name: string | null;
 }
 
+export interface PendingProfileRequest {
+    id: string;
+    status: 'Pending' | 'Approved' | 'Approved with Edits' | 'Rejected' | 'Cancelled';
+    requested_changes: Partial<ProfileFormValues>;
+    current_values: Partial<ProfileFormValues>;
+    created_at: string;
+    rejection_reason?: string | null;
+    registrar_notes?: string | null;
+}
+
 export interface MyProfile {
     id: string;
     first_name: string;
@@ -30,6 +40,7 @@ export interface MyProfile {
     status: string;
     role_labels: string[];
     student?: MyStudentInfo | null;
+    pending_profile_request?: PendingProfileRequest | null;
 }
 
 export interface ProfileFormValues {

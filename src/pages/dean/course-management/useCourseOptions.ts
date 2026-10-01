@@ -8,6 +8,7 @@ interface UseCourseOptionsProps {
 }
 
 export function useCourseOptions({ excludeIds }: UseCourseOptionsProps) {
+    const [courses, setCourses] = useState<CourseOption[]>([]);
     const [courseOptions, setCourseOptions] = useState<CommonSelectOption[]>([]);
 
     useEffect(function() {
@@ -15,6 +16,7 @@ export function useCourseOptions({ excludeIds }: UseCourseOptionsProps) {
             const result = await getCourses(excludeIds);
 
             if (result.data) {
+                setCourses(result.data);
                 setCourseOptions(
                     result.data.map((course: CourseOption) => ({
                         label: course.label,
@@ -27,5 +29,5 @@ export function useCourseOptions({ excludeIds }: UseCourseOptionsProps) {
         fetchCourses();
     }, [JSON.stringify(excludeIds)]);
 
-    return { courseOptions };
+    return { courseOptions, courses };
 }

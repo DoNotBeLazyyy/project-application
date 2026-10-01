@@ -53,7 +53,9 @@ const defaultFormValues: CurriculumMapFormValues = {
     sequence: '1',
     is_elective: false,
     lecture_units: '',
-    laboratory_units: ''
+    laboratory_units: '',
+    units: '',
+    type_units: {}
 };
 
 interface CurriculumMapManagementProps {
@@ -109,13 +111,16 @@ export default function CurriculumMapManagement({
         }
     }
 
-    function handleConfirmDeleteSingle() {
+    async function handleConfirmDeleteSingle() {
         if (!deleteTargetEntry) return;
         const targetId = deleteTargetEntry.id;
         let nextPending = pendingDeletedIds;
         if (!targetId.startsWith('temp-')) {
             nextPending = Array.from(new Set([...pendingDeletedIds, targetId]));
             setPendingDeletedIds(nextPending);
+            if (!onChangeEntries) {
+                await deleteCurriculumMapEntry(targetId);
+            }
         }
         const nextEntries = entries.filter((e) => e.id !== targetId);
         updateEntriesState(nextEntries, nextPending);
@@ -199,8 +204,10 @@ export default function CurriculumMapManagement({
             term_type_id: entry.term_type_id,
             sequence: String(entry.sequence),
             is_elective: entry.is_elective,
-            lecture_units: String(entry.lecture_units),
-            laboratory_units: String(entry.laboratory_units)
+            lecture_units: String(entry.lecture_units ?? 0),
+            laboratory_units: String(entry.laboratory_units ?? 0),
+            units: String(entry.units ?? entry.total_units ?? 0),
+            type_units: entry.type_units ?? {}
         });
         setIsViewOpen(true);
     }
@@ -229,6 +236,23 @@ export default function CurriculumMapManagement({
         const labUnits = values.laboratory_units !== undefined && values.laboratory_units !== ''
             ? Number(values.laboratory_units)
             : (course?.laboratory_units ?? 0);
+        const customUnits = values.units !== undefined && values.units !== ''
+            ? Number(values.units)
+            : (course?.total_units ?? (lecUnits + labUnits));
+
+        const isCustomType = course?.course_type_code &&
+            !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(course.course_type_code.toUpperCase().trim());
+
+        const totalCalculated = isCustomType ? customUnits : (lecUnits + labUnits);
+
+        const typeUnits: Record<string, number> = {
+            ...(values.type_units || {})
+        };
+        if (lecUnits > 0) typeUnits['LEC'] = lecUnits;
+        if (labUnits > 0) typeUnits['LAB'] = labUnits;
+        if (isCustomType && course?.course_type_code && customUnits > 0) {
+            typeUnits[course.course_type_code.toUpperCase().trim()] = customUnits;
+        }
 
         const existingIndex = entries.findIndex(
             (e) => (e.course_id && e.course_id === values.course_id) ||
@@ -245,20 +269,41 @@ export default function CurriculumMapManagement({
                 term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? nextEntries[existingIndex].term_type_code,
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                total_units: lecUnits + labUnits,
+                units: customUnits,
+                type_units: typeUnits,
+                total_units: totalCalculated,
                 sequence: Number(values.sequence),
                 is_elective: values.is_elective
             };
             updateEntriesState(nextEntries);
+            if (!onChangeEntries && selectedProgramId && nextEntries[existingIndex].id && !nextEntries[existingIndex].id.startsWith('temp-')) {
+                await updateCurriculumMapEntry(
+                    nextEntries[existingIndex].id,
+                    {
+                        ...values,
+                        lecture_units: String(lecUnits),
+                        laboratory_units: String(labUnits),
+                        units: String(customUnits),
+                        type_units: typeUnits
+                    },
+                    selectedSchoolYearId
+                );
+            }
         } else {
             const newEntry: CurriculumMapEntry = {
                 id: `temp-${Date.now()}-${Math.random()}`,
                 course_id: values.course_id,
                 course_code: course?.code ?? '',
                 course_title: course?.title ?? '',
+                base_code: course?.base_code || course?.code || '',
+                course_type_id: course?.course_type_id,
+                course_type_code: course?.course_type_code || '',
+                course_type_label: course?.course_type_label || '',
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                total_units: lecUnits + labUnits,
+                units: customUnits,
+                type_units: typeUnits,
+                total_units: totalCalculated,
                 year_level: Number(values.year_level),
                 term_type_id: values.term_type_id,
                 term_type_label: termTypeObj?.label ?? '',
@@ -270,6 +315,21 @@ export default function CurriculumMapManagement({
                 prerequisites: []
             };
             updateEntriesState([...entries, newEntry]);
+
+            if (!onChangeEntries && selectedProgramId) {
+                await createCurriculumMapEntry(
+                    selectedProgramId,
+                    {
+                        ...values,
+                        lecture_units: String(lecUnits),
+                        laboratory_units: String(labUnits),
+                        units: String(customUnits),
+                        type_units: typeUnits
+                    },
+                    selectedSchoolYearId
+                );
+                fetchCurriculum();
+            }
         }
 
         setIsCreateOpen(false);
@@ -294,6 +354,25 @@ export default function CurriculumMapManagement({
         const labUnits = values.laboratory_units !== undefined && values.laboratory_units !== ''
             ? Number(values.laboratory_units)
             : (course?.laboratory_units ?? selectedEntry.laboratory_units ?? 0);
+        const customUnits = values.units !== undefined && values.units !== ''
+            ? Number(values.units)
+            : (selectedEntry.units ?? course?.total_units ?? (lecUnits + labUnits));
+
+        const isCustomType = (course?.course_type_code || selectedEntry.course_type_code) &&
+            !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(String(course?.course_type_code || selectedEntry.course_type_code).toUpperCase().trim());
+
+        const totalCalculated = isCustomType ? customUnits : (lecUnits + labUnits);
+
+        const typeUnits: Record<string, number> = {
+            ...(selectedEntry.type_units || {}),
+            ...(values.type_units || {})
+        };
+        if (lecUnits > 0) typeUnits['LEC'] = lecUnits;
+        if (labUnits > 0) typeUnits['LAB'] = labUnits;
+        const currentTypeCode = (course?.course_type_code || selectedEntry.course_type_code)?.toUpperCase().trim();
+        if (isCustomType && currentTypeCode && customUnits > 0) {
+            typeUnits[currentTypeCode] = customUnits;
+        }
 
         const updatedEntries = entries.map((entry) => {
             if (entry.id !== selectedEntry.id) return entry;
@@ -304,7 +383,9 @@ export default function CurriculumMapManagement({
                 course_title: course?.title ?? entry.course_title,
                 lecture_units: lecUnits,
                 laboratory_units: labUnits,
-                total_units: lecUnits + labUnits,
+                units: customUnits,
+                type_units: typeUnits,
+                total_units: totalCalculated,
                 year_level: Number(values.year_level),
                 term_type_id: values.term_type_id,
                 term_type_label: termTypeObj?.label ?? entry.term_type_label,
@@ -315,6 +396,21 @@ export default function CurriculumMapManagement({
         });
 
         updateEntriesState(updatedEntries);
+
+        if (!onChangeEntries && selectedEntry.id && !selectedEntry.id.startsWith('temp-')) {
+            await updateCurriculumMapEntry(
+                selectedEntry.id,
+                {
+                    ...values,
+                    lecture_units: String(lecUnits),
+                    laboratory_units: String(labUnits),
+                    units: String(customUnits),
+                    type_units: typeUnits
+                },
+                selectedSchoolYearId
+            );
+        }
+
         handleCloseUpdate();
     }
 

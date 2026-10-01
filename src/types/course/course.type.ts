@@ -1,6 +1,7 @@
 export interface CourseListRow {
     id: string;
     code: string;
+    base_code?: string;
     title: string;
     description: string | null;
     department_id: string;
@@ -33,6 +34,7 @@ export interface CourseTypeRow {
 
 export interface CourseFormValues {
     code: string;
+    base_code?: string;
     title: string;
     description: string;
     department_id: string;
@@ -56,7 +58,15 @@ export interface CourseFilterValues {
 export interface CourseOption {
     id: string;
     code: string;
+    base_code?: string;
     label: string;
+    course_type_id?: string;
+    course_type_code?: string;
+    course_type_label?: string;
+    lecture_units?: number;
+    laboratory_units?: number;
+    total_units?: number;
+    credit_hours?: number;
 }
 
 export interface CourseBulkRow {

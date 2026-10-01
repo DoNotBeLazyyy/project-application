@@ -3,8 +3,14 @@ export interface CurriculumMapEntry {
     course_id: string;
     course_code: string;
     course_title: string;
+    base_code?: string;
+    course_type_id?: string;
+    course_type_code?: string;
+    course_type_label?: string;
     lecture_units: number;
     laboratory_units: number;
+    units?: number;
+    type_units?: Record<string, number>;
     total_units: number;
     year_level: number;
     term_type_id: string;
@@ -23,6 +29,10 @@ export interface CurriculumMapFormValues {
     term_type_id: string;
     sequence: string;
     is_elective: boolean;
+    lecture_units?: string;
+    laboratory_units?: string;
+    units?: string;
+    type_units?: Record<string, number>;
 }
 
 export interface CurriculumMapBulkRow {

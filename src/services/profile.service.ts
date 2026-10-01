@@ -56,8 +56,8 @@ export async function createMyStudentProfile(
 
 export async function updateMyProfile(
     params: ProfileFormValues
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_update_my_profile', {
+): Promise<ServiceResult<{ message?: string; pending_approval?: boolean } | null>> {
+    return callRpc<{ message?: string; pending_approval?: boolean } | null>('fn_update_my_profile', {
         p_first_name: params.first_name,
         p_middle_name: params.middle_name || null,
         p_last_name: params.last_name,

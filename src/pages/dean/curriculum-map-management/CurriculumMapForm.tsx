@@ -9,7 +9,7 @@ import { listTerms } from '@services/term/term.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { useEffect, useState } from 'react';
-import { Control } from 'react-hook-form';
+import { Control, useWatch } from 'react-hook-form';
 
 interface CurriculumMapFormProps extends ComponentPropsForm {
     control: Control<CurriculumMapFormValues>;
@@ -24,8 +24,11 @@ export default function CurriculumMapForm({
     ...formProps
 }: CurriculumMapFormProps) {
     const { termTypeOptions: allTermTypeOptions } = useTermTypeOptions();
-    const { courseOptions } = useCourseOptions({});
+    const { courseOptions, courses } = useCourseOptions({});
     const [termTypeOptions, setTermTypeOptions] = useState<CommonSelectOption[]>([]);
+
+    const selectedCourseId = useWatch({ control, name: 'course_id' });
+    const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
     useEffect(() => {
         async function fetchAvailableTermTypes() {
@@ -76,6 +79,11 @@ export default function CurriculumMapForm({
         fetchAvailableTermTypes();
     }, [selectedSchoolYearId, allTermTypeOptions]);
 
+    const isCustomType = selectedCourse?.course_type_code &&
+        !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(selectedCourse.course_type_code.toUpperCase().trim());
+
+    const customTypeLabel = selectedCourse?.course_type_label || selectedCourse?.course_type_code || 'Course Type';
+
     const fields: FormFieldConfig<CurriculumMapFormValues>[] = [
         {
             disabled,
@@ -119,6 +127,14 @@ export default function CurriculumMapForm({
             name: 'laboratory_units',
             type: 'number'
         },
+        ...(isCustomType ? [
+            {
+                disabled,
+                fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
+                name: 'units' as const,
+                type: 'number' as const
+            }
+        ] : []),
         {
             disabled,
             fieldProps: { helperText: 'Display order within the term (starts at 1)' },
