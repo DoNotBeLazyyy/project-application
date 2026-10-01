@@ -58,6 +58,7 @@ export default function GradingTab({
     const [isFlagBusy, setIsFlagBusy] = useState(false);
     const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
     const [isThresholdOpen, setIsThresholdOpen] = useState(false);
+    const [isTransmutationOpen, setIsTransmutationOpen] = useState(false);
     const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
     const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
 
@@ -93,7 +94,54 @@ export default function GradingTab({
             listSpecialGradeFlags(sectionId, activePeriodId)
         ]);
 
-        if (componentsResult.data) setComponents(componentsResult.data);
+        let loadedComponents = componentsResult.data ?? [];
+
+        // If no components exist yet, automatically display inherited default components from section settings / program
+        if (loadedComponents.length === 0) {
+            await reseedSectionGrading(sectionId);
+            const refetched = await listGradingComponents(sectionId, activePeriodId);
+
+            if (refetched.data && refetched.data.length > 0) {
+                loadedComponents = refetched.data;
+            } else {
+                const sectionRes = await getSectionById(sectionId);
+                const currentPeriod = periods.find((p) => p.id === activePeriodId);
+                const periodSeq = currentPeriod?.sequence ?? 1;
+                const periodName = currentPeriod?.name?.toLowerCase() ?? '';
+
+                const matchingPeriod = sectionRes.data?.grading_periods?.find(
+                    (gp) => gp.sequence === periodSeq || gp.name.toLowerCase() === periodName
+                );
+
+                const defaultsToSeed = matchingPeriod?.components?.length
+                    ? matchingPeriod.components
+                    : [
+                        { name: 'Quizzes', weight: 30 },
+                        { name: 'Class Standing', weight: 30 },
+                        { name: 'Major Exam', weight: 40 }
+                    ];
+
+                for (const comp of defaultsToSeed) {
+                    await createGradingComponent(sectionId, activePeriodId, {
+                        name: comp.name,
+                        weight: String(comp.weight)
+                    });
+                }
+
+                const finalComps = await listGradingComponents(sectionId, activePeriodId);
+                if (finalComps.data && finalComps.data.length > 0) {
+                    loadedComponents = finalComps.data;
+                } else {
+                    loadedComponents = defaultsToSeed.map((comp, idx) => ({
+                        id: `default-${idx}`,
+                        name: comp.name,
+                        weight: Number(comp.weight)
+                    }));
+                }
+            }
+        }
+
+        setComponents(loadedComponents);
         if (gradeSheetResult.data) setGradeSheet(gradeSheetResult.data);
         if (flagsResult.data) setSpecialGradeFlags(flagsResult.data);
         setIsLocked(Boolean(lockedResult.data));
@@ -241,6 +289,15 @@ export default function GradingTab({
                         </button>
                     </div>
 
+                    <CommonButton
+                        size="small"
+                        startIcon={<ScalesIcon size={14} weight="bold" />}
+                        variant="outlined"
+                        onClick={() => setIsTransmutationOpen(true)}
+                    >
+                        Transmutation Scale
+                    </CommonButton>
+
                     {overridableRules.length > 0 && (
                         <CommonButton
                             size="small"
@@ -307,6 +364,11 @@ export default function GradingTab({
                 open={Boolean(flagPendingDismissal)}
                 onClose={() => setFlagPendingDismissal(null)}
                 onConfirm={handleConfirmDismissFlag}
+            />
+
+            <TransmutationScaleModal
+                open={isTransmutationOpen}
+                onClose={() => setIsTransmutationOpen(false)}
             />
         </div>
     );
