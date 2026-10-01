@@ -46,7 +46,13 @@ export default function CurriculumTermTable({
                         onRowClicked={(params) => {
                             if (params.data.id === '__total__') return;
                             const target = params.event?.target as HTMLElement | undefined;
-                            if (target?.closest('button') || target?.closest('.no-print')) {
+                            if (
+                                target?.closest('button') ||
+                                target?.closest('.no-print') ||
+                                target?.tagName === 'BUTTON' ||
+                                target?.tagName === 'SVG' ||
+                                target?.tagName === 'PATH'
+                            ) {
                                 return;
                             }
                             onView(params.data);

@@ -321,6 +321,9 @@ export default function ProgramWizardModal({
                         hideProgramSelect
                         programId={programId}
                         readOnly={readOnly}
+                        onChangeEntries={(newEntries) => {
+                            setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
+                        }}
                     />
                 )}
             </div>

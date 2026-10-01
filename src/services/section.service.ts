@@ -100,9 +100,6 @@ export async function listSections(
         p_term_ids: filters?.term_ids?.length
             ? filters.term_ids
             : null,
-        p_program_ids: filters?.program_ids?.length
-            ? filters.program_ids
-            : null,
         p_course_ids: filters?.course_ids?.length
             ? filters.course_ids
             : null,

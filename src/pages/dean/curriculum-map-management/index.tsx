@@ -1,24 +1,43 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonModal from '@components/modal/CommonModal';
+import BulkImportModal from '@components/modal/BulkImportModal';
 import CommonSelect from '@components/select/CommonSelect';
 import TableCardControls from '@components/table-card/TableCardControls';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
+import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import { MapTrifoldIcon } from '@phosphor-icons/react';
 import {
     createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
 } from '@services/curriculum-map.service';
+import { listCourses } from '@services/course/course.service';
+import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-curriculum-map-form';
 const UPDATE_FORM_ID = 'update-curriculum-map-form';
+
+const CURRICULUM_MAP_CSV_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
+    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1' },
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_TRIMESTER (optional)' },
+    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)' },
+    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)' }
+];
+
+interface CurriculumMapCsvRow {
+    course_code: string;
+    year_level: string;
+    term_type_code?: string;
+    sequence?: string;
+    is_elective?: string;
+}
 
 const defaultFormValues: CurriculumMapFormValues = {
     course_id: '',
@@ -32,40 +51,53 @@ interface CurriculumMapManagementProps {
     programId?: string;
     readOnly?: boolean;
     hideProgramSelect?: boolean;
+    onChangeEntries?: (entries: CurriculumMapEntry[]) => void;
 }
 
 export default function CurriculumMapManagement({
     programId = '',
     readOnly = false,
-    hideProgramSelect = false
+    hideProgramSelect = false,
+    onChangeEntries
 }: CurriculumMapManagementProps = {}) {
     const [selectedProgramId, setSelectedProgramId] = useState(programId);
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
+    const [selectedTermTypeId, setSelectedTermTypeId] = useState('');
     const [entries, setEntries] = useState<CurriculumMapEntry[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
+    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
 
     const { programOptions } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
-    const grouped = useCurriculumMapGrouped(entries);
+    const { termTypeOptions } = useTermTypeOptions();
+
+    const filteredEntries = useMemo(() => {
+        if (!selectedTermTypeId) return entries;
+        return entries.filter((entry) => entry.term_type_id === selectedTermTypeId);
+    }, [entries, selectedTermTypeId]);
+
+    const grouped = useCurriculumMapGrouped(filteredEntries);
 
     useEffect(() => {
         if (programId) {
             setSelectedProgramId(programId);
         }
-        if (activeSchoolYearId) {
-            setSelectedSchoolYearId(activeSchoolYearId);
-        }
-    }, [programId, activeSchoolYearId]);
+    }, [programId]);
 
     useEffect(() => {
         if (activeSchoolYearId && !selectedSchoolYearId) {
             setSelectedSchoolYearId(activeSchoolYearId);
         }
     }, [activeSchoolYearId]);
+
+    function updateEntriesState(newEntries: CurriculumMapEntry[]) {
+        setEntries(newEntries);
+        onChangeEntries?.(newEntries);
+    }
 
     const createMethods = useForm<CurriculumMapFormValues>({
         defaultValues: defaultFormValues
@@ -77,7 +109,6 @@ export default function CurriculumMapManagement({
 
     const fetchCurriculum = useCallback(async function() {
         if (!selectedProgramId) {
-            setEntries([]);
             return;
         }
 
@@ -89,14 +120,17 @@ export default function CurriculumMapManagement({
 
         if (result.data) {
             setEntries(result.data);
+            onChangeEntries?.(result.data);
         }
 
         setIsLoading(false);
-    }, [selectedProgramId, selectedSchoolYearId]);
+    }, [selectedProgramId, selectedSchoolYearId, onChangeEntries]);
 
     useEffect(function() {
-        fetchCurriculum();
-    }, [fetchCurriculum]);
+        if (selectedProgramId) {
+            fetchCurriculum();
+        }
+    }, [fetchCurriculum, selectedProgramId]);
 
     function handleOpenCreate() {
         createMethods.reset(defaultFormValues);
@@ -128,16 +162,46 @@ export default function CurriculumMapManagement({
     }
 
     async function handleCreateSubmit(values: CurriculumMapFormValues) {
-        const result = await createCurriculumMapEntry(
-            selectedProgramId,
-            values,
-            selectedSchoolYearId || undefined
-        );
+        if (selectedProgramId) {
+            const result = await createCurriculumMapEntry(
+                selectedProgramId,
+                values,
+                selectedSchoolYearId || undefined
+            );
 
-        if (!result.error) {
+            if (!result.error) {
+                setIsCreateOpen(false);
+                createMethods.reset(defaultFormValues);
+                fetchCurriculum();
+            }
+        } else {
+            const listRes = await listCourses(1, 1000, '', [], null);
+            const courses = listRes.data?.items ?? [];
+            const course = courses.find((c) => c.id === values.course_id);
+            const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+
+            const newEntry: CurriculumMapEntry = {
+                id: `temp-${Date.now()}-${Math.random()}`,
+                course_id: values.course_id,
+                course_code: course?.code ?? '',
+                course_title: course?.title ?? '',
+                lecture_units: course?.lecture_units ?? 0,
+                laboratory_units: course?.laboratory_units ?? 0,
+                total_units: course?.total_units ?? 0,
+                year_level: Number(values.year_level),
+                term_type_id: values.term_type_id,
+                term_type_label: termTypeObj?.label ?? '',
+                term_type_code: termTypeObj?.label ?? '',
+                term_type_sequence: 1,
+                school_year_id: selectedSchoolYearId || null,
+                sequence: Number(values.sequence),
+                is_elective: values.is_elective,
+                prerequisites: []
+            };
+
+            updateEntriesState([...entries, newEntry]);
             setIsCreateOpen(false);
             createMethods.reset(defaultFormValues);
-            fetchCurriculum();
         }
     }
 
@@ -148,15 +212,44 @@ export default function CurriculumMapManagement({
     async function handleUpdateSubmit(values: CurriculumMapFormValues) {
         if (!selectedEntry) return;
 
-        const result = await updateCurriculumMapEntry(
-            selectedEntry.id,
-            values,
-            selectedSchoolYearId || undefined
-        );
+        if (selectedProgramId) {
+            const result = await updateCurriculumMapEntry(
+                selectedEntry.id,
+                values,
+                selectedSchoolYearId || undefined
+            );
 
-        if (!result.error) {
+            if (!result.error) {
+                handleCloseUpdate();
+                fetchCurriculum();
+            }
+        } else {
+            const listRes = await listCourses(1, 1000, '', [], null);
+            const courses = listRes.data?.items ?? [];
+            const course = courses.find((c) => c.id === values.course_id);
+            const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+
+            const updatedEntries = entries.map((entry) => {
+                if (entry.id !== selectedEntry.id) return entry;
+                return {
+                    ...entry,
+                    course_id: values.course_id,
+                    course_code: course?.code ?? entry.course_code,
+                    course_title: course?.title ?? entry.course_title,
+                    lecture_units: course?.lecture_units ?? entry.lecture_units,
+                    laboratory_units: course?.laboratory_units ?? entry.laboratory_units,
+                    total_units: course?.total_units ?? entry.total_units,
+                    year_level: Number(values.year_level),
+                    term_type_id: values.term_type_id,
+                    term_type_label: termTypeObj?.label ?? entry.term_type_label,
+                    term_type_code: termTypeObj?.label ?? entry.term_type_code,
+                    sequence: Number(values.sequence),
+                    is_elective: values.is_elective
+                };
+            });
+
+            updateEntriesState(updatedEntries);
             handleCloseUpdate();
-            fetchCurriculum();
         }
     }
 
@@ -165,11 +258,126 @@ export default function CurriculumMapManagement({
     }
 
     async function handleDelete(entryId: string) {
-        const result = await deleteCurriculumMapEntry(entryId);
-
-        if (!result.error) {
-            fetchCurriculum();
+        if (selectedProgramId) {
+            const result = await deleteCurriculumMapEntry(entryId);
+            if (!result.error) {
+                fetchCurriculum();
+            }
+        } else {
+            updateEntriesState(entries.filter((entry) => entry.id !== entryId));
         }
+    }
+
+    async function handleBulkImportCurriculum(
+        rows: CurriculumMapCsvRow[]
+    ): Promise<BulkImportResult> {
+        const listRes = await listCourses(1, 1000, '', [], null);
+        const courses = listRes.data?.items ?? [];
+
+        const provisionedEntries: CurriculumMapEntry[] = [];
+        const errors: string[] = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const rowNum = i + 1;
+
+            if (!row.course_code) {
+                errors.push(`Row ${rowNum}: Course Code is required.`);
+                continue;
+            }
+            if (!row.year_level) {
+                errors.push(`Row ${rowNum}: Year Level is required.`);
+                continue;
+            }
+
+            const course = courses.find(
+                (c) => c.code.trim().toLowerCase() === row.course_code.trim().toLowerCase()
+            );
+
+            if (!course) {
+                errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
+                continue;
+            }
+
+            let termTypeId = selectedTermTypeId;
+            let termTypeObj = termTypeOptions.find((t) => t.value === selectedTermTypeId);
+
+            if (row.term_type_code) {
+                const matchedTermType = termTypeOptions.find(
+                    (t) =>
+                        t.label.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
+                        String(t.value).trim().toLowerCase() === row.term_type_code?.trim().toLowerCase()
+                );
+                if (matchedTermType) {
+                    termTypeId = String(matchedTermType.value);
+                    termTypeObj = matchedTermType;
+                }
+            }
+
+            if (!termTypeId && termTypeOptions.length > 0) {
+                termTypeId = String(termTypeOptions[0].value);
+                termTypeObj = termTypeOptions[0];
+            }
+
+            if (!termTypeId) {
+                errors.push(`Row ${rowNum}: Term Type is required.`);
+                continue;
+            }
+
+            const formValues: CurriculumMapFormValues = {
+                course_id: course.id,
+                year_level: String(row.year_level),
+                term_type_id: termTypeId,
+                sequence: row.sequence || '1',
+                is_elective: String(row.is_elective).toLowerCase() === 'true'
+            };
+
+            if (selectedProgramId) {
+                const res = await createCurriculumMapEntry(
+                    selectedProgramId,
+                    formValues,
+                    selectedSchoolYearId || undefined
+                );
+                if (res.error) {
+                    errors.push(`Row ${rowNum}: ${res.error.message}`);
+                }
+            } else {
+                const newEntry: CurriculumMapEntry = {
+                    id: `temp-${Date.now()}-${Math.random()}`,
+                    course_id: course.id,
+                    course_code: course.code,
+                    course_title: course.title,
+                    lecture_units: course.lecture_units ?? 0,
+                    laboratory_units: course.laboratory_units ?? 0,
+                    total_units: course.total_units ?? 0,
+                    year_level: Number(row.year_level),
+                    term_type_id: termTypeId,
+                    term_type_label: termTypeObj?.label ?? '',
+                    term_type_code: termTypeObj?.label ?? '',
+                    term_type_sequence: 1,
+                    school_year_id: selectedSchoolYearId || null,
+                    sequence: Number(row.sequence || 1),
+                    is_elective: String(row.is_elective).toLowerCase() === 'true',
+                    prerequisites: []
+                };
+                provisionedEntries.push(newEntry);
+            }
+        }
+
+        if (selectedProgramId) {
+            fetchCurriculum();
+        } else if (provisionedEntries.length > 0) {
+            updateEntriesState([...entries, ...provisionedEntries]);
+        }
+
+        const successCount = selectedProgramId
+            ? rows.length - errors.length
+            : provisionedEntries.length;
+
+        return {
+            provisioned_count: successCount,
+            errors
+        };
     }
 
     const selectedProgram = programOptions.find((option) => option.value === selectedProgramId);
@@ -217,6 +425,14 @@ export default function CurriculumMapManagement({
                             sx={{ minWidth: 200 }}
                             value={selectedSchoolYearId}
                             onChange={(e) => setSelectedSchoolYearId(String(e.target.value))}
+                        />
+                        <CommonSelect
+                            fullWidth={false}
+                            options={[{ label: 'All Terms', value: '' }, ...termTypeOptions]}
+                            size="large"
+                            sx={{ minWidth: 180 }}
+                            value={selectedTermTypeId}
+                            onChange={(e) => setSelectedTermTypeId(String(e.target.value))}
                         />
                     </div>
                     {!readOnly && (
@@ -429,7 +645,15 @@ export default function CurriculumMapManagement({
                         </div>
                     </div>
                 </CommonModal>
+
+                <BulkImportModal<CurriculumMapCsvRow>
+                    columns={CURRICULUM_MAP_CSV_COLUMNS}
+                    entityName="Curriculum Map Entry"
+                    open={isBulkImportOpen}
+                    onClose={() => setIsBulkImportOpen(false)}
+                    onImport={handleBulkImportCurriculum}
+                />
             </div>
         </CommonCard>
     );
-}
+}

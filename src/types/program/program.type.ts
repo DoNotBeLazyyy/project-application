@@ -29,6 +29,14 @@ export interface ProgramFormValues {
         weight: number;
         components?: { name: string; weight: number }[];
     }[];
+    curriculum_entries?: {
+        course_id: string;
+        year_level: number;
+        term_type_id: string;
+        school_year_id?: string;
+        sequence?: number;
+        is_elective?: boolean;
+    }[];
 }
 
 export interface ProgramOption {

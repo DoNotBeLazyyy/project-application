@@ -1,3 +1,4 @@
+import { createCurriculumMapEntry } from '@services/curriculum-map.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
@@ -50,7 +51,7 @@ export async function getPrograms(): Promise<ServiceResult<ProgramOption[]>> {
 export async function createProgram(
     params: ProgramFormValues
 ): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_create_program', {
+    const result = await callRpc<{ id?: string; program_id?: string }>('fn_create_program', {
         p_code: params.code,
         p_department_id: nullIfBlank(params.department_id),
         p_description: params.description || null,
@@ -62,6 +63,29 @@ export async function createProgram(
             : null,
         p_years_duration: Number(params.years_duration)
     });
+
+    if (!result.error && params.curriculum_entries && params.curriculum_entries.length > 0) {
+        const programId = result.data?.id || result.data?.program_id;
+        if (programId) {
+            await Promise.allSettled(
+                params.curriculum_entries.map((entry) =>
+                    createCurriculumMapEntry(
+                        programId,
+                        {
+                            course_id: entry.course_id,
+                            is_elective: Boolean(entry.is_elective),
+                            sequence: String(entry.sequence ?? 1),
+                            term_type_id: entry.term_type_id,
+                            year_level: String(entry.year_level)
+                        },
+                        entry.school_year_id
+                    )
+                )
+            );
+        }
+    }
+
+    return { data: null, error: result.error };
 }
 
 export async function updateProgram(
