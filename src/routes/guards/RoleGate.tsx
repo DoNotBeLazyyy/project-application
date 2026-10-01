@@ -11,24 +11,25 @@ interface RoleGateProps {
 
 export default function RoleGate({ allowedRoles }: RoleGateProps) {
     const activeRole = useAppStore((s) => s.activeRole);
+    const availableRoles = useAppStore((s) => s.availableRoles);
+    const setActiveRole = useAppStore((s) => s.setActiveRole);
 
-    const isCurrentActiveRoleAllowed = Boolean(activeRole && allowedRoles.includes(activeRole));
+    const matchingRole = availableRoles.find((r) => allowedRoles.includes(r.code));
+    const isAuthorized = Boolean(matchingRole);
 
     useEffect(() => {
-        if (activeRole && !allowedRoles.includes(activeRole)) {
+        if (availableRoles.length > 0 && !isAuthorized) {
             useToastStore.getState().showToast(
                 'Access Denied: You do not have permission to access this page.',
                 'error'
             );
+        } else if (matchingRole && activeRole !== matchingRole.code) {
+            setActiveRole(matchingRole.code);
         }
-    }, [activeRole, allowedRoles]);
+    }, [activeRole, allowedRoles, availableRoles, isAuthorized, matchingRole, setActiveRole]);
 
-    if (!activeRole) {
-        return <Navigate replace to="/unauthorized" />;
-    }
-
-    if (!isCurrentActiveRoleAllowed) {
-        const fallbackHome = ROLE_HOME[activeRole] || '/unauthorized';
+    if (!isAuthorized) {
+        const fallbackHome = activeRole ? ROLE_HOME[activeRole] : '/login';
         return <Navigate replace to={fallbackHome} />;
     }
 
