@@ -72,7 +72,9 @@ export async function updateMyProfile(
         p_date_of_birth: params.date_of_birth || null,
         p_gender: params.gender || null,
         p_civil_status: params.civil_status || null,
-        p_nationality: params.nationality || null
+        p_nationality: params.nationality || null,
+        p_program_id: params.program_id || null,
+        p_year_level: params.year_level ? Number(params.year_level) : null
     });
 }
 

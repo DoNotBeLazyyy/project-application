@@ -1,19 +1,33 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProfileFormValues } from '@type/profile.type';
 import { Control } from 'react-hook-form';
 
+const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
+    { label: '1st Year', value: 1 },
+    { label: '2nd Year', value: 2 },
+    { label: '3rd Year', value: 3 },
+    { label: '4th Year', value: 4 },
+    { label: '5th Year', value: 5 },
+    { label: '6th Year', value: 6 }
+];
+
 interface ProfileDetailsFormProps extends ComponentPropsForm {
     control: Control<ProfileFormValues>;
+    isStudentUser?: boolean;
+    programOptions?: CommonSelectOption[];
 }
 
 export default function ProfileDetailsForm({
     control,
+    isStudentUser = false,
+    programOptions = [],
     ...formProps
 }: ProfileDetailsFormProps) {
-    const fields: FormFieldConfig<ProfileFormValues>[] = [
+    const baseFields: FormFieldConfig<ProfileFormValues>[] = [
         {
             name: 'first_name',
             rules: { required: 'First name is required' },
@@ -65,7 +79,25 @@ export default function ProfileDetailsForm({
             name: 'nationality',
             type: 'text',
             fieldProps: { helperText: 'Country of citizenship.' }
+        }
+    ];
+
+    const studentFields: FormFieldConfig<ProfileFormValues>[] = isStudentUser ? [
+        {
+            name: 'program_id',
+            options: programOptions,
+            type: 'select',
+            fieldProps: { helperText: 'Your enrolled academic program (requires Registrar verification).' }
         },
+        {
+            name: 'year_level',
+            options: YEAR_LEVEL_OPTIONS,
+            type: 'select',
+            fieldProps: { helperText: 'Current academic level (requires Registrar verification).' }
+        }
+    ] : [];
+
+    const addressFields: FormFieldConfig<ProfileFormValues>[] = [
         {
             name: 'address_line1',
             type: 'text',
@@ -92,6 +124,8 @@ export default function ProfileDetailsForm({
             fieldProps: { helperText: 'ZIP code.' }
         }
     ];
+
+    const fields = [...baseFields, ...studentFields, ...addressFields];
 
     return <CommonForm
         containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"

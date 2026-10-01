@@ -16,6 +16,8 @@ import { cancelMyProfileRequest } from '@services/registrar-verification.service
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
 import { formErrors } from '@utils/form.util';
+import { getPrograms } from '@services/program/program.service';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -62,6 +64,7 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState<ProfileTab>('details');
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
     const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
     const [isStudentPromptOpen, setIsStudentPromptOpen] = useState(false);
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
@@ -73,32 +76,48 @@ export default function ProfilePage() {
     const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
 
     useEffect(function() {
-        async function loadProfile() {
-            const result = await getMyProfile();
+        async function loadData() {
+            const [profileRes, programsRes] = await Promise.all([
+                getMyProfile(),
+                getPrograms()
+            ]);
 
-            if (result.data) {
-                setProfile(result.data);
+            if (programsRes.data) {
+                setProgramOptions(
+                    programsRes.data.map(function(program) {
+                        return {
+                            label: `${program.code} · ${program.label}`,
+                            value: program.id
+                        };
+                    })
+                );
+            }
+
+            if (profileRes.data) {
+                setProfile(profileRes.data);
                 profileMethods.reset({
-                    first_name: result.data.first_name,
-                    middle_name: result.data.middle_name,
-                    last_name: result.data.last_name,
-                    suffix: result.data.suffix,
-                    preferred_name: result.data.preferred_name,
-                    mobile_number: result.data.mobile_number,
-                    address_line1: result.data.address_line1,
-                    address_line2: result.data.address_line2,
-                    city: result.data.city,
-                    province: result.data.province,
-                    postal_code: result.data.postal_code,
-                    date_of_birth: result.data.date_of_birth ?? '',
-                    gender: result.data.gender,
-                    civil_status: result.data.civil_status,
-                    nationality: result.data.nationality
+                    first_name: profileRes.data.first_name,
+                    middle_name: profileRes.data.middle_name,
+                    last_name: profileRes.data.last_name,
+                    suffix: profileRes.data.suffix,
+                    preferred_name: profileRes.data.preferred_name,
+                    mobile_number: profileRes.data.mobile_number,
+                    address_line1: profileRes.data.address_line1,
+                    address_line2: profileRes.data.address_line2,
+                    city: profileRes.data.city,
+                    province: profileRes.data.province,
+                    postal_code: profileRes.data.postal_code,
+                    date_of_birth: profileRes.data.date_of_birth ?? '',
+                    gender: profileRes.data.gender,
+                    civil_status: profileRes.data.civil_status,
+                    nationality: profileRes.data.nationality,
+                    program_id: profileRes.data.student?.program_id ?? '',
+                    year_level: profileRes.data.student?.year_level ?? 1
                 });
             }
         }
 
-        loadProfile();
+        loadData();
     }, [refreshKey]);
 
     function handleAvatarChanged() {
@@ -302,6 +321,8 @@ export default function ProfilePage() {
                         <ProfileDetailsForm
                             control={profileMethods.control}
                             id={PROFILE_FORM_ID}
+                            isStudentUser={isStudentUser}
+                            programOptions={programOptions}
                             onSubmit={profileMethods.handleSubmit(handleProfileSubmit, handleProfileError)}
                         />
                         <div className="flex flex-col gap-2">
