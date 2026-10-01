@@ -1,8 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { ScalesIcon, SlidersHorizontalIcon } from '@phosphor-icons/react';
+import { SlidersHorizontalIcon } from '@phosphor-icons/react';
 import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
-import TransmutationScaleModal from '@pages/faculty/sections/grading/TransmutationScaleModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
 import SpecialGradeFlagModal from '@pages/faculty/sections/grading/SpecialGradeFlagModal';
@@ -58,7 +57,6 @@ export default function GradingTab({
     const [isFlagBusy, setIsFlagBusy] = useState(false);
     const [overridableRules, setOverridableRules] = useState<SectionOverridableRule[]>([]);
     const [isThresholdOpen, setIsThresholdOpen] = useState(false);
-    const [isTransmutationOpen, setIsTransmutationOpen] = useState(false);
     const [isSubmittingGrades, setIsSubmittingGrades] = useState(false);
     const [mobileGradingView, setMobileGradingView] = useState<'sheet' | 'components'>('sheet');
 
@@ -164,6 +162,42 @@ export default function GradingTab({
     async function handleDelete(componentId: string) {
         const result = await deleteGradingComponent(componentId);
         if (!result.error) await fetchPeriodData();
+    }
+
+    async function handleBatchSave(
+        updates: { id: string; name: string; weight: number }[],
+        creates: { name: string; weight: number }[],
+        deletes: string[]
+    ) {
+        // 1. Process deletes first
+        if (deletes.length > 0) {
+            await Promise.all(deletes.map((id) => deleteGradingComponent(id)));
+        }
+
+        // 2. Order updates so weight decreases run before weight increases
+        const sortedUpdates = [...updates].sort((a, b) => {
+            const origA = components.find((c) => c.id === a.id)?.weight ?? 0;
+            const origB = components.find((c) => c.id === b.id)?.weight ?? 0;
+            return (a.weight - origA) - (b.weight - origB);
+        });
+
+        for (const u of sortedUpdates) {
+            await updateGradingComponent(u.id, {
+                name: u.name,
+                weight: String(u.weight)
+            });
+        }
+
+        // 3. Process creations
+        for (const c of creates) {
+            await createGradingComponent(sectionId, activePeriodId, {
+                name: c.name,
+                weight: String(c.weight)
+            });
+        }
+
+        useToastStore.getState().showToast('Grading components saved successfully.', 'success');
+        await fetchPeriodData();
     }
 
     async function handleCalculate() {
@@ -289,14 +323,6 @@ export default function GradingTab({
                         </button>
                     </div>
 
-                    <CommonButton
-                        size="small"
-                        startIcon={<ScalesIcon size={14} weight="bold" />}
-                        variant="outlined"
-                        onClick={() => setIsTransmutationOpen(true)}
-                    >
-                        Transmutation Scale
-                    </CommonButton>
 
                     {overridableRules.length > 0 && (
                         <CommonButton
@@ -320,6 +346,7 @@ export default function GradingTab({
                         locked={isLocked}
                         periodName={periods.find((p) => p.id === activePeriodId)?.name}
                         periodWeight={periods.find((p) => p.id === activePeriodId)?.weight}
+                        onBatchSave={handleBatchSave}
                         onCreate={handleCreate}
                         onDelete={handleDelete}
                         onReseed={handleReseed}
@@ -366,10 +393,7 @@ export default function GradingTab({
                 onConfirm={handleConfirmDismissFlag}
             />
 
-            <TransmutationScaleModal
-                open={isTransmutationOpen}
-                onClose={() => setIsTransmutationOpen(false)}
-            />
+
         </div>
     );
 }

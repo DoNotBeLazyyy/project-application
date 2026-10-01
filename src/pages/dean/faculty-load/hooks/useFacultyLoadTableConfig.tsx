@@ -1,21 +1,32 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
+import { MenuOption } from '@components/table/TableActionCell';
+import { TableActionConfig } from '@components/table/useTableConfigs';
 import { FacultyLoadRow } from '@type/faculty-load.type';
-import { ColDef } from 'ag-grid-community';
+import { MobileCardColDef } from '@type/table.type';
 import { useMemo } from 'react';
 
-export function useFacultyLoadTableConfig() {
-    const columnDefs = useMemo<ColDef<FacultyLoadRow>[]>(function() {
+interface UseFacultyLoadTableConfigProps {
+    onView?: (facultyId: string) => void;
+    onEdit?: (facultyId: string) => void;
+}
+
+export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps) {
+    const { onView, onEdit } = props || {};
+
+    const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
             {
                 field: 'faculty_name',
                 flex: 3,
                 headerName: 'Faculty',
+                mobileCard: 'title',
                 sortable: true
             },
             {
                 field: 'email',
                 flex: 3,
-                headerName: 'Email'
+                headerName: 'Email',
+                mobileCard: 'subtitle'
             },
             {
                 field: 'section_count',
@@ -57,5 +68,27 @@ export function useFacultyLoadTableConfig() {
         ];
     }, []);
 
-    return { columnDefs };
+    const tableActionConfig = useMemo(function() {
+        if (!onView && !onEdit) return undefined;
+
+        return function(): TableActionConfig<FacultyLoadRow> {
+            return {
+                onEditClick: (row: FacultyLoadRow) => () => {
+                    onEdit?.(row.id);
+                },
+                menuOptions: (row: FacultyLoadRow): MenuOption[] => [
+                    ...(onView ? [{
+                        preset: 'view' as const,
+                        onClick: () => onView(row.id)
+                    }] : []),
+                    ...(onEdit ? [{
+                        preset: 'edit' as const,
+                        onClick: () => onEdit(row.id)
+                    }] : [])
+                ]
+            };
+        };
+    }, [onView, onEdit]);
+
+    return { columnDefs, tableActionConfig };
 }

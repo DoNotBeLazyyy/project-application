@@ -16,8 +16,9 @@ import {
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { SectionBulkRow, SectionFilterValues, SectionListRow } from '@type/section.type';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'section_code', label: 'Section Code' },
@@ -49,6 +50,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
 ];
 
 export default function SectionManagement() {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [activeFilters, setActiveFilters] = useState<SectionFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -57,6 +59,19 @@ export default function SectionManagement() {
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
+
+    const editSectionId = searchParams.get('editSectionId') || searchParams.get('edit');
+
+    useEffect(() => {
+        if (editSectionId) {
+            setSelectedId(editSectionId);
+            setIsUpdateOpen(true);
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.delete('editSectionId');
+            nextParams.delete('edit');
+            setSearchParams(nextParams, { replace: true });
+        }
+    }, [editSectionId, searchParams, setSearchParams]);
 
     const filterMethods = useForm<SectionFilterValues>({
         defaultValues: {

@@ -1,6 +1,11 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    FacultyLoadDetail, FacultyLoadFilterValues, FacultyLoadRow, ScheduleConflictFilterValues, ScheduleConflictRow
+    FacultyLoadAssignmentInput,
+    FacultyLoadDetail,
+    FacultyLoadFilterValues,
+    FacultyLoadRow,
+    ScheduleConflictFilterValues,
+    ScheduleConflictRow
 } from '@type/faculty-load.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -61,5 +66,13 @@ export async function assignSectionFaculty(
     return callRpc<{ success: boolean; message: string }>('fn_assign_section_faculty', {
         p_faculty_id: facultyId || null,
         p_section_id: sectionId
+    });
+}
+
+export async function saveFacultyLoadAssignments(
+    assignments: FacultyLoadAssignmentInput[]
+): Promise<ServiceResult<{ success: boolean; updated_count: number; message: string }>> {
+    return callRpc<{ success: boolean; updated_count: number; message: string }>('fn_save_faculty_load_assignments', {
+        p_assignments: assignments
     });
 }

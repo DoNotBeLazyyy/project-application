@@ -2,17 +2,15 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import FacultyLoadFilterForm from '@pages/dean/faculty-load/FacultyLoadFilterForm';
+import FacultyLoadWizardModal from '@pages/dean/faculty-load/FacultyLoadWizardModal';
 import { useFacultyLoadTableConfig } from '@pages/dean/faculty-load/hooks/useFacultyLoadTableConfig';
-import ScheduleConflictsManagement from '@pages/dean/schedule-conflicts';
-import { ChalkboardTeacherIcon, WarningIcon } from '@phosphor-icons/react';
 import { listFacultyLoad } from '@services/faculty-load.service';
 import { getActiveTerm } from '@services/term/term.service';
 import { FacultyLoadFilterValues, FacultyLoadRow } from '@type/faculty-load.type';
 import { SortStringDto } from '@type/http.type';
-import { classMerge } from '@utils/css.util';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 const LOAD_FILTER_FORM_ID = 'filter-faculty-load-form';
 
@@ -27,20 +25,40 @@ const LOAD_SORT_COLUMNS: SortColumn[] = [
 const defaultLoadFilters: FacultyLoadFilterValues = { term_id: '' };
 
 export default function FacultyLoadManagement() {
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = searchParams.get('tab') === 'conflicts' ? 'conflicts' : 'loads';
+    const queryFacultyId = searchParams.get('facultyId');
 
     const [activeTermId, setActiveTermId] = useState('');
     const [isTermResolved, setIsTermResolved] = useState(false);
     const [loadFilters, setLoadFilters] = useState<FacultyLoadFilterValues>(defaultLoadFilters);
     const [isLoadFilterOpen, setIsLoadFilterOpen] = useState(false);
 
+    // Detail Stepper Modal state
+    const [selectedFacultyId, setSelectedFacultyId] = useState<string | null>(queryFacultyId);
+    const [isDetailOpen, setIsDetailOpen] = useState(Boolean(queryFacultyId));
+    const [isDetailReadOnly, setIsDetailReadOnly] = useState(true);
+
     const loadFilterMethods = useForm<FacultyLoadFilterValues>({
         defaultValues: defaultLoadFilters
     });
 
-    const { columnDefs: loadColumnDefs } = useFacultyLoadTableConfig();
+    const handleOpenView = useCallback((facultyId: string) => {
+        setSelectedFacultyId(facultyId);
+        setIsDetailReadOnly(true);
+        setIsDetailOpen(true);
+    }, []);
+
+    const handleOpenEdit = useCallback((facultyId: string) => {
+        setSelectedFacultyId(facultyId);
+        setIsDetailReadOnly(false);
+        setIsDetailOpen(true);
+    }, []);
+
+    const { columnDefs: loadColumnDefs, tableActionConfig } = useFacultyLoadTableConfig({
+        onEdit: handleOpenEdit,
+        onView: handleOpenView
+    });
+
     const { reset: resetLoadFilterForm } = loadFilterMethods;
 
     useEffect(function() {
@@ -56,6 +74,15 @@ export default function FacultyLoadManagement() {
 
         fetchActiveTerm();
     }, [resetLoadFilterForm]);
+
+    // Handle initial query param facultyId
+    useEffect(() => {
+        if (queryFacultyId) {
+            setSelectedFacultyId(queryFacultyId);
+            setIsDetailReadOnly(true);
+            setIsDetailOpen(true);
+        }
+    }, [queryFacultyId]);
 
     function handleLoadFilterSubmit(values: FacultyLoadFilterValues) {
         setLoadFilters(values);
@@ -78,59 +105,27 @@ export default function FacultyLoadManagement() {
         return listFacultyLoad(page, size, search, sort, loadFilters);
     }
 
-    function handleRowClick(facultyId: string) {
-        navigate(`/dean/faculty-load/${facultyId}${loadFilters.term_id
-            ? `?termId=${loadFilters.term_id}`
-            : ''}`);
+    function handleCloseDetail() {
+        setIsDetailOpen(false);
+        setSelectedFacultyId(null);
+        if (queryFacultyId) {
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.delete('facultyId');
+            setSearchParams(nextParams, { replace: true });
+        }
+    }
+
+    function handleDetailSuccess() {
+        setLoadFilters((prev) => ({ ...prev }));
     }
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {/* Faculty Loading View Selector Tabs */}
-            <div className="flex items-center gap-2 border-b border-(--mui-palette-divider) pb-2 shrink-0">
-                <button
-                    type="button"
-                    className={classMerge(
-                        'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer',
-                        activeTab === 'loads'
-                            ? 'bg-brand-600 text-white shadow-xs'
-                            : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-(--mui-palette-action-hover)'
-                    )}
-                    onClick={() => {
-                        const newParams = new URLSearchParams(searchParams);
-                        newParams.delete('tab');
-                        setSearchParams(newParams);
-                    }}
-                >
-                    <ChalkboardTeacherIcon size={18} weight={activeTab === 'loads' ? 'bold' : 'regular'} />
-                    <span>Faculty Teaching Loads</span>
-                </button>
-
-                <button
-                    type="button"
-                    className={classMerge(
-                        'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer',
-                        activeTab === 'conflicts'
-                            ? 'bg-amber-600 text-white shadow-xs'
-                            : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-(--mui-palette-action-hover)'
-                    )}
-                    onClick={() => {
-                        const newParams = new URLSearchParams(searchParams);
-                        newParams.set('tab', 'conflicts');
-                        setSearchParams(newParams);
-                    }}
-                >
-                    <WarningIcon size={18} weight={activeTab === 'conflicts' ? 'bold' : 'regular'} />
-                    <span>Schedule Conflicts</span>
-                </button>
-            </div>
-
-            {/* Tab 1: Faculty Teaching Loads */}
-            {activeTab === 'loads' && isTermResolved && (
+            {isTermResolved && (
                 <div className="flex-1 min-h-0">
                     <CommonTableCard<FacultyLoadRow>
                         cardHeaderProps={{
-                            subheader: 'Select a faculty member to see their sections, meeting times, and assign or reassign sections.',
+                            subheader: 'Review faculty workload, assigned sections, and conflict schedule in the detail modal stepper.',
                             title: 'Faculty Loading'
                         }}
                         controls={{
@@ -162,6 +157,7 @@ export default function FacultyLoadManagement() {
                             }
                         }}
                         sortColumns={LOAD_SORT_COLUMNS}
+                        tableActionConfig={tableActionConfig}
                         tableProps={{
                             leadingColumnDefs: loadColumnDefs
                         }}
@@ -170,17 +166,20 @@ export default function FacultyLoadManagement() {
                         onFilter={function() {
                             setIsLoadFilterOpen(true);
                         }}
-                        onRowClick={handleRowClick}
+                        onRowClick={handleOpenView}
                     />
                 </div>
             )}
 
-            {/* Tab 2: Relocated Schedule Conflicts */}
-            {activeTab === 'conflicts' && (
-                <div className="flex-1 min-h-0">
-                    <ScheduleConflictsManagement />
-                </div>
-            )}
+            {/* Stepper Modal for Faculty Load Detail (Read & Write mode) */}
+            <FacultyLoadWizardModal
+                facultyId={selectedFacultyId}
+                initialReadOnly={isDetailReadOnly}
+                open={isDetailOpen}
+                termId={loadFilters.term_id}
+                onClose={handleCloseDetail}
+                onSuccess={handleDetailSuccess}
+            />
         </div>
     );
 }
