@@ -28,6 +28,7 @@ export function useCurriculumTableConfig({
                 minWidth: 150,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => {
+                    if (!params.data) return null;
                     const isTotal = params.data.id === '__total__';
 
                     return (
@@ -38,7 +39,7 @@ export function useCurriculumTableConfig({
                                     : ''}>
                                 {isTotal
                                     ? 'Total Units'
-                                    : params.data.course_title}
+                                    : params.data.course_title ?? ''}
                             </span>
                         </div>
                     );
@@ -52,7 +53,7 @@ export function useCurriculumTableConfig({
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-end">
-                        {params.data.lecture_units || ''}
+                        {params.data?.lecture_units ?? ''}
                     </div>
                 )
             },
@@ -64,7 +65,7 @@ export function useCurriculumTableConfig({
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-center">
-                        {params.data.laboratory_units || ''}
+                        {params.data?.laboratory_units ?? ''}
                     </div>
                 )
             },
@@ -75,16 +76,16 @@ export function useCurriculumTableConfig({
                 minWidth: 85,
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => {
-                    if (params.data.id === '__total__') return null;
+                    if (!params.data || params.data.id === '__total__') return null;
+                    const prereqs = params.data.prerequisites;
+                    const prereqList = Array.isArray(prereqs)
+                        ? prereqs.map((prereq) => (typeof prereq === 'string' ? prereq : prereq?.code)).filter(Boolean)
+                        : [];
 
                     return (
                         <div className="flex h-full items-center">
                             <span className="text-xs">
-                                {params.data.prerequisites.length > 0
-                                    ? params.data.prerequisites.map((prereq) => prereq.code)
-                                        .join(', ')
-                                    : 'None'
-                                }
+                                {prereqList.length > 0 ? prereqList.join(', ') : 'None'}
                             </span>
                         </div>
                     );
@@ -98,7 +99,7 @@ export function useCurriculumTableConfig({
                 sortable: false,
                 cellRenderer: (params: { data: CurriculumMapEntry }) => (
                     <div className="flex h-full items-center justify-center">
-                        {params.data.is_elective && (
+                        {params.data?.is_elective && (
                             <span className="whitespace-nowrap">
                                 <CommonBadgeStatus
                                     label="Elective"
@@ -118,7 +119,7 @@ export function useCurriculumTableConfig({
                 cellClass: 'no-print',
                 headerClass: 'no-print',
                 cellRenderer: (params: { data: CurriculumMapEntry }) => {
-                    if (params.data.id === '__total__') return null;
+                    if (!params.data || params.data.id === '__total__') return null;
                     return (
                         <div className="flex h-full items-center justify-center">
                             <button

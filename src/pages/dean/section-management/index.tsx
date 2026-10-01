@@ -43,8 +43,9 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)' },
     { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)' },
     { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)' },
+    { key: 'preset_section', label: 'Preset Section (Code or Label)', hint: 'e.g. SEC-101 or BSCS 1-A (section code or label to copy preset grading schema from, optional)' },
     { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)' },
-    { key: 'source_section_code', label: 'Source Section Code', hint: 'e.g. SEC-100 (preset section code to copy grading schema from, optional)' }
+    { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'e.g. Prelim:30(Quizzes:30,Class Standing:30,Major Exam:40); Midterm:30(...); Final:40(...) or Prelim:30,Midterm:30,Final:40 (optional)' }
 ];
 
 export default function SectionManagement() {
@@ -232,17 +233,19 @@ export default function SectionManagement() {
                 }}
                 onMapRow={(row) => ({
                     course_code: row.course_code,
-                    program_code: row.program_code,
                     faculty_email: row.faculty_email,
+                    grading_periods: row.grading_periods,
                     max_slots: row.max_slots,
                     override_grading_schema: row.override_grading_schema,
+                    preset_section: row.preset_section || row.source_section_code,
+                    program_code: row.program_code,
                     room: row.room,
                     schedule_days: row.schedule_days,
                     schedule_room: row.schedule_room,
                     schedule_time_end: row.schedule_time_end,
                     schedule_time_start: row.schedule_time_start,
                     section_code: row.section_code || '',
-                    source_section_code: row.source_section_code,
+                    source_section_code: row.source_section_code || row.preset_section,
                     status: row.status,
                     term_label: row.term_label
                 })}

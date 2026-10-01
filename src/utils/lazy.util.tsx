@@ -44,9 +44,9 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
 
     componentDidCatch(error: Error) {
         const isChunkError =
-            error.name === 'TypeError' ||
             error.message?.includes('dynamically imported module') ||
-            error.message?.includes('Failed to fetch') ||
+            error.message?.includes('Failed to fetch dynamically imported module') ||
+            error.message?.includes('Importing a module script failed') ||
             error.message?.includes('MIME type');
 
         if (isChunkError) {

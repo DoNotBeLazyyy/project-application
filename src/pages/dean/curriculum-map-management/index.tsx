@@ -17,7 +17,7 @@ import { listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 const CREATE_FORM_ID = 'create-curriculum-map-form';
@@ -82,6 +82,11 @@ export default function CurriculumMapManagement({
 
     const grouped = useCurriculumMapGrouped(filteredEntries);
 
+    const onChangeEntriesRef = useRef(onChangeEntries);
+    useEffect(() => {
+        onChangeEntriesRef.current = onChangeEntries;
+    }, [onChangeEntries]);
+
     useEffect(() => {
         if (programId) {
             setSelectedProgramId(programId);
@@ -96,7 +101,7 @@ export default function CurriculumMapManagement({
 
     function updateEntriesState(newEntries: CurriculumMapEntry[]) {
         setEntries(newEntries);
-        onChangeEntries?.(newEntries);
+        onChangeEntriesRef.current?.(newEntries);
     }
 
     const createMethods = useForm<CurriculumMapFormValues>({
@@ -120,11 +125,11 @@ export default function CurriculumMapManagement({
 
         if (result.data) {
             setEntries(result.data);
-            onChangeEntries?.(result.data);
+            onChangeEntriesRef.current?.(result.data);
         }
 
         setIsLoading(false);
-    }, [selectedProgramId, selectedSchoolYearId, onChangeEntries]);
+    }, [selectedProgramId, selectedSchoolYearId]);
 
     useEffect(function() {
         if (selectedProgramId) {

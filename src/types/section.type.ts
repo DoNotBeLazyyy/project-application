@@ -97,6 +97,8 @@ export interface SectionBulkRow {
     schedule_time_start?: string;
     schedule_time_end?: string;
     schedule_room?: string;
-    override_grading_schema?: string;
+    preset_section?: string;
     source_section_code?: string;
+    override_grading_schema?: string;
+    grading_periods?: string;
 }

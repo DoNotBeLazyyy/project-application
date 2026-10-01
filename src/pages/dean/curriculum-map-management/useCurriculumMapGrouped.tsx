@@ -11,7 +11,10 @@ const YEAR_LEVEL_LABELS: Record<number, string> = {
 };
 
 function isSummerEntry(entry: CurriculumMapEntry): boolean {
-    return /summer/i.test(entry.term_type_code) || /summer/i.test(entry.term_type_label);
+    if (!entry) return false;
+    const code = entry.term_type_code ?? '';
+    const label = entry.term_type_label ?? '';
+    return /summer/i.test(code) || /summer/i.test(label);
 }
 
 function buildGroupLabel(yearLevel: number, isSummer: boolean): string {
@@ -26,7 +29,8 @@ export function useCurriculumMapGrouped(entries: CurriculumMapEntry[]): Curricul
     return useMemo(function() {
         const groupMap = new Map<string, Map<string, CurriculumMapEntry[]>>();
 
-        entries.forEach(function(entry) {
+        (entries ?? []).forEach(function(entry) {
+            if (!entry) return;
             const summer = isSummerEntry(entry);
             const groupKey = `${entry.year_level}-${summer
                 ? 'summer'
@@ -68,14 +72,14 @@ export function useCurriculumMapGrouped(entries: CurriculumMapEntry[]): Curricul
 
             const terms = Array.from(termMap?.entries() ?? [])
                 .map(function([termTypeId, termEntries]) {
-                    const first = termEntries[0];
+                    const first = termEntries?.[0] ?? {} as Partial<CurriculumMapEntry>;
                     return {
                         termTypeId,
-                        termTypeLabel: first.term_type_label,
-                        termTypeCode: first.term_type_code,
-                        termTypeSequence: first.term_type_sequence,
-                        entries: termEntries.sort((a, b) => a.sequence - b.sequence),
-                        totalUnits: termEntries.reduce((sum, entry) => sum + entry.total_units, 0)
+                        termTypeLabel: first.term_type_label ?? '',
+                        termTypeCode: first.term_type_code ?? '',
+                        termTypeSequence: first.term_type_sequence ?? 1,
+                        entries: (termEntries ?? []).sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)),
+                        totalUnits: (termEntries ?? []).reduce((sum, entry) => sum + (Number(entry.total_units) || 0), 0)
                     };
                 });
 
