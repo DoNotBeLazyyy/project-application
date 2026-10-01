@@ -436,7 +436,12 @@ export default function AcademicYearWizardModal({
                     major_exam_start_date: gp.major_exam_start_date || null,
                     major_exam_end_date: gp.major_exam_end_date || null,
                     grade_encoding_start_date: gp.grade_encoding_start_date || null,
-                    grade_encoding_end_date: gp.grade_encoding_end_date || null
+                    grade_encoding_end_date: gp.grade_encoding_end_date || null,
+                    components: (gp.components || []).map((c) => ({
+                        id: c.id,
+                        name: (c.name || '').trim(),
+                        weight: Number(c.weight) || 0
+                    }))
                 }))
             })),
             p_thresholds: (values.thresholds || []).map((th, idx) => {

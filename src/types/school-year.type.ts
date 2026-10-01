@@ -32,6 +32,12 @@ export interface SchoolYearOption {
     end_date?: string;
 }
 
+export interface WizardGradingPeriodComponentItem {
+    id?: string;
+    name: string;
+    weight: number;
+}
+
 export interface WizardGradingPeriodItem {
     id?: string;
     name: string;
@@ -43,6 +49,7 @@ export interface WizardGradingPeriodItem {
     major_exam_end_date?: string | null;
     grade_encoding_start_date?: string | null;
     grade_encoding_end_date?: string | null;
+    components?: WizardGradingPeriodComponentItem[];
 }
 
 export interface WizardTermItem {

@@ -8,22 +8,28 @@ import {
 } from '@type/school-year.type';
 import { formatDate } from '@utils/date.util';
 
+export const DEFAULT_GRADING_COMPONENTS: { name: string; weight: number }[] = [
+    { name: 'Quizzes & Short Tasks', weight: 30 },
+    { name: 'Class Standing & Performance', weight: 30 },
+    { name: 'Major Exam', weight: 40 }
+];
+
 export const DEFAULT_GRADING_PERIODS: WizardGradingPeriodItem[] = [
-    { name: 'Prelim', sequence: 1, weight: 30 },
-    { name: 'Midterm', sequence: 2, weight: 30 },
-    { name: 'Finals', sequence: 3, weight: 40 }
+    { name: 'Prelim', sequence: 1, weight: 30, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Midterm', sequence: 2, weight: 30, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Finals', sequence: 3, weight: 40, components: DEFAULT_GRADING_COMPONENTS }
 ];
 
 export const TWO_PERIOD_PRESET: WizardGradingPeriodItem[] = [
-    { name: 'Midterm', sequence: 1, weight: 50 },
-    { name: 'Finals', sequence: 2, weight: 50 }
+    { name: 'Midterm', sequence: 1, weight: 50, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Finals', sequence: 2, weight: 50, components: DEFAULT_GRADING_COMPONENTS }
 ];
 
 export const FOUR_PERIOD_PRESET: WizardGradingPeriodItem[] = [
-    { name: 'Prelim', sequence: 1, weight: 25 },
-    { name: 'Midterm', sequence: 2, weight: 25 },
-    { name: 'Semi-Finals', sequence: 3, weight: 25 },
-    { name: 'Finals', sequence: 4, weight: 25 }
+    { name: 'Prelim', sequence: 1, weight: 25, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Midterm', sequence: 2, weight: 25, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Semi-Finals', sequence: 3, weight: 25, components: DEFAULT_GRADING_COMPONENTS },
+    { name: 'Finals', sequence: 4, weight: 25, components: DEFAULT_GRADING_COMPONENTS }
 ];
 
 export function isSpecialGradeRow(row?: {
@@ -562,7 +568,12 @@ export function cloneSchoolYearForDuplication(
             major_exam_start_date: gp.major_exam_start_date || '',
             major_exam_end_date: gp.major_exam_end_date || '',
             grade_encoding_start_date: gp.grade_encoding_start_date || '',
-            grade_encoding_end_date: gp.grade_encoding_end_date || ''
+            grade_encoding_end_date: gp.grade_encoding_end_date || '',
+            components: (gp.components || []).map((c) => ({
+                id: undefined,
+                name: c.name,
+                weight: Number(c.weight) || 0
+            }))
         }))
     }));
 
