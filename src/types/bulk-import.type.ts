@@ -14,7 +14,11 @@ export interface BulkImportError {
 }
 
 export interface DetailedBulkImportResult extends BulkImportResult {
+    created_count?: number;
+    updated_count?: number;
+    conflicts_count?: number;
     structuredErrors?: BulkImportError[];
+    structuredConflicts?: BulkImportError[];
 }
 
 export interface CsvTemplateColumn {

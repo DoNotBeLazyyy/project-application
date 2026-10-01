@@ -25,7 +25,9 @@ const FIELD_LABELS: Record<string, string> = {
     address_line2: 'Address Line 2',
     city: 'City / Municipality',
     province: 'Province',
-    postal_code: 'Postal Code'
+    postal_code: 'Postal Code',
+    program_name: 'Academic Program',
+    year_level: 'Year Level'
 };
 
 export default function PendingChangesModal({
