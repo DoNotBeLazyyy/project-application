@@ -46,7 +46,7 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
 
     // Registrar Pages
     'enrollment-management': 'Section Enrollments',
-    'grade-release': 'Grade Release',
+    'grade-release': 'Grade Release (Soon)',
     'student-verification': 'Student Profile Verification',
     'registrar-logs': 'Registrar Logs',
 

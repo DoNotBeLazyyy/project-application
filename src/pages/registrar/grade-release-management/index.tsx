@@ -336,12 +336,31 @@ export default function GradeRelease() {
 
     return (
         <CommonCard className="flex flex-col gap-3.5 h-full min-h-0 p-3 sm:p-5 w-full">
+            {/* Published Soon Notice Banner */}
+            <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
+                <ClockIcon size={20} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
+                            Flagged to be Published Soon
+                        </span>
+                        <CommonBadgeStatus color="warning" label="Published Soon" size="small" />
+                    </div>
+                    <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
+                        Grade release is currently hidden from standard operations and flagged to be published soon. All grade review tools, schedules, and sections remain accessible here for preview and testing.
+                    </p>
+                </div>
+            </div>
+
             {/* Header & Term Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-(--mui-palette-divider)">
                 <div className="flex flex-col">
-                    <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl">
-                        Grade Release &amp; Submission Verification
-                    </h1>
+                    <div className="flex items-center gap-2">
+                        <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl">
+                            Grade Release &amp; Submission Verification
+                        </h1>
+                        <CommonBadgeStatus color="warning" label="Published Soon" size="small" />
+                    </div>
                     <p className="text-(--mui-palette-text-secondary) text-xs hidden sm:block">
                         Track faculty term grade submissions by section, inspect student grade sheets, and publish official grades.
                     </p>

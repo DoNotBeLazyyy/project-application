@@ -47,7 +47,7 @@ const STAT_CARDS: RegistrarStatCard[] = [
         icon: <SealCheckIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-warning-50)]',
         iconColor: 'text-[var(--mui-palette-warning-main)]',
-        label: 'Pending Grade Releases',
+        label: 'Pending Grade Releases (Soon)',
         statKey: 'pending_grade_releases',
         to: '/registrar/grade-release'
     },

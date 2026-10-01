@@ -3072,66 +3072,51 @@ BEGIN
             CONTINUE;
         END IF;
 
-        IF EXISTS (
-            SELECT 1 FROM public.courses
-            WHERE code = v_course->>'code' AND deleted_at IS NULL
-        ) THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'Course code already exists: ' || (v_course->>'code')));
-            CONTINUE;
+        -- Check if course code already exists
+        SELECT id INTO v_course_id
+        FROM public.courses
+        WHERE code = TRIM(v_course->>'code') AND deleted_at IS NULL;
+
+        IF v_course_id IS NOT NULL THEN
+            -- Update existing course with bulk upload data
+            UPDATE public.courses
+            SET title = TRIM(v_course->>'title'),
+                department_id = v_department_id,
+                course_type_id = v_course_type_id,
+                lecture_units = (v_course->>'lecture_units')::NUMERIC,
+                laboratory_units = (v_course->>'laboratory_units')::NUMERIC,
+                credit_hours = CASE WHEN v_course->>'credit_hours' = '' THEN NULL
+                                     ELSE (v_course->>'credit_hours')::NUMERIC END,
+                description = NULLIF(TRIM(COALESCE(v_course->>'description', '')), ''),
+                is_active = COALESCE((v_course->>'is_active')::BOOLEAN, TRUE),
+                updated_at = NOW(),
+                updated_by = auth.uid()
+            WHERE id = v_course_id;
+
+            -- Clear existing prerequisites for re-linking
+            DELETE FROM public.course_prerequisites WHERE course_id = v_course_id;
+        ELSE
+            -- Insert new course
+            INSERT INTO public.courses (
+                code, title, department_id, course_type_id,
+                lecture_units, laboratory_units, credit_hours,
+                description, is_active, created_by
+            )
+            VALUES (
+                TRIM(v_course->>'code'),
+                TRIM(v_course->>'title'),
+                v_department_id,
+                v_course_type_id,
+                (v_course->>'lecture_units')::NUMERIC,
+                (v_course->>'laboratory_units')::NUMERIC,
+                CASE WHEN v_course->>'credit_hours' = '' THEN NULL
+                     ELSE (v_course->>'credit_hours')::NUMERIC END,
+                NULLIF(TRIM(COALESCE(v_course->>'description', '')), ''),
+                COALESCE((v_course->>'is_active')::BOOLEAN, TRUE),
+                auth.uid()
+            )
+            RETURNING id INTO v_course_id;
         END IF;
-
-        SELECT id INTO v_department_id
-        FROM public.departments
-        WHERE code = v_course->>'department_code' AND deleted_at IS NULL;
-
-        IF v_department_id IS NULL THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'Department code not found: ' || COALESCE(v_course->>'department_code', 'empty')));
-            CONTINUE;
-        END IF;
-
-        SELECT id INTO v_course_type_id
-        FROM public.course_types
-        WHERE code = v_course->>'course_type_code' AND deleted_at IS NULL;
-
-        IF v_course_type_id IS NULL THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'Course type code not found: ' || COALESCE(v_course->>'course_type_code', 'empty')));
-            CONTINUE;
-        END IF;
-
-        IF (v_course->>'lecture_units')::NUMERIC < 0 OR (v_course->>'lecture_units')::NUMERIC > 10 THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'Lecture units must be between 0 and 10'));
-            CONTINUE;
-        END IF;
-
-        IF (v_course->>'laboratory_units')::NUMERIC < 0 OR (v_course->>'laboratory_units')::NUMERIC > 10 THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'Laboratory units must be between 0 and 10'));
-            CONTINUE;
-        END IF;
-
-        IF (v_course->>'lecture_units')::NUMERIC = 0 AND (v_course->>'laboratory_units')::NUMERIC = 0 THEN
-            v_errors := v_errors || jsonb_build_array(jsonb_build_object('row', v_row_num, 'code', v_course->>'code', 'message', 'At least one of lecture units or laboratory units must be greater than 0'));
-            CONTINUE;
-        END IF;
-
-        INSERT INTO public.courses (
-            code, title, department_id, course_type_id,
-            lecture_units, laboratory_units, credit_hours,
-            description, is_active, created_by
-        )
-        VALUES (
-            TRIM(v_course->>'code'),
-            TRIM(v_course->>'title'),
-            v_department_id,
-            v_course_type_id,
-            (v_course->>'lecture_units')::NUMERIC,
-            (v_course->>'laboratory_units')::NUMERIC,
-            CASE WHEN v_course->>'credit_hours' = '' THEN NULL
-                 ELSE (v_course->>'credit_hours')::NUMERIC END,
-            NULLIF(TRIM(COALESCE(v_course->>'description', '')), ''),
-            COALESCE((v_course->>'is_active')::BOOLEAN, TRUE),
-            auth.uid()
-        )
-        RETURNING id INTO v_course_id;
 
         IF v_course->>'prerequisites' IS NOT NULL AND v_course->>'prerequisites' <> '' THEN
             FOREACH v_prereq_entry IN ARRAY string_to_array(v_course->>'prerequisites', '|')
