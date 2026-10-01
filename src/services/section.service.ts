@@ -327,14 +327,21 @@ export async function bulkCreateSections(
 
     const result = await callRpc<{
         provisioned_count: number;
+        created_count?: number;
+        updated_count?: number;
         errors: BulkImportError[];
     }>('fn_bulk_create_sections', { p_sections: mappedSections });
 
     let provisionedCount = 0;
+    let createdCount = 0;
+    let updatedCount = 0;
     let structuredErrors: BulkImportError[] = [];
+    const structuredConflicts: BulkImportError[] = [];
 
     if (!result.error && result.data) {
         provisionedCount = result.data.provisioned_count ?? 0;
+        createdCount = result.data.created_count ?? provisionedCount;
+        updatedCount = result.data.updated_count ?? 0;
         structuredErrors = result.data.errors ?? [];
     }
     else if (result.error) {
@@ -343,6 +350,16 @@ export async function bulkCreateSections(
             provisioned_count: 0
         };
     }
+
+    const facultyScheduleTracker: {
+        row: number;
+        course_code: string;
+        section_code: string;
+        faculty_email: string;
+        days: DayOfWeek[];
+        start: string;
+        end: string;
+    }[] = [];
 
     if (provisionedCount > 0) {
         const sectionsRes = await getSections();
@@ -356,7 +373,7 @@ export async function bulkCreateSections(
             const createdSec = allSections.find((s) => s.section_code === row.section_code);
             if (!createdSec) continue;
 
-            // 1. Process Schedule
+            // 1. Process Schedule & Conflict Detection
             const days = parseDaysOfWeek(row.schedule_days);
             if (days.length > 0 && row.schedule_time_start && row.schedule_time_end) {
                 const slots: SectionScheduleSlot[] = days.map((day) => ({
@@ -366,9 +383,39 @@ export async function bulkCreateSections(
                     time_start: row.schedule_time_start!.slice(0, 5)
                 }));
                 await saveSectionSchedules(createdSec.id, slots);
+
+                if (row.faculty_email) {
+                    const email = row.faculty_email.trim().toLowerCase();
+                    const start = row.schedule_time_start.slice(0, 5);
+                    const end = row.schedule_time_end.slice(0, 5);
+
+                    const conflict = facultyScheduleTracker.find((prev) =>
+                        prev.faculty_email === email
+                        && prev.days.some((d) => days.includes(d))
+                        && ((start >= prev.start && start < prev.end) || (end > prev.start && end <= prev.end) || (start <= prev.start && end >= prev.end))
+                    );
+
+                    if (conflict) {
+                        structuredConflicts.push({
+                            code: 'FACULTY_SCHEDULE_CONFLICT',
+                            message: `Faculty ${row.faculty_email} double-booked across ${row.course_code} (${row.section_code}) and Row ${conflict.row} (${conflict.course_code}) on ${row.schedule_days} ${start}-${end}`,
+                            row: i + 1
+                        });
+                    }
+
+                    facultyScheduleTracker.push({
+                        course_code: row.course_code,
+                        days,
+                        end,
+                        faculty_email: email,
+                        row: i + 1,
+                        section_code: row.section_code,
+                        start
+                    });
+                }
             }
 
-            // 2. Process Preset Section Copy (by code or label)
+            // 2. Process Preset Section Copy
             const presetVal = (row.preset_section || row.source_section_code || '').trim();
             if (presetVal) {
                 const lowPreset = presetVal.toLowerCase();
@@ -383,7 +430,7 @@ export async function bulkCreateSections(
                 }
             }
 
-            // 3. Process Custom Grading Periods Schema (any number of entries)
+            // 3. Process Custom Grading Periods Schema
             if (row.grading_periods && row.grading_periods.trim()) {
                 const customPeriods = parseGradingPeriodsSchema(row.grading_periods);
                 if (customPeriods.length > 0) {
@@ -418,9 +465,13 @@ export async function bulkCreateSections(
     }
 
     return {
+        conflicts_count: structuredConflicts.length,
+        created_count: createdCount,
         errors: structuredErrors.map((error) =>
             `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
         provisioned_count: provisionedCount,
-        structuredErrors
+        structuredConflicts,
+        structuredErrors,
+        updated_count: updatedCount
     };
 }
