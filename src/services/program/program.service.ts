@@ -87,7 +87,9 @@ export async function createProgram(
                     term_type_code: entry.term_type_code || entry.term_type_label || '',
                     school_year_code: '',
                     sequence: String(entry.sequence ?? 1),
-                    is_elective: String(Boolean(entry.is_elective))
+                    is_elective: String(Boolean(entry.is_elective)),
+                    lecture_units: String(entry.lecture_units ?? 0),
+                    laboratory_units: String(entry.laboratory_units ?? 0)
                 }));
                 await bulkCreateCurriculumMap(bulkEntries);
             }
@@ -137,7 +139,9 @@ export async function updateProgram(
                     term_type_code: entry.term_type_code || entry.term_type_label || '',
                     school_year_code: '',
                     sequence: String(entry.sequence ?? 1),
-                    is_elective: String(Boolean(entry.is_elective))
+                    is_elective: String(Boolean(entry.is_elective)),
+                    lecture_units: String(entry.lecture_units ?? 0),
+                    laboratory_units: String(entry.laboratory_units ?? 0)
                 }));
                 await bulkCreateCurriculumMap(bulkEntries);
             }

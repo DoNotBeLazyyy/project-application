@@ -471,45 +471,7 @@ export default function CurriculumMapManagement({
             }
         }
 
-        if (selectedProgramId) {
-            if (pendingDeletedIds.length > 0) {
-                const realDeleted = pendingDeletedIds.filter((id) => !id.startsWith('temp-'));
-                if (realDeleted.length > 0) {
-                    await Promise.allSettled(realDeleted.map((id) => deleteCurriculumMapEntry(id)));
-                }
-                setPendingDeletedIds([]);
-            }
-
-            const programObj = programOptions.find((p) => p.value === selectedProgramId);
-            const programCode = (programObj as { code?: string })?.code || selectedProgramId;
-            const schoolYearObj = schoolYearOptions.find((s) => s.value === selectedSchoolYearId);
-            const schoolYearCode = schoolYearObj?.label || '';
-
-            const bulkEntries: CurriculumMapBulkRow[] = workingEntries.map((entry) => ({
-                program_code: programCode,
-                course_code: entry.course_code,
-                year_level: String(entry.year_level),
-                term_type_code: entry.term_type_code || entry.term_type_label || '',
-                school_year_code: schoolYearCode,
-                sequence: String(entry.sequence || '1'),
-                is_elective: String(Boolean(entry.is_elective)),
-                lecture_units: String(entry.lecture_units),
-                laboratory_units: String(entry.laboratory_units)
-            }));
-
-            const bulkRes = await bulkCreateCurriculumMap(bulkEntries);
-
-            if (bulkRes.errors && bulkRes.errors.length > 0) {
-                showToast(`Curriculum map import completed with ${bulkRes.errors.length} warnings.`, 'warning');
-            } else {
-                showToast(`Curriculum map updated successfully! (${bulkRes.provisioned_count} entries saved)`, 'success');
-            }
-
-            await fetchCurriculum();
-        } else {
-            updateEntriesState(workingEntries);
-            showToast('Curriculum map updated in form.', 'info');
-        }
+        updateEntriesState(workingEntries);
 
         return {
             provisioned_count: rows.length - errors.length,
