@@ -37,6 +37,8 @@ export interface CurriculumCourse {
     course_code: string;
     course_title: string;
     units: number;
+    lecture_units?: number | null;
+    laboratory_units?: number | null;
     is_elective: boolean;
     status: CurriculumCourseStatus;
     grade: number | null;

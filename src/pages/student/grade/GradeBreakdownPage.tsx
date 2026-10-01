@@ -3,7 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import { formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import GradeBreakdownComponentPanel from '@pages/student/grade/GradeBreakdownComponentPanel';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, InfoIcon } from '@phosphor-icons/react';
 import { getMyGradeBreakdown } from '@services/student-portal.service';
 import { MyGradeBreakdown } from '@type/student-portal.type';
 import { useEffect, useState } from 'react';
@@ -149,6 +149,15 @@ export default function GradeBreakdownPage() {
 
             {breakdown && (
                 <>
+                    {breakdown.is_published === false && (
+                        <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-center gap-3 text-xs text-(--mui-palette-text-primary)">
+                            <InfoIcon size={22} className="text-(--mui-palette-info-main) shrink-0" />
+                            <div>
+                                <span className="font-semibold block text-sm">Grade Pending Official Release</span>
+                                <span className="text-(--mui-palette-text-secondary)">Official grades for this period have not yet been published by the Registrar. Computed marks below are indicative drafts.</span>
+                            </div>
+                        </div>
+                    )}
                     <div className="gap-3 grid grid-cols-2 lg:grid-cols-4">
                         <SummaryTile
                             hint="Weighted average of all components"

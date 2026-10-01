@@ -257,6 +257,7 @@ export default function ProfilePage() {
                         )}
                         <ProfileDetailsForm
                             control={profileMethods.control}
+                            disabled={Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                             id={PROFILE_FORM_ID}
                             isStudentUser={isStudentUser}
                             programOptions={programOptions}
@@ -265,7 +266,7 @@ export default function ProfilePage() {
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2">
                                 <CommonButton
-                                    disabled={!profileMethods.formState.isDirty}
+                                    disabled={!profileMethods.formState.isDirty || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                                     size="small"
                                     variant="outlined"
                                     onClick={() => profileMethods.reset()}
@@ -273,7 +274,7 @@ export default function ProfilePage() {
                                     Reset
                                 </CommonButton>
                                 <CommonButton
-                                    disabled={!profileMethods.formState.isDirty}
+                                    disabled={!profileMethods.formState.isDirty || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                                     form={PROFILE_FORM_ID}
                                     size="small"
                                     type="submit"

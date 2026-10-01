@@ -57,6 +57,14 @@ export default function StudentsTab({ sectionId }: StudentsTabProps) {
             {
                 cellRenderer: (params: { data: SectionStudent }) => {
                     const student = params.data;
+                    if (student.has_pending_verification) {
+                        return (
+                            <CommonBadgeStatus
+                                label="Pending Verification"
+                                variant="warning"
+                            />
+                        );
+                    }
                     if (student.risk_level === 'High' || student.risk_level === 'Moderate') {
                         return (
                             <CommonBadgeStatus

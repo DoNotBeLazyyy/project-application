@@ -318,6 +318,8 @@ export interface MyGradeBreakdown {
     status: string | null;
     total_component_weight: number;
     passing_grade: number | null;
+    is_published?: boolean;
+    released_at?: string | null;
     components: MyGradeBreakdownComponent[];
 }
 

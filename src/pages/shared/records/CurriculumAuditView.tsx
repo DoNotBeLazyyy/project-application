@@ -33,10 +33,19 @@ interface CurriculumAuditViewProps {
     studentId?: string;
 }
 
-function formatUnits(value: number | null): string {
-    return value !== null && value !== undefined
-        ? String(Number(value))
-        : '—';
+function formatUnits(value: number | null | undefined | CurriculumCourse): string {
+    if (value === null || value === undefined) return '—';
+    if (typeof value === 'object') {
+        const course = value;
+        if (course.units === null || course.units === undefined) return '—';
+        if (course.lecture_units !== undefined && course.lecture_units !== null && course.laboratory_units !== undefined && course.laboratory_units !== null) {
+            if (course.lecture_units > 0 || course.laboratory_units > 0) {
+                return `${course.units} (${course.lecture_units} Lec / ${course.laboratory_units} Lab)`;
+            }
+        }
+        return String(Number(course.units));
+    }
+    return String(Number(value));
 }
 
 function formatGrade(course: CurriculumCourse): string {
@@ -138,7 +147,7 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                                 </div>
                                             </td>
                                             <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
-                                                {formatUnits(course.units)}
+                                                {formatUnits(course)}
                                             </td>
                                             <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-secondary) text-ellipsis whitespace-nowrap">
                                                 {course.taken_label ?? '—'}

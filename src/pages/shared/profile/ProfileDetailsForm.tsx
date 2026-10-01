@@ -19,12 +19,14 @@ interface ProfileDetailsFormProps extends ComponentPropsForm {
     control: Control<ProfileFormValues>;
     isStudentUser?: boolean;
     programOptions?: CommonSelectOption[];
+    disabled?: boolean;
 }
 
 export default function ProfileDetailsForm({
     control,
     isStudentUser = false,
     programOptions = [],
+    disabled = false,
     ...formProps
 }: ProfileDetailsFormProps) {
     const baseFields: FormFieldConfig<ProfileFormValues>[] = [
@@ -133,7 +135,16 @@ export default function ProfileDetailsForm({
         }
     ];
 
-    const fields = [...baseFields, ...studentFields, ...addressFields];
+    const rawFields = [...baseFields, ...studentFields, ...addressFields];
+    const fields: FormFieldConfig<ProfileFormValues>[] = disabled
+        ? rawFields.map((f) => ({
+            ...f,
+            fieldProps: {
+                ...(f.fieldProps as Record<string, unknown>),
+                disabled: true
+            }
+        })) as FormFieldConfig<ProfileFormValues>[]
+        : rawFields;
 
     return <CommonForm
         containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
