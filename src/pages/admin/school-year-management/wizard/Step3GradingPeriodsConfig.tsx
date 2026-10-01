@@ -1,10 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowCounterClockwiseIcon,
     BroomIcon,
     CheckCircleIcon,
-    InfoIcon,
     PlusIcon,
     ScalesIcon,
     TrashIcon,
@@ -43,7 +41,11 @@ export default function Step3GradingPeriodsConfig({
             name: '',
             sequence: 1,
             start_date: '',
-            weight: 0
+            weight: 0,
+            major_exam_start_date: '',
+            major_exam_end_date: '',
+            grade_encoding_start_date: '',
+            grade_encoding_end_date: ''
         };
 
         const updatedTerms = [...terms];
@@ -78,7 +80,11 @@ export default function Step3GradingPeriodsConfig({
             name: `Period ${nextSequence}`,
             sequence: nextSequence,
             start_date: pStart,
-            weight: 0
+            weight: 0,
+            major_exam_start_date: '',
+            major_exam_end_date: '',
+            grade_encoding_start_date: '',
+            grade_encoding_end_date: ''
         };
 
         const updatedTerms = [...terms];
@@ -224,7 +230,11 @@ export default function Step3GradingPeriodsConfig({
             name: p.name,
             sequence: idx + 1,
             start_date: distributed[idx]?.start_date || targetTerm.start_date || '',
-            weight: p.weight
+            weight: p.weight,
+            major_exam_start_date: p.major_exam_start_date || '',
+            major_exam_end_date: p.major_exam_end_date || '',
+            grade_encoding_start_date: p.grade_encoding_start_date || '',
+            grade_encoding_end_date: p.grade_encoding_end_date || ''
         }));
 
         const updatedTerms = [...terms];
@@ -450,7 +460,7 @@ export default function Step3GradingPeriodsConfig({
                                                             size="small"
                                                             startIcon={<BroomIcon className="w-3.5 h-3.5" />}
                                                             variant="outlined"
-                                                            onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '' })}
+                                                            onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '', major_exam_start_date: '', major_exam_end_date: '', grade_encoding_start_date: '', grade_encoding_end_date: '' })}
                                                             title="Clear period fields"
                                                         >
                                                             <span className="hidden sm:inline">Clear</span>
@@ -520,11 +530,11 @@ export default function Step3GradingPeriodsConfig({
                                                 </div>
                                             </div>
 
-                                            {/* Row 3: Start and end date */}
+                                            {/* Row 3: Start and End Date */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
                                                     <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>Start Date <span className="text-red-500">*</span></span>
+                                                        <span>Period Start Date <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
                                                     </label>
                                                     <input
@@ -548,7 +558,7 @@ export default function Step3GradingPeriodsConfig({
 
                                                 <div>
                                                     <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>End Date <span className="text-red-500">*</span></span>
+                                                        <span>Period End Date <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
                                                     </label>
                                                     <input
@@ -568,6 +578,69 @@ export default function Step3GradingPeriodsConfig({
                                                             Must be after start date
                                                         </p>
                                                     )}
+                                                </div>
+                                            </div>
+
+                                            {/* Row 4: Major Examination Day(s) & Grade Encoding Range */}
+                                            <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/40 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {/* Major Examination Days */}
+                                                <div className="space-y-1.5 bg-slate-100/70 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-slate-200/80 dark:border-zinc-700/50">
+                                                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                                        <span>Major Examination Day(s)</span>
+                                                        <CommonInfoTooltip content="Date or date range reserved for major examinations (e.g. Midterm Exams, Final Exams)." size={12} />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div>
+                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Exam Start</span>
+                                                            <input
+                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                                disabled={disabled}
+                                                                type="date"
+                                                                value={period.major_exam_start_date || ''}
+                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { major_exam_start_date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Exam End</span>
+                                                            <input
+                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                                disabled={disabled}
+                                                                type="date"
+                                                                value={period.major_exam_end_date || ''}
+                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { major_exam_end_date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Grade Encoding Range */}
+                                                <div className="space-y-1.5 bg-slate-100/70 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-slate-200/80 dark:border-zinc-700/50">
+                                                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                                        <span>Grade Encoding Range</span>
+                                                        <CommonInfoTooltip content="Official window during which faculty members can encode and submit grades for this period." size={12} />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div>
+                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Encoding Start</span>
+                                                            <input
+                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                                disabled={disabled}
+                                                                type="date"
+                                                                value={period.grade_encoding_start_date || ''}
+                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_start_date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Encoding End</span>
+                                                            <input
+                                                                className="w-full px-2 py-1 text-xs rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                                disabled={disabled}
+                                                                type="date"
+                                                                value={period.grade_encoding_end_date || ''}
+                                                                onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_end_date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

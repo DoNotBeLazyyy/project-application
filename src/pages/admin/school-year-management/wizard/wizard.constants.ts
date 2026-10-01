@@ -439,6 +439,19 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
                     isValid: false
                 };
             }
+            if (p.major_exam_start_date && p.major_exam_end_date && new Date(p.major_exam_end_date) < new Date(p.major_exam_start_date)) {
+                return {
+                    error: `Major Exam End Date cannot be before Major Exam Start Date for grading period ${periodLabel} in ${termName}.`,
+                    isValid: false
+                };
+            }
+
+            if (p.grade_encoding_start_date && p.grade_encoding_end_date && new Date(p.grade_encoding_end_date) < new Date(p.grade_encoding_start_date)) {
+                return {
+                    error: `Grade Encoding End Date cannot be before Grade Encoding Start Date for grading period ${periodLabel} in ${termName}.`,
+                    isValid: false
+                };
+            }
         }
 
         const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
@@ -545,7 +558,11 @@ export function cloneSchoolYearForDuplication(
             sequence: gp.sequence || gIdx + 1,
             start_date: gp.start_date || '',
             end_date: gp.end_date || '',
-            weight: Number(gp.weight) || 0
+            weight: Number(gp.weight) || 0,
+            major_exam_start_date: gp.major_exam_start_date || '',
+            major_exam_end_date: gp.major_exam_end_date || '',
+            grade_encoding_start_date: gp.grade_encoding_start_date || '',
+            grade_encoding_end_date: gp.grade_encoding_end_date || ''
         }))
     }));
 

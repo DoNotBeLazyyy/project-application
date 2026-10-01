@@ -26,7 +26,7 @@ import {
 import { evaluateSectionConflicts } from '@utils/faculty-load-conflicts.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-export const FACULTY_LOAD_STEPS = [
+const FACULTY_LOAD_STEPS = [
     {
         step: 1,
         title: 'Overview',
@@ -89,20 +89,21 @@ export default function FacultyLoadWizardModal({
     // Fetch faculty options for dropdown
     useEffect(() => {
         if (!open) return;
-        getFacultyOptions().then((res) => {
-            if (res.data) {
-                setFacultyOptions(
-                    res.data.map((f) => ({
-                        label: f.full_name,
-                        value: f.id
-                    }))
-                );
-            }
-        });
+        getFacultyOptions()
+            .then((res) => {
+                if (res.data) {
+                    setFacultyOptions(
+                        res.data.map((f) => ({
+                            label: f.full_name,
+                            value: f.id
+                        }))
+                    );
+                }
+            });
     }, [open]);
 
     // Load faculty load detail
-    const loadDetail = useCallback(async () => {
+    const loadDetail = useCallback(async() => {
         if (!facultyId) return;
         setIsLoading(true);
         try {
@@ -113,7 +114,8 @@ export default function FacultyLoadWizardModal({
                 setInitialSections(fetchedSections);
                 setStagedSections(fetchedSections);
             }
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, [facultyId, termId]);
@@ -123,7 +125,8 @@ export default function FacultyLoadWizardModal({
             setCurrentStep(1);
             setIsReadOnly(initialReadOnly);
             loadDetail();
-        } else {
+        }
+        else {
             setDetail(null);
             setInitialSections([]);
             setStagedSections([]);
@@ -140,8 +143,7 @@ export default function FacultyLoadWizardModal({
         const stagedSectionIds = new Set(stagedSections.map((s) => s.section_id));
 
         const relevantBackend = backendConflicts.filter((bc) =>
-            stagedSectionIds.has(bc.section_a_id) || stagedSectionIds.has(bc.section_b_id)
-        );
+            stagedSectionIds.has(bc.section_a_id) || stagedSectionIds.has(bc.section_b_id));
 
         // Deduplicate
         const merged: FacultyScheduleConflict[] = [...localConflicts];
@@ -182,12 +184,15 @@ export default function FacultyLoadWizardModal({
                     return {
                         ...sec,
                         faculty_id: newFacultyId,
-                        faculty_name: matchedFac ? matchedFac.label : (newFacultyId ? sec.faculty_name : 'Unassigned')
+                        faculty_name: matchedFac
+                            ? matchedFac.label
+                            : (newFacultyId
+                                ? sec.faculty_name
+                                : 'Unassigned')
                     };
                 }
                 return sec;
-            })
-        );
+            }));
     }
 
     // Handler: request delete section (opens confirmation popup)
@@ -199,8 +204,7 @@ export default function FacultyLoadWizardModal({
     function handleConfirmRemoveSection() {
         if (!confirmDeleteTarget) return;
         setStagedSections((prev) =>
-            prev.filter((sec) => sec.section_id !== confirmDeleteTarget.section_id)
-        );
+            prev.filter((sec) => sec.section_id !== confirmDeleteTarget.section_id));
         setConfirmDeleteTarget(null);
         showToast(`Section ${confirmDeleteTarget.section_code} removed from load (unsaved).`, 'info');
     }
@@ -265,7 +269,8 @@ export default function FacultyLoadWizardModal({
                 setIsAssignPickerOpen(false);
                 showToast(`Section ${newSection.section_code} added to load (unsaved).`, 'info');
             }
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }
@@ -303,7 +308,8 @@ export default function FacultyLoadWizardModal({
                         section_id: stagedSec.section_id,
                         faculty_id: stagedSec.faculty_id || facultyId
                     });
-                } else if (init.faculty_id !== stagedSec.faculty_id) {
+                }
+                else if (init.faculty_id !== stagedSec.faculty_id) {
                     // Faculty assignment changed
                     assignments.push({
                         section_id: stagedSec.section_id,
@@ -324,7 +330,8 @@ export default function FacultyLoadWizardModal({
             onSuccess();
             await loadDetail();
             setIsReadOnly(true);
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -370,8 +377,12 @@ export default function FacultyLoadWizardModal({
                             </div>
                             <div className="min-w-0 flex-1 sm:min-w-[260px]">
                                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
-                                    {isReadOnly ? 'Faculty Teaching Load Details' : 'Edit Faculty Teaching Load'}
-                                    {detail?.faculty ? ` — ${detail.faculty.faculty_name}` : ''}
+                                    {isReadOnly
+                                        ? 'Faculty Teaching Load Details'
+                                        : 'Edit Faculty Teaching Load'}
+                                    {detail?.faculty
+                                        ? ` — ${detail.faculty.faculty_name}`
+                                        : ''}
                                 </h2>
                                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                     {isReadOnly
@@ -417,49 +428,52 @@ export default function FacultyLoadWizardModal({
 
                 {/* Wizard Body */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                    {isLoading && !detail ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-3">
-                            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                            <p className="text-xs text-slate-500">Loading faculty load records...</p>
-                        </div>
-                    ) : detail ? (
-                        <>
-                            {currentStep === 1 && (
-                                <Step1FacultyLoadOverview
-                                    conflicts={activeConflicts}
-                                    faculty={detail.faculty}
-                                    sections={stagedSections}
-                                    termLabel={detail.sections[0]?.term_label}
-                                />
-                            )}
+                    {isLoading && !detail
+                        ? (
+                            <div className="flex flex-col items-center justify-center py-20 gap-3">
+                                <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                                <p className="text-xs text-slate-500">Loading faculty load records...</p>
+                            </div>
+                        )
+                        : detail
+                            ? (
+                                <>
+                                    {currentStep === 1 && (
+                                        <Step1FacultyLoadOverview
+                                            conflicts={activeConflicts}
+                                            faculty={detail.faculty}
+                                            sections={stagedSections}
+                                            termLabel={detail.sections[0]?.term_label}
+                                        />
+                                    )}
 
-                            {currentStep === 2 && (
-                                <Step2FacultyLoadSectionList
-                                    facultyName={detail.faculty.faculty_name}
-                                    facultyOptions={facultyOptions}
-                                    isReadOnly={isReadOnly}
-                                    sections={stagedSections}
-                                    onFacultyChange={handleFacultyChange}
-                                    onNavigateToSectionManagement={onClose}
-                                    onOpenAssignModal={handleOpenAssignModal}
-                                    onRequestDeleteSection={handleRequestDeleteSection}
-                                />
-                            )}
+                                    {currentStep === 2 && (
+                                        <Step2FacultyLoadSectionList
+                                            facultyName={detail.faculty.faculty_name}
+                                            facultyOptions={facultyOptions}
+                                            isReadOnly={isReadOnly}
+                                            sections={stagedSections}
+                                            onFacultyChange={handleFacultyChange}
+                                            onNavigateToSectionManagement={onClose}
+                                            onOpenAssignModal={handleOpenAssignModal}
+                                            onRequestDeleteSection={handleRequestDeleteSection}
+                                        />
+                                    )}
 
-                            {currentStep === 3 && (
-                                <Step3FacultyLoadConflicts
-                                    conflicts={activeConflicts}
-                                    facultyName={detail.faculty.faculty_name}
-                                    isReadOnly={isReadOnly}
-                                    onNavigateToSectionManagement={onClose}
-                                />
-                            )}
-                        </>
-                    ) : (
-                        <div className="text-center py-12 text-xs text-slate-500">
+                                    {currentStep === 3 && (
+                                        <Step3FacultyLoadConflicts
+                                            conflicts={activeConflicts}
+                                            facultyName={detail.faculty.faculty_name}
+                                            onNavigateToSectionManagement={onClose}
+                                        />
+                                    )}
+                                </>
+                            )
+                            : (
+                                <div className="text-center py-12 text-xs text-slate-500">
                             Faculty record could not be loaded.
-                        </div>
-                    )}
+                                </div>
+                            )}
                 </div>
 
                 {/* Stepper Footer Action Bar */}
@@ -495,27 +509,31 @@ export default function FacultyLoadWizardModal({
                             </CommonButton>
                         )}
 
-                        {currentStep < 3 ? (
-                            <CommonButton
-                                color="primary"
-                                disabled={isLoading || isSaving}
-                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                                size="medium"
-                                variant="contained"
-                                onClick={handleNext}
-                            >
+                        {currentStep < 3
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isLoading || isSaving}
+                                    endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={handleNext}
+                                >
                                 Next Step
-                            </CommonButton>
-                        ) : isReadOnly ? (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                variant="contained"
-                                onClick={onClose}
-                            >
+                                </CommonButton>
+                            )
+                            : isReadOnly
+                                ? (
+                                    <CommonButton
+                                        color="primary"
+                                        size="medium"
+                                        variant="contained"
+                                        onClick={onClose}
+                                    >
                                 Close
-                            </CommonButton>
-                        ) : null}
+                                    </CommonButton>
+                                )
+                                : null}
 
                         {/* Save Button (accessible in write mode) */}
                         {!isReadOnly && (
@@ -528,7 +546,9 @@ export default function FacultyLoadWizardModal({
                                 variant="contained"
                                 onClick={handleSave}
                             >
-                                {isSaving ? 'Saving Changes...' : 'Save Changes'}
+                                {isSaving
+                                    ? 'Saving Changes...'
+                                    : 'Save Changes'}
                             </CommonButton>
                         )}
                     </div>
@@ -569,9 +589,9 @@ export default function FacultyLoadWizardModal({
                             </h3>
                         </div>
                         <button
+                            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
                             type="button"
                             onClick={() => setIsAssignPickerOpen(false)}
-                            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
                         >
                             <XIcon className="w-4 h-4" />
                         </button>
@@ -581,23 +601,25 @@ export default function FacultyLoadWizardModal({
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                             Select Section Offering to Assign:
                         </label>
-                        {availableOfferings.length === 0 ? (
-                            <span className="text-xs text-slate-500 italic py-2">
+                        {availableOfferings.length === 0
+                            ? (
+                                <span className="text-xs text-slate-500 italic py-2">
                                 No additional available sections found in this term.
-                            </span>
-                        ) : (
-                            <select
-                                className="w-full text-xs font-medium bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                                value={selectedAssignSectionId}
-                                onChange={(e) => setSelectedAssignSectionId(e.target.value)}
-                            >
-                                {availableOfferings.map((off) => (
-                                    <option key={off.id} value={off.id}>
-                                        {off.label}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
+                                </span>
+                            )
+                            : (
+                                <select
+                                    className="w-full text-xs font-medium bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                                    value={selectedAssignSectionId}
+                                    onChange={(e) => setSelectedAssignSectionId(e.target.value)}
+                                >
+                                    {availableOfferings.map((off) => (
+                                        <option key={off.id} value={off.id}>
+                                            {off.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">

@@ -73,7 +73,7 @@ export const deanRoutes: RouteObject[] = [
                 path: 'faculty-load/:facultyId'
             },
             {
-                element: <Navigate replace to="/dean/faculty-load?tab=conflicts" />,
+                element: <Navigate replace to="/dean/faculty-load" />,
                 path: 'schedule-conflicts'
             },
             {

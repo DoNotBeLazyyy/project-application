@@ -39,6 +39,10 @@ export interface WizardGradingPeriodItem {
     start_date?: string | null;
     end_date?: string | null;
     weight: number;
+    major_exam_start_date?: string | null;
+    major_exam_end_date?: string | null;
+    grade_encoding_start_date?: string | null;
+    grade_encoding_end_date?: string | null;
 }
 
 export interface WizardTermItem {

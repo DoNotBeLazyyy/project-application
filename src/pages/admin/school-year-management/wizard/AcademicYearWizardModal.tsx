@@ -318,7 +318,11 @@ export default function AcademicYearWizardModal({
             grading_periods: (t.grading_periods || []).map((gp) => ({
                 ...gp,
                 start_date: gp.start_date ? shiftDateByOneYear(gp.start_date) : null,
-                end_date: gp.end_date ? shiftDateByOneYear(gp.end_date) : null
+                end_date: gp.end_date ? shiftDateByOneYear(gp.end_date) : null,
+                major_exam_start_date: gp.major_exam_start_date ? shiftDateByOneYear(gp.major_exam_start_date) : null,
+                major_exam_end_date: gp.major_exam_end_date ? shiftDateByOneYear(gp.major_exam_end_date) : null,
+                grade_encoding_start_date: gp.grade_encoding_start_date ? shiftDateByOneYear(gp.grade_encoding_start_date) : null,
+                grade_encoding_end_date: gp.grade_encoding_end_date ? shiftDateByOneYear(gp.grade_encoding_end_date) : null
             }))
         }));
 
@@ -428,7 +432,11 @@ export default function AcademicYearWizardModal({
                     sequence: gp.sequence || (idx + 1),
                     start_date: gp.start_date || null,
                     end_date: gp.end_date || null,
-                    weight: Number(gp.weight) || 0
+                    weight: Number(gp.weight) || 0,
+                    major_exam_start_date: gp.major_exam_start_date || null,
+                    major_exam_end_date: gp.major_exam_end_date || null,
+                    grade_encoding_start_date: gp.grade_encoding_start_date || null,
+                    grade_encoding_end_date: gp.grade_encoding_end_date || null
                 }))
             })),
             p_thresholds: (values.thresholds || []).map((th, idx) => {

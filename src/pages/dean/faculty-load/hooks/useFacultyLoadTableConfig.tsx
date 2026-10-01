@@ -77,14 +77,18 @@ export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps
                     onEdit?.(row.id);
                 },
                 menuOptions: (row: FacultyLoadRow): MenuOption[] => [
-                    ...(onView ? [{
-                        preset: 'view' as const,
-                        onClick: () => onView(row.id)
-                    }] : []),
-                    ...(onEdit ? [{
-                        preset: 'edit' as const,
-                        onClick: () => onEdit(row.id)
-                    }] : [])
+                    ...(onView
+                        ? [{
+                            preset: 'view' as const,
+                            onClick: () => onView(row.id)
+                        }]
+                        : []),
+                    ...(onEdit
+                        ? [{
+                            preset: 'edit' as const,
+                            onClick: () => onEdit(row.id)
+                        }]
+                        : [])
                 ]
             };
         };

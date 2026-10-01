@@ -4,11 +4,9 @@ import {
     ChalkboardTeacherIcon,
     CheckCircleIcon,
     ClockIcon,
-    GraduationCapIcon,
     UserIcon,
     UsersThreeIcon,
-    WarningCircleIcon,
-    WarningIcon
+    WarningCircleIcon
 } from '@phosphor-icons/react';
 import { FacultyLoadSection, FacultyScheduleConflict } from '@type/faculty-load.type';
 import { parseTimeToMinutes } from '@utils/faculty-load-conflicts.util';
@@ -133,22 +131,28 @@ export default function Step1FacultyLoadOverview({
                             />
                         </div>
                         <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {faculty.email} {termLabel ? `· Term: ${termLabel}` : ''}
+                            {faculty.email} {termLabel
+                                ? `· Term: ${termLabel}`
+                                : ''}
                         </span>
                     </div>
                 </div>
 
-                {conflicts.length > 0 ? (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 text-rose-700 dark:text-rose-300 text-xs font-semibold">
-                        <WarningCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" weight="fill" />
-                        <span>{conflicts.length} Schedule Conflict{conflicts.length > 1 ? 's' : ''} Detected</span>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
-                        <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" weight="fill" />
-                        <span>Schedule Clear</span>
-                    </div>
-                )}
+                {conflicts.length > 0
+                    ? (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+                            <WarningCircleIcon className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" weight="fill" />
+                            <span>{conflicts.length} Schedule Conflict{conflicts.length > 1
+                                ? 's'
+                                : ''} Detected</span>
+                        </div>
+                    )
+                    : (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" weight="fill" />
+                            <span>Schedule Clear</span>
+                        </div>
+                    )}
             </div>
 
             {/* Bento Statistics Grid */}
@@ -231,57 +235,65 @@ export default function Step1FacultyLoadOverview({
 
                         return (
                             <div
-                                key={day}
                                 className={`rounded-xl border p-3 flex flex-col gap-2 transition-all ${
                                     hasClasses
                                         ? 'border-blue-200/80 dark:border-blue-900/60 bg-blue-50/20 dark:bg-blue-950/10'
                                         : 'border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30'
                                 }`}
+                                key={day}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className={`text-xs font-bold ${
-                                        hasClasses ? 'text-blue-900 dark:text-blue-200' : 'text-slate-400'
-                                    }`}>
+                                    <span
+                                        className={`text-xs font-bold ${
+                                            hasClasses
+                                                ? 'text-blue-900 dark:text-blue-200'
+                                                : 'text-slate-400'
+                                        }`}>
                                         {day}
                                     </span>
-                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                        hasClasses
-                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
-                                            : 'bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500'
-                                    }`}>
-                                        {slots.length} {slots.length === 1 ? 'class' : 'classes'}
+                                    <span
+                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                            hasClasses
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
+                                                : 'bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500'
+                                        }`}>
+                                        {slots.length} {slots.length === 1
+                                            ? 'class'
+                                            : 'classes'}
                                     </span>
                                 </div>
 
-                                {slots.length === 0 ? (
-                                    <div className="text-[11px] text-slate-400 italic py-2">
+                                {slots.length === 0
+                                    ? (
+                                        <div className="text-[11px] text-slate-400 italic py-2">
                                         No scheduled sessions
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col gap-2 pt-1">
-                                        {slots.map((s, idx) => (
-                                            <div
-                                                key={`${day}-${idx}`}
-                                                className="bg-white dark:bg-zinc-800 p-2.5 rounded-lg border border-slate-200/70 dark:border-zinc-700/60 shadow-2xs flex flex-col gap-1 text-xs"
-                                            >
-                                                <div className="flex items-center justify-between gap-1 font-semibold text-slate-900 dark:text-slate-100">
-                                                    <span className="truncate">{s.course_code} ({s.section_code})</span>
-                                                    <span className="text-[10px] text-blue-600 dark:text-blue-400 shrink-0 font-medium">
-                                                        {s.time_start} - {s.time_end}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                                                    <span className="truncate">{s.course_title}</span>
-                                                    {s.room && (
-                                                        <span className="bg-slate-100 dark:bg-zinc-700/70 px-1.5 py-0.5 rounded text-[10px] shrink-0 font-medium">
-                                                            {s.room}
+                                        </div>
+                                    )
+                                    : (
+                                        <div className="flex flex-col gap-2 pt-1">
+                                            {slots.map((s, idx) => (
+                                                <div
+                                                    className="bg-white dark:bg-zinc-800 p-2.5 rounded-lg border border-slate-200/70 dark:border-zinc-700/60 shadow-2xs flex flex-col gap-1 text-xs"
+                                                    key={`${day}-${idx}`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-1 font-semibold text-slate-900 dark:text-slate-100">
+                                                        <span className="truncate">{s.course_code} ({s.section_code})</span>
+                                                        <span className="text-[10px] text-blue-600 dark:text-blue-400 shrink-0 font-medium">
+                                                            {s.time_start} - {s.time_end}
                                                         </span>
-                                                    )}
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                                                        <span className="truncate">{s.course_title}</span>
+                                                        {s.room && (
+                                                            <span className="bg-slate-100 dark:bg-zinc-700/70 px-1.5 py-0.5 rounded text-[10px] shrink-0 font-medium">
+                                                                {s.room}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    )}
                             </div>
                         );
                     })}

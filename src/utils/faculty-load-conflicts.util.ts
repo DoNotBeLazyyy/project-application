@@ -13,7 +13,8 @@ export function parseTimeToMinutes(timeStr: string): number {
 
         if (meridiem === 'PM' && hours < 12) {
             hours += 12;
-        } else if (meridiem === 'AM' && hours === 12) {
+        }
+        else if (meridiem === 'AM' && hours === 12) {
             hours = 0;
         }
 
@@ -30,10 +31,16 @@ export function parseTimeToMinutes(timeStr: string): number {
 export function formatMinutesToTime(minutes: number): string {
     const h24 = Math.floor(minutes / 60) % 24;
     const m = minutes % 60;
-    const meridiem = h24 >= 12 ? 'PM' : 'AM';
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    const mStr = m.toString().padStart(2, '0');
-    return `${h12.toString().padStart(2, '0')}:${mStr} ${meridiem}`;
+    const meridiem = h24 >= 12
+        ? 'PM'
+        : 'AM';
+    const h12 = h24 % 12 === 0
+        ? 12
+        : h24 % 12;
+    const mStr = m.toString()
+        .padStart(2, '0');
+    return `${h12.toString()
+        .padStart(2, '0')}:${mStr} ${meridiem}`;
 }
 
 /**
