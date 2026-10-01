@@ -77,6 +77,7 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     readOnly
                 },
                 select: {
+                    displayEmpty: true,
                     ...slotProps?.select,
                     readOnly,
                     IconComponent: (iconProps) => (
