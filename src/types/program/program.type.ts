@@ -38,6 +38,7 @@ export interface ProgramFormValues {
         sequence?: number;
         is_elective?: boolean;
     }[];
+    pending_deleted_curriculum_ids?: string[];
 }
 
 export interface ProgramOption {

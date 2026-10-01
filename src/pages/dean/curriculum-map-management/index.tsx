@@ -53,7 +53,7 @@ interface CurriculumMapManagementProps {
     schoolYearId?: string;
     readOnly?: boolean;
     hideProgramSelect?: boolean;
-    onChangeEntries?: (entries: CurriculumMapEntry[]) => void;
+    onChangeEntries?: (entries: CurriculumMapEntry[], pendingDeletedIds?: string[]) => void;
 }
 
 export default function CurriculumMapManagement({
@@ -73,19 +73,45 @@ export default function CurriculumMapManagement({
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-    const [isClearing, setIsClearing] = useState(false);
+    const [isDeleteSingleModalOpen, setIsDeleteSingleModalOpen] = useState(false);
+    const [deleteTargetEntry, setDeleteTargetEntry] = useState<CurriculumMapEntry | null>(null);
+    const [pendingDeletedIds, setPendingDeletedIds] = useState<string[]>([]);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
 
-    async function handleConfirmClear() {
-        setIsClearing(true);
-        if (selectedProgramId && entries.length > 0) {
-            await Promise.all(entries.map((entry) => deleteCurriculumMapEntry(entry.id)));
-            fetchCurriculum();
-        } else {
-            updateEntriesState([]);
-        }
-        setIsClearing(false);
+    function updateEntriesState(newEntries: CurriculumMapEntry[], nextPending?: string[]) {
+        setEntries(newEntries);
+        const pendingToPass = nextPending ?? pendingDeletedIds;
+        onChangeEntriesRef.current?.(newEntries, pendingToPass);
+    }
+
+    function handleConfirmClear() {
+        const realIds = entries.filter((e) => !e.id.startsWith('temp-')).map((e) => e.id);
+        const nextPending = Array.from(new Set([...pendingDeletedIds, ...realIds]));
+        setPendingDeletedIds(nextPending);
+        updateEntriesState([], nextPending);
         setIsClearModalOpen(false);
+    }
+
+    function handleOpenDeleteSingle(entryId: string) {
+        const target = entries.find((e) => e.id === entryId);
+        if (target) {
+            setDeleteTargetEntry(target);
+            setIsDeleteSingleModalOpen(true);
+        }
+    }
+
+    function handleConfirmDeleteSingle() {
+        if (!deleteTargetEntry) return;
+        const targetId = deleteTargetEntry.id;
+        let nextPending = pendingDeletedIds;
+        if (!targetId.startsWith('temp-')) {
+            nextPending = Array.from(new Set([...pendingDeletedIds, targetId]));
+            setPendingDeletedIds(nextPending);
+        }
+        const nextEntries = entries.filter((e) => e.id !== targetId);
+        updateEntriesState(nextEntries, nextPending);
+        setIsDeleteSingleModalOpen(false);
+        setDeleteTargetEntry(null);
     }
 
     const { programOptions } = useProgramOptions();
@@ -281,15 +307,8 @@ export default function CurriculumMapManagement({
         formErrors(errors, updateMethods);
     }
 
-    async function handleDelete(entryId: string) {
-        if (selectedProgramId) {
-            const result = await deleteCurriculumMapEntry(entryId);
-            if (!result.error) {
-                fetchCurriculum();
-            }
-        } else {
-            updateEntriesState(entries.filter((entry) => entry.id !== entryId));
-        }
+    function handleDelete(entryId: string) {
+        handleOpenDeleteSingle(entryId);
     }
 
     async function handleBulkImportCurriculum(
@@ -781,6 +800,49 @@ export default function CurriculumMapManagement({
                 <CommonModal
                     cardProps={{
                         cardHeaderProps: {
+                            subheader: 'This action will remove the selected course entry from the curriculum map.',
+                            title: 'Delete Curriculum Entry'
+                        }
+                    }}
+                    maxWidth="xs"
+                    open={isDeleteSingleModalOpen}
+                    onClose={() => {
+                        setIsDeleteSingleModalOpen(false);
+                        setDeleteTargetEntry(null);
+                    }}
+                >
+                    <div className="flex flex-col gap-4">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
+                            Are you sure you want to delete <span className="font-semibold text-slate-900 dark:text-white">{deleteTargetEntry?.course_code} — {deleteTargetEntry?.course_title}</span> from this curriculum map?
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                variant="outlined"
+                                onClick={() => {
+                                    setIsDeleteSingleModalOpen(false);
+                                    setDeleteTargetEntry(null);
+                                }}
+                            >
+                                Cancel
+                            </CommonButton>
+                            <CommonButton
+                                color="error"
+                                size="small"
+                                startIcon={<TrashIcon className="w-4 h-4" />}
+                                variant="contained"
+                                onClick={handleConfirmDeleteSingle}
+                            >
+                                Delete Entry
+                            </CommonButton>
+                        </div>
+                    </div>
+                </CommonModal>
+
+                <CommonModal
+                    cardProps={{
+                        cardHeaderProps: {
                             subheader: 'This action will remove all courses from the curriculum map.',
                             title: 'Clear Curriculum Map'
                         }
@@ -796,7 +858,6 @@ export default function CurriculumMapManagement({
                         <div className="flex justify-end gap-2">
                             <CommonButton
                                 color="inherit"
-                                disabled={isClearing}
                                 size="small"
                                 variant="outlined"
                                 onClick={() => setIsClearModalOpen(false)}
@@ -805,13 +866,12 @@ export default function CurriculumMapManagement({
                             </CommonButton>
                             <CommonButton
                                 color="error"
-                                disabled={isClearing}
                                 size="small"
                                 startIcon={<TrashIcon className="w-4 h-4" />}
                                 variant="contained"
                                 onClick={handleConfirmClear}
                             >
-                                {isClearing ? 'Clearing...' : 'Clear All Entries'}
+                                Clear All Entries
                             </CommonButton>
                         </div>
                     </div>

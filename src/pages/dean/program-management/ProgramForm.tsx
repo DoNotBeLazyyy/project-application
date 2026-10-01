@@ -168,6 +168,12 @@ export default function ProgramForm({
                     <CurriculumMapManagement
                         programId={programId}
                         readOnly={disabled}
+                        onChangeEntries={(newEntries, pendingDeleted) => {
+                            setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
+                            if (pendingDeleted) {
+                                setValue('pending_deleted_curriculum_ids', pendingDeleted as any, { shouldDirty: true });
+                            }
+                        }}
                     />
                 )}
             </div>

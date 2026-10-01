@@ -334,8 +334,11 @@ export default function ProgramWizardModal({
                         programId={programId}
                         schoolYearId={selectedSchoolYearId}
                         readOnly={readOnly}
-                        onChangeEntries={(newEntries) => {
+                        onChangeEntries={(newEntries, pendingDeleted) => {
                             setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
+                            if (pendingDeleted) {
+                                setValue('pending_deleted_curriculum_ids', pendingDeleted as any, { shouldDirty: true });
+                            }
                         }}
                     />
                 )}

@@ -1,4 +1,4 @@
-import { bulkCreateCurriculumMap, createCurriculumMapEntry } from '@services/curriculum-map.service';
+import { bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry } from '@services/curriculum-map.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CurriculumMapBulkRow } from '@type/curriculum-map.type';
@@ -93,7 +93,7 @@ export async function updateProgram(
     programId: string,
     params: ProgramFormValues
 ): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_update_program', {
+    const result = await callRpc<null>('fn_update_program', {
         p_code: params.code,
         p_department_id: nullIfBlank(params.department_id),
         p_description: params.description || null,
@@ -106,6 +106,14 @@ export async function updateProgram(
             : null,
         p_years_duration: Number(params.years_duration)
     });
+
+    if (!result.error && params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
+        await Promise.allSettled(
+            params.pending_deleted_curriculum_ids.map((id) => deleteCurriculumMapEntry(id))
+        );
+    }
+
+    return result;
 }
 
 export async function deleteProgram(
