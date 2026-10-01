@@ -1,3 +1,39 @@
 Code,Name,Department Code,Program Level Code,Years Duration,Total Units,Description,Is Active,Override Grading Schema,Grading Periods,Course Code,Year Level,Term Type Code,School Year Code,Sequence,Is Elective
-BSCS,"Bachelor of Science in Computer Science",CCS,UNDERGRADUATE,4,165,"4-Year Computer Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",,,,,
-BSIT,"Bachelor of Science in Information Technology",CCS,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",,,,,
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 101,1,1ST_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 01,1,1ST_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 08,1,1ST_SEM,SY2024-2025,3,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 120LEC,1,2ND_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 120LAB,1,2ND_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 02,1,2ND_SEM,SY2024-2025,3,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 16,1,SUMMER,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 20,1,SUMMER,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 121LEC,2,1ST_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 121LAB,2,1ST_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 04,2,1ST_SEM,SY2024-2025,3,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 122LEC,2,2ND_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 122LAB,2,2ND_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 123LEC,2,SUMMER,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 123LAB,2,SUMMER,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 101,3,1ST_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 01,3,1ST_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 120LEC,3,2ND_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 02,3,2ND_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 16,3,SUMMER,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",ITC 400,4,1ST_SEM,SY2024-2025,1,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 04,4,2ND_SEM,SY2024-2025,2,false
+BSIT,"Bachelor of Science in Information Technology",CITE,UNDERGRADUATE,4,160,"4-Year Information Technology Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 20,4,SUMMER,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",POLSCI 101,1,1ST_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 01,1,1ST_SEM,SY2024-2025,2,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",POLSCI 102,1,2ND_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 02,1,2ND_SEM,SY2024-2025,2,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 16,1,SUMMER,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",POLSCI 201,2,1ST_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 04,2,1ST_SEM,SY2024-2025,2,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 08,2,2ND_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 20,2,SUMMER,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",POLSCI 101,3,1ST_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 01,3,2ND_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 16,3,SUMMER,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",POLSCI 400,4,1ST_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 04,4,2ND_SEM,SY2024-2025,1,false
+ABPOLSCI,"Bachelor of Arts in Political Science","AB POLSCI",UNDERGRADUATE,4,140,"4-Year Political Science Degree Program",true,true,"Prelim:30,Midterm:30,Final:40",GCAS 20,4,SUMMER,SY2024-2025,1,false
