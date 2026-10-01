@@ -57,7 +57,7 @@ export async function createMyStudentProfile(
 export async function updateMyProfile(
     params: ProfileFormValues
 ): Promise<ServiceResult<{ message?: string; pending_approval?: boolean } | null>> {
-    return callRpc<{ message?: string; pending_approval?: boolean } | null>('fn_update_my_profile', {
+    const basePayload = {
         p_first_name: params.first_name,
         p_middle_name: params.middle_name || null,
         p_last_name: params.last_name,
@@ -72,10 +72,49 @@ export async function updateMyProfile(
         p_date_of_birth: params.date_of_birth || null,
         p_gender: params.gender || null,
         p_civil_status: params.civil_status || null,
-        p_nationality: params.nationality || null,
-        p_program_id: params.program_id || null,
-        p_year_level: params.year_level ? Number(params.year_level) : null
-    });
+        p_nationality: params.nationality || null
+    };
+
+    // Attempt 1: 17 parameters (includes program_id and year_level)
+    const res17 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
+        'fn_update_my_profile',
+        {
+            ...basePayload,
+            p_program_id: params.program_id || null,
+            p_year_level: params.year_level ? Number(params.year_level) : null
+        },
+        { silent: true }
+    );
+
+    if (!res17.error || res17.error.code !== 'PGRST202') {
+        if (res17.error) {
+            useToastStore.getState().showToast(res17.error.message, 'error');
+        }
+        return res17;
+    }
+
+    // Attempt 2: Fallback to 16 parameters (includes program_id)
+    const res16 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
+        'fn_update_my_profile',
+        {
+            ...basePayload,
+            p_program_id: params.program_id || null
+        },
+        { silent: true }
+    );
+
+    if (!res16.error || res16.error.code !== 'PGRST202') {
+        if (res16.error) {
+            useToastStore.getState().showToast(res16.error.message, 'error');
+        }
+        return res16;
+    }
+
+    // Attempt 3: Fallback to 15 parameters
+    return callRpc<{ message?: string; pending_approval?: boolean } | null>(
+        'fn_update_my_profile',
+        basePayload
+    );
 }
 
 export async function updateMyAvatar(
