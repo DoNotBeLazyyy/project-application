@@ -60,21 +60,24 @@ export default function CurriculumMapManagement({
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<CurriculumMapEntry | null>(null);
 
-    useEffect(() => {
-        if (programId) {
-            setSelectedProgramId(programId);
-        }
-    }, [programId]);
-
     const { programOptions } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
     const grouped = useCurriculumMapGrouped(entries);
 
     useEffect(() => {
+        if (programId) {
+            setSelectedProgramId(programId);
+        }
+        if (activeSchoolYearId) {
+            setSelectedSchoolYearId(activeSchoolYearId);
+        }
+    }, [programId, activeSchoolYearId]);
+
+    useEffect(() => {
         if (activeSchoolYearId && !selectedSchoolYearId) {
             setSelectedSchoolYearId(activeSchoolYearId);
         }
-    }, [activeSchoolYearId, selectedSchoolYearId]);
+    }, [activeSchoolYearId]);
 
     const createMethods = useForm<CurriculumMapFormValues>({
         defaultValues: defaultFormValues

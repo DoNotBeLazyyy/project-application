@@ -1,9 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { CopyIcon } from '@phosphor-icons/react';
 import { createCurriculumMapEntry, getCurriculumMap } from '@services/curriculum-map.service';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface CurriculumVersionOption {
     schoolYearId: string | null;
@@ -30,16 +31,23 @@ export default function CloneCurriculumModal({
     programId,
     schoolYearOptions
 }: CloneCurriculumModalProps) {
+    const { activeSchoolYearId } = useSchoolYearOptions();
     const [sourceVersionId, setSourceVersionId] = useState<string>(
         existingVersions[0]
             ? (existingVersions[0].schoolYearId ?? 'baseline')
             : 'blank'
     );
     const [targetSchoolYearId, setTargetSchoolYearId] = useState<string>(
-        schoolYearOptions[0]?.value ? String(schoolYearOptions[0].value) : ''
+        activeSchoolYearId || (schoolYearOptions[0]?.value ? String(schoolYearOptions[0].value) : '')
     );
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (activeSchoolYearId && !targetSchoolYearId) {
+            setTargetSchoolYearId(activeSchoolYearId);
+        }
+    }, [activeSchoolYearId, targetSchoolYearId]);
 
     const sourceOptions: CommonSelectOption[] = [
         ...existingVersions.map((v) => ({
