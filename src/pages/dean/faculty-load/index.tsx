@@ -67,8 +67,8 @@ export default function FacultyLoadManagement() {
             const termId = result.data?.term_id ?? '';
 
             setActiveTermId(termId);
-            setLoadFilters({ term_id: termId });
-            resetLoadFilterForm({ term_id: termId });
+            setLoadFilters({ term_id: '' });
+            resetLoadFilterForm({ term_id: '' });
             setIsTermResolved(true);
         }
 
