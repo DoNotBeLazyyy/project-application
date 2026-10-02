@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import { CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
@@ -154,10 +155,10 @@ export default function ManageExceptionTypesModal({
             <div className="p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-900/40 text-xs">
                 {/* Add New Type Field */}
                 <div className="flex items-center gap-2">
-                    <input
-                        className="flex-1 h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    <CommonInput
+                        containerClassName="flex-1"
                         placeholder="Add custom exception type (e.g. University Week)"
-                        type="text"
+                        size="small"
                         value={newTypeInput}
                         onChange={(e) => setNewTypeInput(e.target.value)}
                         onKeyDown={(e) => {

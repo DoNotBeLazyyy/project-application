@@ -1,4 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -210,11 +212,11 @@ export default function Step5ThresholdsConfig({
                                             <span>Threshold Name / Label <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Official title revealed on student rank lists, certificates, and academic summary cards." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                                        <CommonInput
                                             disabled={disabled}
+                                            fullWidth
                                             placeholder="e.g. Summa Cum Laude, Full Scholar"
-                                            type="text"
+                                            size="small"
                                             value={item.label}
                                             onChange={(e) => update(idx, { ...item, label: e.target.value })}
                                         />
@@ -228,11 +230,11 @@ export default function Step5ThresholdsConfig({
                                             <span>Unique Code</span>
                                             <CommonInfoTooltip content="System identifier code used for automated eligibility queries and SQL rules." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs font-mono rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                                        <CommonInput
                                             disabled={disabled}
+                                            fullWidth
                                             placeholder="e.g. summa_cum_laude"
-                                            type="text"
+                                            size="small"
                                             value={item.code}
                                             onChange={(e) => update(idx, { ...item, code: e.target.value })}
                                         />
@@ -265,17 +267,19 @@ export default function Step5ThresholdsConfig({
                                             <span>Min GWA</span>
                                             <CommonInfoTooltip content="Minimum (best) GWA required for this threshold tier (typically 1.00)." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                                        <CommonNumberInput
                                             disabled={disabled}
+                                            fullWidth
+                                            maxDecimals={2}
+                                            minDecimals={2}
                                             placeholder="1.00 (Optional)"
-                                            step="0.01"
-                                            type="number"
+                                            size="small"
+                                            step={0.01}
                                             value={item.min_gwa ?? ''}
-                                            onChange={(e) =>
+                                            onChange={(val) =>
                                                 update(idx, {
                                                     ...item,
-                                                    min_gwa: e.target.value === '' ? null : e.target.value
+                                                    min_gwa: val === undefined ? null : val
                                                 })
                                             }
                                         />
@@ -286,14 +290,16 @@ export default function Step5ThresholdsConfig({
                                             <span>Max GWA (Cutoff) <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-brand-300 dark:border-brand-700/60 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                                        <CommonNumberInput
                                             disabled={disabled}
+                                            fullWidth
+                                            maxDecimals={2}
+                                            minDecimals={2}
                                             placeholder="1.25"
-                                            step="0.01"
-                                            type="number"
+                                            size="small"
+                                            step={0.01}
                                             value={item.max_gwa ?? ''}
-                                            onChange={(e) => update(idx, { ...item, max_gwa: e.target.value })}
+                                            onChange={(val) => update(idx, { ...item, max_gwa: val === undefined ? '' : val })}
                                         />
                                     </div>
                                 </div>
@@ -305,17 +311,19 @@ export default function Step5ThresholdsConfig({
                                             <span>Subject Floor Grade</span>
                                             <CommonInfoTooltip content="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                                        <CommonNumberInput
                                             disabled={disabled}
+                                            fullWidth
+                                            maxDecimals={2}
+                                            minDecimals={2}
                                             placeholder="Optional (e.g. 2.50)"
-                                            step="0.01"
-                                            type="number"
+                                            size="small"
+                                            step={0.01}
                                             value={item.min_subject_grade ?? ''}
-                                            onChange={(e) =>
+                                            onChange={(val) =>
                                                 update(idx, {
                                                     ...item,
-                                                    min_subject_grade: e.target.value === '' ? null : e.target.value
+                                                    min_subject_grade: val === undefined ? null : val
                                                 })
                                             }
                                         />

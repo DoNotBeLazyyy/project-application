@@ -1,4 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -313,11 +315,11 @@ export default function Step4TransmutationConfig({
                                         <span>Description</span>
                                         <CommonInfoTooltip content="Human-readable descriptor appearing on report cards and evaluation transcripts." size={13} />
                                     </label>
-                                    <input
-                                        className="w-full h-9 px-3 text-xs sm:text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonInput
                                         disabled={disabled}
+                                        fullWidth
                                         placeholder="e.g. Excellent, Incomplete, Dropped"
-                                        type="text"
+                                        size="small"
                                         value={row.description || ''}
                                         onChange={(e) => update(index, { ...row, description: e.target.value })}
                                     />
@@ -352,11 +354,11 @@ export default function Step4TransmutationConfig({
                                             <span>Mark / Grade <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Status grade code (e.g. INC, DRP, W, NFE)." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        <CommonInput
                                             disabled={disabled}
+                                            fullWidth
                                             placeholder="e.g. INC, DRP"
-                                            type="text"
+                                            size="small"
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
@@ -378,11 +380,11 @@ export default function Step4TransmutationConfig({
                                             <span>Mark / Grade <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)." size={13} />
                                         </label>
-                                        <input
-                                            className="w-full h-9 px-3 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        <CommonInput
                                             disabled={disabled}
+                                            fullWidth
                                             placeholder="e.g. 1.25, 3.00"
-                                            type="text"
+                                            size="small"
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
@@ -403,21 +405,17 @@ export default function Step4TransmutationConfig({
                                             <span>Min % <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Minimum raw percentage required for this fixed grade mark." size={13} />
                                         </label>
-                                        <div className="relative">
-                                            <input
-                                                className="w-full h-9 px-3 pr-7 text-sm text-right rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
-                                                disabled={disabled}
-                                                max={100}
-                                                min={0}
-                                                step={0.5}
-                                                type="number"
-                                                value={row.min_percentage ?? ''}
-                                                onChange={(e) => handleUpdatePercentage(index, 'min_percentage', Number(e.target.value) || 0)}
-                                            />
-                                            <span className="absolute right-2.5 top-2 text-xs text-slate-400 font-bold pointer-events-none">
-                                                %
-                                            </span>
-                                        </div>
+                                        <CommonNumberInput
+                                            disabled={disabled}
+                                            fullWidth
+                                            max={100}
+                                            min={0}
+                                            size="small"
+                                            step={0.5}
+                                            suffixText="%"
+                                            value={row.min_percentage ?? ''}
+                                            onChange={(val) => handleUpdatePercentage(index, 'min_percentage', val ?? 0)}
+                                        />
                                     </div>
 
                                     {/* Max % */}
@@ -426,21 +424,17 @@ export default function Step4TransmutationConfig({
                                             <span>Max % <span className="text-red-500">*</span></span>
                                             <CommonInfoTooltip content="Maximum raw percentage allocated to this fixed grade mark." size={13} />
                                         </label>
-                                        <div className="relative">
-                                            <input
-                                                className="w-full h-9 px-3 pr-7 text-sm text-right rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
-                                                disabled={disabled}
-                                                max={100}
-                                                min={0}
-                                                step={0.5}
-                                                type="number"
-                                                value={row.max_percentage ?? ''}
-                                                onChange={(e) => handleUpdatePercentage(index, 'max_percentage', Number(e.target.value) || 0)}
-                                            />
-                                            <span className="absolute right-2.5 top-2 text-xs text-slate-400 font-bold pointer-events-none">
-                                                %
-                                            </span>
-                                        </div>
+                                        <CommonNumberInput
+                                            disabled={disabled}
+                                            fullWidth
+                                            max={100}
+                                            min={0}
+                                            size="small"
+                                            step={0.5}
+                                            suffixText="%"
+                                            value={row.max_percentage ?? ''}
+                                            onChange={(val) => handleUpdatePercentage(index, 'max_percentage', val ?? 0)}
+                                        />
                                     </div>
                                 </div>
                             )}

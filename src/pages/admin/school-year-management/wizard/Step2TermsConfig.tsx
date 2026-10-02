@@ -1,5 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -391,12 +393,16 @@ export default function Step2TermsConfig({
                                         <span>Term Type / Name <span className="text-red-500">*</span></span>
                                         <CommonInfoTooltip content="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)." size={14} />
                                     </label>
-                                    <input
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonInput
                                         disabled={disabled}
-                                        list="term-type-suggestions"
+                                        fullWidth
                                         placeholder="e.g. 1st Semester"
-                                        type="text"
+                                        size="small"
+                                        slotProps={{
+                                            htmlInput: {
+                                                list: 'term-type-suggestions'
+                                            }
+                                        }}
                                         value={currentTerm.term_type_label || ''}
                                         onChange={(e) => {
                                             const newLabel = e.target.value;
@@ -450,18 +456,18 @@ export default function Step2TermsConfig({
                                         <span>Max Units <span className="text-red-500">*</span></span>
                                         <CommonInfoTooltip content="Maximum credit units a student can register for in this term (1 - 60)." size={14} />
                                     </label>
-                                    <input
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                    <CommonNumberInput
                                         disabled={disabled}
+                                        fullWidth
                                         max={60}
                                         min={1}
                                         placeholder="24"
-                                        type="number"
+                                        size="small"
                                         value={currentTerm.max_units ?? 24}
-                                        onChange={(e) => {
+                                        onChange={(val) => {
                                             update(index, {
                                                 ...currentTerm,
-                                                max_units: Number(e.target.value) || 0
+                                                max_units: val ?? 0
                                             });
                                         }}
                                     />

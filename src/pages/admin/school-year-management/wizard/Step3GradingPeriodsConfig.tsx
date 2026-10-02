@@ -1,5 +1,7 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     BroomIcon,
@@ -603,15 +605,12 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Period Name <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)." size={13} />
                                                     </label>
-                                                    <input
-                                                        className={`w-full px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 disabled:opacity-50 ${
-                                                            isDuplicateName
-                                                                ? 'border-red-500 focus:ring-red-500'
-                                                                : 'border-slate-300 dark:border-zinc-700 focus:ring-brand-500'
-                                                        }`}
+                                                    <CommonInput
                                                         disabled={disabled}
+                                                        error={isDuplicateName}
+                                                        fullWidth
                                                         placeholder="e.g. Prelim, Midterm, Finals"
-                                                        type="text"
+                                                        size="small"
                                                         value={period.name}
                                                         onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { name: e.target.value })}
                                                     />
@@ -627,21 +626,16 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Weight (%) <span className="text-red-500">*</span></span>
                                                         <CommonInfoTooltip content="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%." size={13} />
                                                     </label>
-                                                    <div className="relative">
-                                                        <input
-                                                            className="w-full px-3 py-1.5 pr-7 text-sm rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 font-semibold text-right"
-                                                            disabled={disabled}
-                                                            max={100}
-                                                            min={0}
-                                                            step={1}
-                                                            type="number"
-                                                            value={period.weight ?? ''}
-                                                            onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { weight: Number(e.target.value) || 0 })}
-                                                        />
-                                                        <span className="absolute right-2.5 top-1.5 text-xs text-slate-400 font-bold pointer-events-none">
-                                                            %
-                                                        </span>
-                                                    </div>
+                                                    <CommonNumberInput
+                                                        disabled={disabled}
+                                                        fullWidth
+                                                        max={100}
+                                                        min={0}
+                                                        size="small"
+                                                        suffixText="%"
+                                                        value={period.weight ?? ''}
+                                                        onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { weight: val ?? 0 })}
+                                                    />
                                                 </div>
                                             </div>
 
@@ -850,29 +844,25 @@ export default function Step3GradingPeriodsConfig({
                                                                     c{cIdx + 1}
                                                                 </span>
 
-                                                                <input
-                                                                    className="flex-1 px-2 py-1 text-xs rounded border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                                                                 <CommonInput
+                                                                    containerClassName="flex-1"
                                                                     disabled={disabled}
                                                                     placeholder="e.g. Quizzes, Projects, Major Exam"
-                                                                    type="text"
+                                                                    size="small"
                                                                     value={comp.name}
                                                                     onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
                                                                 />
 
-                                                                <div className="relative w-24 shrink-0">
-                                                                    <input
-                                                                        className="w-full px-2 py-1 pr-6 text-xs rounded border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50 font-semibold text-right"
+                                                                <div className="w-28 shrink-0">
+                                                                    <CommonNumberInput
                                                                         disabled={disabled}
                                                                         max={100}
                                                                         min={0}
-                                                                        step={1}
-                                                                        type="number"
+                                                                        size="small"
+                                                                        suffixText="%"
                                                                         value={comp.weight ?? ''}
-                                                                        onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: Number(e.target.value) || 0 })}
+                                                                        onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val ?? 0 })}
                                                                     />
-                                                                    <span className="absolute right-2 top-1 text-[10px] text-slate-400 font-bold pointer-events-none">
-                                                                        %
-                                                                    </span>
                                                                 </div>
 
                                                                 {!disabled && (

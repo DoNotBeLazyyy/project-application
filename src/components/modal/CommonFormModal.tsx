@@ -62,8 +62,8 @@ export default function CommonFormModal({
                     },
                 confirmProps: {
                     children: confirmText,
-                    disabled: isDirty === false || isLoading || confirmProps?.disabled || confirmProps?.loading,
-                    loading: isLoading ?? confirmProps?.loading,
+                    disabled: isDirty === false || Boolean(isLoading) || Boolean(confirmProps?.disabled) || Boolean(confirmProps?.loading),
+                    loading: Boolean(isLoading) || Boolean(confirmProps?.loading),
                     form: formId,
                     type: formId
                         ? 'submit'

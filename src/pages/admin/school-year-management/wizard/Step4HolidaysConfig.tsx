@@ -1,5 +1,6 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
+import CommonInput from '@components/input/CommonInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -190,11 +191,11 @@ export default function Step4HolidaysConfig({
                                         <span className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center shrink-0">
                                             #{idx + 1}
                                         </span>
-                                        <input
-                                            className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 bg-transparent border-b border-transparent focus:border-brand-500 hover:border-slate-300 dark:hover:border-zinc-700 focus:outline-none px-1 py-0.5 w-full transition-colors"
+                                        <CommonInput
+                                            containerClassName="flex-1"
                                             disabled={disabled}
                                             placeholder="Holiday / Exception Title (e.g. Independence Day)"
-                                            type="text"
+                                            size="small"
                                             value={current.title || ''}
                                             onChange={(e) => {
                                                 update(idx, { ...current, title: e.target.value });
@@ -305,11 +306,11 @@ export default function Step4HolidaysConfig({
                                     <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                         Description / Note (Optional)
                                     </label>
-                                    <input
-                                        className="w-full h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                                    <CommonInput
                                         disabled={disabled}
+                                        fullWidth
                                         placeholder="e.g. Regular National Non-Working Holiday"
-                                        type="text"
+                                        size="small"
                                         value={current.description || ''}
                                         onChange={(e) => {
                                             update(idx, { ...current, description: e.target.value });
