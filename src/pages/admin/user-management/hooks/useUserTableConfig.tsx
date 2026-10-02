@@ -67,7 +67,7 @@ export function useUserTableConfig({
                             label={params.data.status}
                             variant={params.data.status === 'Active'
                                 ? 'success'
-                                : 'warning'}
+                                : (params.data.status === 'Inactive' ? 'error' : 'warning')}
                         />
                     </div>
                 )

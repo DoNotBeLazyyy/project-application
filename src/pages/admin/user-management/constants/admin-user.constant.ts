@@ -4,7 +4,8 @@ import { CommonSelectOption } from '@components/select/CommonSelect';
 export const STATUS_OPTIONS: CommonSelectOption[] = [
     { label: 'All Statuses', value: 'All' },
     { label: 'Active', value: 'Active' },
-    { label: 'Invited', value: 'Invited' }
+    { label: 'Invited', value: 'Invited' },
+    { label: 'Inactive', value: 'Inactive' }
 ];
 
 export const CREATE_FORM_ID = 'create-user-form';
