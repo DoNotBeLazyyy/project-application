@@ -13,58 +13,31 @@ const SURFACE_FOCUSED = 'var(--mui-tokens-color-brand-100)';
 export const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-200)';
 const SURFACE_ERROR = 'var(--mui-tokens-color-red-100)';
 export const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-400)';
-const TEXT_READONLY = 'var(--mui-tokens-color-neutral-900, #0f172a)';
 const BORDER_TRANSPARENT = 'var(--mui-tokens-stroke-0) solid transparent';
 export const BORDER_NEUTRAL = 'var(--mui-tokens-stroke-0) solid var(--mui-tokens-color-neutral-300)';
 const BORDER_FOCUSED = 'var(--mui-tokens-stroke-0) solid var(--mui-tokens-color-brand-900)';
 const BORDER_ERROR = 'var(--mui-tokens-stroke-0) solid var(--mui-tokens-color-red-500)';
-
-const DISABLED_SELECTOR = `
-    &.Mui-disabled,
-    &.Mui-disabled:hover
-`;
-
-const READONLY_SELECTOR = `
-    &.MuiInputBase-readOnly,
-    &.MuiInputBase-readOnly:hover,
-    &[readonly],
-    &[readonly]:hover,
-    &:has(input[readonly]),
-    &:has(textarea[readonly]),
-    &.common_input_readonly,
-    &.common_input_readonly:hover
-`;
-
-const DISABLED_OR_READONLY_NOTCH_SELECTOR = (outline: string) => `
-    &.Mui-disabled ${outline},
-    &.MuiInputBase-readOnly ${outline},
-    &[readonly] ${outline},
-    &:has(input[readonly]) ${outline},
-    &:has(textarea[readonly]) ${outline},
-    &.common_input_readonly ${outline}
-`;
 
 export function buildInputStateStyles(outlineClassName?: string): CSSObject {
     if (!outlineClassName) {
         return {
             backgroundColor: SURFACE_DEFAULT,
             border: BORDER_TRANSPARENT,
-            '&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not(:has(input[readonly])):not(:has(textarea[readonly])):not(.common_input_readonly)': {
+            '&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly])': {
                 backgroundColor: SURFACE_FOCUSED,
                 border: BORDER_FOCUSED
             },
-            [DISABLED_SELECTOR]: {
+            '&.Mui-disabled': {
                 backgroundColor: SURFACE_DISABLED,
                 border: BORDER_TRANSPARENT,
                 color: TEXT_DISABLED,
                 WebkitTextFillColor: TEXT_DISABLED
             },
-            [READONLY_SELECTOR]: {
-                backgroundColor: 'transparent !important',
-                border: 'none !important',
-                boxShadow: 'none !important',
-                color: TEXT_READONLY,
-                WebkitTextFillColor: TEXT_READONLY
+            '&.MuiInputBase-readOnly, &[readonly]': {
+                backgroundColor: SURFACE_DISABLED,
+                border: BORDER_TRANSPARENT,
+                color: 'var(--mui-tokens-color-neutral-800)',
+                WebkitTextFillColor: 'var(--mui-tokens-color-neutral-800)'
             },
             '&.Mui-error, &.Mui-error:hover, &.Mui-error.Mui-focused': {
                 backgroundColor: SURFACE_ERROR,
@@ -77,19 +50,18 @@ export function buildInputStateStyles(outlineClassName?: string): CSSObject {
 
     return {
         backgroundColor: SURFACE_DEFAULT,
-        '&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not(:has(input[readonly])):not(:has(textarea[readonly])):not(.common_input_readonly)': {
+        '&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly])': {
             backgroundColor: SURFACE_FOCUSED
         },
-        [DISABLED_SELECTOR]: {
+        '&.Mui-disabled': {
             backgroundColor: SURFACE_DISABLED,
             color: TEXT_DISABLED,
             WebkitTextFillColor: TEXT_DISABLED
         },
-        [READONLY_SELECTOR]: {
-            backgroundColor: 'transparent !important',
-            boxShadow: 'none !important',
-            color: TEXT_READONLY,
-            WebkitTextFillColor: TEXT_READONLY
+        '&.MuiInputBase-readOnly, &[readonly]': {
+            backgroundColor: SURFACE_DISABLED,
+            color: 'var(--mui-tokens-color-neutral-800)',
+            WebkitTextFillColor: 'var(--mui-tokens-color-neutral-800)'
         },
         '&.Mui-error, &.Mui-error.Mui-focused': {
             backgroundColor: SURFACE_ERROR
@@ -100,13 +72,10 @@ export function buildInputStateStyles(outlineClassName?: string): CSSObject {
         [`& ${outline} legend`]: {
             display: 'none'
         },
-        [`& ${outline}, &:hover ${outline}`]: {
+        [`& ${outline}, &:hover ${outline}, &.Mui-disabled ${outline}, &.MuiInputBase-readOnly ${outline}, &[readonly] ${outline}`]: {
             border: BORDER_TRANSPARENT
         },
-        [DISABLED_OR_READONLY_NOTCH_SELECTOR(outline)]: {
-            border: `${BORDER_TRANSPARENT} !important`
-        },
-        [`&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not(:has(input[readonly])):not(:has(textarea[readonly])):not(.common_input_readonly) ${outline}, &.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not(:has(input[readonly])):not(:has(textarea[readonly])):not(.common_input_readonly):hover ${outline}`]: {
+        [`&.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]) ${outline}, &.Mui-focused:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):hover ${outline}`]: {
             border: BORDER_FOCUSED
         },
         [`

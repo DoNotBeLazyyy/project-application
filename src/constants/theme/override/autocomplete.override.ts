@@ -20,7 +20,7 @@ export const autocompleteOverrides: ComponentTheme = {
                         minHeight: INPUT_HEIGHT_SMALL,
                         padding: 'var(--mui-tokens-spacing-1) var(--mui-tokens-spacing-2)'
                     },
-                    '&.Mui-disabled, &.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &.common_input_readonly': {
+                    '&.Mui-disabled, &.MuiInputBase-readOnly, &[readonly]': {
                         backgroundColor: SURFACE_DISABLED
                     }
                 },

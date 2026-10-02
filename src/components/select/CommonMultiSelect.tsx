@@ -70,7 +70,6 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
         <Autocomplete
             className={classMerge(
                 fullWidth && 'w-full',
-                isNonInteractive && 'common_input_readonly',
                 containerClassName
             )}
             disableCloseOnSelect
@@ -86,10 +85,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    className={classMerge(
-                        className,
-                        isNonInteractive && 'common_input_readonly'
-                    )}
+                    className={className}
                     error={error}
                     helperText={helperText}
                     label={label}

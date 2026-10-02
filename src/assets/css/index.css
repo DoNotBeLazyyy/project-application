@@ -438,56 +438,6 @@
 }
 
 /* Ensure all form inputs default to white background */
-.MuiInputBase-root:not(.common_input_readonly):not(.MuiInputBase-readOnly):not([readonly]) {
+.MuiInputBase-root {
     background-color: #ffffff;
-}
-
-/* Plain text read mode display (no border, no field/box background, proper text color) */
-.common_input_readonly,
-.common_input_readonly .MuiInputBase-root,
-.common_input_readonly .MuiOutlinedInput-root,
-.common_input_readonly .MuiFilledInput-root,
-.MuiInputBase-root.MuiInputBase-readOnly,
-.MuiInputBase-root[readonly],
-.MuiInputBase-root:has(input[readonly]),
-.MuiInputBase-root:has(textarea[readonly]) {
-    background-color: transparent !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    min-height: auto !important;
-}
-
-.common_input_readonly .MuiOutlinedInput-notchedOutline,
-.MuiInputBase-root.MuiInputBase-readOnly .MuiOutlinedInput-notchedOutline,
-.MuiInputBase-root[readonly] .MuiOutlinedInput-notchedOutline,
-.MuiInputBase-root:has(input[readonly]) .MuiOutlinedInput-notchedOutline,
-.MuiInputBase-root:has(textarea[readonly]) .MuiOutlinedInput-notchedOutline {
-    border: none !important;
-    display: none !important;
-}
-
-.common_input_readonly .MuiInputBase-input,
-.MuiInputBase-root.MuiInputBase-readOnly .MuiInputBase-input,
-.MuiInputBase-root[readonly] .MuiInputBase-input,
-.MuiInputBase-root:has(input[readonly]) .MuiInputBase-input,
-.MuiInputBase-root:has(textarea[readonly]) .MuiInputBase-input {
-    color: var(--mui-palette-text-primary, #0f172a) !important;
-    -webkit-text-fill-color: var(--mui-palette-text-primary, #0f172a) !important;
-    font-weight: 500 !important;
-    cursor: default !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-.common_input_readonly .MuiInputAdornment-root,
-.common_input_readonly .MuiSelect-icon,
-.MuiInputBase-root.MuiInputBase-readOnly .MuiInputAdornment-root,
-.MuiInputBase-root.MuiInputBase-readOnly .MuiSelect-icon,
-.MuiInputBase-root:has(input[readonly]) .MuiInputAdornment-root,
-.MuiInputBase-root:has(input[readonly]) .MuiSelect-icon {
-    display: none !important;
 }

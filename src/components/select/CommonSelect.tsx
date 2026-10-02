@@ -59,10 +59,7 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
 
     return (
         <TextField
-            className={classMerge(
-                className,
-                isNonInteractive && 'common_input_readonly'
-            )}
+            className={className}
             disabled={disabled}
             ref={ref}
             select

@@ -365,10 +365,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                     }}
                 >
                     <TextField
-                        className={classMerge(
-                            className,
-                            isNonInteractive && 'common_input_readonly'
-                        )}
+                        className={className}
                         error={error}
                         fullWidth={fullWidth}
                         helperText={inlineHelperText}
@@ -381,10 +378,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
                             input: {
                                 ...inputSlotProps,
                                 readOnly: isReadOnly,
-                                className: classMerge(
-                                    'common_textarea_input',
-                                    isNonInteractive && 'common_input_readonly'
-                                ),
+                                className: 'common_textarea_input',
                                 endAdornment: (
                                     <>
                                         {isClearVisible && (

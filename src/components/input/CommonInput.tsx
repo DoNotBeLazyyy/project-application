@@ -221,8 +221,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                 className={
                     classMerge(
                         className,
-                        isRoundedFull && 'common_input_rounded_full',
-                        isReadOnly && 'common_input_readonly'
+                        isRoundedFull && 'common_input_rounded_full'
                     )
                 }
                 error={error}

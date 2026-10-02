@@ -102,10 +102,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                             : {})
                     },
                     textField: {
-                        className: classMerge(
-                            externalClassName,
-                            isNonInteractive && 'common_input_readonly'
-                        ),
+                        className: externalClassName,
                         disabled,
                         error: errorProp ?? !!fieldState.error,
                         fullWidth,
@@ -125,19 +122,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                             ...(disabled
                                 ? [{
                                     pointerEvents: 'none' as const
-                                }]
-                                : []),
-                            ...(readOnly
-                                ? [{
-                                    '& .MuiInputBase-root': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputBase-input': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputAdornment-root': {
-                                        pointerEvents: 'none' as const
-                                    }
                                 }]
                                 : []),
                             ...(externalTextFieldProps?.sx

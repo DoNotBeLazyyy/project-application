@@ -102,10 +102,7 @@ export function CommonDatePicker({
                             : {})
                     },
                     textField: {
-                        className: classMerge(
-                            externalClassName,
-                            isNonInteractive && 'common_input_readonly'
-                        ),
+                        className: externalClassName,
                         disabled,
                         error: errorProp,
                         fullWidth,
@@ -123,19 +120,6 @@ export function CommonDatePicker({
                             ...(disabled
                                 ? [{
                                     pointerEvents: 'none' as const
-                                }]
-                                : []),
-                            ...(readOnly
-                                ? [{
-                                    '& .MuiInputBase-root': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputBase-input': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputAdornment-root': {
-                                        pointerEvents: 'none' as const
-                                    }
                                 }]
                                 : []),
                             ...(externalTextFieldProps?.sx
@@ -239,10 +223,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             : {})
                     },
                     textField: {
-                        className: classMerge(
-                            externalClassName,
-                            isNonInteractive && 'common_input_readonly'
-                        ),
+                        className: externalClassName,
                         disabled,
                         error: errorProp ?? !!fieldState.error,
                         fullWidth,
@@ -261,19 +242,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             ...(disabled
                                 ? [{
                                     pointerEvents: 'none' as const
-                                }]
-                                : []),
-                            ...(readOnly
-                                ? [{
-                                    '& .MuiInputBase-root': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputBase-input': {
-                                        cursor: 'default'
-                                    },
-                                    '& .MuiInputAdornment-root': {
-                                        pointerEvents: 'none' as const
-                                    }
                                 }]
                                 : []),
                             ...(externalTextFieldProps?.sx

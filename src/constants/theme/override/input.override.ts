@@ -20,22 +20,17 @@ export const inputOverrides: ComponentTheme = {
                     color: 'var(--mui-tokens-color-neutral-400)',
                     WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
                 },
-                '&.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &:has(textarea[readonly]), &.common_input_readonly': {
-                    color: 'var(--mui-tokens-color-neutral-900, #0f172a)',
-                    WebkitTextFillColor: 'var(--mui-tokens-color-neutral-900, #0f172a)',
-                    backgroundColor: 'transparent !important',
-                    boxShadow: 'none !important',
-                    border: 'none !important',
-                    paddingLeft: '0 !important',
-                    paddingRight: '0 !important'
+                '&.MuiInputBase-readOnly, &[readonly]': {
+                    color: 'var(--mui-tokens-color-neutral-800)',
+                    WebkitTextFillColor: 'var(--mui-tokens-color-neutral-800)'
                 },
                 '&.Mui-disabled .MuiInputAdornment-root svg, &.Mui-disabled .MuiSelect-icon': {
                     color: 'var(--mui-tokens-color-neutral-400) !important'
                 },
-                '&.MuiInputBase-readOnly .MuiInputAdornment-root, &[readonly] .MuiInputAdornment-root, &:has(input[readonly]) .MuiInputAdornment-root, &:has(textarea[readonly]) .MuiInputAdornment-root, &.common_input_readonly .MuiInputAdornment-root, &.MuiInputBase-readOnly .MuiSelect-icon, &.common_input_readonly .MuiSelect-icon': {
-                    display: 'none !important'
+                '&.MuiInputBase-readOnly .MuiInputAdornment-root svg, &.MuiInputBase-readOnly .MuiSelect-icon': {
+                    color: 'var(--mui-tokens-color-neutral-600) !important'
                 },
-                '&.Mui-disabled .MuiChip-root': {
+                '&.Mui-disabled .MuiChip-root, &.MuiInputBase-readOnly .MuiChip-root': {
                     backgroundColor: 'var(--mui-tokens-color-common-white) !important',
                     borderColor: 'var(--mui-tokens-color-brand-500) !important',
                     color: 'var(--mui-tokens-color-brand-950) !important',
@@ -49,22 +44,6 @@ export const inputOverrides: ComponentTheme = {
                         color: 'var(--mui-tokens-color-brand-600) !important',
                         opacity: '0.4 !important',
                         pointerEvents: 'none'
-                    }
-                },
-                '&.MuiInputBase-readOnly .MuiChip-root, &.common_input_readonly .MuiChip-root': {
-                    backgroundColor: 'transparent !important',
-                    borderColor: 'transparent !important',
-                    color: 'var(--mui-tokens-color-neutral-900, #0f172a) !important',
-                    opacity: '1 !important',
-                    padding: 0,
-                    '& .MuiChip-label': {
-                        color: 'var(--mui-tokens-color-neutral-900, #0f172a) !important',
-                        opacity: '1 !important',
-                        padding: 0,
-                        WebkitTextFillColor: 'var(--mui-tokens-color-neutral-900, #0f172a) !important'
-                    },
-                    '& .MuiChip-deleteIcon': {
-                        display: 'none !important'
                     }
                 },
                 '&.MuiInputAdornment-positionStart': {
@@ -275,12 +254,12 @@ export const inputOverrides: ComponentTheme = {
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
-                '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline, &.MuiInputBase-readOnly.common_textarea_input.MuiInputBase-multiline, &[readonly].common_textarea_input.MuiInputBase-multiline, &:has(textarea[readonly]).common_textarea_input.MuiInputBase-multiline, &.common_input_readonly.common_textarea_input.MuiInputBase-multiline': {
+                '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline, &.MuiInputBase-readOnly.common_textarea_input.MuiInputBase-multiline, &[readonly].common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: SURFACE_DISABLED
                 },
                 [`
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):not(:has(textarea[readonly])):not(.common_input_readonly) .MuiOutlinedInput-notchedOutline,
-                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):not(:has(textarea[readonly])):not(.common_input_readonly):hover .MuiOutlinedInput-notchedOutline
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]) .MuiOutlinedInput-notchedOutline,
+                    &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):hover .MuiOutlinedInput-notchedOutline
                 `]: {
                     border: BORDER_NEUTRAL
                 },
