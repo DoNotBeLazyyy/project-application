@@ -15,6 +15,7 @@ export const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-50, #FAFAFA)';
 const SURFACE_ERROR = 'var(--mui-tokens-color-red-100, #FFF0F0)';
 export const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-600)';
 export const BORDER_BLUE = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-brand-400, #6BA6F4)';
+export const BORDER_NEUTRAL = BORDER_BLUE;
 export const BORDER_BLUE_HOVER = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-brand-600, #387BE0)';
 export const BORDER_FOCUSED = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-brand-700, #225DB4)';
 export const BORDER_ERROR = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-red-500, #EB5757)';

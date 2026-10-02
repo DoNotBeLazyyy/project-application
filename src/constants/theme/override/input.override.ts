@@ -1,5 +1,5 @@
 import {
-    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_MEDIUM, INPUT_HEIGHT_SMALL, INPUT_HEIGHT_TOUCH,
+    BORDER_BLUE, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_MEDIUM, INPUT_HEIGHT_SMALL, INPUT_HEIGHT_TOUCH,
     INPUT_PADDING_LARGE, INPUT_PADDING_MEDIUM, INPUT_PADDING_SMALL, SURFACE_DISABLED
 } from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
