@@ -402,11 +402,6 @@ export default function Step2TermsConfig({
                                         label="Term Type / Name"
                                         placeholder="e.g. 1st Semester"
                                         size="small"
-                                        slotProps={{
-                                            htmlInput: {
-                                                list: 'term-type-suggestions'
-                                            }
-                                        }}
                                         value={currentTerm.term_type_label || ''}
                                         onChange={(e) => {
                                             const newLabel = e.target.value;
@@ -420,11 +415,6 @@ export default function Step2TermsConfig({
                                             setValue(`terms.${index}.term_type_id`, matched?.id || '', { shouldDirty: true });
                                         }}
                                     />
-                                    <datalist id="term-type-suggestions">
-                                        {termTypes.map((tt) => (
-                                            <option key={tt.id} value={tt.label} />
-                                        ))}
-                                    </datalist>
                                 </div>
 
                                 {/* Term Start Date */}

@@ -1,4 +1,3 @@
-import FormErrorSummary from '@components/form/FormErrorSummary';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
 import { ComponentPropsForm } from '@type/common.type';
@@ -34,7 +33,6 @@ export interface CommonFormProps<T extends FieldValues> {
     fields: FormFieldConfig<T>[];
     containerClassName?: string;
     formProps?: ComponentPropsForm;
-    hasErrorSummary?: boolean;
     hasHelper?: boolean;
     helperPlacement?: FormHelperPlacement;
 }
@@ -114,7 +112,6 @@ export default function CommonForm<T extends FieldValues>({
     fields,
     containerClassName = 'flex flex-col gap-4',
     formProps,
-    hasErrorSummary = true,
     hasHelper = true,
     helperPlacement = 'label'
 }: CommonFormProps<T>) {
@@ -160,12 +157,6 @@ export default function CommonForm<T extends FieldValues>({
                     );
                 })}
             </div>
-            {hasErrorSummary && (
-                <FormErrorSummary
-                    className="mt-4"
-                    control={control}
-                />
-            )}
         </form>
     );
 }

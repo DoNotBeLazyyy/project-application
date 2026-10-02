@@ -4,6 +4,7 @@ import Tooltip, { TooltipProps } from '@mui/material/Tooltip';
 import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { KeyboardEventButtonElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
+import { FORM_ERROR_EVENT } from '@utils/form.util';
 import { ReactNode, useEffect, useState } from 'react';
 
 export type CommonInfoTooltipVariant = 'info' | 'error';
@@ -87,8 +88,25 @@ export default function CommonInfoTooltip({
     useEffect(() => {
         if (defaultOpen) {
             setIsPinned(true);
+        } else {
+            setIsPinned(false);
         }
     }, [defaultOpen, content]);
+
+    useEffect(() => {
+        function handleFormError() {
+            if (defaultOpen) {
+                setIsPinned(true);
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+            return () => {
+                window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+            };
+        }
+    }, [defaultOpen]);
 
     const isOpen = controlledIsOpen ?? (isPinned || isHovered);
     const {

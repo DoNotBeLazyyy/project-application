@@ -317,33 +317,8 @@ export default function SectionGradingOverride({
                         </div>
                     </div>
                 ) : (
-                    /* Edit Mode: Preset Dropdown & Component Weights */
+                    /* Edit Mode: Component Weights */
                     <div className="flex flex-col gap-4">
-                        {/* Preset Selection Dropdown */}
-                        <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 shadow-xs">
-                            <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-                                <span>
-                                    {hasPresets
-                                        ? 'Select a grading schema preset from an existing section to apply its configuration.'
-                                        : 'No preset available for section grading schemas.'}
-                                </span>
-                            </div>
-
-                            <ValidCommonSelect
-                                control={control}
-                                disabled={disabled || !hasPresets}
-                                hasHelper
-                                helperText={hasPresets ? 'Select a section preset to apply its grading schema' : 'No preset available'}
-                                label="Preset Grading Schema"
-                                name="source_section_id"
-                                options={presetOptions}
-                                placeholder={hasPresets ? 'Select a grading schema preset' : 'No preset available'}
-                                onChange={(e) => {
-                                    handlePresetChange(e.target.value);
-                                }}
-                            />
-                        </div>
 
                         {/* Component Weight Configuration Header */}
                         <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">

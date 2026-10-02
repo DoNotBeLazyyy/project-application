@@ -14,7 +14,6 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import {
-    copySectionSetupToSections,
     createSection,
     flattenScheduleBlocksToSlots,
     getSectionById,
@@ -65,6 +64,7 @@ const defaultFormValues: SectionFormValues = {
 
 interface SectionWizardModalProps {
     open: boolean;
+    initialFacultyId?: string | null;
     readOnly?: boolean;
     sectionId?: string | null;
     onClose: () => void;
@@ -73,6 +73,7 @@ interface SectionWizardModalProps {
 
 export default function SectionWizardModal({
     open,
+    initialFacultyId,
     readOnly: initialReadOnly = false,
     sectionId,
     onClose,
@@ -131,9 +132,12 @@ export default function SectionWizardModal({
                 });
         } else {
             setIsEditable(true);
-            reset(defaultFormValues);
+            reset({
+                ...defaultFormValues,
+                faculty_id: initialFacultyId || ''
+            });
         }
-    }, [open, sectionId, initialReadOnly, reset]);
+    }, [open, sectionId, initialReadOnly, initialFacultyId, reset]);
 
     async function validateStep1(): Promise<boolean> {
         const isValid = await trigger(
@@ -226,14 +230,6 @@ export default function SectionWizardModal({
 
             if (targetSectionId) {
                 await saveSectionSchedules(targetSectionId, flatSlots);
-
-                if (
-                    values.override_grading_schema &&
-                    values.grading_override_mode === 'copy_section' &&
-                    values.source_section_id
-                ) {
-                    await copySectionSetupToSections(values.source_section_id, [targetSectionId]);
-                }
             }
 
             useToastStore.getState().showToast(

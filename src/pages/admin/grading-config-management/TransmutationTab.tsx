@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import FormErrorSummary from '@components/form/FormErrorSummary';
 import { FormField } from '@components/form/FormField';
 import CommonTable from '@components/table/CommonTable';
 import { FloppyDiskIcon, LockSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
@@ -475,10 +474,6 @@ export default function TransmutationTab({
 
     return (
         <div className="flex flex-col gap-3 h-full min-h-0">
-            <FormErrorSummary
-                className="shrink-0"
-                control={methods.control}
-            />
             <CommonCard
                 cardHeaderProps={{
                     /*

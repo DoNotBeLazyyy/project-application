@@ -1,5 +1,6 @@
 import CommonTextarea, { CommonTextareaProps } from '@components/textarea/CommonTextarea';
 import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
+import { checkForMessage } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
@@ -29,8 +30,14 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
     onChangeText: onDefaultChange,
     ...props
 }: ValidCommonTextareaProps<T>) {
-    const { field: { value, ref, onChange }, fieldState } = useController({ name, control, rules }); // Text area form control
-    const helperMessage = fieldState.error?.message ?? helperTextProp;
+    const {
+        field: { value, ref, onChange },
+        fieldState,
+        formState
+    } = useController({ name, control, rules });
+
+    const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
+    const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
 
     /**
      * Change event handler for textarea input.
@@ -45,25 +52,20 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
     }
 
     return (
-        <div className="flex flex-col gap-1 w-full">
-            <CommonTextarea
-                error={errorProp ?? !!fieldState.error}
-                inputRef={ref}
-                value={value}
-                onChange={handleChange}
-                {...props}
-            />
-            {hasHelper && helperMessage && (
-                <span
-                    className={
-                        fieldState.error
-                            ? 'text-(--mui-palette-error-main) text-xs'
-                            : 'text-(--mui-palette-text-secondary) text-xs'
-                    }
-                >
-                    {helperMessage}
-                </span>
-            )}
-        </div>
+        <CommonTextarea
+            {...props}
+            defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
+            error={errorProp ?? !!fieldState.error}
+            helperText={
+                hasHelper
+                    ? fieldState.error?.message ?? helperTextProp
+                    : undefined
+            }
+            inputRef={ref}
+            isFirstError={props.isFirstError ?? isFirstError}
+            isRequired={props.isRequired || Boolean(rules?.required)}
+            value={value}
+            onChange={handleChange}
+        />
     );
 }

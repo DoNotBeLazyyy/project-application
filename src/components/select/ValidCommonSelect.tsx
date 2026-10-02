@@ -1,5 +1,6 @@
 import CommonSelect, { CommonSelectProps } from '@components/select/CommonSelect';
 import { InputChangeEvent } from '@type/common.type';
+import { checkForMessage } from '@utils/form.util';
 import { useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -22,10 +23,14 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
 }: ValidCommonSelectProps<T>) {
     const {
         field: { ref, value, onChange },
-        fieldState
+        fieldState,
+        formState
     } = useController({ control, name, rules });
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
+
+    const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
+    const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
 
     const isNonInteractive = Boolean(disabled || readOnly);
 
@@ -59,6 +64,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     return (
         <CommonSelect
             {...props}
+            defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             disabled={disabled}
             error={errorProp ?? !!fieldState.error}
             helperText={
@@ -67,6 +73,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
                     : undefined
             }
             inputRef={ref}
+            isFirstError={props.isFirstError ?? isFirstError}
             isRequired={props.isRequired || Boolean(rules?.required)}
             readOnly={readOnly}
             slotProps={{

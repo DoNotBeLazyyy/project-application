@@ -24,7 +24,7 @@ import {
     FacultyScheduleConflict
 } from '@type/faculty-load.type';
 import { evaluateSectionConflicts } from '@utils/faculty-load-conflicts.util';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const FACULTY_LOAD_STEPS = [
     {
@@ -66,10 +66,18 @@ export default function FacultyLoadWizardModal({
     onClose,
     onSuccess
 }: FacultyLoadWizardModalProps) {
+    const navigate = useNavigate();
     const { showToast } = useToastStore();
     const [currentStep, setCurrentStep] = useState(1);
-    const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
+    const [isReadOnly, setIsReadOnly] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+
+    function handleRedirectToSectionManagement() {
+        onClose();
+        if (facultyId) {
+            navigate(`/dean/section-management?createSection=true&facultyId=${facultyId}`);
+        }
+    }
     const [isSaving, setIsSaving] = useState(false);
 
     // Baseline server detail and staged working state
@@ -394,17 +402,16 @@ export default function FacultyLoadWizardModal({
 
                         <div className="flex items-center gap-2 shrink-0">
                             {/* Switch to Edit Mode in header */}
-                            {isReadOnly && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                    variant="outlined"
-                                    onClick={() => setIsReadOnly(false)}
-                                >
-                                    Edit Load
-                                </CommonButton>
-                            )}
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                variant="outlined"
+                                className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                onClick={handleRedirectToSectionManagement}
+                            >
+                                Edit Load
+                            </CommonButton>
 
                             <button
                                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"

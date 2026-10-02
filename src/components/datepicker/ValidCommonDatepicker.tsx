@@ -3,6 +3,7 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
+import { checkForMessage } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
@@ -215,13 +216,17 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
 }: ValidCommonDatePickerProps<T>) {
     const {
         field: { ref, value, onChange },
-        fieldState
+        fieldState,
+        formState
     } = useController({ control, name, rules });
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
     const resolvedValue = value
         ? DateTime.fromISO(value)
         : null;
+
+    const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
+    const resolvedIsFirstError = isFirstError ?? Boolean(fieldState.error && firstErrorKey === name);
 
     const isNonInteractive = Boolean(disabled || readOnly);
     const isError = errorProp ?? !!fieldState.error;
@@ -284,9 +289,10 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
-                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || resolvedIsFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
+                    isFirstError={resolvedIsFirstError}
                     isRequired={isRequired || Boolean(rules?.required)}
                     label={label}
                 />

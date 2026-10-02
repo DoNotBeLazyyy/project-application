@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import FormErrorSummary from '@components/form/FormErrorSummary';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { logout } from '@services/auth.service';
 import { supabase } from '@services/supabase.client';
@@ -228,8 +227,6 @@ export default function SetPasswordPage() {
                             type="password"
                         />
                     </div>
-
-                    <FormErrorSummary control={control} />
 
                     {submitError && (
                         <p className="text-(--mui-palette-error-main) text-sm">

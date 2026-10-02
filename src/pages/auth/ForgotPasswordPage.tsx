@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import FormErrorSummary from '@components/form/FormErrorSummary';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import { requestPasswordReset } from '@services/auth.service';
 import { ForgotPasswordFormValues } from '@type/auth.type';
@@ -83,8 +82,6 @@ export default function ForgotPasswordPage() {
                                 type="email"
                                 variant="outlined"
                             />
-
-                            <FormErrorSummary control={methods.control} />
 
                             <CommonButton
                                 disabled={isSubmitting}

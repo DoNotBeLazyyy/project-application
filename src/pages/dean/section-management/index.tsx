@@ -2,7 +2,6 @@ import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
-import CopySectionSetupModal from '@pages/dean/section-management/CopySectionSetupModal';
 import SectionFilterForm from '@pages/dean/section-management/SectionFilterForm';
 import SectionGridCard from '@pages/dean/section-management/SectionGridCard';
 import SectionWizardModal from '@pages/dean/section-management/SectionWizardModal';
@@ -44,7 +43,6 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)' },
     { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)' },
     { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)' },
-    { key: 'preset_section', label: 'Preset Section (Code or Label)', hint: 'e.g. SEC-101 or BSCS 1-A (section code or label to copy preset grading schema from, optional)' },
     { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)' },
     { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'e.g. Prelim:30(Quizzes:30,Class Standing:30,Major Exam:40); Midterm:30(...); Final:40(...) or Prelim:30,Midterm:30,Final:40 (optional)' }
 ];
@@ -53,14 +51,16 @@ export default function SectionManagement() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [activeFilters, setActiveFilters] = useState<SectionFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [createFacultyId, setCreateFacultyId] = useState<string | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [copySourceId, setCopySourceId] = useState<string | null>(null);
 
     const editSectionId = searchParams.get('editSectionId') || searchParams.get('edit');
+    const isCreateParam = searchParams.get('createSection') === 'true' || searchParams.get('create') === 'true';
+    const paramFacultyId = searchParams.get('facultyId');
 
     useEffect(() => {
         if (editSectionId) {
@@ -70,8 +70,18 @@ export default function SectionManagement() {
             nextParams.delete('editSectionId');
             nextParams.delete('edit');
             setSearchParams(nextParams, { replace: true });
+        } else if (isCreateParam || paramFacultyId) {
+            if (paramFacultyId) {
+                setCreateFacultyId(paramFacultyId);
+            }
+            setIsCreateOpen(true);
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.delete('createSection');
+            nextParams.delete('create');
+            nextParams.delete('facultyId');
+            setSearchParams(nextParams, { replace: true });
         }
-    }, [editSectionId, searchParams, setSearchParams]);
+    }, [editSectionId, isCreateParam, paramFacultyId, searchParams, setSearchParams]);
 
     const filterMethods = useForm<SectionFilterValues>({
         defaultValues: {
@@ -102,12 +112,7 @@ export default function SectionManagement() {
         setSelectedId(null);
     }
 
-    function handleOpenCopySetup(id: string) {
-        setCopySourceId(id);
-    }
-
     const { columnDefs, tableActionConfig } = useSectionTableConfig({
-        onCopySetup: handleOpenCopySetup,
         onEdit: handleOpenUpdate,
         onRequestDeleteRow: function() {},
         onView: handleOpenView
@@ -179,7 +184,6 @@ export default function SectionManagement() {
                         <SectionGridCard
                             isSelected={isSelected}
                             row={item}
-                            onCopySetup={handleOpenCopySetup}
                             onEdit={handleOpenUpdate}
                             onRequestDelete={onRequestDeleteRow}
                             onToggleSelect={onToggleSelect}
@@ -209,11 +213,14 @@ export default function SectionManagement() {
             {/* Create Wizard Modal */}
             <SectionWizardModal
                 open={isCreateOpen}
+                initialFacultyId={createFacultyId}
                 onClose={function() {
                     setIsCreateOpen(false);
+                    setCreateFacultyId(null);
                 }}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
+                    setCreateFacultyId(null);
                 }}
             />
 
@@ -264,17 +271,6 @@ export default function SectionManagement() {
                     status: row.status,
                     term_label: row.term_label
                 })}
-                onSuccess={function() {
-                    setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
-                }}
-            />
-
-            <CopySectionSetupModal
-                open={copySourceId !== null}
-                sourceSectionId={copySourceId}
-                onClose={function() {
-                    setCopySourceId(null);
-                }}
                 onSuccess={function() {
                     setActiveFilters((prev) => ({ ...prev } as SectionFilterValues));
                 }}

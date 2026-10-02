@@ -1,6 +1,6 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
-import { CopyIcon, EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import { EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { SectionListRow } from '@type/section.type';
 import { formatTermLabel } from '@utils/term.util';
 
@@ -10,7 +10,6 @@ export interface SectionGridCardProps {
     onToggleSelect: () => void;
     onView: (id: string) => void;
     onEdit: (id: string) => void;
-    onCopySetup: (id: string) => void;
     onRequestDelete: (id: string) => void;
 }
 
@@ -28,7 +27,6 @@ export default function SectionGridCard({
     onToggleSelect,
     onView,
     onEdit,
-    onCopySetup,
     onRequestDelete
 }: SectionGridCardProps) {
     const hasFaculty = Boolean(row.faculty_id && row.faculty_name);
@@ -57,13 +55,7 @@ export default function SectionGridCard({
                     onClick: () => onRequestDelete(row.id)
                 }
             ]
-            : []),
-        {
-            key: 'copy',
-            label: 'Copy Grading Setup',
-            icon: <CopyIcon size={18} weight="bold" />,
-            onClick: () => onCopySetup(row.id)
-        }
+            : [])
     ];
 
     return (

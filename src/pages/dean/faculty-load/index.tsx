@@ -10,7 +10,7 @@ import { FacultyLoadFilterValues, FacultyLoadRow } from '@type/faculty-load.type
 import { SortStringDto } from '@type/http.type';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const LOAD_FILTER_FORM_ID = 'filter-faculty-load-form';
 
@@ -25,6 +25,7 @@ const LOAD_SORT_COLUMNS: SortColumn[] = [
 const defaultLoadFilters: FacultyLoadFilterValues = { term_id: '' };
 
 export default function FacultyLoadManagement() {
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const queryFacultyId = searchParams.get('facultyId');
 
@@ -36,7 +37,6 @@ export default function FacultyLoadManagement() {
     // Detail Stepper Modal state
     const [selectedFacultyId, setSelectedFacultyId] = useState<string | null>(queryFacultyId);
     const [isDetailOpen, setIsDetailOpen] = useState(Boolean(queryFacultyId));
-    const [isDetailReadOnly, setIsDetailReadOnly] = useState(true);
 
     const loadFilterMethods = useForm<FacultyLoadFilterValues>({
         defaultValues: defaultLoadFilters
@@ -44,15 +44,12 @@ export default function FacultyLoadManagement() {
 
     const handleOpenView = useCallback((facultyId: string) => {
         setSelectedFacultyId(facultyId);
-        setIsDetailReadOnly(true);
         setIsDetailOpen(true);
     }, []);
 
     const handleOpenEdit = useCallback((facultyId: string) => {
-        setSelectedFacultyId(facultyId);
-        setIsDetailReadOnly(false);
-        setIsDetailOpen(true);
-    }, []);
+        navigate(`/dean/section-management?createSection=true&facultyId=${facultyId}`);
+    }, [navigate]);
 
     const { columnDefs: loadColumnDefs, tableActionConfig } = useFacultyLoadTableConfig({
         onEdit: handleOpenEdit,
