@@ -19,17 +19,19 @@ import { AcademicYearWizardFormValues, WizardTermItem } from '@type/school-year.
 import { TermTypeOption } from '@type/term/term-type.type';
 import { formatDate } from '@utils/date.util';
 import { useEffect, useState } from 'react';
-import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import { DEFAULT_GRADING_PERIODS, distributeDatesAcrossPeriods } from './wizard.constants';
 
 interface Step2TermsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
+    setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 export default function Step2TermsConfig({
     control,
-    disabled = false
+    disabled = false,
+    setValue
 }: Step2TermsConfigProps) {
     const [termTypes, setTermTypes] = useState<TermTypeOption[]>([]);
     const [isLoadingTypes, setIsLoadingTypes] = useState(false);
@@ -39,7 +41,7 @@ export default function Step2TermsConfig({
     const syEndDate = useWatch({ control, name: 'end_date' });
     const syEvaluationScope = useWatch({ control, name: 'evaluation_scope' }) || 'Period';
 
-    const { fields, append, remove, update } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: 'terms'
     });
@@ -169,7 +171,10 @@ export default function Step2TermsConfig({
     }
 
     function handleUpdateTermDate(index: number, field: 'start_date' | 'end_date', value: string) {
-        const current = { ...(watchedTerms[index] || fields[index]), [field]: value };
+        setValue(`terms.${index}.${field}`, value, { shouldDirty: true });
+
+        const currentTerm = watchedTerms[index] || fields[index];
+        const current = { ...currentTerm, [field]: value };
 
         // When end_date is updated, check if succeeding term conflicts and auto-adjust
         if (field === 'end_date') {
@@ -184,24 +189,22 @@ export default function Step2TermsConfig({
                     nextEnd.setMonth(nextEnd.getMonth() + 4);
                     formattedNextEnd = formatDate(nextEnd);
                 }
-                const updatedNext = {
-                    ...next,
-                    end_date: formattedNextEnd,
-                    start_date: formattedNextStart
-                };
-                if (updatedNext.grading_periods?.length) {
+                setValue(`terms.${index + 1}.start_date`, formattedNextStart, { shouldDirty: true });
+                setValue(`terms.${index + 1}.end_date`, formattedNextEnd, { shouldDirty: true });
+
+                if (next.grading_periods?.length) {
                     const nextDist = distributeDatesAcrossPeriods(
                         formattedNextStart,
                         formattedNextEnd,
-                        updatedNext.grading_periods.length
+                        next.grading_periods.length
                     );
-                    updatedNext.grading_periods = updatedNext.grading_periods.map((gp, gIdx) => ({
+                    const updatedNextPeriods = next.grading_periods.map((gp, gIdx) => ({
                         ...gp,
                         end_date: nextDist[gIdx]?.end_date || formattedNextEnd,
                         start_date: nextDist[gIdx]?.start_date || formattedNextStart
                     }));
+                    setValue(`terms.${index + 1}.grading_periods`, updatedNextPeriods, { shouldDirty: true });
                 }
-                update(index + 1, updatedNext);
             }
         }
 
@@ -212,14 +215,13 @@ export default function Step2TermsConfig({
                 current.end_date,
                 current.grading_periods.length
             );
-            current.grading_periods = current.grading_periods.map((gp, gIdx) => ({
+            const updatedCurrentPeriods = current.grading_periods.map((gp, gIdx) => ({
                 ...gp,
                 end_date: distributed[gIdx]?.end_date || current.end_date,
                 start_date: distributed[gIdx]?.start_date || current.start_date
             }));
+            setValue(`terms.${index}.grading_periods`, updatedCurrentPeriods, { shouldDirty: true });
         }
-
-        update(index, current);
     }
 
     return (
@@ -228,10 +230,10 @@ export default function Step2TermsConfig({
                 <div className="flex justify-end items-center gap-2">
                     {fields.length === 0 && (
                         <CommonButton
-                            color="inherit"
+                            color="primary"
                             size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                            startIcon={<CalendarPlusIcon className="w-4 h-4" />}
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                            startIcon={<CalendarPlusIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                             variant="outlined"
                             onClick={handleAutoPopulateSemesters}
                             title="Preset 2 Semesters"
@@ -334,14 +336,11 @@ export default function Step2TermsConfig({
                                             title="Reset Term Dates to Blank"
                                             type="button"
                                             onClick={() => {
-                                                update(index, {
-                                                    ...currentTerm,
-                                                    start_date: '',
-                                                    end_date: '',
-                                                    enrollment_start_date: '',
-                                                    enrollment_end_date: '',
-                                                    grading_deadline: ''
-                                                });
+                                                setValue(`terms.${index}.start_date`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.end_date`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.enrollment_start_date`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.enrollment_end_date`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.grading_deadline`, '', { shouldDirty: true });
                                             }}
                                         >
                                             <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
@@ -418,12 +417,13 @@ export default function Step2TermsConfig({
                                         onChange={(e) => {
                                             const newLabel = e.target.value;
                                             const matched = termTypes.find((t) => t.label.toLowerCase() === newLabel.trim().toLowerCase());
-                                            update(index, {
-                                                ...currentTerm,
-                                                term_type_code: matched?.code || newLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                                                term_type_id: matched?.id || '',
-                                                term_type_label: newLabel
-                                            });
+                                            setValue(`terms.${index}.term_type_label`, newLabel, { shouldDirty: true });
+                                            setValue(
+                                                `terms.${index}.term_type_code`,
+                                                matched?.code || newLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                                                { shouldDirty: true }
+                                            );
+                                            setValue(`terms.${index}.term_type_id`, matched?.id || '', { shouldDirty: true });
                                         }}
                                     />
                                     <datalist id="term-type-suggestions">
@@ -476,10 +476,7 @@ export default function Step2TermsConfig({
                                         size="small"
                                         value={currentTerm.max_units ?? 24}
                                         onChange={(val) => {
-                                            update(index, {
-                                                ...currentTerm,
-                                                max_units: val ?? 0
-                                            });
+                                            setValue(`terms.${index}.max_units`, val ?? 0, { shouldDirty: true });
                                         }}
                                     />
                                 </div>
@@ -494,10 +491,7 @@ export default function Step2TermsConfig({
                                         disabled={disabled}
                                         value={currentTerm.enrollment_start_date || ''}
                                         onChange={(val) => {
-                                            update(index, {
-                                                ...currentTerm,
-                                                enrollment_start_date: val
-                                            });
+                                            setValue(`terms.${index}.enrollment_start_date`, val, { shouldDirty: true });
                                         }}
                                     />
                                 </div>
@@ -512,10 +506,7 @@ export default function Step2TermsConfig({
                                         disabled={disabled}
                                         value={currentTerm.enrollment_end_date || ''}
                                         onChange={(val) => {
-                                            update(index, {
-                                                ...currentTerm,
-                                                enrollment_end_date: val
-                                            });
+                                            setValue(`terms.${index}.enrollment_end_date`, val, { shouldDirty: true });
                                         }}
                                     />
                                 </div>
@@ -530,10 +521,7 @@ export default function Step2TermsConfig({
                                         disabled={disabled}
                                         value={currentTerm.grading_deadline || ''}
                                         onChange={(val) => {
-                                            update(index, {
-                                                ...currentTerm,
-                                                grading_deadline: val
-                                            });
+                                            setValue(`terms.${index}.grading_deadline`, val, { shouldDirty: true });
                                         }}
                                     />
                                 </div>
@@ -554,10 +542,7 @@ export default function Step2TermsConfig({
                                         size="medium"
                                         value={currentTerm.evaluation_scope || 'Period'}
                                         onChange={(e) => {
-                                            update(index, {
-                                                ...currentTerm,
-                                                evaluation_scope: (e.target.value as any) || 'Period'
-                                            });
+                                            setValue(`terms.${index}.evaluation_scope`, (e.target.value as any) || 'Period', { shouldDirty: true });
                                         }}
                                     />
                                 </div>

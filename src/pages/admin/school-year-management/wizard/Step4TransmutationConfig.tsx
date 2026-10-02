@@ -13,7 +13,7 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
 import { useState } from 'react';
-import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
     DEFAULT_TRANSMUTATION_ROWS,
     isSpecialGradeRow,
@@ -24,14 +24,16 @@ import {
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
+    setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 export default function Step4TransmutationConfig({
     control,
-    disabled = false
+    disabled = false,
+    setValue
 }: Step4TransmutationConfigProps) {
     const [deleteRungTarget, setDeleteRungTarget] = useState<{ index: number; label: string } | null>(null);
-    const { fields, append, remove, replace, update } = useFieldArray({
+    const { fields, append, remove, replace } = useFieldArray({
         control,
         name: 'transmutation_rows'
     });
@@ -64,16 +66,11 @@ export default function Step4TransmutationConfig({
     }
 
     function handleResetRowBlank(index: number) {
-        const r = rows[index];
-        if (!r) return;
-        update(index, {
-            ...r,
-            description: '',
-            label: '',
-            max_percentage: null,
-            min_percentage: null,
-            transmuted_grade: null
-        });
+        setValue(`transmutation_rows.${index}.description`, '', { shouldDirty: true });
+        setValue(`transmutation_rows.${index}.label`, '', { shouldDirty: true });
+        setValue(`transmutation_rows.${index}.max_percentage`, null, { shouldDirty: true });
+        setValue(`transmutation_rows.${index}.min_percentage`, null, { shouldDirty: true });
+        setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
     }
 
     function handleUpdatePercentage(
@@ -148,7 +145,7 @@ export default function Step4TransmutationConfig({
             }
         }
 
-        replace(updatedRows);
+        setValue('transmutation_rows', updatedRows, { shouldDirty: true });
     }
 
     return (
@@ -189,10 +186,10 @@ export default function Step4TransmutationConfig({
 
                         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                             <CommonButton
-                                color="inherit"
+                                color="primary"
                                 size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                                 variant="outlined"
                                 onClick={handleResetBlank}
                                 title="Reset to Blank"
@@ -310,14 +307,11 @@ export default function Step4TransmutationConfig({
                                         onChange={(e) => {
                                             const nextCond = e.target.value === 'conditional';
                                             const numeric = parseFloat(row.label);
-                                            update(index, {
-                                                ...row,
-                                                is_conditional: nextCond,
-                                                min_percentage: nextCond ? null : (row.min_percentage ?? 0),
-                                                max_percentage: nextCond ? null : (row.max_percentage ?? 100),
-                                                transmuted_grade: nextCond ? null : (isNaN(numeric) ? null : numeric),
-                                                special_code: nextCond ? row.label.trim().toUpperCase() : null
-                                            });
+                                            setValue(`transmutation_rows.${index}.is_conditional`, nextCond, { shouldDirty: true });
+                                            setValue(`transmutation_rows.${index}.min_percentage`, nextCond ? null : (row.min_percentage ?? 0), { shouldDirty: true });
+                                            setValue(`transmutation_rows.${index}.max_percentage`, nextCond ? null : (row.max_percentage ?? 100), { shouldDirty: true });
+                                            setValue(`transmutation_rows.${index}.transmuted_grade`, nextCond ? null : (isNaN(numeric) ? null : numeric), { shouldDirty: true });
+                                            setValue(`transmutation_rows.${index}.special_code`, nextCond ? row.label.trim().toUpperCase() : null, { shouldDirty: true });
                                         }}
                                     >
                                         <option value="fixed">Fixed Range</option>
@@ -337,7 +331,7 @@ export default function Step4TransmutationConfig({
                                         placeholder="e.g. Excellent, Incomplete, Dropped"
                                         size="small"
                                         value={row.description || ''}
-                                        onChange={(e) => update(index, { ...row, description: e.target.value })}
+                                        onChange={(e) => setValue(`transmutation_rows.${index}.description`, e.target.value, { shouldDirty: true })}
                                     />
                                 </div>
 
@@ -355,7 +349,7 @@ export default function Step4TransmutationConfig({
                                         } disabled:opacity-60`}
                                         disabled={disabled}
                                         type="button"
-                                        onClick={() => update(index, { ...row, is_passing: !row.is_passing })}
+                                        onClick={() => setValue(`transmutation_rows.${index}.is_passing`, !row.is_passing, { shouldDirty: true })}
                                     >
                                         {row.is_passing ? '✓ Passing' : '✕ Failing'}
                                     </button>
@@ -378,12 +372,9 @@ export default function Step4TransmutationConfig({
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                update(index, {
-                                                    ...row,
-                                                    label: val,
-                                                    transmuted_grade: null,
-                                                    special_code: val.trim().toUpperCase()
-                                                });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.special_code`, val.trim().toUpperCase(), { shouldDirty: true });
                                             }}
                                         />
                                     </div>
@@ -405,12 +396,9 @@ export default function Step4TransmutationConfig({
                                             onChange={(e) => {
                                                 const val = e.target.value;
                                                 const numeric = parseFloat(val);
-                                                update(index, {
-                                                    ...row,
-                                                    label: val,
-                                                    transmuted_grade: isNaN(numeric) ? null : numeric,
-                                                    special_code: null
-                                                });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.transmuted_grade`, isNaN(numeric) ? null : numeric, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.special_code`, null, { shouldDirty: true });
                                             }}
                                         />
                                     </div>

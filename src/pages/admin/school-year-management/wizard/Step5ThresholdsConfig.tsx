@@ -12,12 +12,13 @@ import {
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
 import { useState } from 'react';
-import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import { DEFAULT_ACADEMIC_THRESHOLDS } from './wizard.constants';
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
+    setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 const CATEGORY_OPTIONS: { label: string; value: AcademicThresholdCategory }[] = [
@@ -28,10 +29,11 @@ const CATEGORY_OPTIONS: { label: string; value: AcademicThresholdCategory }[] = 
 
 export default function Step5ThresholdsConfig({
     control,
-    disabled = false
+    disabled = false,
+    setValue
 }: Step5ThresholdsConfigProps) {
     const [deleteThresholdTarget, setDeleteThresholdTarget] = useState<{ index: number; label: string } | null>(null);
-    const { append, remove, replace, update } = useFieldArray({
+    const { append, remove, replace } = useFieldArray({
         control,
         name: 'thresholds'
     });
@@ -59,17 +61,12 @@ export default function Step5ThresholdsConfig({
     }
 
     function handleResetThresholdBlank(idx: number) {
-        const item = thresholds[idx];
-        if (!item) return;
-        update(idx, {
-            ...item,
-            code: '',
-            label: '',
-            max_gwa: '',
-            min_gwa: null,
-            min_subject_grade: null,
-            scholarship_discount_pct: null
-        });
+        setValue(`thresholds.${idx}.code`, '', { shouldDirty: true });
+        setValue(`thresholds.${idx}.label`, '', { shouldDirty: true });
+        setValue(`thresholds.${idx}.max_gwa`, '', { shouldDirty: true });
+        setValue(`thresholds.${idx}.min_gwa`, null, { shouldDirty: true });
+        setValue(`thresholds.${idx}.min_subject_grade`, null, { shouldDirty: true });
+        setValue(`thresholds.${idx}.scholarship_discount_pct`, null, { shouldDirty: true });
     }
 
     return (
@@ -98,10 +95,10 @@ export default function Step5ThresholdsConfig({
 
                         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                             <CommonButton
-                                color="inherit"
+                                color="primary"
                                 size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                                 variant="outlined"
                                 onClick={handleResetBlank}
                                 title="Reset to Blank"
@@ -209,10 +206,7 @@ export default function Step5ThresholdsConfig({
                                             value={item.category}
                                             onChange={(e) => {
                                                 const cat = e.target.value as AcademicThresholdCategory;
-                                                update(idx, {
-                                                    ...item,
-                                                    category: cat
-                                                });
+                                                setValue(`thresholds.${idx}.category`, cat, { shouldDirty: true });
                                             }}
                                         >
                                             {CATEGORY_OPTIONS.map((c) => (
@@ -234,7 +228,7 @@ export default function Step5ThresholdsConfig({
                                             placeholder="e.g. Summa Cum Laude, Full Scholar"
                                             size="small"
                                             value={item.label}
-                                            onChange={(e) => update(idx, { ...item, label: e.target.value })}
+                                            onChange={(e) => setValue(`thresholds.${idx}.label`, e.target.value, { shouldDirty: true })}
                                         />
                                     </div>
                                 </div>
@@ -252,7 +246,7 @@ export default function Step5ThresholdsConfig({
                                             placeholder="e.g. summa_cum_laude"
                                             size="small"
                                             value={item.code}
-                                            onChange={(e) => update(idx, { ...item, code: e.target.value })}
+                                            onChange={(e) => setValue(`thresholds.${idx}.code`, e.target.value, { shouldDirty: true })}
                                         />
                                     </div>
 
@@ -269,7 +263,7 @@ export default function Step5ThresholdsConfig({
                                             } disabled:opacity-60`}
                                             disabled={disabled}
                                             type="button"
-                                            onClick={() => update(idx, { ...item, is_active: !item.is_active })}
+                                            onClick={() => setValue(`thresholds.${idx}.is_active`, !item.is_active, { shouldDirty: true })}
                                         >
                                             {item.is_active ? '✓ Active Threshold' : '✕ Inactive'}
                                         </button>
@@ -293,10 +287,11 @@ export default function Step5ThresholdsConfig({
                                             step={0.01}
                                             value={item.min_gwa ?? ''}
                                             onChange={(val) =>
-                                                update(idx, {
-                                                    ...item,
-                                                    min_gwa: val === undefined ? null : val
-                                                })
+                                                setValue(
+                                                    `thresholds.${idx}.min_gwa`,
+                                                    val === undefined ? null : val,
+                                                    { shouldDirty: true }
+                                                )
                                             }
                                         />
                                     </div>
@@ -315,7 +310,7 @@ export default function Step5ThresholdsConfig({
                                             size="small"
                                             step={0.01}
                                             value={item.max_gwa ?? ''}
-                                            onChange={(val) => update(idx, { ...item, max_gwa: val === undefined ? '' : val })}
+                                            onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined ? '' : val, { shouldDirty: true })}
                                         />
                                     </div>
                                 </div>
@@ -337,10 +332,11 @@ export default function Step5ThresholdsConfig({
                                             step={0.01}
                                             value={item.min_subject_grade ?? ''}
                                             onChange={(val) =>
-                                                update(idx, {
-                                                    ...item,
-                                                    min_subject_grade: val === undefined ? null : val
-                                                })
+                                                setValue(
+                                                    `thresholds.${idx}.min_subject_grade`,
+                                                    val === undefined ? null : val,
+                                                    { shouldDirty: true }
+                                                )
                                             }
                                         />
                                     </div>
@@ -352,7 +348,7 @@ export default function Step5ThresholdsConfig({
                                                 className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700 shrink-0"
                                                 disabled={disabled}
                                                 type="checkbox"
-                                                onChange={(e) => update(idx, { ...item, requires_no_failing: e.target.checked })}
+                                                onChange={(e) => setValue(`thresholds.${idx}.requires_no_failing`, e.target.checked, { shouldDirty: true })}
                                             />
                                             <span className="truncate">No failing grades permitted</span>
                                             <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />

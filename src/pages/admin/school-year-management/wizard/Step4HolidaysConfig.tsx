@@ -18,13 +18,14 @@ import {
     WizardCalendarExceptionItem
 } from '@type/school-year.type';
 import { useState } from 'react';
-import { Control, useFieldArray, useWatch } from 'react-hook-form';
+import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
 import { generatePresetHolidays } from './wizard.constants';
 
 interface Step4HolidaysConfigProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
+    setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
 const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = [
@@ -37,13 +38,14 @@ const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = [
 
 export default function Step4HolidaysConfig({
     control,
-    disabled = false
+    disabled = false,
+    setValue
 }: Step4HolidaysConfigProps) {
     const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
     const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
     const [deleteExceptionTarget, setDeleteExceptionTarget] = useState<{ index: number; title: string } | null>(null);
 
-    const { fields, append, remove, replace, update } = useFieldArray({
+    const { fields, append, remove, replace } = useFieldArray({
         control,
         name: 'holidays'
     });
@@ -75,15 +77,10 @@ export default function Step4HolidaysConfig({
     }
 
     function handleResetRowBlank(index: number) {
-        const current = holidays[index];
-        if (!current) return;
-        update(index, {
-            ...current,
-            title: '',
-            start_date: '',
-            end_date: '',
-            description: ''
-        });
+        setValue(`holidays.${index}.title`, '', { shouldDirty: true });
+        setValue(`holidays.${index}.start_date`, '', { shouldDirty: true });
+        setValue(`holidays.${index}.end_date`, '', { shouldDirty: true });
+        setValue(`holidays.${index}.description`, '', { shouldDirty: true });
     }
 
     const holidayCount = holidays.filter((h) => h.exception_type === 'Holiday').length;
@@ -114,30 +111,33 @@ export default function Step4HolidaysConfig({
                 {!disabled && (
                     <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-700/40">
                         <CommonButton
-                            color="inherit"
+                            color="primary"
                             size="small"
-                            startIcon={<SparkleIcon className="w-3.5 h-3.5 text-amber-500" />}
+                            startIcon={<SparkleIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                             variant="outlined"
+                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                             onClick={handleLoadPresetHolidays}
                         >
                             Load Preset Holidays
                         </CommonButton>
 
                         <CommonButton
-                            color="inherit"
+                            color="primary"
                             size="small"
-                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                             variant="outlined"
+                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                             onClick={handleResetBlank}
                         >
                             Reset to Blank
                         </CommonButton>
 
                         <CommonButton
-                            color="inherit"
+                            color="primary"
                             size="small"
-                            startIcon={<GearIcon className="w-3.5 h-3.5 text-slate-500" />}
+                            startIcon={<GearIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
                             variant="outlined"
+                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                             onClick={() => setIsManageTypesOpen(true)}
                         >
                             Configure Types
@@ -200,7 +200,7 @@ export default function Step4HolidaysConfig({
                                             size="small"
                                             value={current.title || ''}
                                             onChange={(e) => {
-                                                update(idx, { ...current, title: e.target.value });
+                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true });
                                             }}
                                         />
                                     </div>
@@ -247,10 +247,11 @@ export default function Step4HolidaysConfig({
                                             disabled={disabled}
                                             value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                             onChange={(e) => {
-                                                update(idx, {
-                                                    ...current,
-                                                    exception_type: e.target.value as CalendarExceptionType
-                                                });
+                                                setValue(
+                                                    `holidays.${idx}.exception_type`,
+                                                    e.target.value as CalendarExceptionType,
+                                                    { shouldDirty: true }
+                                                );
                                             }}
                                         >
                                             {optionsToRender.map((opt) => (
@@ -272,10 +273,7 @@ export default function Step4HolidaysConfig({
                                                 disabled={disabled}
                                                 type="checkbox"
                                                 onChange={(e) => {
-                                                    update(idx, {
-                                                        ...current,
-                                                        affects_attendance: e.target.checked
-                                                    });
+                                                    setValue(`holidays.${idx}.affects_attendance`, e.target.checked, { shouldDirty: true });
                                                 }}
                                             />
                                             <span className="font-medium">Class Suspended</span>
@@ -290,7 +288,7 @@ export default function Step4HolidaysConfig({
                                             disabled={disabled}
                                             value={current.start_date || ''}
                                             onChange={(val) => {
-                                                update(idx, { ...current, start_date: val });
+                                                setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true });
                                             }}
                                         />
                                     </div>
@@ -303,7 +301,7 @@ export default function Step4HolidaysConfig({
                                             disabled={disabled}
                                             value={current.end_date || ''}
                                             onChange={(val) => {
-                                                update(idx, { ...current, end_date: val });
+                                                setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true });
                                             }}
                                         />
                                     </div>
@@ -320,7 +318,7 @@ export default function Step4HolidaysConfig({
                                         size="small"
                                         value={current.description || ''}
                                         onChange={(e) => {
-                                            update(idx, { ...current, description: e.target.value });
+                                            setValue(`holidays.${idx}.description`, e.target.value, { shouldDirty: true });
                                         }}
                                     />
                                 </div>

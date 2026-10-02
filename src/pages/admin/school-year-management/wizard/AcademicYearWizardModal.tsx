@@ -617,11 +617,11 @@ export default function AcademicYearWizardModal({
                         {/* Actions positioned below the title */}
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:pl-13">
                             <CommonButton
-                                color="inherit"
+                                color="primary"
                                 size="small"
-                                startIcon={<EyeIcon className="w-4 h-4" />}
+                                startIcon={<EyeIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                 variant="outlined"
-                                className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                 title="Preview"
                                 aria-label="Preview"
                                 onClick={() => setIsPreviewModalOpen(true)}
@@ -631,11 +631,11 @@ export default function AcademicYearWizardModal({
 
                             {!isReadOnly && (
                                 <CommonButton
-                                    color="inherit"
+                                    color="primary"
                                     size="small"
-                                    startIcon={<FastForwardIcon className="w-4 h-4" />}
+                                    startIcon={<FastForwardIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                     variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                     title="Roll Forward +1 Year"
                                     aria-label="Roll Forward +1 Year"
                                     onClick={handleRollForwardOneYear}
@@ -646,11 +646,11 @@ export default function AcademicYearWizardModal({
 
                             {schoolYearId && (
                                 <CommonButton
-                                    color="inherit"
+                                    color="primary"
                                     size="small"
-                                    startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                                    startIcon={<ClockCounterClockwiseIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                     variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                     title="History"
                                     aria-label="History"
                                     onClick={() => setIsHistoryModalOpen(true)}
@@ -663,9 +663,9 @@ export default function AcademicYearWizardModal({
                                 <CommonButton
                                     color="primary"
                                     size="small"
-                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                    startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                     variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                     title="Edit"
                                     aria-label="Edit"
                                     onClick={() => setIsReadOnly(false)}
@@ -727,6 +727,7 @@ export default function AcademicYearWizardModal({
                             <Step2TermsConfig
                                 control={control}
                                 disabled={isReadOnly}
+                                setValue={setValue}
                             />
                         )}
 
@@ -742,6 +743,7 @@ export default function AcademicYearWizardModal({
                             <Step4HolidaysConfig
                                 control={control}
                                 disabled={isReadOnly}
+                                setValue={setValue}
                             />
                         )}
 
@@ -749,6 +751,7 @@ export default function AcademicYearWizardModal({
                             <Step4TransmutationConfig
                                 control={control}
                                 disabled={isReadOnly}
+                                setValue={setValue}
                             />
                         )}
 
@@ -756,6 +759,7 @@ export default function AcademicYearWizardModal({
                             <Step5ThresholdsConfig
                                 control={control}
                                 disabled={isReadOnly}
+                                setValue={setValue}
                             />
                         )}
                     </>

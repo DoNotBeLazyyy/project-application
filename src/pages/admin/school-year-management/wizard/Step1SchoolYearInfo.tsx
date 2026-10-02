@@ -49,6 +49,7 @@ export default function Step1SchoolYearInfo({
 
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
+    const prevDatesRef = useRef({ end: '', start: '' });
 
     function handleClearForm() {
         setValue('start_date', '', { shouldValidate: false, shouldDirty: true });
@@ -58,6 +59,7 @@ export default function Step1SchoolYearInfo({
         setValue('is_active', false, { shouldValidate: false, shouldDirty: true });
         userEditedCodeRef.current = false;
         userEditedLabelRef.current = false;
+        prevDatesRef.current = { end: '', start: '' };
         if (onClearSourceYear) {
             onClearSourceYear();
         }
@@ -66,10 +68,22 @@ export default function Step1SchoolYearInfo({
     useEffect(() => {
         userEditedCodeRef.current = false;
         userEditedLabelRef.current = false;
+        prevDatesRef.current = { end: '', start: '' };
     }, [sourceSchoolYear]);
 
     useEffect(() => {
         if (!startDate || !endDate) {
+            prevDatesRef.current = { end: endDate || '', start: startDate || '' };
+            return;
+        }
+
+        const datesChanged =
+            prevDatesRef.current.start !== startDate ||
+            prevDatesRef.current.end !== endDate;
+
+        prevDatesRef.current = { end: endDate, start: startDate };
+
+        if (!datesChanged && !sourceSchoolYear) {
             return;
         }
 
@@ -125,7 +139,7 @@ export default function Step1SchoolYearInfo({
         if (shouldPopulateLabel && label !== autoLabel) {
             setValue('label', autoLabel, { shouldValidate: true });
         }
-    }, [startDate, endDate, isNew, sourceSchoolYear, setValue, code, label]);
+    }, [startDate, endDate, isNew, sourceSchoolYear, setValue]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -139,10 +153,11 @@ export default function Step1SchoolYearInfo({
                 </div>
                 {!disabled && (
                     <CommonButton
-                        color="inherit"
+                        color="primary"
                         size="small"
-                        startIcon={<BroomIcon className="w-4 h-4" />}
+                        startIcon={<BroomIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                         variant="outlined"
+                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                         onClick={handleClearForm}
                         title="Clear form fields in this step"
                     >

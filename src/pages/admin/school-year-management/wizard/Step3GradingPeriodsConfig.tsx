@@ -576,7 +576,7 @@ export default function Step3GradingPeriodsConfig({
 
                                     return (
                                         <div
-                                            key={period.id || pIdx}
+                                            key={period.id || `term_${tIdx}_period_${pIdx}`}
                                             className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
                                                 isDuplicateName || hasPrecedingConflict || hasDateOrderError || isOutsideTerm || !isCompBalanced
                                                     ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
@@ -871,7 +871,7 @@ export default function Step3GradingPeriodsConfig({
                                                     <div className="space-y-2">
                                                         {components.map((comp, cIdx) => (
                                                             <div
-                                                                key={comp.id || cIdx}
+                                                                key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
                                                                 className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
                                                             >
                                                                 <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
