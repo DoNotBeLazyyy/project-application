@@ -38,6 +38,10 @@ export const adminRoutes: RouteObject[] = [
             },
             {
                 element: <Navigate replace to="/admin/school-years" />,
+                path: 'school-year-management'
+            },
+            {
+                element: <Navigate replace to="/admin/school-years" />,
                 path: 'transmutation'
             },
             {
