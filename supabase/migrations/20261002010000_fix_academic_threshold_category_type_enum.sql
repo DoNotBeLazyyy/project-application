@@ -325,7 +325,7 @@ BEGIN
                 is_active
             ) VALUES (
                 v_sy_id,
-                (v_thresh_elem->>'category')::public.academic_threshold_category,
+                COALESCE(NULLIF(btrim(v_thresh_elem->>'category'), ''), 'Honor'),
                 btrim(v_thresh_elem->>'code'),
                 btrim(v_thresh_elem->>'label'),
                 NULLIF(v_thresh_elem->>'min_gwa', '')::numeric,
@@ -356,7 +356,7 @@ BEGIN
             ) VALUES (
                 v_sy_id,
                 btrim(v_holiday_elem->>'title'),
-                (v_holiday_elem->>'exception_type')::public.calendar_exception_type,
+                COALESCE(NULLIF(btrim(v_holiday_elem->>'exception_type'), ''), 'Holiday'),
                 (v_holiday_elem->>'start_date')::date,
                 (v_holiday_elem->>'end_date')::date,
                 COALESCE((v_holiday_elem->>'affects_attendance')::boolean, true),
