@@ -4,6 +4,7 @@ import FormLabel from '@components/form/FormLabel';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { formatFieldLabel, getFieldErrorMessage } from '@utils/form.util';
+import { useEffect, useMemo } from 'react';
 import { Control, FieldValues, useFormState } from 'react-hook-form';
 
 const COL_SPAN_CLASSES: Record<number, string> = {
@@ -43,6 +44,7 @@ interface CommonFormRowProps<T extends FieldValues> {
     field: FormFieldConfig<T>;
     hasHelper: boolean;
     helperPlacement: FormHelperPlacement;
+    isFirstError?: boolean;
 }
 
 /**
@@ -53,7 +55,8 @@ function CommonFormRow<T extends FieldValues>({
     control,
     field,
     hasHelper,
-    helperPlacement
+    helperPlacement,
+    isFirstError
 }: CommonFormRowProps<T>) {
     const name = field.name as string;
     const isOnLabel = helperPlacement === 'label';
@@ -82,10 +85,12 @@ function CommonFormRow<T extends FieldValues>({
         >
             {!isSelfLabelled && (
                 <FormLabel
+                    defaultOpenErrorTooltip={isFirstError}
                     description={hasHelper && isOnLabel
                         ? description
                         : undefined}
                     errorMessage={errorMessage}
+                    isFirstError={isFirstError}
                     isRequired={Boolean(field.rules?.required)}
                     label={field.label ?? formatFieldLabel(name)}
                 />
@@ -113,16 +118,43 @@ export default function CommonForm<T extends FieldValues>({
     hasHelper = true,
     helperPlacement = 'label'
 }: CommonFormProps<T>) {
+    const { errors, submitCount } = useFormState({ control });
+
+    // Determine the first field in form order that currently has a validation error
+    const firstErrorField = useMemo(() => {
+        return fields.find((field) => {
+            const err = getFieldErrorMessage(errors, field.name as string);
+            return Boolean(err);
+        })?.name as string | undefined;
+    }, [fields, errors]);
+
+    // Automatically focus and scroll to the first invalid field upon validation failure
+    useEffect(() => {
+        if (!firstErrorField) return;
+
+        const selector = `[name="${firstErrorField}"], #${firstErrorField}`;
+        const targetElement = document.querySelector<HTMLElement>(selector) ||
+            document.querySelector<HTMLElement>('[aria-invalid="true"], .Mui-error input, .Mui-error textarea, .Mui-error');
+
+        if (targetElement) {
+            targetElement.focus({ preventScroll: false });
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [firstErrorField, submitCount]);
+
     return (
         <form {...formProps}>
             <div className={containerClassName}>
                 {fields.map(function(field) {
+                    const isFirstError = field.name === firstErrorField;
+
                     return (
                         <CommonFormRow
                             control={control}
                             field={field}
                             hasHelper={hasHelper}
                             helperPlacement={helperPlacement}
+                            isFirstError={isFirstError}
                             key={field.name as string}
                         />
                     );

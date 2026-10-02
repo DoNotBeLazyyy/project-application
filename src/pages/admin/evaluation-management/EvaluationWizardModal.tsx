@@ -3,6 +3,8 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
+import CommonPromptModal from '@components/modal/CommonPromptModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
@@ -20,6 +22,7 @@ import {
     PlusCircleIcon,
     SlidersIcon,
     TrashIcon,
+    WarningIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
@@ -186,6 +189,8 @@ export default function EvaluationWizardModal({
     onSwitchToEdit
 }: EvaluationWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+    const [deleteQuestionTarget, setDeleteQuestionTarget] = useState<{ index: number; text: string } | null>(null);
     const { control, handleSubmit, trigger } = methods;
 
     useEffect(() => {
@@ -251,8 +256,12 @@ export default function EvaluationWizardModal({
     }
 
     function handleCloseModal() {
-        setCurrentStep(1);
-        onClose();
+        if (!readOnly && methods.formState.isDirty) {
+            setIsConfirmCloseOpen(true);
+        } else {
+            setCurrentStep(1);
+            onClose();
+        }
     }
 
     const templateFields: FormFieldConfig<EvaluationTemplateForm>[] = [
@@ -477,7 +486,13 @@ export default function EvaluationWizardModal({
                                         key={fieldItem.id}
                                         total={fields.length}
                                         onMove={(fromIdx, toIdx) => move(fromIdx, toIdx)}
-                                        onRemove={(removeIdx) => remove(removeIdx)}
+                                        onRemove={(removeIdx) => {
+                                            const qText = methods.getValues(`questions.${removeIdx}.question_text` as const);
+                                            setDeleteQuestionTarget({
+                                                index: removeIdx,
+                                                text: qText ? `"${qText.length > 50 ? qText.slice(0, 50) + '...' : qText}"` : `Question #${removeIdx + 1}`
+                                            });
+                                        }}
                                     />
                                 ))
                             )}
@@ -540,6 +555,56 @@ export default function EvaluationWizardModal({
                     )}
                 </div>
             </div>
+
+            {/* Delete Question Prompt */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteQuestionTarget)}
+                mainContent={{
+                    title: 'Delete Evaluation Question?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete ${deleteQuestionTarget?.text || 'this question'}? This action cannot be undone.`
+                }}
+                open={Boolean(deleteQuestionTarget)}
+                onClose={() => setDeleteQuestionTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteQuestionTarget !== null) {
+                                remove(deleteQuestionTarget.index);
+                                setDeleteQuestionTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
+
+            {/* Unsaved Changes Confirmation Modal */}
+            <CommonPromptModal
+                isOpen={isConfirmCloseOpen}
+                mainContent={{ title: 'Discard unsaved changes?' }}
+                subContent={{ title: 'You have unsaved changes in this evaluation section. Are you sure you want to discard your changes and close?' }}
+                actionIconProps={{
+                    icon: WarningIcon,
+                    iconContainerClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                }}
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Keep Editing',
+                        onClick: () => setIsConfirmCloseOpen(false)
+                    },
+                    confirmProps: {
+                        children: 'Discard Changes',
+                        color: 'error',
+                        onClick: () => {
+                            setIsConfirmCloseOpen(false);
+                            setCurrentStep(1);
+                            onClose();
+                        }
+                    }
+                }}
+                onClose={() => setIsConfirmCloseOpen(false)}
+            />
         </CommonModal>
     );
 }

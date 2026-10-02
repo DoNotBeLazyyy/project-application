@@ -33,6 +33,10 @@ export type CommonInputProps = TextFieldProps & {
     // Whether the field is read-only
     readOnly?: boolean;
 
+    /** Whether to open the error tooltip by default */
+    defaultOpenErrorTooltip?: boolean;
+    isFirstError?: boolean;
+
     // Callback invoked after the built-in clear button empties the field
     onClear?: () => void;
 }
@@ -53,12 +57,14 @@ export type CommonInputProps = TextFieldProps & {
 const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     className,
     containerClassName,
+    defaultOpenErrorTooltip,
     error,
     fullWidth,
     hasClearButton = false,
     hasPasswordToggle,
     helperText,
     inputRef,
+    isFirstError,
     isRequired,
     isRoundedFull,
     label,
@@ -203,6 +209,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isRequired={isRequired}

@@ -1,6 +1,6 @@
 import {
-    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_SMALL, INPUT_HEIGHT_TOUCH, INPUT_PADDING_LARGE,
-    SURFACE_DISABLED
+    BORDER_NEUTRAL, buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_HEIGHT_MEDIUM, INPUT_HEIGHT_SMALL, INPUT_HEIGHT_TOUCH,
+    INPUT_PADDING_LARGE, INPUT_PADDING_MEDIUM, INPUT_PADDING_SMALL, SURFACE_DISABLED
 } from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 
@@ -16,14 +16,26 @@ export const inputOverrides: ComponentTheme = {
             root: {
                 borderRadius: 'var(--mui-tokens-radius-md)',
                 boxSizing: 'border-box',
-                '&.Mui-disabled, &.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &:has(textarea[readonly]), &.common_input_readonly': {
+                '&.Mui-disabled': {
                     color: 'var(--mui-tokens-color-neutral-400)',
                     WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
                 },
-                '&.Mui-disabled .MuiInputAdornment-root svg, &.MuiInputBase-readOnly .MuiInputAdornment-root svg, &[readonly] .MuiInputAdornment-root svg, &:has(input[readonly]) .MuiInputAdornment-root svg, &:has(textarea[readonly]) .MuiInputAdornment-root svg, &.common_input_readonly .MuiInputAdornment-root svg, &.Mui-disabled .MuiSelect-icon, &.MuiInputBase-readOnly .MuiSelect-icon, &.common_input_readonly .MuiSelect-icon': {
+                '&.MuiInputBase-readOnly, &[readonly], &:has(input[readonly]), &:has(textarea[readonly]), &.common_input_readonly': {
+                    color: 'var(--mui-tokens-color-neutral-900, #0f172a)',
+                    WebkitTextFillColor: 'var(--mui-tokens-color-neutral-900, #0f172a)',
+                    backgroundColor: 'transparent !important',
+                    boxShadow: 'none !important',
+                    border: 'none !important',
+                    paddingLeft: '0 !important',
+                    paddingRight: '0 !important'
+                },
+                '&.Mui-disabled .MuiInputAdornment-root svg, &.Mui-disabled .MuiSelect-icon': {
                     color: 'var(--mui-tokens-color-neutral-400) !important'
                 },
-                '&.Mui-disabled .MuiChip-root, &.MuiInputBase-readOnly .MuiChip-root, &.common_input_readonly .MuiChip-root': {
+                '&.MuiInputBase-readOnly .MuiInputAdornment-root, &[readonly] .MuiInputAdornment-root, &:has(input[readonly]) .MuiInputAdornment-root, &:has(textarea[readonly]) .MuiInputAdornment-root, &.common_input_readonly .MuiInputAdornment-root, &.MuiInputBase-readOnly .MuiSelect-icon, &.common_input_readonly .MuiSelect-icon': {
+                    display: 'none !important'
+                },
+                '&.Mui-disabled .MuiChip-root': {
                     backgroundColor: 'var(--mui-tokens-color-common-white) !important',
                     borderColor: 'var(--mui-tokens-color-brand-500) !important',
                     color: 'var(--mui-tokens-color-brand-950) !important',
@@ -37,6 +49,22 @@ export const inputOverrides: ComponentTheme = {
                         color: 'var(--mui-tokens-color-brand-600) !important',
                         opacity: '0.4 !important',
                         pointerEvents: 'none'
+                    }
+                },
+                '&.MuiInputBase-readOnly .MuiChip-root, &.common_input_readonly .MuiChip-root': {
+                    backgroundColor: 'transparent !important',
+                    borderColor: 'transparent !important',
+                    color: 'var(--mui-tokens-color-neutral-900, #0f172a) !important',
+                    opacity: '1 !important',
+                    padding: 0,
+                    '& .MuiChip-label': {
+                        color: 'var(--mui-tokens-color-neutral-900, #0f172a) !important',
+                        opacity: '1 !important',
+                        padding: 0,
+                        WebkitTextFillColor: 'var(--mui-tokens-color-neutral-900, #0f172a) !important'
+                    },
+                    '& .MuiChip-deleteIcon': {
+                        display: 'none !important'
                     }
                 },
                 '&.MuiInputAdornment-positionStart': {
@@ -58,14 +86,20 @@ export const inputOverrides: ComponentTheme = {
                 style: ({ theme }) => ({
                     height: INPUT_HEIGHT_SMALL,
                     maxHeight: INPUT_HEIGHT_SMALL,
-                    padding: 'var(--mui-tokens-spacing-3)',
+                    padding: INPUT_PADDING_SMALL,
                     ...theme.typography.bodySmall,
                     '@media (pointer: coarse)': {
                         height: INPUT_HEIGHT_TOUCH,
                         maxHeight: INPUT_HEIGHT_TOUCH
                     },
                     '&.MuiSelect-root': { padding: 0 },
-                    '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-3)' },
+                    '& .MuiSelect-select': {
+                        alignItems: 'center',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        height: '100%',
+                        padding: INPUT_PADDING_SMALL
+                    },
                     '&.MuiAutocomplete-inputRoot': {
                         alignItems: 'center',
                         flexWrap: 'wrap',
@@ -92,7 +126,7 @@ export const inputOverrides: ComponentTheme = {
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
                     `]: {
-                        padding: 'var(--mui-tokens-spacing-3)'
+                        padding: INPUT_PADDING_SMALL
                     },
                     '& .MuiInputAdornment-positionStart': {
                         '& svg': {
@@ -110,6 +144,65 @@ export const inputOverrides: ComponentTheme = {
             },
             {
                 props: {
+                    size: 'medium'
+                },
+                style: ({ theme }) => ({
+                    height: INPUT_HEIGHT_MEDIUM,
+                    maxHeight: INPUT_HEIGHT_MEDIUM,
+                    padding: INPUT_PADDING_MEDIUM,
+                    ...theme.typography.bodyNormal,
+                    '&.MuiSelect-root': { padding: 0 },
+                    '& .MuiSelect-select': {
+                        alignItems: 'center',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        height: '100%',
+                        padding: INPUT_PADDING_MEDIUM
+                    },
+                    '&.MuiAutocomplete-inputRoot': {
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        height: 'auto',
+                        maxHeight: 'none',
+                        minHeight: INPUT_HEIGHT_MEDIUM,
+                        padding: 'var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-3)'
+                    },
+                    '&.MuiInputBase-multiline': {
+                        alignItems: 'flex-start',
+                        height: 'auto',
+                        maxHeight: 'none',
+                        minHeight: '9.5rem',
+                        minWidth: 'min(16.5rem, 100%)',
+                        width: 'auto'
+                    },
+                    '&.common_textarea_input.MuiInputBase-multiline': {
+                        minHeight: '9.5rem',
+                        minWidth: 'min(16.5rem, 100%)',
+                        width: '100%',
+                        padding: 'var(--mui-tokens-spacing-3) var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-8) var(--mui-tokens-spacing-4)'
+                    },
+                    [`
+                        &.MuiInputBase-adornedStart,
+                        &.MuiInputBase-adornedEnd
+                    `]: {
+                        padding: INPUT_PADDING_MEDIUM
+                    },
+                    '& .MuiInputAdornment-positionStart': {
+                        '& svg': {
+                            height: '1.375rem',
+                            width: '1.375rem'
+                        }
+                    },
+                    '& .MuiInputAdornment-positionEnd': {
+                        '& svg': {
+                            height: '1.125rem',
+                            width: '1.125rem'
+                        }
+                    }
+                })
+            },
+            {
+                props: {
                     size: 'large'
                 },
                 style: ({ theme }) => ({
@@ -118,7 +211,13 @@ export const inputOverrides: ComponentTheme = {
                     padding: INPUT_PADDING_LARGE,
                     ...theme.typography.bodyNormal,
                     '&.MuiSelect-root': { padding: 0 },
-                    '& .MuiSelect-select': { padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)' },
+                    '& .MuiSelect-select': {
+                        alignItems: 'center',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        height: '100%',
+                        padding: INPUT_PADDING_LARGE
+                    },
                     '&.MuiAutocomplete-inputRoot': {
                         alignItems: 'center',
                         flexWrap: 'wrap',
@@ -145,7 +244,7 @@ export const inputOverrides: ComponentTheme = {
                         &.MuiInputBase-adornedStart,
                         &.MuiInputBase-adornedEnd
                     `]: {
-                        padding: 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)'
+                        padding: INPUT_PADDING_LARGE
                     },
                     '& .MuiInputAdornment-positionStart': {
                         '& svg': {

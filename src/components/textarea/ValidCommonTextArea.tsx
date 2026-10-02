@@ -48,7 +48,7 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
         <div className="flex flex-col gap-1 w-full">
             <CommonTextarea
                 error={errorProp ?? !!fieldState.error}
-                ref={ref}
+                inputRef={ref}
                 value={value}
                 onChange={handleChange}
                 {...props}

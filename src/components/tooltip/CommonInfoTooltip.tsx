@@ -4,7 +4,7 @@ import Tooltip, { TooltipProps } from '@mui/material/Tooltip';
 import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { KeyboardEventButtonElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 export type CommonInfoTooltipVariant = 'info' | 'error';
 
@@ -14,6 +14,16 @@ export interface CommonInfoTooltipProps {
 
     // Additional class name for the trigger button
     className?: string;
+
+    /**
+     * Whether the tooltip is open by default (e.g. for first invalid field)
+     */
+    defaultOpen?: boolean;
+
+    /**
+     * Controlled open state
+     */
+    isOpen?: boolean;
 
     // Accessible name for the trigger; defaults to a generic description label
     label?: string;
@@ -63,16 +73,24 @@ const VARIANT_STYLES = {
 export default function CommonInfoTooltip({
     className,
     content,
+    defaultOpen = false,
+    isOpen: controlledIsOpen,
     label = 'More information',
     placement = 'bottom-start',
     size = 18,
     variant = 'info'
 }: CommonInfoTooltipProps) {
     const { hasHover } = useBreakpoint();
-    const [isPinned, setIsPinned] = useState(false);
+    const [isPinned, setIsPinned] = useState(defaultOpen);
     const [isHovered, setIsHovered] = useState(false);
 
-    const isOpen = isPinned || isHovered;
+    useEffect(() => {
+        if (defaultOpen) {
+            setIsPinned(true);
+        }
+    }, [defaultOpen, content]);
+
+    const isOpen = controlledIsOpen ?? (isPinned || isHovered);
     const {
         background,
         icon: Icon,

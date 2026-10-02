@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import CommonPromptModal from '@components/modal/CommonPromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowLeftIcon,
@@ -11,6 +12,7 @@ import {
     FastForwardIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
+    WarningIcon,
     XIcon
 } from '@phosphor-icons/react';
 import {
@@ -77,6 +79,7 @@ export default function AcademicYearWizardModal({
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
     const [sourceSchoolYear, setSourceSchoolYear] = useState<SourceSchoolYearInfo | null>(null);
     const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
@@ -562,6 +565,14 @@ export default function AcademicYearWizardModal({
         }
     }
 
+    function handleRequestClose() {
+        if (!isReadOnly && methods.formState.isDirty) {
+            setIsConfirmCloseOpen(true);
+        } else {
+            onClose();
+        }
+    }
+
     const currentStepConfig = WIZARD_STEPS.find((s) => s.step === currentStep);
 
     return (
@@ -572,7 +583,7 @@ export default function AcademicYearWizardModal({
             fullWidth
             maxWidth="lg"
             open={open}
-            onClose={onClose}
+            onClose={handleRequestClose}
         >
             {/* Modal Top Header */}
             <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
@@ -666,10 +677,10 @@ export default function AcademicYearWizardModal({
                     </div>
 
                     <button
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                         title="Close"
                         type="button"
-                        onClick={onClose}
+                        onClick={handleRequestClose}
                     >
                         <XIcon className="w-5 h-5" />
                     </button>
@@ -823,6 +834,32 @@ export default function AcademicYearWizardModal({
                 startDate={watch('start_date')}
                 terms={watch('terms')}
                 onClose={() => setIsPreviewModalOpen(false)}
+            />
+
+            {/* Unsaved Changes Confirmation Modal */}
+            <CommonPromptModal
+                isOpen={isConfirmCloseOpen}
+                mainContent={{ title: 'Discard unsaved changes?' }}
+                subContent={{ title: 'You have unsaved changes in this academic year calendar. Are you sure you want to discard your changes and close?' }}
+                actionIconProps={{
+                    icon: WarningIcon,
+                    iconContainerClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                }}
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Keep Editing',
+                        onClick: () => setIsConfirmCloseOpen(false)
+                    },
+                    confirmProps: {
+                        children: 'Discard Changes',
+                        color: 'error',
+                        onClick: () => {
+                            setIsConfirmCloseOpen(false);
+                            onClose();
+                        }
+                    }
+                }}
+                onClose={() => setIsConfirmCloseOpen(false)}
             />
         </CommonModal>
     );

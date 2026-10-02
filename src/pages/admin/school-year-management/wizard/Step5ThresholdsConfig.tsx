@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -10,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
+import { useState } from 'react';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import { DEFAULT_ACADEMIC_THRESHOLDS } from './wizard.constants';
 
@@ -28,6 +30,7 @@ export default function Step5ThresholdsConfig({
     control,
     disabled = false
 }: Step5ThresholdsConfigProps) {
+    const [deleteThresholdTarget, setDeleteThresholdTarget] = useState<{ index: number; label: string } | null>(null);
     const { append, remove, replace, update } = useFieldArray({
         control,
         name: 'thresholds'
@@ -179,7 +182,12 @@ export default function Step5ThresholdsConfig({
                                                 className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
                                                 variant="outlined"
-                                                onClick={() => remove(idx)}
+                                                onClick={() => {
+                                                    setDeleteThresholdTarget({
+                                                        index: idx,
+                                                        label: item.label || `Threshold #${idx + 1}`
+                                                    });
+                                                }}
                                                 title="Delete threshold"
                                             >
                                                 <span className="hidden sm:inline">Delete</span>
@@ -196,7 +204,7 @@ export default function Step5ThresholdsConfig({
                                             <CommonInfoTooltip content="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)." size={13} />
                                         </label>
                                         <select
-                                            className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 cursor-pointer"
+                                            className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
                                             disabled={disabled}
                                             value={item.category}
                                             onChange={(e) => {
@@ -337,7 +345,7 @@ export default function Step5ThresholdsConfig({
                                         />
                                     </div>
 
-                                    <div className="h-9 flex items-center px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800/40">
+                                    <div className="h-9 flex items-center px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
                                         <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200 w-full select-none">
                                             <input
                                                 checked={Boolean(item.requires_no_failing)}
@@ -356,6 +364,29 @@ export default function Step5ThresholdsConfig({
                     })
                 )}
             </div>
+
+            {/* Delete Threshold Prompt Modal */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteThresholdTarget)}
+                mainContent={{
+                    title: 'Delete Academic Threshold?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete academic threshold "${deleteThresholdTarget?.label}"?`
+                }}
+                open={Boolean(deleteThresholdTarget)}
+                onClose={() => setDeleteThresholdTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteThresholdTarget !== null) {
+                                remove(deleteThresholdTarget.index);
+                                setDeleteThresholdTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
         </div>
     );
 }

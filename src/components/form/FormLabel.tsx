@@ -17,6 +17,10 @@ export interface FormLabelProps {
 
     // Whether to display the mandatory asterisk indicator
     isRequired?: boolean;
+
+    /** Whether to open the error tooltip by default (for the first invalid field) */
+    defaultOpenErrorTooltip?: boolean;
+    isFirstError?: boolean;
 }
 
 /**
@@ -41,8 +45,10 @@ export interface FormLabelProps {
  */
 export default function FormLabel({
     className,
+    defaultOpenErrorTooltip,
     description,
     errorMessage,
+    isFirstError,
     isRequired,
     label
 }: FormLabelProps) {
@@ -76,6 +82,7 @@ export default function FormLabel({
             {errorMessage && (
                 <CommonInfoTooltip
                     content={errorMessage}
+                    defaultOpen={Boolean(defaultOpenErrorTooltip || isFirstError)}
                     label="This field has a problem"
                     size={16}
                     variant="error"

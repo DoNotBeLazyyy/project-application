@@ -2,6 +2,7 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowsCounterClockwiseIcon,
@@ -40,6 +41,8 @@ export default function Step3GradingPeriodsConfig({
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
+    const [deletePeriodTarget, setDeletePeriodTarget] = useState<{ termIndex: number; periodIndex: number; name: string } | null>(null);
+    const [deleteComponentTarget, setDeleteComponentTarget] = useState<{ termIndex: number; periodIndex: number; compIndex: number; name: string } | null>(null);
     const [copyModalState, setCopyModalState] = useState<{
         open: boolean;
         termIndex: number;
@@ -609,7 +612,13 @@ export default function Step3GradingPeriodsConfig({
                                                                 size="small"
                                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
                                                                 variant="outlined"
-                                                                onClick={() => handleRemovePeriod(tIdx, pIdx)}
+                                                                onClick={() => {
+                                                                    setDeletePeriodTarget({
+                                                                        termIndex: tIdx,
+                                                                        periodIndex: pIdx,
+                                                                        name: period.name || `Period #${period.sequence}`
+                                                                    });
+                                                                }}
                                                                 title="Remove period"
                                                             >
                                                                 <span className="hidden sm:inline">Remove</span>
@@ -893,8 +902,15 @@ export default function Step3GradingPeriodsConfig({
                                                                 {!disabled && (
                                                                     <button
                                                                         type="button"
-                                                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                                                        onClick={() => handleRemoveComponent(tIdx, pIdx, cIdx)}
+                                                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                                                        onClick={() => {
+                                                                            setDeleteComponentTarget({
+                                                                                termIndex: tIdx,
+                                                                                periodIndex: pIdx,
+                                                                                compIndex: cIdx,
+                                                                                name: comp.name || `Component #${cIdx + 1}`
+                                                                            });
+                                                                        }}
                                                                         title="Remove component"
                                                                     >
                                                                         <TrashIcon className="w-3.5 h-3.5" />
@@ -926,6 +942,56 @@ export default function Step3GradingPeriodsConfig({
                     onClose={() => setCopyModalState(null)}
                 />
             )}
+
+            {/* Delete Period Prompt Modal */}
+            <DeletePromptModal
+                isOpen={Boolean(deletePeriodTarget)}
+                mainContent={{
+                    title: 'Delete Grading Period?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete "${deletePeriodTarget?.name}"? All component weights configured inside will be removed.`
+                }}
+                open={Boolean(deletePeriodTarget)}
+                onClose={() => setDeletePeriodTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deletePeriodTarget !== null) {
+                                handleRemovePeriod(deletePeriodTarget.termIndex, deletePeriodTarget.periodIndex);
+                                setDeletePeriodTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
+
+            {/* Delete Component Prompt Modal */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteComponentTarget)}
+                mainContent={{
+                    title: 'Delete Component Item?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete component "${deleteComponentTarget?.name}"?`
+                }}
+                open={Boolean(deleteComponentTarget)}
+                onClose={() => setDeleteComponentTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteComponentTarget !== null) {
+                                handleRemoveComponent(
+                                    deleteComponentTarget.termIndex,
+                                    deleteComponentTarget.periodIndex,
+                                    deleteComponentTarget.compIndex
+                                );
+                                setDeleteComponentTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -11,6 +12,7 @@ import {
     XCircleIcon
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
+import { useState } from 'react';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import {
     DEFAULT_TRANSMUTATION_ROWS,
@@ -28,6 +30,7 @@ export default function Step4TransmutationConfig({
     control,
     disabled = false
 }: Step4TransmutationConfigProps) {
+    const [deleteRungTarget, setDeleteRungTarget] = useState<{ index: number; label: string } | null>(null);
     const { fields, append, remove, replace, update } = useFieldArray({
         control,
         name: 'transmutation_rows'
@@ -278,7 +281,12 @@ export default function Step4TransmutationConfig({
                                             className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                             startIcon={<TrashIcon className="w-3.5 h-3.5" />}
                                             variant="outlined"
-                                            onClick={() => remove(index)}
+                                            onClick={() => {
+                                                setDeleteRungTarget({
+                                                    index,
+                                                    label: row.label || `Grade Rung #${index + 1}`
+                                                });
+                                            }}
                                             title="Delete grade rung"
                                         >
                                             <span className="hidden sm:inline">Delete</span>
@@ -296,7 +304,7 @@ export default function Step4TransmutationConfig({
                                         <CommonInfoTooltip content="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)." size={13} />
                                     </label>
                                     <select
-                                        className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+                                        className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
                                         disabled={disabled}
                                         value={isCond ? 'conditional' : 'fixed'}
                                         onChange={(e) => {
@@ -450,6 +458,29 @@ export default function Step4TransmutationConfig({
                     );
                 })}
             </div>
+
+            {/* Delete Grade Rung Prompt Modal */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteRungTarget)}
+                mainContent={{
+                    title: 'Delete Grade Rung?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete grade rung "${deleteRungTarget?.label}"?`
+                }}
+                open={Boolean(deleteRungTarget)}
+                onClose={() => setDeleteRungTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteRungTarget !== null) {
+                                remove(deleteRungTarget.index);
+                                setDeleteRungTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
         </div>
     );
 }

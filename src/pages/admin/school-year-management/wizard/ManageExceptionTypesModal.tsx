@@ -1,7 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
-import { CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
+import CommonPromptModal from '@components/modal/CommonPromptModal';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
+import { CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { ExceptionTypeOptionItem } from '@type/school-year.type';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,10 +27,30 @@ export default function ManageExceptionTypesModal({
 }: ManageExceptionTypesModalProps) {
     const [typeItems, setTypeItems] = useState<ExceptionTypeOptionItem[]>([]);
     const [newTypeInput, setNewTypeInput] = useState('');
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+    const [deleteTypeTarget, setDeleteTypeTarget] = useState<string | null>(null);
 
     const usedTypeSet = useMemo(() => {
         return new Set(usedTypes.map((t) => t.trim().toLowerCase()));
     }, [usedTypes]);
+
+    const isDirty = useMemo(() => {
+        if (newTypeInput.trim().length > 0) return true;
+        if (typeItems.length !== exceptionTypes.length) return true;
+        const initialNormalized = exceptionTypes.map((item) => ({
+            ...item,
+            is_default: item.is_default ?? DEFAULT_TYPE_NAMES.includes(item.label)
+        }));
+        return JSON.stringify(typeItems) !== JSON.stringify(initialNormalized);
+    }, [typeItems, exceptionTypes, newTypeInput]);
+
+    function handleRequestClose() {
+        if (isDirty) {
+            setIsConfirmCloseOpen(true);
+        } else {
+            onClose();
+        }
+    }
 
     useEffect(() => {
         if (open) {
@@ -82,7 +104,7 @@ export default function ManageExceptionTypesModal({
         );
     }
 
-    function handleHardRemove(targetLabel: string) {
+    function handleRequestHardRemove(targetLabel: string) {
         if (usedTypeSet.has(targetLabel.toLowerCase())) {
             useToastStore.getState().showToast(
                 `Cannot permanently delete "${targetLabel}" because it is currently assigned to active records. Soft-deprecate it (toggle Inactive) instead.`,
@@ -96,8 +118,7 @@ export default function ManageExceptionTypesModal({
             return;
         }
 
-        setTypeItems((prev) => prev.filter((item) => item.label.toLowerCase() !== targetLabel.toLowerCase()));
-        useToastStore.getState().showToast(`Removed exception type "${targetLabel}".`, 'success');
+        setDeleteTypeTarget(targetLabel);
     }
 
     function handleSave() {
@@ -124,7 +145,7 @@ export default function ManageExceptionTypesModal({
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={onClose}
+            onClose={handleRequestClose}
         >
             {/* Header */}
             <div className="p-4 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between gap-3 shrink-0">
@@ -143,9 +164,9 @@ export default function ManageExceptionTypesModal({
                 </div>
 
                 <button
-                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     type="button"
-                    onClick={onClose}
+                    onClick={handleRequestClose}
                 >
                     <XIcon className="w-4 h-4" />
                 </button>
@@ -235,7 +256,7 @@ export default function ManageExceptionTypesModal({
                                     </button>
 
                                     <button
-                                        className={`p-1.5 rounded-lg transition-colors ${
+                                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                                             isUsed
                                                 ? 'text-slate-300 dark:text-zinc-600 cursor-not-allowed'
                                                 : 'text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30'
@@ -247,7 +268,7 @@ export default function ManageExceptionTypesModal({
                                                 : 'Delete unused type'
                                         }
                                         type="button"
-                                        onClick={() => handleHardRemove(item.label)}
+                                        onClick={() => handleRequestHardRemove(item.label)}
                                     >
                                         <TrashIcon className="w-3.5 h-3.5" />
                                     </button>
@@ -264,7 +285,7 @@ export default function ManageExceptionTypesModal({
                     color="inherit"
                     size="small"
                     variant="outlined"
-                    onClick={onClose}
+                    onClick={handleRequestClose}
                 >
                     Cancel
                 </CommonButton>
@@ -277,6 +298,56 @@ export default function ManageExceptionTypesModal({
                     Save Changes
                 </CommonButton>
             </div>
+
+            {/* Delete Type Confirmation Prompt */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteTypeTarget)}
+                mainContent={{
+                    title: 'Delete Exception Type?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to permanently delete exception type "${deleteTypeTarget}"?`
+                }}
+                open={Boolean(deleteTypeTarget)}
+                onClose={() => setDeleteTypeTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteTypeTarget) {
+                                setTypeItems((prev) => prev.filter((item) => item.label.toLowerCase() !== deleteTypeTarget.toLowerCase()));
+                                useToastStore.getState().showToast(`Removed exception type "${deleteTypeTarget}".`, 'success');
+                                setDeleteTypeTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
+
+            {/* Unsaved Changes Prompt Modal */}
+            <CommonPromptModal
+                isOpen={isConfirmCloseOpen}
+                mainContent={{ title: 'Discard unsaved changes?' }}
+                subContent={{ title: 'You have unsaved changes to the exception types list. Are you sure you want to discard your changes and close?' }}
+                actionIconProps={{
+                    icon: WarningIcon,
+                    iconContainerClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                }}
+                formButtonsProps={{
+                    cancelProps: {
+                        children: 'Keep Editing',
+                        onClick: () => setIsConfirmCloseOpen(false)
+                    },
+                    confirmProps: {
+                        children: 'Discard Changes',
+                        color: 'error',
+                        onClick: () => {
+                            setIsConfirmCloseOpen(false);
+                            onClose();
+                        }
+                    }
+                }}
+                onClose={() => setIsConfirmCloseOpen(false)}
+            />
         </CommonModal>
     );
 }

@@ -82,12 +82,14 @@ const TEXTAREA_MIN_SIZE = {
 const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     className,
     containerClassName,
+    defaultOpenErrorTooltip,
     error,
     fullWidth,
     hasClearButton = false,
     hasTextCount = false,
     helperText,
     inputRef,
+    isFirstError,
     isRequired,
     label,
     labelClassName,
@@ -332,6 +334,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isRequired={isRequired}

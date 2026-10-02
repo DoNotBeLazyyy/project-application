@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -32,6 +33,7 @@ export default function Step2TermsConfig({
 }: Step2TermsConfigProps) {
     const [termTypes, setTermTypes] = useState<TermTypeOption[]>([]);
     const [isLoadingTypes, setIsLoadingTypes] = useState(false);
+    const [deleteTermTarget, setDeleteTermTarget] = useState<{ index: number; name: string } | null>(null);
 
     const syStartDate = useWatch({ control, name: 'start_date' });
     const syEndDate = useWatch({ control, name: 'end_date' });
@@ -348,10 +350,15 @@ export default function Step2TermsConfig({
 
                                         {fields.length > 1 && (
                                             <button
-                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
                                                 title="Remove Term"
                                                 type="button"
-                                                onClick={() => remove(index)}
+                                                onClick={() => {
+                                                    setDeleteTermTarget({
+                                                        index,
+                                                        name: currentTerm.term_type_label || `Term #${index + 1}`
+                                                    });
+                                                }}
                                             >
                                                 <TrashIcon className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Remove</span>
@@ -559,6 +566,29 @@ export default function Step2TermsConfig({
                     );
                 })}
             </div>
+
+            {/* Delete Term Prompt */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteTermTarget)}
+                mainContent={{
+                    title: 'Delete Term?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete "${deleteTermTarget?.name}"? All grading periods and configurations in this term will also be removed.`
+                }}
+                open={Boolean(deleteTermTarget)}
+                onClose={() => setDeleteTermTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteTermTarget !== null) {
+                                remove(deleteTermTarget.index);
+                                setDeleteTermTarget(null);
+                            }
+                        }
+                    }
+                }}
+            />
         </div>
     );
 }

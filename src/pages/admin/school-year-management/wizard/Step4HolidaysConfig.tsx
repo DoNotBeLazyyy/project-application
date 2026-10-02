@@ -1,6 +1,7 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
@@ -40,6 +41,7 @@ export default function Step4HolidaysConfig({
 }: Step4HolidaysConfigProps) {
     const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
     const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
+    const [deleteExceptionTarget, setDeleteExceptionTarget] = useState<{ index: number; title: string } | null>(null);
 
     const { fields, append, remove, replace, update } = useFieldArray({
         control,
@@ -220,7 +222,12 @@ export default function Step4HolidaysConfig({
                                                 size="small"
                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
                                                 variant="outlined"
-                                                onClick={() => remove(idx)}
+                                                onClick={() => {
+                                                    setDeleteExceptionTarget({
+                                                        index: idx,
+                                                        title: current.title || `Exception #${idx + 1}`
+                                                    });
+                                                }}
                                                 title="Remove Exception"
                                             >
                                                 <span className="hidden sm:inline">Remove</span>
@@ -236,7 +243,7 @@ export default function Step4HolidaysConfig({
                                         </label>
                                         <select
                                             aria-label="Select exception type"
-                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium"
                                             disabled={disabled}
                                             value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                             onChange={(e) => {
@@ -258,7 +265,7 @@ export default function Step4HolidaysConfig({
                                         <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
                                             Class Impact
                                         </label>
-                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                                             <input
                                                 checked={Boolean(current.affects_attendance)}
                                                 className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
@@ -330,6 +337,29 @@ export default function Step4HolidaysConfig({
                 usedTypes={Array.from(new Set(holidays.map((h) => h.exception_type).filter(Boolean)))}
                 onClose={() => setIsManageTypesOpen(false)}
                 onSave={(updated) => setExceptionTypeOptions(updated)}
+            />
+
+            {/* Delete Exception Prompt Modal */}
+            <DeletePromptModal
+                isOpen={Boolean(deleteExceptionTarget)}
+                mainContent={{
+                    title: 'Delete Exception?'
+                }}
+                subContent={{
+                    title: `Are you sure you want to delete "${deleteExceptionTarget?.title}"?`
+                }}
+                open={Boolean(deleteExceptionTarget)}
+                onClose={() => setDeleteExceptionTarget(null)}
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: () => {
+                            if (deleteExceptionTarget !== null) {
+                                remove(deleteExceptionTarget.index);
+                                setDeleteExceptionTarget(null);
+                            }
+                        }
+                    }
+                }}
             />
         </div>
     );

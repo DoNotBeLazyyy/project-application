@@ -1,4 +1,13 @@
-import { buildInputStateStyles, INPUT_HEIGHT_LARGE, INPUT_PADDING_LARGE } from '@constants/theme/input-state.constant';
+import {
+    buildInputStateStyles,
+    INPUT_HEIGHT_LARGE,
+    INPUT_HEIGHT_MEDIUM,
+    INPUT_HEIGHT_SMALL,
+    INPUT_HEIGHT_TOUCH,
+    INPUT_PADDING_LARGE,
+    INPUT_PADDING_MEDIUM,
+    INPUT_PADDING_SMALL
+} from '@constants/theme/input-state.constant';
 import { ComponentTheme } from '@type/common/theme.type';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
 
@@ -38,6 +47,45 @@ export const datePickerOverrides: ComponentTheme = {
             input: {
                 padding: 'var(--mui-tokens-spacing-0)'
             }
-        }
+        },
+        variants: [
+            {
+                props: {
+                    size: 'small'
+                },
+                style: ({ theme }) => ({
+                    height: INPUT_HEIGHT_SMALL,
+                    maxHeight: INPUT_HEIGHT_SMALL,
+                    padding: INPUT_PADDING_SMALL,
+                    ...theme.typography.bodySmall,
+                    '@media (pointer: coarse)': {
+                        height: INPUT_HEIGHT_TOUCH,
+                        maxHeight: INPUT_HEIGHT_TOUCH
+                    }
+                })
+            },
+            {
+                props: {
+                    size: 'medium'
+                },
+                style: ({ theme }) => ({
+                    height: INPUT_HEIGHT_MEDIUM,
+                    maxHeight: INPUT_HEIGHT_MEDIUM,
+                    padding: INPUT_PADDING_MEDIUM,
+                    ...theme.typography.bodyNormal
+                })
+            },
+            {
+                props: {
+                    size: 'large'
+                },
+                style: ({ theme }) => ({
+                    height: INPUT_HEIGHT_LARGE,
+                    maxHeight: INPUT_HEIGHT_LARGE,
+                    padding: INPUT_PADDING_LARGE,
+                    ...theme.typography.bodyNormal
+                })
+            }
+        ]
     }
 };
