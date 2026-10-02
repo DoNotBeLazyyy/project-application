@@ -11,6 +11,7 @@ export interface CommonDateTimePickerProps extends Omit<DateTimePickerProps, 'va
     helperText?: string;
     fullWidth?: boolean;
     hasHelper?: boolean;
+    size?: 'small' | 'medium' | 'large';
 }
 
 export type ValidCommonDateTimePickerProps<T extends FieldValues = FieldValues> =
@@ -26,6 +27,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     fullWidth = true,
     disabled,
     readOnly,
+    size = 'large',
     ...props
 }: ValidCommonDateTimePickerProps<T>) {
     const {
@@ -80,7 +82,8 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
         ? props.slotProps.textField
         : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const resolvedSize = externalSize ?? size;
 
     return (
         <LocalizationProvider dateAdapter={AdapterLuxon}>
@@ -109,7 +112,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         helperText: hasHelper
                             ? fieldState.error?.message ?? helperTextProp
                             : undefined,
-                        size: 'medium',
+                        size: resolvedSize,
                         variant: 'outlined' as const,
                         ...restTextFieldProps,
                         onFocus: () => {
