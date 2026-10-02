@@ -16,14 +16,28 @@ export function formatFieldLabel(key: string): string {
         .filter(function(segment) {
             return segment !== '' && !/^\d+$/.test(segment);
         });
-    const leaf = segments[segments.length - 1] ?? key;
+    let leaf = segments[segments.length - 1] ?? key;
+
+    // Strip trailing id/ids/code/codes suffix if it's not the entire identifier
+    if (leaf.toLowerCase() !== 'id' && leaf.toLowerCase() !== 'code') {
+        leaf = leaf
+            .replace(/_ids$/i, 's')
+            .replace(/_id$/i, '')
+            .replace(/_codes$/i, 's')
+            .replace(/_code$/i, '')
+            .replace(/Ids$/, 's')
+            .replace(/Id$/, '')
+            .replace(/Codes$/, 's')
+            .replace(/Code$/, '');
+    }
 
     return leaf
         .replace(/_/g, ' ')
         .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, function(str) {
+        .replace(/\b\w/g, function(str) {
             return str.toUpperCase();
         })
+        .replace(/\s+/g, ' ')
         .trim();
 }
 

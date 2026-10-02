@@ -445,12 +445,14 @@ export default function AssessmentWizardModal({
 
     const step1Fields: FormFieldConfig<AssessmentFormValues>[] = [
         {
+            label: 'Title',
             name: 'title',
             rules: { required: 'Required' },
             type: 'text',
             gridCols: 2
         },
         {
+            label: 'Assessment Type',
             name: 'assessment_type',
             options: ASSESSMENT_TYPE_OPTIONS,
             rules: { required: 'Required' },
@@ -458,23 +460,27 @@ export default function AssessmentWizardModal({
             gridCols: 1
         },
         {
+            label: 'Grading Component',
             name: 'grading_component_id',
             options: componentOptions,
             type: 'select',
             gridCols: 1
         },
         {
+            label: 'Total Points',
             name: 'total_points',
             rules: { required: 'Required', min: { value: 1, message: 'Must be at least 1' } },
             type: 'number',
             gridCols: 1
         },
         {
+            label: 'Passing Points',
             name: 'passing_points',
             type: 'number',
             gridCols: 1
         },
         {
+            label: 'Description',
             name: 'description',
             type: 'text-area',
             gridCols: 2

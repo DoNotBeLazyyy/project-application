@@ -79,12 +79,14 @@ export default function QuestionModal({
 
     const baseFields: FormFieldConfig<QuestionFormValues>[] = [
         {
+            label: 'Question Type',
             name: 'question_type',
             options: QUESTION_TYPE_OPTIONS,
             rules: { required: 'Required' },
             type: 'select'
         },
         {
+            label: 'Points',
             name: 'points',
             rules: {
                 required: 'Required',
@@ -93,11 +95,13 @@ export default function QuestionModal({
             type: 'number'
         },
         {
+            label: 'Question Text',
             name: 'question_text',
             rules: { required: 'Required' },
             type: 'text-area'
         },
         {
+            label: 'Explanation',
             name: 'explanation',
             type: 'text-area'
         },
@@ -108,9 +112,9 @@ export default function QuestionModal({
         },
         ...(watchedQuestionType === 'File Upload'
             ? [
-                { name: 'allowed_file_types' as const, type: 'text' as const },
-                { name: 'max_file_size_mb' as const, type: 'number' as const },
-                { name: 'max_file_count' as const, type: 'number' as const }
+                { label: 'Allowed File Types', name: 'allowed_file_types' as const, type: 'text' as const },
+                { label: 'Max File Size (MB)', name: 'max_file_size_mb' as const, type: 'number' as const },
+                { label: 'Max File Count', name: 'max_file_count' as const, type: 'number' as const }
             ]
             : [])
     ];

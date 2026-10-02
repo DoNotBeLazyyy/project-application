@@ -18,16 +18,18 @@ export default function PeriodForm({
 }: PeriodFormProps) {
     const fields: FormFieldConfig<PeriodFormValues>[] = [
         {
-            name: 'name',
             disabled,
+            label: 'Period Name',
+            name: 'name',
             rules: disabled
                 ? undefined
                 : { required: 'Period name is required' },
             type: 'text'
         },
         {
-            name: 'weight',
             disabled,
+            label: 'Weight (%)',
+            name: 'weight',
             rules: disabled
                 ? undefined
                 : {

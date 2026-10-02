@@ -34,6 +34,7 @@ export default function ProgramForm({
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Unique program code' },
+            label: 'Program Code',
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
@@ -44,6 +45,7 @@ export default function ProgramForm({
         {
             disabled,
             fieldProps: { helperText: 'Full program name, e.g. BS Computer Science' },
+            label: 'Program Name',
             name: 'name',
             rules: disabled
                 ? undefined
@@ -54,6 +56,7 @@ export default function ProgramForm({
         {
             disabled,
             fieldProps: { helperText: 'Department that owns this program' },
+            label: 'Department',
             name: 'department_id',
             options: departmentOptions,
             rules: disabled
@@ -64,6 +67,7 @@ export default function ProgramForm({
         {
             disabled,
             fieldProps: { helperText: 'Academic level of the program' },
+            label: 'Program Level',
             name: 'program_level_id',
             options: programLevelOptions,
             rules: disabled
@@ -74,11 +78,13 @@ export default function ProgramForm({
         {
             disabled,
             fieldProps: { helperText: 'Total units across the whole program (optional)' },
+            label: 'Total Units',
             name: 'total_units',
             type: 'number'
         },
         {
             disabled,
+            label: 'Duration (Years)',
             name: 'years_duration',
             rules: disabled
                 ? undefined
@@ -100,6 +106,7 @@ export default function ProgramForm({
                 resize: 'vertical',
                 rows: 3
             },
+            label: 'Description',
             name: 'description',
             type: 'text-area',
             gridCols: 2

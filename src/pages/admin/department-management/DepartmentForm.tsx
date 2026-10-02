@@ -18,6 +18,7 @@ export function getDepartmentFormFields(
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Short unique code, e.g. CCS' },
+            label: 'Department Code',
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
@@ -27,6 +28,7 @@ export function getDepartmentFormFields(
         {
             disabled,
             fieldProps: { helperText: 'Full department name' },
+            label: 'Department Name',
             name: 'name',
             rules: disabled
                 ? undefined
@@ -35,6 +37,7 @@ export function getDepartmentFormFields(
         },
         {
             disabled,
+            label: 'Description',
             name: 'description',
             type: 'text-area'
         }

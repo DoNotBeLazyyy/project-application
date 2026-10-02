@@ -20,6 +20,7 @@ export default function CourseTypeForm({
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Short unique code, e.g. LEC' },
+            label: 'Course Type Code',
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
@@ -29,6 +30,7 @@ export default function CourseTypeForm({
         {
             disabled,
             fieldProps: { helperText: 'Display name, e.g. Lecture' },
+            label: 'Course Type Name',
             name: 'label',
             rules: disabled
                 ? undefined
@@ -37,6 +39,7 @@ export default function CourseTypeForm({
         },
         {
             disabled,
+            label: 'Description',
             name: 'description',
             type: 'text-area'
         }

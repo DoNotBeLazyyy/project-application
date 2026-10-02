@@ -25,16 +25,19 @@ export default function CourseFilterForm({
 
     const fields: FormFieldConfig<CourseFilterValues>[] = [
         {
+            label: 'Departments',
             name: 'department_ids',
             options: departmentOptions,
             type: 'multi-select'
         },
         {
+            label: 'Course Types',
             name: 'course_type_ids',
             options: courseTypeOptions,
             type: 'multi-select'
         },
         {
+            label: 'Status',
             name: 'is_active',
             options: IS_ACTIVE_OPTIONS,
             type: 'select'

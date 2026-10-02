@@ -20,11 +20,13 @@ export default function SchoolYearFilterForm({
 }: SchoolYearFilterFormProps) {
     const fields: FormFieldConfig<SchoolYearFilterValues>[] = [
         {
+            label: 'Status',
             name: 'is_active',
             options: IS_ACTIVE_OPTIONS,
             type: 'select'
         },
         {
+            label: 'Year',
             name: 'year',
             placeholder: 'e.g. 2024',
             rules: {

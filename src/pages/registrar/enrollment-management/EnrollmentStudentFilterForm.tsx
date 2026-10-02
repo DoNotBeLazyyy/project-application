@@ -50,21 +50,25 @@ export default function EnrollmentStudentFilterForm({
 
     const fields: FormFieldConfig<EnrollmentStudentFilterValues>[] = [
         {
+            label: 'Programs',
             name: 'program_ids',
             options: programOptions,
             type: 'multi-select'
         },
         {
+            label: 'Year Levels',
             name: 'year_levels',
             options: YEAR_LEVEL_OPTIONS,
             type: 'multi-select'
         },
         {
+            label: 'Student Status',
             name: 'statuses',
             options: STUDENT_STATUS_OPTIONS,
             type: 'multi-select'
         },
         {
+            label: 'Enrollment State',
             name: 'enrollment_states',
             options: ENROLLMENT_STATE_OPTIONS,
             type: 'multi-select'

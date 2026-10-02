@@ -20,6 +20,7 @@ export default function ProgramLevelForm({
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Short unique code, e.g. UG' },
+            label: 'Program Level Code',
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
@@ -29,6 +30,7 @@ export default function ProgramLevelForm({
         {
             disabled,
             fieldProps: { helperText: 'Display name, e.g. Undergraduate' },
+            label: 'Program Level Name',
             name: 'label',
             rules: disabled
                 ? undefined
@@ -37,6 +39,7 @@ export default function ProgramLevelForm({
         },
         {
             disabled,
+            label: 'Description',
             name: 'description',
             type: 'text-area'
         }

@@ -17,20 +17,24 @@ export default function FilterUserForm({
     const { roleOptions } = useRoleOptions({ withAllOption: true });
     const fields: FormFieldConfig<UserFilterValues>[] = [
         {
+            label: 'Role',
             name: 'role_code',
             type: 'select',
             options: roleOptions
         },
         {
+            label: 'Status',
             name: 'status',
             type: 'select',
             options: STATUS_OPTIONS
         },
         {
+            label: 'City',
             name: 'city',
             type: 'text'
         },
         {
+            label: 'Province',
             name: 'province',
             type: 'text'
         }

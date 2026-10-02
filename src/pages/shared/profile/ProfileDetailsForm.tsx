@@ -31,53 +31,63 @@ export default function ProfileDetailsForm({
 }: ProfileDetailsFormProps) {
     const baseFields: FormFieldConfig<ProfileFormValues>[] = [
         {
+            label: 'First Name',
             name: 'first_name',
             rules: { required: 'First name is required' },
             type: 'text',
             fieldProps: { helperText: 'Your legal given name.' }
         },
         {
+            label: 'Middle Name',
             name: 'middle_name',
             type: 'text',
             fieldProps: { helperText: 'Optional.' }
         },
         {
+            label: 'Last Name',
             name: 'last_name',
             rules: { required: 'Last name is required' },
             type: 'text',
             fieldProps: { helperText: 'Your legal family name.' }
         },
         {
+            label: 'Suffix',
             name: 'suffix',
             type: 'text',
             fieldProps: { helperText: 'Jr., Sr., III — optional.' }
         },
         {
+            label: 'Preferred Name',
             name: 'preferred_name',
             type: 'text',
             fieldProps: { helperText: 'How you would like to be addressed.' }
         },
         {
+            label: 'Mobile Number',
             name: 'mobile_number',
             type: 'text',
             fieldProps: { helperText: 'Reachable contact number.' }
         },
         {
+            label: 'Date of Birth',
             name: 'date_of_birth',
             type: 'date',
             fieldProps: { disableFuture: true }
         },
         {
+            label: 'Gender',
             name: 'gender',
             options: GENDER_OPTIONS,
             type: 'select'
         },
         {
+            label: 'Civil Status',
             name: 'civil_status',
             options: CIVIL_STATUS_OPTIONS,
             type: 'select'
         },
         {
+            label: 'Nationality',
             name: 'nationality',
             type: 'text',
             fieldProps: { helperText: 'Country of citizenship.' }
@@ -86,6 +96,7 @@ export default function ProfileDetailsForm({
 
     const studentFields: FormFieldConfig<ProfileFormValues>[] = isStudentUser ? [
         {
+            label: 'Student Number',
             name: 'student_number',
             type: 'text',
             fieldProps: {
@@ -94,12 +105,14 @@ export default function ProfileDetailsForm({
             }
         },
         {
+            label: 'Program',
             name: 'program_id',
             options: programOptions,
             type: 'select',
             fieldProps: { helperText: 'Your enrolled academic program (requires Registrar verification).' }
         },
         {
+            label: 'Year Level',
             name: 'year_level',
             options: YEAR_LEVEL_OPTIONS,
             type: 'select',
@@ -109,26 +122,31 @@ export default function ProfileDetailsForm({
 
     const addressFields: FormFieldConfig<ProfileFormValues>[] = [
         {
+            label: 'Address Line 1',
             name: 'address_line1',
             type: 'text',
             fieldProps: { helperText: 'House or unit number and street.' }
         },
         {
+            label: 'Address Line 2',
             name: 'address_line2',
             type: 'text',
             fieldProps: { helperText: 'Barangay, subdivision — optional.' }
         },
         {
+            label: 'City',
             name: 'city',
             type: 'text',
             fieldProps: { helperText: 'City or municipality.' }
         },
         {
+            label: 'Province',
             name: 'province',
             type: 'text',
             fieldProps: { helperText: 'Province.' }
         },
         {
+            label: 'Postal Code',
             name: 'postal_code',
             type: 'text',
             fieldProps: { helperText: 'ZIP code.' }

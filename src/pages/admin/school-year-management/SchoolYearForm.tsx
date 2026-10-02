@@ -27,6 +27,7 @@ export default function SchoolYearForm({
     const fields: FormFieldConfig<SchoolYearFormValues>[] = [
         {
             disabled,
+            label: 'Start Date',
             name: 'start_date',
             rules: disabled
                 ? undefined
@@ -38,6 +39,7 @@ export default function SchoolYearForm({
         },
         {
             disabled,
+            label: 'End Date',
             name: 'end_date',
             rules: disabled
                 ? undefined
@@ -59,6 +61,7 @@ export default function SchoolYearForm({
         {
             disabled: true,
             fieldProps: { helperText: 'Auto-generated based on Start Date and End Date.' },
+            label: 'Academic Year Code',
             name: 'code',
             rules: undefined,
             type: 'text'
@@ -66,12 +69,14 @@ export default function SchoolYearForm({
         {
             disabled: true,
             fieldProps: { helperText: 'Auto-generated based on Start Date and End Date.' },
+            label: 'Academic Year Label',
             name: 'label',
             rules: undefined,
             type: 'text'
         },
         {
             disabled,
+            label: 'Active Status',
             name: 'is_active',
             type: 'checkbox',
             fieldProps: {

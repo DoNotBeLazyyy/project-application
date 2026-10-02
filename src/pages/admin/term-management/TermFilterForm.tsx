@@ -18,11 +18,13 @@ export default function TermFilterForm({
 }: TermFilterFormProps) {
     const fields: FormFieldConfig<TermFilterValues>[] = [
         {
+            label: 'School Year',
             name: 'school_year_id',
             options: [{ label: 'All School Years', value: '' }, ...schoolYearOptions],
             type: 'select'
         },
         {
+            label: 'Status',
             name: 'status',
             options: TERM_STATUS_OPTIONS,
             type: 'select'

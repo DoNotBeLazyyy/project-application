@@ -329,6 +329,7 @@ export default function CourseForm({
         {
             disabled,
             fieldProps: { helperText: 'Full course title' },
+            label: 'Course Title',
             name: 'title',
             rules: disabled
                 ? undefined
@@ -339,6 +340,7 @@ export default function CourseForm({
         {
             disabled,
             fieldProps: { helperText: 'Unique course code, e.g. CS101' },
+            label: 'Course Code',
             name: 'code',
             rules: disabled
                 ? undefined
@@ -349,6 +351,7 @@ export default function CourseForm({
         {
             disabled,
             fieldProps: { helperText: 'Department that owns this course' },
+            label: 'Department',
             name: 'department_id',
             options: departmentOptions,
             rules: disabled
@@ -372,6 +375,7 @@ export default function CourseForm({
                 helperText: 'Optional course description',
                 placeholder: 'Enter a short description of this course'
             },
+            label: 'Description',
             name: 'description',
             type: 'text-area',
             gridCols: 6

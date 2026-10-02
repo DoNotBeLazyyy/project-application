@@ -25,6 +25,7 @@ export default function TermForm({
     const fields: FormFieldConfig<TermFormValues>[] = [
         {
             disabled,
+            label: 'School Year',
             name: 'school_year_id',
             options: schoolYearOptions,
             rules: disabled
@@ -34,6 +35,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'Term Type',
             name: 'term_type_id',
             options: termTypeOptions,
             rules: disabled
@@ -43,6 +45,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'Start Date',
             name: 'start_date',
             rules: disabled
                 ? undefined
@@ -54,6 +57,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'End Date',
             name: 'end_date',
             rules: disabled
                 ? undefined
@@ -72,6 +76,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'Enrollment Start Date',
             name: 'enrollment_start_date',
             type: 'date',
             fieldProps: {
@@ -80,6 +85,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'Enrollment End Date',
             name: 'enrollment_end_date',
             rules: disabled
                 ? undefined
@@ -99,6 +105,7 @@ export default function TermForm({
         },
         {
             disabled,
+            label: 'Grading Deadline',
             name: 'grading_deadline',
             rules: disabled
                 ? undefined

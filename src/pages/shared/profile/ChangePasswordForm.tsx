@@ -17,12 +17,14 @@ export default function ChangePasswordForm({
 }: ChangePasswordFormProps) {
     const fields: FormFieldConfig<ChangePasswordFormValues>[] = [
         {
+            label: 'Current Password',
             name: 'current_password',
             rules: { required: 'Current password is required' },
             type: 'password',
             fieldProps: { helperText: 'The password you use to sign in today.' }
         },
         {
+            label: 'New Password',
             name: 'new_password',
             rules: {
                 required: 'New password is required',
@@ -39,6 +41,7 @@ export default function ChangePasswordForm({
             fieldProps: { helperText: `At least ${MIN_PASSWORD_LENGTH} characters.` }
         },
         {
+            label: 'Confirm New Password',
             name: 'confirm_password',
             rules: {
                 required: 'Please confirm your new password',

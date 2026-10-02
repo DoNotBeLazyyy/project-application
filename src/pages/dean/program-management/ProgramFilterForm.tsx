@@ -25,16 +25,19 @@ export default function ProgramFilterForm({
 
     const fields: FormFieldConfig<ProgramFilterValues>[] = [
         {
+            label: 'Departments',
             name: 'department_ids',
             options: departmentOptions,
             type: 'multi-select'
         },
         {
+            label: 'Program Levels',
             name: 'program_level_ids',
             options: programLevelOptions,
             type: 'multi-select'
         },
         {
+            label: 'Status',
             name: 'is_active',
             options: ACTIVE_OPTIONS,
             type: 'select'

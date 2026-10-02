@@ -16,21 +16,25 @@ export default function CreateUserForm({
     const { roleOptions } = useRoleOptions();
     const fields: FormFieldConfig<AddUserFormValues>[] = [
         {
+            label: 'First Name',
             name: 'first_name',
             type: 'text',
             rules: { required: 'Required' }
         },
         {
+            label: 'Last Name',
             name: 'last_name',
             type: 'text',
             rules: { required: 'Required' }
         },
         {
+            label: 'Email',
             name: 'email',
             type: 'email',
             rules: { required: 'Required' }
         },
         {
+            label: 'Role',
             name: 'role_code',
             type: 'select',
             options: roleOptions

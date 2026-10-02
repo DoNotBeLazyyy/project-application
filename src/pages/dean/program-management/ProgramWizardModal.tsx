@@ -85,6 +85,7 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly || isCodeDisabled,
             fieldProps: { helperText: 'Unique program code, e.g. BSCS' },
+            label: 'Program Code',
             name: 'code',
             rules: readOnly || isCodeDisabled
                 ? undefined
@@ -95,6 +96,7 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly,
             fieldProps: { helperText: 'Full program name, e.g. Bachelor of Science in Computer Science' },
+            label: 'Program Name',
             name: 'name',
             rules: readOnly ? undefined : { required: 'Program name is required' },
             type: 'text',
@@ -103,6 +105,7 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly,
             fieldProps: { helperText: 'Department that owns this program' },
+            label: 'Department',
             name: 'department_id',
             options: departmentOptions,
             rules: readOnly ? undefined : { required: 'Please select a department' },
@@ -111,6 +114,7 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly,
             fieldProps: { helperText: 'Academic level of the program' },
+            label: 'Program Level',
             name: 'program_level_id',
             options: programLevelOptions,
             rules: readOnly ? undefined : { required: 'Please select a program level' },
@@ -119,6 +123,7 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly,
             fieldProps: { helperText: 'Academic / School Year for this program' },
+            label: 'Academic Year',
             name: 'school_year_id',
             options: schoolYearOptions,
             rules: readOnly ? undefined : { required: 'Please select an academic year' },
@@ -127,11 +132,13 @@ export default function ProgramWizardModal({
         {
             disabled: readOnly,
             fieldProps: { helperText: 'Total units across the whole program (optional)' },
+            label: 'Total Units',
             name: 'total_units',
             type: 'number'
         },
         {
             disabled: readOnly,
+            label: 'Duration (Years)',
             name: 'years_duration',
             rules: readOnly ? undefined : {
                 required: 'Number of years is required',
@@ -151,6 +158,7 @@ export default function ProgramWizardModal({
                 resize: 'vertical',
                 rows: 3
             },
+            label: 'Description',
             name: 'description',
             type: 'text-area',
             gridCols: 2

@@ -20,6 +20,7 @@ export default function RoleForm({
         {
             disabled: disabled || isCodeDisabled,
             fieldProps: { helperText: 'Letters, numbers and underscores, e.g. DEAN_SECRETARY' },
+            label: 'Role Code',
             name: 'code',
             rules: disabled || isCodeDisabled
                 ? undefined
@@ -35,6 +36,7 @@ export default function RoleForm({
         {
             disabled,
             fieldProps: { helperText: 'Display name shown across the system' },
+            label: 'Role Name',
             name: 'label',
             rules: disabled
                 ? undefined
@@ -49,6 +51,7 @@ export default function RoleForm({
         },
         {
             disabled,
+            label: 'Description',
             name: 'description',
             type: 'text-area'
         }

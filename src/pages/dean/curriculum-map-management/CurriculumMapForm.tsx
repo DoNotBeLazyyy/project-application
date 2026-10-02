@@ -88,6 +88,7 @@ export default function CurriculumMapForm({
         {
             disabled,
             fieldProps: { helperText: 'Select the course to add to this curriculum' },
+            label: 'Course',
             name: 'course_id',
             options: courseOptions,
             rules: disabled
@@ -98,6 +99,7 @@ export default function CurriculumMapForm({
         {
             disabled,
             fieldProps: { helperText: 'Year level when this course is taken' },
+            label: 'Year Level',
             name: 'year_level',
             options: YEAR_LEVEL_OPTIONS,
             rules: disabled
@@ -108,6 +110,7 @@ export default function CurriculumMapForm({
         {
             disabled,
             fieldProps: { helperText: 'Term when this course is offered' },
+            label: 'Term Type',
             name: 'term_type_id',
             options: termTypeOptions,
             rules: disabled
@@ -118,12 +121,14 @@ export default function CurriculumMapForm({
         {
             disabled,
             fieldProps: { helperText: 'Lecture units for this program (override default if needed)' },
+            label: 'Lecture Units',
             name: 'lecture_units',
             type: 'number'
         },
         {
             disabled,
             fieldProps: { helperText: 'Laboratory units for this program (override default if needed)' },
+            label: 'Laboratory Units',
             name: 'laboratory_units',
             type: 'number'
         },

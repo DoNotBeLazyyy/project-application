@@ -64,12 +64,14 @@ export default function AssessmentSettingsForm({
 
     const baseFields: FormFieldConfig<AssessmentFormValues>[] = [
         {
+            label: 'Title',
             name: 'title',
             rules: { required: 'Required' },
             type: 'text',
             gridCols: 2
         },
         {
+            label: 'Assessment Type',
             name: 'assessment_type',
             options: ASSESSMENT_TYPE_OPTIONS,
             rules: { required: 'Required' },
@@ -77,33 +79,39 @@ export default function AssessmentSettingsForm({
             gridCols: 2
         },
         {
+            label: 'Description',
             name: 'description',
             type: 'text-area',
             gridCols: 2
         },
         {
+            label: 'Grading Component',
             name: 'grading_component_id',
             options: componentOptions,
             type: 'select',
             gridCols: 2
         },
         {
+            label: 'Total Points',
             name: 'total_points',
             rules: { required: 'Required', min: { value: 1, message: 'Must be at least 1' } },
             type: 'number',
             gridCols: 2
         },
         {
+            label: 'Passing Points',
             name: 'passing_points',
             type: 'number',
             gridCols: 2
         },
         {
+            label: 'Time Limit (Minutes)',
             name: 'time_limit_minutes',
             type: 'number',
             gridCols: 2
         },
         {
+            label: 'Max Attempts',
             name: 'max_attempts',
             type: 'number',
             gridCols: 2
@@ -128,6 +136,7 @@ export default function AssessmentSettingsForm({
         },
         ...(!showAllQuestions
             ? [{
+                label: 'Questions Per Page',
                 name: 'questions_per_page' as const,
                 rules: {
                     required: 'Required when not showing all questions',
