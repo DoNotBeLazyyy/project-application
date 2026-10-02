@@ -9,6 +9,8 @@ import { useDepartmentOptions } from '@pages/admin/department-management/useDepa
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
+import { getDepartmentCourseCodes } from '@services/course/course.service';
+import { generateCourseCode } from '@utils/course.util';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -279,12 +281,53 @@ export default function CourseForm({
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
 
-    const { departmentOptions } = useDepartmentOptions();
+    const { departmentOptions, departments } = useDepartmentOptions();
     const { courseTypeOptions } = useCourseTypeOptions();
     const { minimumGradeOptions } = useMinimumGradeOptions();
     const { courseOptions: allCourseOptions } = useCourseOptions({
         excludeIds: [excludeCourseId].filter((id): id is string => !!id)
     });
+
+    const watchedTitle = useWatch({ control, name: 'title' });
+    const watchedDepartmentId = useWatch({ control, name: 'department_id' });
+    const [deptCoursesInfo, setDeptCoursesInfo] = useState<{ count: number; codes: string[] }>({
+        count: 0,
+        codes: []
+    });
+
+    useEffect(() => {
+        let isMounted = true;
+        if (!watchedDepartmentId) {
+            setDeptCoursesInfo({ count: 0, codes: [] });
+            return;
+        }
+
+        getDepartmentCourseCodes(watchedDepartmentId).then((res) => {
+            if (isMounted && res.data) {
+                setDeptCoursesInfo(res.data);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [watchedDepartmentId]);
+
+    // System generate course code for new course creation
+    useEffect(() => {
+        if (excludeCourseId || isCodeDisabled || !setValue) return;
+
+        const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
+        const generatedCode = generateCourseCode({
+            departmentCode: selectedDept?.code,
+            departmentName: selectedDept?.label,
+            title: watchedTitle || '',
+            courseCount: deptCoursesInfo.count,
+            existingCodes: deptCoursesInfo.codes
+        });
+
+        setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+    }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, isCodeDisabled, setValue]);
 
     const {
         fields: courseTypeFields,
@@ -339,7 +382,11 @@ export default function CourseForm({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Unique course code, e.g. CS101' },
+            fieldProps: {
+                helperText: excludeCourseId || isCodeDisabled
+                    ? 'Unique course code, e.g. CS101'
+                    : 'System-generated based on department, title, and course count.'
+            },
             label: 'Course Code',
             name: 'code',
             rules: disabled

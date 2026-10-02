@@ -35,6 +35,30 @@ export async function listCourses(
     });
 }
 
+export async function getDepartmentCourseCodes(
+    departmentId: string
+): Promise<ServiceResult<{ count: number; codes: string[] }>> {
+    if (!departmentId) {
+        return { data: { count: 0, codes: [] }, error: null };
+    }
+    const res = await listCourses(1, 1000, '', [], {
+        department_ids: [departmentId],
+        course_type_ids: [],
+        is_active: 'All'
+    });
+    if (res.error) {
+        return { data: { count: 0, codes: [] }, error: res.error };
+    }
+    const items = res.data?.items ?? [];
+    return {
+        data: {
+            count: res.data?.total_count ?? items.length,
+            codes: items.map((item) => item.code)
+        },
+        error: null
+    };
+}
+
 export async function getCourseById(
     courseId: string
 ): Promise<ServiceResult<CourseFormValues>> {

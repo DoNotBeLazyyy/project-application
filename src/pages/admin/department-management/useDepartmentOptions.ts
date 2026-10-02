@@ -4,6 +4,7 @@ import { DepartmentOption } from '@type/department.type';
 import { useEffect, useState } from 'react';
 
 export function useDepartmentOptions() {
+    const [departments, setDepartments] = useState<DepartmentOption[]>([]);
     const [departmentOptions, setDepartmentOptions] = useState<CommonSelectOption[]>([]);
 
     useEffect(function() {
@@ -11,6 +12,7 @@ export function useDepartmentOptions() {
             const result = await getDepartments();
 
             if (result.data) {
+                setDepartments(result.data);
                 setDepartmentOptions(
                     result.data.map((department: DepartmentOption) => ({
                         label: department.label,
@@ -23,5 +25,5 @@ export function useDepartmentOptions() {
         fetchDepartments();
     }, []);
 
-    return { departmentOptions };
+    return { departments, departmentOptions };
 }
