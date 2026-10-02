@@ -9,7 +9,7 @@ import InstitutionalIdentityCard from '@components/dashboard/InstitutionalIdenti
 import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSummaryCard';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
-import { BookOpenIcon, CalendarCheckIcon, GraduationCapIcon, UserFocusIcon } from '@phosphor-icons/react';
+import { BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon } from '@phosphor-icons/react';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getStudentInsight } from '@services/analytics.service';
 import { getMyProfile } from '@services/profile.service';
@@ -177,6 +177,31 @@ export default function StudentDashboard() {
                         }}
                     >
                         Assign Program
+                    </CommonButton>
+                </div>
+            )}
+
+            {profile?.pending_profile_request?.status === 'Pending' && (
+                <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-4 rounded-lg flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                        <ClockIcon size={28} className="text-(--mui-palette-info-main) shrink-0" />
+                        <div>
+                            <p className="font-semibold text-(--mui-palette-text-primary) text-sm m-0">
+                                Profile Verification Pending Approval
+                            </p>
+                            <p className="text-(--mui-palette-text-secondary) text-xs m-0">
+                                Your requested profile or program changes have been submitted to the Office of the Registrar for verification and approval.
+                            </p>
+                        </div>
+                    </div>
+                    <CommonButton
+                        size="small"
+                        variant="outlined"
+                        onClick={function() {
+                            navigate('/student/profile');
+                        }}
+                    >
+                        View Status
                     </CommonButton>
                 </div>
             )}
