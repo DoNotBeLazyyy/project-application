@@ -35,7 +35,8 @@ export type CommonInputProps = TextFieldProps & {
 
     /** Whether to open the error tooltip by default */
     defaultOpenErrorTooltip?: boolean;
-    isFirstError?: boolean;
+    // Guidance or tooltip description content
+    description?: ReactNode;
 
     // Callback invoked after the built-in clear button empties the field
     onClear?: () => void;
@@ -58,6 +59,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     className,
     containerClassName,
     defaultOpenErrorTooltip,
+    description,
     error,
     fullWidth,
     hasClearButton = false,
@@ -96,9 +98,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     const labelErrorMessage = label && error
         ? helperText
         : undefined;
-    const labelDescription = label && !error
-        ? helperText
-        : undefined;
+    const labelDescription = description ?? (label && !error ? helperText : undefined);
     const inlineHelperText = label
         ? undefined
         : helperText;
@@ -177,22 +177,23 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
         )
         : null;
 
+    const hasCustomEndAdornment = Boolean(clearAdornment || passwordAdornment || inputSlotProps?.endAdornment);
+    const resolvedEndAdornment = hasCustomEndAdornment
+        ? (
+            <>
+                {clearAdornment}
+                {inputSlotProps?.endAdornment}
+                {passwordAdornment}
+            </>
+        )
+        : undefined;
+
     const resolvedSlotProps: TextFieldProps['slotProps'] = {
         ...slotProps,
         input: {
             ...inputSlotProps,
             readOnly: isReadOnly,
-            ...(clearAdornment || passwordAdornment
-                ? {
-                    endAdornment: (
-                        <>
-                            {clearAdornment}
-                            {inputSlotProps?.endAdornment}
-                            {passwordAdornment}
-                        </>
-                    )
-                }
-                : {})
+            ...(resolvedEndAdornment !== undefined ? { endAdornment: resolvedEndAdornment } : {})
         }
     };
 

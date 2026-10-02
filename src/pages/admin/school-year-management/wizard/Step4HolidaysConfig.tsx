@@ -281,11 +281,10 @@ export default function Step4HolidaysConfig({
                                     </div>
 
                                     <div>
-                                        <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                            Start Date
-                                        </label>
                                         <CommonDatePicker
                                             disabled={disabled}
+                                            label="Start Date"
+                                            size="small"
                                             value={current.start_date || ''}
                                             onChange={(val) => {
                                                 setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true });
@@ -294,11 +293,10 @@ export default function Step4HolidaysConfig({
                                     </div>
 
                                     <div>
-                                        <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                            End Date
-                                        </label>
                                         <CommonDatePicker
                                             disabled={disabled}
+                                            label="End Date"
+                                            size="small"
                                             value={current.end_date || ''}
                                             onChange={(val) => {
                                                 setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true });
@@ -308,12 +306,10 @@ export default function Step4HolidaysConfig({
                                 </div>
 
                                 <div>
-                                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                        Description / Note (Optional)
-                                    </label>
                                     <CommonInput
                                         disabled={disabled}
                                         fullWidth
+                                        label="Description / Note (Optional)"
                                         placeholder="e.g. Regular National Non-Working Holiday"
                                         size="small"
                                         value={current.description || ''}

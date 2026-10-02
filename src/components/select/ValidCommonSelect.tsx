@@ -67,6 +67,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
                     : undefined
             }
             inputRef={ref}
+            isRequired={props.isRequired || Boolean(rules?.required)}
             readOnly={readOnly}
             slotProps={{
                 ...props.slotProps,

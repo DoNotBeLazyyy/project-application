@@ -1,12 +1,20 @@
+import FormLabel from '@components/form/FormLabel';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
 import { DateTime } from 'luxon';
-import { useRef, useState } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
+    containerClassName?: string;
+    labelClassName?: string;
+    label?: ReactNode;
+    description?: ReactNode;
+    isRequired?: boolean;
+    defaultOpenErrorTooltip?: boolean;
+    isFirstError?: boolean;
     error?: boolean;
     helperText?: string;
     fullWidth?: boolean;
@@ -18,6 +26,13 @@ export type ValidCommonDatePickerProps<T extends FieldValues = FieldValues> =
     CommonDatePickerProps & UseControllerProps<T>;
 
 export interface StandaloneCommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
+    containerClassName?: string;
+    labelClassName?: string;
+    label?: ReactNode;
+    description?: ReactNode;
+    isRequired?: boolean;
+    defaultOpenErrorTooltip?: boolean;
+    isFirstError?: boolean;
     value?: string | null;
     onChange: (dateStr: string) => void;
     error?: boolean;
@@ -30,15 +45,23 @@ export interface StandaloneCommonDatePickerProps extends Omit<DatePickerProps, '
 }
 
 export function CommonDatePicker({
-    value,
-    onChange,
+    className,
+    containerClassName,
+    defaultOpenErrorTooltip,
+    description,
+    disabled,
     error: errorProp,
+    fullWidth = true,
     hasHelper = false,
     helperText: helperTextProp,
-    fullWidth = true,
-    disabled,
+    isFirstError,
+    isRequired,
+    label,
+    labelClassName,
+    onChange,
     readOnly,
     size = 'large',
+    value,
     ...props
 }: StandaloneCommonDatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -84,6 +107,11 @@ export function CommonDatePicker({
         }
     }
 
+    const labelErrorMessage = label && errorProp
+        ? helperTextProp
+        : undefined;
+    const labelDescription = description ?? (label && !errorProp ? helperTextProp : undefined);
+
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
         ? props.slotProps.textField
         : undefined;
@@ -91,68 +119,97 @@ export function CommonDatePicker({
     const resolvedSize = externalSize ?? size;
 
     return (
-        <LocalizationProvider dateAdapter={AdapterLuxon}>
-            <DatePicker
-                {...props}
-                disabled={disabled}
-                open={isNonInteractive ? false : isOpen}
-                readOnly={readOnly}
-                slotProps={{
-                    ...props.slotProps,
-                    openPickerButton: {
-                        disabled: isNonInteractive,
-                        ...(typeof props.slotProps?.openPickerButton === 'object'
-                            ? props.slotProps.openPickerButton
-                            : {})
-                    },
-                    textField: {
-                        className: externalClassName,
-                        disabled,
-                        error: errorProp,
-                        fullWidth,
-                        helperText: hasHelper ? helperTextProp : undefined,
-                        size: resolvedSize,
-                        variant: 'outlined' as const,
-                        ...restTextFieldProps,
-                        onFocus: () => {
-                            if (isNonInteractive) {
-                                return;
-                            }
-                            handleFocus();
+        <div
+            className={
+                classMerge(
+                    'flex flex-col gap-(--mui-tokens-spacing-2) relative',
+                    fullWidth && 'w-full',
+                    containerClassName
+                )
+            }
+        >
+            {label && (
+                <FormLabel
+                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
+                    isRequired={isRequired}
+                    label={label}
+                />
+            )}
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+                <DatePicker
+                    {...props}
+                    className={className}
+                    disabled={disabled}
+                    open={isNonInteractive ? false : isOpen}
+                    readOnly={readOnly}
+                    slotProps={{
+                        ...props.slotProps,
+                        openPickerButton: {
+                            disabled: isNonInteractive,
+                            ...(typeof props.slotProps?.openPickerButton === 'object'
+                                ? props.slotProps.openPickerButton
+                                : {})
                         },
-                        sx: [
-                            ...(disabled
-                                ? [{
-                                    pointerEvents: 'none' as const
-                                }]
-                                : []),
-                            ...(externalTextFieldProps?.sx
-                                ? (Array.isArray(externalTextFieldProps.sx)
-                                    ? externalTextFieldProps.sx
-                                    : [externalTextFieldProps.sx])
-                                : [])
-                        ]
-                    }
-                }}
-                value={resolvedValue}
-                onChange={handleChange}
-                onClose={handleClose}
-                onOpen={handleOpen}
-            />
-        </LocalizationProvider>
+                        textField: {
+                            className: externalClassName,
+                            disabled,
+                            error: errorProp,
+                            fullWidth,
+                            helperText: label ? undefined : (hasHelper ? helperTextProp : undefined),
+                            size: resolvedSize,
+                            variant: 'outlined' as const,
+                            ...restTextFieldProps,
+                            onFocus: () => {
+                                if (isNonInteractive) {
+                                    return;
+                                }
+                                handleFocus();
+                            },
+                            sx: [
+                                ...(disabled
+                                    ? [{
+                                        pointerEvents: 'none' as const
+                                    }]
+                                    : []),
+                                ...(externalTextFieldProps?.sx
+                                    ? (Array.isArray(externalTextFieldProps.sx)
+                                        ? externalTextFieldProps.sx
+                                        : [externalTextFieldProps.sx])
+                                    : [])
+                            ]
+                        }
+                    }}
+                    value={resolvedValue}
+                    onChange={handleChange}
+                    onClose={handleClose}
+                    onOpen={handleOpen}
+                />
+            </LocalizationProvider>
+        </div>
     );
 }
 
 export default function ValidCommonDatePicker<T extends FieldValues = FieldValues>({
+    className,
+    containerClassName,
     control,
-    name,
-    rules,
+    defaultOpenErrorTooltip,
+    description,
+    disabled,
     error: errorProp,
+    fullWidth = true,
     hasHelper = true,
     helperText: helperTextProp,
-    fullWidth = true,
-    disabled,
+    isFirstError,
+    isRequired,
+    label,
+    labelClassName,
+    name,
     readOnly,
+    rules,
     size = 'large',
     ...props
 }: ValidCommonDatePickerProps<T>) {
@@ -167,6 +224,10 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         : null;
 
     const isNonInteractive = Boolean(disabled || readOnly);
+    const isError = errorProp ?? !!fieldState.error;
+    const errorMessage = fieldState.error?.message ?? helperTextProp;
+    const labelErrorMessage = label && isError ? errorMessage : undefined;
+    const labelDescription = description ?? (label && !isError ? helperTextProp : undefined);
 
     function handleChange(date: DateTime | null) {
         if (isNonInteractive) {
@@ -211,59 +272,78 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     const resolvedSize = externalSize ?? size;
 
     return (
-        <LocalizationProvider dateAdapter={AdapterLuxon}>
-            <DatePicker
-                {...props}
-                disabled={disabled}
-                inputRef={ref}
-                open={isNonInteractive
-                    ? false
-                    : isOpen}
-                readOnly={readOnly}
-                slotProps={{
-                    ...props.slotProps,
-                    openPickerButton: {
-                        disabled: isNonInteractive,
-                        ...(typeof props.slotProps?.openPickerButton === 'object'
-                            ? props.slotProps.openPickerButton
-                            : {})
-                    },
-                    textField: {
-                        className: externalClassName,
-                        disabled,
-                        error: errorProp ?? !!fieldState.error,
-                        fullWidth,
-                        helperText: hasHelper
-                            ? fieldState.error?.message ?? helperTextProp
-                            : undefined,
-                        size: resolvedSize,
-                        variant: 'outlined' as const,
-                        ...restTextFieldProps,
-                        onFocus: () => {
-                            if (isNonInteractive) {
-                                return;
-                            }
-                            handleFocus();
+        <div
+            className={
+                classMerge(
+                    'flex flex-col gap-(--mui-tokens-spacing-2) relative',
+                    fullWidth && 'w-full',
+                    containerClassName
+                )
+            }
+        >
+            {label && (
+                <FormLabel
+                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
+                    isRequired={isRequired || Boolean(rules?.required)}
+                    label={label}
+                />
+            )}
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+                <DatePicker
+                    {...props}
+                    className={className}
+                    disabled={disabled}
+                    inputRef={ref}
+                    open={isNonInteractive
+                        ? false
+                        : isOpen}
+                    readOnly={readOnly}
+                    slotProps={{
+                        ...props.slotProps,
+                        openPickerButton: {
+                            disabled: isNonInteractive,
+                            ...(typeof props.slotProps?.openPickerButton === 'object'
+                                ? props.slotProps.openPickerButton
+                                : {})
                         },
-                        sx: [
-                            ...(disabled
-                                ? [{
-                                    pointerEvents: 'none' as const
-                                }]
-                                : []),
-                            ...(externalTextFieldProps?.sx
-                                ? (Array.isArray(externalTextFieldProps.sx)
-                                    ? externalTextFieldProps.sx
-                                    : [externalTextFieldProps.sx])
-                                : [])
-                        ]
-                    }
-                }}
-                value={resolvedValue}
-                onChange={handleChange}
-                onClose={handleClose}
-                onOpen={handleOpen}
-            />
-        </LocalizationProvider>
+                        textField: {
+                            className: externalClassName,
+                            disabled,
+                            error: isError,
+                            fullWidth,
+                            helperText: label ? undefined : (hasHelper ? errorMessage : undefined),
+                            size: resolvedSize,
+                            variant: 'outlined' as const,
+                            ...restTextFieldProps,
+                            onFocus: () => {
+                                if (isNonInteractive) {
+                                    return;
+                                }
+                                handleFocus();
+                            },
+                            sx: [
+                                ...(disabled
+                                    ? [{
+                                        pointerEvents: 'none' as const
+                                    }]
+                                    : []),
+                                ...(externalTextFieldProps?.sx
+                                    ? (Array.isArray(externalTextFieldProps.sx)
+                                        ? externalTextFieldProps.sx
+                                        : [externalTextFieldProps.sx])
+                                    : [])
+                            ]
+                        }
+                    }}
+                    value={resolvedValue}
+                    onChange={handleChange}
+                    onClose={handleClose}
+                    onOpen={handleOpen}
+                />
+            </LocalizationProvider>
+        </div>
     );
 }

@@ -5,8 +5,8 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { BroomIcon, CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
-import { useEffect, useRef } from 'react';
-import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
+import { useEffect, useMemo, useRef } from 'react';
+import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
     checkSchoolYearCodeConflict,
     checkSchoolYearDateConflict,
@@ -46,6 +46,12 @@ export default function Step1SchoolYearInfo({
     const endDate = useWatch({ control, name: 'end_date' });
     const code = useWatch({ control, name: 'code' });
     const label = useWatch({ control, name: 'label' });
+
+    const { errors } = useFormState({ control });
+    const firstErrorField = useMemo(() => {
+        const step1Fields: (keyof AcademicYearWizardFormValues)[] = ['start_date', 'end_date', 'code', 'label'];
+        return step1Fields.find((f) => Boolean(errors[f]));
+    }, [errors]);
 
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
@@ -238,13 +244,13 @@ export default function Step1SchoolYearInfo({
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        <span>Start Date <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Official start date of the academic calendar. Terms must begin on or after this date." size={14} />
-                    </label>
                     <ValidCommonDatePicker
                         control={control}
+                        description="Official start date of the academic calendar. Terms must begin on or after this date."
                         disabled={disabled}
+                        isFirstError={firstErrorField === 'start_date'}
+                        isRequired
+                        label="Start Date"
                         name="start_date"
                         rules={{
                             required: 'Start date is required',
@@ -276,13 +282,13 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        <span>End Date <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Official concluding date of this academic year. Terms must end on or before this date." size={14} />
-                    </label>
                     <ValidCommonDatePicker
                         control={control}
+                        description="Official concluding date of this academic year. Terms must end on or before this date."
                         disabled={disabled}
+                        isFirstError={firstErrorField === 'end_date'}
+                        isRequired
+                        label="End Date"
                         name="end_date"
                         rules={{
                             required: 'End date is required',
@@ -314,20 +320,20 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        <span>Academic Year Code <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Auto-generated unique system identifier for this academic year based on Start and End dates (e.g. AY-2026-2027)." size={14} />
-                    </label>
                     <ValidCommonInput
                         control={control}
+                        description="Auto-generated unique system identifier for this academic year based on Start and End dates (e.g. AY-2026-2027)."
                         disabled={true}
+                        isFirstError={firstErrorField === 'code'}
+                        isRequired
+                        label="Academic Year Code"
                         name="code"
                         placeholder="e.g. AY-2026-2027"
-                        onChange={() => {
-                            userEditedCodeRef.current = true;
-                        }}
                         rules={{
                             required: 'Academic year code is required'
+                        }}
+                        onChange={() => {
+                            userEditedCodeRef.current = true;
                         }}
                     />
                     {sourceSchoolYear && (
@@ -338,20 +344,20 @@ export default function Step1SchoolYearInfo({
                 </div>
 
                 <div>
-                    <label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-                        <span>Academic Year Label <span className="text-red-500">*</span></span>
-                        <CommonInfoTooltip content="Auto-generated title displayed on portal headers, report cards, and official transcripts based on Start and End dates." size={14} />
-                    </label>
                     <ValidCommonInput
                         control={control}
+                        description="Auto-generated title displayed on portal headers, report cards, and official transcripts based on Start and End dates."
                         disabled={true}
+                        isFirstError={firstErrorField === 'label'}
+                        isRequired
+                        label="Academic Year Label"
                         name="label"
                         placeholder="e.g. Academic Year 2026-2027"
-                        onChange={() => {
-                            userEditedLabelRef.current = true;
-                        }}
                         rules={{
                             required: 'Academic year label is required'
+                        }}
+                        onChange={() => {
+                            userEditedLabelRef.current = true;
                         }}
                     />
                     {sourceSchoolYear && (

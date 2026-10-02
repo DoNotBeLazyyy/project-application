@@ -320,14 +320,9 @@ export default function Step2TermsConfig({
                         >
                             {/* Card Header */}
                             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/40 pb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
-                                        {index + 1}
-                                    </span>
-                                    <h4 className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100">
-                                        {currentTerm.term_type_label || `Term #${index + 1}`}
-                                    </h4>
-                                </div>
+                                <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
+                                    #{index + 1}
+                                </span>
 
                                 {!disabled && (
                                     <div className="flex items-center gap-2">
@@ -399,13 +394,12 @@ export default function Step2TermsConfig({
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {/* Term Type Input */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Term Type / Name <span className="text-red-500">*</span></span>
-                                        <CommonInfoTooltip content="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)." size={14} />
-                                    </label>
                                     <CommonInput
+                                        description="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)."
                                         disabled={disabled}
                                         fullWidth
+                                        isRequired
+                                        label="Term Type / Name"
                                         placeholder="e.g. 1st Semester"
                                         size="small"
                                         slotProps={{
@@ -435,13 +429,13 @@ export default function Step2TermsConfig({
 
                                 {/* Term Start Date */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Term Start Date <span className="text-red-500">*</span></span>
-                                        <CommonInfoTooltip content="Official date when classes begin for this term." size={14} />
-                                    </label>
                                     <CommonDatePicker
+                                        description="Official date when classes begin for this term."
                                         disabled={disabled}
                                         error={hasPrecedingConflict}
+                                        isRequired
+                                        label="Term Start Date"
+                                        size="small"
                                         value={currentTerm.start_date || ''}
                                         onChange={(val) => handleUpdateTermDate(index, 'start_date', val)}
                                     />
@@ -449,13 +443,13 @@ export default function Step2TermsConfig({
 
                                 {/* Term End Date */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Term End Date <span className="text-red-500">*</span></span>
-                                        <CommonInfoTooltip content="Official date when classes conclude for this term." size={14} />
-                                    </label>
                                     <CommonDatePicker
+                                        description="Official date when classes conclude for this term."
                                         disabled={disabled}
                                         error={hasDateOrderError}
+                                        isRequired
+                                        label="Term End Date"
+                                        size="small"
                                         value={currentTerm.end_date || ''}
                                         onChange={(val) => handleUpdateTermDate(index, 'end_date', val)}
                                     />
@@ -463,13 +457,12 @@ export default function Step2TermsConfig({
 
                                 {/* Max Credit Units for this term */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Max Units <span className="text-red-500">*</span></span>
-                                        <CommonInfoTooltip content="Maximum credit units a student can register for in this term (1 - 60)." size={14} />
-                                    </label>
                                     <CommonNumberInput
+                                        description="Maximum credit units a student can register for in this term (1 - 60)."
                                         disabled={disabled}
                                         fullWidth
+                                        isRequired
+                                        label="Max Units"
                                         max={60}
                                         min={1}
                                         placeholder="24"
@@ -483,12 +476,11 @@ export default function Step2TermsConfig({
 
                                 {/* Enrollment Start Date */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Enrollment Opens</span>
-                                        <CommonInfoTooltip content="Date when student course registration and online enrollment opens." size={14} />
-                                    </label>
                                     <CommonDatePicker
+                                        description="Date when student course registration and online enrollment opens."
                                         disabled={disabled}
+                                        label="Enrollment Opens"
+                                        size="small"
                                         value={currentTerm.enrollment_start_date || ''}
                                         onChange={(val) => {
                                             setValue(`terms.${index}.enrollment_start_date`, val, { shouldDirty: true });
@@ -498,12 +490,11 @@ export default function Step2TermsConfig({
 
                                 {/* Enrollment End Date */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Enrollment Closes</span>
-                                        <CommonInfoTooltip content="Final date for student course registration, late enrollment, and add-drop requests." size={14} />
-                                    </label>
                                     <CommonDatePicker
+                                        description="Final date for student course registration, late enrollment, and add-drop requests."
                                         disabled={disabled}
+                                        label="Enrollment Closes"
+                                        size="small"
                                         value={currentTerm.enrollment_end_date || ''}
                                         onChange={(val) => {
                                             setValue(`terms.${index}.enrollment_end_date`, val, { shouldDirty: true });
@@ -513,12 +504,11 @@ export default function Step2TermsConfig({
 
                                 {/* Grading Submission Deadline */}
                                 <div>
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Grading Deadline</span>
-                                        <CommonInfoTooltip content="Final deadline for faculty to encode and submit final grades." size={14} />
-                                    </label>
                                     <CommonDatePicker
+                                        description="Final deadline for faculty to encode and submit final grades."
                                         disabled={disabled}
+                                        label="Grading Deadline"
+                                        size="small"
                                         value={currentTerm.grading_deadline || ''}
                                         onChange={(val) => {
                                             setValue(`terms.${index}.grading_deadline`, val, { shouldDirty: true });
@@ -528,18 +518,16 @@ export default function Step2TermsConfig({
 
                                 {/* Evaluation Scope for this term */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                        <span>Faculty Evaluation Scope</span>
-                                        <CommonInfoTooltip content="Determines whether student evaluation of faculty is conducted per period or per term for this specific term." size={14} />
-                                    </label>
                                     <CommonSelect
+                                        description="Determines whether student evaluation of faculty is conducted per period or per term for this specific term."
                                         disabled={disabled}
                                         fullWidth
+                                        label="Faculty Evaluation Scope"
                                         options={[
                                             { label: 'Per Grading Period', value: 'Period' },
                                             { label: 'Per Term', value: 'Term' }
                                         ]}
-                                        size="medium"
+                                        size="small"
                                         value={currentTerm.evaluation_scope || 'Period'}
                                         onChange={(e) => {
                                             setValue(`terms.${index}.evaluation_scope`, (e.target.value as any) || 'Period', { shouldDirty: true });

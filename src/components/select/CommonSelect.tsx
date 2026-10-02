@@ -1,9 +1,10 @@
+import FormLabel from '@components/form/FormLabel';
 import MenuItem from '@mui/material/MenuItem';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { StringNum } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 export type SharedStringSizeProps = 'pagination' | 'xsmall' | 'small' | 'medium' | 'large';
 export interface CommonSelectOption {
@@ -20,6 +21,13 @@ export interface CommonSelectProps extends Omit<TextFieldProps, 'select' | 'chil
 
     // Whether the select field is read-only
     readOnly?: boolean;
+
+    containerClassName?: string;
+    labelClassName?: string;
+    isRequired?: boolean;
+    defaultOpenErrorTooltip?: boolean;
+    isFirstError?: boolean;
+    description?: ReactNode;
 }
 
 /**
@@ -47,7 +55,17 @@ export interface CommonSelectProps extends Omit<TextFieldProps, 'select' | 'chil
  */
 const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
     className,
+    containerClassName,
+    defaultOpenErrorTooltip,
+    description,
     disabled,
+    error,
+    fullWidth,
+    helperText,
+    isFirstError,
+    isRequired,
+    label,
+    labelClassName,
     options,
     readOnly,
     size = 'large',
@@ -56,45 +74,72 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
     ...props
 }, ref) => {
     const isNonInteractive = Boolean(disabled || readOnly);
+    const labelErrorMessage = label && error
+        ? helperText
+        : undefined;
+    const labelDescription = description ?? (label && !error ? helperText : undefined);
 
     return (
-        <TextField
-            className={className}
-            disabled={disabled}
-            ref={ref}
-            select
-            size={size}
-            variant={variant}
-            {...props}
-            label=""
-            slotProps={{
-                ...slotProps,
-                input: {
-                    ...slotProps?.input,
-                    readOnly
-                },
-                select: {
-                    displayEmpty: true,
-                    ...slotProps?.select,
-                    readOnly,
-                    IconComponent: (iconProps) => (
-                        <CaretDownIcon
-                            {...iconProps}
-                            weight="bold"
-                        />
-                    )
-                }
-            }}
+        <div
+            className={
+                classMerge(
+                    'flex flex-col gap-(--mui-tokens-spacing-2) relative',
+                    fullWidth && 'w-full',
+                    containerClassName
+                )
+            }
         >
-            {options.map(({ label, value }) => (
-                <MenuItem
-                    key={value}
-                    value={value}
-                >
-                    {label}
-                </MenuItem>
-            ))}
-        </TextField>
+            {label && (
+                <FormLabel
+                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    description={labelDescription}
+                    errorMessage={labelErrorMessage}
+                    isRequired={isRequired}
+                    label={label}
+                />
+            )}
+            <TextField
+                className={className}
+                disabled={disabled}
+                error={error}
+                fullWidth={fullWidth}
+                helperText={label ? undefined : helperText}
+                label=""
+                ref={ref}
+                select
+                size={size}
+                variant={variant}
+                {...props}
+                slotProps={{
+                    ...slotProps,
+                    input: {
+                        ...slotProps?.input,
+                        readOnly
+                    },
+                    select: {
+                        displayEmpty: true,
+                        ...slotProps?.select,
+                        readOnly,
+                        IconComponent: (iconProps) => (
+                            <CaretDownIcon
+                                {...iconProps}
+                                weight="bold"
+                            />
+                        )
+                    }
+                }}
+            >
+                {options.map(({ label: optLabel, value }) => (
+                    <MenuItem
+                        key={value}
+                        value={value}
+                    >
+                        {optLabel}
+                    </MenuItem>
+                ))}
+            </TextField>
+        </div>
     );
 });
 CommonSelect.displayName = 'CommonSelect';

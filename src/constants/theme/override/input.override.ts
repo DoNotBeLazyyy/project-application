@@ -254,6 +254,9 @@ export const inputOverrides: ComponentTheme = {
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-tokens-color-common-white)'
                 },
+                '&.common_textarea_input.MuiInputBase-multiline:hover:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly])': {
+                    backgroundColor: 'var(--mui-tokens-color-brand-50, #F2F7FE)'
+                },
                 '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline, &.MuiInputBase-readOnly.common_textarea_input.MuiInputBase-multiline, &[readonly].common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: SURFACE_DISABLED
                 },
@@ -261,7 +264,7 @@ export const inputOverrides: ComponentTheme = {
                     &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]) .MuiOutlinedInput-notchedOutline,
                     &.common_textarea_input.MuiInputBase-multiline:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly]):hover .MuiOutlinedInput-notchedOutline
                 `]: {
-                    border: BORDER_NEUTRAL
+                    border: BORDER_BLUE
                 },
                 '& .MuiInputAdornment-root.MuiInputAdornment-positionStart:not(.MuiInputAdornment-hiddenLabel)': {
                     marginTop: 'var(--mui-tokens-spacing-0)'

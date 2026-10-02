@@ -151,14 +151,9 @@ export default function Step5ThresholdsConfig({
                             >
                                 {/* Row 1: Header with Action Buttons */}
                                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-2.5">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                            #{idx + 1}
-                                        </span>
-                                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                            Threshold #{idx + 1}
-                                        </h4>
-                                    </div>
+                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                        #{idx + 1}
+                                    </span>
 
                                     {!disabled && (
                                         <div className="flex items-center gap-1.5">
@@ -218,13 +213,12 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Threshold Name / Label <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Official title revealed on student rank lists, certificates, and academic summary cards." size={13} />
-                                        </label>
                                         <CommonInput
+                                            description="Official title revealed on student rank lists, certificates, and academic summary cards."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Threshold Name / Label"
                                             placeholder="e.g. Summa Cum Laude, Full Scholar"
                                             size="small"
                                             value={item.label}
@@ -236,13 +230,11 @@ export default function Step5ThresholdsConfig({
                                 {/* Row 3: Unique Code and Status */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Unique Code</span>
-                                            <CommonInfoTooltip content="System identifier code used for automated eligibility queries and SQL rules." size={13} />
-                                        </label>
                                         <CommonInput
+                                            description="System identifier code used for automated eligibility queries and SQL rules."
                                             disabled={disabled}
                                             fullWidth
+                                            label="Unique Code"
                                             placeholder="e.g. summa_cum_laude"
                                             size="small"
                                             value={item.code}
@@ -273,13 +265,11 @@ export default function Step5ThresholdsConfig({
                                 {/* Row 4: Min and Max GWA */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Min GWA</span>
-                                            <CommonInfoTooltip content="Minimum (best) GWA required for this threshold tier (typically 1.00)." size={13} />
-                                        </label>
                                         <CommonNumberInput
+                                            description="Minimum (best) GWA required for this threshold tier (typically 1.00)."
                                             disabled={disabled}
                                             fullWidth
+                                            label="Min GWA"
                                             maxDecimals={2}
                                             minDecimals={2}
                                             placeholder="1.00 (Optional)"
@@ -297,13 +287,12 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Max GWA (Cutoff) <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified." size={13} />
-                                        </label>
                                         <CommonNumberInput
+                                            description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Max GWA (Cutoff)"
                                             maxDecimals={2}
                                             minDecimals={2}
                                             placeholder="1.25"
@@ -318,13 +307,11 @@ export default function Step5ThresholdsConfig({
                                 {/* Row 5: Subject Floor Grade and No Failing Checkbox */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Subject Floor Grade</span>
-                                            <CommonInfoTooltip content="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies." size={13} />
-                                        </label>
                                         <CommonNumberInput
+                                            description="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies."
                                             disabled={disabled}
                                             fullWidth
+                                            label="Subject Floor Grade"
                                             maxDecimals={2}
                                             minDecimals={2}
                                             placeholder="Optional (e.g. 2.50)"

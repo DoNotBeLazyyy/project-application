@@ -250,14 +250,9 @@ export default function Step4TransmutationConfig({
                         >
                             {/* Row 1: Header with Action Buttons */}
                             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                        #{index + 1}
-                                    </span>
-                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                        Grade Rung #{index + 1}
-                                    </h4>
-                                </div>
+                                <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                    #{index + 1}
+                                </span>
 
                                 {!disabled && (
                                     <div className="flex items-center gap-1.5">
@@ -321,13 +316,11 @@ export default function Step4TransmutationConfig({
 
                                 {/* Description */}
                                 <div className="sm:col-span-5 md:col-span-6">
-                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                        <span>Description</span>
-                                        <CommonInfoTooltip content="Human-readable descriptor appearing on report cards and evaluation transcripts." size={13} />
-                                    </label>
                                     <CommonInput
+                                        description="Human-readable descriptor appearing on report cards and evaluation transcripts."
                                         disabled={disabled}
                                         fullWidth
+                                        label="Description"
                                         placeholder="e.g. Excellent, Incomplete, Dropped"
                                         size="small"
                                         value={row.description || ''}
@@ -360,13 +353,12 @@ export default function Step4TransmutationConfig({
                             {isCond ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Mark / Grade <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Status grade code (e.g. INC, DRP, W, NFE)." size={13} />
-                                        </label>
                                         <CommonInput
+                                            description="Status grade code (e.g. INC, DRP, W, NFE)."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Mark / Grade"
                                             placeholder="e.g. INC, DRP"
                                             size="small"
                                             value={row.label}
@@ -383,13 +375,12 @@ export default function Step4TransmutationConfig({
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {/* Mark / Grade */}
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Mark / Grade <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)." size={13} />
-                                        </label>
                                         <CommonInput
+                                            description="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Mark / Grade"
                                             placeholder="e.g. 1.25, 3.00"
                                             size="small"
                                             value={row.label}
@@ -405,13 +396,12 @@ export default function Step4TransmutationConfig({
 
                                     {/* Min % */}
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Min % <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Minimum raw percentage required for this fixed grade mark." size={13} />
-                                        </label>
                                         <CommonNumberInput
+                                            description="Minimum raw percentage required for this fixed grade mark."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Min %"
                                             max={100}
                                             min={0}
                                             size="small"
@@ -424,13 +414,12 @@ export default function Step4TransmutationConfig({
 
                                     {/* Max % */}
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Max % <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Maximum raw percentage allocated to this fixed grade mark." size={13} />
-                                        </label>
                                         <CommonNumberInput
+                                            description="Maximum raw percentage allocated to this fixed grade mark."
                                             disabled={disabled}
                                             fullWidth
+                                            isRequired
+                                            label="Max %"
                                             max={100}
                                             min={0}
                                             size="small"

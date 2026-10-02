@@ -585,14 +585,9 @@ export default function Step3GradingPeriodsConfig({
                                         >
                                             {/* Row 1: Entry number and action buttons */}
                                             <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-700/50 pb-2.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                                        #{period.sequence}
-                                                    </span>
-                                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                                                        Period #{period.sequence}
-                                                    </span>
-                                                </div>
+                                                <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                                    #{period.sequence}
+                                                </span>
 
                                                 {!disabled && (
                                                     <div className="flex items-center gap-1.5">
@@ -631,34 +626,28 @@ export default function Step3GradingPeriodsConfig({
                                             {/* Row 2: Period name and weight */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>Period Name <span className="text-red-500">*</span></span>
-                                                        <CommonInfoTooltip content="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)." size={13} />
-                                                    </label>
                                                     <CommonInput
+                                                        description="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)."
                                                         disabled={disabled}
                                                         error={isDuplicateName}
                                                         fullWidth
+                                                        helperText={isDuplicateName ? 'Duplicate name in this term' : undefined}
+                                                        isRequired
+                                                        label="Period Name"
                                                         placeholder="e.g. Prelim, Midterm, Finals"
                                                         size="small"
                                                         value={period.name}
                                                         onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { name: e.target.value })}
                                                     />
-                                                    {isDuplicateName && (
-                                                        <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                                                            Duplicate name in this term
-                                                        </p>
-                                                    )}
                                                 </div>
 
                                                 <div>
-                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>Weight (%) <span className="text-red-500">*</span></span>
-                                                        <CommonInfoTooltip content="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%." size={13} />
-                                                    </label>
                                                     <CommonNumberInput
+                                                        description="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%."
                                                         disabled={disabled}
                                                         fullWidth
+                                                        isRequired
+                                                        label="Weight (%)"
                                                         max={100}
                                                         min={0}
                                                         size="small"
@@ -672,39 +661,31 @@ export default function Step3GradingPeriodsConfig({
                                             {/* Row 3: Start and End Date */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>Period Start Date <span className="text-red-500">*</span></span>
-                                                        <CommonInfoTooltip content="Opening date for coursework and assessment recording in this grading period." size={13} />
-                                                    </label>
                                                     <CommonDatePicker
+                                                        description="Opening date for coursework and assessment recording in this grading period."
                                                         disabled={disabled}
                                                         error={hasPrecedingConflict}
+                                                        helperText={hasPrecedingConflict ? `Overlaps with #${pIdx} end date` : undefined}
+                                                        isRequired
+                                                        label="Period Start Date"
+                                                        size="small"
                                                         value={period.start_date || ''}
                                                         onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', val)}
                                                     />
-                                                    {hasPrecedingConflict && (
-                                                        <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
-                                                            Overlaps with #{pIdx} end date
-                                                        </p>
-                                                    )}
                                                 </div>
 
                                                 <div>
-                                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                        <span>Period End Date <span className="text-red-500">*</span></span>
-                                                        <CommonInfoTooltip content="Cut-off date for exams and grade input for this period." size={13} />
-                                                    </label>
                                                     <CommonDatePicker
+                                                        description="Cut-off date for exams and grade input for this period."
                                                         disabled={disabled}
                                                         error={hasDateOrderError}
+                                                        helperText={hasDateOrderError ? 'Must be after start date' : undefined}
+                                                        isRequired
+                                                        label="Period End Date"
+                                                        size="small"
                                                         value={period.end_date || ''}
                                                         onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', val)}
                                                     />
-                                                    {hasDateOrderError && (
-                                                        <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                                                            Must be after start date
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
 
