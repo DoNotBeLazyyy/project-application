@@ -274,13 +274,16 @@ export default function ProfilePage() {
                                     Reset
                                 </CommonButton>
                                 <CommonButton
-                                    disabled={!profileMethods.formState.isDirty || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
+                                    disabled={!profileMethods.formState.isDirty || profileMethods.formState.isSubmitting || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
+                                    loading={profileMethods.formState.isSubmitting}
                                     form={PROFILE_FORM_ID}
                                     size="small"
                                     type="submit"
                                     variant="contained"
                                 >
-                                    {isStudentUser ? 'Submit Profile Changes' : 'Save Profile'}
+                                    {profileMethods.formState.isSubmitting
+                                        ? (isStudentUser ? 'Submitting...' : 'Saving...')
+                                        : (isStudentUser ? 'Submit Profile Changes' : 'Save Profile')}
                                 </CommonButton>
                             </div>
                             {isStudentUser && (
@@ -306,12 +309,14 @@ export default function ProfilePage() {
                         />
                         <div className="flex">
                             <CommonButton
+                                disabled={!passwordMethods.formState.isDirty || passwordMethods.formState.isSubmitting}
+                                loading={passwordMethods.formState.isSubmitting}
                                 form={PASSWORD_FORM_ID}
                                 size="small"
                                 type="submit"
                                 variant="contained"
                             >
-                                Update Password
+                                {passwordMethods.formState.isSubmitting ? 'Updating Password...' : 'Update Password'}
                             </CommonButton>
                         </div>
                     </div>

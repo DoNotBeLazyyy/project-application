@@ -8,6 +8,7 @@ export interface CommonFormModalProps extends CommonActionModalProps {
     formContent?: ReactNode;
     formId?: string;
     isDirty?: boolean;
+    isLoading?: boolean;
     onConfirmClose?: () => boolean;
     onReset?: () => void;
 }
@@ -22,6 +23,7 @@ export default function CommonFormModal({
     fullScreen,
     hideCancel = false,
     isDirty,
+    isLoading,
     sx,
     onClose,
     onReset,
@@ -60,7 +62,8 @@ export default function CommonFormModal({
                     },
                 confirmProps: {
                     children: confirmText,
-                    disabled: isDirty === false,
+                    disabled: isDirty === false || isLoading || confirmProps?.disabled || confirmProps?.loading,
+                    loading: isLoading ?? confirmProps?.loading,
                     form: formId,
                     type: formId
                         ? 'submit'

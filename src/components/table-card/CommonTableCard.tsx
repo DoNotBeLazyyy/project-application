@@ -97,6 +97,7 @@ export default function CommonTableCard<T extends FieldValues>({
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [isDeletePromptOpen, setIsDeletePromptOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
     const [gridSelectedIds, setGridSelectedIds] = useState<Set<string>>(new Set());
 
@@ -176,35 +177,38 @@ export default function CommonTableCard<T extends FieldValues>({
     }
 
     async function handleConfirmDelete() {
-        setIsDeletePromptOpen(false);
-
-        if (pendingDeleteIds.length === 1 && onDeleteRow) {
-            const result = await onDeleteRow(pendingDeleteIds[0]);
-            if (!result?.error) {
-                setGridSelectedIds(new Set());
-                loadData(
-                    pagination.currentPage,
-                    pagination.rowsPerPage,
-                    activeSearch,
-                    internalSort
-                );
+        setIsDeleting(true);
+        try {
+            if (pendingDeleteIds.length === 1 && onDeleteRow) {
+                const result = await onDeleteRow(pendingDeleteIds[0]);
+                if (!result?.error) {
+                    setGridSelectedIds(new Set());
+                    loadData(
+                        pagination.currentPage,
+                        pagination.rowsPerPage,
+                        activeSearch,
+                        internalSort
+                    );
+                }
             }
-        }
-        else if (onDelete) {
-            const result = await onDelete(pendingDeleteIds);
-            if (!result?.error) {
-                gridApi?.deselectAll();
-                setGridSelectedIds(new Set());
-                loadData(
-                    pagination.currentPage,
-                    pagination.rowsPerPage,
-                    activeSearch,
-                    internalSort
-                );
+            else if (onDelete) {
+                const result = await onDelete(pendingDeleteIds);
+                if (!result?.error) {
+                    gridApi?.deselectAll();
+                    setGridSelectedIds(new Set());
+                    loadData(
+                        pagination.currentPage,
+                        pagination.rowsPerPage,
+                        activeSearch,
+                        internalSort
+                    );
+                }
             }
+        } finally {
+            setIsDeleting(false);
+            setIsDeletePromptOpen(false);
+            setPendingDeleteIds([]);
         }
-
-        setPendingDeleteIds([]);
     }
 
     function handleCancelDelete() {
@@ -787,9 +791,11 @@ export default function CommonTableCard<T extends FieldValues>({
             <DeletePromptModal
                 formButtonsProps={{
                     cancelProps: {
+                        disabled: isDeleting,
                         onClick: handleCancelDelete
                     },
                     confirmProps: {
+                        loading: isDeleting,
                         onClick: handleConfirmDelete
                     }
                 }}

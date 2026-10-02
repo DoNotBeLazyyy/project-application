@@ -88,6 +88,7 @@ export default function ForgotPasswordPage() {
 
                             <CommonButton
                                 disabled={isSubmitting}
+                                loading={isSubmitting}
                                 fullWidth
                                 size="large"
                                 type="submit"

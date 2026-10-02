@@ -158,7 +158,7 @@ BEGIN
     ), '[]'::jsonb)
     INTO v_holidays
     FROM public.school_year_calendar_exceptions h
-    WHERE h.school_year_id = p_school_year_id AND h.deleted_at IS NULL;
+    WHERE h.school_year_id = p_school_year_id;
 
     RETURN jsonb_build_object(
         'success', true,

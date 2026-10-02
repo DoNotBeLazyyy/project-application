@@ -198,7 +198,8 @@ export default function EntityFormPage<TValues extends FieldValues>({
                                 Cancel
                             </CommonButton>
                             <CommonButton
-                                disabled={!isCreate && !formState.isDirty}
+                                disabled={(!isCreate && !formState.isDirty) || formState.isSubmitting}
+                                loading={formState.isSubmitting}
                                 form={formId}
                                 size="small"
                                 startIcon={<FloppyDiskIcon size={16} weight="bold" />}
@@ -206,8 +207,8 @@ export default function EntityFormPage<TValues extends FieldValues>({
                                 variant="contained"
                             >
                                 {isCreate
-                                    ? 'Create'
-                                    : 'Save'}
+                                    ? (formState.isSubmitting ? 'Creating…' : 'Create')
+                                    : (formState.isSubmitting ? 'Saving…' : 'Save')}
                             </CommonButton>
                         </>
                     )}

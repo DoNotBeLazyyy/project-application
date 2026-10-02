@@ -238,11 +238,15 @@ export default function SetPasswordPage() {
                     )}
 
                     <CommonButton
+                        disabled={methods.formState.isSubmitting}
+                        loading={methods.formState.isSubmitting}
                         fullWidth
                         type="submit"
                         variant="contained"
                     >
-                        Activate Account
+                        {methods.formState.isSubmitting
+                            ? 'Activating Account…'
+                            : 'Activate Account'}
                     </CommonButton>
                 </form>
             </CommonCard>

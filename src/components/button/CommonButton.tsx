@@ -38,26 +38,15 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
 }, ref) => {
     const isLoading = loading === true; // Per-button loading state flag
     const isDisabled = disabled || isLoading; // Disable when explicitly disabled or loading
-    const resolvedStartIcon = resolveIcon(startIcon); // Computed start icon element
-    const resolvedEndIcon = startIcon
-        ? null
-        : resolveIcon(endIcon); // Only resolve end icon when no start icon is present
+    const spinner = loadingIcon ?? <CircleNotchIcon className="animate-spin" />;
 
-    /**
-     * Resolves the icon to display based on the loading state.
-     *
-     * @param icon - The original icon to render.
-     * @returns
-     */
-    function resolveIcon(icon?: ReactNode) {
-        if (!icon) {
-            return null;
-        }
+    const resolvedStartIcon = isLoading
+        ? (endIcon && !startIcon ? null : spinner)
+        : (startIcon ?? null);
 
-        return isLoading
-            ? loadingIcon ?? <CircleNotchIcon className="animate-spin" />
-            : icon;
-    }
+    const resolvedEndIcon = isLoading
+        ? (endIcon && !startIcon ? spinner : null)
+        : (startIcon ? null : (endIcon ?? null));
 
     return <Button
         className={

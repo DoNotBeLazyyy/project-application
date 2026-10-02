@@ -155,6 +155,7 @@ export default function LoginPage() {
 
                     <CommonButton
                         disabled={isSubmitting}
+                        loading={isSubmitting}
                         fullWidth
                         size="large"
                         type="submit"
