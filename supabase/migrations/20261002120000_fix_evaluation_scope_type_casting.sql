@@ -1,27 +1,6 @@
--- ====================================================================
--- Migration: 20261002070000_fix_academic_threshold_category_type.sql
--- Description: Fix "type public.academic_threshold_category does not exist" (42704)
---              by creating enum types and removing rigid enum casting in
---              fn_save_academic_year_calendar and fn_save_school_year_wizard.
--- ====================================================================
+-- Migration: 20261002120000_fix_evaluation_scope_type_casting.sql
+-- Description: Fix Postgres 42804 datatype mismatch by explicitly casting v_clean_eval_scope text to public.evaluation_scope_type enum
 
--- 1. Ensure enum types and domains exist defensively for legacy compatibility
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'academic_threshold_category') THEN
-        CREATE TYPE public.academic_threshold_category AS ENUM ('Honor', 'Scholarship', 'Standing');
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'academic_threshold_category_type') THEN
-        CREATE DOMAIN public.academic_threshold_category_type AS public.academic_threshold_category;
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'calendar_exception_type') THEN
-        CREATE TYPE public.calendar_exception_type AS ENUM ('Holiday', 'Break', 'Suspension', 'Special Class', 'Exam Day');
-    END IF;
-END $$;
-
--- 2. Update fn_save_academic_year_calendar with resilient string handling (no enum casting)
 CREATE OR REPLACE FUNCTION public.fn_save_academic_year_calendar(
     p_school_year_id uuid,
     p_code text,
@@ -49,30 +28,28 @@ DECLARE
     v_row_elem jsonb;
     v_thresh_elem jsonb;
     v_holiday_elem jsonb;
-    v_incoming_term_ids uuid[] := '{}';
-    v_incoming_gp_ids uuid[] := '{}';
+    v_incoming_term_ids uuid[] := ARRAY[]::uuid[];
     v_clean_code text := btrim(COALESCE(p_code, ''));
     v_clean_label text := btrim(COALESCE(p_label, ''));
     v_clean_eval_scope text := COALESCE(NULLIF(btrim(p_evaluation_scope), ''), 'Period');
     v_units smallint := COALESCE(p_max_units_per_term, 24);
     v_current_user_id uuid := auth.uid();
-    v_is_new boolean := (p_school_year_id IS NULL);
-    v_action text;
-    v_terms_count int := COALESCE(jsonb_array_length(p_terms), 0);
-    v_trans_count int := COALESCE(jsonb_array_length(p_transmutation_rows), 0);
-    v_thresh_count int := COALESCE(jsonb_array_length(p_thresholds), 0);
-    v_holidays_count int := COALESCE(jsonb_array_length(p_holidays), 0);
+    v_is_new boolean := false;
+    v_action text := 'UPDATE';
+    v_terms_count integer := 0;
+    v_trans_count integer := 0;
+    v_thresh_count integer := 0;
+    v_holidays_count integer := 0;
     v_summary text;
     v_snapshot jsonb;
-    v_conflicting_sy RECORD;
 BEGIN
     PERFORM public.fn_assert_role('Admin');
 
-    IF v_clean_code IS NULL OR v_clean_code = '' THEN
+    IF v_clean_code = '' THEN
         RETURN jsonb_build_object('success', false, 'message', 'School year code is required.');
     END IF;
 
-    IF v_clean_label IS NULL OR v_clean_label = '' THEN
+    IF v_clean_label = '' THEN
         RETURN jsonb_build_object('success', false, 'message', 'School year label is required.');
     END IF;
 
@@ -84,58 +61,49 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'message', 'End date must be after start date.');
     END IF;
 
+    -- Validate max_units_per_term against system setting bounds
     IF v_units < 1 OR v_units > 60 THEN
-        v_units := 24;
+        RETURN jsonb_build_object('success', false, 'message', 'Maximum units per term must be between 1 and 60.');
     END IF;
 
+    -- Validate evaluation scope
     IF v_clean_eval_scope NOT IN ('Period', 'Term') THEN
         v_clean_eval_scope := 'Period';
     END IF;
 
-    -- 1. Check duplicate code
+    -- Check duplicate code / label
     IF EXISTS (
-        SELECT 1 FROM public.school_years
-        WHERE lower(btrim(code)) = lower(v_clean_code)
-          AND (p_school_year_id IS NULL OR id <> p_school_year_id)
-          AND deleted_at IS NULL
+        SELECT 1
+        FROM public.school_years
+        WHERE (LOWER(code) = LOWER(v_clean_code) OR LOWER(label) = LOWER(v_clean_label))
+        AND deleted_at IS NULL
+        AND (p_school_year_id IS NULL OR id <> p_school_year_id)
     ) THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Academic year code already exists: ' || v_clean_code);
+        RETURN jsonb_build_object('success', false, 'message', 'An academic year with the same code or label already exists.');
     END IF;
 
-    -- 2. Check duplicate label
+    -- Check overlapping active dates with other school years
     IF EXISTS (
-        SELECT 1 FROM public.school_years
-        WHERE lower(btrim(label)) = lower(v_clean_label)
-          AND (p_school_year_id IS NULL OR id <> p_school_year_id)
-          AND deleted_at IS NULL
+        SELECT 1
+        FROM public.school_years
+        WHERE deleted_at IS NULL
+        AND (p_school_year_id IS NULL OR id <> p_school_year_id)
+        AND (p_start_date <= end_date AND p_end_date >= start_date)
     ) THEN
-        RETURN jsonb_build_object('success', false, 'message', 'Academic year label already exists: ' || v_clean_label);
+        RETURN jsonb_build_object('success', false, 'message', 'The school year dates overlap with an existing school year.');
     END IF;
 
-    -- 3. Check exact same start and end dates
-    IF EXISTS (
-        SELECT 1 FROM public.school_years
-        WHERE (p_school_year_id IS NULL OR id <> p_school_year_id)
-          AND deleted_at IS NULL
-          AND start_date = p_start_date
-          AND end_date = p_end_date
-    ) THEN
-        RETURN jsonb_build_object('success', false, 'message', 'An academic year with the exact same start date and end date already exists.');
+    IF p_terms IS NOT NULL THEN
+        v_terms_count := jsonb_array_length(p_terms);
     END IF;
-
-    -- 4. Check overlapping academic year dates
-    SELECT code, label, start_date, end_date INTO v_conflicting_sy
-    FROM public.school_years
-    WHERE (p_school_year_id IS NULL OR id <> p_school_year_id)
-      AND deleted_at IS NULL
-      AND (p_start_date < end_date AND p_end_date > start_date)
-    LIMIT 1;
-
-    IF v_conflicting_sy.label IS NOT NULL THEN
-        RETURN jsonb_build_object(
-            'success', false,
-            'message', 'Academic year dates overlap with existing academic year "' || v_conflicting_sy.label || '" (' || v_conflicting_sy.start_date || ' to ' || v_conflicting_sy.end_date || '). Each academic year must have a distinct, non-overlapping calendar period.'
-        );
+    IF p_transmutation_rows IS NOT NULL THEN
+        v_trans_count := jsonb_array_length(p_transmutation_rows);
+    END IF;
+    IF p_thresholds IS NOT NULL THEN
+        v_thresh_count := jsonb_array_length(p_thresholds);
+    END IF;
+    IF p_holidays IS NOT NULL THEN
+        v_holidays_count := jsonb_array_length(p_holidays);
     END IF;
 
     -- 5. Create or Update School Year
@@ -184,13 +152,12 @@ BEGIN
     -- If active, deactivate other school years
     IF COALESCE(p_is_active, false) = true THEN
         UPDATE public.school_years
-        SET is_active = false,
-            updated_at = now(),
-            updated_by = v_current_user_id
-        WHERE id <> v_sy_id AND deleted_at IS NULL;
+        SET is_active = false
+        WHERE id <> v_sy_id
+        AND deleted_at IS NULL;
     END IF;
 
-    -- 6. Synchronize Terms and Grading Periods
+    -- 6. Synchronize Terms
     IF p_terms IS NOT NULL AND jsonb_array_length(p_terms) > 0 THEN
         FOR v_term_elem IN SELECT * FROM jsonb_array_elements(p_terms) LOOP
             v_term_id := NULL;
@@ -268,7 +235,6 @@ BEGIN
                                 performance_task_pct = NULLIF(v_gp_elem->>'performance_task_pct', '')::numeric,
                                 quarterly_exam_pct = NULLIF(v_gp_elem->>'quarterly_exam_pct', '')::numeric,
                                 components = COALESCE(v_gp_elem->'components', '[]'::jsonb),
-                                is_active = COALESCE((v_gp_elem->>'is_active')::boolean, true),
                                 deleted_at = NULL,
                                 updated_at = now(),
                                 updated_by = v_current_user_id
@@ -287,7 +253,6 @@ BEGIN
                                 performance_task_pct,
                                 quarterly_exam_pct,
                                 components,
-                                is_active,
                                 created_at,
                                 created_by
                             ) VALUES (
@@ -303,45 +268,31 @@ BEGIN
                                 NULLIF(v_gp_elem->>'performance_task_pct', '')::numeric,
                                 NULLIF(v_gp_elem->>'quarterly_exam_pct', '')::numeric,
                                 COALESCE(v_gp_elem->'components', '[]'::jsonb),
-                                COALESCE((v_gp_elem->>'is_active')::boolean, true),
                                 now(),
                                 v_current_user_id
-                            )
-                            RETURNING id INTO v_gp_id;
+                            );
                         END IF;
-
-                        v_incoming_gp_ids := array_append(v_incoming_gp_ids, v_gp_id);
                     END;
                 END LOOP;
-
-                -- Soft delete removed grading periods for this term
-                UPDATE public.grading_periods
-                SET deleted_at = now(),
-                    updated_at = now(),
-                    updated_by = v_current_user_id
-                WHERE term_id = v_term_id
-                  AND deleted_at IS NULL
-                  AND NOT (id = ANY(v_incoming_gp_ids));
             END IF;
         END LOOP;
 
-        -- Soft delete removed terms
+        -- Soft delete omitted terms for this school year
         UPDATE public.terms
         SET deleted_at = now(),
-            updated_at = now(),
-            updated_by = v_current_user_id
+            deleted_by = v_current_user_id
         WHERE school_year_id = v_sy_id
-          AND deleted_at IS NULL
-          AND NOT (id = ANY(v_incoming_term_ids));
+        AND deleted_at IS NULL
+        AND id <> ALL(v_incoming_term_ids);
     END IF;
 
-    -- 7. Synchronize Transmutation Rows
+    -- 7. Synchronize Transmutation Table (Grade Scale Rows)
     IF p_transmutation_rows IS NOT NULL AND jsonb_array_length(p_transmutation_rows) > 0 THEN
-        DELETE FROM public.grade_transmutation_rows
+        DELETE FROM public.grade_scale_rows
         WHERE school_year_id = v_sy_id;
 
         FOR v_row_elem IN SELECT * FROM jsonb_array_elements(p_transmutation_rows) LOOP
-            INSERT INTO public.grade_transmutation_rows (
+            INSERT INTO public.grade_scale_rows (
                 school_year_id,
                 grade_scale_id,
                 raw_min_score,
@@ -363,7 +314,7 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- 8. Synchronize Academic Thresholds (Resilient text storage, no enum cast)
+    -- 8. Synchronize Academic Thresholds
     IF p_thresholds IS NOT NULL AND jsonb_array_length(p_thresholds) > 0 THEN
         DELETE FROM public.academic_thresholds
         WHERE school_year_id = v_sy_id;
@@ -397,7 +348,7 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- 9. Synchronize Holidays / Exceptions (Resilient text storage, no enum cast)
+    -- 9. Synchronize Holidays / Exceptions
     IF p_holidays IS NOT NULL THEN
         DELETE FROM public.school_year_calendar_exceptions
         WHERE school_year_id = v_sy_id;
@@ -467,42 +418,3 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.fn_save_academic_year_calendar(uuid, text, text, date, date, boolean, jsonb, jsonb, jsonb, smallint, text, jsonb) TO authenticated, anon, service_role;
-
--- 3. Also update fn_save_school_year_wizard if called directly
-CREATE OR REPLACE FUNCTION public.fn_save_school_year_wizard(
-    p_school_year_id uuid,
-    p_code text,
-    p_label text,
-    p_start_date date,
-    p_end_date date,
-    p_is_active boolean,
-    p_max_units_per_term numeric,
-    p_evaluation_scope text,
-    p_terms jsonb,
-    p_transmutation_rows jsonb,
-    p_thresholds jsonb,
-    p_holidays jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-    RETURN public.fn_save_academic_year_calendar(
-        p_school_year_id => p_school_year_id,
-        p_code => p_code,
-        p_label => p_label,
-        p_start_date => p_start_date,
-        p_end_date => p_end_date,
-        p_is_active => p_is_active,
-        p_terms => p_terms,
-        p_transmutation_rows => p_transmutation_rows,
-        p_thresholds => p_thresholds,
-        p_max_units_per_term => COALESCE(p_max_units_per_term, 24)::smallint,
-        p_evaluation_scope => p_evaluation_scope,
-        p_holidays => p_holidays
-    );
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.fn_save_school_year_wizard(uuid, text, text, date, date, boolean, numeric, text, jsonb, jsonb, jsonb, jsonb) TO authenticated, anon, service_role;
