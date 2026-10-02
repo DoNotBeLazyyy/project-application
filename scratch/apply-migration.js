@@ -18,14 +18,29 @@ async function runSqlFile(filePath) {
     console.log(`Reading SQL file: ${fullPath}`);
     const sql = fs.readFileSync(fullPath, 'utf8');
 
-    const client = new Client(DB_CONFIG);
-    console.log(`Connecting to Supabase PostgreSQL at ${DB_CONFIG.host}:${DB_CONFIG.port}...`);
-    await client.connect();
-    console.log('Connected! Executing SQL...');
+    const ports = [5432, 6543];
+    let client;
+    let connected = false;
+
+    for (const port of ports) {
+        try {
+            console.log(`Connecting to Supabase PostgreSQL at ${DB_CONFIG.host}:${port}...`);
+            client = new Client({ ...DB_CONFIG, port });
+            await client.connect();
+            connected = true;
+            console.log(`Connected on port ${port}! Executing SQL...`);
+            break;
+        } catch (err) {
+            console.warn(`Connection on port ${port} failed (${err.message}). Trying next...`);
+        }
+    }
+
+    if (!connected || !client) {
+        throw new Error('Failed to connect to Supabase PostgreSQL on any available port.');
+    }
 
     await client.query(sql);
     console.log('SQL executed successfully!');
-
     await client.end();
 }
 

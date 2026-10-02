@@ -138,8 +138,8 @@ export async function createSection(
     params: SectionFormValues
 ): Promise<ServiceResult<{ id?: string }>> {
     const code = params.section_code && params.section_code.trim() !== ''
-        ? params.section_code
-        : `SEC-${Math.floor(1000 + Math.random() * 9000)}`;
+        ? params.section_code.trim()
+        : null;
 
     return callRpc<{ id?: string }>('fn_create_section', {
         p_term_id: nullIfBlank(params.term_id),
