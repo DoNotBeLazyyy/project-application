@@ -44,7 +44,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     name,
     readOnly,
     rules,
-    size = 'large',
+    size = 'medium',
     ...props
 }: ValidCommonDateTimePickerProps<T>) {
     const {

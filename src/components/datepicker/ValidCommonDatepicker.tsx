@@ -61,7 +61,7 @@ export function CommonDatePicker({
     labelClassName,
     onChange,
     readOnly,
-    size = 'large',
+    size = 'medium',
     value,
     ...props
 }: StandaloneCommonDatePickerProps) {
@@ -211,7 +211,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     name,
     readOnly,
     rules,
-    size = 'large',
+    size = 'medium',
     ...props
 }: ValidCommonDatePickerProps<T>) {
     const {

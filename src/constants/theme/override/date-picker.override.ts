@@ -16,9 +16,9 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
     ...theme.typography.bodyNormal,
     borderRadius: 'var(--mui-tokens-radius-md)',
     boxSizing: 'border-box' as const,
-    height: INPUT_HEIGHT_LARGE,
-    maxHeight: INPUT_HEIGHT_LARGE,
-    padding: INPUT_PADDING_LARGE,
+    height: INPUT_HEIGHT_MEDIUM,
+    maxHeight: INPUT_HEIGHT_MEDIUM,
+    padding: INPUT_PADDING_MEDIUM,
     '&.Mui-disabled *': {
         color: 'var(--mui-tokens-color-neutral-400)',
         WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
@@ -88,7 +88,7 @@ export const datePickerOverrides: ComponentTheme = {
         defaultProps: {
             slotProps: {
                 textField: {
-                    size: 'large',
+                    size: 'medium',
                     variant: 'outlined'
                 }
             }
@@ -98,7 +98,7 @@ export const datePickerOverrides: ComponentTheme = {
         defaultProps: {
             slotProps: {
                 textField: {
-                    size: 'large',
+                    size: 'medium',
                     variant: 'outlined'
                 }
             }
@@ -106,7 +106,7 @@ export const datePickerOverrides: ComponentTheme = {
     },
     MuiPickersTextField: {
         defaultProps: {
-            size: 'large',
+            size: 'medium',
             variant: 'outlined'
         }
     },
