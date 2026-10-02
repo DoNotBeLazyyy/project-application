@@ -3,7 +3,7 @@ import CommonCard from '@components/card/CommonCard';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { CameraIcon, TrashIcon } from '@phosphor-icons/react';
+import { CameraIcon, InfoIcon, TrashIcon } from '@phosphor-icons/react';
 import { uploadFile } from '@services/storage.service';
 import { getSystemSettings, updateSystemSettings } from '@services/system-settings.service';
 import { SystemSettingsFormValues } from '@type/system-settings.type';
@@ -15,6 +15,7 @@ const SETTINGS_FORM_ID = 'system-settings-form';
 
 export default function SystemSettings() {
     const [isLoading, setIsLoading] = useState(true);
+    const [hasData, setHasData] = useState(true);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,6 +39,7 @@ export default function SystemSettings() {
             const result = await getSystemSettings();
 
             if (result.data) {
+                setHasData(true);
                 methods.reset({
                     institution_name: result.data.institution_name,
                     institution_short_name: result.data.institution_short_name,
@@ -54,6 +56,8 @@ export default function SystemSettings() {
                 if (result.data.institution_logo_url) {
                     setLogoPreview(result.data.institution_logo_url);
                 }
+            } else {
+                setHasData(false);
             }
 
             setIsLoading(false);
@@ -101,6 +105,7 @@ export default function SystemSettings() {
         const result = await updateSystemSettings(values);
 
         if (!result.error) {
+            setHasData(true);
             methods.reset(values);
         }
     }
@@ -233,6 +238,14 @@ export default function SystemSettings() {
             infoContent="Configure institution-wide settings for the system. Changes apply across every portal once saved."
         >
             <div className="flex flex-1 flex-col gap-6 min-h-0 overflow-y-auto p-4 w-full">
+                {!hasData && (
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl p-3.5 flex items-center gap-2.5 text-blue-700 dark:text-blue-300 text-xs">
+                        <InfoIcon className="w-4 h-4 shrink-0" />
+                        <span>
+                            No system settings data configured yet. Complete the form below and click &quot;Save Settings&quot; to initialize institutional settings.
+                        </span>
+                    </div>
+                )}
                 <div className="flex flex-col gap-4 items-center sm:flex-row sm:items-center">
                     {logoPreview
                         ? (
