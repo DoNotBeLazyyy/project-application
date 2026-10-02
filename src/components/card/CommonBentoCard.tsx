@@ -1,6 +1,7 @@
 import TruncatedText from '@components/card/TruncatedText';
 import { CheckIcon } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
+import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
 
 export interface BentoCardMetric {
