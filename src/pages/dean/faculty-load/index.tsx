@@ -76,7 +76,6 @@ export default function FacultyLoadManagement() {
     useEffect(() => {
         if (queryFacultyId) {
             setSelectedFacultyId(queryFacultyId);
-            setIsDetailReadOnly(true);
             setIsDetailOpen(true);
         }
     }, [queryFacultyId]);
@@ -168,10 +167,9 @@ export default function FacultyLoadManagement() {
                 </div>
             )}
 
-            {/* Stepper Modal for Faculty Load Detail (Read & Write mode) */}
+            {/* Stepper Modal for Faculty Load Detail */}
             <FacultyLoadWizardModal
                 facultyId={selectedFacultyId}
-                initialReadOnly={isDetailReadOnly}
                 open={isDetailOpen}
                 termId={loadFilters.term_id}
                 onClose={handleCloseDetail}
