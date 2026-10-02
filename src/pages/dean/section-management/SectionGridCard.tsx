@@ -81,7 +81,6 @@ export default function SectionGridCard({
             isSelected={isSelected}
             metrics={[
                 { label: 'Term', value: formatTermLabel(row.term_label) },
-                { label: 'Program', value: row.program_code || row.program_name || 'N/A' },
                 { label: 'Room', value: row.room ?? 'No room assigned' }
             ]}
             progress={{

@@ -40,11 +40,11 @@ export default function CommonPromptModal({
 
     return (
         <CommonActionModal
-            fullScreen={props.fullScreen ?? false}
+            fullScreen={props.fullScreen}
             {...props}
             containerClassName={
                 classMerge(
-                    'items-center max-w-full min-h-[14.5625rem] w-[30.1875rem] pt-(--mui-tokens-spacing-5)',
+                    'items-center max-w-full w-full sm:w-[30.1875rem] min-h-[14.5625rem] pt-(--mui-tokens-spacing-5) justify-center',
                     containerClassName
                 )
             }

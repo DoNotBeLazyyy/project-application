@@ -335,7 +335,7 @@ export default function EvaluationWizardModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
+                className: 'w-full sm:max-w-4xl p-0 overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[92vh]'
             }}
             fullWidth
             maxWidth="lg"

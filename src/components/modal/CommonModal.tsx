@@ -73,13 +73,26 @@ export default function CommonModal({
             ...resolvedProps,
             className: classMerge(
                 cardProps?.className,
-                resolvedProps.className
+                resolvedProps.className,
+                isFullScreen && '!w-full !h-full !max-w-none !max-h-none !m-0 !rounded-none flex flex-col'
             ),
             style: {
                 ...cardProps?.style,
                 ...resolvedProps.style
             },
             sx: [
+                ...(isFullScreen
+                    ? [{
+                        width: '100% !important',
+                        height: '100% !important',
+                        maxWidth: '100% !important',
+                        maxHeight: '100% !important',
+                        margin: '0 !important',
+                        borderRadius: '0 !important',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }]
+                    : []),
                 ...normalizeSx(cardProps?.sx),
                 ...normalizeSx(resolvedProps.sx)
             ]

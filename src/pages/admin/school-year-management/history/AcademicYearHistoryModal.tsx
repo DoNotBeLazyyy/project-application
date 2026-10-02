@@ -63,7 +63,7 @@ export default function AcademicYearHistoryModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'w-full max-w-3xl p-0 overflow-hidden flex flex-col max-h-[90vh]'
+                className: 'w-full sm:max-w-3xl p-0 overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[90vh]'
             }}
             fullWidth
             maxWidth="md"

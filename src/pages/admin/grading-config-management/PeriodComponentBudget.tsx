@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import WeightStepper from '@pages/admin/grading-config-management/WeightStepper';
 import { PlusCircleIcon, ScalesIcon, TrashIcon } from '@phosphor-icons/react';
 import { GradingPeriodDraft } from '@type/grading-config.type';
@@ -41,22 +42,25 @@ export default function PeriodComponentBudget({
 
     return (
         <div className="bg-(--mui-tokens-color-neutral-50) border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-(--mui-tokens-radius-lg)">
-            <div className="flex flex-wrap gap-2 items-center justify-between">
-                <span className="font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.11em] uppercase">
-                    Component budget · must total 100% of {period.name.trim() || 'this period'}
-                </span>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1 min-w-0">
+                    <span className="font-bold text-(--mui-palette-text-secondary) text-[10.5px] tracking-[0.11em] uppercase truncate">
+                        Component budget · must total 100% of {period.name.trim() || 'this period'}
+                    </span>
+                    <CommonInfoTooltip
+                        content={`Component breakdown for ${period.name.trim() || 'this period'}. Weights must total 100%.`}
+                        size={13}
+                        className="shrink-0"
+                    />
+                </div>
                 <span
                     className={
                         isBalanced
-                            ? 'bg-(--mui-tokens-color-green-100) font-bold px-3 py-1 rounded-(--mui-tokens-radius-full) text-(--mui-tokens-color-green-700) text-xs'
-                            : 'bg-(--mui-tokens-color-yellow-100) font-bold px-3 py-1 rounded-(--mui-tokens-radius-full) text-(--mui-tokens-color-yellow-800) text-xs'
+                            ? 'bg-(--mui-tokens-color-green-100) font-bold px-2.5 py-0.5 rounded-(--mui-tokens-radius-full) text-(--mui-tokens-color-green-700) text-xs ml-auto shrink-0'
+                            : 'bg-(--mui-tokens-color-yellow-100) font-bold px-2.5 py-0.5 rounded-(--mui-tokens-radius-full) text-(--mui-tokens-color-yellow-800) text-xs ml-auto shrink-0'
                     }
                 >
-                    {isBalanced
-                        ? 'Balanced'
-                        : shortfall > 0
-                            ? `${shortfall}% unassigned`
-                            : `${Math.abs(shortfall)}% over`}
+                    {total}/100
                 </span>
             </div>
 

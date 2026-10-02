@@ -55,7 +55,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     containerClassName,
     error,
     fullWidth,
-    hasClearButton = true,
+    hasClearButton = false,
     hasPasswordToggle,
     helperText,
     inputRef,

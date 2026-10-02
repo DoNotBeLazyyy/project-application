@@ -46,16 +46,19 @@ export default function SectionFilterForm({
 
     const fields: FormFieldConfig<SectionFilterValues>[] = [
         {
+            label: 'Term',
             name: 'term_ids',
             options: termOptions,
             type: 'multi-select'
         },
         {
+            label: 'Program',
             name: 'program_ids',
             options: programOptions,
             type: 'multi-select'
         },
         {
+            label: 'Status',
             name: 'statuses',
             options: STATUS_OPTIONS,
             type: 'multi-select'

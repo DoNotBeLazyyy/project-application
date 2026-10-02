@@ -58,7 +58,7 @@ export default function FilterSortModal({
                 ...cardProps
             }}
             confirmText={rest.confirmText ?? 'Apply Changes'}
-            containerClassName={rest.containerClassName ?? 'max-w-full w-[32rem]'}
+            containerClassName={rest.containerClassName ?? 'w-full max-w-full sm:w-[32rem]'}
             formButtonsProps={{
                 ...rest.formButtonsProps,
                 confirmProps: {

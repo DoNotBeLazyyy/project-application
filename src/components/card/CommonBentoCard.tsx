@@ -1,7 +1,6 @@
 import TruncatedText from '@components/card/TruncatedText';
-import { CheckSquareIcon, DotsThreeVerticalIcon } from '@phosphor-icons/react';
-import { ChangeEventInput, MouseEventButtonElement } from '@type/common.type';
-import { classMerge } from '@utils/css.util';
+import { CheckIcon } from '@phosphor-icons/react';
+import { MouseEventButtonElement } from '@type/common.type';
 import { ReactNode } from 'react';
 
 export interface BentoCardMetric {
@@ -127,11 +126,6 @@ export default function CommonBentoCard({
     onClick,
     onToggleSelect
 }: CommonBentoCardProps) {
-    function handleCheckboxChange(event: ChangeEventInput) {
-        event.stopPropagation();
-        onToggleSelect?.(event.target.checked);
-    }
-
     function handleCardClick() {
         onClick?.();
     }
@@ -147,7 +141,7 @@ export default function CommonBentoCard({
             className={classMerge(
                 'bg-white border rounded-2xl p-4.5 shadow-xs transition-all duration-200 flex flex-col justify-between select-none relative group h-full',
                 isSelected
-                    ? 'border-blue-600 ring-2 ring-blue-600/20'
+                    ? 'border-blue-600 ring-2 ring-blue-600/25 shadow-[0_0_15px_rgba(37,99,235,0.2)]'
                     : 'border-slate-200/90 hover:border-slate-300 hover:shadow-md',
                 onClick
                     ? 'cursor-pointer'
@@ -167,38 +161,43 @@ export default function CommonBentoCard({
                                     e.stopPropagation();
                                 }}
                             >
-                                {selectVariant === 'button'
-                                    ? (
-                                        <button
-                                            className={classMerge(
-                                                'text-xs font-bold px-2 sm:px-3 py-1 rounded-lg border transition-colors cursor-pointer flex items-center gap-1',
-                                                isSelected
-                                                    ? 'bg-blue-800 text-white border-blue-800 ring-2 ring-blue-600/30'
-                                                    : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                            )}
-                                            type="button"
-                                            title={isSelected ? 'Unselect' : 'Select'}
-                                            aria-label={isSelected ? 'Unselect' : 'Select'}
-                                            onClick={function() {
-                                                onToggleSelect?.(!isSelected);
-                                            }}
-                                        >
-                                            <CheckSquareIcon size={14} weight="bold" />
-                                            <span className="hidden sm:inline">
-                                                {isSelected
-                                                    ? 'Unselect'
-                                                    : 'Select'}
-                                            </span>
-                                        </button>
-                                    )
-                                    : (
-                                        <input
-                                            checked={isSelected}
-                                            className="border-slate-300 cursor-pointer focus:ring-blue-500 h-4.5 rounded-md text-blue-600 transition-colors w-4.5"
-                                            type="checkbox"
-                                            onChange={handleCheckboxChange}
-                                        />
+                                <button
+                                    aria-label={isSelected ? 'Unselect card' : 'Select card'}
+                                    className={classMerge(
+                                        'cursor-pointer transition-all duration-150 flex items-center justify-center shrink-0 select-none',
+                                        // Mobile first: square checkbox icon (touch-friendly min 24x24px, 360px screen friendly)
+                                        'w-6 h-6 rounded-md border text-xs',
+                                        // Desktop for button variant: expands to pill button with label
+                                        selectVariant === 'button'
+                                            ? 'sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 sm:rounded-lg sm:font-bold sm:gap-1.5'
+                                            : 'sm:w-5 sm:h-5 sm:rounded-md',
+                                        isSelected
+                                            ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600/30 shadow-xs'
+                                            : 'bg-white border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 shadow-2xs'
                                     )}
+                                    title={isSelected ? 'Unselect' : 'Select'}
+                                    type="button"
+                                    onClick={function(e) {
+                                        e.stopPropagation();
+                                        onToggleSelect?.(!isSelected);
+                                    }}
+                                >
+                                    <CheckIcon
+                                        className={classMerge(
+                                            'transition-all shrink-0',
+                                            isSelected
+                                                ? 'opacity-100 text-white scale-100'
+                                                : 'opacity-0 scale-75'
+                                        )}
+                                        size={14}
+                                        weight="bold"
+                                    />
+                                    {selectVariant === 'button' && (
+                                        <span className="hidden sm:inline font-semibold">
+                                            {isSelected ? 'Unselect' : 'Select'}
+                                        </span>
+                                    )}
+                                </button>
                             </div>
                         )}
 

@@ -23,7 +23,7 @@ export default function AcademicYearSchedulePreviewModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'w-full max-w-3xl p-0 overflow-hidden flex flex-col'
+                className: 'w-full sm:max-w-3xl p-0 overflow-hidden flex flex-col h-full sm:h-auto'
             }}
             fullWidth
             maxWidth="md"

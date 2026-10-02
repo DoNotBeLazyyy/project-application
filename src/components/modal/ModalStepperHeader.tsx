@@ -1,3 +1,4 @@
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { CaretDownIcon, CheckCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -31,10 +32,17 @@ export default function ModalStepperHeader({
 
     return (
         <div className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/60 px-4 py-3 shrink-0 relative">
-            <button
-                className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                type="button"
+            <div
+                className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 shadow-xs transition-all group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 select-none"
+                role="button"
+                tabIndex={0}
                 onClick={() => setIsMenuOpen((prev) => !prev)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setIsMenuOpen((prev) => !prev);
+                    }
+                }}
             >
                 <div className="flex items-center gap-3 min-w-0">
                     <span className="w-8 h-8 rounded-lg bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
@@ -46,9 +54,24 @@ export default function ModalStepperHeader({
                                 Step {currentStep} of {steps.length}
                             </span>
                         </div>
-                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                            {activeStepConfig?.title}
-                        </span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                                {activeStepConfig?.title}
+                            </span>
+                            {activeStepConfig?.subtitle && (
+                                <div
+                                    className="inline-flex shrink-0"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                >
+                                    <CommonInfoTooltip
+                                        content={activeStepConfig.subtitle}
+                                        label={`Info for Step ${currentStep}: ${activeStepConfig.title}`}
+                                        size={15}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -60,7 +83,7 @@ export default function ModalStepperHeader({
                         <CaretDownIcon className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} weight="bold" />
                     </div>
                 </div>
-            </button>
+            </div>
 
             {/* Backdrop for click outside */}
             {isMenuOpen && (
@@ -82,15 +105,22 @@ export default function ModalStepperHeader({
                             const isDone = currentStep > s.step;
 
                             return (
-                                <button
+                                <div
                                     key={s.step}
-                                    className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer ${
+                                    className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer select-none ${
                                         isActive
                                             ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-100'
                                             : 'hover:bg-slate-50 dark:hover:bg-zinc-800/70 text-slate-700 dark:text-slate-300'
                                     }`}
-                                    type="button"
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => handleSelectStep(s.step)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleSelectStep(s.step);
+                                        }
+                                    }}
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
                                         <span
@@ -105,9 +135,24 @@ export default function ModalStepperHeader({
                                             {isDone ? <CheckCircleIcon className="w-4 h-4" weight="bold" /> : s.step}
                                         </span>
                                         <div className="flex flex-col min-w-0">
-                                            <span className={`text-xs font-bold ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                Step {s.step}: {s.title}
-                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className={`text-xs font-bold ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                    Step {s.step}: {s.title}
+                                                </span>
+                                                {s.subtitle && (
+                                                    <div
+                                                        className="inline-flex shrink-0"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onKeyDown={(e) => e.stopPropagation()}
+                                                    >
+                                                        <CommonInfoTooltip
+                                                            content={s.subtitle}
+                                                            label={`Info for Step ${s.step}: ${s.title}`}
+                                                            size={13}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                             {s.subtitle && (
                                                 <span className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                                                     {s.subtitle}
@@ -120,7 +165,7 @@ export default function ModalStepperHeader({
                                             Current
                                         </span>
                                     )}
-                                </button>
+                                </div>
                             );
                         })}
                     </div>

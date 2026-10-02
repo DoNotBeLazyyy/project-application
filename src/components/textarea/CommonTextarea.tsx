@@ -84,7 +84,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
     containerClassName,
     error,
     fullWidth,
-    hasClearButton = true,
+    hasClearButton = false,
     hasTextCount = false,
     helperText,
     inputRef,

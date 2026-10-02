@@ -567,7 +567,7 @@ export default function AcademicYearWizardModal({
     return (
         <CommonModal
             cardProps={{
-                className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
+                className: 'w-full sm:max-w-4xl p-0 overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[92vh]'
             }}
             fullWidth
             maxWidth="lg"
@@ -581,95 +581,98 @@ export default function AcademicYearWizardModal({
                         <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
                             <CalendarDotsIcon className="w-5 h-5" />
                         </div>
-                        <div className="min-w-0 flex-1 sm:min-w-[260px]">
-                            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
-                                {schoolYearId
-                                    ? isReadOnly
-                                        ? 'Academic Year Calendar & Criteria'
-                                        : 'Edit Academic Year & Calendar'
-                                    : sourceSchoolYear
-                                    ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
-                                    : 'Create Academic Year & Calendar'}
-                            </h2>
-                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                {sourceSchoolYear
-                                    ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
-                                    : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'}
-                            </p>
-                        </div>
-                    </div>
+                        <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                    {schoolYearId
+                                        ? isReadOnly
+                                            ? 'Academic Year Calendar & Criteria'
+                                            : 'Edit Academic Year & Calendar'
+                                        : sourceSchoolYear
+                                        ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
+                                        : 'Create Academic Year & Calendar'}
+                                </h2>
+                                <CommonInfoTooltip
+                                    content={
+                                        sourceSchoolYear
+                                            ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
+                                            : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'
+                                    }
+                                    size={16}
+                                />
+                            </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                        {/* Desktop Actions (Preview, Roll Forward, History, Edit) */}
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<EyeIcon className="w-4 h-4" />}
-                                variant="outlined"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
-                                title="Preview"
-                                aria-label="Preview"
-                                onClick={() => setIsPreviewModalOpen(true)}
-                            >
-                                <span className="hidden sm:inline">Preview</span>
-                            </CommonButton>
-
-                            {!isReadOnly && (
+                            {/* Actions positioned below the title */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                 <CommonButton
                                     color="inherit"
                                     size="small"
-                                    startIcon={<FastForwardIcon className="w-4 h-4" />}
+                                    startIcon={<EyeIcon className="w-4 h-4" />}
                                     variant="outlined"
-                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
-                                    title="Roll Forward +1 Year"
-                                    aria-label="Roll Forward +1 Year"
-                                    onClick={handleRollForwardOneYear}
+                                    className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                    title="Preview"
+                                    aria-label="Preview"
+                                    onClick={() => setIsPreviewModalOpen(true)}
                                 >
-                                    <span className="hidden sm:inline">Roll Forward +1 Year</span>
+                                    <span>Preview</span>
                                 </CommonButton>
-                            )}
 
-                            {schoolYearId && (
-                                <CommonButton
-                                    color="inherit"
-                                    size="small"
-                                    startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
-                                    variant="outlined"
-                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
-                                    title="History"
-                                    aria-label="History"
-                                    onClick={() => setIsHistoryModalOpen(true)}
-                                >
-                                    <span className="hidden sm:inline">History</span>
-                                </CommonButton>
-                            )}
+                                {!isReadOnly && (
+                                    <CommonButton
+                                        color="inherit"
+                                        size="small"
+                                        startIcon={<FastForwardIcon className="w-4 h-4" />}
+                                        variant="outlined"
+                                        className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                        title="Roll Forward +1 Year"
+                                        aria-label="Roll Forward +1 Year"
+                                        onClick={handleRollForwardOneYear}
+                                    >
+                                        <span>Roll Forward +1 Year</span>
+                                    </CommonButton>
+                                )}
 
-                            {isReadOnly && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                    variant="outlined"
-                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
-                                    title="Edit"
-                                    aria-label="Edit"
-                                    onClick={() => setIsReadOnly(false)}
-                                >
-                                    <span className="hidden sm:inline">Edit</span>
-                                </CommonButton>
-                            )}
+                                {schoolYearId && (
+                                    <CommonButton
+                                        color="inherit"
+                                        size="small"
+                                        startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
+                                        variant="outlined"
+                                        className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                        title="History"
+                                        aria-label="History"
+                                        onClick={() => setIsHistoryModalOpen(true)}
+                                    >
+                                        <span>History</span>
+                                    </CommonButton>
+                                )}
+
+                                {isReadOnly && (
+                                    <CommonButton
+                                        color="primary"
+                                        size="small"
+                                        startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                        variant="outlined"
+                                        className="min-w-0 px-2.5 sm:px-3 text-xs"
+                                        title="Edit"
+                                        aria-label="Edit"
+                                        onClick={() => setIsReadOnly(false)}
+                                    >
+                                        <span>Edit</span>
+                                    </CommonButton>
+                                )}
+                            </div>
                         </div>
-
-                        <button
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-                            title="Close"
-                            type="button"
-                            onClick={onClose}
-                        >
-                            <XIcon className="w-5 h-5" />
-                        </button>
                     </div>
+
+                    <button
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                        title="Close"
+                        type="button"
+                        onClick={onClose}
+                    >
+                        <XIcon className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 

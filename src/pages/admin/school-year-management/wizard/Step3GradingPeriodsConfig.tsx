@@ -7,7 +7,6 @@ import {
     ArrowsCounterClockwiseIcon,
     BroomIcon,
     CheckCircleIcon,
-    ClipboardTextIcon,
     CopySimpleIcon,
     ListPlusIcon,
     PlusIcon,
@@ -20,6 +19,7 @@ import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
 import { useState } from 'react';
 import { Control, useWatch } from 'react-hook-form';
+import CopyComponentBreakdownModal from './CopyComponentBreakdownModal';
 import {
     DEFAULT_GRADING_COMPONENTS,
     DEFAULT_GRADING_PERIODS,
@@ -40,32 +40,31 @@ export default function Step3GradingPeriodsConfig({
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
-    const [copiedComponents, setCopiedComponents] = useState<WizardGradingPeriodComponentItem[] | null>(null);
-    const [copiedSourceLabel, setCopiedSourceLabel] = useState<string>('');
+    const [copyModalState, setCopyModalState] = useState<{
+        open: boolean;
+        termIndex: number;
+        periodIndex: number;
+        termName: string;
+        periodName: string;
+    } | null>(null);
 
-    function handleCopyBreakdown(components: WizardGradingPeriodComponentItem[], periodName: string, termName: string) {
-        if (!components || components.length === 0) {
-            useToastStore.getState().showToast('No component breakdown declared to copy.', 'warning');
-            return;
+    function handleApplyCopiedComponents(
+        components: WizardGradingPeriodComponentItem[],
+        applyToAllInTerm: boolean,
+        sourceLabel: string
+    ) {
+        if (!copyModalState) return;
+        const { termIndex, periodIndex } = copyModalState;
+
+        if (applyToAllInTerm) {
+            handleApplyBreakdownToAllTermPeriods(termIndex, components);
+        } else {
+            handleUpdatePeriod(termIndex, periodIndex, { components });
+            useToastStore.getState().showToast(
+                `Component breakdown copied from "${sourceLabel}".`,
+                'success'
+            );
         }
-        const cloned = components.map((c, i) => ({
-            ...c,
-            id: `comp_copy_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
-        }));
-        setCopiedComponents(cloned);
-        const label = `${termName} - ${periodName}`;
-        setCopiedSourceLabel(label);
-        useToastStore.getState().showToast(`Copied breakdown from "${label}". You can now paste it into any grading period.`, 'info');
-    }
-
-    function handlePasteBreakdown(termIndex: number, periodIndex: number) {
-        if (!copiedComponents) return;
-        const cloned = copiedComponents.map((c, i) => ({
-            ...c,
-            id: `comp_paste_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
-        }));
-        handleUpdatePeriod(termIndex, periodIndex, { components: cloned });
-        useToastStore.getState().showToast('Component breakdown pasted successfully.', 'success');
     }
 
     function handleApplyBreakdownToAllTermPeriods(termIndex: number, components: WizardGradingPeriodComponentItem[]) {
@@ -708,7 +707,7 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Major Examination Day(s)</span>
                                                         <CommonInfoTooltip content="Date or date range reserved for major examinations (e.g. Midterm Exams, Final Exams)." size={12} />
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-2">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Exam Start</span>
                                                             <CommonDatePicker
@@ -734,7 +733,7 @@ export default function Step3GradingPeriodsConfig({
                                                         <span>Grade Encoding Range</span>
                                                         <CommonInfoTooltip content="Official window during which faculty members can encode and submit grades for this period." size={12} />
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-2">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
                                                             <span className="block text-[10px] text-slate-500 mb-0.5">Encoding Start</span>
                                                             <CommonDatePicker
@@ -757,63 +756,61 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* Row 5: Grading Component Breakdown */}
                                             <div className="pt-3 border-t border-slate-200/60 dark:border-zinc-700/50 space-y-2.5">
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                                    <div className="flex items-center justify-between sm:justify-start gap-2">
-                                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
-                                                            <ListPlusIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                                                            Grading Component Breakdown
-                                                        </span>
-                                                        <CommonInfoTooltip content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%." size={12} />
-                                                    </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex items-center justify-between gap-2 w-full">
+                                                        <div className="flex items-center gap-1 min-w-0">
+                                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 truncate">
+                                                                <ListPlusIcon className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+                                                                Grading Component Breakdown
+                                                            </span>
+                                                            <CommonInfoTooltip
+                                                                content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
+                                                                size={13}
+                                                                className="shrink-0"
+                                                            />
+                                                        </div>
 
-                                                    <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
+                                                        {/* Simple 100/100 badge - positioned on right side in mobile and desktop */}
                                                         <span
-                                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ml-auto ${
                                                                 isCompBalanced
                                                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                                                     : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                                             }`}
                                                         >
                                                             {isCompBalanced ? (
-                                                                <CheckCircleIcon className="w-3 h-3 text-emerald-600" />
+                                                                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
                                                             ) : (
-                                                                <WarningCircleIcon className="w-3 h-3 text-amber-600" />
+                                                                <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
                                                             )}
-                                                            Components Total: {compTotalWeight}% {isCompBalanced ? '(100%)' : '(Must equal 100%)'}
+                                                            <span>{compTotalWeight}/100</span>
                                                         </span>
+                                                    </div>
 
-                                                        {!disabled && (
+                                                    {!disabled && (
                                                             <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
-                                                                {components.length > 0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
-                                                                        onClick={() => handleCopyBreakdown(components, period.name || `Period #${pIdx + 1}`, term.term_type_label || `Term #${tIdx + 1}`)}
-                                                                        title="Copy this component breakdown"
-                                                                        aria-label="Copy this component breakdown"
-                                                                    >
-                                                                        <CopySimpleIcon className="w-3.5 h-3.5" />
-                                                                        <span className="hidden sm:inline">Copy Breakdown</span>
-                                                                    </button>
-                                                                )}
-
-                                                                {copiedComponents && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-semibold transition-colors flex items-center gap-1"
-                                                                        onClick={() => handlePasteBreakdown(tIdx, pIdx)}
-                                                                        title={`Paste copied breakdown from ${copiedSourceLabel}`}
-                                                                        aria-label={`Paste copied breakdown from ${copiedSourceLabel}`}
-                                                                    >
-                                                                        <ClipboardTextIcon className="w-3.5 h-3.5" />
-                                                                        <span className="hidden sm:inline">Paste Breakdown</span>
-                                                                    </button>
-                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                                                    onClick={() => setCopyModalState({
+                                                                        open: true,
+                                                                        termIndex: tIdx,
+                                                                        periodIndex: pIdx,
+                                                                        termName: term.term_type_label || `Term #${tIdx + 1}`,
+                                                                        periodName: period.name || `Period #${pIdx + 1}`
+                                                                    })}
+                                                                    title="Copy component breakdown from another period or standard template"
+                                                                    aria-label="Copy component breakdown from another period or standard template"
+                                                                >
+                                                                    <CopySimpleIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                                                                    <span className="hidden sm:inline">Copy Breakdown...</span>
+                                                                    <span className="sm:hidden">Copy</span>
+                                                                </button>
 
                                                                 {components.length > 0 && (
                                                                     <button
                                                                         type="button"
-                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1"
+                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1 cursor-pointer"
                                                                         onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
                                                                         title="Apply this breakdown to all grading periods in this term"
                                                                         aria-label="Apply this breakdown to all grading periods in this term"
@@ -825,7 +822,7 @@ export default function Step3GradingPeriodsConfig({
 
                                                                 <button
                                                                     type="button"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
                                                                     onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
                                                                     title="Reset to standard 30/30/40 breakdown"
                                                                     aria-label="Reset to standard 30/30/40 breakdown"
@@ -835,7 +832,7 @@ export default function Step3GradingPeriodsConfig({
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                                                                     onClick={() => handleAddComponent(tIdx, pIdx)}
                                                                     title="Add Component"
                                                                     aria-label="Add Component"
@@ -846,7 +843,6 @@ export default function Step3GradingPeriodsConfig({
                                                             </div>
                                                         )}
                                                     </div>
-                                                </div>
 
                                                 {/* Component Items List */}
                                                 {components.length === 0 ? (
@@ -917,6 +913,19 @@ export default function Step3GradingPeriodsConfig({
                     );
                 })}
             </div>
+
+            {copyModalState?.open && (
+                <CopyComponentBreakdownModal
+                    open={copyModalState.open}
+                    targetPeriodIndex={copyModalState.periodIndex}
+                    targetPeriodName={copyModalState.periodName}
+                    targetTermIndex={copyModalState.termIndex}
+                    targetTermName={copyModalState.termName}
+                    terms={terms}
+                    onApply={handleApplyCopiedComponents}
+                    onClose={() => setCopyModalState(null)}
+                />
+            )}
         </div>
     );
 }

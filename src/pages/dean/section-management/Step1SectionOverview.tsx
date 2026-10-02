@@ -2,7 +2,6 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
 import SectionScheduleConfig from '@pages/dean/section-management/SectionScheduleConfig';
 import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
 import { getFacultyOptions, getTerms } from '@services/section.service';
@@ -34,7 +33,6 @@ export default function Step1SectionOverview({
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
     const { courseOptions } = useCourseOptions({});
-    const { programOptions } = useProgramOptions();
 
     useEffect(function() {
         async function fetchOptions() {
@@ -72,7 +70,6 @@ export default function Step1SectionOverview({
     function handleClearOverview() {
         if (!setValue) return;
         setValue('term_id', '', { shouldValidate: false, shouldDirty: true });
-        setValue('program_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('course_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('faculty_id', '', { shouldValidate: false, shouldDirty: true });
         setValue('room', '', { shouldValidate: false, shouldDirty: true });
@@ -87,6 +84,7 @@ export default function Step1SectionOverview({
             ? [{
                 disabled: true,
                 fieldProps: { helperText: 'Auto-generated section identifier' },
+                label: 'Section Code',
                 name: 'section_code' as const,
                 type: 'text' as const,
                 gridCols: 2
@@ -95,6 +93,7 @@ export default function Step1SectionOverview({
         {
             disabled,
             fieldProps: { helperText: 'Term this section runs in' },
+            label: 'Term',
             name: 'term_id',
             options: termOptions,
             rules: disabled
@@ -105,15 +104,8 @@ export default function Step1SectionOverview({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Academic program this section belongs to (optional)' },
-            name: 'program_id',
-            options: programOptions,
-            type: 'select',
-            gridCols: 2
-        },
-        {
-            disabled,
             fieldProps: { helperText: 'Course being offered in this section' },
+            label: 'Course',
             name: 'course_id',
             options: courseOptions,
             rules: disabled
@@ -125,6 +117,7 @@ export default function Step1SectionOverview({
         {
             disabled,
             fieldProps: { helperText: 'Assigned instructor (optional)' },
+            label: 'Faculty',
             name: 'faculty_id',
             options: facultyOptions,
             type: 'select',
@@ -133,6 +126,7 @@ export default function Step1SectionOverview({
         {
             disabled,
             fieldProps: { helperText: 'Room or venue (optional)' },
+            label: 'Room',
             name: 'room',
             type: 'text',
             gridCols: 2
@@ -140,6 +134,7 @@ export default function Step1SectionOverview({
         {
             disabled,
             fieldProps: { helperText: 'Maximum number of enrollees (1-999)' },
+            label: 'Max Slots',
             name: 'max_slots',
             rules: disabled
                 ? undefined
@@ -155,6 +150,7 @@ export default function Step1SectionOverview({
             ? [{
                 disabled,
                 fieldProps: { helperText: 'Current status of this section' },
+                label: 'Status',
                 name: 'status' as const,
                 options: STATUS_OPTIONS,
                 rules: disabled
