@@ -150,6 +150,7 @@ export default function TableCardActionMenu({
                 {actions.map(function(action) {
                     return (
                         <CommonButton
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
                             color={action.isDestructive
                                 ? 'error'
                                 : 'primary'}
@@ -161,8 +162,11 @@ export default function TableCardActionMenu({
                                 ? 'outlined'
                                 : 'contained'}
                             onClick={createHandleActionClick(action.onClick)}
+                            title={typeof (action.children ?? action.label) === 'string' ? String(action.children ?? action.label) : action.label}
                         >
-                            {action.children ?? action.label}
+                            <span className="hidden sm:inline">
+                                {action.children ?? action.label}
+                            </span>
                         </CommonButton>
                     );
                 })}

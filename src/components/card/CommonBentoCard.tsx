@@ -1,5 +1,5 @@
 import TruncatedText from '@components/card/TruncatedText';
-import { DotsThreeVerticalIcon } from '@phosphor-icons/react';
+import { CheckSquareIcon, DotsThreeVerticalIcon } from '@phosphor-icons/react';
 import { ChangeEventInput, MouseEventButtonElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { ReactNode } from 'react';
@@ -171,19 +171,24 @@ export default function CommonBentoCard({
                                     ? (
                                         <button
                                             className={classMerge(
-                                                'text-xs font-bold px-3 py-1 rounded-lg border transition-colors cursor-pointer',
+                                                'text-xs font-bold px-2 sm:px-3 py-1 rounded-lg border transition-colors cursor-pointer flex items-center gap-1',
                                                 isSelected
                                                     ? 'bg-blue-800 text-white border-blue-800 ring-2 ring-blue-600/30'
                                                     : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                                             )}
                                             type="button"
+                                            title={isSelected ? 'Unselect' : 'Select'}
+                                            aria-label={isSelected ? 'Unselect' : 'Select'}
                                             onClick={function() {
                                                 onToggleSelect?.(!isSelected);
                                             }}
                                         >
-                                            {isSelected
-                                                ? 'Unselect'
-                                                : 'Select'}
+                                            <CheckSquareIcon size={14} weight="bold" />
+                                            <span className="hidden sm:inline">
+                                                {isSelected
+                                                    ? 'Unselect'
+                                                    : 'Select'}
+                                            </span>
                                         </button>
                                     )
                                     : (

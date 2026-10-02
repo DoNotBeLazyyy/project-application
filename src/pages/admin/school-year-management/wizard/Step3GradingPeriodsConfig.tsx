@@ -4,6 +4,7 @@ import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
+    ArrowsCounterClockwiseIcon,
     BroomIcon,
     CheckCircleIcon,
     ClipboardTextIcon,
@@ -452,8 +453,29 @@ export default function Step3GradingPeriodsConfig({
 
                             {/* Preset Buttons & Copy Settings Option */}
                             {!disabled && (
-                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 pb-2 border-b border-slate-100 dark:border-zinc-700/30">
-                                    <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 pb-2 border-b border-slate-100 dark:border-zinc-700/30">
+                                    {/* Mobile Presets Dropdown */}
+                                    <div className="flex sm:hidden items-center gap-1.5 w-full">
+                                        <ScalesIcon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                        <select
+                                            aria-label="Select grading periods preset"
+                                            className="text-xs px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 font-medium border-0 focus:outline-none flex-1"
+                                            value=""
+                                            onChange={(e) => {
+                                                if (e.target.value === '3') handleApplyPreset(tIdx, DEFAULT_GRADING_PERIODS);
+                                                else if (e.target.value === '2') handleApplyPreset(tIdx, TWO_PERIOD_PRESET);
+                                                else if (e.target.value === '4') handleApplyPreset(tIdx, FOUR_PERIOD_PRESET);
+                                            }}
+                                        >
+                                            <option disabled value="">Select Preset...</option>
+                                            <option value="3">3 Periods (30/30/40%)</option>
+                                            <option value="2">2 Periods (50/50%)</option>
+                                            <option value="4">4 Periods (25/25/25/25%)</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Desktop Presets Buttons */}
+                                    <div className="hidden sm:flex flex-wrap items-center gap-2">
                                         <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
                                             <ScalesIcon className="w-3.5 h-3.5" />
                                             Presets:
@@ -483,13 +505,13 @@ export default function Step3GradingPeriodsConfig({
 
                                     {/* Copy from another term dropdown */}
                                     {terms.length > 1 && (
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1.5 w-full sm:w-auto">
                                             <span className="text-xs text-slate-500 font-medium hidden sm:inline">
                                                 Copy:
                                             </span>
                                             <select
                                                 aria-label="Copy grading periods from another term"
-                                                className="text-xs px-2.5 py-1 rounded-md bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-medium border border-brand-200 dark:border-brand-800 focus:outline-none transition-colors cursor-pointer"
+                                                className="w-full sm:w-auto text-xs px-2.5 py-1.5 rounded-md bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-medium border border-brand-200 dark:border-brand-800 focus:outline-none transition-colors cursor-pointer"
                                                 value=""
                                                 onChange={(e) => {
                                                     if (e.target.value !== '') {
@@ -735,8 +757,8 @@ export default function Step3GradingPeriodsConfig({
 
                                             {/* Row 5: Grading Component Breakdown */}
                                             <div className="pt-3 border-t border-slate-200/60 dark:border-zinc-700/50 space-y-2.5">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                    <div className="flex items-center justify-between sm:justify-start gap-2">
                                                         <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                                                             <ListPlusIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                                             Grading Component Breakdown
@@ -744,7 +766,7 @@ export default function Step3GradingPeriodsConfig({
                                                         <CommonInfoTooltip content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%." size={12} />
                                                     </div>
 
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                                                         <span
                                                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                                                 isCompBalanced
@@ -761,58 +783,65 @@ export default function Step3GradingPeriodsConfig({
                                                         </span>
 
                                                         {!disabled && (
-                                                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                                            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
                                                                 {components.length > 0 && (
                                                                     <button
                                                                         type="button"
-                                                                        className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
+                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
                                                                         onClick={() => handleCopyBreakdown(components, period.name || `Period #${pIdx + 1}`, term.term_type_label || `Term #${tIdx + 1}`)}
                                                                         title="Copy this component breakdown"
+                                                                        aria-label="Copy this component breakdown"
                                                                     >
-                                                                        <CopySimpleIcon className="w-3 h-3" />
-                                                                        Copy Breakdown
+                                                                        <CopySimpleIcon className="w-3.5 h-3.5" />
+                                                                        <span className="hidden sm:inline">Copy Breakdown</span>
                                                                     </button>
                                                                 )}
 
                                                                 {copiedComponents && (
                                                                     <button
                                                                         type="button"
-                                                                        className="text-[11px] px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-semibold transition-colors flex items-center gap-1"
+                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-semibold transition-colors flex items-center gap-1"
                                                                         onClick={() => handlePasteBreakdown(tIdx, pIdx)}
                                                                         title={`Paste copied breakdown from ${copiedSourceLabel}`}
+                                                                        aria-label={`Paste copied breakdown from ${copiedSourceLabel}`}
                                                                     >
-                                                                        <ClipboardTextIcon className="w-3 h-3" />
-                                                                        Paste Breakdown
+                                                                        <ClipboardTextIcon className="w-3.5 h-3.5" />
+                                                                        <span className="hidden sm:inline">Paste Breakdown</span>
                                                                     </button>
                                                                 )}
 
                                                                 {components.length > 0 && (
                                                                     <button
                                                                         type="button"
-                                                                        className="text-[11px] px-2 py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1"
+                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1"
                                                                         onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
                                                                         title="Apply this breakdown to all grading periods in this term"
+                                                                        aria-label="Apply this breakdown to all grading periods in this term"
                                                                     >
-                                                                        <ShareNetworkIcon className="w-3 h-3" />
-                                                                        Apply to All
+                                                                        <ShareNetworkIcon className="w-3.5 h-3.5" />
+                                                                        <span className="hidden sm:inline">Apply to All</span>
                                                                     </button>
                                                                 )}
 
                                                                 <button
                                                                     type="button"
-                                                                    className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1"
                                                                     onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
                                                                     title="Reset to standard 30/30/40 breakdown"
+                                                                    aria-label="Reset to standard 30/30/40 breakdown"
                                                                 >
-                                                                    Reset Preset
+                                                                    <ArrowsCounterClockwiseIcon className="w-3.5 h-3.5 sm:hidden" />
+                                                                    <span className="hidden sm:inline">Reset Preset</span>
                                                                 </button>
                                                                 <button
                                                                     type="button"
-                                                                    className="text-[11px] px-2 py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1"
                                                                     onClick={() => handleAddComponent(tIdx, pIdx)}
+                                                                    title="Add Component"
+                                                                    aria-label="Add Component"
                                                                 >
-                                                                    <PlusIcon className="w-3 h-3" />
-                                                                    Add Component
+                                                                    <PlusIcon className="w-3.5 h-3.5" />
+                                                                    <span className="hidden sm:inline">Add Component</span>
                                                                 </button>
                                                             </div>
                                                         )}

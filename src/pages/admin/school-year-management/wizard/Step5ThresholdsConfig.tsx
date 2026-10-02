@@ -78,10 +78,10 @@ export default function Step5ThresholdsConfig({
                 </div>
 
                 {!disabled && (
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
                         <select
                             aria-label="Preset Thresholds"
-                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer w-full sm:w-auto"
                             value=""
                             onChange={(e) => {
                                 if (e.target.value === 'honors') {
@@ -93,24 +93,30 @@ export default function Step5ThresholdsConfig({
                             <option value="honors">Standard Honors & Scholarships</option>
                         </select>
 
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
-                            variant="outlined"
-                            onClick={handleResetBlank}
-                        >
-                            Reset to Blank
-                        </CommonButton>
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                            variant="contained"
-                            onClick={handleAddThreshold}
-                        >
-                            Add Threshold
-                        </CommonButton>
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <CommonButton
+                                color="inherit"
+                                size="small"
+                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
+                                variant="outlined"
+                                onClick={handleResetBlank}
+                                title="Reset to Blank"
+                            >
+                                <span className="hidden sm:inline">Reset to Blank</span>
+                            </CommonButton>
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                variant="contained"
+                                onClick={handleAddThreshold}
+                                title="Add Threshold"
+                            >
+                                <span className="hidden sm:inline">Add Threshold</span>
+                            </CommonButton>
+                        </div>
                     </div>
                 )}
             </div>
@@ -159,6 +165,7 @@ export default function Step5ThresholdsConfig({
                                             <CommonButton
                                                 color="inherit"
                                                 size="small"
+                                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                                 startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
                                                 variant="outlined"
                                                 onClick={() => handleResetThresholdBlank(idx)}
@@ -169,6 +176,7 @@ export default function Step5ThresholdsConfig({
                                             <CommonButton
                                                 color="error"
                                                 size="small"
+                                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
                                                 variant="outlined"
                                                 onClick={() => remove(idx)}

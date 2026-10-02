@@ -601,15 +601,18 @@ export default function AcademicYearWizardModal({
 
                     <div className="flex items-center gap-2 shrink-0">
                         {/* Desktop Actions (Preview, Roll Forward, History, Edit) */}
-                        <div className="hidden sm:flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                             <CommonButton
                                 color="inherit"
                                 size="small"
                                 startIcon={<EyeIcon className="w-4 h-4" />}
                                 variant="outlined"
+                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
+                                title="Preview"
+                                aria-label="Preview"
                                 onClick={() => setIsPreviewModalOpen(true)}
                             >
-                                Preview
+                                <span className="hidden sm:inline">Preview</span>
                             </CommonButton>
 
                             {!isReadOnly && (
@@ -618,9 +621,12 @@ export default function AcademicYearWizardModal({
                                     size="small"
                                     startIcon={<FastForwardIcon className="w-4 h-4" />}
                                     variant="outlined"
+                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
+                                    title="Roll Forward +1 Year"
+                                    aria-label="Roll Forward +1 Year"
                                     onClick={handleRollForwardOneYear}
                                 >
-                                    Roll Forward +1 Year
+                                    <span className="hidden sm:inline">Roll Forward +1 Year</span>
                                 </CommonButton>
                             )}
 
@@ -630,9 +636,12 @@ export default function AcademicYearWizardModal({
                                     size="small"
                                     startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
                                     variant="outlined"
+                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
+                                    title="History"
+                                    aria-label="History"
                                     onClick={() => setIsHistoryModalOpen(true)}
                                 >
-                                    History
+                                    <span className="hidden sm:inline">History</span>
                                 </CommonButton>
                             )}
 
@@ -642,15 +651,18 @@ export default function AcademicYearWizardModal({
                                     size="small"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4" />}
                                     variant="outlined"
+                                    className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
+                                    title="Edit"
+                                    aria-label="Edit"
                                     onClick={() => setIsReadOnly(false)}
                                 >
-                                    Edit
+                                    <span className="hidden sm:inline">Edit</span>
                                 </CommonButton>
                             )}
                         </div>
 
                         <button
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                             title="Close"
                             type="button"
                             onClick={onClose}
@@ -658,55 +670,6 @@ export default function AcademicYearWizardModal({
                             <XIcon className="w-5 h-5" />
                         </button>
                     </div>
-                </div>
-
-                {/* Mobile Actions: placed below label and description to prevent vertical narrowing */}
-                <div className="flex sm:hidden items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 overflow-x-auto">
-                    <CommonButton
-                        color="inherit"
-                        size="small"
-                        startIcon={<EyeIcon className="w-4 h-4" />}
-                        variant="outlined"
-                        onClick={() => setIsPreviewModalOpen(true)}
-                    >
-                        Preview
-                    </CommonButton>
-
-                    {!isReadOnly && (
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            startIcon={<FastForwardIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={handleRollForwardOneYear}
-                        >
-                            Roll Forward +1 Year
-                        </CommonButton>
-                    )}
-
-                    {schoolYearId && (
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            startIcon={<ClockCounterClockwiseIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={() => setIsHistoryModalOpen(true)}
-                        >
-                            History
-                        </CommonButton>
-                    )}
-
-                    {isReadOnly && (
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={() => setIsReadOnly(false)}
-                        >
-                            Edit
-                        </CommonButton>
-                    )}
                 </div>
             </div>
 

@@ -51,11 +51,13 @@ export default function TableCardSelectionBar({
                         color="error"
                         disabled={isDeleting}
                         size="small"
+                        className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
                         startIcon={<TrashIcon size={16} weight="bold" />}
                         variant="outlined"
                         onClick={onDeleteSelected}
+                        title={`Delete Selected (${selectedCount})`}
                     >
-                        Delete Selected ({selectedCount})
+                        <span className="hidden sm:inline">Delete Selected </span>({selectedCount})
                     </CommonButton>
                 )}
 

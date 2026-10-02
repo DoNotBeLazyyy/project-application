@@ -228,21 +228,25 @@ export default function Step2TermsConfig({
                         <CommonButton
                             color="inherit"
                             size="small"
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
                             startIcon={<CalendarPlusIcon className="w-4 h-4" />}
                             variant="outlined"
                             onClick={handleAutoPopulateSemesters}
+                            title="Preset 2 Semesters"
                         >
-                            Preset 2 Semesters
+                            <span className="hidden sm:inline">Preset 2 Semesters</span>
                         </CommonButton>
                     )}
                     <CommonButton
                         color="primary"
                         size="small"
+                        className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
                         startIcon={<PlusIcon className="w-4 h-4" />}
                         variant="contained"
                         onClick={handleAddTerm}
+                        title="Add Term"
                     >
-                        Add Term
+                        <span className="hidden sm:inline">Add Term</span>
                     </CommonButton>
                 </div>
             )}
