@@ -166,12 +166,7 @@ export default function CommonBentoCard({
                                     aria-label={isSelected ? 'Unselect card' : 'Select card'}
                                     className={classMerge(
                                         'cursor-pointer transition-all duration-150 flex items-center justify-center shrink-0 select-none',
-                                        // Mobile first: square checkbox icon (touch-friendly min 24x24px, 360px screen friendly)
-                                        'w-6 h-6 rounded-md border text-xs',
-                                        // Desktop for button variant: expands to pill button with label
-                                        selectVariant === 'button'
-                                            ? 'sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 sm:rounded-lg sm:font-bold sm:gap-1.5'
-                                            : 'sm:w-5 sm:h-5 sm:rounded-md',
+                                        'w-6 h-6 sm:w-5 sm:h-5 rounded-md border text-xs',
                                         isSelected
                                             ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600/30 shadow-xs'
                                             : 'bg-white border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 shadow-2xs'
@@ -193,11 +188,6 @@ export default function CommonBentoCard({
                                         size={14}
                                         weight="bold"
                                     />
-                                    {selectVariant === 'button' && (
-                                        <span className="hidden sm:inline font-semibold">
-                                            {isSelected ? 'Unselect' : 'Select'}
-                                        </span>
-                                    )}
                                 </button>
                             </div>
                         )}
