@@ -232,7 +232,7 @@ BEGIN
     SELECT DISTINCT ur.user_id,
            'New Student Setup Request',
            'Student ' || v_user_full_name || ' (' || COALESCE(v_student_number, 'N/A') || ') completed profile setup and requested program verification.',
-           'Account',
+           'Account'::public.notification_category_type,
            '/registrar/student-verification'
     FROM public.user_roles ur
     JOIN public.roles r ON r.id = ur.role_id
@@ -505,7 +505,7 @@ BEGIN
         SELECT DISTINCT ur.user_id,
                'New Student Verification Request',
                'Student ' || v_user_full_name || ' (' || COALESCE(v_student_number, 'N/A') || ') submitted a profile update request for Registrar verification.',
-               'Account',
+               'Account'::public.notification_category_type,
                '/registrar/student-verification'
         FROM public.user_roles ur
         JOIN public.roles r ON r.id = ur.role_id

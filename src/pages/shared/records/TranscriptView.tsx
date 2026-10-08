@@ -154,47 +154,49 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                                     Term GWA {formatGwa(term.term_gwa)} · {formatNumber(term.earned_units)} units earned
                                 </span>
                             </div>
-                            <table className="text-sm w-full">
-                                <thead>
-                                    <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
-                                        <th className="font-medium px-3 py-2 text-left">Code</th>
-                                        <th className="font-medium px-3 py-2 text-left">Course Title</th>
-                                        <th className="font-medium px-3 py-2 text-right">Units</th>
-                                        <th className="font-medium px-3 py-2 text-right">Grade</th>
-                                        <th className="font-medium px-3 py-2 text-left">Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {term.courses.map(function(course) {
-                                        return (
-                                            <tr
-                                                className="border-b border-(--mui-palette-divider) last:border-b-0"
-                                                key={course.enrollment_id}
-                                            >
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary)">
-                                                    {course.course_code}
-                                                </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary)">
-                                                    {course.course_title}
-                                                </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
-                                                    {formatNumber(course.units)}
-                                                </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
-                                                    {formatGrade(course)}
-                                                </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-secondary)">
-                                                    {course.is_passing === null
-                                                        ? '—'
-                                                        : course.is_passing
-                                                            ? 'Passed'
-                                                            : 'Failed'}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                            <div className="overflow-x-auto w-full">
+                                <table className="min-w-[500px] text-sm w-full">
+                                    <thead>
+                                        <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
+                                            <th className="font-medium px-3 py-2 text-left">Code</th>
+                                            <th className="font-medium px-3 py-2 text-left">Course Title</th>
+                                            <th className="font-medium px-3 py-2 text-right">Units</th>
+                                            <th className="font-medium px-3 py-2 text-right">Grade</th>
+                                            <th className="font-medium px-3 py-2 text-left">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {term.courses.map(function(course) {
+                                            return (
+                                                <tr
+                                                    className="border-b border-(--mui-palette-divider) last:border-b-0"
+                                                    key={course.enrollment_id}
+                                                >
+                                                    <td className="px-3 py-2 text-(--mui-palette-text-primary)">
+                                                        {course.course_code}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-(--mui-palette-text-primary)">
+                                                        {course.course_title}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                        {formatNumber(course.units)}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                        {formatGrade(course)}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-(--mui-palette-text-secondary)">
+                                                        {course.is_passing === null
+                                                            ? '—'
+                                                            : course.is_passing
+                                                                ? 'Passed'
+                                                                : 'Failed'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     );
                 })}

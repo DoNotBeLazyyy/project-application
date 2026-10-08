@@ -74,10 +74,11 @@ export default function PeriodModalForm({
                     append(DEFAULT_COMPONENT);
                 }}
                 onRemoveRow={function(index) {
-                    const compName = methods.getValues(`components.${index}.name` as const);
+                    const idx = typeof index === 'number' ? index : (Array.isArray(index) ? (index[0] ?? 0) : 0);
+                    const compName = methods.getValues(`components.${idx}.name` as const);
                     setDeleteCompTarget({
-                        index,
-                        name: compName || `Component #${index + 1}`
+                        index: idx,
+                        name: compName || `Component #${idx + 1}`
                     });
                 }}
             />

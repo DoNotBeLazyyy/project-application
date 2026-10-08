@@ -194,6 +194,7 @@ function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOption
         <CommonSelect
             disabled={disabled}
             fullWidth
+            name={courseTypeName(rowIndex, 'course_type_id')}
             options={availableOptions}
             placeholder="Select Course Type"
             size="small"
@@ -316,6 +317,7 @@ export default function CourseForm({
     // System generate course code for new course creation
     useEffect(() => {
         if (excludeCourseId || isCodeDisabled || !setValue) return;
+        if (!watchedDepartmentId || !watchedTitle) return;
 
         const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
         const generatedCode = generateCourseCode({
@@ -326,7 +328,9 @@ export default function CourseForm({
             existingCodes: deptCoursesInfo.codes
         });
 
-        setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+        if (generatedCode) {
+            setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+        }
     }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, isCodeDisabled, setValue]);
 
     const {

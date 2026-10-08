@@ -250,6 +250,7 @@ export default function EvaluationTemplateFormPanel({
             }
         },
         {
+            label: 'Description',
             name: 'description',
             disabled,
             fullWidth: true,

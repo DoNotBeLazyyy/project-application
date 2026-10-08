@@ -2,6 +2,7 @@ import CommonActionModal, { CommonActionModalProps } from '@components/modal/Com
 import { HTMLAttributesSpanElement } from '@type/common.type';
 import { ActionIconProps } from '@type/common/modal.type';
 import { classMerge } from '@utils/css.util';
+import { normalizeSx } from '@utils/theme.util';
 
 export interface CommonPromptModalProps extends CommonActionModalProps {
     // Action icon props
@@ -40,8 +41,8 @@ export default function CommonPromptModal({
 
     return (
         <CommonActionModal
-            fullScreen={props.fullScreen}
             {...props}
+            fullScreen={props.fullScreen ?? false}
             containerClassName={
                 classMerge(
                     'items-center max-w-full w-full sm:w-[30.1875rem] min-h-[14.5625rem] pt-(--mui-tokens-spacing-5) justify-center',
@@ -51,15 +52,27 @@ export default function CommonPromptModal({
             formButtonsProps={{
                 ...formButtonsProps,
                 className: classMerge(
-                    'flex-col-reverse sm:flex-row-reverse',
+                    'flex-col-reverse sm:flex-row',
                     className
                 ),
                 isButtonsFullWidth,
                 cancelProps: {
+                    color: 'secondary',
                     variant: 'outlined',
                     ...cancelProps
                 }
             }}
+            sx={[
+                {
+                    '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                        borderRadius: 'var(--mui-tokens-radius-lg)',
+                        margin: { xs: '1rem', sm: 'auto' },
+                        maxWidth: { xs: 'calc(100% - 2rem)', sm: '30.1875rem' },
+                        width: { xs: 'calc(100% - 2rem)', sm: '30.1875rem' }
+                    }
+                },
+                ...normalizeSx(props.sx)
+            ]}
         >
             <div className="flex flex-col gap-(--mui-tokens-spacing-5) items-center w-full">
                 {Icon && (

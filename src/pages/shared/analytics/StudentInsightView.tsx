@@ -284,7 +284,9 @@ export default function StudentInsightView({ studentId }: StudentInsightViewProp
                 {insight.trajectory.length > 0
                     ? (
                         <div className="gap-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                            {insight.trajectory.map(function(trajectory) {
+                            {insight.trajectory.filter(function(item, idx, arr) {
+                                return arr.findIndex(function(t) { return t.code === item.code; }) === idx;
+                            }).map(function(trajectory) {
                                 return (
                                     <TrajectoryCard
                                         key={trajectory.code}

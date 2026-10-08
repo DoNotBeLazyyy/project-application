@@ -18,6 +18,7 @@ export interface CommonMultiSelectProps {
     isRequired?: boolean;
     defaultOpenErrorTooltip?: boolean;
     isFirstError?: boolean;
+    name?: string;
     placeholder?: string;
     disabled?: boolean;
     readOnly?: boolean;

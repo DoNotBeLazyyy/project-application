@@ -44,7 +44,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     name,
     readOnly,
     rules,
-    size = 'medium',
+    size = 'large',
     ...props
 }: ValidCommonDateTimePickerProps<T>) {
     const {
@@ -150,14 +150,15 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                 : {})
                         },
                         textField: {
+                            name,
                             className: externalClassName,
                             disabled,
                             error: isError,
                             fullWidth,
                             helperText: label ? undefined : (hasHelper ? errorMessage : undefined),
                             label: '',
-                            size: resolvedSize,
-                            variant: 'outlined' as const,
+                            size: (resolvedSize === 'large' ? 'medium' : resolvedSize) as any,
+                            variant: 'outlined' as any,
                             ...restTextFieldProps,
                             onFocus: () => {
                                 if (isNonInteractive) {

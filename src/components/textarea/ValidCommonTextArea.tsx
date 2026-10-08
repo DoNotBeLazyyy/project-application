@@ -53,6 +53,7 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
 
     return (
         <CommonTextarea
+            name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             error={errorProp ?? !!fieldState.error}

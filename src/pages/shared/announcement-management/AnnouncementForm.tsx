@@ -7,7 +7,8 @@ import { getAnnouncementSectionOptions } from '@services/announcement.service';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { ComponentPropsForm } from '@type/common.type';
-import { useEffect, useState } from 'react';
+import { getRoleFromPath } from '@utils/role-path.util';
+import { useEffect, useRef, useState } from 'react';
 import { Control, useController, useWatch } from 'react-hook-form';
 
 export interface AnnouncementFormProps extends ComponentPropsForm {
@@ -43,8 +44,9 @@ export default function AnnouncementForm({
     ...formProps
 }: AnnouncementFormProps) {
     const activeRole = useAppStore((s) => s.activeRole);
-    const isFacultyOnly = activeRole === 'Faculty';
+    const isFacultyOnly = activeRole === 'Faculty' || (typeof window !== 'undefined' && getRoleFromPath(window.location.pathname) === 'Faculty');
     const [sectionOptions, setSectionOptions] = useState<CommonSelectOption[]>([]);
+    const hasAutoSelectedRef = useRef(false);
 
     const itemType = (useWatch({
         control,
@@ -64,6 +66,20 @@ export default function AnnouncementForm({
     const postedOn = useWatch({
         control,
         name: 'posted_on'
+    });
+
+    const {
+        field: { value: audienceValue, onChange: setTargetAudience }
+    } = useController({
+        control,
+        name: 'target_audience'
+    });
+
+    const {
+        field: { value: sectionIds = [], onChange: setSectionIds }
+    } = useController({
+        control,
+        name: 'section_ids'
     });
 
     const {
@@ -88,16 +104,28 @@ export default function AnnouncementForm({
     });
 
     useEffect(function() {
+        if (isFacultyOnly && audienceValue !== 'Section') {
+            setTargetAudience('Section');
+        }
+    }, [isFacultyOnly, audienceValue, setTargetAudience]);
+
+    useEffect(function() {
         let active = true;
 
         async function loadSections() {
             const result = await getAnnouncementSectionOptions();
 
             if (active && result.data) {
-                setSectionOptions(result.data.map((s) => ({
+                const options = result.data.map((s) => ({
                     label: s.label,
                     value: s.id
-                })));
+                }));
+                setSectionOptions(options);
+
+                if (isFacultyOnly && !hasAutoSelectedRef.current && (!sectionIds || sectionIds.length === 0) && options.length > 0) {
+                    hasAutoSelectedRef.current = true;
+                    setSectionIds([options[0].value]);
+                }
             }
         }
 
@@ -106,7 +134,7 @@ export default function AnnouncementForm({
         return function() {
             active = false;
         };
-    }, []);
+    }, [isFacultyOnly]);
 
     const fields: FormFieldConfig<CommunicationFormValues>[] = [
         ...(authorName || postedOn
@@ -169,7 +197,7 @@ export default function AnnouncementForm({
                 : { required: 'Audience is required' },
             type: 'select' as const
         },
-        ...(audience === 'Section'
+        ...(audience === 'Section' || isFacultyOnly
             ? [
                 {
                     disabled,
@@ -248,6 +276,7 @@ export default function AnnouncementForm({
     return (
         <form {...formProps} className="flex flex-col gap-5 w-full min-w-0 max-w-full">
             <CommonForm
+                component="div"
                 containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                 control={control}
                 fields={fields}

@@ -94,11 +94,30 @@ interface FormFieldProps<T extends FieldValues> {
     hasHelper?: boolean;
 }
 
+function formatFieldLabelFallback(name: string): string {
+    return name
+        .replace(/_/g, ' ')
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function resolveFieldLabel<T extends FieldValues>(field: FormFieldConfig<T>): string | undefined {
+    if (field.fieldProps && 'label' in field.fieldProps && (field.fieldProps as { label?: string }).label !== undefined) {
+        return (field.fieldProps as { label?: string }).label;
+    }
+    if (field.label !== undefined) {
+        return field.label;
+    }
+    return formatFieldLabelFallback(String(field.name));
+}
+
 export function FormField<T extends FieldValues>({
     control,
     field,
     hasHelper = true
 }: FormFieldProps<T>) {
+    const label = resolveFieldLabel(field);
+
     if (field.type === 'select') {
         return (
             <ValidCommonSelect
@@ -106,6 +125,7 @@ export function FormField<T extends FieldValues>({
                 control={control}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
+                label={label}
                 name={field.name}
                 options={field.options ?? []}
                 readOnly={field.readOnly}
@@ -123,7 +143,7 @@ export function FormField<T extends FieldValues>({
                 fullWidth
                 hasHelper={hasHelper}
                 isRequired={Boolean(field.rules?.required)}
-                label={field.label}
+                label={label}
                 name={field.name}
                 placeholder={field.placeholder}
                 readOnly={field.readOnly}
@@ -147,6 +167,7 @@ export function FormField<T extends FieldValues>({
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
+                label={label}
                 name={field.name}
                 readOnly={field.readOnly}
                 rules={field.rules}
@@ -196,6 +217,7 @@ export function FormField<T extends FieldValues>({
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
+                label={label}
                 name={field.name}
                 placeholder={field.placeholder}
                 readOnly={field.readOnly}
@@ -212,6 +234,7 @@ export function FormField<T extends FieldValues>({
                 control={control}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
+                label={label}
                 name={field.name}
                 options={field.options ?? []}
                 readOnly={field.readOnly}
@@ -232,6 +255,7 @@ export function FormField<T extends FieldValues>({
             disabled={field.disabled}
             fullWidth
             hasHelper={hasHelper}
+            label={label}
             name={field.name}
             placeholder={field.placeholder}
             readOnly={field.readOnly}

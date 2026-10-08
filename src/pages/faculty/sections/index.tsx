@@ -102,6 +102,7 @@ export default function FacultySectionManagement() {
                         searchHints: SEARCH_HINTS.mySections
                     }
                 }}
+                showViewToggle
                 sortColumns={SORT_COLUMNS}
                 tableProps={{
                     leadingColumnDefs: columnDefs

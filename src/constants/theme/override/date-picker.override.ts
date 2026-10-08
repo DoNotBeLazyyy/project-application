@@ -16,9 +16,9 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
     ...theme.typography.bodyNormal,
     borderRadius: 'var(--mui-tokens-radius-md)',
     boxSizing: 'border-box' as const,
-    height: INPUT_HEIGHT_MEDIUM,
-    maxHeight: INPUT_HEIGHT_MEDIUM,
-    padding: INPUT_PADDING_MEDIUM,
+    height: INPUT_HEIGHT_LARGE,
+    maxHeight: INPUT_HEIGHT_LARGE,
+    padding: INPUT_PADDING_LARGE,
     '&.Mui-disabled *': {
         color: 'var(--mui-tokens-color-neutral-400)',
         WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'
@@ -83,7 +83,7 @@ const pickersInputVariants = [
     }
 ];
 
-export const datePickerOverrides: ComponentTheme = {
+export const datePickerOverrides: ComponentTheme & Record<string, any> = {
     MuiDatePicker: {
         defaultProps: {
             slotProps: {
@@ -122,7 +122,7 @@ export const datePickerOverrides: ComponentTheme = {
             }
         },
         variants: pickersInputVariants
-    },
+    } as any,
     MuiPickersOutlinedInput: {
         styleOverrides: {
             root: pickersInputRootStyles,
@@ -135,5 +135,5 @@ export const datePickerOverrides: ComponentTheme = {
             }
         },
         variants: pickersInputVariants
-    }
+    } as any
 };

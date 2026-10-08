@@ -37,7 +37,8 @@ export default function CreateUserForm({
             label: 'Role',
             name: 'role_code',
             type: 'select',
-            options: roleOptions
+            options: roleOptions,
+            rules: { required: 'Required' }
         }
     ];
 

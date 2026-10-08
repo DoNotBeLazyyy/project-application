@@ -255,6 +255,7 @@ export default function StudentGrades() {
                         leadingColumnDefs: columnDefs
                     }}
                     uniqueIdKey="row_id"
+                    viewMode="table"
                     onFetch={fetchGrades}
                     onFilter={function() {
                         setIsFilterOpen(true);

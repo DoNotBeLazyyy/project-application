@@ -18,6 +18,7 @@ export default function FilterAuditLogForm({
 }: FilterAuditLogFormProps) {
     const fields: FormFieldConfig<AuditLogFilterValues>[] = [
         {
+            label: 'Action',
             name: 'action',
             options: ACTION_OPTIONS,
             type: 'select'

@@ -23,6 +23,7 @@ export default function FilterStudentVerificationForm({
 }: FilterStudentVerificationFormProps) {
     const fields: FormFieldConfig<StudentProfileRequestFilterValues>[] = [
         {
+            label: 'Status',
             name: 'status',
             options: STATUS_OPTIONS,
             type: 'select'

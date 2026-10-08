@@ -96,11 +96,11 @@ export default function ProfileDetailsForm({
 
     const studentFields: FormFieldConfig<ProfileFormValues>[] = isStudentUser ? [
         {
+            disabled: true,
             label: 'Student Number',
             name: 'student_number',
             type: 'text',
             fieldProps: {
-                disabled: true,
                 helperText: 'System generated student number (read-only).'
             }
         },

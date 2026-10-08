@@ -159,47 +159,64 @@ export default function SubmissionsPage() {
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-1 gap-4 min-h-0">
-                    <SubmissionList
-                        submissions={submissions}
-                        onSelect={handleSelectSubmission}
-                    />
-                    {selectedSubmission && selectedSubmission.use_rubric_scoring && rubric
-                        ? (
-                            <RubricGradingPanel
-                                draftEvaluations={draftEvaluations}
-                                draftFeedback={draftFeedback}
-                                isDirty={isGradeDirty}
-                                isSaving={isSaving}
-                                rubric={rubric}
-                                onEvaluationFeedbackChange={handleRubricFeedbackChange}
-                                onFeedbackChange={setDraftFeedback}
-                                onPointsChange={handleRubricPointsChange}
-                                onSave={handleSaveGrade}
-                            />
-                        )
-                        : selectedSubmission
+                <div className="flex flex-col md:flex-row flex-1 gap-4 min-h-0">
+                    <div className={`h-full min-h-0 ${selectedSubmission ? 'hidden md:flex md:w-2/5' : 'flex flex-1 md:w-2/5'}`}>
+                        <SubmissionList
+                            submissions={submissions}
+                            onSelect={handleSelectSubmission}
+                        />
+                    </div>
+                    <div className={`flex-1 h-full min-h-0 ${!selectedSubmission ? 'hidden md:flex' : 'flex flex-col'}`}>
+                        {selectedSubmission && (
+                            <div className="md:hidden pb-2 shrink-0">
+                                <CommonButton
+                                    color="inherit"
+                                    size="small"
+                                    startIcon={<ArrowLeftIcon size={14} weight="bold" />}
+                                    variant="outlined"
+                                    onClick={() => setSelectedSubmission(null)}
+                                >
+                                    Back to Submissions
+                                </CommonButton>
+                            </div>
+                        )}
+                        {selectedSubmission && selectedSubmission.use_rubric_scoring && rubric
                             ? (
-                                <GradingPanel
-                                    draftAnswers={draftAnswers}
+                                <RubricGradingPanel
+                                    draftEvaluations={draftEvaluations}
                                     draftFeedback={draftFeedback}
                                     isDirty={isGradeDirty}
                                     isSaving={isSaving}
-                                    submission={selectedSubmission}
+                                    rubric={rubric}
+                                    onEvaluationFeedbackChange={handleRubricFeedbackChange}
                                     onFeedbackChange={setDraftFeedback}
-                                    onNotesChange={handleNotesChange}
-                                    onPointsChange={handlePointsChange}
+                                    onPointsChange={handleRubricPointsChange}
                                     onSave={handleSaveGrade}
                                 />
                             )
-                            : (
-                                <div className="flex flex-1 items-center justify-center">
-                                    <p className="text-(--mui-palette-text-secondary) text-sm">
-                                Select a submission to grade
-                                    </p>
-                                </div>
-                            )
-                    }
+                            : selectedSubmission
+                                ? (
+                                    <GradingPanel
+                                        draftAnswers={draftAnswers}
+                                        draftFeedback={draftFeedback}
+                                        isDirty={isGradeDirty}
+                                        isSaving={isSaving}
+                                        submission={selectedSubmission}
+                                        onFeedbackChange={setDraftFeedback}
+                                        onNotesChange={handleNotesChange}
+                                        onPointsChange={handlePointsChange}
+                                        onSave={handleSaveGrade}
+                                    />
+                                )
+                                : (
+                                    <div className="flex flex-1 items-center justify-center">
+                                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                                            Select a submission to grade
+                                        </p>
+                                    </div>
+                                )
+                        }
+                    </div>
                 </div>
             </div>
         </CommonCard>

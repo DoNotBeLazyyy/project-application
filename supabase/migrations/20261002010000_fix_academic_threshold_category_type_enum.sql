@@ -104,7 +104,7 @@ BEGIN
             end_date = p_end_date,
             is_active = COALESCE(p_is_active, is_active),
             max_units_per_term = v_units,
-            evaluation_scope = v_clean_eval_scope,
+            evaluation_scope = v_clean_eval_scope::public.evaluation_scope_type,
             updated_at = now()
         WHERE id = v_sy_id;
     ELSE
@@ -126,7 +126,7 @@ BEGIN
             p_end_date,
             COALESCE(p_is_active, false),
             v_units,
-            v_clean_eval_scope
+            v_clean_eval_scope::public.evaluation_scope_type
         )
         RETURNING id INTO v_sy_id;
     END IF;

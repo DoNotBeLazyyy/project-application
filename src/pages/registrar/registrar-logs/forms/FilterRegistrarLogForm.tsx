@@ -26,15 +26,18 @@ export default function FilterRegistrarLogForm({
 }: FilterRegistrarLogFormProps) {
     const fields: FormFieldConfig<RegistrarLogFilterValues>[] = [
         {
+            label: 'Action',
             name: 'action',
             options: ACTION_OPTIONS,
             type: 'select'
         },
         {
+            label: 'From',
             name: 'date_from',
             type: 'date'
         },
         {
+            label: 'To',
             name: 'date_to',
             type: 'date'
         }

@@ -8,7 +8,7 @@ import { ChangeEventInputTextarea } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { buildElementChangeEvent, clearInputElement, hasClearableValue } from '@utils/input.util';
 import {
-    forwardRef, InputHTMLAttributes, MouseEvent, MutableRefObject, useCallback, useEffect, useRef, useState
+    forwardRef, InputHTMLAttributes, MouseEvent, MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState
 } from 'react';
 
 export type CommonInputProps = TextFieldProps & {
@@ -23,6 +23,9 @@ export type CommonInputProps = TextFieldProps & {
 
     // Whether to display the mandatory asterisk indicator
     isRequired?: boolean;
+
+    // Whether this input is the first error in the form
+    isFirstError?: boolean;
 
     // Whether to make the input pill-shaped
     isRoundedFull?: boolean;
@@ -40,7 +43,7 @@ export type CommonInputProps = TextFieldProps & {
 
     // Callback invoked after the built-in clear button empties the field
     onClear?: () => void;
-}
+};
 
 /**
  * CommonInput

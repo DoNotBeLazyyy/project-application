@@ -65,6 +65,21 @@ interface AcademicYearWizardModalProps {
     onSuccess: () => void;
 }
 
+const DEFAULT_WIZARD_FORM_VALUES: AcademicYearWizardFormValues = {
+    code: '',
+    end_date: '',
+    evaluation_scope: 'Period',
+    holidays: [],
+    id: null,
+    is_active: false,
+    label: '',
+    max_units_per_term: 24,
+    start_date: '',
+    terms: [],
+    thresholds: [],
+    transmutation_rows: []
+};
+
 export default function AcademicYearWizardModal({
     open,
     readOnly: initialReadOnly = false,
@@ -85,26 +100,20 @@ export default function AcademicYearWizardModal({
     const [availableSourceYears, setAvailableSourceYears] = useState<SchoolYearOption[]>([]);
     const [existingSchoolYears, setExistingSchoolYears] = useState<ExistingSchoolYearComparison[]>([]);
 
-    const defaultValues: AcademicYearWizardFormValues = {
-        code: '',
-        end_date: '',
-        evaluation_scope: 'Period',
-        holidays: [],
-        id: null,
-        is_active: false,
-        label: '',
-        max_units_per_term: 24,
-        start_date: '',
-        terms: [],
-        thresholds: [],
-        transmutation_rows: []
-    };
+    const defaultValues = DEFAULT_WIZARD_FORM_VALUES;
 
     const methods = useForm<AcademicYearWizardFormValues>({
         defaultValues
     });
 
-    const { control, getValues, reset, setValue, watch } = methods;
+    const {
+        control,
+        formState: { isDirty },
+        getValues,
+        reset,
+        setValue,
+        watch
+    } = methods;
 
     async function loadAndDuplicateSchoolYear(sourceId: string) {
         setIsLoading(true);
@@ -158,6 +167,8 @@ export default function AcademicYearWizardModal({
             reset(defaultValues);
             setIsReadOnly(initialReadOnly);
             setIsHistoryModalOpen(false);
+            setIsPreviewModalOpen(false);
+            setIsConfirmCloseOpen(false);
             setSourceSchoolYear(null);
             return;
         }
@@ -566,7 +577,7 @@ export default function AcademicYearWizardModal({
     }
 
     function handleRequestClose() {
-        if (!isReadOnly && methods.formState.isDirty) {
+        if (!isReadOnly && isDirty) {
             setIsConfirmCloseOpen(true);
         } else {
             onClose();
@@ -679,6 +690,7 @@ export default function AcademicYearWizardModal({
                     <button
                         className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                         title="Close"
+                        aria-label="Close"
                         type="button"
                         onClick={handleRequestClose}
                     >
@@ -842,7 +854,7 @@ export default function AcademicYearWizardModal({
 
             {/* Unsaved Changes Confirmation Modal */}
             <CommonPromptModal
-                isOpen={isConfirmCloseOpen}
+                open={isConfirmCloseOpen}
                 mainContent={{ title: 'Discard unsaved changes?' }}
                 subContent={{ title: 'You have unsaved changes in this academic year calendar. Are you sure you want to discard your changes and close?' }}
                 actionIconProps={{

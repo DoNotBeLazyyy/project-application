@@ -49,10 +49,10 @@ export async function getDepartmentCourseCodes(
     if (res.error) {
         return { data: { count: 0, codes: [] }, error: res.error };
     }
-    const items = res.data?.items ?? [];
+    const items = res.data?.content ?? [];
     return {
         data: {
-            count: res.data?.total_count ?? items.length,
+            count: res.data?.totalElements ?? items.length,
             codes: items.map((item) => item.code)
         },
         error: null

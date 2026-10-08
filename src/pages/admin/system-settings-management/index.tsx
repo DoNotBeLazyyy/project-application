@@ -312,6 +312,7 @@ export default function SystemSettings() {
                     onSubmit={methods.handleSubmit(handleSubmit, handleFormError)}
                 >
                     <CommonForm
+                        component="div"
                         containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                         control={methods.control}
                         fields={fields}

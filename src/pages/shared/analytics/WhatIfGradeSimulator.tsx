@@ -116,7 +116,11 @@ export default function WhatIfGradeSimulator({ academic, courses, trajectory }: 
         const hasFailingGrade = Object.values(simulatedGrades).some((g) => parseFloat(g) >= 5.0)
             || academic.failing_count > 0;
 
-        return trajectory.map(function(item) {
+        const uniqueTrajectories = trajectory.filter(function(item, idx, arr) {
+            return arr.findIndex(function(t) { return t.code === item.code; }) === idx;
+        });
+
+        return uniqueTrajectories.map(function(item) {
             const isQualified = !hasFailingGrade && cumGwa <= item.target_gwa;
             const isBlocked = item.category === 'Honor' && hasFailingGrade;
 

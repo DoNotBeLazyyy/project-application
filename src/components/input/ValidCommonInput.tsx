@@ -31,6 +31,7 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
     return (
         <CommonInput
             {...props}
+            name={name}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             error={errorProp ?? !!fieldState.error}
             helperText={

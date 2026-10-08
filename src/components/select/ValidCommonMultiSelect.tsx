@@ -27,6 +27,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
 
     return (
         <CommonMultiSelect
+            name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             error={errorProp ?? !!fieldState.error}

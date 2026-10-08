@@ -35,7 +35,7 @@ interface ScrolledSection {
 }
 
 function toAnswerForms(form: EvaluationForm): EvaluationAnswerForm[] {
-    const saved = new Map(form.answers.map(function(answer) {
+    const saved = new Map((form.answers ?? []).map(function(answer) {
         return [answer.question_id, answer];
     }));
     let sequence = 0;

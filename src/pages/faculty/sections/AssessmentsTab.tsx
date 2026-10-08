@@ -47,14 +47,22 @@ const TYPE_COLOR_MAP: Record<AssessmentType, { bg: string; text: string; border:
 };
 
 interface AssessmentsTabProps {
+    initialView?: 'assessments' | 'rubrics';
     sectionId: string;
 }
 
-export default function AssessmentsTab({ sectionId }: AssessmentsTabProps) {
+export default function AssessmentsTab({ initialView = 'assessments', sectionId }: AssessmentsTabProps) {
     const navigate = useNavigate();
-    const [activeView, setActiveView] = useState<'assessments' | 'rubrics'>('assessments');
+    const [activeView, setActiveView] = useState<'assessments' | 'rubrics'>(initialView);
     const [assessments, setAssessments] = useState<AssessmentListRow[]>([]);
     const [duplicating, setDuplicating] = useState<AssessmentListRow | null>(null);
+
+    // Sync activeView if initialView changes
+    useEffect(() => {
+        if (initialView) {
+            setActiveView(initialView);
+        }
+    }, [initialView]);
 
     // Stepper Wizard Modal state
     const [isWizardOpen, setIsWizardOpen] = useState(false);

@@ -414,9 +414,13 @@ BEGIN
             ) VALUES (
                 v_sy_id,
                 btrim(v_holiday_elem->>'title'),
-                COALESCE(NULLIF(btrim(v_holiday_elem->>'exception_type'), ''), 'Holiday'),
-                (v_holiday_elem->>'start_date')::date,
-                (v_holiday_elem->>'end_date')::date,
+                CASE 
+                    WHEN btrim(COALESCE(v_holiday_elem->>'exception_type', '')) IN ('Holiday', 'Break', 'Suspension', 'Special Class', 'Exam Day')
+                    THEN btrim(v_holiday_elem->>'exception_type')::public.calendar_exception_type
+                    ELSE 'Holiday'::public.calendar_exception_type
+                END,
+                COALESCE(NULLIF(v_holiday_elem->>'start_date', '')::date, p_start_date),
+                COALESCE(NULLIF(v_holiday_elem->>'end_date', '')::date, NULLIF(v_holiday_elem->>'start_date', '')::date, p_start_date),
                 COALESCE((v_holiday_elem->>'affects_attendance')::boolean, true),
                 NULLIF(btrim(v_holiday_elem->>'description'), '')
             );

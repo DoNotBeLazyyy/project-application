@@ -34,7 +34,7 @@ export function useProgramTableConfig({
             {
                 field: 'department_name',
                 flex: 3,
-                headerName: 'Department Name',
+                headerName: 'Department',
                 sortable: false
             },
             {

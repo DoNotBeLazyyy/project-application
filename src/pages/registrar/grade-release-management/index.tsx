@@ -335,7 +335,7 @@ export default function GradeRelease() {
     }, [sectionRows]);
 
     return (
-        <CommonCard className="flex flex-col gap-3.5 h-full min-h-0 p-3 sm:p-5 w-full">
+        <CommonCard className="flex flex-col gap-3.5 min-h-0 md:h-full p-3 sm:p-5 w-full">
             {/* Published Soon Notice Banner */}
             <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                 <ClockIcon size={20} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />

@@ -4,6 +4,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
 import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
+import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
 import { bulkDeleteAnnouncements, deleteAnnouncement, listAnnouncements } from '@services/announcement.service';
 import { bulkDeleteEvents, deleteEvent, listEvents } from '@services/event.service';
@@ -26,10 +27,13 @@ interface AnnouncementManagementProps {
     defaultTab?: 'announcements' | 'events';
 }
 
-export default function AnnouncementManagement({ defaultTab: _defaultTab }: AnnouncementManagementProps = {}) {
+export default function AnnouncementManagement({ defaultTab }: AnnouncementManagementProps = {}) {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const basePath = useAnnouncementBasePath();
+    const isEvent = pathname.includes('/event-management') || defaultTab === 'events';
+    const announcementBasePath = useAnnouncementBasePath();
+    const eventBasePath = useEventBasePath();
+    const basePath = isEvent ? eventBasePath : announcementBasePath;
 
     const [activeFilters, setActiveFilters] = useState<AnnouncementFilterValues | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -38,19 +42,19 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         defaultValues: {
             audience: 'All',
             is_pinned: 'All',
-            type: 'All'
+            type: isEvent ? 'Event' : 'All'
         }
     });
 
     const rowMapRef = useRef<Map<string, CommunicationListRow>>(new Map());
 
-    function handleOpenDetail(id: string) {
+    const handleOpenDetail = useCallback(function(id: string) {
         navigate(`${basePath}/${id}`);
-    }
+    }, [basePath, navigate]);
 
-    function handleOpenEdit(id: string) {
+    const handleOpenEdit = useCallback(function(id: string) {
         navigate(`${basePath}/${id}?edit=1`);
-    }
+    }, [basePath, navigate]);
 
     const {
         columnDefs,
@@ -68,7 +72,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         search: string,
         sort: SortStringDto[]
     ): Promise<ServiceResult<CommonListResDto<CommunicationListRow>>> {
-        const filterType = activeFilters?.type ?? 'All';
+        const filterType = activeFilters?.type ?? (isEvent ? 'Event' : 'All');
         const audience = activeFilters && activeFilters.audience !== 'All'
             ? activeFilters.audience
             : null;
@@ -296,7 +300,7 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
             },
             error: null
         };
-    }, [activeFilters]);
+    }, [activeFilters, isEvent]);
 
     async function handleDeleteRow(id: string) {
         const item = rowMapRef.current.get(id);
@@ -338,13 +342,15 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
         <div className="flex flex-col gap-4 h-full">
             <CommonTableCard<CommunicationListRow>
                 cardHeaderProps={{
-                    subheader: 'Publish announcements and schedule campus events for your community.',
-                    title: 'Announcements & Events'
+                    subheader: isEvent
+                        ? 'Schedule campus events and track activities for your community.'
+                        : 'Publish announcements and schedule campus events for your community.',
+                    title: isEvent ? 'Event Management' : 'Announcements & Events'
                 }}
                 controls={{
                     tableButtonsProps: {
                         createButtonProps: {
-                            children: 'Create Post',
+                            children: isEvent ? 'Create Event' : 'Create Post',
                             onClick: function() {
                                 navigate(`${basePath}/new`);
                             }
@@ -358,8 +364,10 @@ export default function AnnouncementManagement({ defaultTab: _defaultTab }: Anno
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
-                            subheader: 'Narrow the list by type, audience, or pinned status.',
-                            title: 'Filter Announcements & Events'
+                            subheader: isEvent
+                                ? 'Narrow the list by audience or status.'
+                                : 'Narrow the list by type, audience, or pinned status.',
+                            title: isEvent ? 'Filter Events' : 'Filter Announcements & Events'
                         }
                     },
                     confirmText: 'Apply Filters',

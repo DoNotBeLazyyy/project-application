@@ -2,8 +2,9 @@ import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
+import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
 import EventViewerCard from '@pages/shared/event-management/EventViewerCard';
-import { createAnnouncement, getAnnouncementById, updateAnnouncement } from '@services/announcement.service';
+import { createAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
 import { createEvent, getEventById, updateEvent } from '@services/event.service';
 import { CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
@@ -36,12 +37,15 @@ function toDateInput(value: string | null | undefined): string {
 }
 
 export default function AnnouncementDetailPage() {
-    const basePath = useAnnouncementBasePath();
+    const announcementBasePath = useAnnouncementBasePath();
+    const eventBasePath = useEventBasePath();
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
 
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
+    const basePath = isEventUrl ? eventBasePath : announcementBasePath;
     const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
+    const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
 
     const defaultValues: CommunicationFormValues = useMemo(function() {
         return {
@@ -59,10 +63,10 @@ export default function AnnouncementDetailPage() {
             posted_on: '',
             section_ids: [],
             start_at: '',
-            target_audience: 'Global',
+            target_audience: isFacultyOnly ? 'Section' : 'Global',
             title: ''
         };
-    }, [initialType]);
+    }, [initialType, isFacultyOnly]);
 
     const fetchCommunicationItem = useCallback(async function(
         id: string
@@ -158,9 +162,17 @@ export default function AnnouncementDetailPage() {
     }, [pathname]);
 
     async function handleCreate(values: CommunicationFormValues) {
-        const audience = values.target_audience || 'Global';
-        const sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
+        const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
+        const audience = isFacultyOnly ? 'Section' : (values.target_audience || 'Global');
+        let sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
         const currentRole = getRoleFromPath(pathname);
+
+        if (isFacultyOnly && sectionIds.length === 0) {
+            const secRes = await getAnnouncementSectionOptions();
+            if (secRes.data && secRes.data.length > 0) {
+                sectionIds = [secRes.data[0].id];
+            }
+        }
 
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';
@@ -191,8 +203,16 @@ export default function AnnouncementDetailPage() {
     }
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
-        const audience = values.target_audience || 'Global';
-        const sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
+        const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
+        const audience = isFacultyOnly ? 'Section' : (values.target_audience || 'Global');
+        let sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
+
+        if (isFacultyOnly && sectionIds.length === 0) {
+            const secRes = await getAnnouncementSectionOptions();
+            if (secRes.data && secRes.data.length > 0) {
+                sectionIds = [secRes.data[0].id];
+            }
+        }
 
         if (values.item_type === 'Event') {
             const body = values.description || values.content || '';
@@ -228,6 +248,8 @@ export default function AnnouncementDetailPage() {
             defaultValues={defaultValues}
             fetchById={fetchCommunicationItem}
             formId={FORM_ID}
+            onCreate={handleCreate}
+            onUpdate={handleUpdate}
             renderForm={function({ control, disabled, id, onSubmit }) {
                 return (
                     <AnnouncementForm
@@ -286,8 +308,6 @@ export default function AnnouncementDetailPage() {
                 edit: 'Edit Announcement or Event',
                 view: 'Post Details'
             }}
-            onCreate={handleCreate}
-            onUpdate={handleUpdate}
         />
     );
 }

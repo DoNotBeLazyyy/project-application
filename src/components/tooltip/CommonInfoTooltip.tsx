@@ -5,7 +5,7 @@ import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { KeyboardEventButtonElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import { FORM_ERROR_EVENT } from '@utils/form.util';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 export type CommonInfoTooltipVariant = 'info' | 'error';
 
@@ -82,6 +82,7 @@ export default function CommonInfoTooltip({
     variant = 'info'
 }: CommonInfoTooltipProps) {
     const { hasHover } = useBreakpoint();
+    const buttonRef = useRef<HTMLButtonElement>(null);
     const [isPinned, setIsPinned] = useState(defaultOpen);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -143,13 +144,15 @@ export default function CommonInfoTooltip({
         setIsHovered(false);
     }
 
+    const isLayoutVisible = isHovered || (Boolean(buttonRef.current && buttonRef.current.getClientRects().length > 0));
+
     return (
         <ClickAwayListener onClickAway={handleClickAway}>
             <Tooltip
                 disableFocusListener
                 disableHoverListener
                 disableTouchListener
-                open={isOpen}
+                open={Boolean(isOpen && isLayoutVisible)}
                 placement={placement}
                 slotProps={{
                     tooltip: {
@@ -167,6 +170,7 @@ export default function CommonInfoTooltip({
                 title={content}
             >
                 <button
+                    ref={buttonRef}
                     aria-expanded={isOpen}
                     aria-label={label}
                     className={

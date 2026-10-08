@@ -61,7 +61,7 @@ export function CommonDatePicker({
     labelClassName,
     onChange,
     readOnly,
-    size = 'medium',
+    size = 'large',
     value,
     ...props
 }: StandaloneCommonDatePickerProps) {
@@ -160,8 +160,8 @@ export function CommonDatePicker({
                             error: errorProp,
                             fullWidth,
                             helperText: label ? undefined : (hasHelper ? helperTextProp : undefined),
-                            size: resolvedSize,
-                            variant: 'outlined' as const,
+                            size: (resolvedSize === 'large' ? 'medium' : resolvedSize) as any,
+                            variant: 'outlined' as any,
                             ...restTextFieldProps,
                             onFocus: () => {
                                 if (isNonInteractive) {
@@ -211,7 +211,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     name,
     readOnly,
     rules,
-    size = 'medium',
+    size = 'large',
     ...props
 }: ValidCommonDatePickerProps<T>) {
     const {
@@ -316,13 +316,14 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                                 : {})
                         },
                         textField: {
+                            name,
                             className: externalClassName,
                             disabled,
                             error: isError,
                             fullWidth,
                             helperText: label ? undefined : (hasHelper ? errorMessage : undefined),
-                            size: resolvedSize,
-                            variant: 'outlined' as const,
+                            size: (resolvedSize === 'large' ? 'medium' : resolvedSize) as any,
+                            variant: 'outlined' as any,
                             ...restTextFieldProps,
                             onFocus: () => {
                                 if (isNonInteractive) {

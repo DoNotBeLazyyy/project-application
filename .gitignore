@@ -94,3 +94,4 @@ Thumbs.db
 .vercel
 .env*
 scripts/
+scratch/

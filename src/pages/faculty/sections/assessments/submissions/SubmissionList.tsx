@@ -89,7 +89,7 @@ export default function SubmissionList({ submissions, onSelect }: SubmissionList
     }, []);
 
     return (
-        <div className="flex flex-col min-h-0 w-2/5">
+        <div className="flex flex-col min-h-0 w-full h-full">
             <CommonTable<SubmissionListRow>
                 leadingColumnDefs={columnDefs}
                 rowData={submissions}

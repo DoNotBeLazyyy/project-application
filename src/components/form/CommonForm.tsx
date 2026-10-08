@@ -29,6 +29,7 @@ const COL_SPAN_CLASSES: Record<number, string> = {
 export type FormHelperPlacement = 'label' | 'below';
 
 export interface CommonFormProps<T extends FieldValues> {
+    component?: 'form' | 'div';
     control: Control<T>;
     fields: FormFieldConfig<T>[];
     containerClassName?: string;
@@ -108,6 +109,7 @@ function CommonFormRow<T extends FieldValues>({
 }
 
 export default function CommonForm<T extends FieldValues>({
+    component = 'form',
     control,
     fields,
     containerClassName = 'flex flex-col gap-4',
@@ -139,24 +141,32 @@ export default function CommonForm<T extends FieldValues>({
         }
     }, [firstErrorField, submitCount]);
 
+    const content = (
+        <div className={containerClassName}>
+            {fields.map(function(field) {
+                const isFirstError = field.name === firstErrorField;
+
+                return (
+                    <CommonFormRow
+                        control={control}
+                        field={field}
+                        hasHelper={hasHelper}
+                        helperPlacement={helperPlacement}
+                        isFirstError={isFirstError}
+                        key={field.name as string}
+                    />
+                );
+            })}
+        </div>
+    );
+
+    if (component === 'div') {
+        return content;
+    }
+
     return (
         <form {...formProps}>
-            <div className={containerClassName}>
-                {fields.map(function(field) {
-                    const isFirstError = field.name === firstErrorField;
-
-                    return (
-                        <CommonFormRow
-                            control={control}
-                            field={field}
-                            hasHelper={hasHelper}
-                            helperPlacement={helperPlacement}
-                            isFirstError={isFirstError}
-                            key={field.name as string}
-                        />
-                    );
-                })}
-            </div>
+            {content}
         </form>
     );
 }

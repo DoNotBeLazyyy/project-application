@@ -325,7 +325,7 @@ export default function ManageExceptionTypesModal({
 
             {/* Unsaved Changes Prompt Modal */}
             <CommonPromptModal
-                isOpen={isConfirmCloseOpen}
+                open={isConfirmCloseOpen}
                 mainContent={{ title: 'Discard unsaved changes?' }}
                 subContent={{ title: 'You have unsaved changes to the exception types list. Are you sure you want to discard your changes and close?' }}
                 actionIconProps={{

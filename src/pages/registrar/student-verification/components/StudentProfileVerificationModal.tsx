@@ -47,7 +47,7 @@ const FIELD_LABELS: Record<string, string> = {
     postal_code: 'Postal Code',
     program_name: 'Academic Program',
     year_level: 'Year Level',
-    program_id: 'Program ID',
+    program_id: 'Program',
     program_code: 'Program Code'
 };
 

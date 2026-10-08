@@ -24,10 +24,10 @@ import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-type SectionTab = 'content' | 'assessments' | 'grading' | 'attendance' | 'students' | 'discussion' | 'announcements';
+type SectionTab = 'content' | 'assessments' | 'grading' | 'attendance' | 'students' | 'discussion' | 'announcements' | 'rubrics';
 
 const SECTION_TABS: SectionTab[] = [
-    'content', 'assessments', 'grading', 'attendance', 'students', 'discussion', 'announcements'
+    'content', 'assessments', 'grading', 'attendance', 'students', 'discussion', 'announcements', 'rubrics'
 ];
 
 export default function SectionDetailPage() {
@@ -36,8 +36,9 @@ export default function SectionDetailPage() {
     const [section, setSection] = useState<SectionDetail | null>(null);
 
     const tabParam = searchParams.get('tab') as SectionTab | null;
+    const isRubricsTab = tabParam === 'rubrics';
     const activeTab: SectionTab = tabParam && SECTION_TABS.includes(tabParam)
-        ? tabParam
+        ? (isRubricsTab ? 'assessments' : tabParam)
         : 'content';
 
     useEffect(function() {
@@ -152,7 +153,10 @@ export default function SectionDetailPage() {
                         <SectionContentPanel sectionId={sectionId} />
                     )}
                     {activeTab === 'assessments' && (
-                        <AssessmentsTab sectionId={sectionId} />
+                        <AssessmentsTab
+                            initialView={isRubricsTab ? 'rubrics' : 'assessments'}
+                            sectionId={sectionId}
+                        />
                     )}
                     {activeTab === 'grading' && (
                         <GradingTab

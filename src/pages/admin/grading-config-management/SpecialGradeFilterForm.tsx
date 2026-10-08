@@ -32,16 +32,19 @@ export default function SpecialGradeFilterForm({
 }: SpecialGradeFilterFormProps) {
     const fields: FormFieldConfig<SpecialGradeFilterValues>[] = [
         {
+            label: 'Status',
             name: 'is_active',
             options: ACTIVE_OPTIONS,
             type: 'select'
         },
         {
+            label: 'Grade Type',
             name: 'is_passing',
             options: PASSING_OPTIONS,
             type: 'select'
         },
         {
+            label: 'Completion Requirement',
             name: 'requires_completion',
             options: COMPLETION_OPTIONS,
             type: 'select'

@@ -29,12 +29,18 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
     label,
     name,
     rules,
+    onChange: onExternalChange,
     ...props
 }: ValidCommonToastEditorProps<T>) {
     const {
         field: { onBlur, onChange, value },
         fieldState: { error }
     } = useController({ control, name, rules });
+
+    function handleChange(val: string) {
+        onChange(val);
+        onExternalChange?.(val);
+    }
 
     const labelErrorMessage = label && error
         ? error.message
@@ -57,10 +63,10 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
                 />
             )}
             <CommonToastEditor
+                {...props}
                 value={value ?? ''}
                 onBlur={onBlur}
-                onChange={onChange}
-                {...props}
+                onChange={handleChange}
             />
             {hasHelper && inlineHelper && (
                 <span

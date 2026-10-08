@@ -80,6 +80,8 @@ export default function CommonActionModal({
                         ? undefined
                         : {
                             children: 'Cancel',
+                            color: 'secondary',
+                            variant: 'outlined',
                             ...cancelProps
                         }}
                     className={

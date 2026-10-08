@@ -21,6 +21,7 @@ export default function UserForm({
     const fields: FormFieldConfig<UpdateUserFormValues>[] = [
         {
             disabled,
+            label: 'First Name',
             name: 'first_name',
             rules: disabled
                 ? undefined
@@ -29,6 +30,7 @@ export default function UserForm({
         },
         {
             disabled,
+            label: 'Last Name',
             name: 'last_name',
             rules: disabled
                 ? undefined
@@ -37,6 +39,7 @@ export default function UserForm({
         },
         {
             disabled,
+            label: 'Email',
             name: 'email',
             rules: disabled
                 ? undefined

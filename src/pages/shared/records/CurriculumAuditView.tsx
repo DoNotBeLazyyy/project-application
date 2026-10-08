@@ -100,72 +100,74 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                 {term.term_type_label}
                             </span>
                         </div>
-                        <table className="table-fixed text-sm w-full">
-                            <colgroup>
-                                <col className="w-28" />
-                                <col />
-                                <col className="w-20" />
-                                <col className="w-40" />
-                                <col className="w-24" />
-                                <col className="w-36" />
-                            </colgroup>
-                            <thead>
-                                <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
-                                    <th className="font-medium px-3 py-2 text-left">Code</th>
-                                    <th className="font-medium px-3 py-2 text-left">Course Title</th>
-                                    <th className="font-medium px-3 py-2 text-right">Units</th>
-                                    <th className="font-medium px-3 py-2 text-left">Term Taken</th>
-                                    <th className="font-medium px-3 py-2 text-right">Grade</th>
-                                    <th className="font-medium px-3 py-2 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {term.courses.map(function(course) {
-                                    return (
-                                        <tr
-                                            className="border-b border-(--mui-palette-divider) last:border-b-0"
-                                            key={course.curriculum_map_id}
-                                        >
-                                            <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-primary) text-ellipsis whitespace-nowrap">
-                                                {course.course_code}
-                                            </td>
-                                            <td className="px-3 py-2 text-(--mui-palette-text-primary)">
-                                                <div className="flex gap-2 items-center min-w-0">
-                                                    <Tooltip
-                                                        arrow
-                                                        title={course.course_title}
-                                                    >
-                                                        <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                                                            {course.course_title}
-                                                        </span>
-                                                    </Tooltip>
-                                                    {course.is_elective && (
-                                                        <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                                                            Elective
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
-                                                {formatUnits(course)}
-                                            </td>
-                                            <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-secondary) text-ellipsis whitespace-nowrap">
-                                                {course.taken_label ?? '—'}
-                                            </td>
-                                            <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
-                                                {formatGrade(course)}
-                                            </td>
-                                            <td className="px-3 py-2">
-                                                <CommonBadgeStatus
-                                                    label={course.status}
-                                                    variant={STATUS_VARIANT_MAP[course.status]}
-                                                />
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                        <div className="overflow-x-auto w-full">
+                            <table className="min-w-[640px] table-fixed text-sm w-full">
+                                <colgroup>
+                                    <col className="w-28" />
+                                    <col />
+                                    <col className="w-20" />
+                                    <col className="w-40" />
+                                    <col className="w-24" />
+                                    <col className="w-36" />
+                                </colgroup>
+                                <thead>
+                                    <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
+                                        <th className="font-medium px-3 py-2 text-left">Code</th>
+                                        <th className="font-medium px-3 py-2 text-left">Course Title</th>
+                                        <th className="font-medium px-3 py-2 text-right">Units</th>
+                                        <th className="font-medium px-3 py-2 text-left">Term Taken</th>
+                                        <th className="font-medium px-3 py-2 text-right">Grade</th>
+                                        <th className="font-medium px-3 py-2 text-left">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {term.courses.map(function(course) {
+                                        return (
+                                            <tr
+                                                className="border-b border-(--mui-palette-divider) last:border-b-0"
+                                                key={course.curriculum_map_id}
+                                            >
+                                                <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-primary) text-ellipsis whitespace-nowrap">
+                                                    {course.course_code}
+                                                </td>
+                                                <td className="px-3 py-2 text-(--mui-palette-text-primary)">
+                                                    <div className="flex gap-2 items-center min-w-0">
+                                                        <Tooltip
+                                                            arrow
+                                                            title={course.course_title}
+                                                        >
+                                                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                                                                {course.course_title}
+                                                            </span>
+                                                        </Tooltip>
+                                                        {course.is_elective && (
+                                                            <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                                                Elective
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                    {formatUnits(course)}
+                                                </td>
+                                                <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-secondary) text-ellipsis whitespace-nowrap">
+                                                    {course.taken_label ?? '—'}
+                                                </td>
+                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                    {formatGrade(course)}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <CommonBadgeStatus
+                                                        label={course.status}
+                                                        variant={STATUS_VARIANT_MAP[course.status]}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 );
             })}

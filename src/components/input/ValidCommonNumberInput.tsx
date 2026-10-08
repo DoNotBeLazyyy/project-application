@@ -27,6 +27,7 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
 
     return (
         <CommonNumberInput
+            name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             error={errorProp ?? !!fieldState.error}

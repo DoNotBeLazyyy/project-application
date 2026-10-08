@@ -26,6 +26,7 @@ export default function CommonFormModal({
     isLoading,
     sx,
     onClose,
+    onConfirmClose: _onConfirmClose,
     onReset,
     ...props
 }: CommonFormModalProps) {
@@ -57,6 +58,7 @@ export default function CommonFormModal({
                     ? undefined
                     : {
                         color: 'secondary',
+                        variant: 'outlined',
                         onClick: handleCloseModal,
                         ...cancelProps
                     },

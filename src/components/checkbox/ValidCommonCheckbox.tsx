@@ -35,6 +35,7 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                                 checked={!!value}
                                 disabled={disabled}
                                 inputRef={ref}
+                                name={name}
                                 sx={[{ paddingLeft: 0 }, ...normalizeSx(sx)]}
                                 onChange={function(e) {
                                     onChange(e.target.checked);
@@ -51,6 +52,7 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                         checked={!!value}
                         disabled={disabled}
                         inputRef={ref}
+                        name={name}
                         sx={[{ padding: 0.5, width: 'fit-content' }, ...normalizeSx(sx)]}
                         onChange={function(e) {
                             onChange(e.target.checked);

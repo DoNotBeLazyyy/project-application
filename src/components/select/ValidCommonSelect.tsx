@@ -63,6 +63,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
 
     return (
         <CommonSelect
+            name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             disabled={disabled}

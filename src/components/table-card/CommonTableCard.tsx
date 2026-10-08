@@ -20,7 +20,7 @@ import { ChangeEventInputTextarea, KeyboardEventDivElement } from '@type/common.
 import { SortStringDto } from '@type/http.type';
 import { CommonTableCardProps } from '@type/table-card.type';
 import { formatMobileCardValue, resolveMobileCardPlan } from '@utils/table.util';
-import { useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { FieldValues } from 'react-hook-form';
 
 export default function CommonTableCard<T extends FieldValues>({
@@ -118,13 +118,15 @@ export default function CommonTableCard<T extends FieldValues>({
         scrollRootRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function handleRequestDeleteRow(id: string) {
+    const handleRequestDeleteRow = useCallback(function(id: string) {
         triggerDeletePrompt([id]);
-    }
+    }, []);
 
-    const resolvedTableActionConfig = typeof tableActionConfig === 'function'
-        ? tableActionConfig(handleRequestDeleteRow)
-        : tableActionConfig;
+    const resolvedTableActionConfig = useMemo(() => {
+        return typeof tableActionConfig === 'function'
+            ? tableActionConfig(handleRequestDeleteRow)
+            : tableActionConfig;
+    }, [tableActionConfig, handleRequestDeleteRow]);
 
     const hasFilter = Boolean(filterModalProps);
     const hasSort = Boolean(sortColumns?.length);
@@ -634,7 +636,7 @@ export default function CommonTableCard<T extends FieldValues>({
                                 className="gap-4 grid px-4"
                                 style={{
                                     gridTemplateColumns:
-                                        'repeat(auto-fit, minmax(max(280px, calc((100% - 3rem) / 4)), 1fr))'
+                                        'repeat(auto-fit, minmax(min(100%, max(280px, calc((100% - 3rem) / 4))), 1fr))'
                                 }}
                             >
                                 {internalRowData.map(function(item, index) {

@@ -15,6 +15,9 @@ export interface CommonModalProps extends DialogProps {
 
     // Determines if escape key down trigger onClose
     closeOnEscape?: boolean;
+
+    // Alias for open to support isOpen convention
+    isOpen?: boolean;
 }
 
 /**
@@ -39,11 +42,14 @@ export default function CommonModal({
     cardProps,
     closeOnBackdropClick = true,
     closeOnEscape = true,
+    isOpen,
+    onClose,
+    open,
     slotProps,
     slots,
-    onClose,
     ...props
 }: CommonModalProps) {
+    const isModalOpen = open ?? isOpen ?? false;
     const { isMobile } = useBreakpoint();
     const isFullScreen = props.fullScreen ?? isMobile;
 
@@ -118,6 +124,7 @@ export default function CommonModal({
 
     return <Dialog
         fullScreen={isFullScreen}
+        open={isModalOpen}
         {...props}
         slotProps={{
             ...slotProps,

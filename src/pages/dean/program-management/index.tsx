@@ -35,6 +35,7 @@ const defaultFormValues: ProgramFormValues = {
     description: '',
     department_id: '',
     program_level_id: '',
+    school_year_id: '',
     total_units: '',
     years_duration: '',
     is_active: true
@@ -95,6 +96,7 @@ export default function ProgramManagement() {
                 name: result.data.name,
                 department_id: result.data.department_id ?? '',
                 program_level_id: result.data.program_level_id ?? '',
+                school_year_id: (result.data as any).school_year_id ?? '',
                 total_units: result.data.total_units ?? '',
                 years_duration: result.data.years_duration ?? '',
                 is_active: result.data.is_active ?? false,

@@ -66,7 +66,7 @@ export default function CurriculumMapForm({
                     setTermTypeOptions(filtered);
                 } else {
                     const fallback = Array.from(availableIds).map((id) => ({
-                        label: id,
+                        label: allTermTypeOptions.find((opt) => String(opt.value) === String(id))?.label || `Term Type`,
                         value: id
                     }));
                     setTermTypeOptions(fallback);
@@ -136,6 +136,7 @@ export default function CurriculumMapForm({
             {
                 disabled,
                 fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
+                label: `${customTypeLabel} Units`,
                 name: 'units' as const,
                 type: 'number' as const
             }
@@ -143,6 +144,7 @@ export default function CurriculumMapForm({
         {
             disabled,
             fieldProps: { helperText: 'Display order within the term (starts at 1)' },
+            label: 'Sequence',
             name: 'sequence',
             rules: disabled
                 ? undefined

@@ -333,6 +333,7 @@ export default function EvaluationWizardModal({
             }
         },
         {
+            label: 'Description',
             name: 'description',
             disabled: readOnly,
             fullWidth: true,
@@ -393,6 +394,7 @@ export default function EvaluationWizardModal({
                         <button
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close"
+                            aria-label="Close"
                             type="button"
                             onClick={handleCloseModal}
                         >
@@ -581,7 +583,7 @@ export default function EvaluationWizardModal({
 
             {/* Unsaved Changes Confirmation Modal */}
             <CommonPromptModal
-                isOpen={isConfirmCloseOpen}
+                open={isConfirmCloseOpen}
                 mainContent={{ title: 'Discard unsaved changes?' }}
                 subContent={{ title: 'You have unsaved changes in this evaluation section. Are you sure you want to discard your changes and close?' }}
                 actionIconProps={{
