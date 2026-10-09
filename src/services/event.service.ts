@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import { EventDetail, EventFeedRow, EventFormValues, EventListRow } from '@type/event.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -40,11 +40,12 @@ export async function listMyEventsFeed(
 }
 
 export async function getEventById(
-    eventId: string
+    eventId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<EventDetail>> {
     return callRpc<EventDetail>('fn_get_event_by_id', {
         p_id: eventId
-    });
+    }, options);
 }
 
 export async function createEvent(

@@ -39,11 +39,12 @@ function toDateInput(value: string | null | undefined): string {
 export default function AnnouncementDetailPage() {
     const announcementBasePath = useAnnouncementBasePath();
     const eventBasePath = useEventBasePath();
-    const { pathname } = useLocation();
+    const location = useLocation();
+    const { pathname } = location;
     const [searchParams] = useSearchParams();
 
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
-    const basePath = isEventUrl ? eventBasePath : announcementBasePath;
+    const basePath = (location.state as { from?: string } | null)?.from || (isEventUrl ? eventBasePath : announcementBasePath);
     const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
     const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
 
@@ -71,9 +72,10 @@ export default function AnnouncementDetailPage() {
     const fetchCommunicationItem = useCallback(async function(
         id: string
     ): Promise<ServiceResult<CommunicationFormValues>> {
-        // If coming from an event path, check event first, otherwise check announcement first
-        if (pathname.includes('/event-management')) {
-            const eventRes = await getEventById(id);
+        const checkEventFirst = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
+
+        if (checkEventFirst) {
+            const eventRes = await getEventById(id, { silent: true });
             if (eventRes.data) {
                 const d = eventRes.data;
                 return {
@@ -100,66 +102,96 @@ export default function AnnouncementDetailPage() {
                     error: null
                 };
             }
-        }
 
-        const annResult = await getAnnouncementById(id);
-        if (annResult.data) {
-            const d = annResult.data;
-            return {
-                data: {
-                    all_day: false,
-                    attachments: d.attachments ?? [],
-                    author_name: d.author_name ?? '—',
-                    content: d.content,
-                    created_at: d.created_at,
-                    description: d.content,
-                    end_at: '',
-                    expires_at: d.expires_at ?? '',
-                    id: d.id,
-                    is_pinned: d.is_pinned,
-                    item_type: 'Announcement',
-                    location: '',
-                    posted_on: formatTimestamp(d.published_at ?? d.created_at),
-                    section_ids: d.section_ids ?? [],
-                    sections: d.sections ?? [],
-                    start_at: '',
-                    target_audience: d.target_audience || 'Global',
-                    title: d.title
-                },
-                error: null
-            };
-        }
+            const annResult = await getAnnouncementById(id, { silent: true });
+            if (annResult.data) {
+                const d = annResult.data;
+                return {
+                    data: {
+                        all_day: false,
+                        attachments: d.attachments ?? [],
+                        author_name: d.author_name ?? '—',
+                        content: d.content,
+                        created_at: d.created_at,
+                        description: d.content,
+                        end_at: '',
+                        expires_at: d.expires_at ?? '',
+                        id: d.id,
+                        is_pinned: d.is_pinned,
+                        item_type: 'Announcement',
+                        location: '',
+                        posted_on: formatTimestamp(d.published_at ?? d.created_at),
+                        section_ids: d.section_ids ?? [],
+                        sections: d.sections ?? [],
+                        start_at: '',
+                        target_audience: d.target_audience || 'Global',
+                        title: d.title
+                    },
+                    error: null
+                };
+            }
 
-        const evtResult = await getEventById(id);
-        if (evtResult.data) {
-            const d = evtResult.data;
-            return {
-                data: {
-                    all_day: d.all_day,
-                    attachments: d.attachments ?? [],
-                    author_name: d.author_name ?? 'Staff',
-                    content: d.description ?? '',
-                    created_at: d.created_at,
-                    description: d.description ?? '',
-                    end_at: toDateInput(d.end_at),
-                    expires_at: '',
-                    id: d.id,
-                    is_pinned: false,
-                    item_type: 'Event',
-                    location: d.location ?? '',
-                    posted_on: formatTimestamp(d.created_at),
-                    section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
-                    sections: d.sections ?? [],
-                    start_at: toDateInput(d.start_at),
-                    target_audience: d.target_audience || 'Global',
-                    title: d.title
-                },
-                error: null
-            };
-        }
+            return { data: null, error: eventRes.error || annResult.error };
+        } else {
+            const annResult = await getAnnouncementById(id, { silent: true });
+            if (annResult.data) {
+                const d = annResult.data;
+                return {
+                    data: {
+                        all_day: false,
+                        attachments: d.attachments ?? [],
+                        author_name: d.author_name ?? '—',
+                        content: d.content,
+                        created_at: d.created_at,
+                        description: d.content,
+                        end_at: '',
+                        expires_at: d.expires_at ?? '',
+                        id: d.id,
+                        is_pinned: d.is_pinned,
+                        item_type: 'Announcement',
+                        location: '',
+                        posted_on: formatTimestamp(d.published_at ?? d.created_at),
+                        section_ids: d.section_ids ?? [],
+                        sections: d.sections ?? [],
+                        start_at: '',
+                        target_audience: d.target_audience || 'Global',
+                        title: d.title
+                    },
+                    error: null
+                };
+            }
 
-        return { data: null, error: annResult.error || evtResult.error };
-    }, [pathname]);
+            const evtResult = await getEventById(id, { silent: true });
+            if (evtResult.data) {
+                const d = evtResult.data;
+                return {
+                    data: {
+                        all_day: d.all_day,
+                        attachments: d.attachments ?? [],
+                        author_name: d.author_name ?? 'Staff',
+                        content: d.description ?? '',
+                        created_at: d.created_at,
+                        description: d.description ?? '',
+                        end_at: toDateInput(d.end_at),
+                        expires_at: '',
+                        id: d.id,
+                        is_pinned: false,
+                        item_type: 'Event',
+                        location: d.location ?? '',
+                        posted_on: formatTimestamp(d.created_at),
+                        section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
+                        sections: d.sections ?? [],
+                        start_at: toDateInput(d.start_at),
+                        target_audience: d.target_audience || 'Global',
+                        title: d.title
+                    },
+                    error: null
+                };
+            }
+
+            return { data: null, error: annResult.error || evtResult.error };
+        }
+    }, [pathname, searchParams]);
 
     async function handleCreate(values: CommunicationFormValues) {
         const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';

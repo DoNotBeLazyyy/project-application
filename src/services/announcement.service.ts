@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import {
     AnnouncementDetail,
     AnnouncementFeedRow,
@@ -60,11 +60,12 @@ export async function listSectionAnnouncements(
 }
 
 export async function getAnnouncementById(
-    announcementId: string
+    announcementId: string,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<AnnouncementDetail>> {
     return callRpc<AnnouncementDetail>('fn_get_announcement_by_id', {
         p_id: announcementId
-    });
+    }, options);
 }
 
 export async function getAnnouncementSectionOptions(): Promise<ServiceResult<AnnouncementSectionOption[]>> {

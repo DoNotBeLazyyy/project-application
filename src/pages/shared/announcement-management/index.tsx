@@ -49,12 +49,30 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
     const rowMapRef = useRef<Map<string, CommunicationListRow>>(new Map());
 
     const handleOpenDetail = useCallback(function(id: string) {
-        navigate(`${basePath}/${id}`);
-    }, [basePath, navigate]);
+        const item = rowMapRef.current.get(id);
+        const itemType = item?.item_type;
+        const targetBasePath = itemType === 'Event'
+            ? eventBasePath
+            : itemType === 'Announcement'
+                ? announcementBasePath
+                : basePath;
+        navigate(`${targetBasePath}/${id}`, {
+            state: { from: pathname }
+        });
+    }, [announcementBasePath, basePath, eventBasePath, navigate, pathname]);
 
     const handleOpenEdit = useCallback(function(id: string) {
-        navigate(`${basePath}/${id}?edit=1`);
-    }, [basePath, navigate]);
+        const item = rowMapRef.current.get(id);
+        const itemType = item?.item_type;
+        const targetBasePath = itemType === 'Event'
+            ? eventBasePath
+            : itemType === 'Announcement'
+                ? announcementBasePath
+                : basePath;
+        navigate(`${targetBasePath}/${id}?edit=1`, {
+            state: { from: pathname }
+        });
+    }, [announcementBasePath, basePath, eventBasePath, navigate, pathname]);
 
     const {
         columnDefs,

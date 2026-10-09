@@ -4,7 +4,7 @@ import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
-    BookOpenIcon, CalendarCheckIcon, ChalkboardTeacherIcon, ClipboardTextIcon, GraduationCapIcon, SealCheckIcon
+    CalendarCheckIcon, ChalkboardTeacherIcon, GraduationCapIcon
 } from '@phosphor-icons/react';
 import { getAdminDashboardStats } from '@services/admin.service';
 import { AdminDashboardStats } from '@type/admin.type';
@@ -17,7 +17,7 @@ interface DashboardCard {
     iconColor: string;
     label: string;
     statKey: keyof AdminDashboardStats;
-    to?: string;
+    to: string;
 }
 
 const DASHBOARD_CARDS: DashboardCard[] = [
@@ -38,33 +38,12 @@ const DASHBOARD_CARDS: DashboardCard[] = [
         to: '/admin/users?role=Faculty&status=Active'
     },
     {
-        icon: <BookOpenIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-secondary-50)]',
-        iconColor: 'text-[var(--mui-palette-secondary-main)]',
-        label: 'Total Programs',
-        statKey: 'total_programs'
-    },
-    {
         icon: <CalendarCheckIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
         label: 'Active Terms',
         statKey: 'active_terms',
         to: '/admin/school-years'
-    },
-    {
-        icon: <ClipboardTextIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-warning-50)]',
-        iconColor: 'text-[var(--mui-palette-warning-main)]',
-        label: 'Active Enrollments',
-        statKey: 'active_enrollments'
-    },
-    {
-        icon: <SealCheckIcon size={24} />,
-        iconBg: 'bg-[var(--mui-palette-error-50)]',
-        iconColor: 'text-[var(--mui-palette-error-main)]',
-        label: 'Pending Clearances',
-        statKey: 'pending_clearances'
     }
 ];
 
@@ -94,7 +73,7 @@ export default function AdminDashboard() {
                 title="Dashboard"
             />
 
-            <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+            <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-3">
                 {DASHBOARD_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}

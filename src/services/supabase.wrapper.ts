@@ -68,7 +68,7 @@ function notify(message: string, variant: 'error' | 'success'): void {
     }
 }
 
-interface CallRpcOptions {
+export interface CallRpcOptions {
     background?: boolean;
     silent?: boolean;
 }
