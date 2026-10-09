@@ -91,7 +91,7 @@ function CommonFormRow<T extends FieldValues>({
                     errorMessage={errorMessage}
                     isFirstError={isFirstError}
                     isRequired={Boolean(field.rules?.required)}
-                    label={field.label ?? formatFieldLabel(name)}
+                    label={field.label ?? (field.fieldProps as { label?: string })?.label ?? formatFieldLabel(name)}
                 />
             )}
             {/*

@@ -94,38 +94,19 @@ interface FormFieldProps<T extends FieldValues> {
     hasHelper?: boolean;
 }
 
-function formatFieldLabelFallback(name: string): string {
-    return name
-        .replace(/_/g, ' ')
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function resolveFieldLabel<T extends FieldValues>(field: FormFieldConfig<T>): string | undefined {
-    if (field.fieldProps && 'label' in field.fieldProps && (field.fieldProps as { label?: string }).label !== undefined) {
-        return (field.fieldProps as { label?: string }).label;
-    }
-    if (field.label !== undefined) {
-        return field.label;
-    }
-    return formatFieldLabelFallback(String(field.name));
-}
-
 export function FormField<T extends FieldValues>({
     control,
     field,
     hasHelper = true
 }: FormFieldProps<T>) {
-    const label = resolveFieldLabel(field);
-
     if (field.type === 'select') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
         return (
             <ValidCommonSelect
-                {...field.fieldProps}
+                {...fieldProps}
                 control={control}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
-                label={label}
                 name={field.name}
                 options={field.options ?? []}
                 readOnly={field.readOnly}
@@ -135,24 +116,24 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'text-area') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; slotProps?: CommonTextareaProps['slotProps'] };
         return (
             <ValidCommonTextarea
-                {...field.fieldProps}
+                {...fieldProps}
                 control={control}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
                 isRequired={Boolean(field.rules?.required)}
-                label={label}
                 name={field.name}
                 placeholder={field.placeholder}
                 readOnly={field.readOnly}
                 rules={field.rules}
                 slotProps={{
-                    ...field.fieldProps?.slotProps,
+                    ...fieldProps?.slotProps,
                     input: {
                         readOnly: field.readOnly,
-                        ...field.fieldProps?.slotProps?.input
+                        ...fieldProps?.slotProps?.input
                     }
                 }}
             />
@@ -160,14 +141,14 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'date') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
         return (
             <ValidCommonDatePicker
-                {...field.fieldProps}
+                {...fieldProps}
                 control={control}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
-                label={label}
                 name={field.name}
                 readOnly={field.readOnly}
                 rules={field.rules}
@@ -176,12 +157,14 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'checkbox') {
+        const checkboxLabel = (field.fieldProps as { label?: string })?.label ?? field.label;
         return (
             <ValidCommonCheckbox
                 {...field.fieldProps}
                 control={control}
                 disabled={field.disabled || field.readOnly}
                 hasHelper={hasHelper}
+                label={checkboxLabel}
                 name={field.name}
                 rules={field.rules}
             />
@@ -210,14 +193,14 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'number') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
         return (
             <ValidCommonNumberInput
-                {...field.fieldProps}
+                {...fieldProps}
                 control={control}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
-                label={label}
                 name={field.name}
                 placeholder={field.placeholder}
                 readOnly={field.readOnly}
@@ -228,13 +211,13 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'multi-select') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
         return (
             <ValidCommonMultiSelect
-                {...field.fieldProps}
+                {...fieldProps}
                 control={control}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
-                label={label}
                 name={field.name}
                 options={field.options ?? []}
                 readOnly={field.readOnly}
@@ -247,15 +230,15 @@ export function FormField<T extends FieldValues>({
     const resolvedRules = isEmail
         ? { ...field.rules, pattern: field.rules?.pattern ?? EMAIL_PATTERN }
         : field.rules;
+    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
 
     return (
         <ValidCommonInput
-            {...field.fieldProps}
+            {...fieldProps}
             control={control}
             disabled={field.disabled}
             fullWidth
             hasHelper={hasHelper}
-            label={label}
             name={field.name}
             placeholder={field.placeholder}
             readOnly={field.readOnly}
