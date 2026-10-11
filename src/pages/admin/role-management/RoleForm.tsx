@@ -2,35 +2,28 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { CreateRoleFormValues } from '@type/role.type';
-import { Control } from 'react-hook-form';
+import { generateRoleCode } from '@utils/entity-code.util';
+import { useEffect } from 'react';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface RoleFormProps extends ComponentPropsForm {
     control: Control<CreateRoleFormValues>;
     isCodeDisabled?: boolean;
     disabled?: boolean;
+    isCreate?: boolean;
+    setValue?: UseFormSetValue<CreateRoleFormValues>;
 }
 
-export default function RoleForm({
-    control,
-    disabled,
-    isCodeDisabled,
-    ...formProps
-}: RoleFormProps) {
-    const fields: FormFieldConfig<CreateRoleFormValues>[] = [
+export function getRoleFormFields(
+    disabled?: boolean,
+    _isCodeDisabled?: boolean
+): FormFieldConfig<CreateRoleFormValues>[] {
+    return [
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Letters, numbers and underscores, e.g. DEAN_SECRETARY' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique role code' },
             label: 'Role Code',
             name: 'code',
-            rules: disabled || isCodeDisabled
-                ? undefined
-                : {
-                    required: 'Role code is required',
-                    pattern: {
-                        value: /^[A-Za-z][A-Za-z0-9_]*$/,
-                        message: 'Must start with a letter and use only letters, numbers or underscores'
-                    }
-                },
             type: 'text'
         },
         {
@@ -56,6 +49,26 @@ export default function RoleForm({
             type: 'text-area'
         }
     ];
+}
+
+export default function RoleForm({
+    control,
+    disabled,
+    isCodeDisabled,
+    isCreate = false,
+    setValue,
+    ...formProps
+}: RoleFormProps) {
+    const fields = getRoleFormFields(disabled, isCodeDisabled);
+    const watchedLabel = useWatch({ control, name: 'label' });
+
+    useEffect(() => {
+        if (!setValue || disabled || !isCreate) return;
+        const generated = generateRoleCode(watchedLabel || '');
+        if (generated) {
+            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedLabel, disabled, isCreate, setValue]);
 
     return (
         <CommonForm

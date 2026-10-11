@@ -1,12 +1,13 @@
 import BulkImportModal from '@components/modal/BulkImportModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import { CommonSelectOption } from '@components/select/CommonSelect';
+import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/EnrollmentStudentFilterForm';
 import EnrollmentStudentGridCard from '@pages/registrar/enrollment-management/EnrollmentStudentGridCard';
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
+import { CalendarBlankIcon } from '@phosphor-icons/react';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
 import { getTerms } from '@services/section.service';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
@@ -36,6 +37,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
 ];
 
 const defaultFilterValues: EnrollmentStudentFilterValues = {
+    term_id: '',
     program_ids: [],
     year_levels: [],
     statuses: [],
@@ -64,23 +66,36 @@ export default function EnrollmentManagement() {
                 getTerms()
             ]);
 
+            let initialTermId: string | null = null;
+            let initialTermLabel = '';
+
             if (targetTerm.data) {
-                setTargetTermId(targetTerm.data.id);
-                setTargetTermLabel(targetTerm.data.label);
+                initialTermId = targetTerm.data.id;
+                initialTermLabel = targetTerm.data.label;
             }
 
             if (terms.data) {
-                setTermOptions(
-                    terms.data.map((term) => ({
-                        label: term.label,
-                        value: term.id
-                    }))
-                );
+                const options = terms.data.map((term) => ({
+                    label: term.label,
+                    value: term.id
+                }));
+                setTermOptions(options);
+
+                if (!initialTermId && options.length > 0) {
+                    initialTermId = String(options[0].value);
+                    initialTermLabel = options[0].label;
+                }
+            }
+
+            if (initialTermId) {
+                setTargetTermId(initialTermId);
+                setTargetTermLabel(initialTermLabel);
+                filterMethods.setValue('term_id', initialTermId);
             }
         }
 
         fetchTermContext();
-    }, []);
+    }, [filterMethods]);
 
     function handleOpenWorkspace(id: string) {
         setSelectedStudentId(id);
@@ -96,6 +111,18 @@ export default function EnrollmentManagement() {
         setRefreshKey((previous) => previous + 1);
     }
 
+    function handleTermChange(newTermId: string) {
+        setTargetTermId(newTermId);
+        const selected = termOptions.find((term) => term.value === newTermId);
+        if (selected) {
+            setTargetTermLabel(selected.label);
+        }
+        filterMethods.setValue('term_id', newTermId);
+        if (activeFilters) {
+            setActiveFilters((previous) => (previous ? { ...previous, term_id: newTermId } : null));
+        }
+    }
+
     const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
         onManage: handleOpenWorkspace
     });
@@ -106,21 +133,64 @@ export default function EnrollmentManagement() {
         search: string,
         sort: SortStringDto[]
     ) {
-        return listEnrollmentStudents(page, size, search, sort, targetTermId, activeFilters);
+        const effectiveTermId = activeFilters?.term_id || targetTermId;
+        return listEnrollmentStudents(page, size, search, sort, effectiveTermId, activeFilters);
     }
 
     function handleFilterSubmit(values: EnrollmentStudentFilterValues) {
+        if (values.term_id && values.term_id !== targetTermId) {
+            setTargetTermId(values.term_id);
+            const selected = termOptions.find((term) => term.value === values.term_id);
+            if (selected) {
+                setTargetTermLabel(selected.label);
+            }
+        }
         setActiveFilters(values);
         setIsFilterOpen(false);
     }
 
     function handleFilterReset() {
-        filterMethods.reset();
+        filterMethods.reset({
+            ...defaultFilterValues,
+            term_id: targetTermId || ''
+        });
         setActiveFilters(null);
     }
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            {/* Term Context & Switcher Bar */}
+            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl shadow-xs">
+                <div className="flex items-center gap-3">
+                    <div className="bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) p-2 rounded-lg flex items-center justify-center shrink-0">
+                        <CalendarBlankIcon size={20} weight="bold" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[11px] font-semibold text-(--mui-palette-text-secondary) uppercase tracking-wider">
+                            Active Academic Term
+                        </span>
+                        <span className="text-sm font-bold text-(--mui-palette-text-primary)">
+                            {targetTermLabel || 'Loading term...'}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">
+                        Term / Academic Year:
+                    </span>
+                    <div className="w-full sm:w-80">
+                        <CommonSelect
+                            fullWidth
+                            options={termOptions}
+                            size="small"
+                            value={targetTermId ?? ''}
+                            onChange={(event) => handleTermChange(event.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+
             <CommonTableCard<EnrollmentStudentRow>
                 cardHeaderProps={{
                     subheader: targetTermLabel
@@ -128,6 +198,7 @@ export default function EnrollmentManagement() {
                         : 'Enroll students into their curriculum subjects.',
                     title: 'Enrollment Management'
                 }}
+                showSubheader={true}
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.enrollmentStudents
@@ -144,7 +215,7 @@ export default function EnrollmentManagement() {
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
-                            subheader: 'Narrow the roster by program, year level or enrollment state.',
+                            subheader: 'Narrow the roster by term, program, year level or enrollment state.',
                             title: 'Filter Students'
                         }
                     },
@@ -154,6 +225,7 @@ export default function EnrollmentManagement() {
                         <EnrollmentStudentFilterForm
                             control={filterMethods.control}
                             id={FILTER_FORM_ID}
+                            termOptions={termOptions}
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),

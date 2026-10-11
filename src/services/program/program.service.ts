@@ -49,6 +49,16 @@ export async function getPrograms(): Promise<ServiceResult<ProgramOption[]>> {
     return callRpc<ProgramOption[]>('fn_get_programs');
 }
 
+function resolveTermTypeCode(codeOrLabel?: string): string {
+    if (!codeOrLabel) return '';
+    const clean = codeOrLabel.trim();
+    const lower = clean.toLowerCase();
+    if (lower === '1st semester' || lower === '1st_semester' || lower === 'first semester') return '1st_semester';
+    if (lower === '2nd semester' || lower === '2nd_semester' || lower === 'second semester') return '2nd_semester';
+    if (lower === 'summer') return 'summer';
+    return clean.toLowerCase().replace(/\s+/g, '_');
+}
+
 export async function createProgram(
     params: ProgramFormValues
 ): Promise<ServiceResult<null>> {
@@ -66,33 +76,30 @@ export async function createProgram(
     });
 
     if (!result.error) {
-        const programId = result.data?.id || result.data?.program_id;
-        if (programId) {
-            // STEP 1: Delete any pending deleted curriculum map entries first
-            if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
-                const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
-                if (realDeletedIds.length > 0) {
-                    await Promise.allSettled(
-                        realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
-                    );
-                }
+        // STEP 1: Delete any pending deleted curriculum map entries first (if any)
+        if (params.pending_deleted_curriculum_ids && params.pending_deleted_curriculum_ids.length > 0) {
+            const realDeletedIds = params.pending_deleted_curriculum_ids.filter((id) => !id.startsWith('temp-'));
+            if (realDeletedIds.length > 0) {
+                await Promise.allSettled(
+                    realDeletedIds.map((id) => deleteCurriculumMapEntry(id))
+                );
             }
+        }
 
-            // STEP 2: Bulk create all curriculum entries after deletion completes via SINGLE API call
-            if (params.curriculum_entries && params.curriculum_entries.length > 0) {
-                const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
-                    program_code: params.code,
-                    course_code: entry.course_code || '',
-                    year_level: String(entry.year_level),
-                    term_type_code: entry.term_type_code || entry.term_type_label || '',
-                    school_year_code: '',
-                    sequence: String(entry.sequence ?? 1),
-                    is_elective: String(Boolean(entry.is_elective)),
-                    lecture_units: String(entry.lecture_units ?? 0),
-                    laboratory_units: String(entry.laboratory_units ?? 0)
-                }));
-                await bulkCreateCurriculumMap(bulkEntries);
-            }
+        // STEP 2: Bulk create all curriculum entries after program is created via SINGLE API call
+        if (params.curriculum_entries && params.curriculum_entries.length > 0) {
+            const bulkEntries: CurriculumMapBulkRow[] = params.curriculum_entries.map((entry) => ({
+                program_code: params.code,
+                course_code: entry.course_code || '',
+                year_level: String(entry.year_level),
+                term_type_code: resolveTermTypeCode(entry.term_type_code || entry.term_type_label),
+                school_year_code: '',
+                sequence: String(entry.sequence ?? 1),
+                is_elective: String(Boolean(entry.is_elective)),
+                lecture_units: String(entry.lecture_units ?? 0),
+                laboratory_units: String(entry.laboratory_units ?? 0)
+            }));
+            await bulkCreateCurriculumMap(bulkEntries);
         }
     }
 
@@ -136,7 +143,7 @@ export async function updateProgram(
                     program_code: params.code,
                     course_code: entry.course_code || '',
                     year_level: String(entry.year_level),
-                    term_type_code: entry.term_type_code || entry.term_type_label || '',
+                    term_type_code: resolveTermTypeCode(entry.term_type_code || entry.term_type_label),
                     school_year_code: '',
                     sequence: String(entry.sequence ?? 1),
                     is_elective: String(Boolean(entry.is_elective)),

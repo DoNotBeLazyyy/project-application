@@ -20,6 +20,8 @@ import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ProgramFormValues } from '@type/program/program.type';
+import { CurriculumMapEntry } from '@type/curriculum-map.type';
+import { generateProgramCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
 import { UseFormReturn, useWatch } from 'react-hook-form';
 
@@ -59,6 +61,18 @@ export default function ProgramWizardModal({
     const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, setValue, trigger } = methods;
     const selectedSchoolYearId = useWatch({ control, name: 'school_year_id' });
+    const selectedDepartmentId = useWatch({ control, name: 'department_id' });
+    const selectedName = useWatch({ control, name: 'name' });
+
+    useEffect(() => {
+        if (!isEditing && selectedName) {
+            const currentCode = methods.getValues('code');
+            const generated = generateProgramCode(selectedName);
+            if (generated && (!currentCode || currentCode !== generated)) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            }
+        }
+    }, [isEditing, selectedName, setValue, methods]);
 
     useEffect(() => {
         if (open) {
@@ -83,13 +97,10 @@ export default function ProgramWizardModal({
 
     const fields: FormFieldConfig<ProgramFormValues>[] = [
         {
-            disabled: readOnly || isCodeDisabled,
-            fieldProps: { helperText: 'Unique program code, e.g. BSCS' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique program code, e.g. BSCS' },
             label: 'Program Code',
             name: 'code',
-            rules: readOnly || isCodeDisabled
-                ? undefined
-                : { required: 'Program code is required' },
             type: 'text',
             gridCols: 1
         },
@@ -98,7 +109,9 @@ export default function ProgramWizardModal({
             fieldProps: { helperText: 'Full program name, e.g. Bachelor of Science in Computer Science' },
             label: 'Program Name',
             name: 'name',
-            rules: readOnly ? undefined : { required: 'Program name is required' },
+            rules: readOnly
+                ? undefined
+                : { required: 'Program name is required' },
             type: 'text',
             gridCols: 1
         },
@@ -108,7 +121,9 @@ export default function ProgramWizardModal({
             label: 'Department',
             name: 'department_id',
             options: departmentOptions,
-            rules: readOnly ? undefined : { required: 'Please select a department' },
+            rules: readOnly
+                ? undefined
+                : { required: 'Please select a department' },
             type: 'select'
         },
         {
@@ -117,7 +132,9 @@ export default function ProgramWizardModal({
             label: 'Program Level',
             name: 'program_level_id',
             options: programLevelOptions,
-            rules: readOnly ? undefined : { required: 'Please select a program level' },
+            rules: readOnly
+                ? undefined
+                : { required: 'Please select a program level' },
             type: 'select'
         },
         {
@@ -126,7 +143,9 @@ export default function ProgramWizardModal({
             label: 'Academic Year',
             name: 'school_year_id',
             options: schoolYearOptions,
-            rules: readOnly ? undefined : { required: 'Please select an academic year' },
+            rules: readOnly
+                ? undefined
+                : { required: 'Please select an academic year' },
             type: 'select'
         },
         {
@@ -140,11 +159,13 @@ export default function ProgramWizardModal({
             disabled: readOnly,
             label: 'Duration (Years)',
             name: 'years_duration',
-            rules: readOnly ? undefined : {
-                required: 'Number of years is required',
-                min: { value: 1, message: 'Must be at least 1 year' },
-                max: { value: 8, message: 'Cannot exceed 8 years' }
-            },
+            rules: readOnly
+                ? undefined
+                : {
+                    required: 'Number of years is required',
+                    min: { value: 1, message: 'Must be at least 1 year' },
+                    max: { value: 8, message: 'Cannot exceed 8 years' }
+                },
             type: 'number',
             fieldProps: {
                 helperText: 'Standard duration in years (1-8)',
@@ -172,7 +193,8 @@ export default function ProgramWizardModal({
             const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
             if (!isValid) return;
             setCurrentStep(2);
-        } else if (currentStep === 2) {
+        }
+        else if (currentStep === 2) {
             setCurrentStep(3);
         }
     }
@@ -227,8 +249,8 @@ export default function ProgramWizardModal({
                                 {readOnly
                                     ? 'View Academic Program'
                                     : isEditing
-                                    ? 'Edit Academic Program'
-                                    : 'Create Academic Program'}
+                                        ? 'Edit Academic Program'
+                                        : 'Create Academic Program'}
                             </h2>
                             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                                 {readOnly
@@ -283,19 +305,22 @@ export default function ProgramWizardModal({
 
             {/* Stepper Progress Bar Header */}
             <ModalStepperHeader
+                currentStep={currentStep}
+                readOnly={readOnly}
                 steps={PROGRAM_WIZARD_STEPS.map((s) => ({
                     step: s.step,
                     title: s.title,
                     subtitle: s.subtitle
                 }))}
-                currentStep={currentStep}
                 onStepClick={handleStepClick}
-                readOnly={readOnly}
             />
 
             {/* Stepper Step Body */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                {currentStep === 1 && (
+                <div
+                    style={{ display: currentStep === 1
+                        ? 'block'
+                        : 'none' }}>
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                             <div>
@@ -309,10 +334,10 @@ export default function ProgramWizardModal({
                             </div>
                             {!readOnly && (
                                 <button
-                                    type="button"
-                                    onClick={handleClearProgramDetails}
                                     className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer self-start sm:self-auto"
                                     title="Clear Program Details"
+                                    type="button"
+                                    onClick={handleClearProgramDetails}
                                 >
                                     <BroomIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">Clear</span>
@@ -327,21 +352,29 @@ export default function ProgramWizardModal({
                             hasHelper
                         />
                     </div>
-                )}
+                </div>
 
-                {currentStep === 2 && (
+                <div
+                    style={{ display: currentStep === 2
+                        ? 'block'
+                        : 'none' }}>
                     <ProgramGradingSchemaStep
                         control={control}
                         disabled={readOnly}
                     />
-                )}
+                </div>
 
-                {currentStep === 3 && (
+                <div
+                    style={{ display: currentStep === 3
+                        ? 'block'
+                        : 'none' }}>
                     <CurriculumMapManagement
+                        departmentId={selectedDepartmentId}
                         hideProgramSelect
+                        initialEntries={(methods.getValues('curriculum_entries') as unknown as CurriculumMapEntry[]) || []}
                         programId={programId}
-                        schoolYearId={selectedSchoolYearId}
                         readOnly={readOnly}
+                        schoolYearId={selectedSchoolYearId}
                         onChangeEntries={(newEntries, pendingDeleted) => {
                             setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
                             if (pendingDeleted) {
@@ -349,7 +382,7 @@ export default function ProgramWizardModal({
                             }
                         }}
                     />
-                )}
+                </div>
             </div>
 
             {/* Sticky Bottom Action Bar (Exactly matching Academic Year Stepper Modal Footer) */}
@@ -373,51 +406,59 @@ export default function ProgramWizardModal({
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 3 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
+                    {currentStep < 3
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isSaving}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : readOnly ? (
-                        onSwitchToEdit ? (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                startIcon={<PencilSimpleIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={() => onSwitchToEdit(currentStep)}
-                            >
-                                Edit Program
-                            </CommonButton>
-                        ) : (
-                            <CommonButton
-                                color="primary"
-                                size="medium"
-                                variant="contained"
-                                onClick={handleCloseModal}
-                            >
-                                Close
                             </CommonButton>
                         )
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isSaving}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSubmit(onSubmit)}
-                        >
-                            {isSaving ? 'Saving Program...' : 'Save Program'}
-                        </CommonButton>
-                    )}
+                        : readOnly
+                            ? (
+                                onSwitchToEdit
+                                    ? (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            startIcon={<PencilSimpleIcon className="w-4 h-4" />}
+                                            variant="contained"
+                                            onClick={() => onSwitchToEdit(currentStep)}
+                                        >
+                                Edit Program
+                                        </CommonButton>
+                                    )
+                                    : (
+                                        <CommonButton
+                                            color="primary"
+                                            size="medium"
+                                            variant="contained"
+                                            onClick={handleCloseModal}
+                                        >
+                                Close
+                                        </CommonButton>
+                                    )
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isSaving}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSubmit(onSubmit)}
+                                >
+                                    {isSaving
+                                        ? 'Saving Program...'
+                                        : 'Save Program'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
         </CommonModal>

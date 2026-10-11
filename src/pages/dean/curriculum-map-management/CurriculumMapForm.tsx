@@ -8,23 +8,25 @@ import { getAcademicYearCalendarDetails } from '@services/school-year.service';
 import { listTerms } from '@services/term/term.service';
 import { ComponentPropsForm } from '@type/common.type';
 import { CurriculumMapFormValues } from '@type/curriculum-map.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Control, useWatch } from 'react-hook-form';
 
 interface CurriculumMapFormProps extends ComponentPropsForm {
     control: Control<CurriculumMapFormValues>;
     disabled?: boolean;
     selectedSchoolYearId?: string;
+    departmentId?: string;
 }
 
 export default function CurriculumMapForm({
     control,
     disabled,
     selectedSchoolYearId,
+    departmentId,
     ...formProps
 }: CurriculumMapFormProps) {
     const { termTypeOptions: allTermTypeOptions } = useTermTypeOptions();
-    const { courseOptions, courses } = useCourseOptions({});
+    const { courseOptions, courses } = useCourseOptions({ departmentId });
     const [termTypeOptions, setTermTypeOptions] = useState<CommonSelectOption[]>([]);
 
     const selectedCourseId = useWatch({ control, name: 'course_id' });
@@ -64,14 +66,17 @@ export default function CurriculumMapForm({
                 const filtered = allTermTypeOptions.filter((opt) => availableIds.has(String(opt.value)));
                 if (filtered.length > 0) {
                     setTermTypeOptions(filtered);
-                } else {
-                    const fallback = Array.from(availableIds).map((id) => ({
-                        label: allTermTypeOptions.find((opt) => String(opt.value) === String(id))?.label || `Term Type`,
-                        value: id
-                    }));
+                }
+                else {
+                    const fallback = Array.from(availableIds)
+                        .map((id) => ({
+                            label: allTermTypeOptions.find((opt) => String(opt.value) === String(id))?.label || 'Term Type',
+                            value: id
+                        }));
                     setTermTypeOptions(fallback);
                 }
-            } else {
+            }
+            else {
                 setTermTypeOptions(allTermTypeOptions);
             }
         }
@@ -79,18 +84,38 @@ export default function CurriculumMapForm({
         fetchAvailableTermTypes();
     }, [selectedSchoolYearId, allTermTypeOptions]);
 
-    const isCustomType = selectedCourse?.course_type_code &&
-        !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(selectedCourse.course_type_code.toUpperCase().trim());
+    const isCustomType = selectedCourse?.course_type_code
+        && !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(selectedCourse.course_type_code.toUpperCase()
+            .trim());
 
     const customTypeLabel = selectedCourse?.course_type_label || selectedCourse?.course_type_code || 'Course Type';
+
+    const displayedCourseOptions = useMemo(() => {
+        if (selectedCourseId && !courseOptions.some((opt) => opt.value === selectedCourseId)) {
+            return [
+                ...courseOptions,
+                {
+                    label: selectedCourse?.label || 'Selected Course',
+                    value: selectedCourseId
+                }
+            ];
+        }
+        return courseOptions;
+    }, [courseOptions, selectedCourseId, selectedCourse]);
+
+    const courseHelperText = !departmentId
+        ? 'Please select a program or department first'
+        : courseOptions.length === 0
+            ? 'No courses available for this department'
+            : 'Select the course to add to this curriculum';
 
     const fields: FormFieldConfig<CurriculumMapFormValues>[] = [
         {
             disabled,
-            fieldProps: { helperText: 'Select the course to add to this curriculum' },
+            fieldProps: { helperText: courseHelperText },
             label: 'Course',
             name: 'course_id',
-            options: courseOptions,
+            options: displayedCourseOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a course' },
@@ -132,15 +157,17 @@ export default function CurriculumMapForm({
             name: 'laboratory_units',
             type: 'number'
         },
-        ...(isCustomType ? [
-            {
-                disabled,
-                fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
-                label: `${customTypeLabel} Units`,
-                name: 'units' as const,
-                type: 'number' as const
-            }
-        ] : []),
+        ...(isCustomType
+            ? [
+                {
+                    disabled,
+                    fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
+                    label: `${customTypeLabel} Units`,
+                    name: 'units' as const,
+                    type: 'number' as const
+                }
+            ]
+            : []),
         {
             disabled,
             fieldProps: { helperText: 'Display order within the term (starts at 1)' },

@@ -173,6 +173,8 @@ export default function CourseTypeManagement() {
                         <CourseTypeForm
                             control={createMethods.control}
                             id={CREATE_FORM_ID}
+                            isCreate
+                            setValue={createMethods.setValue}
                             onSubmit={createMethods.handleSubmit(
                                 handleCreateSubmit,
                                 handleCreateFormError

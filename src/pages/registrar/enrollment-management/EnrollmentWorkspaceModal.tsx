@@ -119,14 +119,16 @@ export default function EnrollmentWorkspaceModal({
         };
     }, [scope, yearLevels, includeFull, includePrerequisiteGaps, includeConflicts]);
 
+    const effectiveTermId = termId ?? defaultTermId;
+
     const loadWorkspace = useCallback(async function() {
         if (!studentId) return;
 
         setIsAvailableLoading(true);
         try {
             const [detailResult, sectionsResult] = await Promise.all([
-                getEnrollmentStudentDetail(studentId, termId),
-                listEligibleSections(studentId, termId, activeSearch, sectionFilters)
+                getEnrollmentStudentDetail(studentId, effectiveTermId),
+                listEligibleSections(studentId, effectiveTermId, activeSearch, sectionFilters)
             ]);
 
             if (detailResult.data) {
@@ -142,13 +144,7 @@ export default function EnrollmentWorkspaceModal({
         } finally {
             setIsAvailableLoading(false);
         }
-    }, [studentId, termId, activeSearch, sectionFilters]);
-
-    useEffect(function() {
-        if (open) {
-            loadWorkspace();
-        }
-    }, [open, loadWorkspace]);
+    }, [studentId, effectiveTermId, activeSearch, sectionFilters]);
 
     useEffect(function() {
         if (open) {
@@ -160,6 +156,12 @@ export default function EnrollmentWorkspaceModal({
             setMobileTab('load');
         }
     }, [open, defaultTermId, filterMethods]);
+
+    useEffect(function() {
+        if (open && studentId) {
+            loadWorkspace();
+        }
+    }, [open, studentId, loadWorkspace]);
 
     // Sets of IDs currently enrolled or staged
     const enrolledSectionIds = useMemo(function() {
@@ -672,7 +674,11 @@ export default function EnrollmentWorkspaceModal({
                                 {/* Prescribed vs All Scope note */}
                                 <div className="flex items-center justify-between text-[11px] text-(--mui-palette-text-secondary) pt-1">
                                     <span>
-                                        Scope: <strong className="text-(--mui-palette-text-primary)">{sectionFilters.scope === 'recommended' ? 'Prescribed Curriculum' : 'All Curriculum'}</strong>
+                                        Scope: <strong className="text-(--mui-palette-text-primary)">
+                                            {sectionFilters.scope === 'recommended'
+                                                ? 'Prescribed Curriculum'
+                                                : 'All Curriculum'}
+                                        </strong>
                                     </span>
                                     {sectionFilters.scope === 'recommended' && (
                                         <button

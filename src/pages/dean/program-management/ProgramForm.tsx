@@ -1,14 +1,18 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, ListChecksIcon, MapTrifoldIcon, ScalesIcon } from '@phosphor-icons/react';
+import {
+    ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, ListChecksIcon, MapTrifoldIcon, ScalesIcon
+} from '@phosphor-icons/react';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFormValues } from '@type/program/program.type';
-import { useState } from 'react';
+import { CurriculumMapEntry } from '@type/curriculum-map.type';
+import { generateProgramCode } from '@utils/entity-code.util';
+import { useEffect, useState } from 'react';
 import { Control, useFormContext } from 'react-hook-form';
 
 interface ProgramFormProps extends ComponentPropsForm {
@@ -25,20 +29,30 @@ export default function ProgramForm({
     programId,
     ...formProps
 }: ProgramFormProps) {
-    const { setValue } = useFormContext<ProgramFormValues>();
+    const { setValue, getValues, watch } = useFormContext<ProgramFormValues>();
+    const selectedDepartmentId = watch('department_id');
     const [activeStep, setActiveStep] = useState<number>(1);
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
 
+    const programName = watch('name');
+
+    useEffect(() => {
+        if (!programId && programName) {
+            const currentCode = getValues('code');
+            const generated = generateProgramCode(programName);
+            if (generated && (!currentCode || currentCode !== generated)) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            }
+        }
+    }, [programName, programId, setValue, getValues]);
+
     const fields: FormFieldConfig<ProgramFormValues>[] = [
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Unique program code' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique program code' },
             label: 'Program Code',
             name: 'code',
-            rules: disabled || isCodeDisabled
-                ? undefined
-                : { required: 'Program code is required' },
             type: 'text',
             gridCols: 1
         },
@@ -131,18 +145,20 @@ export default function ProgramForm({
 
                         return (
                             <button
-                                key={step.id}
-                                type="button"
-                                onClick={() => setActiveStep(step.id)}
                                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                     isActive
                                         ? 'bg-blue-600 text-white shadow-sm'
                                         : isDone
-                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
+                                key={step.id}
+                                type="button"
+                                onClick={() => setActiveStep(step.id)}
                             >
-                                {isDone ? <CheckCircleIcon className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                                {isDone
+                                    ? <CheckCircleIcon className="w-4 h-4" />
+                                    : <Icon className="w-4 h-4" />}
                                 <span>{step.label}</span>
                             </button>
                         );
@@ -155,7 +171,10 @@ export default function ProgramForm({
 
             {/* Stepper Content Area (Takes Full Available Height in Mobile) */}
             <div className="flex-1 overflow-y-auto min-h-[380px] sm:min-h-0 pr-1">
-                {activeStep === 1 && (
+                <div
+                    style={{ display: activeStep === 1
+                        ? 'block'
+                        : 'none' }}>
                     <CommonForm
                         containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                         control={control}
@@ -163,17 +182,25 @@ export default function ProgramForm({
                         formProps={formProps}
                         hasHelper
                     />
-                )}
+                </div>
 
-                {activeStep === 2 && (
+                <div
+                    style={{ display: activeStep === 2
+                        ? 'block'
+                        : 'none' }}>
                     <ProgramGradingSchemaStep
                         control={control}
                         disabled={disabled}
                     />
-                )}
+                </div>
 
-                {activeStep === 3 && (
+                <div
+                    style={{ display: activeStep === 3
+                        ? 'block'
+                        : 'none' }}>
                     <CurriculumMapManagement
+                        departmentId={selectedDepartmentId}
+                        initialEntries={(getValues('curriculum_entries') as unknown as CurriculumMapEntry[]) || []}
                         programId={programId}
                         readOnly={disabled}
                         onChangeEntries={(newEntries, pendingDeleted) => {
@@ -183,39 +210,43 @@ export default function ProgramForm({
                             }
                         }}
                     />
-                )}
+                </div>
             </div>
 
             {/* Stepper Footer Action Bar (Back / Next Navigation) */}
             <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
                 <CommonButton
-                    type="button"
-                    variant="outlined"
                     color="inherit"
                     disabled={activeStep === 1}
-                    onClick={() => setActiveStep((prev) => Math.max(1, prev - 1))}
-                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
                     size="small"
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                    type="button"
+                    variant="outlined"
+                    onClick={() => setActiveStep((prev) => Math.max(1, prev - 1))}
                 >
                     Back
                 </CommonButton>
 
-                {activeStep < steps.length ? (
-                    <CommonButton
-                        type="button"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => setActiveStep((prev) => Math.min(steps.length, prev + 1))}
-                        endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                        size="small"
-                    >
-                        {activeStep === 1 ? 'Next: Grading Schema' : 'Next: Curriculum Map'}
-                    </CommonButton>
-                ) : (
-                    <span className="text-xs text-slate-500 font-medium italic flex items-center gap-1.5">
-                        <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Form complete
-                    </span>
-                )}
+                {activeStep < steps.length
+                    ? (
+                        <CommonButton
+                            color="primary"
+                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                            size="small"
+                            type="button"
+                            variant="contained"
+                            onClick={() => setActiveStep((prev) => Math.min(steps.length, prev + 1))}
+                        >
+                            {activeStep === 1
+                                ? 'Next: Grading Schema'
+                                : 'Next: Curriculum Map'}
+                        </CommonButton>
+                    )
+                    : (
+                        <span className="text-xs text-slate-500 font-medium italic flex items-center gap-1.5">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Form complete
+                        </span>
+                    )}
             </div>
         </div>
     );

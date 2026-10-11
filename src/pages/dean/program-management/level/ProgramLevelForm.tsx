@@ -2,29 +2,28 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramLevelFormValues } from '@type/program/program-level.type';
-import { Control } from 'react-hook-form';
+import { generateProgramLevelCode } from '@utils/entity-code.util';
+import { useEffect } from 'react';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface ProgramLevelFormProps extends ComponentPropsForm {
     control: Control<ProgramLevelFormValues>;
     disabled?: boolean;
     isCodeDisabled?: boolean;
+    isCreate?: boolean;
+    setValue?: UseFormSetValue<ProgramLevelFormValues>;
 }
 
-export default function ProgramLevelForm({
-    control,
-    disabled,
-    isCodeDisabled,
-    ...formProps
-}: ProgramLevelFormProps) {
-    const fields: FormFieldConfig<ProgramLevelFormValues>[] = [
+export function getProgramLevelFormFields(
+    disabled?: boolean,
+    _isCodeDisabled?: boolean
+): FormFieldConfig<ProgramLevelFormValues>[] {
+    return [
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Short unique code, e.g. UG' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique program level code' },
             label: 'Program Level Code',
             name: 'code',
-            rules: disabled || isCodeDisabled
-                ? undefined
-                : { required: 'Code is required' },
             type: 'text'
         },
         {
@@ -44,6 +43,26 @@ export default function ProgramLevelForm({
             type: 'text-area'
         }
     ];
+}
+
+export default function ProgramLevelForm({
+    control,
+    disabled,
+    isCodeDisabled,
+    isCreate = false,
+    setValue,
+    ...formProps
+}: ProgramLevelFormProps) {
+    const fields = getProgramLevelFormFields(disabled, isCodeDisabled);
+    const watchedLabel = useWatch({ control, name: 'label' });
+
+    useEffect(() => {
+        if (!setValue || disabled || !isCreate) return;
+        const generated = generateProgramLevelCode(watchedLabel || '');
+        if (generated) {
+            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedLabel, disabled, isCreate, setValue]);
 
     return (
         <CommonForm

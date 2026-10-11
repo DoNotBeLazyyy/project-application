@@ -54,6 +54,7 @@ export interface ProgramOption {
     id: string;
     code: string;
     label: string;
+    department_id?: string;
 }
 
 export interface ProgramFilterValues {

@@ -78,18 +78,15 @@ export default function Step1SectionOverview({
             setValue('status', 'Open', { shouldValidate: false, shouldDirty: true });
         }
     }
-
     const fields: FormFieldConfig<SectionFormValues>[] = [
-        ...(disabled
-            ? [{
-                disabled: true,
-                fieldProps: { helperText: 'Auto-generated section identifier' },
-                label: 'Section Code',
-                name: 'section_code' as const,
-                type: 'text' as const,
-                gridCols: 2
-            }]
-            : []),
+        {
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique section code' },
+            label: 'Section Code',
+            name: 'section_code',
+            type: 'text',
+            gridCols: 2
+        },
         {
             disabled,
             fieldProps: { helperText: 'Term this section runs in' },

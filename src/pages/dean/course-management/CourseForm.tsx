@@ -316,7 +316,7 @@ export default function CourseForm({
 
     // System generate course code for new course creation
     useEffect(() => {
-        if (excludeCourseId || isCodeDisabled || !setValue) return;
+        if (excludeCourseId || !setValue) return;
         if (!watchedDepartmentId || !watchedTitle) return;
 
         const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
@@ -331,7 +331,7 @@ export default function CourseForm({
         if (generatedCode) {
             setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
         }
-    }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, isCodeDisabled, setValue]);
+    }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, setValue]);
 
     const {
         fields: courseTypeFields,
@@ -385,17 +385,13 @@ export default function CourseForm({
             gridCols: 3
         },
         {
-            disabled,
+            disabled: true,
             fieldProps: {
-                helperText: excludeCourseId || isCodeDisabled
-                    ? 'Unique course code, e.g. CS101'
-                    : 'System-generated based on department, title, and course count.'
+                helperText: 'System-generated unique course code based on department and title.'
             },
             label: 'Course Code',
             name: 'code',
-            rules: disabled
-                ? undefined
-                : { required: 'Course code is required' },
+            rules: undefined,
             type: 'text',
             gridCols: 3
         },

@@ -9,22 +9,25 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon } from '@phosphor-icons/react';
+import {
+    DotsThreeVerticalIcon, PlusIcon, PrinterIcon, TrashIcon, UploadSimpleIcon
+} from '@phosphor-icons/react';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
 import { useProgramOptions } from '@pages/dean/program-management/useProgramOptions';
-import {
-    bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry
-} from '@services/curriculum-map.service';
+import { getProgramById } from '@services/program/program.service';
+import { createCurriculumMapEntry, deleteCurriculumMapEntry, getCurriculumMap, updateCurriculumMapEntry } from '@services/curriculum-map.service';
 import { getCourses, listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
-import { CourseListRow } from '@type/course/course.type';
-import { CurriculumMapBulkRow, CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
+
+import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { formErrors } from '@utils/form.util';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback, useEffect, useMemo, useRef, useState
+} from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 import { useToastStore } from '@stores/toast.store';
@@ -66,24 +69,28 @@ const defaultFormValues: CurriculumMapFormValues = {
 
 interface CurriculumMapManagementProps {
     programId?: string;
+    departmentId?: string;
     schoolYearId?: string;
     readOnly?: boolean;
     hideProgramSelect?: boolean;
+    initialEntries?: CurriculumMapEntry[];
     onChangeEntries?: (entries: CurriculumMapEntry[], pendingDeletedIds?: string[]) => void;
 }
 
 export default function CurriculumMapManagement({
     programId = '',
+    departmentId = '',
     schoolYearId = '',
     readOnly = false,
     hideProgramSelect = false,
+    initialEntries = [],
     onChangeEntries
 }: CurriculumMapManagementProps = {}) {
     const showToast = useToastStore((state) => state.showToast);
     const [selectedProgramId, setSelectedProgramId] = useState(programId);
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState(schoolYearId);
     const [selectedTermTypeId, setSelectedTermTypeId] = useState('');
-    const [entries, setEntries] = useState<CurriculumMapEntry[]>([]);
+    const [entries, setEntries] = useState<CurriculumMapEntry[]>(initialEntries);
     const [isLoading, setIsLoading] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
@@ -111,7 +118,8 @@ export default function CurriculumMapManagement({
     }
 
     function handleConfirmClear() {
-        const realIds = entries.filter((e) => !e.id.startsWith('temp-')).map((e) => e.id);
+        const realIds = entries.filter((e) => !e.id.startsWith('temp-'))
+            .map((e) => e.id);
         const nextPending = Array.from(new Set([...pendingDeletedIds, ...realIds]));
         setPendingDeletedIds(nextPending);
         updateEntriesState([], nextPending);
@@ -143,9 +151,33 @@ export default function CurriculumMapManagement({
         setDeleteTargetEntry(null);
     }
 
-    const { programOptions } = useProgramOptions();
+    const { programOptions, programs } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
     const { termTypeOptions } = useTermTypeOptions();
+
+    const [programDeptId, setProgramDeptId] = useState<string>('');
+
+    useEffect(() => {
+        const currentProgId = selectedProgramId || programId;
+        if (!currentProgId) {
+            setProgramDeptId('');
+            return;
+        }
+        const match = programs.find((p) => p.id === currentProgId) || programOptions.find((p) => p.value === currentProgId);
+        if (match?.department_id) {
+            setProgramDeptId(match.department_id);
+        }
+        else {
+            getProgramById(currentProgId)
+                .then((res) => {
+                    if (res.data?.department_id) {
+                        setProgramDeptId(res.data.department_id);
+                    }
+                });
+        }
+    }, [selectedProgramId, programId, programs, programOptions]);
+
+    const effectiveDepartmentId = departmentId || programDeptId;
 
     const filteredEntries = useMemo(() => {
         if (!selectedTermTypeId) return entries;
@@ -168,7 +200,8 @@ export default function CurriculumMapManagement({
     useEffect(() => {
         if (schoolYearId) {
             setSelectedSchoolYearId(schoolYearId);
-        } else if (activeSchoolYearId && !selectedSchoolYearId) {
+        }
+        else if (activeSchoolYearId && !selectedSchoolYearId) {
             setSelectedSchoolYearId(activeSchoolYearId);
         }
     }, [schoolYearId, activeSchoolYearId]);
@@ -180,6 +213,12 @@ export default function CurriculumMapManagement({
     const updateMethods = useForm<CurriculumMapFormValues>({
         defaultValues: defaultFormValues
     });
+
+    useEffect(() => {
+        if (initialEntries && initialEntries.length > 0 && entries.length === 0) {
+            setEntries(initialEntries);
+        }
+    }, [initialEntries]);
 
     const fetchCurriculum = useCallback(async function() {
         if (!selectedProgramId) {
@@ -193,8 +232,21 @@ export default function CurriculumMapManagement({
         );
 
         if (result.data) {
-            setEntries(result.data);
-            onChangeEntriesRef.current?.(result.data);
+            setEntries((prevEntries) => {
+                const stagedTempEntries = prevEntries.filter((e) => e.id?.startsWith('temp-'));
+                const merged = [...(result.data ?? [])];
+                for (const temp of stagedTempEntries) {
+                    const exists = merged.some(
+                        (m) => (m.course_id && m.course_id === temp.course_id)
+                               || (m.course_code && temp.course_code && m.course_code === temp.course_code)
+                    );
+                    if (!exists) {
+                        merged.push(temp);
+                    }
+                }
+                onChangeEntriesRef.current?.(merged);
+                return merged;
+            });
         }
 
         setIsLoading(false);
@@ -207,6 +259,10 @@ export default function CurriculumMapManagement({
     }, [fetchCurriculum, selectedProgramId]);
 
     function handleOpenCreate() {
+        if (!selectedProgramId && !programId && !departmentId) {
+            showToast('Please select a program first', 'error');
+            return;
+        }
         createMethods.reset(defaultFormValues);
         setIsCreateOpen(true);
     }
@@ -240,9 +296,42 @@ export default function CurriculumMapManagement({
     }
 
     async function handleCreateSubmit(values: CurriculumMapFormValues) {
-        const listRes = await listCourses(1, 1000, '', [], null);
+        const [listRes, optRes] = await Promise.all([
+            listCourses(1, 1000, '', [], effectiveDepartmentId
+                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                : null),
+            getCourses(undefined, effectiveDepartmentId || undefined)
+        ]);
         const courses = listRes.data?.content ?? [];
-        const course = courses.find((c: any) => c.id === values.course_id);
+        let course: {
+            id: string;
+            code: string;
+            title?: string;
+            base_code?: string;
+            course_type_id?: string;
+            course_type_code?: string;
+            course_type_label?: string;
+            lecture_units?: number;
+            laboratory_units?: number;
+            total_units?: number;
+        } | undefined = courses.find((c) => c.id === values.course_id);
+        if (!course && optRes.data) {
+            const opt = optRes.data.find((c) => c.id === values.course_id);
+            if (opt) {
+                course = {
+                    id: opt.id,
+                    code: opt.code,
+                    title: opt.label,
+                    base_code: opt.base_code,
+                    course_type_id: opt.course_type_id,
+                    course_type_code: opt.course_type_code,
+                    course_type_label: opt.course_type_label,
+                    lecture_units: opt.lecture_units ?? 0,
+                    laboratory_units: opt.laboratory_units ?? 0,
+                    total_units: opt.total_units ?? 0
+                };
+            }
+        }
         const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
@@ -255,10 +344,13 @@ export default function CurriculumMapManagement({
             ? Number(values.units)
             : (course?.total_units ?? (lecUnits + labUnits));
 
-        const isCustomType = course?.course_type_code &&
-            !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(course.course_type_code.toUpperCase().trim());
+        const isCustomType = course?.course_type_code
+            && !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(course.course_type_code.toUpperCase()
+                .trim());
 
-        const totalCalculated = isCustomType ? customUnits : (lecUnits + labUnits);
+        const totalCalculated = isCustomType
+            ? customUnits
+            : (lecUnits + labUnits);
 
         const typeUnits: Record<string, number> = {
             ...(values.type_units || {})
@@ -266,12 +358,15 @@ export default function CurriculumMapManagement({
         if (lecUnits > 0) typeUnits['LEC'] = lecUnits;
         if (labUnits > 0) typeUnits['LAB'] = labUnits;
         if (isCustomType && course?.course_type_code && customUnits > 0) {
-            typeUnits[course.course_type_code.toUpperCase().trim()] = customUnits;
+            typeUnits[course.course_type_code.toUpperCase()
+                .trim()] = customUnits;
         }
 
         const existingIndex = entries.findIndex(
-            (e) => (e.course_id && e.course_id === values.course_id) ||
-                (e.course_code && course?.code && e.course_code.trim().toLowerCase() === course.code.trim().toLowerCase())
+            (e) => (e.course_id && e.course_id === values.course_id)
+                || (e.course_code && course?.code && e.course_code.trim()
+                    .toLowerCase() === course.code.trim()
+                    .toLowerCase())
         );
 
         if (existingIndex >= 0) {
@@ -304,7 +399,8 @@ export default function CurriculumMapManagement({
                     selectedSchoolYearId
                 );
             }
-        } else {
+        }
+        else {
             const newEntry: CurriculumMapEntry = {
                 id: `temp-${Date.now()}-${Math.random()}`,
                 course_id: values.course_id,
@@ -358,9 +454,42 @@ export default function CurriculumMapManagement({
     async function handleUpdateSubmit(values: CurriculumMapFormValues) {
         if (!selectedEntry) return;
 
-        const listRes = await listCourses(1, 1000, '', [], null);
+        const [listRes, optRes] = await Promise.all([
+            listCourses(1, 1000, '', [], effectiveDepartmentId
+                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                : null),
+            getCourses(undefined, effectiveDepartmentId || undefined)
+        ]);
         const courses = listRes.data?.content ?? [];
-        const course = courses.find((c: any) => c.id === values.course_id);
+        let course: {
+            id: string;
+            code: string;
+            title?: string;
+            base_code?: string;
+            course_type_id?: string;
+            course_type_code?: string;
+            course_type_label?: string;
+            lecture_units?: number;
+            laboratory_units?: number;
+            total_units?: number;
+        } | undefined = courses.find((c) => c.id === values.course_id);
+        if (!course && optRes.data) {
+            const opt = optRes.data.find((c) => c.id === values.course_id);
+            if (opt) {
+                course = {
+                    id: opt.id,
+                    code: opt.code,
+                    title: opt.label,
+                    base_code: opt.base_code,
+                    course_type_id: opt.course_type_id,
+                    course_type_code: opt.course_type_code,
+                    course_type_label: opt.course_type_label,
+                    lecture_units: opt.lecture_units ?? 0,
+                    laboratory_units: opt.laboratory_units ?? 0,
+                    total_units: opt.total_units ?? 0
+                };
+            }
+        }
         const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
@@ -373,10 +502,14 @@ export default function CurriculumMapManagement({
             ? Number(values.units)
             : (selectedEntry.units ?? course?.total_units ?? (lecUnits + labUnits));
 
-        const isCustomType = (course?.course_type_code || selectedEntry.course_type_code) &&
-            !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(String(course?.course_type_code || selectedEntry.course_type_code).toUpperCase().trim());
+        const isCustomType = (course?.course_type_code || selectedEntry.course_type_code)
+            && !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(String(course?.course_type_code || selectedEntry.course_type_code)
+                .toUpperCase()
+                .trim());
 
-        const totalCalculated = isCustomType ? customUnits : (lecUnits + labUnits);
+        const totalCalculated = isCustomType
+            ? customUnits
+            : (lecUnits + labUnits);
 
         const typeUnits: Record<string, number> = {
             ...(selectedEntry.type_units || {}),
@@ -384,7 +517,8 @@ export default function CurriculumMapManagement({
         };
         if (lecUnits > 0) typeUnits['LEC'] = lecUnits;
         if (labUnits > 0) typeUnits['LAB'] = labUnits;
-        const currentTypeCode = (course?.course_type_code || selectedEntry.course_type_code)?.toUpperCase().trim();
+        const currentTypeCode = (course?.course_type_code || selectedEntry.course_type_code)?.toUpperCase()
+            .trim();
         if (isCustomType && currentTypeCode && customUnits > 0) {
             typeUnits[currentTypeCode] = customUnits;
         }
@@ -440,8 +574,11 @@ export default function CurriculumMapManagement({
     async function handleBulkImportCurriculum(
         rows: CurriculumMapCsvRow[]
     ): Promise<BulkImportResult> {
-        const [listRes, optionsRes] = await Promise.all([
-            listCourses(1, 1000, '', [], null),
+        const [listRes, optionsRes, allCoursesRes] = await Promise.all([
+            listCourses(1, 1000, '', [], effectiveDepartmentId
+                ? { department_ids: [effectiveDepartmentId], course_type_ids: [], is_active: 'All' }
+                : null),
+            getCourses(undefined, effectiveDepartmentId || undefined),
             getCourses()
         ]);
 
@@ -450,7 +587,8 @@ export default function CurriculumMapManagement({
         if (listRes.data?.content) {
             for (const item of listRes.data.content) {
                 if (item.code) {
-                    coursesMap.set(item.code.trim().toLowerCase(), {
+                    coursesMap.set(item.code.trim()
+                        .toLowerCase(), {
                         id: item.id,
                         code: item.code,
                         title: item.title,
@@ -464,8 +602,10 @@ export default function CurriculumMapManagement({
 
         if (optionsRes.data) {
             for (const opt of optionsRes.data) {
-                if (opt.code && !coursesMap.has(opt.code.trim().toLowerCase())) {
-                    coursesMap.set(opt.code.trim().toLowerCase(), {
+                if (opt.code && !coursesMap.has(opt.code.trim()
+                    .toLowerCase())) {
+                    coursesMap.set(opt.code.trim()
+                        .toLowerCase(), {
                         id: opt.id,
                         code: opt.code,
                         title: opt.label,
@@ -479,7 +619,7 @@ export default function CurriculumMapManagement({
 
         const courses = Array.from(coursesMap.values());
         const errors: string[] = [];
-        let workingEntries = [...entries];
+        const workingEntries = [...entries];
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -494,17 +634,30 @@ export default function CurriculumMapManagement({
                 continue;
             }
 
-            const targetCode = row.course_code.trim().toLowerCase();
+            const targetCode = row.course_code.trim()
+                .toLowerCase();
             const normalizedTarget = targetCode.replace(/[\s\-_]+/g, '');
 
             const course = courses.find((c) => {
-                const cCode = c.code.trim().toLowerCase();
+                const cCode = c.code.trim()
+                    .toLowerCase();
                 const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
                 return cCode === targetCode || normalizedCCode === normalizedTarget;
             });
 
             if (!course) {
-                errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
+                const inAnotherDept = allCoursesRes.data?.find((c) => {
+                    const cCode = c.code.trim()
+                        .toLowerCase();
+                    const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
+                    return cCode === targetCode || normalizedCCode === normalizedTarget;
+                });
+                if (inAnotherDept) {
+                    errors.push(`Row ${rowNum}: Course '${row.course_code}' does not belong to this department.`);
+                }
+                else {
+                    errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
+                }
                 continue;
             }
 
@@ -514,9 +667,16 @@ export default function CurriculumMapManagement({
             if (row.term_type_code) {
                 const matchedTermType = termTypeOptions.find(
                     (t) =>
-                        t.label.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
-                        t.code?.trim().toLowerCase() === row.term_type_code?.trim().toLowerCase() ||
-                        String(t.value).trim().toLowerCase() === row.term_type_code?.trim().toLowerCase()
+                        t.label.trim()
+                            .toLowerCase() === row.term_type_code?.trim()
+                            .toLowerCase()
+                        || t.code?.trim()
+                            .toLowerCase() === row.term_type_code?.trim()
+                            .toLowerCase()
+                        || String(t.value)
+                            .trim()
+                            .toLowerCase() === row.term_type_code?.trim()
+                            .toLowerCase()
                 );
                 if (matchedTermType) {
                     termTypeId = String(matchedTermType.value);
@@ -542,8 +702,10 @@ export default function CurriculumMapManagement({
                 : (course.laboratory_units ?? 0);
 
             const existingIdx = workingEntries.findIndex(
-                (e) => (e.course_id && e.course_id === course.id) ||
-                    (e.course_code && e.course_code.trim().toLowerCase() === course.code.trim().toLowerCase())
+                (e) => (e.course_id && e.course_id === course.id)
+                    || (e.course_code && e.course_code.trim()
+                        .toLowerCase() === course.code.trim()
+                        .toLowerCase())
             );
 
             if (existingIdx >= 0) {
@@ -557,9 +719,11 @@ export default function CurriculumMapManagement({
                     laboratory_units: labUnits,
                     total_units: lecUnits + labUnits,
                     sequence: Number(row.sequence || 1),
-                    is_elective: String(row.is_elective).toLowerCase() === 'true'
+                    is_elective: String(row.is_elective)
+                        .toLowerCase() === 'true'
                 };
-            } else {
+            }
+            else {
                 const newEntry: CurriculumMapEntry = {
                     id: `temp-${Date.now()}-${Math.random()}-${i}`,
                     course_id: course.id,
@@ -575,7 +739,8 @@ export default function CurriculumMapManagement({
                     term_type_sequence: 1,
                     school_year_id: selectedSchoolYearId || null,
                     sequence: Number(row.sequence || 1),
-                    is_elective: String(row.is_elective).toLowerCase() === 'true',
+                    is_elective: String(row.is_elective)
+                        .toLowerCase() === 'true',
                     prerequisites: []
                 };
                 workingEntries.push(newEntry);
@@ -657,7 +822,10 @@ export default function CurriculumMapManagement({
                             onClose={handleCloseMenu}
                         >
                             {!readOnly && (
-                                <MenuItem onClick={() => { handleCloseMenu(); handleOpenCreate(); }}>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleCloseMenu(); handleOpenCreate();
+                                    }}>
                                     <ListItemIcon>
                                         <PlusIcon size={18} />
                                     </ListItemIcon>
@@ -665,14 +833,20 @@ export default function CurriculumMapManagement({
                                 </MenuItem>
                             )}
                             {!readOnly && (
-                                <MenuItem onClick={() => { handleCloseMenu(); setIsBulkImportOpen(true); }}>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleCloseMenu(); setIsBulkImportOpen(true);
+                                    }}>
                                     <ListItemIcon>
                                         <UploadSimpleIcon size={18} />
                                     </ListItemIcon>
                                     <ListItemText>Upload CSV</ListItemText>
                                 </MenuItem>
                             )}
-                            <MenuItem onClick={() => { handleCloseMenu(); window.print(); }}>
+                            <MenuItem
+                                onClick={() => {
+                                    handleCloseMenu(); window.print();
+                                }}>
                                 <ListItemIcon>
                                     <PrinterIcon size={18} />
                                 </ListItemIcon>
@@ -683,7 +857,9 @@ export default function CurriculumMapManagement({
                                 <MenuItem
                                     key="clear-action"
                                     sx={{ color: 'error.main' }}
-                                    onClick={() => { handleCloseMenu(); setIsClearModalOpen(true); }}
+                                    onClick={() => {
+                                        handleCloseMenu(); setIsClearModalOpen(true);
+                                    }}
                                 >
                                     <ListItemIcon sx={{ color: 'error.main' }}>
                                         <TrashIcon size={18} />
@@ -763,222 +939,225 @@ export default function CurriculumMapManagement({
                 </div>
             </div>
 
-                <CommonModal
-                    cardProps={{
-                        cardHeaderProps: {
-                            subheader: 'Add a new course to the curriculum map.',
-                            title: 'Add Curriculum Entry'
-                        }
-                    }}
-                    maxWidth="md"
-                    open={isCreateOpen}
-                    onClose={function() {
-                        setIsCreateOpen(false);
-                    }}
-                >
-                    <div className="flex flex-col gap-4">
-                        <CurriculumMapForm
-                            control={createMethods.control}
-                            id={CREATE_FORM_ID}
-                            selectedSchoolYearId={selectedSchoolYearId}
-                            onSubmit={createMethods.handleSubmit(
-                                handleCreateSubmit,
-                                handleCreateFormError
-                            )}
-                        />
-                        <div className="flex gap-2 justify-end">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                variant="outlined"
-                                onClick={function() {
-                                    setIsCreateOpen(false);
-                                }}
-                            >
+            <CommonModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Add a new course to the curriculum map.',
+                        title: 'Add Curriculum Entry'
+                    }
+                }}
+                maxWidth="md"
+                open={isCreateOpen}
+                onClose={function() {
+                    setIsCreateOpen(false);
+                }}
+            >
+                <div className="flex flex-col gap-4">
+                    <CurriculumMapForm
+                        control={createMethods.control}
+                        departmentId={effectiveDepartmentId}
+                        id={CREATE_FORM_ID}
+                        selectedSchoolYearId={selectedSchoolYearId}
+                        onSubmit={createMethods.handleSubmit(
+                            handleCreateSubmit,
+                            handleCreateFormError
+                        )}
+                    />
+                    <div className="flex gap-2 justify-end">
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={function() {
+                                setIsCreateOpen(false);
+                            }}
+                        >
                             Cancel
-                            </CommonButton>
-                            <CommonButton
-                                form={CREATE_FORM_ID}
-                                size="small"
-                                type="submit"
-                                variant="contained"
-                            >
+                        </CommonButton>
+                        <CommonButton
+                            form={CREATE_FORM_ID}
+                            size="small"
+                            type="submit"
+                            variant="contained"
+                        >
                             Add Entry
-                            </CommonButton>
-                        </div>
+                        </CommonButton>
                     </div>
-                </CommonModal>
+                </div>
+            </CommonModal>
 
-                <CommonModal
-                    cardProps={{
-                        cardHeaderProps: {
-                            subheader: 'Update this curriculum map entry.',
-                            title: 'Edit Curriculum Entry'
-                        }
-                    }}
-                    maxWidth="md"
-                    open={isUpdateOpen}
-                    onClose={handleCloseUpdate}
-                >
-                    <div className="flex flex-col gap-4">
-                        <CurriculumMapForm
-                            control={updateMethods.control}
-                            id={UPDATE_FORM_ID}
-                            selectedSchoolYearId={selectedSchoolYearId}
-                            onSubmit={updateMethods.handleSubmit(
-                                handleUpdateSubmit,
-                                handleUpdateFormError
-                            )}
-                        />
-                        <div className="flex gap-2 justify-end">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                variant="outlined"
-                                onClick={handleCloseUpdate}
-                            >
+            <CommonModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Update this curriculum map entry.',
+                        title: 'Edit Curriculum Entry'
+                    }
+                }}
+                maxWidth="md"
+                open={isUpdateOpen}
+                onClose={handleCloseUpdate}
+            >
+                <div className="flex flex-col gap-4">
+                    <CurriculumMapForm
+                        control={updateMethods.control}
+                        departmentId={effectiveDepartmentId}
+                        id={UPDATE_FORM_ID}
+                        selectedSchoolYearId={selectedSchoolYearId}
+                        onSubmit={updateMethods.handleSubmit(
+                            handleUpdateSubmit,
+                            handleUpdateFormError
+                        )}
+                    />
+                    <div className="flex gap-2 justify-end">
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={handleCloseUpdate}
+                        >
                             Cancel
-                            </CommonButton>
-                            <CommonButton
-                                disabled={!updateMethods.formState.isDirty}
-                                form={UPDATE_FORM_ID}
-                                size="small"
-                                type="submit"
-                                variant="contained"
-                            >
+                        </CommonButton>
+                        <CommonButton
+                            disabled={!updateMethods.formState.isDirty}
+                            form={UPDATE_FORM_ID}
+                            size="small"
+                            type="submit"
+                            variant="contained"
+                        >
                             Save
-                            </CommonButton>
-                        </div>
+                        </CommonButton>
                     </div>
-                </CommonModal>
-                <CommonModal
-                    cardProps={{
-                        cardHeaderProps: {
-                            subheader: 'Viewing curriculum map entry details.',
-                            title: 'View Curriculum Entry'
-                        }
-                    }}
-                    maxWidth="md"
-                    open={isViewOpen}
-                    onClose={handleCloseView}
-                >
-                    <div className="flex flex-col gap-4">
-                        <CurriculumMapForm
-                            control={updateMethods.control}
-                            disabled
-                            selectedSchoolYearId={selectedSchoolYearId}
-                        />
-                        <div className="flex gap-2 justify-end">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                variant="outlined"
-                                onClick={handleCloseView}
-                            >
+                </div>
+            </CommonModal>
+            <CommonModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'Viewing curriculum map entry details.',
+                        title: 'View Curriculum Entry'
+                    }
+                }}
+                maxWidth="md"
+                open={isViewOpen}
+                onClose={handleCloseView}
+            >
+                <div className="flex flex-col gap-4">
+                    <CurriculumMapForm
+                        control={updateMethods.control}
+                        departmentId={effectiveDepartmentId}
+                        disabled
+                        selectedSchoolYearId={selectedSchoolYearId}
+                    />
+                    <div className="flex gap-2 justify-end">
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={handleCloseView}
+                        >
                             Close
-                            </CommonButton>
-                            <CommonButton
-                                size="small"
-                                variant="contained"
-                                onClick={function() {
-                                    setIsViewOpen(false);
-                                    setIsUpdateOpen(true);
-                                }}
-                            >
+                        </CommonButton>
+                        <CommonButton
+                            size="small"
+                            variant="contained"
+                            onClick={function() {
+                                setIsViewOpen(false);
+                                setIsUpdateOpen(true);
+                            }}
+                        >
                             Edit
-                            </CommonButton>
-                        </div>
+                        </CommonButton>
                     </div>
-                </CommonModal>
+                </div>
+            </CommonModal>
 
-                <BulkImportModal<CurriculumMapCsvRow>
-                    open={isBulkImportOpen}
-                    templateColumns={CURRICULUM_MAP_CSV_COLUMNS}
-                    title="Bulk Import Curriculum Map"
-                    onBulkImport={handleBulkImportCurriculum}
-                    onClose={() => setIsBulkImportOpen(false)}
-                    onMapRow={(row) => row as unknown as CurriculumMapCsvRow}
-                />
+            <BulkImportModal<CurriculumMapCsvRow>
+                open={isBulkImportOpen}
+                templateColumns={CURRICULUM_MAP_CSV_COLUMNS}
+                title="Bulk Import Curriculum Map"
+                onBulkImport={handleBulkImportCurriculum}
+                onClose={() => setIsBulkImportOpen(false)}
+                onMapRow={(row) => row as unknown as CurriculumMapCsvRow}
+            />
 
-                <CommonModal
-                    cardProps={{
-                        cardHeaderProps: {
-                            subheader: 'This action will remove the selected course entry from the curriculum map.',
-                            title: 'Delete Curriculum Entry'
-                        }
-                    }}
-                    maxWidth="xs"
-                    open={isDeleteSingleModalOpen}
-                    onClose={() => {
-                        setIsDeleteSingleModalOpen(false);
-                        setDeleteTargetEntry(null);
-                    }}
-                >
-                    <div className="flex flex-col gap-4">
-                        <p className="text-xs text-slate-600 dark:text-slate-300">
+            <CommonModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'This action will remove the selected course entry from the curriculum map.',
+                        title: 'Delete Curriculum Entry'
+                    }
+                }}
+                maxWidth="xs"
+                open={isDeleteSingleModalOpen}
+                onClose={() => {
+                    setIsDeleteSingleModalOpen(false);
+                    setDeleteTargetEntry(null);
+                }}
+            >
+                <div className="flex flex-col gap-4">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
                             Are you sure you want to delete <span className="font-semibold text-slate-900 dark:text-white">{deleteTargetEntry?.course_code} — {deleteTargetEntry?.course_title}</span> from this curriculum map?
-                        </p>
-                        <div className="flex justify-end gap-2">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                variant="outlined"
-                                onClick={() => {
-                                    setIsDeleteSingleModalOpen(false);
-                                    setDeleteTargetEntry(null);
-                                }}
-                            >
+                    </p>
+                    <div className="flex justify-end gap-2">
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={() => {
+                                setIsDeleteSingleModalOpen(false);
+                                setDeleteTargetEntry(null);
+                            }}
+                        >
                                 Cancel
-                            </CommonButton>
-                            <CommonButton
-                                color="error"
-                                size="small"
-                                startIcon={<TrashIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={handleConfirmDeleteSingle}
-                            >
+                        </CommonButton>
+                        <CommonButton
+                            color="error"
+                            size="small"
+                            startIcon={<TrashIcon className="w-4 h-4" />}
+                            variant="contained"
+                            onClick={handleConfirmDeleteSingle}
+                        >
                                 Delete Entry
-                            </CommonButton>
-                        </div>
+                        </CommonButton>
                     </div>
-                </CommonModal>
+                </div>
+            </CommonModal>
 
-                <CommonModal
-                    cardProps={{
-                        cardHeaderProps: {
-                            subheader: 'This action will remove all courses from the curriculum map.',
-                            title: 'Clear Curriculum Map'
-                        }
-                    }}
-                    maxWidth="xs"
-                    open={isClearModalOpen}
-                    onClose={() => setIsClearModalOpen(false)}
-                >
-                    <div className="flex flex-col gap-4">
-                        <p className="text-xs text-slate-600 dark:text-slate-300">
+            <CommonModal
+                cardProps={{
+                    cardHeaderProps: {
+                        subheader: 'This action will remove all courses from the curriculum map.',
+                        title: 'Clear Curriculum Map'
+                    }
+                }}
+                maxWidth="xs"
+                open={isClearModalOpen}
+                onClose={() => setIsClearModalOpen(false)}
+            >
+                <div className="flex flex-col gap-4">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
                             Are you sure you want to clear/reset all curriculum entries? This will delete all course mappings from this curriculum map.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                variant="outlined"
-                                onClick={() => setIsClearModalOpen(false)}
-                            >
+                    </p>
+                    <div className="flex justify-end gap-2">
+                        <CommonButton
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setIsClearModalOpen(false)}
+                        >
                                 Cancel
-                            </CommonButton>
-                            <CommonButton
-                                color="error"
-                                size="small"
-                                startIcon={<TrashIcon className="w-4 h-4" />}
-                                variant="contained"
-                                onClick={handleConfirmClear}
-                            >
+                        </CommonButton>
+                        <CommonButton
+                            color="error"
+                            size="small"
+                            startIcon={<TrashIcon className="w-4 h-4" />}
+                            variant="contained"
+                            onClick={handleConfirmClear}
+                        >
                                 Clear All Entries
-                            </CommonButton>
-                        </div>
+                        </CommonButton>
                     </div>
-                </CommonModal>
+                </div>
+            </CommonModal>
         </CommonCard>
     );
 }

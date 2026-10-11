@@ -7,12 +7,16 @@ import ConditionBuilder from '@pages/admin/grading-config-management/ConditionBu
 import RulePreviewPanel from '@pages/admin/grading-config-management/RulePreviewPanel';
 import { ComponentPropsForm } from '@type/common.type';
 import { SpecialGradeConditionGroup, SpecialGradeFormValues } from '@type/grading-config.type';
-import { Control, Controller, useWatch } from 'react-hook-form';
+import { generateSpecialGradeCode } from '@utils/entity-code.util';
+import { useEffect } from 'react';
+import { Control, Controller, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface SpecialGradeFormProps extends ComponentPropsForm {
     control: Control<SpecialGradeFormValues>;
     disabled?: boolean;
     isCodeDisabled?: boolean;
+    isCreate?: boolean;
+    setValue?: UseFormSetValue<SpecialGradeFormValues>;
 }
 
 const CONDITIONS_HELP = (
@@ -62,21 +66,30 @@ export default function SpecialGradeForm({
     control,
     disabled,
     isCodeDisabled,
+    isCreate = false,
+    setValue,
     ...formProps
 }: SpecialGradeFormProps) {
     const conditions = useWatch({ control, name: 'conditions' });
     const code = useWatch({ control, name: 'code' });
     const isAutoDetected = useWatch({ control, name: 'is_auto_detected' });
     const requiresCompletion = useWatch({ control, name: 'requires_completion' });
+    const watchedLabel = useWatch({ control, name: 'label' });
+
+    useEffect(() => {
+        if (!setValue || disabled || !isCreate) return;
+        const generated = generateSpecialGradeCode(watchedLabel || '');
+        if (generated) {
+            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedLabel, disabled, isCreate, setValue]);
 
     const identityFields: FormFieldConfig<SpecialGradeFormValues>[] = [
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Unique grade code, e.g. INC, FDA, DRP' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique grade code' },
+            label: 'Grade Code',
             name: 'code',
-            rules: disabled || isCodeDisabled
-                ? undefined
-                : { required: 'Grade code is required' },
             type: 'text'
         },
         {

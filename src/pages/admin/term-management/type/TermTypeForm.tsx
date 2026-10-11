@@ -2,30 +2,29 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { TermTypeFormValues } from '@type/term/term-type.type';
-import { Control } from 'react-hook-form';
+import { generateTermTypeCode } from '@utils/entity-code.util';
+import { useEffect } from 'react';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface TermTypeFormProps extends ComponentPropsForm {
     control: Control<TermTypeFormValues>;
     disabled?: boolean;
     isCodeDisabled?: boolean;
+    isCreate?: boolean;
+    setValue?: UseFormSetValue<TermTypeFormValues>;
 }
 
-export default function TermTypeForm({
-    control,
-    disabled,
-    isCodeDisabled,
-    ...formProps
-}: TermTypeFormProps) {
-    const fields: FormFieldConfig<TermTypeFormValues>[] = [
+export function getTermTypeFormFields(
+    disabled?: boolean,
+    _isCodeDisabled?: boolean
+): FormFieldConfig<TermTypeFormValues>[] {
+    return [
         {
-            disabled: disabled || isCodeDisabled,
-            fieldProps: { helperText: 'Unique identifier, e.g. SEM-1, SEM-2, SUMMER' },
+            disabled: true,
+            fieldProps: { helperText: 'System-generated unique term type code' },
             label: 'Code',
             name: 'code',
             placeholder: 'e.g. SEM-1',
-            rules: disabled || isCodeDisabled
-                ? undefined
-                : { required: 'Code is required' },
             type: 'text'
         },
         {
@@ -48,6 +47,26 @@ export default function TermTypeForm({
             type: 'text-area'
         }
     ];
+}
+
+export default function TermTypeForm({
+    control,
+    disabled,
+    isCodeDisabled,
+    isCreate = false,
+    setValue,
+    ...formProps
+}: TermTypeFormProps) {
+    const fields = getTermTypeFormFields(disabled, isCodeDisabled);
+    const watchedLabel = useWatch({ control, name: 'label' });
+
+    useEffect(() => {
+        if (!setValue || disabled || !isCreate) return;
+        const generated = generateTermTypeCode(watchedLabel || '');
+        if (generated) {
+            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedLabel, disabled, isCreate, setValue]);
 
     return (
         <CommonForm

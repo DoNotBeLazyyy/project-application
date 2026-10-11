@@ -5,20 +5,31 @@ import { useEffect, useState } from 'react';
 
 interface UseCourseOptionsProps {
     excludeIds?: string[];
+    departmentId?: string;
 }
 
-export function useCourseOptions({ excludeIds }: UseCourseOptionsProps) {
+export function useCourseOptions({ excludeIds, departmentId }: UseCourseOptionsProps = {}) {
     const [courses, setCourses] = useState<CourseOption[]>([]);
     const [courseOptions, setCourseOptions] = useState<CommonSelectOption[]>([]);
 
     useEffect(function() {
         async function fetchCourses() {
-            const result = await getCourses(excludeIds);
+            if (departmentId === '') {
+                setCourses([]);
+                setCourseOptions([]);
+                return;
+            }
+
+            const result = await getCourses(excludeIds, departmentId);
 
             if (result.data) {
-                setCourses(result.data);
+                const filtered = departmentId
+                    ? result.data.filter((course: CourseOption) => !course.department_id || course.department_id === departmentId)
+                    : result.data;
+
+                setCourses(filtered);
                 setCourseOptions(
-                    result.data.map((course: CourseOption) => ({
+                    filtered.map((course: CourseOption) => ({
                         label: course.label,
                         value: course.id
                     }))
@@ -27,7 +38,7 @@ export function useCourseOptions({ excludeIds }: UseCourseOptionsProps) {
         }
 
         fetchCourses();
-    }, [JSON.stringify(excludeIds)]);
+    }, [JSON.stringify(excludeIds), departmentId]);
 
     return { courseOptions, courses };
 }

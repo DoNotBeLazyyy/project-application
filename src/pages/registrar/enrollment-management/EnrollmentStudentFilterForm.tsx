@@ -23,10 +23,12 @@ const ENROLLMENT_STATE_OPTIONS: { label: string; value: EnrollmentState }[] = [
 
 interface EnrollmentStudentFilterFormProps extends ComponentPropsForm {
     control: Control<EnrollmentStudentFilterValues>;
+    termOptions?: CommonSelectOption[];
 }
 
 export default function EnrollmentStudentFilterForm({
     control,
+    termOptions,
     ...formProps
 }: EnrollmentStudentFilterFormProps) {
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
@@ -49,29 +51,39 @@ export default function EnrollmentStudentFilterForm({
     }, []);
 
     const fields: FormFieldConfig<EnrollmentStudentFilterValues>[] = [
+        ...(termOptions && termOptions.length > 0
+            ? [
+                {
+                    label: 'Academic Term',
+                    name: 'term_id' as const,
+                    options: termOptions,
+                    type: 'select' as const
+                }
+            ]
+            : []),
         {
             label: 'Programs',
-            name: 'program_ids',
+            name: 'program_ids' as const,
             options: programOptions,
-            type: 'multi-select'
+            type: 'multi-select' as const
         },
         {
             label: 'Year Levels',
-            name: 'year_levels',
+            name: 'year_levels' as const,
             options: YEAR_LEVEL_OPTIONS,
-            type: 'multi-select'
+            type: 'multi-select' as const
         },
         {
             label: 'Student Status',
-            name: 'statuses',
+            name: 'statuses' as const,
             options: STUDENT_STATUS_OPTIONS,
-            type: 'multi-select'
+            type: 'multi-select' as const
         },
         {
             label: 'Enrollment State',
-            name: 'enrollment_states',
+            name: 'enrollment_states' as const,
             options: ENROLLMENT_STATE_OPTIONS,
-            type: 'multi-select'
+            type: 'multi-select' as const
         }
     ];
 

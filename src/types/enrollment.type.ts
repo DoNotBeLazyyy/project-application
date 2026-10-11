@@ -27,6 +27,7 @@ export interface EnrollmentStudentRow {
 }
 
 export interface EnrollmentStudentFilterValues {
+    term_id?: string;
     program_ids: string[];
     year_levels: string[];
     statuses: StudentStatus[];

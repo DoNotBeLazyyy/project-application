@@ -306,41 +306,47 @@ export default function ProgramManagement() {
             />
 
             {/* Create Program Wizard Modal */}
-            <ProgramWizardModal
-                open={isCreateOpen}
-                methods={createMethods}
-                onClose={() => {
-                    createMethods.reset(defaultFormValues);
-                    setIsCreateOpen(false);
-                }}
-                onSubmit={handleCreateSubmit}
-            />
+            {isCreateOpen && (
+                <ProgramWizardModal
+                    open={isCreateOpen}
+                    methods={createMethods}
+                    onClose={() => {
+                        createMethods.reset(defaultFormValues);
+                        setIsCreateOpen(false);
+                    }}
+                    onSubmit={handleCreateSubmit}
+                />
+            )}
 
             {/* Edit Program Wizard Modal */}
-            <ProgramWizardModal
-                open={isUpdateOpen}
-                initialStep={editStep}
-                isEditing
-                programId={selectedId ?? undefined}
-                methods={updateMethods}
-                onClose={handleCloseUpdate}
-                onSubmit={handleUpdateSubmit}
-            />
+            {isUpdateOpen && (
+                <ProgramWizardModal
+                    open={isUpdateOpen}
+                    initialStep={editStep}
+                    isEditing
+                    programId={selectedId ?? undefined}
+                    methods={updateMethods}
+                    onClose={handleCloseUpdate}
+                    onSubmit={handleUpdateSubmit}
+                />
+            )}
 
             {/* View Program Wizard Modal */}
-            <ProgramWizardModal
-                open={isViewOpen}
-                readOnly
-                programId={selectedId ?? undefined}
-                methods={updateMethods}
-                onClose={handleCloseView}
-                onSubmit={function() {}}
-                onSwitchToEdit={function(step) {
-                    if (selectedId) {
-                        handleSwitchToEdit(selectedId, step);
-                    }
-                }}
-            />
+            {isViewOpen && (
+                <ProgramWizardModal
+                    open={isViewOpen}
+                    readOnly
+                    programId={selectedId ?? undefined}
+                    methods={updateMethods}
+                    onClose={handleCloseView}
+                    onSubmit={function() {}}
+                    onSwitchToEdit={function(step) {
+                        if (selectedId) {
+                            handleSwitchToEdit(selectedId, step);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

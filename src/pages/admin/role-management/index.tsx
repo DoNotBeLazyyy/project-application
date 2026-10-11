@@ -167,6 +167,8 @@ export default function RoleManagement() {
                         <RoleForm
                             control={createMethods.control}
                             id={CREATE_FORM_ID}
+                            isCreate
+                            setValue={createMethods.setValue}
                             onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateFormError)}
                         />
                     ),

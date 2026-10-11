@@ -211,6 +211,8 @@ export default function TermTypeManagement() {
                     <TermTypeForm
                         control={createMethods.control}
                         id={CREATE_FORM_ID}
+                        isCreate
+                        setValue={createMethods.setValue}
                         onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateError)}
                     />
                 )}

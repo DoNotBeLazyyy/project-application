@@ -398,6 +398,8 @@ export default function SpecialGradesPage() {
                     <SpecialGradeForm
                         control={createMethods.control}
                         id={CREATE_FORM_ID}
+                        isCreate
+                        setValue={createMethods.setValue}
                         onSubmit={createMethods.handleSubmit(
                             handleCreateSubmit,
                             (errs: FieldErrors<SpecialGradeFormValues>) => formErrors(errs, createMethods)
