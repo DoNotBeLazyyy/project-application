@@ -16,7 +16,7 @@ export interface DepartmentGridCardProps {
  * DepartmentGridCard
  *
  * Grid (bento) representation of a department row for Admin.
- * Name as hero title, code as subtitle, and optional description.
+ * Name as hero title and code as subtitle.
  */
 export default function DepartmentGridCard({
     row,
@@ -54,7 +54,6 @@ export default function DepartmentGridCard({
                     ariaLabel="Department actions"
                 />
             )}
-            details={row.description ? [{ label: 'Description', value: row.description }] : undefined}
             isSelected={isSelected}
             selectVariant="button"
             status=""

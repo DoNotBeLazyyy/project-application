@@ -122,11 +122,6 @@ export default function SpecialGradeGridCard({
                     label: 'Triggers when',
                     lines: 2,
                     value: conditionSummary
-                },
-                {
-                    emptyText: 'No description provided',
-                    label: 'Description',
-                    value: row.description ?? ''
                 }
             ]}
             facts={facts}
