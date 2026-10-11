@@ -119,7 +119,9 @@ export default function EnrollmentManagement() {
         }
         filterMethods.setValue('term_id', newTermId);
         if (activeFilters) {
-            setActiveFilters((previous) => (previous ? { ...previous, term_id: newTermId } : null));
+            setActiveFilters((previous) => (previous
+                ? { ...previous, term_id: newTermId }
+                : null));
         }
     }
 
@@ -198,7 +200,6 @@ export default function EnrollmentManagement() {
                         : 'Enroll students into their curriculum subjects.',
                     title: 'Enrollment Management'
                 }}
-                showSubheader={true}
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.enrollmentStudents
@@ -245,6 +246,7 @@ export default function EnrollmentManagement() {
                         />
                     );
                 }}
+                showSubheader={true}
                 sortColumns={SORT_COLUMNS}
                 tableActionConfig={tableActionConfig}
                 tableProps={{
