@@ -7,12 +7,16 @@ const STOP_WORDS = new Set([
  */
 export function extractWords(text: string, filterStopWords = true): string[] {
     if (!text || !text.trim()) return [];
-    const clean = text.trim().replace(/[^a-zA-Z0-9\s]/g, ' ');
-    const rawWords = clean.split(/\s+/).filter(Boolean);
+    const clean = text.trim()
+        .replace(/[^a-zA-Z0-9\s]/g, ' ');
+    const rawWords = clean.split(/\s+/)
+        .filter(Boolean);
     if (!filterStopWords) return rawWords;
 
     const significant = rawWords.filter((w) => !STOP_WORDS.has(w.toUpperCase()));
-    return significant.length > 0 ? significant : rawWords;
+    return significant.length > 0
+        ? significant
+        : rawWords;
 }
 
 /**
@@ -28,14 +32,16 @@ export function generateAcronym(text: string, defaultPrefix = 'GEN'): string {
         if (match) {
             return (match[1].slice(0, 4) + match[2]).toUpperCase();
         }
-        return word.slice(0, 4).toUpperCase();
+        return word.slice(0, 4)
+            .toUpperCase();
     }
 
     let acronym = '';
     for (const w of words) {
         if (/^\d+$/.test(w)) {
             acronym += w;
-        } else {
+        }
+        else {
             const letter = w[0].toUpperCase();
             const trailingDigits = w.match(/\d+$/)?.[0] || '';
             acronym += letter + trailingDigits;
@@ -49,7 +55,8 @@ export function generateAcronym(text: string, defaultPrefix = 'GEN'): string {
  */
 export function ensureUniqueCode(candidate: string, existingCodes?: string[]): string {
     if (!existingCodes || existingCodes.length === 0) return candidate;
-    const existingSet = new Set(existingCodes.map((c) => c.trim().toUpperCase()));
+    const existingSet = new Set(existingCodes.map((c) => c.trim()
+        .toUpperCase()));
 
     if (!existingSet.has(candidate.toUpperCase())) return candidate;
 
@@ -84,8 +91,10 @@ const ORG_PREFIX_MAP: Record<string, string> = {
  */
 export function generateDepartmentCode(name: string, existingCodes?: string[]): string {
     if (!name || !name.trim()) return '';
-    const clean = name.trim().replace(/[^a-zA-Z0-9\s]/g, ' ');
-    const rawWords = clean.split(/\s+/).filter(Boolean);
+    const clean = name.trim()
+        .replace(/[^a-zA-Z0-9\s]/g, ' ');
+    const rawWords = clean.split(/\s+/)
+        .filter(Boolean);
     const stopWords = new Set(['AND', 'OR', 'OF', 'TO', 'IN', 'FOR', 'WITH', 'THE', 'A', 'AN', 'AT', 'BY', '&']);
     const words = rawWords.filter((w) => !stopWords.has(w.toUpperCase()));
 
@@ -100,18 +109,25 @@ export function generateDepartmentCode(name: string, existingCodes?: string[]): 
         if (disciplineWords.length === 1) {
             const discWord = disciplineWords[0].toUpperCase();
             code = `${orgPrefix}${discWord.slice(0, 3)}`;
-        } else {
-            const initials = disciplineWords.map((w) => w[0].toUpperCase()).join('');
+        }
+        else {
+            const initials = disciplineWords.map((w) => w[0].toUpperCase())
+                .join('');
             code = `${orgPrefix}${initials}`;
         }
-    } else if (words.length === 1) {
-        code = words[0].slice(0, 4).toUpperCase();
-    } else if (words.length === 2) {
+    }
+    else if (words.length === 1) {
+        code = words[0].slice(0, 4)
+            .toUpperCase();
+    }
+    else if (words.length === 2) {
         const w1 = words[0].toUpperCase();
         const w2 = words[1].toUpperCase();
         code = `${w1[0]}${w2[0]}`;
-    } else {
-        code = words.map((w) => w[0].toUpperCase()).join('');
+    }
+    else {
+        code = words.map((w) => w[0].toUpperCase())
+            .join('');
     }
 
     return ensureUniqueCode(code, existingCodes);
@@ -127,8 +143,10 @@ export function generateDepartmentCode(name: string, existingCodes?: string[]): 
  */
 export function generateProgramCode(name: string, existingCodes?: string[]): string {
     if (!name || !name.trim()) return '';
-    const clean = name.trim().replace(/[^a-zA-Z0-9\s]/g, ' ');
-    const rawWords = clean.split(/\s+/).filter(Boolean);
+    const clean = name.trim()
+        .replace(/[^a-zA-Z0-9\s]/g, ' ');
+    const rawWords = clean.split(/\s+/)
+        .filter(Boolean);
     const stopWords = new Set(['AND', 'OR', 'OF', 'TO', 'IN', 'FOR', 'WITH', 'THE', 'A', 'AN', 'AT', 'BY', '&']);
     const words = rawWords.filter((w) => !stopWords.has(w.toUpperCase()));
 
@@ -138,50 +156,77 @@ export function generateProgramCode(name: string, existingCodes?: string[]): str
     let majorWords = words;
 
     const firstWord = words[0].toUpperCase();
-    const secondWord = words.length > 1 ? words[1].toUpperCase() : '';
+    const secondWord = words.length > 1
+        ? words[1].toUpperCase()
+        : '';
 
     if (firstWord.startsWith('BACHELOR')) {
-        degree = secondWord.startsWith('ARTS') ? 'BA' : 'BS';
-        majorWords = words.slice(secondWord.startsWith('SCIENCE') || secondWord.startsWith('ARTS') ? 2 : 1);
-    } else if (firstWord.startsWith('MASTER')) {
-        degree = secondWord.startsWith('ARTS') ? 'MA' : 'MS';
-        majorWords = words.slice(secondWord.startsWith('SCIENCE') || secondWord.startsWith('ARTS') ? 2 : 1);
-    } else if (firstWord.startsWith('DOCTOR')) {
+        degree = secondWord.startsWith('ARTS')
+            ? 'BA'
+            : 'BS';
+        majorWords = words.slice(secondWord.startsWith('SCIENCE') || secondWord.startsWith('ARTS')
+            ? 2
+            : 1);
+    }
+    else if (firstWord.startsWith('MASTER')) {
+        degree = secondWord.startsWith('ARTS')
+            ? 'MA'
+            : 'MS';
+        majorWords = words.slice(secondWord.startsWith('SCIENCE') || secondWord.startsWith('ARTS')
+            ? 2
+            : 1);
+    }
+    else if (firstWord.startsWith('DOCTOR')) {
         degree = 'PHD';
         majorWords = words.slice(1);
-    } else if (firstWord.startsWith('ASSOCIATE')) {
+    }
+    else if (firstWord.startsWith('ASSOCIATE')) {
         degree = 'ACT';
         majorWords = words.slice(1);
     }
 
     let majorCode = '';
     if (majorWords.length === 0) {
-        majorCode = words.map((w) => w[0].toUpperCase()).join('');
-    } else if (majorWords.length === 1) {
-        majorCode = majorWords[0].slice(0, 4).toUpperCase();
-    } else if (majorWords.length === 2) {
+        majorCode = words.map((w) => w[0].toUpperCase())
+            .join('');
+    }
+    else if (majorWords.length === 1) {
+        majorCode = majorWords[0].slice(0, 4)
+            .toUpperCase();
+    }
+    else if (majorWords.length === 2) {
         const mw1 = majorWords[0].toUpperCase();
         const mw2 = majorWords[1].toUpperCase();
         if (mw1 === 'COMPUTER' && mw2.startsWith('ENG')) {
             majorCode = 'CPE';
-        } else if (mw1 === 'INDUSTRIAL') {
+        }
+        else if (mw1 === 'INDUSTRIAL') {
             majorCode = 'INDT';
-        } else if (mw1 === 'ELECTRICAL') {
+        }
+        else if (mw1 === 'ELECTRICAL') {
             majorCode = 'EE';
-        } else if (mw1 === 'ELECTRONICS') {
+        }
+        else if (mw1 === 'ELECTRONICS') {
             majorCode = 'ECE';
-        } else if (mw1 === 'MECHANICAL') {
+        }
+        else if (mw1 === 'MECHANICAL') {
             majorCode = 'ME';
-        } else if (mw1 === 'CHEMICAL') {
+        }
+        else if (mw1 === 'CHEMICAL') {
             majorCode = 'CHE';
-        } else {
+        }
+        else {
             majorCode = (mw1[0] + mw2[0]).toUpperCase();
         }
-    } else {
-        majorCode = majorWords.map((w) => w[0].toUpperCase()).join('');
+    }
+    else {
+        majorCode = majorWords.map((w) => w[0].toUpperCase())
+            .join('');
     }
 
-    const fullCode = degree ? `${degree}${majorCode}` : majorCode;
+    const fullCode = degree
+        ? `${degree}${majorCode}`
+        : majorCode;
     return ensureUniqueCode(fullCode, existingCodes);
 }
 
@@ -191,7 +236,8 @@ export function generateProgramCode(name: string, existingCodes?: string[]): str
  */
 export function generateCourseTypeCode(label: string, existingCodes?: string[]): string {
     if (!label || !label.trim()) return '';
-    const trimmed = label.trim().toUpperCase();
+    const trimmed = label.trim()
+        .toUpperCase();
     if (trimmed.startsWith('LECTURE')) return ensureUniqueCode('LEC', existingCodes);
     if (trimmed.startsWith('LABORATORY')) return ensureUniqueCode('LAB', existingCodes);
     if (trimmed.startsWith('TUTORIAL')) return ensureUniqueCode('TUT', existingCodes);
@@ -208,7 +254,8 @@ export function generateCourseTypeCode(label: string, existingCodes?: string[]):
  */
 export function generateProgramLevelCode(label: string, existingCodes?: string[]): string {
     if (!label || !label.trim()) return '';
-    const trimmed = label.trim().toUpperCase();
+    const trimmed = label.trim()
+        .toUpperCase();
     if (trimmed.startsWith('UNDERGRADUATE')) return ensureUniqueCode('UG', existingCodes);
     if (trimmed.startsWith('POSTGRADUATE')) return ensureUniqueCode('PG', existingCodes);
     if (trimmed.startsWith('GRADUATE')) return ensureUniqueCode('GRAD', existingCodes);
@@ -226,7 +273,8 @@ export function generateProgramLevelCode(label: string, existingCodes?: string[]
  */
 export function generateTermTypeCode(label: string, existingCodes?: string[]): string {
     if (!label || !label.trim()) return '';
-    const trimmed = label.trim().toUpperCase();
+    const trimmed = label.trim()
+        .toUpperCase();
     const semMatch = trimmed.match(/(?:1ST|FIRST|1)\s*SEM/i);
     if (semMatch) return ensureUniqueCode('SEM-1', existingCodes);
 
@@ -258,7 +306,10 @@ export function generateTermTypeCode(label: string, existingCodes?: string[]): s
  */
 export function generateRoleCode(label: string, existingCodes?: string[]): string {
     if (!label || !label.trim()) return '';
-    const clean = label.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    const clean = label.trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
     const candidate = clean || 'ROLE';
     return ensureUniqueCode(candidate, existingCodes);
 }
@@ -269,7 +320,8 @@ export function generateRoleCode(label: string, existingCodes?: string[]): strin
  */
 export function generateSpecialGradeCode(label: string, existingCodes?: string[]): string {
     if (!label || !label.trim()) return '';
-    const trimmed = label.trim().toUpperCase();
+    const trimmed = label.trim()
+        .toUpperCase();
     if (trimmed.startsWith('INCOMPLETE')) return ensureUniqueCode('INC', existingCodes);
     if (trimmed.startsWith('DROPPED') || trimmed.startsWith('DROP')) return ensureUniqueCode('DRP', existingCodes);
     if (trimmed.startsWith('WITHDRAW') || trimmed.startsWith('WITHDRAWAL')) return ensureUniqueCode('W', existingCodes);

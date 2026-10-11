@@ -44,8 +44,7 @@ export function generateTitleAcronym(title: string): string {
 
     // Multiple words: extract initials and any trailing number
     let acronym = '';
-    for (let i = 0; i < wordsToUse.length; i++) {
-        const w = wordsToUse[i];
+    for (const w of wordsToUse) {
         if (/^\d+$/.test(w)) {
             acronym += w;
         }
