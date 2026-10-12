@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
-import DeletePromptModal from '@components/modal/DeletePromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import Step1FacultyLoadOverview from '@pages/dean/faculty-load/Step1FacultyLoadOverview';
 import Step2FacultyLoadSectionList from '@pages/dean/faculty-load/Step2FacultyLoadSectionList';
@@ -91,9 +90,6 @@ export default function FacultyLoadWizardModal({
     const [isAssignPickerOpen, setIsAssignPickerOpen] = useState(false);
     const [availableOfferings, setAvailableOfferings] = useState<{ id: string; label: string }[]>([]);
     const [selectedAssignSectionId, setSelectedAssignSectionId] = useState('');
-
-    // Delete section confirmation popup state
-    const [confirmDeleteTarget, setConfirmDeleteTarget] = useState<FacultyLoadSection | null>(null);
 
     // Fetch faculty options for dropdown
     useEffect(() => {
@@ -204,18 +200,11 @@ export default function FacultyLoadWizardModal({
             }));
     }
 
-    // Handler: request delete section (opens confirmation popup)
-    function handleRequestDeleteSection(section: FacultyLoadSection) {
-        setConfirmDeleteTarget(section);
-    }
-
-    // Handler: confirm remove section
-    function handleConfirmRemoveSection() {
-        if (!confirmDeleteTarget) return;
+    // Handler: remove section directly from staged load
+    function handleRemoveSection(section: FacultyLoadSection) {
         setStagedSections((prev) =>
-            prev.filter((sec) => sec.section_id !== confirmDeleteTarget.section_id));
-        setConfirmDeleteTarget(null);
-        showToast(`Section ${confirmDeleteTarget.section_code} removed from load (unsaved).`, 'info');
+            prev.filter((sec) => sec.section_id !== section.section_id));
+        showToast(`Section ${section.section_code} removed from load (unsaved).`, 'info');
     }
 
     // Handler: open assign section picker
@@ -404,11 +393,11 @@ export default function FacultyLoadWizardModal({
                         <div className="flex items-center gap-2 shrink-0">
                             {/* Switch to Edit Mode in header */}
                             <CommonButton
+                                className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                 color="primary"
                                 size="small"
                                 startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                 variant="outlined"
-                                className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                 onClick={handleRedirectToSectionManagement}
                             >
                                 Edit Load
@@ -464,7 +453,7 @@ export default function FacultyLoadWizardModal({
                                             onFacultyChange={handleFacultyChange}
                                             onNavigateToSectionManagement={onClose}
                                             onOpenAssignModal={handleOpenAssignModal}
-                                            onRequestDeleteSection={handleRequestDeleteSection}
+                                            onRequestDeleteSection={handleRemoveSection}
                                         />
                                     )}
 
@@ -562,27 +551,6 @@ export default function FacultyLoadWizardModal({
                     </div>
                 </div>
             </CommonModal>
-
-            {/* Popup confirmation modal for deleting/removing a section */}
-            <DeletePromptModal
-                actionIconProps={{
-                    iconContainerClassName: 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                }}
-                formButtonsProps={{
-                    confirmProps: {
-                        children: 'Yes, Remove Section'
-                    }
-                }}
-                mainContent={{
-                    title: 'Remove Section Assignment'
-                }}
-                open={confirmDeleteTarget !== null}
-                subContent={{
-                    title: `Are you sure you want to remove section "${confirmDeleteTarget?.section_code} - ${confirmDeleteTarget?.course_code}" from ${detail?.faculty.faculty_name}'s teaching load? This change will be applied upon saving.`
-                }}
-                onClose={() => setConfirmDeleteTarget(null)}
-                onSubmit={handleConfirmRemoveSection}
-            />
 
             {/* Simple Picker Modal for Assigning an Available Section to this Faculty */}
             {isAssignPickerOpen && (

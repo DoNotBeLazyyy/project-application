@@ -135,9 +135,7 @@ export default function CommonInfoTooltip({
     }
 
     function handleMouseEnter() {
-        if (hasHover) {
-            setIsHovered(true);
-        }
+        setIsHovered(true);
     }
 
     function handleMouseLeave() {

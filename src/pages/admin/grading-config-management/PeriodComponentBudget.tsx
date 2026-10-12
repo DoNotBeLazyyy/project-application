@@ -9,9 +9,12 @@ import {
 } from '@utils/period-allocation.util';
 
 export interface PeriodComponentBudgetProps {
+    focusedKey?: string | null;
     period: GradingPeriodDraft;
     onAddComponent: () => void;
+    onApplyStandardPreset: () => void;
     onBalance: () => void;
+    onClearFocus?: () => void;
     onComponentChange: (componentKey: string, patch: { name?: string; weight?: number }) => void;
     onRemoveComponent: (componentKey: string) => void;
 }
@@ -29,9 +32,12 @@ export interface PeriodComponentBudgetProps {
  * save.
  */
 export default function PeriodComponentBudget({
+    focusedKey,
     period,
     onAddComponent,
+    onApplyStandardPreset,
     onBalance,
+    onClearFocus,
     onComponentChange,
     onRemoveComponent
 }: PeriodComponentBudgetProps) {
@@ -48,9 +54,9 @@ export default function PeriodComponentBudget({
                         Component budget · must total 100% of {period.name.trim() || 'this period'}
                     </span>
                     <CommonInfoTooltip
+                        className="shrink-0"
                         content={`Component breakdown for ${period.name.trim() || 'this period'}. Weights must total 100%.`}
                         size={13}
-                        className="shrink-0"
                     />
                 </div>
                 <span
@@ -102,6 +108,34 @@ export default function PeriodComponentBudget({
                 )}
             </div>
 
+            {period.components.length === 0 && (
+                <div className="border border-dashed border-(--mui-palette-divider) flex flex-col items-center justify-center p-4 rounded-(--mui-tokens-radius-md) text-center gap-2">
+                    <p className="text-xs text-(--mui-palette-text-secondary)">
+                        No component breakdown declared yet for this period.
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        <CommonButton
+                            color="primary"
+                            size="xsmall"
+                            startIcon={<PlusCircleIcon weight="bold" />}
+                            variant="outlined"
+                            onClick={onAddComponent}
+                        >
+                            Add component
+                        </CommonButton>
+                        <CommonButton
+                            color="inherit"
+                            size="xsmall"
+                            startIcon={<ScalesIcon weight="bold" />}
+                            variant="outlined"
+                            onClick={onApplyStandardPreset}
+                        >
+                            Apply Standard Preset (30/30/40)
+                        </CommonButton>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col gap-2">
                 {period.components.map((component, index) => (
                     <div className="flex gap-2 items-center" key={component.key}>
@@ -112,7 +146,13 @@ export default function PeriodComponentBudget({
                         <CommonInput
                             containerClassName="grow min-w-0"
                             fullWidth
-                            placeholder="Component name"
+                            inputRef={function(el) {
+                                if (focusedKey === component.key && el) {
+                                    el.focus();
+                                    onClearFocus?.();
+                                }
+                            }}
+                            placeholder="e.g., Quizzes, Midterm Exam, Recitation"
                             size="small"
                             value={component.name}
                             onChange={function(event) {
@@ -155,6 +195,15 @@ export default function PeriodComponentBudget({
                     onClick={onAddComponent}
                 >
                     Add component
+                </CommonButton>
+                <CommonButton
+                    color="primary"
+                    size="xsmall"
+                    startIcon={<ScalesIcon weight="bold" />}
+                    variant="text"
+                    onClick={onApplyStandardPreset}
+                >
+                    Apply Standard Preset (30/30/40)
                 </CommonButton>
                 <CommonButton
                     color="primary"

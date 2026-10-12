@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { login, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
@@ -128,7 +129,10 @@ export default function LoginPage() {
                         label="Email"
                         name="email"
                         placeholder="Enter your email"
-                        rules={{ required: 'Email is required' }}
+                        rules={{
+                            required: 'Email is required',
+                            pattern: EMAIL_PATTERN
+                        }}
                         size="small"
                         type="email"
                         variant="outlined"

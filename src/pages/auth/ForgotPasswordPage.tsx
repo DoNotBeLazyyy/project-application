@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { requestPasswordReset } from '@services/auth.service';
 import { ForgotPasswordFormValues } from '@type/auth.type';
 import { formErrors } from '@utils/form.util';
@@ -70,6 +71,7 @@ export default function ForgotPasswordPage() {
                             </p>
 
                             <ValidCommonInput
+                                autoComplete="email"
                                 control={methods.control}
                                 fullWidth
                                 hasHelper
@@ -77,7 +79,10 @@ export default function ForgotPasswordPage() {
                                 label="Email"
                                 name="email"
                                 placeholder="Enter your email"
-                                rules={{ required: 'Email is required' }}
+                                rules={{
+                                    required: 'Email is required',
+                                    pattern: EMAIL_PATTERN
+                                }}
                                 size="small"
                                 type="email"
                                 variant="outlined"

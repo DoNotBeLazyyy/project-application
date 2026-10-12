@@ -88,6 +88,8 @@ export function usePeriodComposer() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
+    const [focusedKey, setFocusedKey] = useState<string | null>(null);
+
     const total = termTotal(periods);
     const status = useMemo(() => describeTermAllocation(periods), [periods]);
     const snapshot = useMemo(() => toComparable(savedPeriods), [savedPeriods]);
@@ -196,7 +198,7 @@ export function usePeriodComposer() {
         setPeriods((previous) => [
             ...previous,
             {
-                components: DEFAULT_COMPONENTS.map((component) => toComponentDraft(component.name, component.weight)),
+                components: [],
                 key,
                 name: '',
                 sequence: previous.length + 1,
@@ -204,6 +206,7 @@ export function usePeriodComposer() {
             }
         ]);
         setExpandedKeys((previous) => [...previous, key]);
+        setFocusedKey(key);
     }
 
     function handleRemovePeriod(key: string) {
@@ -256,6 +259,7 @@ export function usePeriodComposer() {
     }
 
     function handleAddComponent(periodKey: string) {
+        const newCompKey = generateId();
         setPeriods((previous) => previous.map(function(period) {
             if (period.key !== periodKey) {
                 return period;
@@ -265,7 +269,21 @@ export function usePeriodComposer() {
 
             return {
                 ...period,
-                components: [...period.components, toComponentDraft('', remaining)]
+                components: [...period.components, { key: newCompKey, name: '', weight: remaining }]
+            };
+        }));
+        setFocusedKey(newCompKey);
+    }
+
+    function handleApplyStandardPreset(periodKey: string) {
+        setPeriods((previous) => previous.map(function(period) {
+            if (period.key !== periodKey) {
+                return period;
+            }
+
+            return {
+                ...period,
+                components: DEFAULT_COMPONENTS.map((component) => toComponentDraft(component.name, component.weight))
             };
         }));
     }
@@ -342,7 +360,7 @@ export function usePeriodComposer() {
             .filter((id): id is string => Boolean(id) && !liveIds.includes(id as string));
 
         for (const id of removedIds) {
-            const result = await deleteGradingPeriodTemplate(id);
+            const result = await deleteGradingPeriodTemplate(id, { silent: true });
 
             if (result.error) {
                 setIsSaving(false);
@@ -354,8 +372,8 @@ export function usePeriodComposer() {
         for (const [index, period] of periods.entries()) {
             const payload = toPayload(period, index + 1);
             const result = period.id
-                ? await updateGradingPeriodTemplate(period.id, payload)
-                : await createGradingPeriodTemplate(payload);
+                ? await updateGradingPeriodTemplate(period.id, payload, { silent: true })
+                : await createGradingPeriodTemplate(payload, { silent: true });
 
             if (result.error) {
                 setIsSaving(false);
@@ -376,8 +394,10 @@ export function usePeriodComposer() {
         blockers,
         canSave,
         expandedKeys,
+        focusedKey,
         handleAddComponent,
         handleAddPeriod,
+        handleApplyStandardPreset,
         handleBalance,
         handleBalanceComponents,
         handleComponentChange,
@@ -394,6 +414,7 @@ export function usePeriodComposer() {
         isLoading,
         isSaving,
         periods,
+        setFocusedKey,
         status,
         total
     };

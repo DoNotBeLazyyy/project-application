@@ -103,7 +103,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
         if (!overrideEnabled) overrideField.onChange(true);
         const next = JSON.parse(JSON.stringify(activePeriods));
         if (!next[pIndex].components) next[pIndex].components = [];
-        next[pIndex].components.push({ name: 'New Component', weight: 0 });
+        next[pIndex].components.push({ name: '', weight: 0 });
         periodsField.onChange(next);
     }
 
@@ -120,10 +120,10 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
         const next = JSON.parse(JSON.stringify(activePeriods));
         const seq = next.length + 1;
         next.push({
-            name: `Period ${seq}`,
+            name: '',
             sequence: seq,
             weight: 0,
-            components: [{ name: 'Class Standing', weight: 100 }]
+            components: []
         });
         periodsField.onChange(next);
     }
@@ -163,17 +163,19 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
 
                 {/* Row 2: Status Card */}
                 <div className="w-full">
-                    {overrideEnabled ? (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold">
-                            <InfoIcon className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                            <span>Program Override Active — Custom grading schema is defined for this program.</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
-                            <CheckCircleIcon className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                            <span>Inheriting Academic Year Defaults — Program uses standard university grading settings.</span>
-                        </div>
-                    )}
+                    {overrideEnabled
+                        ? (
+                            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold">
+                                <InfoIcon className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                <span>Program Override Active — Custom grading schema is defined for this program.</span>
+                            </div>
+                        )
+                        : (
+                            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
+                                <CheckCircleIcon className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <span>Inheriting Academic Year Defaults — Program uses standard university grading settings.</span>
+                            </div>
+                        )}
                 </div>
 
                 {/* Row 3: Action Buttons (Default & Clear in their own row) */}
@@ -182,41 +184,42 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         className="flex-1"
                         disabled={disabled || !overrideEnabled}
                         size="small"
+                        startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" />}
                         variant="outlined"
                         onClick={handleSetDefault}
-                        startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" />}
                     >
                         Default (Inherit)
                     </CommonButton>
                     <CommonButton
                         className="flex-1"
+                        color="error"
                         disabled={disabled}
                         size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={handleClear}
                         startIcon={<XCircleIcon className="w-4 h-4" />}
+                        variant="outlined"
+                        onClick={handleClear}
                     >
                         Clear (Keep 1 Schema)
                     </CommonButton>
                 </div>
 
                 {/* Row 4: Total Period Weight Banner & Add Period Button (part of form header) */}
-                <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-semibold shrink-0 mt-1 ${
-                    isTotalValid
-                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                        : 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                }`}>
+                <div
+                    className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-semibold shrink-0 mt-1 ${
+                        isTotalValid
+                            ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                            : 'bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                    }`}>
                     <div className="flex items-center gap-2">
                         <InfoIcon className="w-4 h-4" />
                         <span>Grading Periods Total: {totalPeriodWeight}% (Must equal 100%)</span>
                     </div>
                     {overrideEnabled && (
                         <button
-                            type="button"
-                            disabled={disabled}
-                            onClick={handleAddPeriod}
                             className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold cursor-pointer"
+                            disabled={disabled}
+                            type="button"
+                            onClick={handleAddPeriod}
                         >
                             <PlusCircleIcon className="w-4 h-4" /> Add Period
                         </button>
@@ -232,8 +235,8 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
 
                     return (
                         <div
-                            key={period.name + pIdx}
                             className="flex flex-col border border-slate-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-sm"
+                            key={period.name + pIdx}
                         >
                             <div className="p-3 bg-slate-50 dark:bg-zinc-800/60 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
                                 <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
@@ -244,9 +247,6 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                         <CommonInput
                                             disabled={disabled}
                                             size="small"
-                                            type="number"
-                                            value={period.weight}
-                                            onChange={(e) => handleUpdatePeriodWeight(pIdx, Number(e.target.value))}
                                             slotProps={{
                                                 htmlInput: {
                                                     className: 'text-right font-semibold text-xs',
@@ -254,16 +254,19 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                                     max: 100
                                                 }
                                             }}
+                                            type="number"
+                                            value={period.weight}
+                                            onChange={(e) => handleUpdatePeriodWeight(pIdx, Number(e.target.value))}
                                         />
                                         <span className="text-xs text-slate-500 font-medium">%</span>
                                     </div>
                                     {overrideEnabled && activePeriods.length > 1 && (
                                         <button
-                                            type="button"
-                                            disabled={disabled}
-                                            onClick={() => handleRemovePeriod(pIdx)}
                                             className="text-slate-400 hover:text-red-500 p-1"
+                                            disabled={disabled}
                                             title="Remove Period"
+                                            type="button"
+                                            onClick={() => handleRemovePeriod(pIdx)}
                                         >
                                             <TrashIcon className="w-4 h-4" />
                                         </button>
@@ -274,18 +277,23 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                             <div className="p-3 flex flex-col gap-3 flex-1">
                                 <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 border-b border-slate-100 dark:border-zinc-800/60 pb-1.5">
                                     <span>Components</span>
-                                    <span className={isCompValid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+                                    <span
+                                        className={isCompValid
+                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                            : 'text-amber-600 dark:text-amber-400'}>
                                         {compTotal}% / 100%
                                     </span>
                                 </div>
 
                                 <div className="flex flex-col gap-2 flex-1">
                                     {(period.components || []).map((comp, cIdx) => (
-                                        <div key={cIdx} className="flex items-center gap-2 text-xs">
+                                        <div className="flex items-center gap-2 text-xs" key={cIdx}>
                                             <div className={`w-2 h-2 rounded-full ${componentRailColor(cIdx)}`} />
                                             <input
-                                                type="text"
+                                                className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-blue-500 outline-none text-xs text-slate-700 dark:text-slate-200 font-medium"
                                                 disabled={disabled}
+                                                placeholder="e.g., Quizzes, Midterm Exam, Recitation"
+                                                type="text"
                                                 value={comp.name}
                                                 onChange={(e) => {
                                                     if (!overrideEnabled) overrideField.onChange(true);
@@ -293,24 +301,23 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                                     next[pIdx].components[cIdx].name = e.target.value;
                                                     periodsField.onChange(next);
                                                 }}
-                                                className="flex-1 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-blue-500 outline-none text-xs text-slate-700 dark:text-slate-200 font-medium"
                                             />
                                             <div className="flex items-center gap-1 w-32">
                                                 <input
-                                                    type="number"
+                                                    className="w-full text-right bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded px-1.5 py-0.5 text-xs font-semibold"
                                                     disabled={disabled}
+                                                    type="number"
                                                     value={comp.weight}
                                                     onChange={(e) => handleUpdateComponentWeight(pIdx, cIdx, Number(e.target.value))}
-                                                    className="w-full text-right bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded px-1.5 py-0.5 text-xs font-semibold"
                                                 />
                                                 <span className="text-[10px] text-slate-400">%</span>
                                             </div>
                                             {overrideEnabled && (period.components || []).length > 1 && (
                                                 <button
-                                                    type="button"
-                                                    disabled={disabled}
-                                                    onClick={() => handleRemoveComponent(pIdx, cIdx)}
                                                     className="text-slate-400 hover:text-red-500 p-0.5"
+                                                    disabled={disabled}
+                                                    type="button"
+                                                    onClick={() => handleRemoveComponent(pIdx, cIdx)}
                                                 >
                                                     <TrashIcon className="w-3.5 h-3.5" />
                                                 </button>
@@ -321,10 +328,10 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
 
                                 {overrideEnabled && (
                                     <button
-                                        type="button"
-                                        disabled={disabled}
-                                        onClick={() => handleAddComponent(pIdx)}
                                         className="flex items-center justify-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-1 py-1 border border-dashed border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-colors"
+                                        disabled={disabled}
+                                        type="button"
+                                        onClick={() => handleAddComponent(pIdx)}
                                     >
                                         <PlusCircleIcon className="w-3.5 h-3.5" /> Add Component
                                     </button>

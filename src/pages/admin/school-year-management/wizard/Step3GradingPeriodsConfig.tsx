@@ -5,7 +5,6 @@ import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowsCounterClockwiseIcon,
     BroomIcon,
     CheckCircleIcon,
     CopySimpleIcon,
@@ -20,14 +19,14 @@ import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
 import { useState } from 'react';
 import { Control, useWatch } from 'react-hook-form';
-import CopyComponentBreakdownModal from './CopyComponentBreakdownModal';
+import CopyComponentBreakdownModal from '@pages/admin/school-year-management/wizard/CopyComponentBreakdownModal';
 import {
     DEFAULT_GRADING_COMPONENTS,
     DEFAULT_GRADING_PERIODS,
     distributeDatesAcrossPeriods,
     FOUR_PERIOD_PRESET,
     TWO_PERIOD_PRESET
-} from './wizard.constants';
+} from '@pages/admin/school-year-management/wizard/wizard.constants';
 
 interface Step3GradingPeriodsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -42,7 +41,7 @@ export default function Step3GradingPeriodsConfig({
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
     const [deletePeriodTarget, setDeletePeriodTarget] = useState<{ termIndex: number; periodIndex: number; name: string } | null>(null);
-    const [deleteComponentTarget, setDeleteComponentTarget] = useState<{ termIndex: number; periodIndex: number; compIndex: number; name: string } | null>(null);
+    const [focusTarget, setFocusTarget] = useState<{ type: 'period' | 'component'; key: string } | null>(null);
     const [copyModalState, setCopyModalState] = useState<{
         open: boolean;
         termIndex: number;
@@ -61,12 +60,14 @@ export default function Step3GradingPeriodsConfig({
 
         if (applyToAllInTerm) {
             handleApplyBreakdownToAllTermPeriods(termIndex, components);
-        } else {
+        }
+        else {
             handleUpdatePeriod(termIndex, periodIndex, { components });
-            useToastStore.getState().showToast(
-                `Component breakdown copied from "${sourceLabel}".`,
-                'success'
-            );
+            useToastStore.getState()
+                .showToast(
+                    `Component breakdown copied from "${sourceLabel}".`,
+                    'success'
+                );
         }
     }
 
@@ -78,7 +79,9 @@ export default function Step3GradingPeriodsConfig({
             ...period,
             components: components.map((c, i) => ({
                 ...c,
-                id: `comp_all_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
+                id: `comp_all_${Date.now()}_${i}_${Math.random()
+                    .toString(36)
+                    .substring(2, 6)}`
             }))
         }));
 
@@ -89,7 +92,8 @@ export default function Step3GradingPeriodsConfig({
         };
 
         onChangeTerms(updatedTerms);
-        useToastStore.getState().showToast('Component breakdown applied to all grading periods in this term.', 'success');
+        useToastStore.getState()
+            .showToast('Component breakdown applied to all grading periods in this term.', 'success');
     }
 
     // Clear all grading periods in a term down to 1 blank period
@@ -139,7 +143,7 @@ export default function Step3GradingPeriodsConfig({
 
         const newPeriod: WizardGradingPeriodItem = {
             end_date: pEnd,
-            name: `Period ${nextSequence}`,
+            name: '',
             sequence: nextSequence,
             start_date: pStart,
             weight: 0,
@@ -147,7 +151,7 @@ export default function Step3GradingPeriodsConfig({
             major_exam_end_date: '',
             grade_encoding_start_date: '',
             grade_encoding_end_date: '',
-            components: [...DEFAULT_GRADING_COMPONENTS]
+            components: []
         };
 
         const updatedTerms = [...terms];
@@ -157,6 +161,7 @@ export default function Step3GradingPeriodsConfig({
         };
 
         onChangeTerms(updatedTerms);
+        setFocusTarget({ type: 'period', key: `term_${termIndex}_period_${currentPeriods.length}` });
     }
 
     // Remove a period from a term
@@ -261,7 +266,9 @@ export default function Step3GradingPeriodsConfig({
                 ...p,
                 end_date: distributed[idx]?.end_date || targetTerm.end_date || '',
                 start_date: distributed[idx]?.start_date || targetTerm.start_date || '',
-                components: p.components ? [...p.components] : [...DEFAULT_GRADING_COMPONENTS]
+                components: p.components
+                    ? [...p.components]
+                    : [...DEFAULT_GRADING_COMPONENTS]
             }))
         };
 
@@ -276,10 +283,11 @@ export default function Step3GradingPeriodsConfig({
 
         const sourcePeriods = sourceTerm.grading_periods || [];
         if (sourcePeriods.length === 0) {
-            useToastStore.getState().showToast(
-                `Selected source term has no grading periods to copy.`,
-                'warning'
-            );
+            useToastStore.getState()
+                .showToast(
+                    'Selected source term has no grading periods to copy.',
+                    'warning'
+                );
             return;
         }
 
@@ -299,7 +307,9 @@ export default function Step3GradingPeriodsConfig({
             major_exam_end_date: p.major_exam_end_date || '',
             grade_encoding_start_date: p.grade_encoding_start_date || '',
             grade_encoding_end_date: p.grade_encoding_end_date || '',
-            components: p.components ? p.components.map((c) => ({ ...c })) : [...DEFAULT_GRADING_COMPONENTS]
+            components: p.components
+                ? p.components.map((c) => ({ ...c }))
+                : [...DEFAULT_GRADING_COMPONENTS]
         }));
 
         const updatedTerms = [...terms];
@@ -309,10 +319,11 @@ export default function Step3GradingPeriodsConfig({
         };
 
         onChangeTerms(updatedTerms);
-        useToastStore.getState().showToast(
-            `Copied grading periods from ${sourceTerm.term_type_label || `Term #${sourceTermIndex + 1}`}.`,
-            'info'
-        );
+        useToastStore.getState()
+            .showToast(
+                `Copied grading periods from ${sourceTerm.term_type_label || `Term #${sourceTermIndex + 1}`}.`,
+                'info'
+            );
     }
 
     // Add component item to period
@@ -322,13 +333,14 @@ export default function Step3GradingPeriodsConfig({
 
         const currentComponents = targetPeriod.components || [];
         const newComponent: WizardGradingPeriodComponentItem = {
-            name: `Component ${currentComponents.length + 1}`,
+            name: '',
             weight: 0
         };
 
         handleUpdatePeriod(termIndex, periodIndex, {
             components: [...currentComponents, newComponent]
         });
+        setFocusTarget({ type: 'component', key: `comp_${termIndex}_${periodIndex}_${currentComponents.length}` });
     }
 
     // Remove component item from period
@@ -391,8 +403,8 @@ export default function Step3GradingPeriodsConfig({
 
                     return (
                         <div
-                            key={term.id || tIdx}
                             className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm space-y-4"
+                            key={term.id || tIdx}
                         >
                             {/* Term Heading & Weight Meter */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/40 pb-3">
@@ -419,12 +431,16 @@ export default function Step3GradingPeriodsConfig({
                                                 : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                         }`}
                                     >
-                                        {isBalanced ? (
-                                            <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
-                                        ) : (
-                                            <WarningCircleIcon className="w-4 h-4 text-amber-600" />
-                                        )}
-                                        Weight: {totalWeight}% {isBalanced ? '(100%)' : '(Must equal 100%)'}
+                                        {isBalanced
+                                            ? (
+                                                <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                                            )
+                                            : (
+                                                <WarningCircleIcon className="w-4 h-4 text-amber-600" />
+                                            )}
+                                        Weight: {totalWeight}% {isBalanced
+                                            ? '(100%)'
+                                            : '(Must equal 100%)'}
                                     </span>
 
                                     {!disabled && (
@@ -433,9 +449,9 @@ export default function Step3GradingPeriodsConfig({
                                                 color="inherit"
                                                 size="small"
                                                 startIcon={<BroomIcon className="w-3.5 h-3.5" />}
+                                                title="Clear all grading periods for this term"
                                                 variant="outlined"
                                                 onClick={() => handleClearTermPeriods(tIdx)}
-                                                title="Clear all grading periods for this term"
                                             >
                                                 Clear Term
                                             </CommonButton>
@@ -517,32 +533,36 @@ export default function Step3GradingPeriodsConfig({
                             {/* Periods List */}
                             <div className="space-y-4">
                                 {periods.map((period, pIdx) => {
-                                    const prevPeriod = pIdx > 0 ? periods[pIdx - 1] : null;
+                                    const prevPeriod = pIdx > 0
+                                        ? periods[pIdx - 1]
+                                        : null;
 
                                     // Duplicate name check
                                     const isDuplicateName = periods.some(
-                                        (p, idx) => idx !== pIdx && p.name && p.name.trim().toLowerCase() === period.name.trim().toLowerCase()
+                                        (p, idx) => idx !== pIdx && p.name && p.name.trim()
+                                            .toLowerCase() === period.name.trim()
+                                            .toLowerCase()
                                     );
 
                                     // Preceding period conflict
                                     const hasPrecedingConflict = Boolean(
-                                        prevPeriod &&
-                                        period.start_date &&
-                                        prevPeriod.end_date &&
-                                        new Date(period.start_date) < new Date(prevPeriod.end_date)
+                                        prevPeriod
+                                        && period.start_date
+                                        && prevPeriod.end_date
+                                        && new Date(period.start_date) < new Date(prevPeriod.end_date)
                                     );
 
                                     // Date order error
                                     const hasDateOrderError = Boolean(
-                                        period.start_date &&
-                                        period.end_date &&
-                                        new Date(period.end_date) <= new Date(period.start_date)
+                                        period.start_date
+                                        && period.end_date
+                                        && new Date(period.end_date) <= new Date(period.start_date)
                                     );
 
                                     // Outside term bounds error
                                     const isOutsideTerm = Boolean(
-                                        (term.start_date && period.start_date && new Date(period.start_date) < new Date(term.start_date)) ||
-                                        (term.end_date && period.end_date && new Date(period.end_date) > new Date(term.end_date))
+                                        (term.start_date && period.start_date && new Date(period.start_date) < new Date(term.start_date))
+                                        || (term.end_date && period.end_date && new Date(period.end_date) > new Date(term.end_date))
                                     );
 
                                     // Components weight total check
@@ -552,12 +572,12 @@ export default function Step3GradingPeriodsConfig({
 
                                     return (
                                         <div
-                                            key={period.id || `term_${tIdx}_period_${pIdx}`}
                                             className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
                                                 isDuplicateName || hasPrecedingConflict || hasDateOrderError || isOutsideTerm || !isCompBalanced
                                                     ? 'border-amber-300 dark:border-amber-700/70 bg-amber-50/20 dark:bg-amber-950/10'
                                                     : 'border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/40'
                                             }`}
+                                            key={period.id || `term_${tIdx}_period_${pIdx}`}
                                         >
                                             {/* Row 1: Entry number and action buttons */}
                                             <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-700/50 pb-2.5">
@@ -571,9 +591,9 @@ export default function Step3GradingPeriodsConfig({
                                                             color="inherit"
                                                             size="small"
                                                             startIcon={<BroomIcon className="w-3.5 h-3.5" />}
+                                                            title="Clear period fields"
                                                             variant="outlined"
                                                             onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '', major_exam_start_date: '', major_exam_end_date: '', grade_encoding_start_date: '', grade_encoding_end_date: '', components: [] })}
-                                                            title="Clear period fields"
                                                         >
                                                             <span className="hidden sm:inline">Clear</span>
                                                         </CommonButton>
@@ -582,6 +602,7 @@ export default function Step3GradingPeriodsConfig({
                                                                 color="error"
                                                                 size="small"
                                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                                title="Remove period"
                                                                 variant="outlined"
                                                                 onClick={() => {
                                                                     setDeletePeriodTarget({
@@ -590,7 +611,6 @@ export default function Step3GradingPeriodsConfig({
                                                                         name: period.name || `Period #${period.sequence}`
                                                                     });
                                                                 }}
-                                                                title="Remove period"
                                                             >
                                                                 <span className="hidden sm:inline">Remove</span>
                                                             </CommonButton>
@@ -607,7 +627,16 @@ export default function Step3GradingPeriodsConfig({
                                                         disabled={disabled}
                                                         error={isDuplicateName}
                                                         fullWidth
-                                                        helperText={isDuplicateName ? 'Duplicate name in this term' : undefined}
+                                                        helperText={isDuplicateName
+                                                            ? 'Duplicate name in this term'
+                                                            : undefined}
+                                                        inputRef={(el) => {
+                                                            const itemKey = period.id || `term_${tIdx}_period_${pIdx}`;
+                                                            if (focusTarget?.type === 'period' && focusTarget.key === itemKey && el) {
+                                                                el.focus();
+                                                                setFocusTarget(null);
+                                                            }
+                                                        }}
                                                         isRequired
                                                         label="Period Name"
                                                         placeholder="e.g. Prelim, Midterm, Finals"
@@ -641,7 +670,9 @@ export default function Step3GradingPeriodsConfig({
                                                         description="Opening date for coursework and assessment recording in this grading period."
                                                         disabled={disabled}
                                                         error={hasPrecedingConflict}
-                                                        helperText={hasPrecedingConflict ? `Overlaps with #${pIdx} end date` : undefined}
+                                                        helperText={hasPrecedingConflict
+                                                            ? `Overlaps with #${pIdx} end date`
+                                                            : undefined}
                                                         isRequired
                                                         label="Period Start Date"
                                                         size="small"
@@ -655,7 +686,9 @@ export default function Step3GradingPeriodsConfig({
                                                         description="Cut-off date for exams and grade input for this period."
                                                         disabled={disabled}
                                                         error={hasDateOrderError}
-                                                        helperText={hasDateOrderError ? 'Must be after start date' : undefined}
+                                                        helperText={hasDateOrderError
+                                                            ? 'Must be after start date'
+                                                            : undefined}
                                                         isRequired
                                                         label="Period End Date"
                                                         size="small"
@@ -730,9 +763,9 @@ export default function Step3GradingPeriodsConfig({
                                                                 Grading Component Breakdown
                                                             </span>
                                                             <CommonInfoTooltip
+                                                                className="shrink-0"
                                                                 content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
                                                                 size={13}
-                                                                className="shrink-0"
                                                             />
                                                         </div>
 
@@ -744,139 +777,154 @@ export default function Step3GradingPeriodsConfig({
                                                                     : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                                             }`}
                                                         >
-                                                            {isCompBalanced ? (
-                                                                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
-                                                            ) : (
-                                                                <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
-                                                            )}
+                                                            {isCompBalanced
+                                                                ? (
+                                                                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                                                                )
+                                                                : (
+                                                                    <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
+                                                                )}
                                                             <span>{compTotalWeight}/100</span>
                                                         </span>
                                                     </div>
 
                                                     {!disabled && (
-                                                            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
-                                                                <button
-                                                                    type="button"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                    onClick={() => setCopyModalState({
-                                                                        open: true,
-                                                                        termIndex: tIdx,
-                                                                        periodIndex: pIdx,
-                                                                        termName: term.term_type_label || `Term #${tIdx + 1}`,
-                                                                        periodName: period.name || `Period #${pIdx + 1}`
-                                                                    })}
-                                                                    title="Copy component breakdown from another period or standard template"
-                                                                    aria-label="Copy component breakdown from another period or standard template"
-                                                                >
-                                                                    <CopySimpleIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-                                                                    <span className="hidden sm:inline">Copy Breakdown...</span>
-                                                                    <span className="sm:hidden">Copy</span>
-                                                                </button>
-
-                                                                {components.length > 0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                        onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
-                                                                        title="Apply this breakdown to all grading periods in this term"
-                                                                        aria-label="Apply this breakdown to all grading periods in this term"
-                                                                    >
-                                                                        <ShareNetworkIcon className="w-3.5 h-3.5" />
-                                                                        <span className="hidden sm:inline">Apply to All</span>
-                                                                    </button>
-                                                                )}
-
-                                                                <button
-                                                                    type="button"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                    onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
-                                                                    title="Reset to standard 30/30/40 breakdown"
-                                                                    aria-label="Reset to standard 30/30/40 breakdown"
-                                                                >
-                                                                    <ArrowsCounterClockwiseIcon className="w-3.5 h-3.5 sm:hidden" />
-                                                                    <span className="hidden sm:inline">Reset Preset</span>
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
-                                                                    onClick={() => handleAddComponent(tIdx, pIdx)}
-                                                                    title="Add Component"
-                                                                    aria-label="Add Component"
-                                                                >
-                                                                    <PlusIcon className="w-3.5 h-3.5" />
-                                                                    <span className="hidden sm:inline">Add Component</span>
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                {/* Component Items List */}
-                                                {components.length === 0 ? (
-                                                    <div className="p-3 text-center rounded-lg border border-dashed border-slate-200 dark:border-zinc-700/60 bg-white/50 dark:bg-zinc-800/30">
-                                                        <p className="text-xs text-slate-500">No component breakdown declared yet.</p>
-                                                        {!disabled && (
+                                                        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
                                                             <button
+                                                                aria-label="Copy component breakdown from another period or standard template"
+                                                                className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                                                title="Copy component breakdown from another period or standard template"
                                                                 type="button"
-                                                                className="text-xs text-brand-600 dark:text-brand-400 font-semibold underline mt-1"
+                                                                onClick={() => setCopyModalState({
+                                                                    open: true,
+                                                                    termIndex: tIdx,
+                                                                    periodIndex: pIdx,
+                                                                    termName: term.term_type_label || `Term #${tIdx + 1}`,
+                                                                    periodName: period.name || `Period #${pIdx + 1}`
+                                                                })}
+                                                            >
+                                                                <CopySimpleIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                                                                <span className="hidden sm:inline">Copy Breakdown...</span>
+                                                                <span className="sm:hidden">Copy</span>
+                                                            </button>
+
+                                                            {components.length > 0 && (
+                                                                <button
+                                                                    aria-label="Apply this breakdown to all grading periods in this term"
+                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                                                    title="Apply this breakdown to all grading periods in this term"
+                                                                    type="button"
+                                                                    onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
+                                                                >
+                                                                    <ShareNetworkIcon className="w-3.5 h-3.5" />
+                                                                    <span className="hidden sm:inline">Apply to All</span>
+                                                                </button>
+                                                            )}
+
+                                                            <button
+                                                                aria-label="Apply standard 30/30/40 breakdown"
+                                                                className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                                                title="Apply standard 30/30/40 breakdown"
+                                                                type="button"
                                                                 onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
                                                             >
-                                                                Apply standard 30/30/40 breakdown (Quizzes, Class Standing, Major Exam)
+                                                                <ScalesIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                                                                <span className="hidden sm:inline">Apply Preset (30/30/40)</span>
+                                                                <span className="sm:hidden">Preset</span>
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="space-y-2">
-                                                        {components.map((comp, cIdx) => (
-                                                            <div
-                                                                key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
-                                                                className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
+                                                            <button
+                                                                aria-label="Add Component"
+                                                                className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                                                                title="Add Component"
+                                                                type="button"
+                                                                onClick={() => handleAddComponent(tIdx, pIdx)}
                                                             >
-                                                                <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
-                                                                    c{cIdx + 1}
-                                                                </span>
+                                                                <PlusIcon className="w-3.5 h-3.5" />
+                                                                <span className="hidden sm:inline">Add Component</span>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                                 <CommonInput
-                                                                    containerClassName="flex-1"
-                                                                    disabled={disabled}
-                                                                    placeholder="e.g. Quizzes, Projects, Major Exam"
-                                                                    size="small"
-                                                                    value={comp.name}
-                                                                    onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
-                                                                />
-
-                                                                <div className="w-28 shrink-0">
-                                                                    <CommonNumberInput
-                                                                        disabled={disabled}
-                                                                        max={100}
-                                                                        min={0}
-                                                                        size="small"
-                                                                        suffixText="%"
-                                                                        value={comp.weight ?? ''}
-                                                                        onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val ?? 0 })}
-                                                                    />
-                                                                </div>
-
-                                                                {!disabled && (
+                                                {/* Component Items List */}
+                                                {components.length === 0
+                                                    ? (
+                                                        <div className="p-3 text-center rounded-lg border border-dashed border-slate-200 dark:border-zinc-700/60 bg-white/50 dark:bg-zinc-800/30">
+                                                            <p className="text-xs text-slate-500">No component breakdown declared yet.</p>
+                                                            {!disabled && (
+                                                                <div className="flex flex-wrap items-center justify-center gap-3 mt-1.5">
                                                                     <button
+                                                                        className="text-xs text-brand-600 dark:text-brand-400 font-semibold underline cursor-pointer"
                                                                         type="button"
-                                                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                                                                        onClick={() => {
-                                                                            setDeleteComponentTarget({
-                                                                                termIndex: tIdx,
-                                                                                periodIndex: pIdx,
-                                                                                compIndex: cIdx,
-                                                                                name: comp.name || `Component #${cIdx + 1}`
-                                                                            });
-                                                                        }}
-                                                                        title="Remove component"
+                                                                        onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
                                                                     >
-                                                                        <TrashIcon className="w-3.5 h-3.5" />
+                                                                    Apply Standard Preset (30/30/40)
                                                                     </button>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                                    <span className="text-xs text-slate-300 dark:zinc-600">·</span>
+                                                                    <button
+                                                                        className="text-xs text-brand-600 dark:text-brand-400 font-semibold underline cursor-pointer"
+                                                                        type="button"
+                                                                        onClick={() => handleAddComponent(tIdx, pIdx)}
+                                                                    >
+                                                                    + Add Component
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                    : (
+                                                        <div className="space-y-2">
+                                                            {components.map((comp, cIdx) => (
+                                                                <div
+                                                                    className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
+                                                                    key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
+                                                                >
+                                                                    <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                                                    c{cIdx + 1}
+                                                                    </span>
+
+                                                                    <CommonInput
+                                                                        containerClassName="flex-1"
+                                                                        disabled={disabled}
+                                                                        inputRef={(el) => {
+                                                                            const itemKey = comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`;
+                                                                            if (focusTarget?.type === 'component' && focusTarget.key === itemKey && el) {
+                                                                                el.focus();
+                                                                                setFocusTarget(null);
+                                                                            }
+                                                                        }}
+                                                                        placeholder="e.g. Quizzes, Midterm Exam, Recitation"
+                                                                        size="small"
+                                                                        value={comp.name}
+                                                                        onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
+                                                                    />
+
+                                                                    <div className="w-28 shrink-0">
+                                                                        <CommonNumberInput
+                                                                            disabled={disabled}
+                                                                            max={100}
+                                                                            min={0}
+                                                                            size="small"
+                                                                            suffixText="%"
+                                                                            value={comp.weight ?? ''}
+                                                                            onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val ?? 0 })}
+                                                                        />
+                                                                    </div>
+
+                                                                    {!disabled && (
+                                                                        <button
+                                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                                                            title="Remove component"
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveComponent(tIdx, pIdx, cIdx)}
+                                                                        >
+                                                                            <TrashIcon className="w-3.5 h-3.5" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                             </div>
                                         </div>
                                     );
@@ -902,15 +950,6 @@ export default function Step3GradingPeriodsConfig({
 
             {/* Delete Period Prompt Modal */}
             <DeletePromptModal
-                isOpen={Boolean(deletePeriodTarget)}
-                mainContent={{
-                    title: 'Delete Grading Period?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to delete "${deletePeriodTarget?.name}"? All component weights configured inside will be removed.`
-                }}
-                open={Boolean(deletePeriodTarget)}
-                onClose={() => setDeletePeriodTarget(null)}
                 formButtonsProps={{
                     confirmProps: {
                         onClick: () => {
@@ -921,33 +960,15 @@ export default function Step3GradingPeriodsConfig({
                         }
                     }
                 }}
-            />
-
-            {/* Delete Component Prompt Modal */}
-            <DeletePromptModal
-                isOpen={Boolean(deleteComponentTarget)}
+                isOpen={Boolean(deletePeriodTarget)}
                 mainContent={{
-                    title: 'Delete Component Item?'
+                    title: 'Delete Grading Period?'
                 }}
+                open={Boolean(deletePeriodTarget)}
                 subContent={{
-                    title: `Are you sure you want to delete component "${deleteComponentTarget?.name}"?`
+                    title: `Are you sure you want to delete "${deletePeriodTarget?.name}"? All component weights configured inside will be removed.`
                 }}
-                open={Boolean(deleteComponentTarget)}
-                onClose={() => setDeleteComponentTarget(null)}
-                formButtonsProps={{
-                    confirmProps: {
-                        onClick: () => {
-                            if (deleteComponentTarget !== null) {
-                                handleRemoveComponent(
-                                    deleteComponentTarget.termIndex,
-                                    deleteComponentTarget.periodIndex,
-                                    deleteComponentTarget.compIndex
-                                );
-                                setDeleteComponentTarget(null);
-                            }
-                        }
-                    }
-                }}
+                onClose={() => setDeletePeriodTarget(null)}
             />
         </div>
     );

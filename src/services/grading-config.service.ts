@@ -1,4 +1,4 @@
-import { callRpc } from '@services/supabase.wrapper';
+import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
 import {
     GradingPeriodTemplate,
     SpecialGradeConditionGroup,
@@ -29,7 +29,8 @@ export async function getGradingPeriodTemplates(): Promise<ServiceResult<Grading
 }
 
 export async function createGradingPeriodTemplate(
-    period: GradingPeriodTemplate
+    period: GradingPeriodTemplate,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_create_grading_period_template', {
         p_name: period.name,
@@ -39,12 +40,13 @@ export async function createGradingPeriodTemplate(
             name: component.name,
             weight: Number(component.weight)
         }))
-    });
+    }, options);
 }
 
 export async function updateGradingPeriodTemplate(
     id: string,
-    period: GradingPeriodTemplate
+    period: GradingPeriodTemplate,
+    options?: CallRpcOptions
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_grading_period_template', {
         p_id: id,
@@ -55,11 +57,14 @@ export async function updateGradingPeriodTemplate(
             name: component.name,
             weight: Number(component.weight)
         }))
-    });
+    }, options);
 }
 
-export async function deleteGradingPeriodTemplate(id: string): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_delete_grading_period_template', { p_id: id });
+export async function deleteGradingPeriodTemplate(
+    id: string,
+    options?: CallRpcOptions
+): Promise<ServiceResult<null>> {
+    return callRpc<null>('fn_delete_grading_period_template', { p_id: id }, options);
 }
 
 export async function getSpecialGradeConfigs(): Promise<ServiceResult<SpecialGradeConfig[]>> {

@@ -337,13 +337,14 @@ export default function AiAssistant() {
 
     return (
         <aside
+            aria-hidden={!isOpen}
             aria-label="AU-JAS Assistant Panel"
             className={
                 classMerge(
                     'bg-white border-l border-slate-200 flex flex-col h-full overflow-hidden shrink-0 transition-[width,min-width] duration-300 ease-in-out',
                     isOpen
                         ? 'min-w-96 w-96'
-                        : 'border-l-0 min-w-0 w-0'
+                        : 'border-l-0 min-w-0 w-0 invisible pointer-events-none'
                 )
             }
         >

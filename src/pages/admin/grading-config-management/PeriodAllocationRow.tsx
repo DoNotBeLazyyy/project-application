@@ -25,12 +25,15 @@ export const PERIOD_GRID_CLASS = 'gap-3 grid grid-cols-[2rem_minmax(10rem,1fr)_8
 export interface PeriodAllocationRowProps {
     canMoveDown: boolean;
     canMoveUp: boolean;
+    focusedKey?: string | null;
     index: number;
     isExpanded: boolean;
     isOnlyPeriod: boolean;
     period: GradingPeriodDraft;
     onAddComponent: () => void;
+    onApplyStandardPreset: () => void;
     onBalanceComponents: () => void;
+    onClearFocus?: () => void;
     onComponentChange: (componentKey: string, patch: { name?: string; weight?: number }) => void;
     onMove: (direction: number) => void;
     onRemove: () => void;
@@ -52,12 +55,15 @@ export interface PeriodAllocationRowProps {
 export default function PeriodAllocationRow({
     canMoveDown,
     canMoveUp,
+    focusedKey,
     index,
     isExpanded,
     isOnlyPeriod,
     period,
     onAddComponent,
+    onApplyStandardPreset,
     onBalanceComponents,
+    onClearFocus,
     onComponentChange,
     onMove,
     onRemove,
@@ -84,7 +90,13 @@ export default function PeriodAllocationRow({
                 <CommonInput
                     containerClassName="min-w-0 w-full"
                     fullWidth
-                    placeholder="Period name"
+                    inputRef={function(el) {
+                        if (focusedKey === period.key && el) {
+                            el.focus();
+                            onClearFocus?.();
+                        }
+                    }}
+                    placeholder="e.g., Prelim, Midterm, Finals"
                     size="small"
                     value={period.name}
                     onChange={function(event) {
@@ -172,9 +184,12 @@ export default function PeriodAllocationRow({
             {isExpanded && (
                 <div className="min-w-3xl pb-4 pl-11">
                     <PeriodComponentBudget
+                        focusedKey={focusedKey}
                         period={period}
                         onAddComponent={onAddComponent}
+                        onApplyStandardPreset={onApplyStandardPreset}
                         onBalance={onBalanceComponents}
+                        onClearFocus={onClearFocus}
                         onComponentChange={onComponentChange}
                         onRemoveComponent={onRemoveComponent}
                     />

@@ -1,9 +1,7 @@
-import DeletePromptModal from '@components/modal/DeletePromptModal';
 import PeriodForm, { PeriodFormProps } from '@pages/admin/grading-config-management/PeriodForm';
 import PeriodTableForm, { PeriodTableFormProps } from '@pages/admin/grading-config-management/PeriodTableForm';
 import { GradingComponentTemplate } from '@type/grading-config.type';
 import { formErrors } from '@utils/form.util';
-import { useState } from 'react';
 import { FieldValues, useFieldArray, UseFormReturn } from 'react-hook-form';
 
 export interface PeriodFormValues extends FieldValues {
@@ -39,7 +37,6 @@ export default function PeriodModalForm({
     periodTableFormProps,
     onSubmit
 }: PeriodModalFormProps) {
-    const [deleteCompTarget, setDeleteCompTarget] = useState<{ index: number; name: string } | null>(null);
     const { fields, append, remove } = useFieldArray({
         control: methods.control,
         name: 'components'
@@ -74,35 +71,12 @@ export default function PeriodModalForm({
                     append(DEFAULT_COMPONENT);
                 }}
                 onRemoveRow={function(index) {
-                    const idx = typeof index === 'number' ? index : (Array.isArray(index) ? (index[0] ?? 0) : 0);
-                    const compName = methods.getValues(`components.${idx}.name` as const);
-                    setDeleteCompTarget({
-                        index: idx,
-                        name: compName || `Component #${idx + 1}`
-                    });
-                }}
-            />
-
-            {/* Delete Component Prompt Modal */}
-            <DeletePromptModal
-                isOpen={Boolean(deleteCompTarget)}
-                mainContent={{
-                    title: 'Delete Component Item?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to delete component "${deleteCompTarget?.name}"?`
-                }}
-                open={Boolean(deleteCompTarget)}
-                onClose={() => setDeleteCompTarget(null)}
-                formButtonsProps={{
-                    confirmProps: {
-                        onClick: () => {
-                            if (deleteCompTarget !== null) {
-                                remove(deleteCompTarget.index);
-                                setDeleteCompTarget(null);
-                            }
-                        }
-                    }
+                    const idx = typeof index === 'number'
+                        ? index
+                        : (Array.isArray(index)
+                            ? (index[0] ?? 0)
+                            : 0);
+                    remove(idx);
                 }}
             />
         </div>

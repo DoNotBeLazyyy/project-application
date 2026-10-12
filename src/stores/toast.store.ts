@@ -22,6 +22,12 @@ export const useToastStore = create<ToastStore>(function(set) {
             try {
                 const id = generateId();
                 set(function(state) {
+                    const isDuplicate = state.toasts.some(function(t) {
+                        return t.message.trim() === message.trim() && t.variant === variant;
+                    });
+                    if (isDuplicate) {
+                        return state;
+                    }
                     const next = [
                         ...state.toasts.slice(-2),
                         { id, message, variant }

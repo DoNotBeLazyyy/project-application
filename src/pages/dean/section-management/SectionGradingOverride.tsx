@@ -1,7 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
-import ValidCommonSelect from '@components/select/ValidCommonSelect';
-import { useSectionOptions } from '@pages/dean/section-management/useSectionOptions';
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
@@ -13,7 +11,6 @@ import {
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { getGradingPeriodTemplates } from '@services/grading-config.service';
-import { getSectionById } from '@services/section.service';
 import { SectionFormValues, SectionGradingPeriodOverride } from '@type/section.type';
 import { componentRailColor } from '@utils/period-allocation.util';
 import { useEffect } from 'react';
@@ -60,10 +57,8 @@ const DEFAULT_FALLBACK_PERIODS: SectionGradingPeriodOverride[] = [
 
 export default function SectionGradingOverride({
     control,
-    currentSectionId,
     disabled = false
 }: SectionGradingOverrideProps) {
-    const { sectionOptions } = useSectionOptions();
 
     const overrideEnabled = useWatch({ control, name: 'override_grading_schema' });
 
@@ -74,15 +69,6 @@ export default function SectionGradingOverride({
     const {
         field: { value: periodsValue, onChange: onPeriodsChange }
     } = useController({ control, name: 'grading_periods' });
-
-    const availableSectionOptions = sectionOptions.filter(
-        (option) => option.value !== currentSectionId
-    );
-
-    const hasPresets = availableSectionOptions.length > 0;
-    const presetOptions = hasPresets
-        ? availableSectionOptions
-        : [{ label: 'No preset available', value: '' }];
 
     // Initialize default periods whenever empty
     useEffect(function() {
@@ -101,7 +87,8 @@ export default function SectionGradingOverride({
                         }))
                     }));
                     onPeriodsChange(mapped);
-                } else {
+                }
+                else {
                     onPeriodsChange(DEFAULT_FALLBACK_PERIODS);
                 }
             }
@@ -122,15 +109,6 @@ export default function SectionGradingOverride({
         onPeriodsChange([]);
     }
 
-    async function handlePresetChange(selectedId: string) {
-        if (!selectedId) return;
-        enableOverrideIfNeeded();
-        const res = await getSectionById(selectedId);
-        if (res.data?.grading_periods && res.data.grading_periods.length > 0) {
-            onPeriodsChange(res.data.grading_periods);
-        }
-    }
-
     function handleAddComponent(periodIndex: number) {
         enableOverrideIfNeeded();
         const target = periods[periodIndex];
@@ -141,7 +119,7 @@ export default function SectionGradingOverride({
             ...target,
             components: [
                 ...target.components,
-                { name: `Component ${target.components.length + 1}`, weight: 0 }
+                { name: '', weight: 0 }
             ]
         };
         onPeriodsChange(updated);
@@ -193,7 +171,9 @@ export default function SectionGradingOverride({
 
         const balancedComponents = target.components.map((comp, idx) => ({
             ...comp,
-            weight: idx === count - 1 ? equalShare + remainder : equalShare
+            weight: idx === count - 1
+                ? equalShare + remainder
+                : equalShare
         }));
 
         const updated = [...periods];
@@ -213,15 +193,17 @@ export default function SectionGradingOverride({
                     <div>
                         <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
                             Grading Schema Settings
-                            {overrideEnabled ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            {overrideEnabled
+                                ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                     Section Override Active
-                                </span>
-                            ) : (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                    <CheckCircleIcon className="w-3.5 h-3.5" /> Inheriting Program Defaults
-                                </span>
-                            )}
+                                    </span>
+                                )
+                                : (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        <CheckCircleIcon className="w-3.5 h-3.5" /> Inheriting Program Defaults
+                                    </span>
+                                )}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
@@ -246,232 +228,235 @@ export default function SectionGradingOverride({
 
             {/* Schema Configuration */}
             <div className="flex flex-col gap-4 pt-1">
-                {disabled ? (
-                    /* Read-Only Mode: Show Inherited / Section Grading Schema Breakdown */
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-800 dark:text-blue-200">
-                            <InfoIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                            <div>
-                                <span className="font-bold">
-                                    {overrideEnabled
-                                        ? 'Custom Section Grading Schema'
-                                        : 'Inherited Program Grading Schema'}
-                                </span>
-                                <p className="mt-0.5 text-blue-700 dark:text-blue-300">
-                                    {overrideEnabled
-                                        ? 'This section uses a custom section-level grading override.'
-                                        : 'Below are the active inherited grading period components and weight settings.'}
-                                </p>
+                {disabled
+                    ? (
+                        /* Read-Only Mode: Show Inherited / Section Grading Schema Breakdown */
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-800 dark:text-blue-200">
+                                <InfoIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                <div>
+                                    <span className="font-bold">
+                                        {overrideEnabled
+                                            ? 'Custom Section Grading Schema'
+                                            : 'Inherited Program Grading Schema'}
+                                    </span>
+                                    <p className="mt-0.5 text-blue-700 dark:text-blue-300">
+                                        {overrideEnabled
+                                            ? 'This section uses a custom section-level grading override.'
+                                            : 'Below are the active inherited grading period components and weight settings.'}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex flex-col gap-3">
-                            {periods.map((period, pIdx) => {
-                                const totalCompWeight = (period.components || []).reduce(
-                                    (sum, c) => sum + (Number(c.weight) || 0),
-                                    0
-                                );
-                                return (
-                                    <div
-                                        className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
-                                        key={period.id || pIdx}
-                                    >
-                                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700 pb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-6 h-6 rounded-md bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
+                            <div className="flex flex-col gap-3">
+                                {periods.map((period, pIdx) => {
+                                    const totalCompWeight = (period.components || []).reduce(
+                                        (sum, c) => sum + (Number(c.weight) || 0),
+                                        0
+                                    );
+                                    return (
+                                        <div
+                                            className="p-4 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
+                                            key={period.id || pIdx}
+                                        >
+                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700 pb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-6 h-6 rounded-md bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
                                                     #{period.sequence}
-                                                </span>
-                                                <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                                    {period.name} Period
+                                                    </span>
+                                                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                                                        {period.name} Period
+                                                    </span>
+                                                </div>
+                                                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                Total Weight: {totalCompWeight}%
                                                 </span>
                                             </div>
-                                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                                Total Weight: {totalCompWeight}%
-                                            </span>
-                                        </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                                            {period.components.map((comp, cIdx) => (
-                                                <div
-                                                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-700/60"
-                                                    key={cIdx}
-                                                >
-                                                    <div className="flex items-center gap-2 min-w-0">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                                                {period.components.map((comp, cIdx) => (
+                                                    <div
+                                                        className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-700/60"
+                                                        key={cIdx}
+                                                    >
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <span
+                                                                className="rounded-sm shrink-0 size-2.5"
+                                                                style={{ background: componentRailColor(cIdx) }}
+                                                            />
+                                                            <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
+                                                                {comp.name}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-brand-600 dark:text-brand-400 shrink-0 ml-2">
+                                                            {comp.weight}%
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )
+                    : (
+                    /* Edit Mode: Component Weights */
+                        <div className="flex flex-col gap-4">
+
+                            {/* Component Weight Configuration Header */}
+                            <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
+                                <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
+                                <span>
+                                Configure grading components per grading period. Each period&apos;s component weights must strictly total <strong>100%</strong>.
+                                </span>
+                            </div>
+
+                            {/* Period Breakdown Cards */}
+                            <div className="flex flex-col gap-4">
+                                {periods.map((period, pIdx) => {
+                                    const totalCompWeight = (period.components || []).reduce(
+                                        (sum, c) => sum + (Number(c.weight) || 0),
+                                        0
+                                    );
+                                    const isBalanced = totalCompWeight === 100;
+                                    const shortfall = 100 - totalCompWeight;
+
+                                    return (
+                                        <div
+                                            className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
+                                            key={period.id || pIdx}
+                                        >
+                                            {/* Period Title & Badge */}
+                                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-zinc-700 pb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-5 h-5 rounded-md bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
+                                                    #{period.sequence}
+                                                    </span>
+                                                    <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                                                        {period.name} Period
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                                            isBalanced
+                                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                                        }`}
+                                                    >
+                                                        {isBalanced
+                                                            ? (
+                                                                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                                                            )
+                                                            : (
+                                                                <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
+                                                            )}
+                                                        {isBalanced
+                                                            ? '100% Balanced'
+                                                            : shortfall > 0
+                                                                ? `${shortfall}% unassigned`
+                                                                : `${Math.abs(shortfall)}% over`}
+                                                    </span>
+
+                                                    {!disabled && (
+                                                        <CommonButton
+                                                            color="primary"
+                                                            disabled={isBalanced || period.components.length === 0}
+                                                            size="xsmall"
+                                                            startIcon={<ScalesIcon weight="bold" />}
+                                                            variant="text"
+                                                            onClick={() => handleBalancePeriod(pIdx)}
+                                                        >
+                                                        Distribute
+                                                        </CommonButton>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Component items */}
+                                            <div className="flex flex-col gap-2">
+                                                {period.components.map((comp, cIdx) => (
+                                                    <div
+                                                        className="flex items-center gap-2"
+                                                        key={cIdx}
+                                                    >
                                                         <span
                                                             className="rounded-sm shrink-0 size-2.5"
                                                             style={{ background: componentRailColor(cIdx) }}
                                                         />
-                                                        <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
-                                                            {comp.name}
-                                                        </span>
+                                                        <div className="flex-1 min-w-0">
+                                                            <CommonInput
+                                                                containerClassName="w-full"
+                                                                disabled={disabled}
+                                                                fullWidth
+                                                                placeholder="e.g., Quizzes, Midterm Exam, Recitation"
+                                                                size="small"
+                                                                value={comp.name}
+                                                                onChange={(e) =>
+                                                                    handleUpdateComponent(pIdx, cIdx, {
+                                                                        name: e.target.value
+                                                                    })
+                                                                }
+                                                            />
+                                                        </div>
+
+                                                        <div className="relative w-24 shrink-0">
+                                                            <CommonInput
+                                                                containerClassName="w-full"
+                                                                disabled={disabled}
+                                                                placeholder="Weight"
+                                                                size="small"
+                                                                slotProps={{ htmlInput: { min: 0, max: 100 } }}
+                                                                type="number"
+                                                                value={String(comp.weight ?? '')}
+                                                                onChange={(e) =>
+                                                                    handleUpdateComponent(pIdx, cIdx, {
+                                                                        weight: Number(e.target.value) || 0
+                                                                    })
+                                                                }
+                                                            />
+                                                            <span className="absolute right-2 top-2 text-xs text-slate-400 font-bold pointer-events-none">
+                                                            %
+                                                            </span>
+                                                        </div>
+
+                                                        {!disabled && period.components.length > 1 && (
+                                                            <CommonButton
+                                                                aria-label="Remove component"
+                                                                color="error"
+                                                                size="xsmall"
+                                                                startIcon={<TrashIcon weight="bold" />}
+                                                                variant="text"
+                                                                onClick={() => handleRemoveComponent(pIdx, cIdx)}
+                                                            />
+                                                        )}
                                                     </div>
-                                                    <span className="text-xs font-bold text-brand-600 dark:text-brand-400 shrink-0 ml-2">
-                                                        {comp.weight}%
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : (
-                    /* Edit Mode: Component Weights */
-                    <div className="flex flex-col gap-4">
-
-                        {/* Component Weight Configuration Header */}
-                        <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
-                            <InfoIcon className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-                            <span>
-                                Configure grading components per grading period. Each period's component weights must strictly total <strong>100%</strong>.
-                            </span>
-                        </div>
-
-                        {/* Period Breakdown Cards */}
-                        <div className="flex flex-col gap-4">
-                            {periods.map((period, pIdx) => {
-                                const totalCompWeight = (period.components || []).reduce(
-                                    (sum, c) => sum + (Number(c.weight) || 0),
-                                    0
-                                );
-                                const isBalanced = totalCompWeight === 100;
-                                const shortfall = 100 - totalCompWeight;
-
-                                return (
-                                    <div
-                                        className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
-                                        key={period.id || pIdx}
-                                    >
-                                        {/* Period Title & Badge */}
-                                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-zinc-700 pb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-5 h-5 rounded-md bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
-                                                    #{period.sequence}
-                                                </span>
-                                                <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                                                    {period.name} Period
-                                                </span>
+                                                ))}
                                             </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                                        isBalanced
-                                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                                                            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                                                    }`}
-                                                >
-                                                    {isBalanced ? (
-                                                        <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
-                                                    ) : (
-                                                        <WarningCircleIcon className="w-3.5 h-3.5 text-amber-600" />
-                                                    )}
-                                                    {isBalanced
-                                                        ? '100% Balanced'
-                                                        : shortfall > 0
-                                                            ? `${shortfall}% unassigned`
-                                                            : `${Math.abs(shortfall)}% over`}
-                                                </span>
-
-                                                {!disabled && (
+                                            {/* Add Component Button */}
+                                            {!disabled && (
+                                                <div className="pt-1">
                                                     <CommonButton
                                                         color="primary"
-                                                        disabled={isBalanced || period.components.length === 0}
                                                         size="xsmall"
-                                                        startIcon={<ScalesIcon weight="bold" />}
+                                                        startIcon={<PlusCircleIcon weight="bold" />}
                                                         variant="text"
-                                                        onClick={() => handleBalancePeriod(pIdx)}
+                                                        onClick={() => handleAddComponent(pIdx)}
                                                     >
-                                                        Distribute
-                                                    </CommonButton>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Component items */}
-                                        <div className="flex flex-col gap-2">
-                                            {period.components.map((comp, cIdx) => (
-                                                <div
-                                                    className="flex items-center gap-2"
-                                                    key={cIdx}
-                                                >
-                                                    <span
-                                                        className="rounded-sm shrink-0 size-2.5"
-                                                        style={{ background: componentRailColor(cIdx) }}
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <CommonInput
-                                                            containerClassName="w-full"
-                                                            disabled={disabled}
-                                                            fullWidth
-                                                            placeholder="Component name (e.g. Quizzes)"
-                                                            size="small"
-                                                            value={comp.name}
-                                                            onChange={(e) =>
-                                                                handleUpdateComponent(pIdx, cIdx, {
-                                                                    name: e.target.value
-                                                                })
-                                                            }
-                                                        />
-                                                    </div>
-
-                                                    <div className="relative w-24 shrink-0">
-                                                        <CommonInput
-                                                            containerClassName="w-full"
-                                                            disabled={disabled}
-                                                            placeholder="Weight"
-                                                            size="small"
-                                                            slotProps={{ htmlInput: { min: 0, max: 100 } }}
-                                                            type="number"
-                                                            value={String(comp.weight ?? '')}
-                                                            onChange={(e) =>
-                                                                handleUpdateComponent(pIdx, cIdx, {
-                                                                    weight: Number(e.target.value) || 0
-                                                                })
-                                                            }
-                                                        />
-                                                        <span className="absolute right-2 top-2 text-xs text-slate-400 font-bold pointer-events-none">
-                                                            %
-                                                        </span>
-                                                    </div>
-
-                                                    {!disabled && period.components.length > 1 && (
-                                                        <CommonButton
-                                                            aria-label="Remove component"
-                                                            color="error"
-                                                            size="xsmall"
-                                                            startIcon={<TrashIcon weight="bold" />}
-                                                            variant="text"
-                                                            onClick={() => handleRemoveComponent(pIdx, cIdx)}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Add Component Button */}
-                                        {!disabled && (
-                                            <div className="pt-1">
-                                                <CommonButton
-                                                    color="primary"
-                                                    size="xsmall"
-                                                    startIcon={<PlusCircleIcon weight="bold" />}
-                                                    variant="text"
-                                                    onClick={() => handleAddComponent(pIdx)}
-                                                >
                                                     Add component
-                                                </CommonButton>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                                    </CommonButton>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
             </div>
         </div>
     );
 }
-

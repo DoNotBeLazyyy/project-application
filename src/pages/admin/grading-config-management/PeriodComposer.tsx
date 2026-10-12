@@ -59,8 +59,10 @@ export default function PeriodComposer() {
         blockers,
         canSave,
         expandedKeys,
+        focusedKey,
         handleAddComponent,
         handleAddPeriod,
+        handleApplyStandardPreset,
         handleBalance,
         handleBalanceComponents,
         handleComponentChange,
@@ -77,6 +79,7 @@ export default function PeriodComposer() {
         isLoading,
         isSaving,
         periods,
+        setFocusedKey,
         status,
         total
     } = usePeriodComposer();
@@ -208,6 +211,7 @@ export default function PeriodComposer() {
                                 <PeriodAllocationRow
                                     canMoveDown={index < periods.length - 1}
                                     canMoveUp={index > 0}
+                                    focusedKey={focusedKey}
                                     index={index}
                                     isExpanded={expandedKeys.includes(period.key)}
                                     isOnlyPeriod={periods.length === 1}
@@ -216,8 +220,14 @@ export default function PeriodComposer() {
                                     onAddComponent={function() {
                                         handleAddComponent(period.key);
                                     }}
+                                    onApplyStandardPreset={function() {
+                                        handleApplyStandardPreset(period.key);
+                                    }}
                                     onBalanceComponents={function() {
                                         handleBalanceComponents(period.key);
+                                    }}
+                                    onClearFocus={function() {
+                                        setFocusedKey(null);
                                     }}
                                     onComponentChange={function(componentKey, patch) {
                                         handleComponentChange(period.key, componentKey, patch);
