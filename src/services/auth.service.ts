@@ -20,7 +20,10 @@ export const INACTIVE_ACCOUNT_MESSAGE = 'Your account is currently inactive. Ple
 export async function login(email: string, password: string): Promise<ServiceResult<Session>> {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-        return { data: null, error: parseServiceError(error) };
+        const parsed = parseServiceError(error);
+        useToastStore.getState()
+            .showToast(parsed.message, 'error');
+        return { data: null, error: parsed };
     }
 
     recordActivity();

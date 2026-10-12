@@ -4,6 +4,7 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { login, logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
+import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
 import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
@@ -42,6 +43,7 @@ export default function LoginPage() {
         const initialErr = locationState?.authError || urlErr?.userMessage;
         if (initialErr) {
             setLoginError(initialErr);
+            useToastStore.getState().showToast(initialErr, 'error');
             clearAuthUrlError();
         }
     }, [locationState?.authError]);
@@ -67,6 +69,7 @@ export default function LoginPage() {
         const result = await login(values.email, values.password);
         if (result.error) {
             setLoginError(result.error.message);
+            useToastStore.getState().showToast(result.error.message, 'error');
 
             return;
         }
