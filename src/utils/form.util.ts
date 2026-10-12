@@ -62,12 +62,14 @@ export function getFieldErrorMessage(errors: FieldErrors, name: string): string 
             return undefined;
         }, errors);
 
-    if (resolved && typeof resolved === 'object' && 'message' in resolved) {
-        const { message } = resolved as { message?: unknown };
-
-        return typeof message === 'string'
-            ? message
-            : undefined;
+    if (resolved && typeof resolved === 'object') {
+        const errObj = resolved as { message?: unknown; type?: unknown };
+        if (typeof errObj.message === 'string' && errObj.message.trim().length > 0) {
+            return errObj.message;
+        }
+        if (errObj.type || 'message' in errObj) {
+            return `${formatFieldLabel(name)} is required.`;
+        }
     }
 
     return undefined;
@@ -78,6 +80,7 @@ export const FORM_ERROR_EVENT = 'app:form-error';
 export interface FormErrorEventDetail {
     count: number;
     message: string;
+    firstErrorField?: string;
 }
 
 function scrollFieldIntoView(name: string): void {
@@ -112,7 +115,8 @@ export function formErrors<T extends FieldValues>(
         scrollFieldIntoView(firstError.key);
         announceFormError({
             count: error.count,
-            message: firstError.message ?? 'Please complete the required fields before saving.'
+            message: firstError.message ?? 'Please complete the required fields before saving.',
+            firstErrorField: firstError.key
         });
     }
 }
@@ -145,10 +149,15 @@ export function checkForMessage<T extends FieldValues>(
                         : key;
                     const value = err[key];
 
-                    if (value && typeof value === 'object' && 'message' in value) {
+                    if (value && typeof value === 'object' && ('message' in value || 'type' in value)) {
+                        const rawMessage = typeof (value as { message?: unknown }).message === 'string'
+                            && (value as { message: string }).message.trim().length > 0
+                            ? (value as { message: string }).message
+                            : `${formatFieldLabel(newPath)} is required.`;
+
                         const entry: ErrorMessageProps<T> = {
                             key: newPath as Path<T>,
-                            message: value.message as string
+                            message: rawMessage
                         };
 
                         count++;

@@ -1,5 +1,5 @@
 import CommonMultiSelect, { CommonMultiSelectProps } from '@components/select/CommonMultiSelect';
-import { checkForMessage } from '@utils/form.util';
+import { checkForMessage, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonMultiSelectProps<T extends FieldValues = FieldValues> =
@@ -24,6 +24,11 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
+    const resolvedErrorMessage = fieldState.error
+        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+            ? fieldState.error.message
+            : `${formatFieldLabel(name)} is required.`)
+        : undefined;
 
     return (
         <CommonMultiSelect
@@ -33,7 +38,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
-                    ? fieldState.error?.message ?? helperTextProp
+                    ? (resolvedErrorMessage ?? helperTextProp)
                     : undefined
             }
             isFirstError={props.isFirstError ?? isFirstError}

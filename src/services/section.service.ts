@@ -112,6 +112,31 @@ export async function listSections(
     });
 }
 
+
+export interface SectionOfferingRecord {
+    id: string;
+    term_id: string;
+    course_id: string;
+    faculty_id: string | null;
+}
+
+export async function getExistingSectionOfferings(): Promise<ServiceResult<SectionOfferingRecord[]>> {
+    const listRes = await listSections(1, 1000, '', [], null);
+    if (listRes.data?.content) {
+        return {
+            data: listRes.data.content.map((s) => ({
+                id: s.id,
+                term_id: s.term_id,
+                course_id: s.course_id,
+                faculty_id: s.faculty_id
+            })),
+            error: null
+        };
+    }
+
+    return { data: [], error: listRes.error };
+}
+
 export async function getSectionById(
     sectionId: string
 ): Promise<ServiceResult<SectionFormValues>> {

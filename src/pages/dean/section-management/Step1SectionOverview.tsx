@@ -3,7 +3,9 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
 import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
-import { getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord } from '@services/section.service';
+import {
+    FacultyOption, getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord, TermOption
+} from '@services/section.service';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
 import { useEffect, useMemo, useState } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -50,11 +52,11 @@ export default function Step1SectionOverview({
 
             if (termsResult.data) {
                 const availableTerms = isCreate
-                    ? termsResult.data.filter((term) => term.is_active_academic_year !== false)
+                    ? termsResult.data.filter((term: TermOption) => term.is_active_academic_year !== false)
                     : termsResult.data;
 
                 setTermOptions(
-                    availableTerms.map((term) => ({
+                    availableTerms.map((term: TermOption) => ({
                         label: term.label,
                         value: term.id
                     }))
@@ -63,7 +65,7 @@ export default function Step1SectionOverview({
 
             if (facultyResult.data) {
                 setFacultyOptions(
-                    facultyResult.data.map((faculty) => ({
+                    facultyResult.data.map((faculty: FacultyOption) => ({
                         label: faculty.full_name,
                         value: faculty.id
                     }))

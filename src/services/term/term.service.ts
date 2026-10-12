@@ -76,3 +76,25 @@ export async function deleteTerm(termId: string): Promise<ServiceResult<null>> {
 export async function getActiveTerm(): Promise<ServiceResult<ActiveTerm>> {
     return callRpc<ActiveTerm>('fn_get_active_term');
 }
+
+export interface ExistingTermRecord {
+    id: string;
+    school_year_id: string;
+    term_type_id: string;
+}
+
+export async function getExistingTerms(): Promise<ServiceResult<ExistingTermRecord[]>> {
+    const listRes = await listTerms(1, 1000, '', [], null);
+    if (listRes.data?.content) {
+        return {
+            data: listRes.data.content.map((t) => ({
+                id: t.id,
+                school_year_id: t.school_year_id,
+                term_type_id: t.term_type_id
+            })),
+            error: null
+        };
+    }
+
+    return { data: [], error: listRes.error };
+}

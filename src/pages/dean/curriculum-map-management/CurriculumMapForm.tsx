@@ -7,15 +7,18 @@ import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions
 import { getAcademicYearCalendarDetails } from '@services/school-year.service';
 import { listTerms } from '@services/term/term.service';
 import { ComponentPropsForm } from '@type/common.type';
-import { CurriculumMapFormValues } from '@type/curriculum-map.type';
+import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
 import { useEffect, useMemo, useState } from 'react';
-import { Control, useWatch } from 'react-hook-form';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface CurriculumMapFormProps extends ComponentPropsForm {
     control: Control<CurriculumMapFormValues>;
     disabled?: boolean;
     selectedSchoolYearId?: string;
     departmentId?: string;
+    existingEntries?: CurriculumMapEntry[];
+    currentEntryId?: string | null;
+    setValue?: UseFormSetValue<CurriculumMapFormValues>;
 }
 
 export default function CurriculumMapForm({
@@ -23,6 +26,9 @@ export default function CurriculumMapForm({
     disabled,
     selectedSchoolYearId,
     departmentId,
+    existingEntries,
+    currentEntryId,
+    setValue,
     ...formProps
 }: CurriculumMapFormProps) {
     const { termTypeOptions: allTermTypeOptions } = useTermTypeOptions();
@@ -103,11 +109,44 @@ export default function CurriculumMapForm({
         return courseOptions;
     }, [courseOptions, selectedCourseId, selectedCourse]);
 
-    const courseHelperText = !departmentId
+    const activeEntries = useMemo(() => {
+        if (!existingEntries) return [];
+        return existingEntries.filter((e) => !currentEntryId || e.id !== currentEntryId);
+    }, [existingEntries, currentEntryId]);
+
+    const forbiddenCourseIds = useMemo(() => {
+        const forbidden = new Set<string>();
+        for (const entry of activeEntries) {
+            if (entry.course_id) {
+                forbidden.add(entry.course_id);
+            }
+        }
+        return forbidden;
+    }, [activeEntries]);
+
+    const filteredCourseOptions = useMemo(() => {
+        if (forbiddenCourseIds.size === 0) return displayedCourseOptions;
+        return displayedCourseOptions.filter((opt) => !forbiddenCourseIds.has(String(opt.value)));
+    }, [displayedCourseOptions, forbiddenCourseIds]);
+
+    // Auto-clear course if it is already in the curriculum map
+    useEffect(() => {
+        if (selectedCourseId && forbiddenCourseIds.has(selectedCourseId)) {
+            setValue?.('course_id', '', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [selectedCourseId, forbiddenCourseIds, setValue]);
+
+    const baseCourseHelperText = !departmentId
         ? 'Please select a program or department first'
         : courseOptions.length === 0
             ? 'No courses available for this department'
             : 'Select the course to add to this curriculum';
+
+    const courseHelperText = forbiddenCourseIds.size > 0
+        ? `${baseCourseHelperText} (${forbiddenCourseIds.size} course${forbiddenCourseIds.size > 1
+            ? 's'
+            : ''} filtered: already in curriculum map)`
+        : baseCourseHelperText;
 
     const fields: FormFieldConfig<CurriculumMapFormValues>[] = [
         {
@@ -115,7 +154,7 @@ export default function CurriculumMapForm({
             fieldProps: { helperText: courseHelperText },
             label: 'Course',
             name: 'course_id',
-            options: displayedCourseOptions,
+            options: filteredCourseOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a course' },

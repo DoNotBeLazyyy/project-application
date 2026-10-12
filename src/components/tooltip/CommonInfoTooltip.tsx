@@ -85,11 +85,16 @@ export default function CommonInfoTooltip({
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [isPinned, setIsPinned] = useState(defaultOpen);
     const [isHovered, setIsHovered] = useState(false);
+    const pinnedAtRef = useRef<number>(defaultOpen
+        ? Date.now()
+        : 0);
 
     useEffect(() => {
         if (defaultOpen) {
+            pinnedAtRef.current = Date.now();
             setIsPinned(true);
-        } else {
+        }
+        else {
             setIsPinned(false);
         }
     }, [defaultOpen, content]);
@@ -97,6 +102,7 @@ export default function CommonInfoTooltip({
     useEffect(() => {
         function handleFormError() {
             if (defaultOpen) {
+                pinnedAtRef.current = Date.now();
                 setIsPinned(true);
             }
         }
@@ -119,30 +125,47 @@ export default function CommonInfoTooltip({
 
     function handleToggle() {
         setIsPinned(function(previous) {
+            if (!previous) {
+                pinnedAtRef.current = Date.now();
+            }
             return !previous;
         });
     }
 
-    function handleClickAway() {
+    function handleClickAway(event: MouseEvent | TouchEvent) {
+        // Prevent dismissal from clicks that happened around the time of pinning (e.g. submit button click)
+        if (Date.now() - pinnedAtRef.current < 600) {
+            return;
+        }
+
+        // For error tooltips, do not close when the user clicks inside the input/field container to fix the error
+        if (variant === 'error' && event.target instanceof Node && buttonRef.current) {
+            const fieldContainer = buttonRef.current.closest('.flex-col') || buttonRef.current.closest('div');
+            if (fieldContainer && fieldContainer.contains(event.target)) {
+                return;
+            }
+        }
+
         setIsPinned(false);
         setIsHovered(false);
     }
 
     function handleKeyDown(event: KeyboardEventButtonElement) {
         if (event.key === 'Escape') {
-            handleClickAway();
+            setIsPinned(false);
+            setIsHovered(false);
         }
     }
 
     function handleMouseEnter() {
-        setIsHovered(true);
+        if (hasHover) {
+            setIsHovered(true);
+        }
     }
 
     function handleMouseLeave() {
         setIsHovered(false);
     }
-
-    const isLayoutVisible = isHovered || (Boolean(buttonRef.current && buttonRef.current.getClientRects().length > 0));
 
     return (
         <ClickAwayListener onClickAway={handleClickAway}>
@@ -150,7 +173,7 @@ export default function CommonInfoTooltip({
                 disableFocusListener
                 disableHoverListener
                 disableTouchListener
-                open={Boolean(isOpen && isLayoutVisible)}
+                open={isOpen}
                 placement={placement}
                 slotProps={{
                     tooltip: {
@@ -168,7 +191,6 @@ export default function CommonInfoTooltip({
                 title={content}
             >
                 <button
-                    ref={buttonRef}
                     aria-expanded={isOpen}
                     aria-label={label}
                     className={
@@ -179,6 +201,7 @@ export default function CommonInfoTooltip({
                             className
                         )
                     }
+                    ref={buttonRef}
                     type="button"
                     onBlur={handleMouseLeave}
                     onClick={handleToggle}

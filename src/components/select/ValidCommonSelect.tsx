@@ -1,6 +1,6 @@
 import CommonSelect, { CommonSelectProps } from '@components/select/CommonSelect';
 import { InputChangeEvent } from '@type/common.type';
-import { checkForMessage } from '@utils/form.util';
+import { checkForMessage, formatFieldLabel } from '@utils/form.util';
 import { useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -31,6 +31,11 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
+    const resolvedErrorMessage = fieldState.error
+        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+            ? fieldState.error.message
+            : `${formatFieldLabel(name)} is required.`)
+        : undefined;
 
     const isNonInteractive = Boolean(disabled || readOnly);
 
@@ -70,7 +75,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
-                    ? fieldState.error?.message ?? helperTextProp
+                    ? (resolvedErrorMessage ?? helperTextProp)
                     : undefined
             }
             inputRef={ref}

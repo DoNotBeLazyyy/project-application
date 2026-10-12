@@ -3,7 +3,7 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
-import { checkForMessage } from '@utils/form.util';
+import { checkForMessage, formatFieldLabel } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
@@ -111,12 +111,14 @@ export function CommonDatePicker({
     const labelErrorMessage = label && errorProp
         ? helperTextProp
         : undefined;
-    const labelDescription = description ?? (label && !errorProp ? helperTextProp : undefined);
+    const labelDescription = description ?? (label && !errorProp
+        ? helperTextProp
+        : undefined);
 
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
         ? props.slotProps.textField
         : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const { className: externalClassName, onFocus: externalOnFocus, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
     const resolvedSize = externalSize ?? size;
 
     return (
@@ -144,7 +146,9 @@ export function CommonDatePicker({
                     {...props}
                     className={className}
                     disabled={disabled}
-                    open={isNonInteractive ? false : isOpen}
+                    open={isNonInteractive
+                        ? false
+                        : isOpen}
                     readOnly={readOnly}
                     slotProps={{
                         ...props.slotProps,
@@ -159,16 +163,25 @@ export function CommonDatePicker({
                             disabled,
                             error: errorProp,
                             fullWidth,
-                            helperText: label ? undefined : (hasHelper ? helperTextProp : undefined),
+                            helperText: label
+                                ? undefined
+                                : (hasHelper
+                                    ? helperTextProp
+                                    : undefined),
                             label: '',
-                            size: (resolvedSize === 'large' ? 'medium' : resolvedSize) as any,
-                            variant: 'outlined' as any,
                             ...restTextFieldProps,
+                            size: (resolvedSize === 'large'
+                                ? 'medium'
+                                : resolvedSize) as 'small' | 'medium' | undefined,
+                            variant: 'outlined' as unknown as 'standard',
                             onFocus: () => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 handleFocus();
+                                if (typeof externalOnFocus === 'function') {
+                                    (externalOnFocus as () => void)();
+                                }
                             },
                             sx: [
                                 ...(disabled
@@ -231,9 +244,17 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
 
     const isNonInteractive = Boolean(disabled || readOnly);
     const isError = errorProp ?? !!fieldState.error;
-    const errorMessage = fieldState.error?.message ?? helperTextProp;
-    const labelErrorMessage = label && isError ? errorMessage : undefined;
-    const labelDescription = description ?? (label && !isError ? helperTextProp : undefined);
+    const resolvedErrorMessage = fieldState.error
+        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+            ? fieldState.error.message
+            : `${formatFieldLabel(name)} is required.`)
+        : helperTextProp;
+    const labelErrorMessage = label && isError
+        ? resolvedErrorMessage
+        : undefined;
+    const labelDescription = description ?? (label && !isError
+        ? helperTextProp
+        : undefined);
 
     function handleChange(date: DateTime | null) {
         if (isNonInteractive) {
@@ -274,7 +295,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
         ? props.slotProps.textField
         : undefined;
-    const { onFocus: externalOnFocus, variant: _variant, className: externalClassName, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
+    const { className: externalClassName, onFocus: externalOnFocus, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
     const resolvedSize = externalSize ?? size;
 
     return (
@@ -322,16 +343,25 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                             disabled,
                             error: isError,
                             fullWidth,
-                            helperText: label ? undefined : (hasHelper ? errorMessage : undefined),
+                            helperText: label
+                                ? undefined
+                                : (hasHelper
+                                    ? resolvedErrorMessage
+                                    : undefined),
                             label: '',
-                            size: (resolvedSize === 'large' ? 'medium' : resolvedSize) as any,
-                            variant: 'outlined' as any,
                             ...restTextFieldProps,
+                            size: (resolvedSize === 'large'
+                                ? 'medium'
+                                : resolvedSize) as 'small' | 'medium' | undefined,
+                            variant: 'outlined' as unknown as 'standard',
                             onFocus: () => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 handleFocus();
+                                if (typeof externalOnFocus === 'function') {
+                                    (externalOnFocus as () => void)();
+                                }
                             },
                             sx: [
                                 ...(disabled

@@ -1,6 +1,6 @@
 import CommonTextarea, { CommonTextareaProps } from '@components/textarea/CommonTextarea';
 import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
-import { checkForMessage } from '@utils/form.util';
+import { checkForMessage, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
@@ -38,6 +38,11 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
+    const resolvedErrorMessage = fieldState.error
+        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+            ? fieldState.error.message
+            : `${formatFieldLabel(name)} is required.`)
+        : undefined;
 
     /**
      * Change event handler for textarea input.
@@ -59,7 +64,7 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
-                    ? fieldState.error?.message ?? helperTextProp
+                    ? (resolvedErrorMessage ?? helperTextProp)
                     : undefined
             }
             inputRef={ref}

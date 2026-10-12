@@ -228,6 +228,7 @@ export default function TermManagement() {
                             control={createMethods.control}
                             id={CREATE_FORM_ID}
                             schoolYearOptions={schoolYearOptions}
+                            setValue={createMethods.setValue}
                             termTypeOptions={termTypeOptions}
                             onSubmit={createMethods.handleSubmit(handleCreateSubmit, handleCreateFormError)}
                         />
@@ -293,8 +294,10 @@ export default function TermManagement() {
                     formContent: (
                         <TermForm
                             control={updateMethods.control}
+                            currentTermId={selectedId}
                             id={UPDATE_FORM_ID}
                             schoolYearOptions={schoolYearOptions}
+                            setValue={updateMethods.setValue}
                             termTypeOptions={termTypeOptions}
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
@@ -319,6 +322,7 @@ export default function TermManagement() {
                     formContent: (
                         <TermForm
                             control={updateMethods.control}
+                            currentTermId={selectedId}
                             disabled
                             schoolYearOptions={schoolYearOptions}
                             termTypeOptions={termTypeOptions}

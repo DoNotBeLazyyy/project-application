@@ -1,6 +1,6 @@
 import CommonInput, { CommonInputProps } from '@components/input/CommonInput';
 import { InputChangeEvent } from '@type/common.type';
-import { checkForMessage } from '@utils/form.util';
+import { checkForMessage, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonInputProps<T extends FieldValues = FieldValues> = Omit<CommonInputProps, 'value'> & UseControllerProps<T> & {
@@ -27,21 +27,26 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
+    const resolvedErrorMessage = fieldState.error
+        ? (fieldState.error.message && fieldState.error.message.trim().length > 0
+            ? fieldState.error.message
+            : `${formatFieldLabel(name)} is required.`)
+        : undefined;
 
     return (
         <CommonInput
             {...props}
-            name={name}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper
-                    ? fieldState.error?.message ?? helperTextProp
+                    ? (resolvedErrorMessage ?? helperTextProp)
                     : undefined
             }
             inputRef={ref}
             isFirstError={props.isFirstError ?? isFirstError}
             isRequired={props.isRequired || Boolean(rules?.required)}
+            name={name}
             type={type}
             value={value}
             onChange={handleChange}
