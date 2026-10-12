@@ -82,14 +82,15 @@ export async function getCourses(
 export async function createCourse(
     params: CourseFormValues
 ): Promise<ServiceResult<null>> {
-    const primaryType = params.course_types?.[0];
+    const validCourseTypes = params.course_types?.filter((ct) => ct.course_type_id && ct.course_type_id.trim() !== '') || [];
+    const primaryType = validCourseTypes[0];
     const firstCourseTypeId = primaryType?.course_type_id || params.course_type_id || null;
-    const totalUnits = params.course_types?.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0) ?? (params.lecture_units !== ''
-        ? Number(params.lecture_units)
-        : 0);
-    const totalCredit = params.course_types?.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0) ?? (params.credit_hours
-        ? Number(params.credit_hours)
-        : 0);
+    const totalUnits = validCourseTypes.length
+        ? validCourseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0)
+        : (params.lecture_units !== '' ? Number(params.lecture_units) : 0);
+    const totalCredit = validCourseTypes.length
+        ? validCourseTypes.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0)
+        : (params.credit_hours ? Number(params.credit_hours) : 0);
 
     return callRpc<null>('fn_create_course', {
         p_code: params.code,
@@ -102,8 +103,8 @@ export async function createCourse(
         p_credit_hours: totalCredit,
         p_description: params.description || null,
         p_is_active: params.is_active,
-        p_course_types: params.course_types?.length
-            ? params.course_types.map((ct) => ({
+        p_course_types: validCourseTypes.length
+            ? validCourseTypes.map((ct) => ({
                 course_type_id: ct.course_type_id,
                 units: Number(ct.units) || 0,
                 credit_hours: Number(ct.credit_hours) || 0

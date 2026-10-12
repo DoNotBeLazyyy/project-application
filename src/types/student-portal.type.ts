@@ -140,6 +140,9 @@ export interface StudentAssessment {
     show_results_at: string | null;
     scheduled_publish_at: string | null;
     attachments: AssessmentAttachment[];
+    attempts_used?: number;
+    has_active_submission?: boolean;
+    latest_submission_status?: string | null;
 }
 
 export interface StudentQuestionChoice {

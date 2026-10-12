@@ -32,11 +32,18 @@ export default function TakeAssessmentPage() {
     useEffect(function() {
         async function fetchAssessment() {
             const result = await getAssessmentForStudent(assessmentId, enrollmentId);
-            if (result.data) setAssessment(result.data);
+            if (result.data) {
+                setAssessment(result.data);
+                const used = result.data.attempts_used ?? 0;
+                const max = result.data.max_attempts ?? 1;
+                if (used >= max && !result.data.has_active_submission) {
+                    navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result?already_submitted=true`, { replace: true });
+                }
+            }
         }
 
         fetchAssessment();
-    }, [assessmentId, enrollmentId]);
+    }, [assessmentId, enrollmentId, navigate]);
 
     useEffect(function() {
         return function() {
@@ -247,13 +254,34 @@ export default function TakeAssessmentPage() {
                         While this assessment is open, the time you spend away from this tab
                         is recorded and visible to your instructor.
                     </p>
-                    <CommonButton
-                        size="small"
-                        variant="contained"
-                        onClick={handleStart}
-                    >
-                        Start Assessment
-                    </CommonButton>
+                    {(assessment.attempts_used ?? 0) >= assessment.max_attempts && !assessment.has_active_submission
+                        ? (
+                            <div className="flex flex-col items-center gap-2">
+                                <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                                You have completed all attempts for this assessment ({assessment.attempts_used ?? 1} of {assessment.max_attempts}).
+                                </span>
+                                <CommonButton
+                                    size="small"
+                                    variant="contained"
+                                    onClick={function() {
+                                        navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result`);
+                                    }}
+                                >
+                                View Results
+                                </CommonButton>
+                            </div>
+                        )
+                        : (
+                            <CommonButton
+                                size="small"
+                                variant="contained"
+                                onClick={handleStart}
+                            >
+                                {assessment.has_active_submission
+                                    ? 'Resume Assessment'
+                                    : 'Start Assessment'}
+                            </CommonButton>
+                        )}
                 </div>
             </CommonCard>
         );

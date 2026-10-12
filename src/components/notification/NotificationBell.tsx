@@ -7,6 +7,7 @@ import {
     markMyNotificationsRead,
     markMyNotificationsUnread
 } from '@services/notification.service';
+import { supabase } from '@services/supabase.client';
 import { useAppStore } from '@stores/app.store';
 import { NotificationRow } from '@type/notification.type';
 import { formatDate } from '@utils/date.util';
@@ -14,7 +15,7 @@ import { resolveNotificationPath } from '@utils/notification.util';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const POLL_INTERVAL_MS = 60000;
+const POLL_INTERVAL_MS = 30000;
 
 const ROW_BASE_CLASS = 'border-l-4 flex gap-3 px-4 py-3 text-left transition-colors w-full';
 const ICON_BASE_CLASS = 'flex h-9 items-center justify-center mt-0.5 rounded-full shrink-0 w-9';
@@ -33,6 +34,9 @@ function resolveRowStateClass(isRead: boolean): string {
 export default function NotificationBell() {
     const navigate = useNavigate();
     const activeRole = useAppStore((state) => state.activeRole);
+    const session = useAppStore((state) => state.session);
+    const userProfile = useAppStore((state) => state.userProfile);
+    const userId = session?.user?.id || userProfile?.id;
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [count, setCount] = useState(0);
     const [items, setItems] = useState<NotificationRow[]>([]);
@@ -47,6 +51,7 @@ export default function NotificationBell() {
         }
     }
 
+    // Polling fallback
     useEffect(function() {
         refreshCount();
 
@@ -56,6 +61,53 @@ export default function NotificationBell() {
             window.clearInterval(timer);
         };
     }, []);
+
+    // Instant refresh on tab focus / visibility return
+    useEffect(function() {
+        function handleVisibilityOrFocus() {
+            if (document.visibilityState === 'visible') {
+                refreshCount();
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+        window.addEventListener('focus', handleVisibilityOrFocus);
+
+        return function() {
+            document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+            window.removeEventListener('focus', handleVisibilityOrFocus);
+        };
+    }, []);
+
+    // Real-time push notifications via Supabase Realtime
+    useEffect(function() {
+        if (!userId) {
+            return;
+        }
+
+        const channel = supabase
+            .channel(`realtime:notifications:${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${userId}`
+                },
+                function() {
+                    refreshCount();
+                    if (isOpen) {
+                        loadItems();
+                    }
+                }
+            )
+            .subscribe();
+
+        return function() {
+            supabase.removeChannel(channel);
+        };
+    }, [userId, isOpen]);
 
     async function loadItems() {
         setIsLoading(true);
@@ -96,7 +148,8 @@ export default function NotificationBell() {
                     currentParams.set(key, value);
                 });
                 navigate(`?${currentParams.toString()}`);
-            } else {
+            }
+            else {
                 navigate(target);
             }
         }

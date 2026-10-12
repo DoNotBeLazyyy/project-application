@@ -4,13 +4,14 @@ import CommonTableCard from '@components/table-card/CommonTableCard';
 import StudentProfileVerificationModal from '@pages/registrar/student-verification/components/StudentProfileVerificationModal';
 import FilterStudentVerificationForm from '@pages/registrar/student-verification/forms/FilterStudentVerificationForm';
 import { useStudentVerificationTableConfig } from '@pages/registrar/student-verification/hooks/useStudentVerificationTableConfig';
+import { supabase } from '@services/supabase.client';
 import { listStudentProfileRequests } from '@services/registrar-verification.service';
 import { SortStringDto } from '@type/http.type';
 import {
     StudentProfileRequestFilterValues,
     StudentProfileRequestRow
 } from '@type/registrar-verification.type';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 const FILTER_FORM_ID = 'filter-student-verification-form';
@@ -35,6 +36,38 @@ export default function StudentVerificationPage() {
     const rowsMapRef = useRef<Map<string, StudentProfileRequestRow>>(new Map());
     const filterMethods = useForm<StudentProfileRequestFilterValues>({ defaultValues: EMPTY_FILTERS });
     const { columnDefs } = useStudentVerificationTableConfig();
+
+    useEffect(function() {
+        function handleVisibilityOrFocus() {
+            if (document.visibilityState === 'visible') {
+                setRefreshCount((prev) => prev + 1);
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+        window.addEventListener('focus', handleVisibilityOrFocus);
+
+        const channel = supabase
+            .channel('realtime:student_profile_change_requests')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'student_profile_change_requests'
+                },
+                function() {
+                    setRefreshCount((prev) => prev + 1);
+                }
+            )
+            .subscribe();
+
+        return function() {
+            document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+            window.removeEventListener('focus', handleVisibilityOrFocus);
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     async function fetchRequests(
         page: number,
@@ -75,7 +108,8 @@ export default function StudentVerificationPage() {
                 setSelectedRequest(found);
                 setIsVerificationModalOpen(true);
             }
-        } else {
+        }
+        else {
             setSelectedRequest(rowOrId);
             setIsVerificationModalOpen(true);
         }
@@ -98,7 +132,8 @@ export default function StudentVerificationPage() {
             },
             {
                 label: 'Submitted',
-                value: new Date(item.created_at).toLocaleDateString()
+                value: new Date(item.created_at)
+                    .toLocaleDateString()
             },
             {
                 label: 'Reviewer',
