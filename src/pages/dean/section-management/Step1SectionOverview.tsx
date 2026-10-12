@@ -2,12 +2,11 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import SectionScheduleConfig from '@pages/dean/section-management/SectionScheduleConfig';
 import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
-import { getFacultyOptions, getTerms } from '@services/section.service';
+import { getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord } from '@services/section.service';
 import { SectionFormValues, SectionStatus } from '@type/section.type';
-import { useEffect, useState } from 'react';
-import { Control, UseFormSetValue } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 const STATUS_OPTIONS: { label: string; value: SectionStatus }[] = [
     { label: 'Open', value: 'Open' },
@@ -21,6 +20,7 @@ interface Step1SectionOverviewProps {
     control: Control<SectionFormValues>;
     disabled?: boolean;
     isCreate?: boolean;
+    sectionId?: string | null;
     setValue?: UseFormSetValue<SectionFormValues>;
 }
 
@@ -28,17 +28,24 @@ export default function Step1SectionOverview({
     control,
     disabled,
     isCreate,
+    sectionId,
     setValue
 }: Step1SectionOverviewProps) {
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
     const [facultyOptions, setFacultyOptions] = useState<CommonSelectOption[]>([]);
+    const [existingOfferings, setExistingOfferings] = useState<SectionOfferingRecord[]>([]);
     const { courseOptions } = useCourseOptions({});
+
+    const watchedTermId = useWatch({ control, name: 'term_id' });
+    const watchedCourseId = useWatch({ control, name: 'course_id' });
+    const watchedFacultyId = useWatch({ control, name: 'faculty_id' });
 
     useEffect(function() {
         async function fetchOptions() {
-            const [termsResult, facultyResult] = await Promise.all([
+            const [termsResult, facultyResult, offeringsResult] = await Promise.all([
                 getTerms(),
-                getFacultyOptions()
+                getFacultyOptions(),
+                getExistingSectionOfferings()
             ]);
 
             if (termsResult.data) {
@@ -62,10 +69,104 @@ export default function Step1SectionOverview({
                     }))
                 );
             }
+
+            if (offeringsResult.data) {
+                setExistingOfferings(offeringsResult.data);
+            }
         }
 
         fetchOptions();
     }, [isCreate]);
+
+    // Exclude the current section being edited from collision checks
+    const activeOfferings = useMemo(() => {
+        return existingOfferings.filter((offering) => !sectionId || offering.id !== sectionId);
+    }, [existingOfferings, sectionId]);
+
+    // 1. Dynamic Course Filtering:
+    // When Term & Faculty are selected, filter out courses already taught by this faculty in this term.
+    const forbiddenCourseIds = useMemo(() => {
+        if (!watchedTermId || !watchedFacultyId) return new Set<string>();
+        const forbidden = new Set<string>();
+        for (const offering of activeOfferings) {
+            if (
+                offering.term_id === watchedTermId
+                && offering.faculty_id === watchedFacultyId
+                && offering.course_id
+            ) {
+                forbidden.add(offering.course_id);
+            }
+        }
+        return forbidden;
+    }, [activeOfferings, watchedTermId, watchedFacultyId]);
+
+    const filteredCourseOptions = useMemo(() => {
+        if (forbiddenCourseIds.size === 0) return courseOptions;
+        return courseOptions.filter((opt) => !forbiddenCourseIds.has(String(opt.value)));
+    }, [courseOptions, forbiddenCourseIds]);
+
+    // 2. Dynamic Term Filtering:
+    // When Course & Faculty are selected, filter out terms where this faculty already teaches this course.
+    const forbiddenTermIds = useMemo(() => {
+        if (!watchedCourseId || !watchedFacultyId) return new Set<string>();
+        const forbidden = new Set<string>();
+        for (const offering of activeOfferings) {
+            if (
+                offering.course_id === watchedCourseId
+                && offering.faculty_id === watchedFacultyId
+                && offering.term_id
+            ) {
+                forbidden.add(offering.term_id);
+            }
+        }
+        return forbidden;
+    }, [activeOfferings, watchedCourseId, watchedFacultyId]);
+
+    const filteredTermOptions = useMemo(() => {
+        if (forbiddenTermIds.size === 0) return termOptions;
+        return termOptions.filter((opt) => !forbiddenTermIds.has(String(opt.value)));
+    }, [termOptions, forbiddenTermIds]);
+
+    // 3. Dynamic Faculty Filtering:
+    // When Term & Course are selected, filter out faculty who already teach this course in this term.
+    const forbiddenFacultyIds = useMemo(() => {
+        if (!watchedTermId || !watchedCourseId) return new Set<string>();
+        const forbidden = new Set<string>();
+        for (const offering of activeOfferings) {
+            if (
+                offering.term_id === watchedTermId
+                && offering.course_id === watchedCourseId
+                && offering.faculty_id
+            ) {
+                forbidden.add(offering.faculty_id);
+            }
+        }
+        return forbidden;
+    }, [activeOfferings, watchedTermId, watchedCourseId]);
+
+    const filteredFacultyOptions = useMemo(() => {
+        if (forbiddenFacultyIds.size === 0) return facultyOptions;
+        return facultyOptions.filter((opt) => !forbiddenFacultyIds.has(String(opt.value)));
+    }, [facultyOptions, forbiddenFacultyIds]);
+
+    // Auto-clear dependent values if they become forbidden due to user selection changes
+    useEffect(() => {
+        if (watchedCourseId && forbiddenCourseIds.has(watchedCourseId)) {
+            setValue?.('course_id', '', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedCourseId, forbiddenCourseIds, setValue]);
+
+    useEffect(() => {
+        if (watchedTermId && forbiddenTermIds.has(watchedTermId)) {
+            setValue?.('term_id', '', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedTermId, forbiddenTermIds, setValue]);
+
+    useEffect(() => {
+        if (watchedFacultyId && forbiddenFacultyIds.has(watchedFacultyId)) {
+            setValue?.('faculty_id', '', { shouldValidate: true, shouldDirty: true });
+        }
+    }, [watchedFacultyId, forbiddenFacultyIds, setValue]);
 
     function handleClearOverview() {
         if (!setValue) return;
@@ -78,6 +179,25 @@ export default function Step1SectionOverview({
             setValue('status', 'Open', { shouldValidate: false, shouldDirty: true });
         }
     }
+
+    const termHelperText = forbiddenTermIds.size > 0
+        ? `Term this section runs in (${forbiddenTermIds.size} term${forbiddenTermIds.size > 1
+            ? 's'
+            : ''} filtered: instructor already assigned to course)`
+        : 'Term this section runs in';
+
+    const courseHelperText = forbiddenCourseIds.size > 0
+        ? `Course being offered (${forbiddenCourseIds.size} course${forbiddenCourseIds.size > 1
+            ? 's'
+            : ''} filtered: instructor already assigned in this term)`
+        : 'Course being offered in this section';
+
+    const facultyHelperText = forbiddenFacultyIds.size > 0
+        ? `Assigned instructor (${forbiddenFacultyIds.size} instructor${forbiddenFacultyIds.size > 1
+            ? 's'
+            : ''} filtered: already assigned to course in this term)`
+        : 'Assigned instructor (optional)';
+
     const fields: FormFieldConfig<SectionFormValues>[] = [
         {
             disabled: true,
@@ -89,10 +209,10 @@ export default function Step1SectionOverview({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Term this section runs in' },
+            fieldProps: { helperText: termHelperText },
             label: 'Term',
             name: 'term_id',
-            options: termOptions,
+            options: filteredTermOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a term' },
@@ -101,10 +221,10 @@ export default function Step1SectionOverview({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Course being offered in this section' },
+            fieldProps: { helperText: courseHelperText },
             label: 'Course',
             name: 'course_id',
-            options: courseOptions,
+            options: filteredCourseOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a course' },
@@ -113,10 +233,10 @@ export default function Step1SectionOverview({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Assigned instructor (optional)' },
+            fieldProps: { helperText: facultyHelperText },
             label: 'Faculty',
             name: 'faculty_id',
-            options: facultyOptions,
+            options: filteredFacultyOptions,
             type: 'select',
             gridCols: 2
         },
@@ -177,10 +297,10 @@ export default function Step1SectionOverview({
                     </div>
                     {!disabled && setValue && (
                         <button
-                            type="button"
-                            onClick={handleClearOverview}
                             className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
                             title="Clear section overview fields"
+                            type="button"
+                            onClick={handleClearOverview}
                         >
                             <BroomIcon className="w-4 h-4" />
                             <span>Clear</span>
@@ -195,9 +315,6 @@ export default function Step1SectionOverview({
                     hasHelper
                 />
             </div>
-
-            <SectionScheduleConfig control={control as any} disabled={disabled} />
         </div>
     );
 }
-

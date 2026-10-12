@@ -1,14 +1,13 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import Step1SectionOverview from '@pages/dean/section-management/Step1SectionOverview';
-import Step2SectionGradingSchema from '@pages/dean/section-management/Step2SectionGradingSchema';
+import Step2SectionSchedule from '@pages/dean/section-management/Step2SectionSchedule';
+import Step3SectionGradingSchema from '@pages/dean/section-management/Step3SectionGradingSchema';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
     ChalkboardIcon,
-    CheckCircleIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
     XIcon
@@ -23,7 +22,7 @@ import {
     updateSection
 } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
-import { SectionFormValues } from '@type/section.type';
+import { SectionFormValues, SectionScheduleSlot } from '@type/section.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -31,10 +30,15 @@ export const SECTION_WIZARD_STEPS = [
     {
         step: 1,
         title: 'Overview',
-        subtitle: 'Basic section identity, term, course, instructor, room, capacity, and schedule'
+        subtitle: 'Basic section identity, term, course, instructor, room, and capacity'
     },
     {
         step: 2,
+        title: 'Schedule Assignment',
+        subtitle: 'Configure class meeting days, time slots, and room assignments'
+    },
+    {
+        step: 3,
         title: 'Grading Schema Settings',
         subtitle: 'Configure section grading schema and component weights'
     }
@@ -109,7 +113,8 @@ export default function SectionWizardModal({
                     if (res.data) {
                         const data = res.data;
                         setIsEditable(data.is_active_academic_year !== false);
-                        const scheduleBlocks = groupScheduleSlotsToBlocks((data.schedules || []) as any);
+                        const rawSlots = (data.schedules || []) as unknown as SectionScheduleSlot[];
+                        const scheduleBlocks = groupScheduleSlotsToBlocks(rawSlots);
                         reset({
                             term_id: data.term_id || '',
                             course_id: data.course_id || '',
@@ -123,14 +128,17 @@ export default function SectionWizardModal({
                             grading_override_mode: 'copy_section',
                             source_section_id: '',
                             grading_periods: [],
-                            schedules: scheduleBlocks.length > 0 ? scheduleBlocks : defaultFormValues.schedules
+                            schedules: scheduleBlocks.length > 0
+                                ? scheduleBlocks
+                                : defaultFormValues.schedules
                         });
                     }
                 })
                 .finally(() => {
                     setIsLoading(false);
                 });
-        } else {
+        }
+        else {
             setIsEditable(true);
             reset({
                 ...defaultFormValues,
@@ -150,9 +158,35 @@ export default function SectionWizardModal({
 
     function validateStep2(): boolean {
         const values = getValues();
+        const schedules = values.schedules || [];
+        for (let i = 0; i < schedules.length; i++) {
+            const slot = schedules[i];
+            if (!slot.days || slot.days.length === 0) {
+                useToastStore.getState()
+                    .showToast(
+                        `Schedule Slot #${i + 1} must have at least one day selected.`,
+                        'error'
+                    );
+                return false;
+            }
+            if (slot.time_start && slot.time_end && slot.time_start >= slot.time_end) {
+                useToastStore.getState()
+                    .showToast(
+                        `Schedule Slot #${i + 1}: Start time must be earlier than end time.`,
+                        'error'
+                    );
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function validateStep3(): boolean {
+        const values = getValues();
         if (values.override_grading_schema) {
             if (values.grading_override_mode === 'copy_section' && !values.source_section_id) {
-                useToastStore.getState().showToast('Please select a source section to copy grading schema from.', 'error');
+                useToastStore.getState()
+                    .showToast('Please select a source section to copy grading schema from.', 'error');
                 return false;
             }
         }
@@ -164,6 +198,11 @@ export default function SectionWizardModal({
             const valid = await validateStep1();
             if (!valid) return;
             setCurrentStep(2);
+        }
+        else if (currentStep === 2) {
+            const valid = validateStep2();
+            if (!valid) return;
+            setCurrentStep(3);
         }
     }
 
@@ -188,6 +227,17 @@ export default function SectionWizardModal({
         if (currentStep === 1) {
             const valid = await validateStep1();
             if (!valid) return;
+            if (stepNumber === 3) {
+                const step2Valid = validateStep2();
+                if (!step2Valid) {
+                    setCurrentStep(2);
+                    return;
+                }
+            }
+        }
+        else if (currentStep === 2) {
+            const valid = validateStep2();
+            if (!valid) return;
         }
 
         setCurrentStep(stepNumber);
@@ -200,7 +250,14 @@ export default function SectionWizardModal({
             return;
         }
 
-        if (!validateStep2()) {
+        const step2Valid = validateStep2();
+        if (!step2Valid) {
+            setCurrentStep(2);
+            return;
+        }
+
+        if (!validateStep3()) {
+            setCurrentStep(3);
             return;
         }
 
@@ -214,7 +271,8 @@ export default function SectionWizardModal({
             if (sectionId) {
                 const result = await updateSection(sectionId, values);
                 if (result.error) return;
-            } else {
+            }
+            else {
                 const result = await createSection(values);
                 if (result.error) return;
                 targetSectionId = result.data?.id;
@@ -232,13 +290,17 @@ export default function SectionWizardModal({
                 await saveSectionSchedules(targetSectionId, flatSlots);
             }
 
-            useToastStore.getState().showToast(
-                sectionId ? 'Section updated successfully.' : 'Section created successfully.',
-                'success'
-            );
+            useToastStore.getState()
+                .showToast(
+                    sectionId
+                        ? 'Section updated successfully.'
+                        : 'Section created successfully.',
+                    'success'
+                );
             onSuccess();
             onClose();
-        } finally {
+        }
+        finally {
             setIsSaving(false);
         }
     }
@@ -325,43 +387,53 @@ export default function SectionWizardModal({
 
             {/* Stepper Progress Bar Header */}
             <ModalStepperHeader
+                currentStep={currentStep}
+                readOnly={isReadOnly}
                 steps={SECTION_WIZARD_STEPS.map((s) => ({
                     step: s.step,
                     title: s.title,
                     subtitle: s.subtitle
                 }))}
-                currentStep={currentStep}
                 onStepClick={handleStepClick}
-                readOnly={isReadOnly}
             />
 
             {/* Wizard Step Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 dark:bg-zinc-900/40">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs text-slate-500">Loading section details...</p>
-                    </div>
-                ) : (
-                    <>
-                        {currentStep === 1 && (
-                            <Step1SectionOverview
-                                control={control}
-                                disabled={isReadOnly}
-                                isCreate={!sectionId}
-                                setValue={setValue}
-                            />
-                        )}
+                {isLoading
+                    ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                            <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-xs text-slate-500">Loading section details...</p>
+                        </div>
+                    )
+                    : (
+                        <>
+                            {currentStep === 1 && (
+                                <Step1SectionOverview
+                                    control={control}
+                                    disabled={isReadOnly}
+                                    isCreate={!sectionId}
+                                    sectionId={sectionId}
+                                    setValue={setValue}
+                                />
+                            )}
 
-                        {currentStep === 2 && (
-                            <Step2SectionGradingSchema
-                                control={control}
-                                currentSectionId={sectionId ?? undefined}
-                                disabled={isReadOnly}
-                            />
-                        )}
-                    </>
-                )}
+                            {currentStep === 2 && (
+                                <Step2SectionSchedule
+                                    control={control}
+                                    disabled={isReadOnly}
+                                />
+                            )}
+
+                            {currentStep === 3 && (
+                                <Step3SectionGradingSchema
+                                    control={control}
+                                    currentSectionId={sectionId ?? undefined}
+                                    disabled={isReadOnly}
+                                />
+                            )}
+                        </>
+                    )}
             </div>
 
             {/* Sticky Bottom Action Bar (Exactly matching Academic Year Stepper Modal Footer) */}
@@ -380,44 +452,52 @@ export default function SectionWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 2 — {currentStepConfig?.title}
+                    Step {currentStep} of {SECTION_WIZARD_STEPS.length} — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 2 ? (
-                        <CommonButton
-                            color="primary"
-                            disabled={isLoading || isSaving}
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
+                    {currentStep < SECTION_WIZARD_STEPS.length
+                        ? (
+                            <CommonButton
+                                color="primary"
+                                disabled={isLoading || isSaving}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleNext}
+                            >
                             Next Step
-                        </CommonButton>
-                    ) : isReadOnly ? (
-                        <CommonButton
-                            color="primary"
-                            size="medium"
-                            variant="contained"
-                            onClick={onClose}
-                        >
+                            </CommonButton>
+                        )
+                        : isReadOnly
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={onClose}
+                                >
                             Close
-                        </CommonButton>
-                    ) : (
-                        <CommonButton
-                            color="primary"
-                            disabled={isLoading || isSaving}
-                            loading={isSaving}
-                            size="medium"
-                            startIcon={<FloppyDiskIcon className="w-4 h-4" />}
-                            variant="contained"
-                            onClick={handleSave}
-                        >
-                            {isSaving ? 'Saving Section...' : sectionId ? 'Save Changes' : 'Create Section'}
-                        </CommonButton>
-                    )}
+                                </CommonButton>
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isLoading || isSaving}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSave}
+                                >
+                                    {isSaving
+                                        ? 'Saving Section...'
+                                        : sectionId
+                                            ? 'Save Changes'
+                                            : 'Create Section'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
         </CommonModal>
