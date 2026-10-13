@@ -113,18 +113,20 @@ export default function ProfileDetailsForm({
             }
         },
         {
+            disabled: true,
             label: 'Program',
             name: 'program_id',
             options: programOptions,
             type: 'select',
-            fieldProps: { helperText: 'Your enrolled academic program (requires Registrar verification).' }
+            fieldProps: { helperText: 'Academic program assigned by the Registrar (read-only).' }
         },
         {
+            disabled: true,
             label: 'Year Level',
             name: 'year_level',
             options: YEAR_LEVEL_OPTIONS,
             type: 'select',
-            fieldProps: { helperText: 'Current academic level (requires Registrar verification).' }
+            fieldProps: { helperText: 'Current academic level (assigned by Registrar / auto-updated with curriculum).' }
         }
     ] : [];
 
@@ -135,7 +137,7 @@ export default function ProfileDetailsForm({
             name: 'department_name',
             type: 'text',
             fieldProps: {
-                helperText: 'Academic department governed by you as Dean (read-only).'
+                helperText: 'Academic department assigned by Administrator (read-only).'
             }
         }
     ] : [];

@@ -69,6 +69,12 @@ export default function ProfilePage() {
     const [isCancelling, setIsCancelling] = useState(false);
 
     const isStudentUser = Boolean(profile?.student || profile?.role_labels?.includes('Student'));
+    const isStaffUser = Boolean(
+        profile?.role_labels?.some((r) => ['Dean', 'Faculty', 'Registrar'].includes(r)) &&
+        !profile?.role_labels?.includes('Admin')
+    );
+    const requiresApproval = isStudentUser || isStaffUser;
+    const approverName = profile?.pending_profile_request?.approver_role || (isStudentUser ? 'Registrar' : 'Administrator');
 
     const profileMethods = useForm<ProfileFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PASSWORD });
@@ -223,9 +229,9 @@ export default function ProfilePage() {
                                 <div className="flex items-start gap-3">
                                     <HourglassIcon size={24} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="font-semibold m-0 text-sm">Profile Change Request Pending Registrar Verification</p>
+                                        <p className="font-semibold m-0 text-sm">Profile Change Request Pending {approverName} Verification</p>
                                         <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                                            You submitted profile updates on {new Date(profile.pending_profile_request.created_at).toLocaleString()}. Changes will take effect once reviewed and approved by the Registrar.
+                                            You submitted profile updates on {new Date(profile.pending_profile_request.created_at).toLocaleString()}. Changes will take effect once reviewed and approved by the {approverName}.
                                         </p>
                                     </div>
                                 </div>
@@ -286,13 +292,13 @@ export default function ProfilePage() {
                                     variant="contained"
                                 >
                                     {profileMethods.formState.isSubmitting
-                                        ? (isStudentUser ? 'Submitting...' : 'Saving...')
-                                        : (isStudentUser ? 'Submit Profile Changes' : 'Save Profile')}
+                                        ? (requiresApproval ? 'Submitting...' : 'Saving...')
+                                        : (requiresApproval ? 'Submit Profile Changes' : 'Save Profile')}
                                 </CommonButton>
                             </div>
-                            {isStudentUser && (
+                            {requiresApproval && (
                                 <p className="text-xs text-(--mui-palette-text-secondary) m-0 italic">
-                                    * Note: As an enrolled student, changes made to your profile must be reviewed and approved by the Registrar before taking effect.
+                                    * Note: Changes made to your profile must be reviewed and approved by the {isStudentUser ? 'Registrar' : 'Administrator'} before taking effect. (Profile picture updates take effect immediately).
                                 </p>
                             )}
                         </div>

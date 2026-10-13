@@ -1,6 +1,6 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
-import { CopyIcon, EnvelopeSimpleIcon, EyeIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+import { CopyIcon, EnvelopeSimpleIcon, EyeIcon, GraduationCapIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow } from '@type/enrollment.type';
 
@@ -9,6 +9,7 @@ export interface EnrollmentStudentGridCardProps {
     isSelected: boolean;
     onToggleSelect: () => void;
     onManage: (id: string) => void;
+    onAssignProgram?: (row: EnrollmentStudentRow) => void;
 }
 
 /**
@@ -23,7 +24,8 @@ export default function EnrollmentStudentGridCard({
     row,
     isSelected,
     onToggleSelect,
-    onManage
+    onManage,
+    onAssignProgram
 }: EnrollmentStudentGridCardProps) {
     function handleCopy(text: string, message: string) {
         if (navigator?.clipboard?.writeText) {
@@ -39,6 +41,16 @@ export default function EnrollmentStudentGridCard({
             icon: <PencilSimpleIcon size={18} weight="bold" />,
             onClick: () => onManage(row.id)
         },
+        ...(onAssignProgram
+            ? [
+                {
+                    key: 'assign_program',
+                    label: 'Assign Program & Year',
+                    icon: <GraduationCapIcon size={18} weight="bold" />,
+                    onClick: () => onAssignProgram(row)
+                }
+            ]
+            : []),
         {
             key: 'view',
             label: 'View Current Load',

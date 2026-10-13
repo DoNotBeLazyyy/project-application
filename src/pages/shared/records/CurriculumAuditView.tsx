@@ -256,47 +256,51 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                     </div>
                     <div className="flex flex-col gap-1">
                         <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                            Assign Your Academic Program
+                            Academic Program Not Assigned
                         </h2>
                         <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {audit?.message ?? 'Select your degree program and year level to generate your curriculum checklist and track your degree progress.'}
+                            {studentId
+                                ? 'This student does not have an assigned academic program yet. Assign a program below.'
+                                : 'You do not have an assigned academic program yet. Please contact the Registrar\'s Office to have your degree program and year level assigned.'}
                         </p>
                     </div>
 
-                    <div className="flex flex-col gap-3 w-full text-left">
-                        <CommonSelect
-                            disabled={isAssigning || isLoadingPrograms}
-                            fullWidth
-                            label="Academic Program"
-                            options={programOptions}
-                            placeholder="Select your program"
-                            size="small"
-                            value={selectedProgramId}
-                            onChange={function(e) {
-                                setSelectedProgramId(e.target.value as string);
-                            }}
-                        />
-                        <CommonSelect
-                            disabled={isAssigning}
-                            fullWidth
-                            label="Year Level"
-                            options={YEAR_LEVEL_OPTIONS}
-                            size="small"
-                            value={selectedYearLevel}
-                            onChange={function(e) {
-                                setSelectedYearLevel(Number(e.target.value));
-                            }}
-                        />
-                        <CommonButton
-                            className="w-full mt-2"
-                            disabled={isAssigning || !selectedProgramId}
-                            size="medium"
-                            variant="contained"
-                            onClick={handleAssignProgram}
-                        >
-                            {isAssigning ? 'Assigning Program...' : 'Assign Program'}
-                        </CommonButton>
-                    </div>
+                    {Boolean(studentId) && (
+                        <div className="flex flex-col gap-3 w-full text-left">
+                            <CommonSelect
+                                disabled={isAssigning || isLoadingPrograms}
+                                fullWidth
+                                label="Academic Program"
+                                options={programOptions}
+                                placeholder="Select program"
+                                size="small"
+                                value={selectedProgramId}
+                                onChange={function(e) {
+                                    setSelectedProgramId(e.target.value as string);
+                                }}
+                            />
+                            <CommonSelect
+                                disabled={isAssigning}
+                                fullWidth
+                                label="Year Level"
+                                options={YEAR_LEVEL_OPTIONS}
+                                size="small"
+                                value={selectedYearLevel}
+                                onChange={function(e) {
+                                    setSelectedYearLevel(Number(e.target.value));
+                                }}
+                            />
+                            <CommonButton
+                                className="w-full mt-2"
+                                disabled={isAssigning || !selectedProgramId}
+                                size="medium"
+                                variant="contained"
+                                onClick={handleAssignProgram}
+                            >
+                                {isAssigning ? 'Assigning Program...' : 'Assign Program'}
+                            </CommonButton>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -314,16 +318,18 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                     </span>
                 </div>
                 <div className="flex gap-2">
-                    <CommonButton
-                        size="small"
-                        startIcon={<PencilSimpleIcon size={16} />}
-                        variant="outlined"
-                        onClick={function() {
-                            setIsChangeModalOpen(true);
-                        }}
-                    >
-                        Change Program
-                    </CommonButton>
+                    {Boolean(studentId) && (
+                        <CommonButton
+                            size="small"
+                            startIcon={<PencilSimpleIcon size={16} />}
+                            variant="outlined"
+                            onClick={function() {
+                                setIsChangeModalOpen(true);
+                            }}
+                        >
+                            Change Program
+                        </CommonButton>
+                    )}
                     <CommonButton
                         size="small"
                         startIcon={<PrinterIcon size={16} />}

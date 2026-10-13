@@ -7,6 +7,7 @@ import EnrollmentStudentFilterForm from '@pages/registrar/enrollment-management/
 import EnrollmentStudentGridCard from '@pages/registrar/enrollment-management/EnrollmentStudentGridCard';
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
+import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { CalendarBlankIcon } from '@phosphor-icons/react';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
 import { getTerms } from '@services/section.service';
@@ -50,6 +51,7 @@ export default function EnrollmentManagement() {
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+    const [assignModalStudent, setAssignModalStudent] = useState<EnrollmentStudentRow | null>(null);
     const [targetTermId, setTargetTermId] = useState<string | null>(null);
     const [targetTermLabel, setTargetTermLabel] = useState('');
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
@@ -126,7 +128,8 @@ export default function EnrollmentManagement() {
     }
 
     const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
-        onManage: handleOpenWorkspace
+        onManage: handleOpenWorkspace,
+        onAssignProgram: (row) => setAssignModalStudent(row)
     });
 
     async function fetchStudents(
@@ -241,6 +244,7 @@ export default function EnrollmentManagement() {
                         <EnrollmentStudentGridCard
                             isSelected={isSelected}
                             row={item}
+                            onAssignProgram={(target) => setAssignModalStudent(target)}
                             onManage={handleOpenWorkspace}
                             onToggleSelect={onToggleSelect}
                         />
@@ -285,6 +289,20 @@ export default function EnrollmentManagement() {
                 })}
                 onSuccess={handleRefresh}
             />
+            {assignModalStudent && (
+                <AssignProgramModal
+                    currentProgramId={assignModalStudent.program_id}
+                    currentProgramName={assignModalStudent.program_name}
+                    currentYearLevel={assignModalStudent.year_level}
+                    open={Boolean(assignModalStudent)}
+                    studentId={assignModalStudent.id}
+                    onClose={() => setAssignModalStudent(null)}
+                    onSuccess={() => {
+                        setAssignModalStudent(null);
+                        handleRefresh();
+                    }}
+                />
+            )}
         </div>
     );
 }

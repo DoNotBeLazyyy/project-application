@@ -2,27 +2,15 @@ import CommonButton from '@components/button/CommonButton';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import CommonSelect from '@components/select/CommonSelect';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import { BuildingsIcon, GraduationCapIcon, SignOutIcon, UserCircleIcon } from '@phosphor-icons/react';
 import { initAuthSession, logout } from '@services/auth.service';
-import { getDepartments } from '@services/department.service';
 import { completeUserProfile } from '@services/profile.service';
-import { getPrograms } from '@services/program/program.service';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
-import { DepartmentOption } from '@type/department.type';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
-    { label: '1st Year', value: 1 },
-    { label: '2nd Year', value: 2 },
-    { label: '3rd Year', value: 3 },
-    { label: '4th Year', value: 4 },
-    { label: '5th Year', value: 5 },
-    { label: '6th Year', value: 6 }
-];
 
 export interface UserProfilePromptModalProps {
     open: boolean;
@@ -57,14 +45,6 @@ export default function UserProfilePromptModal({
     const [civilStatus, setCivilStatus] = useState('');
     const [nationality, setNationality] = useState('');
 
-    // Role-specific fields
-    const [departmentOptions, setDepartmentOptions] = useState<CommonSelectOption[]>([]);
-    const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
-
-    const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
-    const [selectedProgramId, setSelectedProgramId] = useState('');
-    const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
-
     // Address fields
     const [addressLine1, setAddressLine1] = useState('');
     const [addressLine2, setAddressLine2] = useState('');
@@ -84,39 +64,8 @@ export default function UserProfilePromptModal({
             setSuffix(userProfile.suffix || '');
             setPreferredName(userProfile.preferred_name || '');
             setMobileNumber(userProfile.mobile_number || '');
-            if (userProfile.department_id) {
-                setSelectedDepartmentId(userProfile.department_id);
-            }
         }
-
-        async function fetchOptions() {
-            if (isDean) {
-                const deptRes = await getDepartments();
-                if (deptRes.data) {
-                    setDepartmentOptions(
-                        deptRes.data.map((dept: DepartmentOption) => ({
-                            label: `${dept.code} - ${dept.label}`,
-                            value: dept.id
-                        }))
-                    );
-                }
-            }
-
-            if (isStudent) {
-                const progRes = await getPrograms();
-                if (progRes.data) {
-                    setProgramOptions(
-                        progRes.data.map((prog) => ({
-                            label: `${prog.code} · ${prog.label}`,
-                            value: prog.id
-                        }))
-                    );
-                }
-            }
-        }
-
-        fetchOptions();
-    }, [open, userProfile, isDean, isStudent]);
+    }, [open, userProfile]);
 
     async function handleLogout() {
         await logout();
@@ -134,11 +83,6 @@ export default function UserProfilePromptModal({
             return;
         }
 
-        if (isDean && !selectedDepartmentId) {
-            useToastStore.getState().showToast('Please select your assigned department as Dean.', 'error');
-            return;
-        }
-
         setIsSubmitting(true);
         try {
             const res = await completeUserProfile({
@@ -152,9 +96,6 @@ export default function UserProfilePromptModal({
                 gender: gender || undefined,
                 civil_status: civilStatus || undefined,
                 nationality: nationality.trim() || undefined,
-                department_id: isDean ? selectedDepartmentId : undefined,
-                program_id: isStudent ? (selectedProgramId || undefined) : undefined,
-                year_level: isStudent ? selectedYearLevel : undefined,
                 address_line1: addressLine1.trim() || undefined,
                 address_line2: addressLine2.trim() || undefined,
                 city: city.trim() || undefined,
@@ -197,63 +138,35 @@ export default function UserProfilePromptModal({
                         <p className="font-semibold mb-0.5">Welcome to AU-JAS!</p>
                         <p className="text-(--mui-palette-text-secondary)">
                             Before you can operate, please complete your user profile.
-                            {isDean && ' As a Dean, you must specify the department you belong to.'}
                         </p>
                     </div>
                 </div>
 
-                {/* Dean Department Selection */}
+                {/* Dean Department Info */}
                 {isDean && (
-                    <div className="flex flex-col gap-3 p-4 border border-(--mui-palette-secondary-200) bg-(--mui-palette-secondary-50) rounded-(--mui-tokens-radius-md)">
+                    <div className="flex flex-col gap-2 p-4 border border-(--mui-palette-secondary-200) bg-(--mui-palette-secondary-50) rounded-(--mui-tokens-radius-md)">
                         <div className="flex items-center gap-2 font-semibold text-sm text-(--mui-palette-secondary-main)">
                             <BuildingsIcon size={20} />
-                            <span>Assigned Department (Dean)</span>
+                            <span>Governing Department</span>
                         </div>
-                        <p className="text-xs text-(--mui-palette-text-secondary)">
-                            Your assigned department dictates the programs, courses, sections, and faculty loads under your jurisdiction.
+                        <p className="text-xs text-(--mui-palette-text-secondary) m-0">
+                            {userProfile?.department_name
+                                ? `Assigned to: ${userProfile.department_code} — ${userProfile.department_name} (Assigned by Administrator)`
+                                : 'Your academic department will be assigned by the Administrator.'}
                         </p>
-                        <CommonSelect
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Department"
-                            options={departmentOptions}
-                            placeholder="Select your department"
-                            required
-                            size="small"
-                            value={selectedDepartmentId}
-                            onChange={(e) => setSelectedDepartmentId(e.target.value as string)}
-                        />
                     </div>
                 )}
 
-                {/* Student Academic Selection */}
+                {/* Student Academic Info */}
                 {isStudent && (
-                    <div className="flex flex-col gap-3 p-4 border border-(--mui-palette-info-200) bg-(--mui-palette-info-50) rounded-(--mui-tokens-radius-md)">
+                    <div className="flex flex-col gap-2 p-4 border border-(--mui-palette-info-200) bg-(--mui-palette-info-50) rounded-(--mui-tokens-radius-md)">
                         <div className="flex items-center gap-2 font-semibold text-sm text-(--mui-palette-info-main)">
                             <GraduationCapIcon size={20} />
-                            <span>Academic Enrollment (Student)</span>
+                            <span>Academic Program & Year Level</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <CommonSelect
-                                disabled={isSubmitting}
-                                fullWidth
-                                label="Program"
-                                options={programOptions}
-                                placeholder="Select academic program"
-                                size="small"
-                                value={selectedProgramId}
-                                onChange={(e) => setSelectedProgramId(e.target.value as string)}
-                            />
-                            <CommonSelect
-                                disabled={isSubmitting}
-                                fullWidth
-                                label="Year Level"
-                                options={YEAR_LEVEL_OPTIONS}
-                                size="small"
-                                value={selectedYearLevel}
-                                onChange={(e) => setSelectedYearLevel(Number(e.target.value))}
-                            />
-                        </div>
+                        <p className="text-xs text-(--mui-palette-text-secondary) m-0">
+                            Your academic program and initial year level will be assigned directly by the Registrar's Office upon verification.
+                        </p>
                     </div>
                 )}
 

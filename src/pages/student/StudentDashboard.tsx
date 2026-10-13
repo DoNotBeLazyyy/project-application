@@ -10,7 +10,6 @@ import StudentInsightSummaryCard from '@components/dashboard/StudentInsightSumma
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import { BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocusIcon } from '@phosphor-icons/react';
-import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getStudentInsight } from '@services/analytics.service';
 import { getMyProfile } from '@services/profile.service';
 import { getStudentDashboard } from '@services/student-portal.service';
@@ -96,7 +95,6 @@ export default function StudentDashboard() {
     const [dashboard, setDashboard] = useState<StudentDashboardData | null>(null);
     const [insight, setInsight] = useState<StudentInsight | null>(null);
     const [profile, setProfile] = useState<MyProfile | null>(null);
-    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
     async function loadProfile() {
@@ -165,19 +163,10 @@ export default function StudentDashboard() {
                                 Academic Program Not Assigned
                             </p>
                             <p className="text-(--mui-palette-text-secondary) text-xs m-0">
-                                You have not selected an academic program yet. Assign your program to generate your curriculum checklist and track your degree progress.
+                                You do not have an assigned academic program yet. Please contact the Registrar's Office to have your degree program and year level assigned.
                             </p>
                         </div>
                     </div>
-                    <CommonButton
-                        size="small"
-                        variant="contained"
-                        onClick={function() {
-                            setIsAssignModalOpen(true);
-                        }}
-                    >
-                        Assign Program
-                    </CommonButton>
                 </div>
             )}
 
@@ -287,16 +276,6 @@ export default function StudentDashboard() {
             </div>
 
             <InstitutionalIdentityCard />
-
-            <AssignProgramModal
-                currentProgramId={profile?.student?.program_id}
-                currentYearLevel={profile?.student?.year_level}
-                open={isAssignModalOpen}
-                onClose={function() {
-                    setIsAssignModalOpen(false);
-                }}
-                onSuccess={loadProfile}
-            />
 
             <StudentProfilePromptModal
                 currentProfile={profile}

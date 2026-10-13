@@ -107,3 +107,33 @@ export async function cancelMyProfileRequest(
         p_request_id: requestId
     });
 }
+
+export async function registrarAssignStudentProgramAndYear(
+    studentId: string,
+    programId: string,
+    yearLevel?: number | null,
+    isOverride = false,
+    reason?: string | null
+): Promise<ServiceResult<{ success: boolean; message?: string; year_level?: number }>> {
+    return callRpc<{ success: boolean; message?: string; year_level?: number }>(
+        'fn_registrar_assign_student_program_and_year',
+        {
+            p_is_override: isOverride,
+            p_program_id: programId,
+            p_reason: reason || null,
+            p_student_id: studentId,
+            p_year_level: yearLevel || null
+        }
+    );
+}
+
+export async function syncStudentYearLevel(
+    studentId: string
+): Promise<ServiceResult<{ success: boolean; updated: boolean; year_level: number; calculated_year_level: number; overridden?: boolean }>> {
+    return callRpc<{ success: boolean; updated: boolean; year_level: number; calculated_year_level: number; overridden?: boolean }>(
+        'fn_sync_student_year_level',
+        {
+            p_student_id: studentId
+        }
+    );
+}

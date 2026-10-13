@@ -2,7 +2,11 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { getPrograms } from '@services/program/program.service';
+import { registrarAssignStudentProgramAndYear, syncStudentYearLevel } from '@services/registrar-verification.service';
 import { shiftStudentProgram } from '@services/records.service';
 import { useToastStore } from '@stores/toast.store';
 import { useEffect, useState } from 'react';
@@ -24,6 +28,7 @@ export interface AssignProgramModalProps {
     currentProgramId?: string | null;
     currentProgramName?: string | null;
     currentYearLevel?: number | null;
+    currentYearLevelOverridden?: boolean;
     title?: string;
 }
 
@@ -35,13 +40,16 @@ export default function AssignProgramModal({
     currentProgramId,
     currentProgramName,
     currentYearLevel,
+    currentYearLevelOverridden = false,
     title
 }: AssignProgramModalProps) {
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
     const [selectedProgramId, setSelectedProgramId] = useState<string>('');
     const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
+    const [isOverride, setIsOverride] = useState<boolean>(false);
     const [reason, setReason] = useState<string>('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
 
     useEffect(function() {
@@ -49,6 +57,7 @@ export default function AssignProgramModal({
 
         setSelectedProgramId(currentProgramId ?? '');
         setSelectedYearLevel(currentYearLevel && currentYearLevel >= 1 && currentYearLevel <= 6 ? currentYearLevel : 1);
+        setIsOverride(currentYearLevelOverridden);
         setReason('');
 
         async function fetchPrograms() {
@@ -68,23 +77,53 @@ export default function AssignProgramModal({
         }
 
         fetchPrograms();
-    }, [open, currentProgramId, currentYearLevel]);
+    }, [open, currentProgramId, currentYearLevel, currentYearLevelOverridden]);
+
+    async function handleSyncCurriculum() {
+        if (!studentId) return;
+        setIsSyncing(true);
+        const res = await syncStudentYearLevel(studentId);
+        setIsSyncing(false);
+        if (res.data) {
+            setSelectedYearLevel(res.data.calculated_year_level);
+            setIsOverride(false);
+            useToastStore.getState().showToast(
+                `Calculated Year Level from Curriculum: Year ${res.data.calculated_year_level}`,
+                'info'
+            );
+        }
+    }
 
     async function handleSave() {
         if (!selectedProgramId) return;
 
         setIsSaving(true);
-        const result = await shiftStudentProgram(studentId ?? null, {
-            effective_date: new Date().toISOString().slice(0, 10),
-            program_id: selectedProgramId,
-            reason: reason.trim() || undefined,
-            year_level: selectedYearLevel
-        });
+        let error: unknown = null;
+
+        if (studentId) {
+            const res = await registrarAssignStudentProgramAndYear(
+                studentId,
+                selectedProgramId,
+                selectedYearLevel,
+                isOverride,
+                reason.trim() || undefined
+            );
+            error = res.error;
+        } else {
+            const res = await shiftStudentProgram(null, {
+                effective_date: new Date().toISOString().slice(0, 10),
+                program_id: selectedProgramId,
+                reason: reason.trim() || undefined,
+                year_level: selectedYearLevel
+            });
+            error = res.error;
+        }
+
         setIsSaving(false);
 
-        if (!result.error) {
+        if (!error) {
             useToastStore.getState().showToast(
-                currentProgramId ? 'Program updated successfully.' : 'Program assigned successfully.',
+                currentProgramId ? 'Program & Year Level updated successfully.' : 'Program assigned successfully.',
                 'success'
             );
             onSuccess?.();
@@ -93,7 +132,8 @@ export default function AssignProgramModal({
     }
 
     const isUnchanged = selectedProgramId === (currentProgramId ?? '')
-        && selectedYearLevel === (currentYearLevel ?? 1);
+        && selectedYearLevel === (currentYearLevel ?? 1)
+        && isOverride === currentYearLevelOverridden;
 
     return (
         <CommonModal
@@ -101,10 +141,10 @@ export default function AssignProgramModal({
             onClose={onClose}
             cardProps={{
                 cardHeaderProps: {
-                    title: title || (currentProgramId ? 'Change Academic Program' : 'Assign Academic Program'),
+                    title: title || (currentProgramId ? 'Manage Program & Year Level' : 'Assign Academic Program & Year Level'),
                     subheader: currentProgramName
-                        ? `Currently assigned: ${currentProgramName}`
-                        : 'Select your degree program and year level.'
+                        ? `Currently assigned: ${currentProgramName} (Year ${currentYearLevel ?? 1})`
+                        : 'Assign degree program and year level under Registrar supervision.'
                 }
             }}
         >
@@ -121,31 +161,66 @@ export default function AssignProgramModal({
                     }}
                 />
 
-                <CommonSelect
+                <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                        <CommonSelect
+                            disabled={isSaving}
+                            fullWidth
+                            label="Year Level"
+                            options={YEAR_LEVEL_OPTIONS}
+                            size="small"
+                            value={selectedYearLevel}
+                            onChange={function(e) {
+                                setSelectedYearLevel(Number(e.target.value));
+                            }}
+                        />
+                    </div>
+                    {Boolean(studentId) && (
+                        <CommonButton
+                            disabled={isSaving || isSyncing}
+                            loading={isSyncing}
+                            size="small"
+                            startIcon={<ArrowsClockwiseIcon size={16} />}
+                            variant="outlined"
+                            onClick={handleSyncCurriculum}
+                        >
+                            Sync Curriculum
+                        </CommonButton>
+                    )}
+                </div>
+
+                <div className="bg-(--mui-palette-action-hover) p-3 rounded-lg flex flex-col gap-1">
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={isOverride}
+                                disabled={isSaving}
+                                size="small"
+                                onChange={(e) => setIsOverride(e.target.checked)}
+                            />
+                        }
+                        label={
+                            <span className="text-sm font-medium text-(--mui-palette-text-primary)">
+                                Manual Year Level Override
+                            </span>
+                        }
+                    />
+                    <p className="text-xs text-(--mui-palette-text-secondary) m-0 ml-7">
+                        When unchecked, the student's year level will automatically update when they complete all required curriculum subjects. Check this if the Registrar needs to manually override or hold the year level.
+                    </p>
+                </div>
+
+                <CommonInput
                     disabled={isSaving}
                     fullWidth
-                    label="Year Level"
-                    options={YEAR_LEVEL_OPTIONS}
+                    label="Reason / Notes (Optional)"
+                    placeholder="e.g. Initial assignment, curriculum transfer, or manual override"
                     size="small"
-                    value={selectedYearLevel}
+                    value={reason}
                     onChange={function(e) {
-                        setSelectedYearLevel(Number(e.target.value));
+                        setReason(e.target.value);
                     }}
                 />
-
-                {currentProgramId && (
-                    <CommonInput
-                        disabled={isSaving}
-                        fullWidth
-                        label="Reason for Shift / Change (Optional)"
-                        placeholder="e.g. Approved shift to new program"
-                        size="small"
-                        value={reason}
-                        onChange={function(e) {
-                            setReason(e.target.value);
-                        }}
-                    />
-                )}
 
                 <div className="flex gap-2 justify-end mt-2">
                     <CommonButton
@@ -165,7 +240,7 @@ export default function AssignProgramModal({
                     >
                         {isSaving
                             ? 'Saving...'
-                            : (currentProgramId ? 'Update Program' : 'Assign Program')}
+                            : (currentProgramId ? 'Update Program & Year' : 'Assign Program')}
                     </CommonButton>
                 </div>
             </div>

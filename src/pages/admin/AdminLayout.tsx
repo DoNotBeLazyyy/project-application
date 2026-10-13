@@ -1,6 +1,6 @@
 import RoleShell from '@components/layout/RoleShell';
 import {
-    BuildingsIcon, CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, HouseIcon, MegaphoneIcon, UsersIcon
+    BuildingsIcon, CalendarDotsIcon, CalendarIcon, ClipboardTextIcon, ClockCounterClockwiseIcon, GearIcon, HouseIcon, MegaphoneIcon, UserCheckIcon, UsersIcon
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
@@ -26,6 +26,12 @@ export default function AdminLayout() {
                         isActive: pathname.startsWith('/admin/users'),
                         label: 'Users',
                         onClick: () => navigate('/admin/users')
+                    },
+                    {
+                        icon: <UserCheckIcon size={18} />,
+                        isActive: pathname.startsWith('/admin/profile-verifications'),
+                        label: 'Profile Approvals',
+                        onClick: () => navigate('/admin/profile-verifications')
                     }
                 ]
             },

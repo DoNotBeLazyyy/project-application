@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { CopyIcon, EnvelopeSimpleIcon } from '@phosphor-icons/react';
+import { CopyIcon, EnvelopeSimpleIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 
 interface UseEnrollmentStudentTableConfigProps {
     onManage: (id: string) => void;
+    onAssignProgram?: (row: EnrollmentStudentRow) => void;
 }
 
 const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' | 'info'> = {
@@ -20,7 +21,8 @@ const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'w
 };
 
 export function useEnrollmentStudentTableConfig({
-    onManage
+    onManage,
+    onAssignProgram
 }: UseEnrollmentStudentTableConfigProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
@@ -107,6 +109,15 @@ export function useEnrollmentStudentTableConfig({
                     preset: 'edit',
                     onClick: () => onManage(row.id)
                 },
+                ...(onAssignProgram ? [{
+                    children: (
+                        <div className="flex gap-2 items-center">
+                            <GraduationCapIcon size={18} weight="bold" />
+                            <span>Assign Program & Year</span>
+                        </div>
+                    ),
+                    onClick: () => onAssignProgram(row)
+                }] : []),
                 {
                     preset: 'view',
                     onClick: () => onManage(row.id)

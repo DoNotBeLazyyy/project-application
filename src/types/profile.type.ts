@@ -2,6 +2,7 @@ export interface MyStudentInfo {
     id: string;
     student_number: string;
     year_level: number;
+    year_level_overridden?: boolean;
     status: string;
     program_id: string | null;
     program_code: string | null;
@@ -16,6 +17,8 @@ export interface PendingProfileRequest {
     created_at: string;
     rejection_reason?: string | null;
     registrar_notes?: string | null;
+    reviewer_notes?: string | null;
+    approver_role?: string | null;
 }
 
 export interface MyProfile {

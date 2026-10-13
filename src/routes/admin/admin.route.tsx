@@ -22,6 +22,12 @@ export const adminRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/admin/profile-verification');
+                }),
+                path: 'profile-verifications'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/admin/school-year-management');
                 }),
                 path: 'school-years'
