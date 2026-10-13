@@ -37,6 +37,11 @@ export default function Step3GradingPeriodsConfig({
     const [deletePeriodTarget, setDeletePeriodTarget] = useState<{ termIndex: number; periodIndex: number; name: string } | null>(null);
     const [focusTarget, setFocusTarget] = useState<{ type: 'period' | 'component'; key: string } | null>(null);
     const [collapsedPeriods, setCollapsedPeriods] = useState<Record<string, boolean>>({});
+    const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
+
+    function toggleTermCollapse(index: number) {
+        setCollapsedTerms((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     function togglePeriodCollapse(key: string) {
         setCollapsedPeriods((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -46,6 +51,10 @@ export default function Step3GradingPeriodsConfig({
     function handleAddPeriod(termIndex: number) {
         const targetTerm = terms[termIndex];
         if (!targetTerm) return;
+
+        if (collapsedTerms[termIndex]) {
+            setCollapsedTerms((prev) => ({ ...prev, [termIndex]: false }));
+        }
 
         const currentPeriods = targetTerm.grading_periods || [];
         const nextSequence = currentPeriods.length + 1;
@@ -237,7 +246,7 @@ export default function Step3GradingPeriodsConfig({
                             key={term.id || tIdx}
                         >
                             {/* Term Heading & Weight Meter */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/40 pb-3">
+                            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${collapsedTerms[tIdx] ? '' : 'border-b border-slate-100 dark:border-zinc-700/40 pb-3'}`}>
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
@@ -246,6 +255,9 @@ export default function Step3GradingPeriodsConfig({
                                         <h4 className="font-semibold text-base text-slate-900 dark:text-slate-100">
                                             {termTitle}
                                         </h4>
+                                        <span className="text-xs text-slate-500 font-normal">
+                                            ({periods.length} {periods.length === 1 ? 'period' : 'periods'})
+                                        </span>
                                     </div>
                                     <p className="text-xs text-slate-500 mt-0.5 ml-8">
                                         {term.start_date || 'No start'} to {term.end_date || 'No end'}
@@ -286,11 +298,25 @@ export default function Step3GradingPeriodsConfig({
                                             </CommonButton>
                                         </div>
                                     )}
+
+                                    <button
+                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                        title={collapsedTerms[tIdx] ? 'Expand Term' : 'Collapse Term'}
+                                        type="button"
+                                        aria-label={collapsedTerms[tIdx] ? 'Expand Term' : 'Collapse Term'}
+                                        onClick={() => toggleTermCollapse(tIdx)}
+                                    >
+                                        <CaretDownIcon
+                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedTerms[tIdx] ? '-rotate-90' : 'rotate-0'}`}
+                                            weight="bold"
+                                        />
+                                        <span className="text-xs hidden sm:inline">{collapsedTerms[tIdx] ? 'Expand' : 'Collapse'}</span>
+                                    </button>
                                 </div>
                             </div>
 
                             {/* Periods List */}
-                            <div className="space-y-4">
+                            <div className={collapsedTerms[tIdx] ? 'hidden' : 'space-y-4'}>
                                 {periods.map((period, pIdx) => {
                                     const prevPeriod = pIdx > 0
                                         ? periods[pIdx - 1]
@@ -603,34 +629,71 @@ export default function Step3GradingPeriodsConfig({
                                                         <div className="space-y-2">
                                                             {components.map((comp, cIdx) => (
                                                                 <div
-                                                                    className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
+                                                                    className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 bg-white dark:bg-zinc-800 p-2.5 sm:p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
                                                                     key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
                                                                 >
-                                                                    <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
-                                                                    c{cIdx + 1}
+                                                                    {/* Mobile Entry Header: Badge & Delete button */}
+                                                                    <div className="flex items-center justify-between sm:hidden w-full">
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <span className="w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                                                                c{cIdx + 1}
+                                                                            </span>
+                                                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                                                Component #{cIdx + 1}
+                                                                            </span>
+                                                                        </div>
+                                                                        {!disabled && (
+                                                                            <button
+                                                                                className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                                                                title="Remove component"
+                                                                                type="button"
+                                                                                onClick={() => handleRemoveComponent(tIdx, pIdx, cIdx)}
+                                                                            >
+                                                                                <TrashIcon className="w-4 h-4" />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Desktop Badge */}
+                                                                    <span className="hidden sm:flex w-5 h-5 rounded bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold items-center justify-center shrink-0">
+                                                                        c{cIdx + 1}
                                                                     </span>
 
-                                                                    <CommonInput
-                                                                        containerClassName="flex-1"
-                                                                        disabled={disabled}
-                                                                        inputRef={(el) => {
-                                                                            const itemKey = comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`;
-                                                                            if (focusTarget?.type === 'component' && focusTarget.key === itemKey && el) {
-                                                                                el.focus();
-                                                                                setFocusTarget(null);
-                                                                            }
-                                                                        }}
-                                                                        placeholder="e.g. Quizzes, Midterm Exam, Recitation"
-                                                                        size="small"
-                                                                        value={comp.name}
-                                                                        onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
-                                                                    />
-
-                                                                    <div className="w-28 shrink-0">
-                                                                        <CommonNumberInput
+                                                                    {/* Field 1: Component Name */}
+                                                                    <div className="w-full sm:flex-1">
+                                                                        <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                            Component Name
+                                                                        </span>
+                                                                        <CommonInput
+                                                                            containerClassName="w-full"
                                                                             disabled={disabled}
+                                                                            fullWidth
+                                                                            inputRef={(el) => {
+                                                                                const itemKey = comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`;
+                                                                                if (focusTarget?.type === 'component' && focusTarget.key === itemKey && el) {
+                                                                                    el.focus();
+                                                                                    setFocusTarget(null);
+                                                                                }
+                                                                            }}
+                                                                            placeholder="e.g. Quizzes, Midterm Exam, Recitation"
+                                                                            size="small"
+                                                                            value={comp.name}
+                                                                            onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
+                                                                        />
+                                                                    </div>
+
+                                                                    {/* Field 2: Weight */}
+                                                                    <div className="w-full sm:w-28 sm:shrink-0">
+                                                                        <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                            Weight (%)
+                                                                        </span>
+                                                                        <CommonNumberInput
+                                                                            containerClassName="w-full"
+                                                                            disabled={disabled}
+                                                                            fullWidth
                                                                             max={100}
                                                                             min={0}
+                                                                            placeholder="Weight"
                                                                             size="small"
                                                                             suffixText="%"
                                                                             value={comp.weight ?? ''}
@@ -638,9 +701,10 @@ export default function Step3GradingPeriodsConfig({
                                                                         />
                                                                     </div>
 
+                                                                    {/* Desktop Remove Button */}
                                                                     {!disabled && (
                                                                         <button
-                                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                                                            className="hidden sm:block p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
                                                                             title="Remove component"
                                                                             type="button"
                                                                             onClick={() => handleRemoveComponent(tIdx, pIdx, cIdx)}
