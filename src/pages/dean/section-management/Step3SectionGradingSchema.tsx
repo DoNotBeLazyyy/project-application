@@ -15,7 +15,7 @@ export default function Step3SectionGradingSchema({
 }: Step3SectionGradingSchemaProps) {
     return (
         <div className="flex flex-col gap-4">
-            <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs">
+            <div className="bg-white dark:bg-zinc-800/80 p-3.5 sm:p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs">
                 <SectionGradingOverride
                     control={control}
                     currentSectionId={currentSectionId}

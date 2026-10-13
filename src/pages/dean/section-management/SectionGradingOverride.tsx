@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import {
     ArrowCounterClockwiseIcon,
     CheckCircleIcon,
@@ -185,13 +186,13 @@ export default function SectionGradingOverride({
     }
 
     return (
-        <div className="col-span-1 md:col-span-2 flex flex-col gap-4 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-4 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30">
             {/* Header & Status (Indicates if overridden or inheriting program defaults) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-2.5">
                     <SlidersIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
                     <div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
                             Grading Schema Settings
                             {overrideEnabled
                                 ? (
@@ -215,6 +216,7 @@ export default function SectionGradingOverride({
 
                 {overrideEnabled && !disabled && (
                     <CommonButton
+                        className="w-full sm:w-auto"
                         color="inherit"
                         size="small"
                         startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" />}
@@ -324,7 +326,7 @@ export default function SectionGradingOverride({
 
                                     return (
                                         <div
-                                            className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
+                                            className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3"
                                             key={period.id || pIdx}
                                         >
                                             {/* Period Title & Badge */}
@@ -376,17 +378,48 @@ export default function SectionGradingOverride({
                                             </div>
 
                                             {/* Component items */}
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-2.5 sm:gap-2">
                                                 {period.components.map((comp, cIdx) => (
                                                     <div
-                                                        className="flex items-center gap-2"
+                                                        className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 p-3 sm:p-0 rounded-lg sm:rounded-none bg-slate-50/70 sm:bg-transparent dark:bg-zinc-900/40 sm:dark:bg-transparent border border-slate-200/60 sm:border-0 dark:border-zinc-700/60"
                                                         key={cIdx}
                                                     >
+                                                        {/* Mobile Header: Component indicator + Delete button */}
+                                                        <div className="flex items-center justify-between sm:hidden w-full pb-0.5">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span
+                                                                    className="rounded-sm shrink-0 size-2.5"
+                                                                    style={{ background: componentRailColor(cIdx) }}
+                                                                />
+                                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                                    Component #{cIdx + 1}
+                                                                </span>
+                                                            </div>
+                                                            {!disabled && period.components.length > 1 && (
+                                                                <CommonButton
+                                                                    aria-label="Remove component"
+                                                                    color="error"
+                                                                    size="xsmall"
+                                                                    startIcon={<TrashIcon weight="bold" />}
+                                                                    variant="text"
+                                                                    onClick={() => handleRemoveComponent(pIdx, cIdx)}
+                                                                >
+                                                                    <span className="text-xs">Remove</span>
+                                                                </CommonButton>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Desktop Color Rail Indicator */}
                                                         <span
-                                                            className="rounded-sm shrink-0 size-2.5"
+                                                            className="hidden sm:inline-block rounded-sm shrink-0 size-2.5"
                                                             style={{ background: componentRailColor(cIdx) }}
                                                         />
-                                                        <div className="flex-1 min-w-0">
+
+                                                        {/* Field 1: Component Name */}
+                                                        <div className="w-full sm:flex-1 min-w-0">
+                                                            <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                Component Name
+                                                            </span>
                                                             <CommonInput
                                                                 containerClassName="w-full"
                                                                 disabled={disabled}
@@ -402,35 +435,41 @@ export default function SectionGradingOverride({
                                                             />
                                                         </div>
 
-                                                        <div className="relative w-24 shrink-0">
-                                                            <CommonInput
+                                                        {/* Field 2: Weight */}
+                                                        <div className="w-full sm:w-28 sm:shrink-0">
+                                                            <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+                                                                Weight (%)
+                                                            </span>
+                                                            <CommonNumberInput
                                                                 containerClassName="w-full"
                                                                 disabled={disabled}
+                                                                fullWidth
+                                                                max={100}
+                                                                min={0}
                                                                 placeholder="Weight"
                                                                 size="small"
-                                                                slotProps={{ htmlInput: { min: 0, max: 100 } }}
-                                                                type="number"
-                                                                value={String(comp.weight ?? '')}
-                                                                onChange={(e) =>
+                                                                suffixText="%"
+                                                                value={comp.weight ?? ''}
+                                                                onChange={(val) =>
                                                                     handleUpdateComponent(pIdx, cIdx, {
-                                                                        weight: Number(e.target.value) || 0
+                                                                        weight: val as any
                                                                     })
                                                                 }
                                                             />
-                                                            <span className="absolute right-2 top-2 text-xs text-slate-400 font-bold pointer-events-none">
-                                                            %
-                                                            </span>
                                                         </div>
 
+                                                        {/* Desktop Remove Button */}
                                                         {!disabled && period.components.length > 1 && (
-                                                            <CommonButton
-                                                                aria-label="Remove component"
-                                                                color="error"
-                                                                size="xsmall"
-                                                                startIcon={<TrashIcon weight="bold" />}
-                                                                variant="text"
-                                                                onClick={() => handleRemoveComponent(pIdx, cIdx)}
-                                                            />
+                                                            <div className="hidden sm:block shrink-0">
+                                                                <CommonButton
+                                                                    aria-label="Remove component"
+                                                                    color="error"
+                                                                    size="xsmall"
+                                                                    startIcon={<TrashIcon weight="bold" />}
+                                                                    variant="text"
+                                                                    onClick={() => handleRemoveComponent(pIdx, cIdx)}
+                                                                />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 ))}
