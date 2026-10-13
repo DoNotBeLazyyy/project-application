@@ -56,8 +56,8 @@ export default function Step4HolidaysConfig({
         const newHoliday: WizardCalendarExceptionItem = {
             title: '',
             exception_type: activeDefault as CalendarExceptionType,
-            start_date: syStartDate || '',
-            end_date: syStartDate || '',
+            start_date: '',
+            end_date: '',
             affects_attendance: true,
             description: ''
         };

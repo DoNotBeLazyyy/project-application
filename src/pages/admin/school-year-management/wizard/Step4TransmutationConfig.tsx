@@ -42,10 +42,10 @@ export default function Step4TransmutationConfig({
 
     function handleAddRow() {
         const newRow: WizardTransmutationRow = {
-            label: '1.00',
-            min_percentage: 0,
-            max_percentage: 100,
-            transmuted_grade: 1.00,
+            label: '',
+            min_percentage: null,
+            max_percentage: null,
+            transmuted_grade: null,
             is_passing: true,
             is_conditional: false, // Default is Fixed
             special_code: null,

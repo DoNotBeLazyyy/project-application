@@ -462,8 +462,8 @@ export default function CourseForm({
     function handleAddCourseType() {
         appendCourseType({
             course_type_id: '',
-            units: 3,
-            credit_hours: 3
+            units: 0,
+            credit_hours: 0
         });
     }
 

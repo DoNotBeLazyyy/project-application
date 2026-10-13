@@ -16,10 +16,9 @@ import {
 import { getTermTypes } from '@services/term/term-type.service';
 import { AcademicYearWizardFormValues, WizardTermItem } from '@type/school-year.type';
 import { TermTypeOption } from '@type/term/term-type.type';
-import { formatDate } from '@utils/date.util';
 import { useEffect, useState } from 'react';
 import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
-import { DEFAULT_GRADING_PERIODS, distributeDatesAcrossPeriods } from './wizard.constants';
+import { DEFAULT_GRADING_PERIODS } from './wizard.constants';
 
 interface Step2TermsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -36,8 +35,6 @@ export default function Step2TermsConfig({
     const [isLoadingTypes, setIsLoadingTypes] = useState(false);
     const [deleteTermTarget, setDeleteTermTarget] = useState<{ index: number; name: string } | null>(null);
 
-    const syStartDate = useWatch({ control, name: 'start_date' });
-    const syEndDate = useWatch({ control, name: 'end_date' });
     const syEvaluationScope = useWatch({ control, name: 'evaluation_scope' }) || 'Period';
 
     const { fields, append, remove } = useFieldArray({
@@ -65,49 +62,23 @@ export default function Step2TermsConfig({
         };
     }, []);
 
-    // Helper to add a new default term with non-conflicting type and distributed dates
+    // Helper to add a new blank term
     function handleAddTerm() {
-        const termIndex = watchedTerms.length;
-        const defaultNames = ['1st Semester', '2nd Semester', 'Summer Term', '3rd Semester', 'Trimester 1', 'Trimester 2'];
-        const suggestedLabel = defaultNames[termIndex] || `Term #${termIndex + 1}`;
-        const matchedType = termTypes.find((t) => t.label.toLowerCase() === suggestedLabel.toLowerCase());
-
-        let termStart = syStartDate || '';
-        let termEnd = syEndDate || '';
-
-        // If previous terms exist, set start date after the last term's end date
-        if (watchedTerms.length > 0) {
-            const lastTerm = watchedTerms[watchedTerms.length - 1];
-            if (lastTerm.end_date) {
-                const nextDate = new Date(lastTerm.end_date);
-                nextDate.setDate(nextDate.getDate() + 1);
-                termStart = formatDate(nextDate);
-
-                const nextEndDate = new Date(nextDate);
-                nextEndDate.setMonth(nextEndDate.getMonth() + 4);
-                termEnd = syEndDate && new Date(syEndDate) > nextEndDate
-                    ? formatDate(nextEndDate)
-                    : (syEndDate || formatDate(nextEndDate));
-            }
-        }
-
-        const distributed = distributeDatesAcrossPeriods(termStart, termEnd, DEFAULT_GRADING_PERIODS.length);
-
         const newTerm: WizardTermItem = {
-            end_date: termEnd,
+            end_date: '',
             enrollment_end_date: '',
             enrollment_start_date: '',
             grading_deadline: '',
-            grading_periods: DEFAULT_GRADING_PERIODS.map((gp, gIdx) => ({
+            grading_periods: DEFAULT_GRADING_PERIODS.map((gp) => ({
                 ...gp,
-                end_date: distributed[gIdx]?.end_date || termEnd,
-                start_date: distributed[gIdx]?.start_date || termStart
+                end_date: '',
+                start_date: ''
             })),
-            start_date: termStart,
+            start_date: '',
             status: 'Upcoming',
-            term_type_code: matchedType?.code || suggestedLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-            term_type_id: matchedType?.id || '',
-            term_type_label: suggestedLabel
+            term_type_code: '',
+            term_type_id: '',
+            term_type_label: ''
         };
 
         append(newTerm);
@@ -115,56 +86,6 @@ export default function Step2TermsConfig({
 
     function handleUpdateTermDate(index: number, field: 'start_date' | 'end_date', value: string) {
         setValue(`terms.${index}.${field}`, value, { shouldDirty: true });
-
-        const currentTerm = watchedTerms[index] || fields[index];
-        const current = { ...currentTerm, [field]: value };
-
-        // When end_date is updated, check if succeeding term conflicts and auto-adjust
-        if (field === 'end_date') {
-            const next = watchedTerms[index + 1];
-            if (next && next.start_date && value && new Date(next.start_date) < new Date(value)) {
-                const nextStart = new Date(value);
-                nextStart.setDate(nextStart.getDate() + 1);
-                const formattedNextStart = formatDate(nextStart);
-                let formattedNextEnd = next.end_date;
-                if (next.end_date && new Date(next.end_date) <= nextStart) {
-                    const nextEnd = new Date(nextStart);
-                    nextEnd.setMonth(nextEnd.getMonth() + 4);
-                    formattedNextEnd = formatDate(nextEnd);
-                }
-                setValue(`terms.${index + 1}.start_date`, formattedNextStart, { shouldDirty: true });
-                setValue(`terms.${index + 1}.end_date`, formattedNextEnd, { shouldDirty: true });
-
-                if (next.grading_periods?.length) {
-                    const nextDist = distributeDatesAcrossPeriods(
-                        formattedNextStart,
-                        formattedNextEnd,
-                        next.grading_periods.length
-                    );
-                    const updatedNextPeriods = next.grading_periods.map((gp, gIdx) => ({
-                        ...gp,
-                        end_date: nextDist[gIdx]?.end_date || formattedNextEnd,
-                        start_date: nextDist[gIdx]?.start_date || formattedNextStart
-                    }));
-                    setValue(`terms.${index + 1}.grading_periods`, updatedNextPeriods, { shouldDirty: true });
-                }
-            }
-        }
-
-        // Keep grading periods within this term synchronized and non-overlapping
-        if (current.start_date && current.end_date && current.grading_periods?.length) {
-            const distributed = distributeDatesAcrossPeriods(
-                current.start_date,
-                current.end_date,
-                current.grading_periods.length
-            );
-            const updatedCurrentPeriods = current.grading_periods.map((gp, gIdx) => ({
-                ...gp,
-                end_date: distributed[gIdx]?.end_date || current.end_date,
-                start_date: distributed[gIdx]?.start_date || current.start_date
-            }));
-            setValue(`terms.${index}.grading_periods`, updatedCurrentPeriods, { shouldDirty: true });
-        }
     }
 
     return (
@@ -221,6 +142,7 @@ export default function Step2TermsConfig({
                     const otherTermsHaveThisType = watchedTerms.some(
                         (t, idx) =>
                             idx !== index &&
+                            Boolean((currentTerm.term_type_label || '').trim()) &&
                             (t.term_type_label || '').trim().toLowerCase() === (currentTerm.term_type_label || '').trim().toLowerCase()
                     );
 
@@ -261,8 +183,12 @@ export default function Step2TermsConfig({
                                             title="Reset Term Dates to Blank"
                                             type="button"
                                             onClick={() => {
+                                                setValue(`terms.${index}.term_type_label`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.term_type_code`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.term_type_id`, '', { shouldDirty: true });
                                                 setValue(`terms.${index}.start_date`, '', { shouldDirty: true });
                                                 setValue(`terms.${index}.end_date`, '', { shouldDirty: true });
+                                                setValue(`terms.${index}.max_units`, undefined as any, { shouldDirty: true });
                                                 setValue(`terms.${index}.enrollment_start_date`, '', { shouldDirty: true });
                                                 setValue(`terms.${index}.enrollment_end_date`, '', { shouldDirty: true });
                                                 setValue(`terms.${index}.grading_deadline`, '', { shouldDirty: true });
@@ -387,7 +313,7 @@ export default function Step2TermsConfig({
                                         min={1}
                                         placeholder="24"
                                         size="small"
-                                        value={currentTerm.max_units ?? 24}
+                                        value={currentTerm.max_units ?? ''}
                                         onChange={(val) => {
                                             setValue(`terms.${index}.max_units`, val ?? 0, { shouldDirty: true });
                                         }}

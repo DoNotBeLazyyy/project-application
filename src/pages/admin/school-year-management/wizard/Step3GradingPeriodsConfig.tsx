@@ -127,23 +127,11 @@ export default function Step3GradingPeriodsConfig({
         if (!targetTerm) return;
 
         const currentPeriods = targetTerm.grading_periods || [];
-        const nextSequence = currentPeriods.length + 1;
-        let pStart = targetTerm.start_date || '';
-        let pEnd = targetTerm.end_date || '';
-
-        if (currentPeriods.length > 0) {
-            const lastP = currentPeriods[currentPeriods.length - 1];
-            if (lastP.end_date) {
-                pStart = lastP.end_date;
-                pEnd = targetTerm.end_date || lastP.end_date;
-            }
-        }
-
         const newPeriod: WizardGradingPeriodItem = {
-            end_date: pEnd,
+            end_date: '',
             name: '',
             sequence: nextSequence,
-            start_date: pStart,
+            start_date: '',
             weight: 0,
             major_exam_start_date: '',
             major_exam_end_date: '',
