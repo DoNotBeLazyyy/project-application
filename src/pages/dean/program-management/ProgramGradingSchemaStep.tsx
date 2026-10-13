@@ -2,12 +2,12 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import {
     ArrowCounterClockwiseIcon,
+    CaretDownIcon,
     CheckCircleIcon,
     InfoIcon,
     PlusCircleIcon,
     ScalesIcon,
-    TrashIcon,
-    CaretDownIcon
+    TrashIcon
 } from '@phosphor-icons/react';
 import { ProgramFormValues } from '@type/program/program.type';
 import { componentRailColor } from '@utils/period-allocation.util';
@@ -52,21 +52,15 @@ export const DEFAULT_ACADEMIC_YEAR_PERIODS = [
     }
 ];
 
-export const MINIMUM_SINGLE_SCHEMA_PERIOD = [
-    {
-        name: 'Period 1',
-        sequence: 1,
-        weight: 100,
-        components: [
-            { name: 'Class Standing', weight: 100 }
-        ]
-    }
-];
-
 export default function ProgramGradingSchemaStep({ control, disabled = false }: ProgramGradingSchemaStepProps) {
     const overrideEnabled = useWatch({ control, name: 'override_grading_schema' });
     const { field: overrideField } = useController({ control, name: 'override_grading_schema' });
     const { field: periodsField } = useController({ control, name: 'grading_periods' });
+    const [collapsedPeriods, setCollapsedPeriods] = useState<Record<number, boolean>>({});
+
+    function togglePeriodCollapse(index: number) {
+        setCollapsedPeriods((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     const activePeriods = overrideEnabled && periodsField.value?.length
         ? periodsField.value
@@ -76,12 +70,6 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
     function handleSetDefault() {
         overrideField.onChange(false);
         periodsField.onChange([]);
-    }
-
-    // Clear button: clears all records in grading schema down to exactly 1 schema period (at least one schema must remain)
-    function handleClear() {
-        overrideField.onChange(true);
-        periodsField.onChange(JSON.parse(JSON.stringify(MINIMUM_SINGLE_SCHEMA_PERIOD)));
     }
 
     function handleUpdatePeriodWeight(pIndex: number, newWeight: number) {
@@ -143,7 +131,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
 
     return (
         <div className="flex flex-col gap-4 w-full">
-            {/* Form Header Block (part of scrollable content containing label, status, default/clear buttons, and total weight banner + add period button) */}
+            {/* Form Header Block */}
             <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                 {/* Row 1: Title & Description */}
                 <div className="flex items-start gap-3">
@@ -179,32 +167,22 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         )}
                 </div>
 
-                {/* Row 3: Action Buttons (Default & Clear in their own row) */}
-                <div className="flex items-center gap-2 w-full pt-1">
-                    <CommonButton
-                        className="flex-1"
-                        disabled={disabled || !overrideEnabled}
-                        size="small"
-                        startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" />}
-                        variant="outlined"
-                        onClick={handleSetDefault}
-                    >
-                        Default (Inherit)
-                    </CommonButton>
-                    <CommonButton
-                        className="flex-1"
-                        color="error"
-                        disabled={disabled}
-                        size="small"
-                        startIcon={<XCircleIcon className="w-4 h-4" />}
-                        variant="outlined"
-                        onClick={handleClear}
-                    >
-                        Clear (Keep 1 Schema)
-                    </CommonButton>
-                </div>
+                {/* Row 3: Action Buttons */}
+                {overrideEnabled && (
+                    <div className="flex items-center gap-2 w-full pt-1">
+                        <CommonButton
+                            disabled={disabled}
+                            size="small"
+                            startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" />}
+                            variant="outlined"
+                            onClick={handleSetDefault}
+                        >
+                            Default (Inherit)
+                        </CommonButton>
+                    </div>
+                )}
 
-                {/* Row 4: Total Period Weight Banner & Add Period Button (part of form header) */}
+                {/* Row 4: Total Period Weight Banner & Add Period Button */}
                 <div
                     className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-semibold shrink-0 mt-1 ${
                         isTotalValid
@@ -240,11 +218,16 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                             key={period.name + pIdx}
                         >
                             <div className="p-3 bg-slate-50 dark:bg-zinc-800/60 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                                    {period.sequence}. {period.name}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 w-40">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                                        {period.sequence}. {period.name || `Period ${period.sequence}`}
+                                    </span>
+                                    <span className="text-[11px] font-semibold text-brand-600 dark:text-brand-400 shrink-0">
+                                        ({period.weight}%)
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex items-center gap-1 w-32 sm:w-40">
                                         <CommonInput
                                             disabled={disabled}
                                             size="small"
@@ -263,7 +246,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                     </div>
                                     {overrideEnabled && activePeriods.length > 1 && (
                                         <button
-                                            className="text-slate-400 hover:text-red-500 p-1"
+                                            className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
                                             disabled={disabled}
                                             title="Remove Period"
                                             type="button"
@@ -272,10 +255,23 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                             <TrashIcon className="w-4 h-4" />
                                         </button>
                                     )}
+                                    <button
+                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                        title={collapsedPeriods[pIdx] ? 'Expand period' : 'Collapse period'}
+                                        type="button"
+                                        aria-label={collapsedPeriods[pIdx] ? 'Expand period' : 'Collapse period'}
+                                        onClick={() => togglePeriodCollapse(pIdx)}
+                                    >
+                                        <CaretDownIcon
+                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedPeriods[pIdx] ? '-rotate-90' : 'rotate-0'}`}
+                                            weight="bold"
+                                        />
+                                        <span className="text-xs hidden sm:inline">{collapsedPeriods[pIdx] ? 'Expand' : 'Collapse'}</span>
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="p-3 flex flex-col gap-3 flex-1">
+                            <div className={collapsedPeriods[pIdx] ? 'hidden' : 'p-3 flex flex-col gap-3 flex-1'}>
                                 <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 border-b border-slate-100 dark:border-zinc-800/60 pb-1.5">
                                     <span>Components</span>
                                     <span
