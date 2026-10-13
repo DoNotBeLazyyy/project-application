@@ -45,7 +45,7 @@ export interface ProgramFormValues {
         laboratory_units?: number;
         units?: number;
         total_units?: number;
-        type_units?: string;
+        type_units?: Record<string, number>;
     }[];
     pending_deleted_curriculum_ids?: string[];
 }

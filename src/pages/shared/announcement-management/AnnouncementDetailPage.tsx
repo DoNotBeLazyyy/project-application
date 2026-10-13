@@ -207,22 +207,22 @@ export default function AnnouncementDetailPage() {
         }
 
         if (values.item_type === 'Event') {
-            const body = values.description || values.content || '';
+            const body = (values.description || values.content || '').trim();
             const eventPayload: EventFormValues = {
                 all_day: values.all_day ?? false,
                 attachments: values.attachments,
                 description: body,
                 end_at: values.end_at || '',
-                location: values.location || '',
+                location: values.location ? values.location.trim() : '',
                 section_ids: sectionIds,
                 start_at: values.start_at || '',
                 target_audience: audience,
-                title: values.title
+                title: values.title.trim()
             };
             return createEvent(eventPayload, currentRole);
         }
 
-        const body = values.content || values.description || '';
+        const body = (values.content || values.description || '').trim();
         return createAnnouncement({
             attachments: values.attachments,
             content: body,
@@ -230,7 +230,7 @@ export default function AnnouncementDetailPage() {
             is_pinned: values.is_pinned ?? false,
             section_ids: sectionIds,
             target_audience: audience,
-            title: values.title
+            title: values.title.trim()
         }, currentRole);
     }
 
@@ -247,22 +247,22 @@ export default function AnnouncementDetailPage() {
         }
 
         if (values.item_type === 'Event') {
-            const body = values.description || values.content || '';
+            const body = (values.description || values.content || '').trim();
             const eventPayload: EventFormValues = {
                 all_day: values.all_day ?? false,
                 attachments: values.attachments,
                 description: body,
                 end_at: values.end_at || '',
-                location: values.location || '',
+                location: values.location ? values.location.trim() : '',
                 section_ids: sectionIds,
                 start_at: values.start_at || '',
                 target_audience: audience,
-                title: values.title
+                title: values.title.trim()
             };
             return updateEvent(id, eventPayload);
         }
 
-        const body = values.content || values.description || '';
+        const body = (values.content || values.description || '').trim();
         return updateAnnouncement(id, {
             attachments: values.attachments,
             content: body,
@@ -270,7 +270,7 @@ export default function AnnouncementDetailPage() {
             is_pinned: values.is_pinned ?? false,
             section_ids: sectionIds,
             target_audience: audience,
-            title: values.title
+            title: values.title.trim()
         });
     }
 

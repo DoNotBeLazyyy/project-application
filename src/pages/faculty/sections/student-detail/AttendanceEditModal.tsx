@@ -5,6 +5,7 @@ import CommonSelect from '@components/select/CommonSelect';
 import { attendanceStatusVariant, formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { saveAttendanceRecords } from '@services/faculty.service';
+import { useToastStore } from '@stores/toast.store';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { AttendanceStatus, StudentAttendanceRow } from '@type/faculty.type';
 import { useEffect, useState } from 'react';
@@ -49,17 +50,21 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
             const result = await saveAttendanceRecords(record.session_id, [
                 {
                     id: record.record_id,
-                    status,
-                    remarks
+                    remarks: remarks.trim(),
+                    status
                 }
             ]);
 
-            if (!result.error) {
+            if (result.error) {
+                useToastStore.getState().showToast(result.error.message || 'Failed to update attendance record.', 'error');
+            } else {
+                useToastStore.getState().showToast('Attendance record updated successfully.', 'success');
                 onSaved();
                 onClose();
             }
-        }
-        finally {
+        } catch {
+            useToastStore.getState().showToast('An unexpected error occurred while updating attendance.', 'error');
+        } finally {
             setIsSaving(false);
         }
     }

@@ -98,7 +98,10 @@ export default function SpecialGradeForm({
             name: 'label',
             rules: disabled
                 ? undefined
-                : { required: 'Grade label is required' },
+                : {
+                    required: 'Grade label is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Grade label cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {

@@ -34,7 +34,10 @@ export function getDepartmentFormFields(
             name: 'name',
             rules: disabled
                 ? undefined
-                : { required: 'Department name is required' },
+                : {
+                    required: 'Department name is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Department name cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {

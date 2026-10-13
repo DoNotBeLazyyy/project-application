@@ -114,7 +114,9 @@ export default function UserAccountMenu() {
                         {displayName}
                     </span>
                     <span className="max-w-40 text-white/60 text-xs truncate">
-                        {activeRoleLabel}
+                        {activeRole === 'Dean' && userProfile?.department_code
+                            ? `${activeRoleLabel} • ${userProfile.department_code}`
+                            : activeRoleLabel}
                     </span>
                 </span>
                 <CaretUpDownIcon
@@ -137,6 +139,11 @@ export default function UserAccountMenu() {
                     <span className="text-(--mui-palette-text-secondary) text-xs truncate">
                         {userProfile?.email}
                     </span>
+                    {userProfile?.department_name && (
+                        <span className="text-(--mui-palette-secondary-main) font-medium text-xs truncate mt-0.5">
+                            {userProfile.department_name}
+                        </span>
+                    )}
                 </div>
                 <Divider />
                 {hasMultipleRoles && (

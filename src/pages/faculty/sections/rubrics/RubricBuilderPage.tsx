@@ -86,16 +86,19 @@ export default function RubricBuilderPage() {
             max_points:  Number(c.max_points)
         }));
 
+        const titleTrimmed = values.title.trim();
+        const descTrimmed = values.description.trim();
+
         try {
             if (isNew) {
-                const result = await createRubric(sectionId, values.title, values.description, criteria);
+                const result = await createRubric(sectionId, titleTrimmed, descTrimmed, criteria);
 
                 if (!result.error) {
                     navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
                 }
             }
             else {
-                const result = await updateRubric(rubricId, values.title, values.description, criteria);
+                const result = await updateRubric(rubricId, titleTrimmed, descTrimmed, criteria);
 
                 if (!result.error) {
                     navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
@@ -165,7 +168,10 @@ export default function RubricBuilderPage() {
                             helperText="A short name for this rubric."
                             label="Title"
                             name="title"
-                            rules={{ required: 'Title is required.' }}
+                            rules={{
+                                required: 'Title is required.',
+                                validate: (val: any) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only.'
+                            }}
                         />
                         <ValidCommonInput
                             control={control}
@@ -208,7 +214,10 @@ export default function RubricBuilderPage() {
                                                 hasHelper
                                                 label="Criterion"
                                                 name={`criteria.${index}.title`}
-                                                rules={{ required: 'Required.' }}
+                                                rules={{
+                                                    required: 'Required.',
+                                                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Criterion title cannot be empty or whitespace only.'
+                                                }}
                                             />
                                             <ValidCommonInput
                                                 control={control}

@@ -11,6 +11,10 @@ export interface UserProfile {
     mobile_number: string | null;
     avatar_url: string | null;
     status: string;
+    department_id?: string | null;
+    department_code?: string | null;
+    department_name?: string | null;
+    profile_completed?: boolean;
 }
 
 export interface RoleItem {

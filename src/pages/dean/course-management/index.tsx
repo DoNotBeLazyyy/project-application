@@ -186,7 +186,11 @@ export default function CourseManagement() {
     async function handleUpdateSubmit(values: CourseFormValues) {
         if (!selectedId) return;
 
-        const result = await updateCourse(selectedId, values);
+        const result = await updateCourse(selectedId, {
+            ...values,
+            title: values.title.trim(),
+            description: values.description ? values.description.trim() : ''
+        });
 
         if (!result.error) {
             handleCloseUpdate();

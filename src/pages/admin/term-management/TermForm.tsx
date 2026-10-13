@@ -143,7 +143,7 @@ export default function TermForm({
                 : { required: 'Required' },
             type: 'date',
             fieldProps: {
-                disablePast: true
+                disablePast: !Boolean(currentTermId)
             }
         },
         {
@@ -162,7 +162,7 @@ export default function TermForm({
                 },
             type: 'date',
             fieldProps: {
-                disablePast: true
+                disablePast: !Boolean(currentTermId)
             }
         },
         {
@@ -171,7 +171,7 @@ export default function TermForm({
             name: 'enrollment_start_date',
             type: 'date',
             fieldProps: {
-                disablePast: true
+                disablePast: !Boolean(currentTermId)
             }
         },
         {

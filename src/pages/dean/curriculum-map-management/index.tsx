@@ -332,6 +332,24 @@ export default function CurriculumMapManagement({
                 };
             }
         }
+        if (!course) {
+            const allCoursesRes = await getCourses();
+            const opt = allCoursesRes.data?.find((c) => c.id === values.course_id);
+            if (opt) {
+                course = {
+                    id: opt.id,
+                    code: opt.code,
+                    title: opt.label,
+                    base_code: opt.base_code,
+                    course_type_id: opt.course_type_id,
+                    course_type_code: opt.course_type_code,
+                    course_type_label: opt.course_type_label,
+                    lecture_units: opt.lecture_units ?? 0,
+                    laboratory_units: opt.laboratory_units ?? 0,
+                    total_units: opt.total_units ?? 0
+                };
+            }
+        }
         const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
@@ -475,6 +493,24 @@ export default function CurriculumMapManagement({
         } | undefined = courses.find((c) => c.id === values.course_id);
         if (!course && optRes.data) {
             const opt = optRes.data.find((c) => c.id === values.course_id);
+            if (opt) {
+                course = {
+                    id: opt.id,
+                    code: opt.code,
+                    title: opt.label,
+                    base_code: opt.base_code,
+                    course_type_id: opt.course_type_id,
+                    course_type_code: opt.course_type_code,
+                    course_type_label: opt.course_type_label,
+                    lecture_units: opt.lecture_units ?? 0,
+                    laboratory_units: opt.laboratory_units ?? 0,
+                    total_units: opt.total_units ?? 0
+                };
+            }
+        }
+        if (!course) {
+            const allCoursesRes = await getCourses();
+            const opt = allCoursesRes.data?.find((c) => c.id === values.course_id);
             if (opt) {
                 course = {
                     id: opt.id,

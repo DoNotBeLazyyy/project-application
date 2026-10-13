@@ -66,7 +66,8 @@ export default function UserGridCard({
             ]}
             isSelected={isSelected}
             metrics={[
-                { label: 'Role', value: row.role_code }
+                { label: 'Role', value: row.role_code },
+                ...(row.department_code ? [{ label: 'Department', value: row.department_code }] : [])
             ]}
             selectVariant="button"
             status={row.status}

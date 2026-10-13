@@ -121,8 +121,8 @@ export default function RoleManagement() {
 
         const result = await updateRole(selectedRoleId, {
             code: values.code,
-            description: values.description,
-            label: values.label
+            description: values.description ? values.description.trim() : '',
+            label: values.label.trim()
         });
 
         if (!result.error) {

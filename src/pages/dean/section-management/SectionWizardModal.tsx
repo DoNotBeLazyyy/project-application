@@ -169,7 +169,15 @@ export default function SectionWizardModal({
                     );
                 return false;
             }
-            if (slot.time_start && slot.time_end && slot.time_start >= slot.time_end) {
+            if (!slot.time_start || !slot.time_end) {
+                useToastStore.getState()
+                    .showToast(
+                        `Schedule Slot #${i + 1}: Both start time and end time are required.`,
+                        'error'
+                    );
+                return false;
+            }
+            if (slot.time_start >= slot.time_end) {
                 useToastStore.getState()
                     .showToast(
                         `Schedule Slot #${i + 1}: Start time must be earlier than end time.`,
@@ -287,7 +295,8 @@ export default function SectionWizardModal({
             }
 
             if (targetSectionId) {
-                await saveSectionSchedules(targetSectionId, flatSlots);
+                const schedRes = await saveSectionSchedules(targetSectionId, flatSlots);
+                if (schedRes.error) return;
             }
 
             useToastStore.getState()

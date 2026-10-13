@@ -13,6 +13,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { CourseFormValues } from '@type/course/course.type';
+import { useToastStore } from '@stores/toast.store';
 import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
@@ -88,6 +89,25 @@ export default function CourseWizardModal({
     function handleCloseModal() {
         setCurrentStep(1);
         onClose();
+    }
+
+    function handleFormSubmit(values: CourseFormValues) {
+        if (values.prerequisites && values.prerequisites.length > 0) {
+            for (let i = 0; i < values.prerequisites.length; i++) {
+                const prereq = values.prerequisites[i];
+                if (prereq.prerequisite_kind === 'course' && (!prereq.course_id || !prereq.course_id.trim())) {
+                    useToastStore.getState().showToast(`Prerequisite #${i + 1}: Please select a course or remove the row.`, 'error');
+                    setCurrentStep(3);
+                    return;
+                }
+                if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required).trim())) {
+                    useToastStore.getState().showToast(`Prerequisite #${i + 1}: Please select a year level standing or remove the row.`, 'error');
+                    setCurrentStep(3);
+                    return;
+                }
+            }
+        }
+        onSubmit(values);
     }
 
     return (
@@ -252,7 +272,7 @@ export default function CourseWizardModal({
                             size="medium"
                             startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                             variant="contained"
-                            onClick={handleSubmit(onSubmit)}
+                            onClick={handleSubmit(handleFormSubmit)}
                         >
                             {isSaving ? 'Saving Course...' : isCodeDisabled ? 'Save Changes' : 'Save Course'}
                         </CommonButton>

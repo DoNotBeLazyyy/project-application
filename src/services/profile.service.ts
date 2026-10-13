@@ -54,6 +54,52 @@ export async function createMyStudentProfile(
     });
 }
 
+export interface CompleteUserProfileParams {
+    first_name: string;
+    last_name: string;
+    middle_name?: string;
+    suffix?: string;
+    preferred_name?: string;
+    mobile_number?: string;
+    address_line1?: string;
+    address_line2?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
+    date_of_birth?: string;
+    gender?: string;
+    civil_status?: string;
+    nationality?: string;
+    department_id?: string | null;
+    program_id?: string | null;
+    year_level?: number | null;
+}
+
+export async function completeUserProfile(
+    params: CompleteUserProfileParams
+): Promise<ServiceResult<{ success: boolean; message?: string }>> {
+    return callRpc<{ success: boolean; message?: string }>('fn_complete_user_profile', {
+        p_first_name: params.first_name,
+        p_last_name: params.last_name,
+        p_middle_name: params.middle_name || null,
+        p_suffix: params.suffix || null,
+        p_preferred_name: params.preferred_name || null,
+        p_mobile_number: params.mobile_number || null,
+        p_address_line1: params.address_line1 || null,
+        p_address_line2: params.address_line2 || null,
+        p_city: params.city || null,
+        p_province: params.province || null,
+        p_postal_code: params.postal_code || null,
+        p_date_of_birth: params.date_of_birth || null,
+        p_gender: params.gender || null,
+        p_civil_status: params.civil_status || null,
+        p_nationality: params.nationality || null,
+        p_department_id: params.department_id || null,
+        p_program_id: params.program_id || null,
+        p_year_level: params.year_level || null
+    });
+}
+
 export async function updateMyProfile(
     params: ProfileFormValues
 ): Promise<ServiceResult<{ message?: string; pending_approval?: boolean } | null>> {
@@ -87,7 +133,31 @@ export async function updateMyProfile(
         );
     };
 
-    // Attempt 1: 17 parameters (includes program_id and year_level)
+    // Attempt 1: 18 parameters (includes program_id, year_level, and department_id)
+    const res18 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
+        'fn_update_my_profile',
+        {
+            ...basePayload,
+            p_program_id: params.program_id || null,
+            p_year_level: params.year_level ? Number(params.year_level) : null,
+            p_department_id: params.department_id || null
+        },
+        { silent: true }
+    );
+
+    if (!res18.error) {
+        if (res18.data?.message) {
+            useToastStore.getState().showToast(res18.data.message, 'success');
+        }
+        return res18;
+    }
+
+    if (!isMissingRpcSignature(res18.error)) {
+        useToastStore.getState().showToast(res18.error.message, 'error');
+        return res18;
+    }
+
+    // Attempt 2: Fallback to 17 parameters (includes program_id and year_level)
     const res17 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
         'fn_update_my_profile',
         {
@@ -110,7 +180,7 @@ export async function updateMyProfile(
         return res17;
     }
 
-    // Attempt 2: Fallback to 16 parameters (includes program_id)
+    // Attempt 3: Fallback to 16 parameters (includes program_id)
     const res16 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
         'fn_update_my_profile',
         {
@@ -132,7 +202,7 @@ export async function updateMyProfile(
         return res16;
     }
 
-    // Attempt 3: Fallback to 15 parameters
+    // Attempt 4: Fallback to 15 parameters
     return callRpc<{ message?: string; pending_approval?: boolean } | null>(
         'fn_update_my_profile',
         basePayload

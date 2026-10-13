@@ -34,6 +34,7 @@ export async function inviteSingleUser(params: InviteUserParams): Promise<Servic
         first_name: params.first_name,
         last_name: params.last_name,
         role_code: params.role_code,
+        department_id: params.department_id || null,
         redirect_to: `${window.location.origin}/set-password`
     });
 }
@@ -74,6 +75,7 @@ export async function updateUser(
         first_name: params.first_name,
         last_name: params.last_name,
         role_codes: params.role_codes,
+        department_id: params.department_id || null,
         user_id: userId
     });
 }

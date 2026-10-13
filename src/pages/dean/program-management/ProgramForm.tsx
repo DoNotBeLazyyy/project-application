@@ -8,6 +8,7 @@ import { useDepartmentOptions } from '@pages/admin/department-management/useDepa
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
 import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
+import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
@@ -35,7 +36,17 @@ export default function ProgramForm({
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
 
+    const userProfile = useAppStore((state) => state.userProfile);
+    const activeRole = useAppStore((state) => state.activeRole);
+    const isDean = activeRole === 'Dean';
+
     const programName = watch('name');
+
+    useEffect(() => {
+        if (isDean && userProfile?.department_id && !getValues('department_id')) {
+            setValue('department_id', userProfile.department_id, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [isDean, userProfile, setValue, getValues]);
 
     useEffect(() => {
         if (!programId && programName) {
@@ -63,16 +74,21 @@ export default function ProgramForm({
             name: 'name',
             rules: disabled
                 ? undefined
-                : { required: 'Program name is required' },
+                : {
+                    required: 'Program name is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Program name cannot be empty or whitespace only'
+                },
             type: 'text',
             gridCols: 1
         },
         {
-            disabled,
+            disabled: disabled || Boolean(isDean && userProfile?.department_id),
             fieldProps: { helperText: 'Department that owns this program' },
             label: 'Department',
             name: 'department_id',
-            options: departmentOptions,
+            options: isDean && userProfile?.department_id
+                ? departmentOptions.filter((d) => d.value === userProfile.department_id)
+                : departmentOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a department' },

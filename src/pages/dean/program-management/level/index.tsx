@@ -140,7 +140,11 @@ export default function ProgramLevelManagement() {
             return;
         }
 
-        const result = await updateProgramLevel(selectedId, values);
+        const result = await updateProgramLevel(selectedId, {
+            ...values,
+            label: values.label.trim(),
+            description: values.description ? values.description.trim() : ''
+        });
 
         if (!result.error) {
             handleCloseUpdate();

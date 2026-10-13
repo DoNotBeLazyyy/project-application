@@ -8,6 +8,10 @@ export interface UserListRow {
     role_code: string;
     status: string;
     total_count: number;
+    department_id?: string | null;
+    department_code?: string | null;
+    department_name?: string | null;
+    profile_completed?: boolean;
 }
 
 export interface InviteUserParams {
@@ -15,6 +19,7 @@ export interface InviteUserParams {
     last_name: string;
     email: string;
     role_code: UserRole;
+    department_id?: string | null;
 }
 
 export interface AddUserFormValues {
@@ -22,6 +27,7 @@ export interface AddUserFormValues {
     last_name: string;
     email: string;
     role_code: UserRole;
+    department_id?: string;
 }
 
 export interface UpdateUserFormValues {
@@ -29,6 +35,7 @@ export interface UpdateUserFormValues {
     last_name: string;
     email: string;
     role_codes: UserRole[];
+    department_id?: string;
 }
 
 export interface UpdateUserParams {
@@ -36,6 +43,7 @@ export interface UpdateUserParams {
     first_name: string;
     last_name: string;
     role_codes: UserRole[];
+    department_id?: string | null;
 }
 
 export interface SetPasswordFormValues {

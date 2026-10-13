@@ -15,6 +15,7 @@ import {
     WarningIcon
 } from '@phosphor-icons/react';
 import { getDeanDashboard } from '@services/dashboard.service';
+import { useAppStore } from '@stores/app.store';
 import { DeanDashboard as DeanDashboardData, DeanDashboardStats } from '@type/dashboard.type';
 import { resolveStatValue } from '@utils/dashboard.util';
 import { ReactNode, useEffect, useState } from 'react';
@@ -98,6 +99,7 @@ const STAT_CARDS: DeanStatCard[] = [
 
 export default function DeanDashboard() {
     const navigate = useNavigate();
+    const userProfile = useAppStore((s) => s.userProfile);
     const {
         announcements,
         announcementsError,
@@ -115,10 +117,14 @@ export default function DeanDashboard() {
         fetchDashboard();
     }, []);
 
+    const headerSubtitle = userProfile?.department_name
+        ? `${userProfile.department_name} • Academic architecture at a glance.`
+        : 'Academic architecture at a glance.';
+
     return (
         <div className="flex flex-col gap-6">
             <DashboardHeader
-                subtitle="Academic architecture at a glance."
+                subtitle={headerSubtitle}
                 term={dashboard?.term}
                 title="Dashboard"
             />

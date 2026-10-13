@@ -36,13 +36,21 @@ export interface CurriculumMapFormValues {
 }
 
 export interface CurriculumMapBulkRow {
+    program_id?: string;
     program_code: string;
+    course_id?: string;
     course_code: string;
     year_level: string;
+    term_type_id?: string;
     term_type_code: string;
+    school_year_id?: string | null;
     school_year_code: string;
     sequence: string;
     is_elective: string;
+    lecture_units?: string;
+    laboratory_units?: string;
+    units?: string;
+    type_units?: Record<string, number>;
 }
 
 export interface CurriculumMapGrouped {

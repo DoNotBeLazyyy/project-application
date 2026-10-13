@@ -23,7 +23,8 @@ import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
-import { UseFormReturn, useWatch } from 'react-hook-form';
+import { useToastStore } from '@stores/toast.store';
+import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
 
 interface ProgramWizardModalProps {
     open: boolean;
@@ -111,7 +112,10 @@ export default function ProgramWizardModal({
             name: 'name',
             rules: readOnly
                 ? undefined
-                : { required: 'Program name is required' },
+                : {
+                    required: 'Program name is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Program name cannot be empty or whitespace only'
+                },
             type: 'text',
             gridCols: 1
         },
@@ -139,13 +143,11 @@ export default function ProgramWizardModal({
         },
         {
             disabled: readOnly,
-            fieldProps: { helperText: 'Academic / School Year for this program' },
+            fieldProps: { helperText: 'Academic / School Year for this program (optional)' },
             label: 'Academic Year',
             name: 'school_year_id',
             options: schoolYearOptions,
-            rules: readOnly
-                ? undefined
-                : { required: 'Please select an academic year' },
+            rules: undefined,
             type: 'select'
         },
         {
@@ -220,6 +222,21 @@ export default function ProgramWizardModal({
             if (!isValid) return;
         }
         setCurrentStep(stepNumber);
+    }
+
+    const showToast = useToastStore((state) => state.showToast);
+
+    function handleFormErrors(errors: FieldErrors<ProgramFormValues>) {
+        const errorKeys = Object.keys(errors);
+        if (errorKeys.length > 0) {
+            const firstKey = errorKeys[0];
+            const step1Keys = ['code', 'name', 'department_id', 'program_level_id', 'years_duration'];
+            if (step1Keys.includes(firstKey)) {
+                setCurrentStep(1);
+            }
+            const firstMsg = (errors as any)[firstKey]?.message || 'Please correct the form errors before saving';
+            showToast(firstMsg, 'error');
+        }
     }
 
     function handleCloseModal() {
@@ -452,7 +469,7 @@ export default function ProgramWizardModal({
                                     size="medium"
                                     startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                                     variant="contained"
-                                    onClick={handleSubmit(onSubmit)}
+                                    onClick={handleSubmit(onSubmit, handleFormErrors)}
                                 >
                                     {isSaving
                                         ? 'Saving Program...'

@@ -58,7 +58,8 @@ export default function UserManagement() {
             email: '',
             first_name: '',
             last_name: '',
-            role_code: 'Student' as UserRole
+            role_code: 'Student' as UserRole,
+            department_id: ''
         }
     });
 
@@ -98,7 +99,8 @@ export default function UserManagement() {
             email: '',
             first_name: '',
             last_name: '',
-            role_codes: []
+            role_codes: [],
+            department_id: ''
         }
     });
 
@@ -110,7 +112,8 @@ export default function UserManagement() {
                 email: result.data.email,
                 first_name: result.data.first_name,
                 last_name: result.data.last_name,
-                role_codes: result.data.role_codes ?? []
+                role_codes: result.data.role_codes ?? [],
+                department_id: result.data.department_id ?? ''
             });
         }
     }
@@ -187,10 +190,11 @@ export default function UserManagement() {
         }
 
         const result = await updateUser(selectedUserId, {
-            email: values.email,
-            first_name: values.first_name,
-            last_name: values.last_name,
-            role_codes: values.role_codes
+            email: values.email.trim(),
+            first_name: values.first_name.trim(),
+            last_name: values.last_name.trim(),
+            role_codes: values.role_codes,
+            department_id: values.department_id || null
         });
 
         if (!result.error) {

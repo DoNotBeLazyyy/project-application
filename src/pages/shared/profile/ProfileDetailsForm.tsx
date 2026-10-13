@@ -18,6 +18,7 @@ const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
 interface ProfileDetailsFormProps extends ComponentPropsForm {
     control: Control<ProfileFormValues>;
     isStudentUser?: boolean;
+    isDeanUser?: boolean;
     programOptions?: CommonSelectOption[];
     disabled?: boolean;
 }
@@ -25,6 +26,7 @@ interface ProfileDetailsFormProps extends ComponentPropsForm {
 export default function ProfileDetailsForm({
     control,
     isStudentUser = false,
+    isDeanUser = false,
     programOptions = [],
     disabled = false,
     ...formProps
@@ -33,7 +35,10 @@ export default function ProfileDetailsForm({
         {
             label: 'First Name',
             name: 'first_name',
-            rules: { required: 'First name is required' },
+            rules: {
+                required: 'First name is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+            },
             type: 'text',
             fieldProps: { helperText: 'Your legal given name.' }
         },
@@ -46,7 +51,10 @@ export default function ProfileDetailsForm({
         {
             label: 'Last Name',
             name: 'last_name',
-            rules: { required: 'Last name is required' },
+            rules: {
+                required: 'Last name is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+            },
             type: 'text',
             fieldProps: { helperText: 'Your legal family name.' }
         },
@@ -120,6 +128,18 @@ export default function ProfileDetailsForm({
         }
     ] : [];
 
+    const deanFields: FormFieldConfig<ProfileFormValues>[] = isDeanUser ? [
+        {
+            disabled: true,
+            label: 'Assigned Department',
+            name: 'department_name',
+            type: 'text',
+            fieldProps: {
+                helperText: 'Academic department governed by you as Dean (read-only).'
+            }
+        }
+    ] : [];
+
     const addressFields: FormFieldConfig<ProfileFormValues>[] = [
         {
             label: 'Address Line 1',
@@ -153,7 +173,7 @@ export default function ProfileDetailsForm({
         }
     ];
 
-    const rawFields = [...baseFields, ...studentFields, ...addressFields];
+    const rawFields = [...baseFields, ...studentFields, ...deanFields, ...addressFields];
     const fields: FormFieldConfig<ProfileFormValues>[] = disabled
         ? rawFields.map((f) => ({
             ...f,

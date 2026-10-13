@@ -58,6 +58,13 @@ export function useUserTableConfig({
                 tooltipField: 'role_code'
             },
             {
+                field: 'department_code',
+                flex: 2,
+                headerName: 'Department',
+                sortable: true,
+                valueFormatter: (params) => params.value || '—'
+            },
+            {
                 field: 'status',
                 flex: 2,
                 headerName: 'Status',

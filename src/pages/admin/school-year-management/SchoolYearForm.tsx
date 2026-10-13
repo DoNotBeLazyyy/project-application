@@ -34,7 +34,7 @@ export default function SchoolYearForm({
                 : { required: 'Required' },
             type: 'date',
             fieldProps: {
-                disablePast: true
+                disablePast: Boolean(isNew)
             }
         },
         {
@@ -55,7 +55,7 @@ export default function SchoolYearForm({
                 },
             type: 'date',
             fieldProps: {
-                disablePast: true
+                disablePast: Boolean(isNew)
             }
         },
         {

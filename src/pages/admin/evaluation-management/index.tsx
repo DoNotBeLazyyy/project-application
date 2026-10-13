@@ -196,7 +196,17 @@ export default function EvaluationManagement() {
         if (!selectedId) return;
         setIsSaving(true);
         try {
-            const res = await updateEvaluationTemplate(selectedId, values);
+            const sanitizedValues: EvaluationTemplateForm = {
+                ...values,
+                title: values.title.trim(),
+                description: values.description ? values.description.trim() : '',
+                suggestion_placeholder: values.suggestion_placeholder ? values.suggestion_placeholder.trim() : '',
+                questions: (values.questions ?? []).map((q) => ({
+                    ...q,
+                    question_text: q.question_text.trim()
+                }))
+            };
+            const res = await updateEvaluationTemplate(selectedId, sanitizedValues);
             if (!res.error) {
                 useToastStore.getState().showToast('Evaluation section updated successfully.', 'success');
                 handleCloseUpdate();

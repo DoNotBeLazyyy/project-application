@@ -35,7 +35,10 @@ export function getTermTypeFormFields(
             placeholder: 'e.g. 1st Semester',
             rules: disabled
                 ? undefined
-                : { required: 'Term type name is required' },
+                : {
+                    required: 'Term type name is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Term type name cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {

@@ -24,6 +24,7 @@ import {
     PlusIcon,
     TrashIcon
 } from '@phosphor-icons/react';
+import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
 import { useEffect, useState } from 'react';
@@ -296,6 +297,16 @@ export default function CourseForm({
         codes: []
     });
 
+    const userProfile = useAppStore((state) => state.userProfile);
+    const activeRole = useAppStore((state) => state.activeRole);
+    const isDean = activeRole === 'Dean';
+
+    useEffect(() => {
+        if (isDean && userProfile?.department_id && !watchedDepartmentId && setValue) {
+            setValue('department_id', userProfile.department_id, { shouldValidate: true, shouldDirty: true });
+        }
+    }, [isDean, userProfile, watchedDepartmentId, setValue]);
+
     useEffect(() => {
         let isMounted = true;
         if (!watchedDepartmentId) {
@@ -380,7 +391,10 @@ export default function CourseForm({
             name: 'title',
             rules: disabled
                 ? undefined
-                : { required: 'Course title is required' },
+                : {
+                    required: 'Course title is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Course title cannot be empty or whitespace only'
+                },
             type: 'text',
             gridCols: 3
         },
@@ -396,11 +410,13 @@ export default function CourseForm({
             gridCols: 3
         },
         {
-            disabled,
+            disabled: disabled || Boolean(isDean && userProfile?.department_id),
             fieldProps: { helperText: 'Department that owns this course' },
             label: 'Department',
             name: 'department_id',
-            options: departmentOptions,
+            options: isDean && userProfile?.department_id
+                ? departmentOptions.filter((d) => d.value === userProfile.department_id)
+                : departmentOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a department' },

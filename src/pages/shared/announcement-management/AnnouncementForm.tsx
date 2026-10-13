@@ -177,7 +177,10 @@ export default function AnnouncementForm({
             name: 'title',
             rules: disabled
                 ? undefined
-                : { required: 'Title is required' },
+                : {
+                    required: 'Title is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {
@@ -262,6 +265,15 @@ export default function AnnouncementForm({
                     fieldProps: { helperText: 'When the event ends (optional)' },
                     label: 'End Date',
                     name: 'end_at' as const,
+                    rules: disabled
+                        ? undefined
+                        : {
+                            validate: (val: unknown, formVals: CommunicationFormValues) => {
+                                if (!val || !formVals.start_at) return true;
+                                return new Date(val as string) >= new Date(formVals.start_at)
+                                    || 'End date cannot be earlier than start date';
+                            }
+                        },
                     type: 'date' as const
                 }
             ]
@@ -298,7 +310,10 @@ export default function AnnouncementForm({
                 placeholder={itemType === 'Event' ? 'Add event details...' : 'Write the announcement details here...'}
                 rules={disabled
                     ? undefined
-                    : { required: `${itemType === 'Event' ? 'Description' : 'Content'} is required` }}
+                    : {
+                        required: `${itemType === 'Event' ? 'Description' : 'Content'} is required`,
+                        validate: (val: any) => Boolean(val && String(val).replace(/<[^>]*>/g, '').trim()) || `${itemType === 'Event' ? 'Description' : 'Content'} cannot be empty or whitespace only`
+                    }}
                 onChange={handleEditorChange}
             />
 

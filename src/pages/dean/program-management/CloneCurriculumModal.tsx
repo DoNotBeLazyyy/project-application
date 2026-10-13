@@ -88,7 +88,11 @@ export default function CloneCurriculumModal({
                                     is_elective: entry.is_elective,
                                     sequence: String(entry.sequence),
                                     term_type_id: entry.term_type_id,
-                                    year_level: String(entry.year_level)
+                                    year_level: String(entry.year_level),
+                                    lecture_units: String(entry.lecture_units ?? 0),
+                                    laboratory_units: String(entry.laboratory_units ?? 0),
+                                    units: String(entry.units ?? entry.total_units ?? 0),
+                                    type_units: entry.type_units
                                 },
                                 targetSchoolYearId
                             )

@@ -66,7 +66,10 @@ export default function AssessmentSettingsForm({
         {
             label: 'Title',
             name: 'title',
-            rules: { required: 'Required' },
+            rules: {
+                required: 'Title is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Title cannot be empty or whitespace only'
+            },
             type: 'text',
             gridCols: 2
         },

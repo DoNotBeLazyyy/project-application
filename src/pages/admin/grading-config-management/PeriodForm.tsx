@@ -23,7 +23,10 @@ export default function PeriodForm({
             name: 'name',
             rules: disabled
                 ? undefined
-                : { required: 'Period name is required' },
+                : {
+                    required: 'Period name is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Period name cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {

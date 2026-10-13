@@ -26,6 +26,7 @@ interface UserInvitePayload {
     first_name: string;
     last_name: string;
     role_code: string;
+    department_id?: string;
 }
 
 interface RequestBody {
@@ -35,6 +36,7 @@ interface RequestBody {
     last_name?: string;
     role_code?: string;
     role_codes?: string[];
+    department_id?: string;
     user_id?: string;
     users?: UserInvitePayload[];
     redirect_to?: string;
@@ -123,7 +125,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
             p_email: email,
             p_first_name: first_name,
             p_last_name: last_name,
-            p_role_code: role_code
+            p_role_code: role_code,
+            p_department_id: body.department_id || null
         });
 
         if (provisionError) {
@@ -254,7 +257,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
             p_first_name: first_name,
             p_last_name: last_name,
             p_role_codes: role_codes,
-            p_email: email ? email.trim() : null
+            p_email: email ? email.trim() : null,
+            p_department_id: body.department_id || null
         });
 
         if (updateError) {

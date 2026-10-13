@@ -1,8 +1,10 @@
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import SessionTimeoutModal from '@components/modal/SessionTimeoutModal';
+import UserProfilePromptModal from '@components/modal/UserProfilePromptModal';
 import NotificationModalContainer from '@components/notification/NotificationModalContainer';
 import useIdleTimeout from '@hooks/useIdleTimeout';
 import { logout, refreshSession } from '@services/auth.service';
+import { useAppStore } from '@stores/app.store';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
 import { Suspense, useEffect } from 'react';
@@ -11,8 +13,15 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 export default function ProtectedLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const userProfile = useAppStore((s) => s.userProfile);
 
     const { isIdle, resetTimer } = useIdleTimeout();
+
+    const isProfileIncomplete = Boolean(
+        userProfile &&
+        userProfile.profile_completed === false &&
+        pathname !== '/set-password'
+    );
 
     useEffect(function() {
         return function() {
@@ -48,6 +57,10 @@ export default function ProtectedLayout() {
                 open={isIdle}
                 onLogout={handleLogout}
                 onStayLoggedIn={handleStayLoggedIn}
+            />
+            <UserProfilePromptModal
+                isMandatory={true}
+                open={isProfileIncomplete}
             />
             <NotificationModalContainer />
         </>

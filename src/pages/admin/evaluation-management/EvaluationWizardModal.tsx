@@ -156,7 +156,12 @@ function EvaluationQuestionItem({
                             ? undefined
                             : {
                                 required: 'Question text is required',
-                                validate: (val, formVals) => validateUniqueQuestion(val, formVals)
+                                validate: (val, formVals) => {
+                                    if (!val || !String(val).trim()) {
+                                        return 'Question text cannot be empty or whitespace only';
+                                    }
+                                    return validateUniqueQuestion(val, formVals);
+                                }
                             }
                     }
                 />
@@ -269,7 +274,12 @@ export default function EvaluationWizardModal({
             name: 'title',
             label: 'Section Title',
             disabled: readOnly,
-            rules: readOnly ? undefined : { required: 'Section title is required' },
+            rules: readOnly
+                ? undefined
+                : {
+                    required: 'Section title is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Section title cannot be empty or whitespace only'
+                },
             type: 'text',
             fieldProps: { helperText: 'Shown as the section heading on the student form.' }
         },

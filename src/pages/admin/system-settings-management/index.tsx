@@ -102,11 +102,21 @@ export default function SystemSettings() {
     }
 
     async function handleSubmit(values: SystemSettingsFormValues) {
-        const result = await updateSystemSettings(values);
+        const trimmedValues: SystemSettingsFormValues = {
+            ...values,
+            institution_name: values.institution_name.trim(),
+            institution_short_name: values.institution_short_name.trim(),
+            institution_address: values.institution_address.trim(),
+            institution_email: values.institution_email.trim(),
+            institution_phone: values.institution_phone.trim(),
+            institution_mobile: values.institution_mobile?.trim() ?? '',
+            institution_website: values.institution_website?.trim() ?? ''
+        };
+        const result = await updateSystemSettings(trimmedValues);
 
         if (!result.error) {
             setHasData(true);
-            methods.reset(values);
+            methods.reset(trimmedValues);
         }
     }
 
@@ -117,17 +127,26 @@ export default function SystemSettings() {
     const fields: FormFieldConfig<SystemSettingsFormValues>[] = [
         {
             name: 'institution_name',
-            rules: { required: 'Institution name is required' },
+            rules: {
+                required: 'Institution name is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Institution name cannot be empty or whitespace only'
+            },
             type: 'text'
         },
         {
             name: 'institution_short_name',
-            rules: { required: 'Short name is required' },
+            rules: {
+                required: 'Short name is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Short name cannot be empty or whitespace only'
+            },
             type: 'text'
         },
         {
             name: 'institution_address',
-            rules: { required: 'Institution address is required' },
+            rules: {
+                required: 'Institution address is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Institution address cannot be empty or whitespace only'
+            },
             type: 'text'
         },
         {
@@ -143,7 +162,10 @@ export default function SystemSettings() {
         },
         {
             name: 'institution_phone',
-            rules: { required: 'Institution phone is required' },
+            rules: {
+                required: 'Institution phone is required',
+                validate: (v: any) => Boolean(v && String(v).trim()) || 'Institution phone cannot be empty or whitespace only'
+            },
             type: 'text'
         },
         {

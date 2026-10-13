@@ -187,7 +187,12 @@ export default function ProgramManagement() {
             return;
         }
 
-        const result = await updateProgram(selectedId, values);
+        const result = await updateProgram(selectedId, {
+            ...values,
+            code: values.code.trim(),
+            name: values.name.trim(),
+            description: values.description ? values.description.trim() : ''
+        });
 
         if (!result.error) {
             showToast('Program and curriculum map updated successfully!', 'success');

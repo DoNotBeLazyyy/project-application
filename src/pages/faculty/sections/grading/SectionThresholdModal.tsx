@@ -88,22 +88,37 @@ export default function SectionThresholdModal({
             return;
         }
 
-        setBusyKey(key);
-        const result = await saveSectionSpecialGradeOverride(
-            sectionId,
-            rule.special_grade_config_id,
-            leaf.signal,
-            next
-        );
-        setBusyKey(null);
-
-        if (!result.error) {
+        if (Number.isNaN(next) || next < 0) {
             useToastStore.getState()
-                .showToast(
-                    'Saved for this section. Recalculate grades to re-check your students.',
-                    'success'
-                );
-            onSaved();
+                .showToast('Threshold must be a non-negative number.', 'warning');
+            return;
+        }
+
+        setBusyKey(key);
+        try {
+            const result = await saveSectionSpecialGradeOverride(
+                sectionId,
+                rule.special_grade_config_id,
+                leaf.signal,
+                next
+            );
+
+            if (result.error) {
+                useToastStore.getState()
+                    .showToast(result.error.message || 'Failed to save section threshold.', 'error');
+            } else {
+                useToastStore.getState()
+                    .showToast(
+                        'Saved for this section. Recalculate grades to re-check your students.',
+                        'success'
+                    );
+                onSaved();
+            }
+        } catch {
+            useToastStore.getState()
+                .showToast('An unexpected error occurred while saving threshold.', 'error');
+        } finally {
+            setBusyKey(null);
         }
     }
 
@@ -111,25 +126,34 @@ export default function SectionThresholdModal({
         const key = draftKey(rule.special_grade_config_id, leaf.signal);
 
         setBusyKey(key);
-        const result = await clearSectionSpecialGradeOverride(
-            sectionId,
-            rule.special_grade_config_id,
-            leaf.signal
-        );
-        setBusyKey(null);
+        try {
+            const result = await clearSectionSpecialGradeOverride(
+                sectionId,
+                rule.special_grade_config_id,
+                leaf.signal
+            );
 
-        if (!result.error) {
-            setDrafts(function(previous) {
-                return {
-                    ...previous,
-                    [key]: typeof leaf.value === 'number'
-                        ? leaf.value
-                        : 0
-                };
-            });
+            if (result.error) {
+                useToastStore.getState()
+                    .showToast(result.error.message || 'Failed to reset threshold.', 'error');
+            } else {
+                setDrafts(function(previous) {
+                    return {
+                        ...previous,
+                        [key]: typeof leaf.value === 'number'
+                            ? leaf.value
+                            : 0
+                    };
+                });
+                useToastStore.getState()
+                    .showToast('Back to the institution default for this section.', 'success');
+                onSaved();
+            }
+        } catch {
             useToastStore.getState()
-                .showToast('Back to the institution default for this section.', 'success');
-            onSaved();
+                .showToast('An unexpected error occurred while resetting threshold.', 'error');
+        } finally {
+            setBusyKey(null);
         }
     }
 

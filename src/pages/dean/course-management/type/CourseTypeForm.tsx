@@ -33,7 +33,10 @@ export function getCourseTypeFormFields(
             name: 'label',
             rules: disabled
                 ? undefined
-                : { required: 'Label is required' },
+                : {
+                    required: 'Label is required',
+                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Label cannot be empty or whitespace only'
+                },
             type: 'text'
         },
         {

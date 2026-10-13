@@ -111,7 +111,10 @@ export default function ProfilePage() {
                     nationality: profileRes.data.nationality,
                     student_number: profileRes.data.student?.student_number ?? 'System Generated',
                     program_id: profileRes.data.student?.program_id ?? '',
-                    year_level: profileRes.data.student?.year_level ?? 1
+                    year_level: profileRes.data.student?.year_level ?? 1,
+                    department_id: profileRes.data.department_id ?? '',
+                    department_code: profileRes.data.department_code ?? '',
+                    department_name: profileRes.data.department_name ?? ''
                 });
             }
         }
@@ -259,6 +262,7 @@ export default function ProfilePage() {
                             control={profileMethods.control}
                             disabled={Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                             id={PROFILE_FORM_ID}
+                            isDeanUser={Boolean(profile?.role_labels?.includes('Dean'))}
                             isStudentUser={isStudentUser}
                             programOptions={programOptions}
                             onSubmit={profileMethods.handleSubmit(handleProfileSubmit, handleProfileError)}

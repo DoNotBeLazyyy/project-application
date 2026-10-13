@@ -41,6 +41,10 @@ export interface MyProfile {
     role_labels: string[];
     student?: MyStudentInfo | null;
     pending_profile_request?: PendingProfileRequest | null;
+    department_id?: string | null;
+    department_code?: string | null;
+    department_name?: string | null;
+    profile_completed?: boolean;
 }
 
 export interface ProfileFormValues {
@@ -64,6 +68,9 @@ export interface ProfileFormValues {
     program_code?: string;
     program_name?: string;
     year_level?: number | string;
+    department_id?: string;
+    department_code?: string;
+    department_name?: string;
 }
 
 export interface ChangePasswordFormValues {
