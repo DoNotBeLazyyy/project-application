@@ -86,14 +86,8 @@ export default function Step1SchoolYearInfo({
             return;
         }
 
-        // In pure edit mode (existing school year not being duplicated), only populate if fields are blank
+        // In pure edit mode (existing school year not being duplicated), do not overwrite user-cleared fields
         if (!isNew && !sourceSchoolYear) {
-            if (!code || !code.trim()) {
-                setValue('code', autoCode, { shouldValidate: true });
-            }
-            if (!label || !label.trim()) {
-                setValue('label', autoLabel, { shouldValidate: true });
-            }
             return;
         }
 
@@ -105,11 +99,8 @@ export default function Step1SchoolYearInfo({
         );
 
         const shouldPopulateCode =
-            !userEditedCodeRef.current ||
-            !code ||
-            !code.trim() ||
-            /^AY-\d{4}-\d{4}$/i.test(code.trim()) ||
-            isDuplicatedSourceCode;
+            !userEditedCodeRef.current &&
+            (!code || /^AY-\d{4}-\d{4}$/i.test(code.trim()) || isDuplicatedSourceCode);
 
         if (shouldPopulateCode && code !== autoCode) {
             setValue('code', autoCode, { shouldValidate: true });
@@ -122,11 +113,8 @@ export default function Step1SchoolYearInfo({
         );
 
         const shouldPopulateLabel =
-            !userEditedLabelRef.current ||
-            !label ||
-            !label.trim() ||
-            /^Academic Year \d{4}-\d{4}$/i.test(label.trim()) ||
-            isDuplicatedSourceLabel;
+            !userEditedLabelRef.current &&
+            (!label || /^Academic Year \d{4}-\d{4}$/i.test(label.trim()) || isDuplicatedSourceLabel);
 
         if (shouldPopulateLabel && label !== autoLabel) {
             setValue('label', autoLabel, { shouldValidate: true });

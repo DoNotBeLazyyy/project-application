@@ -25,7 +25,7 @@ export function useStaffVerificationTableConfig() {
                             <CommonChip
                                 label={role}
                                 size="small"
-                                variant={role === 'Dean' ? 'filled' : 'light'}
+                                variant={role === 'Dean' ? 'dark' : 'light'}
                             />
                             {params.data.department_code && (
                                 <span className="text-xs text-(--mui-palette-text-secondary)">

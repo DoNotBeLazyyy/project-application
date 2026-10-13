@@ -13,7 +13,7 @@ import { ComponentPropsForm } from '@type/common.type';
 import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
 import { generateProgramCode } from '@utils/entity-code.util';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Control, useFormContext } from 'react-hook-form';
 
 interface ProgramFormProps extends ComponentPropsForm {
@@ -42,9 +42,11 @@ export default function ProgramForm({
 
     const programName = watch('name');
 
+    const hasInitializedDeptRef = useRef(false);
     useEffect(() => {
-        if (isDean && userProfile?.department_id && !getValues('department_id')) {
-            setValue('department_id', userProfile.department_id, { shouldValidate: true, shouldDirty: true });
+        if (!hasInitializedDeptRef.current && isDean && userProfile?.department_id && !getValues('department_id')) {
+            hasInitializedDeptRef.current = true;
+            setValue('department_id', userProfile.department_id, { shouldValidate: false });
         }
     }, [isDean, userProfile, setValue, getValues]);
 

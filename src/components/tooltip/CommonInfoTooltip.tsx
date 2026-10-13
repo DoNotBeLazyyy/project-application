@@ -138,10 +138,20 @@ export default function CommonInfoTooltip({
             return;
         }
 
-        // For error tooltips, do not close when the user clicks inside the input/field container to fix the error
-        if (variant === 'error' && event.target instanceof Node && buttonRef.current) {
-            const fieldContainer = buttonRef.current.closest('.flex-col') || buttonRef.current.closest('div');
-            if (fieldContainer && fieldContainer.contains(event.target)) {
+        // For error tooltips, do not close when the user interacts with the input, dropdown menu, or datepicker
+        if (variant === 'error' && buttonRef.current) {
+            if (event.target instanceof Node) {
+                const fieldContainer = buttonRef.current.closest('.flex-col') || buttonRef.current.closest('div');
+                if (fieldContainer && fieldContainer.contains(event.target)) {
+                    return;
+                }
+            }
+            if (event.target instanceof Element) {
+                if (event.target.closest('.MuiPopover-root, .MuiMenu-root, .MuiPickersPopper-root, .MuiAutocomplete-popper, .MuiDialog-root')) {
+                    return;
+                }
+            }
+            if (defaultOpen) {
                 return;
             }
         }

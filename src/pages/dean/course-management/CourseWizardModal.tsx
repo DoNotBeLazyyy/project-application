@@ -15,7 +15,8 @@ import {
 import { CourseFormValues } from '@type/course/course.type';
 import { useToastStore } from '@stores/toast.store';
 import { useEffect, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { formErrors } from '@utils/form.util';
 
 interface CourseWizardModalProps {
     open: boolean;
@@ -56,7 +57,10 @@ export default function CourseWizardModal({
     async function handleNext() {
         if (currentStep === 1) {
             const isValid = await trigger(['title', 'code', 'department_id']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
             setCurrentStep(2);
         } else if (currentStep === 2) {
             setCurrentStep(3);
@@ -81,9 +85,28 @@ export default function CourseWizardModal({
         }
         if (currentStep === 1) {
             const isValid = await trigger(['title', 'code', 'department_id']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
         }
         setCurrentStep(stepNumber);
+    }
+
+    function handleCourseFormErrors(errors: FieldErrors<CourseFormValues>) {
+        const errorKeys = Object.keys(errors);
+        if (errorKeys.length > 0) {
+            const firstKey = errorKeys[0];
+            const step1Keys = ['title', 'code', 'department_id', 'is_general_education', 'is_major'];
+            if (step1Keys.includes(firstKey)) {
+                setCurrentStep(1);
+            } else if (firstKey.startsWith('types')) {
+                setCurrentStep(2);
+            } else if (firstKey.startsWith('prerequisites')) {
+                setCurrentStep(3);
+            }
+        }
+        formErrors(errors, methods);
     }
 
     function handleCloseModal() {
@@ -272,7 +295,7 @@ export default function CourseWizardModal({
                             size="medium"
                             startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                             variant="contained"
-                            onClick={handleSubmit(handleFormSubmit)}
+                            onClick={handleSubmit(handleFormSubmit, handleCourseFormErrors)}
                         >
                             {isSaving ? 'Saving Course...' : isCodeDisabled ? 'Save Changes' : 'Save Course'}
                         </CommonButton>

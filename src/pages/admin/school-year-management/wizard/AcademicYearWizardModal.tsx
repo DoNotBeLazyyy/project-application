@@ -26,7 +26,7 @@ import {
     SaveAcademicYearCalendarPayload,
     SchoolYearOption
 } from '@type/school-year.type';
-import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
@@ -112,7 +112,8 @@ export default function AcademicYearWizardModal({
         getValues,
         reset,
         setValue,
-        watch
+        watch,
+        trigger
     } = methods;
 
     async function loadAndDuplicateSchoolYear(sourceId: string) {
@@ -222,7 +223,8 @@ export default function AcademicYearWizardModal({
     }, [open, schoolYearId, duplicateSchoolYearId, initialReadOnly]);
 
     // Validation for Step 1
-    function validateStep1(): boolean {
+    async function validateStep1(): Promise<boolean> {
+        const isValid = await trigger(['start_date', 'end_date', 'code', 'label']);
         const values = getValues();
         const result = validateStep1SchoolYear(
             values,
@@ -230,6 +232,10 @@ export default function AcademicYearWizardModal({
             existingSchoolYears,
             schoolYearId
         );
+        if (!isValid) {
+            formErrors(methods.formState.errors, methods);
+            return false;
+        }
         if (!result.isValid && result.error) {
             useToastStore.getState().showToast(result.error, 'error');
             return false;
@@ -309,9 +315,9 @@ export default function AcademicYearWizardModal({
         return true;
     }
 
-    function handleNext() {
+    async function handleNext() {
         if (currentStep === 1) {
-            if (!validateStep1()) return;
+            if (!(await validateStep1())) return;
             setCurrentStep(2);
         } else if (currentStep === 2) {
             if (!validateStep2()) return;
@@ -334,7 +340,7 @@ export default function AcademicYearWizardModal({
         }
     }
 
-    function handleStepClick(stepNumber: number) {
+    async function handleStepClick(stepNumber: number) {
         if (isReadOnly) {
             setCurrentStep(stepNumber);
             return;
@@ -346,7 +352,7 @@ export default function AcademicYearWizardModal({
         }
 
         // Validate sequentially
-        if (currentStep === 1 && !validateStep1()) return;
+        if (currentStep === 1 && !(await validateStep1())) return;
         if (currentStep === 2 && !validateStep2()) return;
         if (currentStep === 3 && !validateStep3()) return;
         if (currentStep === 4 && !validateStep4()) return;
@@ -357,7 +363,7 @@ export default function AcademicYearWizardModal({
 
     async function handleSave() {
         if (
-            !validateStep1() ||
+            !(await validateStep1()) ||
             !validateStep2() ||
             !validateStep3() ||
             !validateStep4() ||

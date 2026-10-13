@@ -3,9 +3,11 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
-import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
+import {
+    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+} from '@utils/form.util';
 import { DateTime } from 'luxon';
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
@@ -107,6 +109,12 @@ export function CommonDatePicker({
             setIsOpen(true);
         }
     }
+
+    useEffect(() => {
+        if ((isFirstError || defaultOpenErrorTooltip) && !isNonInteractive) {
+            setIsOpen(true);
+        }
+    }, [isFirstError, defaultOpenErrorTooltip, isNonInteractive]);
 
     const labelErrorMessage = label && errorProp
         ? helperTextProp
@@ -295,6 +303,40 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
             setIsOpen(true);
         }
     }
+
+    useEffect(() => {
+        if (resolvedIsFirstError && !isNonInteractive) {
+            setIsOpen(true);
+            const timer = setTimeout(() => {
+                const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
+                if (element) {
+                    element.focus({ preventScroll: true });
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [resolvedIsFirstError, formState.submitCount, name, isNonInteractive]);
+
+    useEffect(() => {
+        function handleFormError(event: Event) {
+            if (isNonInteractive) return;
+            const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
+            if (detail?.firstErrorField === name || (fieldState.error && resolvedIsFirstError)) {
+                setIsOpen(true);
+                const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
+                if (element) {
+                    element.focus({ preventScroll: true });
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+            return () => window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+        }
+    }, [name, resolvedIsFirstError, fieldState.error, isNonInteractive]);
 
     const externalTextFieldProps = typeof props.slotProps?.textField === 'object'
         ? props.slotProps.textField

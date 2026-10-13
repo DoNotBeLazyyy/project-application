@@ -279,10 +279,10 @@ export default function SectionThresholdModal({
                                                 hasClearButton={false}
                                                 maxDecimals={0}
                                                 size="small"
-                                                value={drafts[key] ?? 0}
+                                                value={drafts[key] ?? ''}
                                                 variant="outlined"
                                                 onChange={(next) => setDrafts(function(previous) {
-                                                    return { ...previous, [key]: next ?? 0 };
+                                                    return { ...previous, [key]: next as any };
                                                 })}
                                             />
                                             <span className="text-(--mui-palette-text-secondary) text-sm whitespace-nowrap">

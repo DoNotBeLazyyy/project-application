@@ -27,7 +27,7 @@ import {
 import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
@@ -214,7 +214,7 @@ function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCel
             min={0}
             max={10}
             step={0.5}
-            value={Number(units.field.value ?? 0)}
+            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : Number(units.field.value)}
             onChange={(val) => units.field.onChange(val)}
         />
     );
@@ -229,7 +229,7 @@ function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseT
             min={0}
             max={20}
             step={0.5}
-            value={Number(creditHours.field.value ?? 0)}
+            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : Number(creditHours.field.value)}
             onChange={(val) => creditHours.field.onChange(val)}
         />
     );
@@ -311,9 +311,11 @@ export default function CourseForm({
     const activeRole = useAppStore((state) => state.activeRole);
     const isDean = activeRole === 'Dean';
 
+    const hasInitializedDeptRef = useRef(false);
     useEffect(() => {
-        if (isDean && userProfile?.department_id && !watchedDepartmentId && setValue) {
-            setValue('department_id', userProfile.department_id, { shouldValidate: true, shouldDirty: true });
+        if (!hasInitializedDeptRef.current && isDean && userProfile?.department_id && !watchedDepartmentId && setValue) {
+            hasInitializedDeptRef.current = true;
+            setValue('department_id', userProfile.department_id, { shouldValidate: false });
         }
     }, [isDean, userProfile, watchedDepartmentId, setValue]);
 

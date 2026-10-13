@@ -23,7 +23,7 @@ import {
 } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
 import { SectionFormValues, SectionScheduleSlot } from '@type/section.type';
-import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -155,6 +155,9 @@ export default function SectionWizardModal({
                 ? ['term_id', 'course_id', 'max_slots', 'status']
                 : ['term_id', 'course_id', 'max_slots']
         );
+        if (!isValid) {
+            formErrors(methods.formState.errors, methods);
+        }
         return isValid;
     }
 

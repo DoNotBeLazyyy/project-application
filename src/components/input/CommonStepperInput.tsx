@@ -17,7 +17,7 @@ export interface CommonStepperInputProps {
 }
 
 const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>(({
-    value = 0,
+    value,
     onChange,
     min = 0,
     max = 100,
@@ -29,27 +29,34 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     className = '',
     showButtons = false
 }, ref) => {
+    const hasValue = value !== '' && value !== undefined && value !== null;
     const numericValue = typeof value === 'string'
-        ? (parseFloat(value) || 0)
+        ? (value === '' ? 0 : (parseFloat(value) || 0))
         : (value ?? 0);
 
     const handleIncrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const next = Math.min(max, Number((numericValue + step).toFixed(2)));
+        const base = hasValue ? numericValue : min;
+        const next = Math.min(max, Number((base + step).toFixed(2)));
         onChange(next);
-    }, [disabled, max, numericValue, onChange, step]);
+    }, [disabled, max, hasValue, numericValue, onChange, step, min]);
 
     const handleDecrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const next = Math.max(min, Number((numericValue - step).toFixed(2)));
+        const base = hasValue ? numericValue : min;
+        const next = Math.max(min, Number((base - step).toFixed(2)));
         onChange(next);
-    }, [disabled, min, numericValue, onChange, step]);
+    }, [disabled, min, hasValue, numericValue, onChange, step]);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (!onChange) return;
+        if (e.target.value === '') {
+            onChange(undefined as any);
+            return;
+        }
         const raw = parseFloat(e.target.value);
         if (isNaN(raw)) {
-            onChange(min);
+            onChange(undefined as any);
             return;
         }
         const clamped = Math.max(min, Math.min(max, raw));
@@ -80,7 +87,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                         fullWidth
                         size={size}
                         type="number"
-                        value={numericValue}
+                        value={hasValue ? numericValue : ''}
                         onChange={handleInputChange}
                         slotProps={{
                             htmlInput: {

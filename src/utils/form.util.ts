@@ -90,19 +90,99 @@ function scrollFieldIntoView(name: string): void {
         return;
     }
 
-    const field = document.querySelector(`[name="${name}"]`);
+    const escaped = name.replace(/\./g, '\\.');
+    const field = document.querySelector(`[name="${name}"], [id="${name}"], [name="${escaped}"], #${escaped}`);
 
     if (field instanceof HTMLElement) {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
-function announceFormError(detail: FormErrorEventDetail): void {
+export function announceFormError(detail: FormErrorEventDetail): void {
     if (typeof window === 'undefined' || typeof window.CustomEvent !== 'function') {
         return;
     }
 
     window.dispatchEvent(new CustomEvent<FormErrorEventDetail>(FORM_ERROR_EVENT, { detail }));
+}
+
+/**
+ * Automatically focuses the first invalid field and opens its dropdown menu
+ * or date picker popover if applicable.
+ */
+export function focusAndOpenFirstErrorField(
+    name: string,
+    methods?: { setFocus?: (name: any) => void }
+): void {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    if (methods && typeof methods.setFocus === 'function') {
+        try {
+            methods.setFocus(name);
+        } catch {
+            // Ignore if field is not registered in RHF
+        }
+    }
+
+    setTimeout(() => {
+        const escaped = name.replace(/\./g, '\\.');
+        const selector = `[name="${name}"], [id="${name}"], [data-field-name="${name}"], [name="${escaped}"], #${escaped}`;
+        let element = document.querySelector<HTMLElement>(selector);
+
+        if (!element) {
+            element = document.querySelector<HTMLElement>(
+                `[aria-invalid="true"], .Mui-error input, .Mui-error textarea, .Mui-error [role="combobox"], .Mui-error`
+            );
+        }
+
+        if (!element) return;
+
+        const container = element.closest('.MuiFormControl-root, .flex-col, .common_input_container') || element.parentElement;
+
+        // 1. Check if Dropdown / Select
+        const combobox = container?.querySelector<HTMLElement>('[role="combobox"], .MuiSelect-select') ||
+            (element.getAttribute('role') === 'combobox' ? element : null);
+
+        if (combobox) {
+            combobox.focus({ preventScroll: true });
+            if (combobox.getAttribute('aria-expanded') !== 'true') {
+                combobox.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+                combobox.click();
+            }
+        } else {
+            // 2. Check if DatePicker / DateTimePicker
+            const datePickerBtn = container?.querySelector<HTMLButtonElement>(
+                'button[aria-label*="date" i], button[aria-label*="picker" i], button[aria-label*="calendar" i], .MuiInputAdornment-root button'
+            );
+            const isDatePicker = Boolean(
+                datePickerBtn ||
+                container?.querySelector('.MuiDatePicker-root, .MuiDateTimePicker-root')
+            );
+
+            const textInput = container?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ||
+                (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element : null);
+
+            if (textInput) {
+                textInput.focus({ preventScroll: true });
+            } else {
+                element.focus({ preventScroll: true });
+            }
+
+            if (isDatePicker && datePickerBtn) {
+                const isPopperOpen = Boolean(document.querySelector('.MuiPickersPopper-root, .MuiDateCalendar-root'));
+                if (!isPopperOpen) {
+                    datePickerBtn.click();
+                }
+            }
+        }
+
+        const scrollTarget = container || element;
+        if (scrollTarget instanceof HTMLElement && typeof scrollTarget.scrollIntoView === 'function') {
+            scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 50);
 }
 
 export function formErrors<T extends FieldValues>(
@@ -113,8 +193,7 @@ export function formErrors<T extends FieldValues>(
     if (error.firstError) {
         const { firstError } = error;
 
-        methods.setFocus(firstError.key);
-        scrollFieldIntoView(firstError.key);
+        focusAndOpenFirstErrorField(firstError.key, methods);
         announceFormError({
             count: error.count,
             message: firstError.message ?? 'Please complete the required fields before saving.',
@@ -279,6 +358,19 @@ export function useAppForm<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ensureSubmitValidationMode(methods.control as any);
     }
+
+    const origHandleSubmit = methods.handleSubmit;
+    methods.handleSubmit = ((onValid: any, onInvalid?: any) => {
+        return origHandleSubmit(
+            onValid,
+            (errors: FieldErrors<TFieldValues>, event?: React.BaseSyntheticEvent) => {
+                formErrors(errors, methods as any);
+                if (typeof onInvalid === 'function') {
+                    return onInvalid(errors, event);
+                }
+            }
+        );
+    }) as typeof origHandleSubmit;
 
     return methods;
 }

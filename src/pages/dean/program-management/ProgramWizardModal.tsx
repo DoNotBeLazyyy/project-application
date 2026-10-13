@@ -21,6 +21,7 @@ import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGrad
 import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
 import { generateProgramCode } from '@utils/entity-code.util';
+import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useToastStore } from '@stores/toast.store';
 import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
@@ -181,7 +182,10 @@ export default function ProgramWizardModal({
     async function handleNext() {
         if (currentStep === 1) {
             const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
             setCurrentStep(2);
         }
         else if (currentStep === 2) {
@@ -207,12 +211,13 @@ export default function ProgramWizardModal({
         }
         if (currentStep === 1) {
             const isValid = await trigger(['code', 'name', 'department_id', 'program_level_id', 'years_duration']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
         }
         setCurrentStep(stepNumber);
     }
-
-    const showToast = useToastStore((state) => state.showToast);
 
     function handleFormErrors(errors: FieldErrors<ProgramFormValues>) {
         const errorKeys = Object.keys(errors);
@@ -222,9 +227,8 @@ export default function ProgramWizardModal({
             if (step1Keys.includes(firstKey)) {
                 setCurrentStep(1);
             }
-            const firstMsg = (errors as any)[firstKey]?.message || 'Please correct the form errors before saving';
-            showToast(firstMsg, 'error');
         }
+        formErrors(errors, methods);
     }
 
     function handleCloseModal() {

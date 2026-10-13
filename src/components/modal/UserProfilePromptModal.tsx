@@ -358,7 +358,7 @@ export default function UserProfilePromptModal({
                         )}
                         <CommonButton
                             color="primary"
-                            disabled={isSubmitting || !firstName.trim() || !lastName.trim() || (isDean && !selectedDepartmentId)}
+                            disabled={isSubmitting || !firstName.trim() || !lastName.trim()}
                             loading={isSubmitting}
                             size="small"
                             variant="contained"

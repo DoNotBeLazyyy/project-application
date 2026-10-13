@@ -1,7 +1,9 @@
 import CommonSelect, { CommonSelectProps } from '@components/select/CommonSelect';
 import { InputChangeEvent } from '@type/common.type';
-import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
-import { useRef, useState } from 'react';
+import {
+    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+} from '@utils/form.util';
+import { useEffect, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonSelectProps<T extends FieldValues = FieldValues> =
@@ -69,6 +71,42 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
             setIsOpen(true);
         }
     }
+
+    useEffect(() => {
+        if (isFirstError && !isNonInteractive) {
+            setIsOpen(true);
+            const timer = setTimeout(() => {
+                const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
+                if (element) {
+                    const combobox = element.parentElement?.querySelector<HTMLElement>('[role="combobox"], .MuiSelect-select') ?? element;
+                    combobox.focus({ preventScroll: true });
+                    combobox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isFirstError, formState.submitCount, name, isNonInteractive]);
+
+    useEffect(() => {
+        function handleFormError(event: Event) {
+            if (isNonInteractive) return;
+            const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
+            if (detail?.firstErrorField === name || (fieldState.error && isFirstError)) {
+                setIsOpen(true);
+                const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
+                if (element) {
+                    const combobox = element.parentElement?.querySelector<HTMLElement>('[role="combobox"], .MuiSelect-select') ?? element;
+                    combobox.focus({ preventScroll: true });
+                    combobox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+            return () => window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+        }
+    }, [name, isFirstError, fieldState.error, isNonInteractive]);
 
     return (
         <CommonSelect

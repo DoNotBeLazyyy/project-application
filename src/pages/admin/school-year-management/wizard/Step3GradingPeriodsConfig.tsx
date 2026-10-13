@@ -461,7 +461,7 @@ export default function Step3GradingPeriodsConfig({
                                                         size="small"
                                                         suffixText="%"
                                                         value={period.weight ?? ''}
-                                                        onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { weight: val ?? 0 })}
+                                                        onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { weight: val as any })}
                                                     />
                                                 </div>
                                             </div>
@@ -697,7 +697,7 @@ export default function Step3GradingPeriodsConfig({
                                                                             size="small"
                                                                             suffixText="%"
                                                                             value={comp.weight ?? ''}
-                                                                            onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val ?? 0 })}
+                                                                            onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val as any })}
                                                                         />
                                                                     </div>
 

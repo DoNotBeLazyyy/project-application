@@ -4,7 +4,9 @@ import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { StringNum } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { forwardRef, ReactNode } from 'react';
+import {
+    forwardRef, ReactNode, useEffect, useState
+} from 'react';
 
 export type SharedStringSizeProps = 'pagination' | 'xsmall' | 'small' | 'medium' | 'large';
 export interface CommonSelectOption {
@@ -74,6 +76,14 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
     ...props
 }, ref) => {
     const isNonInteractive = Boolean(disabled || readOnly);
+    const [uncontrolledOpen, setUncontrolledOpen] = useState(Boolean(isFirstError));
+
+    useEffect(() => {
+        if (isFirstError && !isNonInteractive) {
+            setUncontrolledOpen(true);
+        }
+    }, [isFirstError, isNonInteractive]);
+
     const labelErrorMessage = label && error
         ? helperText
         : undefined;
@@ -119,6 +129,17 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     },
                     select: {
                         displayEmpty: true,
+                        open: (slotProps?.select as any)?.open !== undefined
+                            ? (slotProps?.select as any).open
+                            : (isFirstError ? uncontrolledOpen : undefined),
+                        onOpen: (e: any) => {
+                            setUncontrolledOpen(true);
+                            (slotProps?.select as any)?.onOpen?.(e);
+                        },
+                        onClose: (e: any) => {
+                            setUncontrolledOpen(false);
+                            (slotProps?.select as any)?.onClose?.(e);
+                        },
                         ...slotProps?.select,
                         readOnly,
                         IconComponent: (iconProps) => (

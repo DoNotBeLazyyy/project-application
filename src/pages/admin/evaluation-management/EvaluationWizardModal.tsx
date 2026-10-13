@@ -26,8 +26,9 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
+import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { Control, FieldValues, useFieldArray, UseFormReturn, useWatch } from 'react-hook-form';
+import { Control, FieldErrors, FieldValues, useFieldArray, UseFormReturn, useWatch } from 'react-hook-form';
 
 export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -232,7 +233,10 @@ export default function EvaluationWizardModal({
     async function handleNext() {
         if (currentStep === 1) {
             const isValid = await trigger(['title', 'sequence']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
             setCurrentStep(2);
         }
     }
@@ -255,9 +259,19 @@ export default function EvaluationWizardModal({
         }
         if (currentStep === 1) {
             const isValid = await trigger(['title', 'sequence']);
-            if (!isValid) return;
+            if (!isValid) {
+                formErrors(methods.formState.errors, methods);
+                return;
+            }
         }
         setCurrentStep(stepNumber);
+    }
+
+    function handleEvaluationErrors(errors: FieldErrors<EvaluationTemplateForm>) {
+        if (errors.title || errors.sequence) {
+            setCurrentStep(1);
+        }
+        formErrors(errors, methods);
     }
 
     function handleCloseModal() {
@@ -556,7 +570,7 @@ export default function EvaluationWizardModal({
                                 size="small"
                                 startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                                 variant="contained"
-                                onClick={handleSubmit(onSubmit)}
+                                onClick={handleSubmit(onSubmit, handleEvaluationErrors)}
                             >
                                 {templateId ? 'Save Evaluation Section' : 'Create Evaluation Section'}
                             </CommonButton>

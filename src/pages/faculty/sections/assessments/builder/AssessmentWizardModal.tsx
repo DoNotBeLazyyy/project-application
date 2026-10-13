@@ -251,7 +251,7 @@ export default function AssessmentWizardModal({
     async function validateStep1(): Promise<boolean> {
         const isValid = await settingsMethods.trigger(['title', 'assessment_type', 'total_points']);
         if (!isValid) {
-            useToastStore.getState().showToast('Please specify a title, assessment type, and valid total points.', 'error');
+            formErrors(settingsMethods.formState.errors, settingsMethods);
             return false;
         }
         return true;
@@ -259,6 +259,10 @@ export default function AssessmentWizardModal({
 
     async function validateStep2(): Promise<boolean> {
         const isValid = await settingsMethods.trigger(['due_at', 'closes_at', 'show_results_at']);
+        if (!isValid) {
+            formErrors(settingsMethods.formState.errors, settingsMethods);
+            return false;
+        }
         return isValid;
     }
 

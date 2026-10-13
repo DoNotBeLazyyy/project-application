@@ -389,7 +389,7 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             suffixText="%"
                                             value={row.min_percentage ?? ''}
-                                            onChange={(val) => handleUpdatePercentage(index, 'min_percentage', val ?? 0)}
+                                            onChange={(val) => handleUpdatePercentage(index, 'min_percentage', val as any)}
                                         />
                                     </div>
 
@@ -407,7 +407,7 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             suffixText="%"
                                             value={row.max_percentage ?? ''}
-                                            onChange={(val) => handleUpdatePercentage(index, 'max_percentage', val ?? 0)}
+                                            onChange={(val) => handleUpdatePercentage(index, 'max_percentage', val as any)}
                                         />
                                     </div>
                                 </div>

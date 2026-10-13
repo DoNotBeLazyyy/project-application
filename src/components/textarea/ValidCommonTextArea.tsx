@@ -1,6 +1,9 @@
 import CommonTextarea, { CommonTextareaProps } from '@components/textarea/CommonTextarea';
 import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
-import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
+import {
+    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+} from '@utils/form.util';
+import { useEffect } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
@@ -44,6 +47,38 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
             ? fieldState.error.message
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
+
+    useEffect(() => {
+        if (isFirstError && !props.disabled && !props.readOnly) {
+            const timer = setTimeout(() => {
+                const element = document.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
+                if (element) {
+                    element.focus({ preventScroll: true });
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isFirstError, formState.submitCount, name, props.disabled, props.readOnly]);
+
+    useEffect(() => {
+        function handleFormError(event: Event) {
+            if (props.disabled || props.readOnly) return;
+            const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
+            if (detail?.firstErrorField === name || (fieldState.error && isFirstError)) {
+                const element = document.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
+                if (element) {
+                    element.focus({ preventScroll: true });
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+            return () => window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+        }
+    }, [name, isFirstError, fieldState.error, props.disabled, props.readOnly]);
 
     /**
      * Change event handler for textarea input.

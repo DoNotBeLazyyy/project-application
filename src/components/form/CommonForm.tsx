@@ -2,7 +2,9 @@ import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { ensureSubmitValidationMode, formatFieldLabel, getFieldErrorMessage } from '@utils/form.util';
+import {
+    announceFormError, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formatFieldLabel, getFieldErrorMessage
+} from '@utils/form.util';
 import { useEffect, useMemo } from 'react';
 import { Control, FieldValues, useFormState } from 'react-hook-form';
 
@@ -132,14 +134,12 @@ export default function CommonForm<T extends FieldValues>({
     useEffect(() => {
         if (!firstErrorField) return;
 
-        const selector = `[name="${firstErrorField}"], #${firstErrorField}`;
-        const targetElement = document.querySelector<HTMLElement>(selector) ||
-            document.querySelector<HTMLElement>('[aria-invalid="true"], .Mui-error input, .Mui-error textarea, .Mui-error');
-
-        if (targetElement) {
-            targetElement.focus({ preventScroll: false });
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        focusAndOpenFirstErrorField(firstErrorField);
+        announceFormError({
+            count: Object.keys(errors).length,
+            message: `${formatFieldLabel(firstErrorField)} is required.`,
+            firstErrorField
+        });
     }, [firstErrorField, submitCount]);
 
     const content = (

@@ -322,7 +322,7 @@ export default function Step2TermsConfig({
                                         size="small"
                                         value={currentTerm.max_units ?? ''}
                                         onChange={(val) => {
-                                            setValue(`terms.${index}.max_units`, val ?? 0, { shouldDirty: true });
+                                            setValue(`terms.${index}.max_units`, val as any, { shouldDirty: true });
                                         }}
                                     />
                                 </div>

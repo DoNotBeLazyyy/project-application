@@ -1,5 +1,8 @@
 import CommonMultiSelect, { CommonMultiSelectProps } from '@components/select/CommonMultiSelect';
-import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
+import {
+    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+} from '@utils/form.util';
+import { useEffect } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonMultiSelectProps<T extends FieldValues = FieldValues> =
@@ -37,6 +40,40 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             ? fieldState.error.message
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
+
+    useEffect(() => {
+        if (isFirstError && !props.disabled && !props.readOnly) {
+            const timer = setTimeout(() => {
+                const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
+                if (element) {
+                    const input = element.parentElement?.querySelector<HTMLInputElement>('input') ?? element;
+                    input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isFirstError, formState.submitCount, name, props.disabled, props.readOnly]);
+
+    useEffect(() => {
+        function handleFormError(event: Event) {
+            if (props.disabled || props.readOnly) return;
+            const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
+            if (detail?.firstErrorField === name || (fieldState.error && isFirstError)) {
+                const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
+                if (element) {
+                    const input = element.parentElement?.querySelector<HTMLInputElement>('input') ?? element;
+                    input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener(FORM_ERROR_EVENT, handleFormError);
+            return () => window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
+        }
+    }, [name, isFirstError, fieldState.error, props.disabled, props.readOnly]);
 
     return (
         <CommonMultiSelect
