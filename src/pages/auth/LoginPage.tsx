@@ -10,7 +10,7 @@ import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
 import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { isSessionExpiredDueToInactivity } from '@utils/session.util';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -31,7 +31,6 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const locationState = location.state as LoginLocationState | null;
-    const [loginError, setLoginError] = useState<string | null>(null);
     const activeRole = useAppStore((state) => state.activeRole);
     const methods = useForm<LoginFormValues>({
         ...DEFAULT_FORM_OPTIONS,
@@ -43,7 +42,6 @@ export default function LoginPage() {
         const urlErr = parseAuthUrlError();
         const initialErr = locationState?.authError || urlErr?.userMessage;
         if (initialErr) {
-            setLoginError(initialErr);
             useToastStore.getState().showToast(initialErr, 'error');
             clearAuthUrlError();
         }
@@ -66,10 +64,8 @@ export default function LoginPage() {
     }, [activeRole, navigate]);
 
     async function onSubmit(values: LoginFormValues) {
-        setLoginError(null);
         const result = await login(values.email, values.password);
         if (result.error) {
-            setLoginError(result.error.message);
             useToastStore.getState().showToast(result.error.message, 'error');
 
             return;
@@ -116,12 +112,6 @@ export default function LoginPage() {
                         <p className="m-0 text-(--mui-palette-success-main) text-sm">
                             Account activated successfully. Please sign in.
                         </p>
-                    )}
-
-                    {loginError && (
-                        <div className="bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-900 leading-relaxed p-3 rounded-md text-(--mui-tokens-color-red-500) text-sm">
-                            {loginError}
-                        </div>
                     )}
 
                     <ValidCommonInput
