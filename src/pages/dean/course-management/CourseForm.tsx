@@ -587,9 +587,6 @@ export default function CourseForm({
                             <FileTextIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                             Overview Data
                         </h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Enter the basic details, title, code, and department for this course.
-                        </p>
                     </div>
                     {!disabled && (
                         <button
@@ -621,9 +618,6 @@ export default function CourseForm({
                                 <BookOpenIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                 Course Type Breakdown
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Configure units and credit hours for each course type component.
-                            </p>
                         </div>
                         <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800 self-start sm:self-auto">
                             <span>Total Units: <strong>{totalUnits}</strong></span>
@@ -749,9 +743,6 @@ export default function CourseForm({
                                 <GitForkIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                 Prerequisites
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Configure course prerequisites, corequisites, and year level standing requirements.
-                            </p>
                         </div>
                         {!disabled && courseKindCount < allCourseOptions.length && (
                             <CommonButton

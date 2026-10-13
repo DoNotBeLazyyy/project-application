@@ -33,16 +33,11 @@ export default function Step3FacultyLoadConflicts({
     return (
         <div className="flex flex-col gap-4">
             {/* Header info */}
-            <div className="bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-700/70 shadow-xs flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                    <WarningIcon className="w-5 h-5 text-amber-500" weight="bold" />
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                        Schedule Conflict Analysis
-                    </h3>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Schedule overlaps across assigned class sections and classroom facilities for {facultyName}.
-                </p>
+            <div className="bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-700/70 shadow-xs flex items-center gap-2">
+                <WarningIcon className="w-5 h-5 text-amber-500" weight="bold" />
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    Schedule Conflict Analysis
+                </h3>
             </div>
 
             {/* Zero Conflicts State */}

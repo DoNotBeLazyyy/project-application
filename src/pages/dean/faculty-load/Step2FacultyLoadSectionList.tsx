@@ -68,11 +68,6 @@ export default function Step2FacultyLoadSectionList({
                             {sections.length}
                         </span>
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {isReadOnly
-                            ? 'Viewing complete section details, capacity, and meeting schedules.'
-                            : 'Edit assigned faculty directly below, or remove sections from this teaching load.'}
-                    </p>
                 </div>
 
                 {!isReadOnly && onOpenAssignModal && (

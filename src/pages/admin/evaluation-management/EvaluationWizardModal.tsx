@@ -459,9 +459,6 @@ export default function EvaluationWizardModal({
                                     <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                                         Evaluation Questions ({fields.length})
                                     </h3>
-                                    <p className="text-xs text-slate-500">
-                                        Manage the questions that students will evaluate for this section.
-                                    </p>
                                 </div>
                             </div>
 

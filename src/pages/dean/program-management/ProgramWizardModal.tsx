@@ -345,9 +345,6 @@ export default function ProgramWizardModal({
                                     <GraduationCapIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                     Program Details
                                 </h4>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    Basic identity & academic duration
-                                </p>
                             </div>
                             {!readOnly && (
                                 <button

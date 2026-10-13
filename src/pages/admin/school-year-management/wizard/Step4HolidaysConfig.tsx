@@ -2,7 +2,6 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
     GearIcon,
@@ -89,7 +88,6 @@ export default function Step4HolidaysConfig({
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
                         <SunIcon className="w-5 h-5 text-amber-500 shrink-0" />
                         <span>Calendar Exceptions & Holiday Overlays</span>
-                        <CommonInfoTooltip content="Declare national holidays, academic breaks, emergency suspensions, and special class days. These exceptions overlay onto the academic year schedule and adjust attendance expectations." size={15} />
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                         Total Exceptions: <span className="font-bold text-slate-900 dark:text-slate-100">{holidays.length}</span>

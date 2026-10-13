@@ -292,9 +292,6 @@ export default function Step1SectionOverview({
                             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                 Section Overview
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Basic section identity, term, course, instructor, room, and capacity.
-                            </p>
                         </div>
                     </div>
                     {!disabled && setValue && (

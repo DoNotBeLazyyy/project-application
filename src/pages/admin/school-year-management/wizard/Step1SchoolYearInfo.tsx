@@ -153,9 +153,6 @@ export default function Step1SchoolYearInfo({
             <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div>
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Academic Year Details</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Define operational start and end dates, system code, display label, and active status.
-                    </p>
                 </div>
                 {!disabled && (
                     <CommonButton

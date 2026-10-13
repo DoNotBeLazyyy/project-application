@@ -327,9 +327,6 @@ export default function EvaluationTemplateFormPanel({
                                 <h3 className="font-semibold text-sm text-(--mui-palette-text-primary)">
                                     Evaluation Questions ({fields.length})
                                 </h3>
-                                <p className="text-xs text-(--mui-palette-text-secondary)">
-                                    Manage the questions that students will evaluate for this section.
-                                </p>
                             </div>
                         </div>
 

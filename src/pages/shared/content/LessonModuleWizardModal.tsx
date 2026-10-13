@@ -448,9 +448,6 @@ export default function LessonModuleWizardModal({
                                     <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                                         Add Resource or Syllabus Document
                                     </h3>
-                                    <p className="text-xs text-slate-500">
-                                        Upload PDFs, slides, lecture materials, or external reference links.
-                                    </p>
                                 </div>
                                 {!isAddingMaterial && (
                                     <CommonButton

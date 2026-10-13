@@ -86,9 +86,6 @@ export default function SectionScheduleConfig({
                         <h4 className="font-semibold text-slate-900 text-sm dark:text-slate-100">
                             Class Schedule Assignment
                         </h4>
-                        <p className="text-slate-500 text-xs">
-                            Select time ranges and active days (Monday – Sunday) for class sessions.
-                        </p>
                     </div>
                 </div>
 
