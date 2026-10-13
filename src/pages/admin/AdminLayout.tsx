@@ -56,6 +56,12 @@ export default function AdminLayout() {
                 sectionLabel: 'CAMPUS & COMMUNITY',
                 items: [
                     {
+                        icon: <CalendarIcon size={18} />,
+                        isActive: pathname === '/admin/calendar',
+                        label: 'Calendar',
+                        onClick: () => navigate('/admin/calendar')
+                    },
+                    {
                         icon: <MegaphoneIcon size={18} />,
                         isActive: pathname.startsWith('/admin/announcement-management') || pathname.startsWith('/admin/event-management'),
                         label: 'Announcements & Events',

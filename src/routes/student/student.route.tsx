@@ -79,6 +79,12 @@ export const studentRoutes: RouteObject[] = [
                     return import('@pages/shared/profile');
                 }),
                 path: 'profile'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/calendar/CalendarPage');
+                }),
+                path: 'calendar'
             }
         ]
     }

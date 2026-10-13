@@ -76,6 +76,12 @@ export default function DeanLayout() {
             sectionLabel: 'CAMPUS COMMUNICATION',
             items: [
                 {
+                    icon: <CalendarIcon size={18} />,
+                    isActive: pathname === '/dean/calendar',
+                    label: 'Calendar',
+                    onClick: () => navigate('/dean/calendar')
+                },
+                {
                     icon: <MegaphoneIcon size={18} />,
                     isActive: pathname.startsWith('/dean/announcement-management') || pathname.startsWith('/dean/event-management'),
                     label: 'Announcements & Events',

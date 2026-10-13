@@ -148,6 +148,12 @@ export const adminRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/shared/calendar/CalendarPage');
+                }),
+                path: 'calendar'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/admin/system-settings-management');
                 }),
                 path: 'system-settings'

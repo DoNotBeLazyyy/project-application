@@ -79,6 +79,12 @@ export const registrarRoutes: RouteObject[] = [
                     return import('@pages/shared/event-management/EventDetailPage');
                 }),
                 path: 'event-management/:id'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/calendar/CalendarPage');
+                }),
+                path: 'calendar'
             }
         ]
     }

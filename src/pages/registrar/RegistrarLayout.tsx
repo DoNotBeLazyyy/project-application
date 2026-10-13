@@ -53,6 +53,12 @@ export default function RegistrarLayout() {
             sectionLabel: 'CAMPUS COMMUNICATION',
             items: [
                 {
+                    icon: <CalendarIcon size={18} />,
+                    isActive: pathname === '/registrar/calendar',
+                    label: 'Calendar',
+                    onClick: () => navigate('/registrar/calendar')
+                },
+                {
                     icon: <MegaphoneIcon size={18} />,
                     isActive: pathname.startsWith('/registrar/announcement-management') || pathname.startsWith('/registrar/event-management'),
                     label: 'Announcements & Events',
