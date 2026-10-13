@@ -2,7 +2,7 @@ import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import { BroomIcon, ChalkboardIcon } from '@phosphor-icons/react';
+import { ChalkboardIcon } from '@phosphor-icons/react';
 import {
     FacultyOption, getExistingSectionOfferings, getFacultyOptions, getTerms, SectionOfferingRecord, TermOption
 } from '@services/section.service';
@@ -170,18 +170,6 @@ export default function Step1SectionOverview({
         }
     }, [watchedFacultyId, forbiddenFacultyIds, setValue]);
 
-    function handleClearOverview() {
-        if (!setValue) return;
-        setValue('term_id', '', { shouldValidate: false, shouldDirty: true });
-        setValue('course_id', '', { shouldValidate: false, shouldDirty: true });
-        setValue('faculty_id', '', { shouldValidate: false, shouldDirty: true });
-        setValue('room', '', { shouldValidate: false, shouldDirty: true });
-        setValue('max_slots', '40', { shouldValidate: false, shouldDirty: true });
-        if (!isCreate) {
-            setValue('status', 'Open', { shouldValidate: false, shouldDirty: true });
-        }
-    }
-
     const termHelperText = forbiddenTermIds.size > 0
         ? `Term this section runs in (${forbiddenTermIds.size} term${forbiddenTermIds.size > 1
             ? 's'
@@ -294,17 +282,6 @@ export default function Step1SectionOverview({
                             </h4>
                         </div>
                     </div>
-                    {!disabled && setValue && (
-                        <button
-                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
-                            title="Clear section overview fields"
-                            type="button"
-                            onClick={handleClearOverview}
-                        >
-                            <BroomIcon className="w-4 h-4" />
-                            <span>Clear</span>
-                        </button>
-                    )}
                 </div>
 
                 <CommonForm

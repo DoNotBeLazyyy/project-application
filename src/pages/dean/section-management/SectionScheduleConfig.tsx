@@ -1,9 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import {
-    CalendarDotsIcon, CheckIcon, ClockIcon, PlusCircleIcon, TrashIcon
+    CalendarDotsIcon, CaretDownIcon, CheckIcon, ClockIcon, PlusCircleIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { DayOfWeek, SectionFormValues, SectionScheduleBlock } from '@type/section.type';
+import { useState } from 'react';
 import { Control, useController } from 'react-hook-form';
 
 const DAYS_OF_WEEK: { label: string; short: string; value: DayOfWeek }[] = [
@@ -39,6 +40,12 @@ export default function SectionScheduleConfig({
         ],
         name: 'schedules'
     });
+
+    const [collapsedSlots, setCollapsedSlots] = useState<Record<number, boolean>>({});
+
+    function toggleSlotCollapse(index: number) {
+        setCollapsedSlots((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     const blocks: SectionScheduleBlock[] = schedulesValue || [];
 
@@ -112,115 +119,147 @@ export default function SectionScheduleConfig({
                 : (
                     <div className="flex flex-col gap-3 pt-1">
                         {blocks.map((block, index) => {
+                            const formattedDays = (block.days || []).length > 0
+                                ? (block.days || []).map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.short || d).join(', ')
+                                : 'No days';
+                            const timeRange = `${block.time_start || '08:00'} - ${block.time_end || '10:00'}`;
+
                             return (
                                 <div
                                     className="bg-slate-50/50 border border-slate-200 dark:bg-zinc-900/40 dark:border-zinc-700 flex flex-col gap-3 p-3.5 rounded-xl"
                                     key={index}
                                 >
                                     <div className="border-b border-slate-200/60 dark:border-zinc-700/60 flex gap-2 items-center justify-between pb-2">
-                                        <span className="flex font-bold gap-1.5 items-center text-brand-700 text-xs dark:text-brand-300">
-                                            <ClockIcon className="size-3.5 text-brand-600" weight="bold" />
-                                            Slot #{index + 1}
-                                        </span>
-
-                                        {!disabled && blocks.length > 1 && (
-                                            <CommonButton
-                                                aria-label="Remove schedule slot"
-                                                color="error"
-                                                size="xsmall"
-                                                startIcon={<TrashIcon weight="bold" />}
-                                                variant="text"
-                                                onClick={() => handleRemoveSlot(index)}
-                                            >
-                                                Remove
-                                            </CommonButton>
-                                        )}
-                                    </div>
-
-                                    {/* Time Range Inputs */}
-                                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
-                                        <CommonInput
-                                            containerClassName="w-full"
-                                            disabled={disabled}
-                                            helperText="Class start time"
-                                            label="Start Time"
-                                            size="small"
-                                            type="time"
-                                            value={block.time_start || '08:00'}
-                                            onChange={(e) => handleUpdateSlot(index, { time_start: e.target.value })}
-                                        />
-                                        <CommonInput
-                                            containerClassName="w-full"
-                                            disabled={disabled}
-                                            helperText="Class end time"
-                                            label="End Time"
-                                            size="small"
-                                            type="time"
-                                            value={block.time_end || '10:00'}
-                                            onChange={(e) => handleUpdateSlot(index, { time_end: e.target.value })}
-                                        />
-                                        <CommonInput
-                                            containerClassName="w-full"
-                                            disabled={disabled}
-                                            helperText="Specific room override (optional)"
-                                            label="Room"
-                                            placeholder="e.g. Room 301"
-                                            size="small"
-                                            type="text"
-                                            value={block.room || ''}
-                                            onChange={(e) => handleUpdateSlot(index, { room: e.target.value })}
-                                        />
-                                    </div>
-
-                                    {/* Selectable Days (Mon to Sun) */}
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <label className="font-semibold text-slate-700 text-xs dark:text-slate-300">
-                                                    Days of Week
-                                                </label>
-                                                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                                    ({(block.days || []).length > 0
-                                                        ? (block.days || []).join(', ')
-                                                        : 'None selected'})
+                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <span className="flex font-bold gap-1.5 items-center text-brand-700 text-xs dark:text-brand-300 shrink-0">
+                                                <ClockIcon className="size-3.5 text-brand-600" weight="bold" />
+                                                Slot #{index + 1}
+                                            </span>
+                                            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">
+                                                {formattedDays} • {timeRange}
+                                            </span>
+                                            {block.room && (
+                                                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0 hidden sm:inline">
+                                                    {block.room}
                                                 </span>
-                                            </div>
+                                            )}
                                         </div>
 
-                                        <div className="flex flex-wrap gap-2">
-                                            {DAYS_OF_WEEK.map((d) => {
-                                                const isSelected = (block.days || []).includes(d.value);
-                                                return (
-                                                    <button
-                                                        aria-pressed={isSelected}
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
-                                                            isSelected
-                                                                ? 'bg-blue-600 dark:bg-blue-500 text-white font-bold shadow-xs border border-blue-700 dark:border-blue-400 ring-2 ring-blue-500/25'
-                                                                : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white'
-                                                        } ${disabled
-                                                            ? 'opacity-60 cursor-not-allowed'
-                                                            : ''}`}
-                                                        disabled={disabled}
-                                                        key={d.value}
-                                                        style={
-                                                            isSelected
-                                                                ? {
-                                                                    backgroundColor: 'var(--mui-tokens-color-brand-600, #2563EB)',
-                                                                    borderColor: 'var(--mui-tokens-color-brand-700, #1D4ED8)',
-                                                                    color: '#FFFFFF'
-                                                                }
-                                                                : undefined
-                                                        }
-                                                        type="button"
-                                                        onClick={() => handleToggleDay(index, d.value)}
-                                                    >
-                                                        {isSelected && (
-                                                            <CheckIcon className="size-3.5 text-white shrink-0" weight="bold" />
-                                                        )}
-                                                        <span>{d.short}</span>
-                                                    </button>
-                                                );
-                                            })}
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            {!disabled && blocks.length > 1 && (
+                                                <CommonButton
+                                                    aria-label="Remove schedule slot"
+                                                    color="error"
+                                                    size="xsmall"
+                                                    startIcon={<TrashIcon weight="bold" />}
+                                                    variant="text"
+                                                    onClick={() => handleRemoveSlot(index)}
+                                                >
+                                                    Remove
+                                                </CommonButton>
+                                            )}
+                                            <button
+                                                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                                title={collapsedSlots[index] ? 'Expand schedule slot' : 'Collapse schedule slot'}
+                                                type="button"
+                                                aria-label={collapsedSlots[index] ? 'Expand schedule slot' : 'Collapse schedule slot'}
+                                                onClick={() => toggleSlotCollapse(index)}
+                                            >
+                                                <CaretDownIcon
+                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedSlots[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                    weight="bold"
+                                                />
+                                                <span className="text-xs hidden sm:inline">{collapsedSlots[index] ? 'Expand' : 'Collapse'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className={collapsedSlots[index] ? 'hidden' : 'flex flex-col gap-3'}>
+                                        {/* Time Range Inputs */}
+                                        <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
+                                            <CommonInput
+                                                containerClassName="w-full"
+                                                disabled={disabled}
+                                                helperText="Class start time"
+                                                label="Start Time"
+                                                size="small"
+                                                type="time"
+                                                value={block.time_start || '08:00'}
+                                                onChange={(e) => handleUpdateSlot(index, { time_start: e.target.value })}
+                                            />
+                                            <CommonInput
+                                                containerClassName="w-full"
+                                                disabled={disabled}
+                                                helperText="Class end time"
+                                                label="End Time"
+                                                size="small"
+                                                type="time"
+                                                value={block.time_end || '10:00'}
+                                                onChange={(e) => handleUpdateSlot(index, { time_end: e.target.value })}
+                                            />
+                                            <CommonInput
+                                                containerClassName="w-full"
+                                                disabled={disabled}
+                                                helperText="Specific room override (optional)"
+                                                label="Room"
+                                                placeholder="e.g. Room 301"
+                                                size="small"
+                                                type="text"
+                                                value={block.room || ''}
+                                                onChange={(e) => handleUpdateSlot(index, { room: e.target.value })}
+                                            />
+                                        </div>
+
+                                        {/* Selectable Days (Mon to Sun) */}
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="font-semibold text-slate-700 text-xs dark:text-slate-300">
+                                                        Days of Week
+                                                    </label>
+                                                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                        ({(block.days || []).length > 0
+                                                            ? (block.days || []).join(', ')
+                                                            : 'None selected'})
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2">
+                                                {DAYS_OF_WEEK.map((d) => {
+                                                    const isSelected = (block.days || []).includes(d.value);
+                                                    return (
+                                                        <button
+                                                            aria-pressed={isSelected}
+                                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                                                                isSelected
+                                                                    ? 'bg-blue-600 dark:bg-blue-500 text-white font-bold shadow-xs border border-blue-700 dark:border-blue-400 ring-2 ring-blue-500/25'
+                                                                    : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white'
+                                                            } ${disabled
+                                                                ? 'opacity-60 cursor-not-allowed'
+                                                                : ''}`}
+                                                            disabled={disabled}
+                                                            key={d.value}
+                                                            style={
+                                                                isSelected
+                                                                    ? {
+                                                                        backgroundColor: 'var(--mui-tokens-color-brand-600, #2563EB)',
+                                                                        borderColor: 'var(--mui-tokens-color-brand-700, #1D4ED8)',
+                                                                        color: '#FFFFFF'
+                                                                    }
+                                                                    : undefined
+                                                            }
+                                                            type="button"
+                                                            onClick={() => handleToggleDay(index, d.value)}
+                                                        >
+                                                            {isSelected && (
+                                                                <CheckIcon className="size-3.5 text-white shrink-0" weight="bold" />
+                                                            )}
+                                                            <span>{d.short}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
