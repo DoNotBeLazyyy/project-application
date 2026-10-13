@@ -260,14 +260,13 @@ export default function SectionManagement() {
                     grading_periods: row.grading_periods,
                     max_slots: row.max_slots,
                     override_grading_schema: row.override_grading_schema,
-                    preset_section: row.preset_section || row.source_section_code,
                     program_code: row.program_code,
                     room: row.room,
                     schedule_days: row.schedule_days,
                     schedule_room: row.schedule_room,
                     schedule_time_end: row.schedule_time_end,
                     schedule_time_start: row.schedule_time_start,
-                    source_section_code: row.source_section_code || row.preset_section,
+                    source_section_code: row.source_section_code,
                     status: row.status,
                     term_label: row.term_label
                 })}

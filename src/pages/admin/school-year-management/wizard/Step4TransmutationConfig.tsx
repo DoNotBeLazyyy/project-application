@@ -15,10 +15,7 @@ import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/scho
 import { useState } from 'react';
 import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
-    DEFAULT_TRANSMUTATION_ROWS,
-    isSpecialGradeRow,
-    PASS_FAIL_PRESET,
-    US_GPA_PRESET
+    isSpecialGradeRow
 } from './wizard.constants';
 
 interface Step4TransmutationConfigProps {
@@ -59,10 +56,6 @@ export default function Step4TransmutationConfig({
 
     function handleResetBlank() {
         replace([]);
-    }
-
-    function handleLoadPreset() {
-        replace([...DEFAULT_TRANSMUTATION_ROWS]);
     }
 
     function handleResetRowBlank(index: number) {
@@ -167,47 +160,29 @@ export default function Step4TransmutationConfig({
                 </div>
 
                 {!disabled && (
-                    <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
-                        <select
-                            aria-label="Preset Transmutation Schema"
-                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer w-full sm:w-auto"
-                            value=""
-                            onChange={(e) => {
-                                if (e.target.value === 'ched') replace([...DEFAULT_TRANSMUTATION_ROWS]);
-                                if (e.target.value === 'us_gpa') replace([...US_GPA_PRESET]);
-                                if (e.target.value === 'pass_fail') replace([...PASS_FAIL_PRESET]);
-                            }}
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                            variant="outlined"
+                            onClick={handleResetBlank}
+                            title="Reset to Blank"
                         >
-                            <option value="">-- Apply Preset Schema --</option>
-                            <option value="ched">CHED Standard (1.00 – 5.00 Scale)</option>
-                            <option value="us_gpa">US Letter Grade (A, B, C, D, F Scale)</option>
-                            <option value="pass_fail">Pass / Fail Direct Scale</option>
-                        </select>
-
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                                variant="outlined"
-                                onClick={handleResetBlank}
-                                title="Reset to Blank"
-                            >
-                                <span className="hidden sm:inline">Reset to Blank</span>
-                            </CommonButton>
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                                variant="contained"
-                                onClick={handleAddRow}
-                                title="Add Grade Row"
-                            >
-                                <span className="hidden sm:inline">Add Grade Row</span>
-                            </CommonButton>
-                        </div>
+                            <span className="hidden sm:inline">Reset to Blank</span>
+                        </CommonButton>
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                            variant="contained"
+                            onClick={handleAddRow}
+                            title="Add Grade Row"
+                        >
+                            <span className="hidden sm:inline">Add Grade Row</span>
+                        </CommonButton>
                     </div>
                 )}
             </div>
@@ -227,10 +202,11 @@ export default function Step4TransmutationConfig({
                             <CommonButton
                                 color="primary"
                                 size="small"
+                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
                                 variant="contained"
-                                onClick={handleLoadPreset}
+                                onClick={handleAddRow}
                             >
-                                Load Standard 1.00–5.00 Ladder
+                                Add Grade Row
                             </CommonButton>
                         </div>
                     )}

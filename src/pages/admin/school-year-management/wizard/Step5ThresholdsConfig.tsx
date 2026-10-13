@@ -13,7 +13,6 @@ import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
 import { useState } from 'react';
 import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
-import { DEFAULT_ACADEMIC_THRESHOLDS } from './wizard.constants';
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -78,45 +77,29 @@ export default function Step5ThresholdsConfig({
                 </div>
 
                 {!disabled && (
-                    <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
-                        <select
-                            aria-label="Preset Thresholds"
-                            className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer w-full sm:w-auto"
-                            value=""
-                            onChange={(e) => {
-                                if (e.target.value === 'honors') {
-                                    replace([...DEFAULT_ACADEMIC_THRESHOLDS]);
-                                }
-                            }}
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                            variant="outlined"
+                            onClick={handleResetBlank}
+                            title="Reset to Blank"
                         >
-                            <option value="">-- Apply Preset Thresholds --</option>
-                            <option value="honors">Standard Honors & Scholarships</option>
-                        </select>
-
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                                variant="outlined"
-                                onClick={handleResetBlank}
-                                title="Reset to Blank"
-                            >
-                                <span className="hidden sm:inline">Reset to Blank</span>
-                            </CommonButton>
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                                variant="contained"
-                                onClick={handleAddThreshold}
-                                title="Add Threshold"
-                            >
-                                <span className="hidden sm:inline">Add Threshold</span>
-                            </CommonButton>
-                        </div>
+                            <span className="hidden sm:inline">Reset to Blank</span>
+                        </CommonButton>
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                            variant="contained"
+                            onClick={handleAddThreshold}
+                            title="Add Threshold"
+                        >
+                            <span className="hidden sm:inline">Add Threshold</span>
+                        </CommonButton>
                     </div>
                 )}
             </div>
@@ -134,10 +117,11 @@ export default function Step5ThresholdsConfig({
                                 <CommonButton
                                     color="primary"
                                     size="small"
+                                    startIcon={<PlusIcon className="w-3.5 h-3.5" />}
                                     variant="contained"
-                                    onClick={() => replace([...DEFAULT_ACADEMIC_THRESHOLDS])}
+                                    onClick={handleAddThreshold}
                                 >
-                                    Load Standard Honors Preset
+                                    Add Threshold
                                 </CommonButton>
                             </div>
                         )}

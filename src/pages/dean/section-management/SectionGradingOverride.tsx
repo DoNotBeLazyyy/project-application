@@ -208,7 +208,7 @@ export default function SectionGradingOverride({
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
                                 ? 'Custom grading schema override active for this section.'
-                                : 'Default: Inheriting program grading schema settings. Modifying any value or selecting a preset will set section override.'}
+                                : 'Default: Inheriting program grading schema settings. Modifying any value will set section override.'}
                         </p>
                     </div>
                 </div>

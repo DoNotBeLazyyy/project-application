@@ -12,7 +12,6 @@ export interface PeriodComponentBudgetProps {
     focusedKey?: string | null;
     period: GradingPeriodDraft;
     onAddComponent: () => void;
-    onApplyStandardPreset: () => void;
     onBalance: () => void;
     onClearFocus?: () => void;
     onComponentChange: (componentKey: string, patch: { name?: string; weight?: number }) => void;
@@ -35,7 +34,6 @@ export default function PeriodComponentBudget({
     focusedKey,
     period,
     onAddComponent,
-    onApplyStandardPreset,
     onBalance,
     onClearFocus,
     onComponentChange,
@@ -123,15 +121,6 @@ export default function PeriodComponentBudget({
                         >
                             Add component
                         </CommonButton>
-                        <CommonButton
-                            color="inherit"
-                            size="xsmall"
-                            startIcon={<ScalesIcon weight="bold" />}
-                            variant="outlined"
-                            onClick={onApplyStandardPreset}
-                        >
-                            Apply Standard Preset (30/30/40)
-                        </CommonButton>
                     </div>
                 </div>
             )}
@@ -195,15 +184,6 @@ export default function PeriodComponentBudget({
                     onClick={onAddComponent}
                 >
                     Add component
-                </CommonButton>
-                <CommonButton
-                    color="primary"
-                    size="xsmall"
-                    startIcon={<ScalesIcon weight="bold" />}
-                    variant="text"
-                    onClick={onApplyStandardPreset}
-                >
-                    Apply Standard Preset (30/30/40)
                 </CommonButton>
                 <CommonButton
                     color="primary"

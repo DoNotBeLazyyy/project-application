@@ -372,31 +372,6 @@ export default function LessonModuleWizardModal({
                                     value={title}
                                     onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                                 />
-                                {!isEdit && (
-                                    <div className="flex flex-wrap gap-1.5 pt-2">
-                                        {[
-                                            'Course Syllabus & Academic Policies',
-                                            'Week 1: Orientation & Foundations',
-                                            'Prelim Examination Review',
-                                            'Midterm Unit: Advanced Concepts',
-                                            'Final Project Guidelines & Rubrics'
-                                        ].map((preset) => (
-                                            <button
-                                                key={preset}
-                                                className="px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors cursor-pointer"
-                                                type="button"
-                                                onClick={() => {
-                                                    setTitle(preset);
-                                                    if (preset.includes('Syllabus')) {
-                                                        setDescription('Official course outline, grading distribution, attendance policy, and course expectations.');
-                                                    }
-                                                }}
-                                            >
-                                                + {preset}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -491,27 +466,6 @@ export default function LessonModuleWizardModal({
 
                             {isAddingMaterial ? (
                                 <div className="border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/50 p-4 rounded-xl flex flex-col gap-3">
-                                    <div className="flex flex-wrap gap-1.5 mb-1">
-                                        {['Course Syllabus', 'Lecture Slides', 'Reading Handout', 'Lab Activity'].map((preset) => (
-                                            <button
-                                                key={preset}
-                                                type="button"
-                                                onClick={() => {
-                                                    setNewMaterialTitle(preset);
-                                                    if (preset === 'Course Syllabus') {
-                                                        setNewMaterialDesc('Official Course Outline, Learning Outcomes, and Academic Policies');
-                                                        setNewMaterialType('Document');
-                                                    } else if (preset === 'Lecture Slides') {
-                                                        setNewMaterialType('Slide');
-                                                    }
-                                                }}
-                                                className="px-2 py-0.5 text-xs rounded bg-white dark:bg-zinc-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-zinc-600 hover:text-blue-600 hover:border-blue-300 transition-colors"
-                                            >
-                                                + {preset}
-                                            </button>
-                                        ))}
-                                    </div>
-
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                             Resource Title <span className="text-rose-500">*</span>

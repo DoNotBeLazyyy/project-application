@@ -7,7 +7,6 @@ import {
     ArrowCounterClockwiseIcon,
     GearIcon,
     PlusIcon,
-    SparkleIcon,
     SunIcon,
     TrashIcon
 } from '@phosphor-icons/react';
@@ -20,7 +19,6 @@ import {
 import { useState } from 'react';
 import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
-import { generatePresetHolidays } from './wizard.constants';
 
 interface Step4HolidaysConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -67,11 +65,6 @@ export default function Step4HolidaysConfig({
         append(newHoliday);
     }
 
-    function handleLoadPresetHolidays() {
-        const presets = generatePresetHolidays(syStartDate, syEndDate);
-        replace(presets);
-    }
-
     function handleResetBlank() {
         replace([]);
     }
@@ -110,17 +103,6 @@ export default function Step4HolidaysConfig({
 
                 {!disabled && (
                     <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-700/40">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<SparkleIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            onClick={handleLoadPresetHolidays}
-                        >
-                            Load Preset Holidays
-                        </CommonButton>
-
                         <CommonButton
                             color="primary"
                             size="small"
@@ -165,7 +147,7 @@ export default function Step4HolidaysConfig({
                             No calendar exceptions or holidays defined
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                            Click &quot;Load Preset Holidays&quot; to auto-populate standard national holidays and academic year-end breaks, or click &quot;Add Exception&quot; to create a custom entry.
+                            Click &quot;Add Exception&quot; to declare national holidays, breaks, or suspensions.
                         </p>
                     </div>
                 </div>

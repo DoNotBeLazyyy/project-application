@@ -4,7 +4,6 @@ import {
     CheckCircleIcon,
     CopySimpleIcon,
     ListPlusIcon,
-    SparkleIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { WizardGradingPeriodComponentItem, WizardTermItem } from '@type/school-year.type';
@@ -25,50 +24,6 @@ export interface CopyComponentBreakdownModalProps {
         sourceLabel: string
     ) => void;
 }
-
-interface ComponentPresetOption {
-    id: string;
-    title: string;
-    description: string;
-    components: WizardGradingPeriodComponentItem[];
-    isPreset: boolean;
-}
-
-const PRESET_OPTIONS: ComponentPresetOption[] = [
-    {
-        id: 'preset_standard_30_30_40',
-        title: 'Standard 30 / 30 / 40 Breakdown',
-        description: 'Balanced for general collegiate courses with quizzes, coursework, and major exam.',
-        isPreset: true,
-        components: [
-            { id: 'c1', name: 'Quizzes', weight: 30 },
-            { id: 'c2', name: 'Class Standing', weight: 30 },
-            { id: 'c3', name: 'Major Exam', weight: 40 }
-        ]
-    },
-    {
-        id: 'preset_four_tier_20_20_30_30',
-        title: '4-Tier Comprehensive (20 / 20 / 30 / 30)',
-        description: 'Includes written works, regular quizzes, performance tasks, and periodic examination.',
-        isPreset: true,
-        components: [
-            { id: 'c1', name: 'Written Works', weight: 20 },
-            { id: 'c2', name: 'Quizzes & Assignments', weight: 20 },
-            { id: 'c3', name: 'Performance Tasks', weight: 30 },
-            { id: 'c4', name: 'Major Examination', weight: 30 }
-        ]
-    },
-    {
-        id: 'preset_even_split_50_50',
-        title: '50 / 50 Assessment & Major Exam',
-        description: 'Even distribution between ongoing coursework/projects and terminal examination.',
-        isPreset: true,
-        components: [
-            { id: 'c1', name: 'Coursework & Performance Tasks', weight: 50 },
-            { id: 'c2', name: 'Major Examination', weight: 50 }
-        ]
-    }
-];
 
 export default function CopyComponentBreakdownModal({
     open,
@@ -123,23 +78,13 @@ export default function CopyComponentBreakdownModal({
 
     // Set default selection when modal opens
     const allOptions = useMemo(() => {
-        return [
-            ...availablePeriodSources.map((s) => ({
-                id: s.id,
-                title: `${s.termLabel} — ${s.periodLabel}`,
-                badge: `${s.totalWeight}/100`,
-                components: s.components,
-                isFromPeriod: true
-            })),
-            ...PRESET_OPTIONS.map((p) => ({
-                id: p.id,
-                title: p.title,
-                badge: '100/100',
-                description: p.description,
-                components: p.components,
-                isFromPeriod: false
-            }))
-        ];
+        return availablePeriodSources.map((s) => ({
+            id: s.id,
+            title: `${s.termLabel} — ${s.periodLabel}`,
+            badge: `${s.totalWeight}/100`,
+            components: s.components,
+            isFromPeriod: true
+        }));
     }, [availablePeriodSources]);
 
     const activeSelectedId = selectedOptionId || allOptions[0]?.id || '';
@@ -267,78 +212,6 @@ export default function CopyComponentBreakdownModal({
                             })}
                         </div>
                     )}
-                </div>
-
-                {/* Preset Templates */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                        <SparkleIcon className="w-4 h-4 text-amber-500" />
-                        <span>Standard Breakdown Templates</span>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        {PRESET_OPTIONS.map((preset) => {
-                            const isSelected = activeSelectedId === preset.id;
-
-                            return (
-                                <div
-                                    key={preset.id}
-                                    className={`p-3.5 rounded-xl border transition-all cursor-pointer text-left ${
-                                        isSelected
-                                            ? 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-500 dark:border-blue-400 shadow-xs ring-1 ring-blue-500/20'
-                                            : 'bg-white dark:bg-zinc-800/80 border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600'
-                                    }`}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => setSelectedOptionId(preset.id)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            setSelectedOptionId(preset.id);
-                                        }
-                                    }}
-                                >
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <div
-                                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                                    isSelected
-                                                        ? 'border-blue-600 bg-blue-600 text-white'
-                                                        : 'border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800'
-                                                }`}
-                                            >
-                                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                            </div>
-                                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                                                {preset.title}
-                                            </span>
-                                        </div>
-
-                                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
-                                            100/100
-                                        </span>
-                                    </div>
-
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-6 mb-2">
-                                        {preset.description}
-                                    </p>
-
-                                    {/* Component Chips */}
-                                    <div className="flex items-center gap-1.5 flex-wrap pl-6">
-                                        {preset.components.map((comp, cIdx) => (
-                                            <span
-                                                key={comp.id || cIdx}
-                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-700/80 text-[11px] font-medium text-slate-700 dark:text-slate-200"
-                                            >
-                                                <span>{comp.name}</span>
-                                                <span className="font-bold text-brand-600 dark:text-brand-400">{comp.weight}%</span>
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
                 </div>
 
                 {/* Apply to all in term checkbox */}

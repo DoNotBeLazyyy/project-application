@@ -7,12 +7,6 @@ import {
 import { generateId } from '@utils/uuid.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const DEFAULT_COMPONENTS: { name: string; weight: number }[] = [
-    { name: 'Class Standing', weight: 30 },
-    { name: 'Major Examination', weight: 40 },
-    { name: 'Quizzes', weight: 30 }
-];
-
 function toComponentDraft(name: string, weight: string | number): GradingComponentDraft {
     return {
         key: generateId(),
@@ -275,19 +269,6 @@ export function usePeriodComposer() {
         setFocusedKey(newCompKey);
     }
 
-    function handleApplyStandardPreset(periodKey: string) {
-        setPeriods((previous) => previous.map(function(period) {
-            if (period.key !== periodKey) {
-                return period;
-            }
-
-            return {
-                ...period,
-                components: DEFAULT_COMPONENTS.map((component) => toComponentDraft(component.name, component.weight))
-            };
-        }));
-    }
-
     function handleRemoveComponent(periodKey: string, componentKey: string) {
         setPeriods((previous) => previous.map(function(period) {
             if (period.key !== periodKey) {
@@ -397,7 +378,6 @@ export function usePeriodComposer() {
         focusedKey,
         handleAddComponent,
         handleAddPeriod,
-        handleApplyStandardPreset,
         handleBalance,
         handleBalanceComponents,
         handleComponentChange,

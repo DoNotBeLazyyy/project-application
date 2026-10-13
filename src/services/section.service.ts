@@ -457,22 +457,7 @@ export async function bulkCreateSections(
                 }
             }
 
-            // 2. Process Preset Section Copy
-            const presetVal = (row.preset_section || row.source_section_code || '').trim();
-            if (presetVal) {
-                const lowPreset = presetVal.toLowerCase();
-                const sourceSec = allSections.find((s) =>
-                    s.section_code.toLowerCase() === lowPreset
-                    || s.label.toLowerCase() === lowPreset
-                    || (s.section_code + ' - ' + s.label).toLowerCase() === lowPreset
-                    || s.id === presetVal
-                );
-                if (sourceSec) {
-                    await copySectionSetupToSections(sourceSec.id, [createdSec.id]);
-                }
-            }
-
-            // 3. Process Custom Grading Periods Schema
+            // 2. Process Custom Grading Periods Schema
             if (row.grading_periods && row.grading_periods.trim()) {
                 const customPeriods = parseGradingPeriodsSchema(row.grading_periods);
                 if (customPeriods.length > 0) {

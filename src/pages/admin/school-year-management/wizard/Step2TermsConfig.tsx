@@ -7,7 +7,6 @@ import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowCounterClockwiseIcon,
-    CalendarPlusIcon,
     ClockIcon,
     InfoIcon,
     PlusIcon,
@@ -114,62 +113,6 @@ export default function Step2TermsConfig({
         append(newTerm);
     }
 
-    // Helper to auto-populate standard terms if list is empty
-    function handleAutoPopulateSemesters() {
-        const sYear = syStartDate ? new Date(syStartDate).getFullYear() : 2026;
-        const eYear = syEndDate ? new Date(syEndDate).getFullYear() : 2027;
-
-        const sem1 = termTypes.find((t) => t.code.toLowerCase().includes('1') || t.label.toLowerCase().includes('1st'));
-        const sem2 = termTypes.find((t) => t.code.toLowerCase().includes('2') || t.label.toLowerCase().includes('2nd'));
-
-        const term1Start = syStartDate || `${sYear}-08-15`;
-        const term1End = `${sYear}-12-20`;
-        const term1Distributed = distributeDatesAcrossPeriods(term1Start, term1End, DEFAULT_GRADING_PERIODS.length);
-        const term1: WizardTermItem = {
-            end_date: term1End,
-            enrollment_end_date: `${sYear}-08-14`,
-            enrollment_start_date: `${sYear}-08-01`,
-            grading_deadline: `${sYear}-12-23`,
-            grading_periods: DEFAULT_GRADING_PERIODS.map((gp, gIdx) => ({
-                ...gp,
-                end_date: term1Distributed[gIdx]?.end_date || term1End,
-                start_date: term1Distributed[gIdx]?.start_date || term1Start
-            })),
-            start_date: term1Start,
-            status: 'Upcoming',
-            term_type_code: sem1 ? sem1.code : '1st_semester',
-            term_type_id: sem1 ? sem1.id : '',
-            term_type_label: sem1 ? sem1.label : '1st Semester'
-        };
-
-        const term2Start = `${eYear}-01-10`;
-        const term2End = syEndDate || `${eYear}-05-30`;
-        const term2Distributed = distributeDatesAcrossPeriods(term2Start, term2End, DEFAULT_GRADING_PERIODS.length);
-        const term2: WizardTermItem = {
-            end_date: term2End,
-            enrollment_end_date: `${eYear}-01-09`,
-            enrollment_start_date: `${eYear}-01-02`,
-            grading_deadline: `${eYear}-06-05`,
-            grading_periods: DEFAULT_GRADING_PERIODS.map((gp, gIdx) => ({
-                ...gp,
-                end_date: term2Distributed[gIdx]?.end_date || term2End,
-                start_date: term2Distributed[gIdx]?.start_date || term2Start
-            })),
-            start_date: term2Start,
-            status: 'Upcoming',
-            term_type_code: sem2 ? sem2.code : '2nd_semester',
-            term_type_id: sem2 ? sem2.id : '',
-            term_type_label: sem2 ? sem2.label : '2nd Semester'
-        };
-
-        if (fields.length === 0) {
-            append(term1);
-            append(term2);
-        } else {
-            append(term1);
-        }
-    }
-
     function handleUpdateTermDate(index: number, field: 'start_date' | 'end_date', value: string) {
         setValue(`terms.${index}.${field}`, value, { shouldDirty: true });
 
@@ -228,19 +171,6 @@ export default function Step2TermsConfig({
         <div className="flex flex-col gap-6">
             {!disabled && (
                 <div className="flex justify-end items-center gap-2">
-                    {fields.length === 0 && (
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            startIcon={<CalendarPlusIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            onClick={handleAutoPopulateSemesters}
-                            title="Preset 2 Semesters"
-                        >
-                            <span className="hidden sm:inline">Preset 2 Semesters</span>
-                        </CommonButton>
-                    )}
                     <CommonButton
                         color="primary"
                         size="small"

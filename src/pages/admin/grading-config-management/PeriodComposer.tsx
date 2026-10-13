@@ -62,7 +62,6 @@ export default function PeriodComposer() {
         focusedKey,
         handleAddComponent,
         handleAddPeriod,
-        handleApplyStandardPreset,
         handleBalance,
         handleBalanceComponents,
         handleComponentChange,
@@ -219,9 +218,6 @@ export default function PeriodComposer() {
                                     period={period}
                                     onAddComponent={function() {
                                         handleAddComponent(period.key);
-                                    }}
-                                    onApplyStandardPreset={function() {
-                                        handleApplyStandardPreset(period.key);
                                     }}
                                     onBalanceComponents={function() {
                                         handleBalanceComponents(period.key);

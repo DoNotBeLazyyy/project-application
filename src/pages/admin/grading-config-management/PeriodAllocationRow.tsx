@@ -31,7 +31,6 @@ export interface PeriodAllocationRowProps {
     isOnlyPeriod: boolean;
     period: GradingPeriodDraft;
     onAddComponent: () => void;
-    onApplyStandardPreset: () => void;
     onBalanceComponents: () => void;
     onClearFocus?: () => void;
     onComponentChange: (componentKey: string, patch: { name?: string; weight?: number }) => void;
@@ -61,7 +60,6 @@ export default function PeriodAllocationRow({
     isOnlyPeriod,
     period,
     onAddComponent,
-    onApplyStandardPreset,
     onBalanceComponents,
     onClearFocus,
     onComponentChange,
@@ -187,7 +185,6 @@ export default function PeriodAllocationRow({
                         focusedKey={focusedKey}
                         period={period}
                         onAddComponent={onAddComponent}
-                        onApplyStandardPreset={onApplyStandardPreset}
                         onBalance={onBalanceComponents}
                         onClearFocus={onClearFocus}
                         onComponentChange={onComponentChange}

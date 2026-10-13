@@ -188,39 +188,6 @@ export default function SectionScheduleConfig({
                                                         : 'None selected'})
                                                 </span>
                                             </div>
-                                            {!disabled && (
-                                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                                                    <span className="text-slate-400">Presets:</span>
-                                                    <button
-                                                        className="px-2 py-0.5 rounded border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer text-[11px]"
-                                                        type="button"
-                                                        onClick={() => handleUpdateSlot(index, { days: ['Monday', 'Wednesday', 'Friday'] })}
-                                                    >
-                                                        MWF
-                                                    </button>
-                                                    <button
-                                                        className="px-2 py-0.5 rounded border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer text-[11px]"
-                                                        type="button"
-                                                        onClick={() => handleUpdateSlot(index, { days: ['Tuesday', 'Thursday'] })}
-                                                    >
-                                                        TTH
-                                                    </button>
-                                                    <button
-                                                        className="px-2 py-0.5 rounded border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer text-[11px]"
-                                                        type="button"
-                                                        onClick={() => handleUpdateSlot(index, { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] })}
-                                                    >
-                                                        Mon–Fri
-                                                    </button>
-                                                    <button
-                                                        className="px-2 py-0.5 rounded border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-[11px]"
-                                                        type="button"
-                                                        onClick={() => handleUpdateSlot(index, { days: [] })}
-                                                    >
-                                                        Clear
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">

@@ -165,28 +165,6 @@ export default function MaterialFormModal({
                         setTitle(e.target.value);
                     }}
                 />
-                {!isEdit && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                        {['Course Syllabus', 'Lecture Slides', 'Reading Handout', 'Lab Activity'].map((preset) => (
-                            <button
-                                key={preset}
-                                type="button"
-                                onClick={() => {
-                                    setTitle(preset);
-                                    if (preset === 'Course Syllabus' && !description) {
-                                        setDescription('Official Course Outline, Learning Outcomes, and Academic Policies');
-                                        setMaterialType('Document');
-                                    } else if (preset === 'Lecture Slides') {
-                                        setMaterialType('Slide');
-                                    }
-                                }}
-                                className="px-2 py-0.5 text-[11px] rounded bg-(--mui-palette-action-hover) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-primary-main) hover:bg-(--mui-palette-primary-main)/10 transition-colors"
-                            >
-                                + {preset}
-                            </button>
-                        ))}
-                    </div>
-                )}
             </div>
             <div className="flex flex-col gap-1">
                 <span className="font-medium text-(--mui-palette-text-primary) text-sm">

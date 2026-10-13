@@ -23,9 +23,7 @@ import CopyComponentBreakdownModal from '@pages/admin/school-year-management/wiz
 import {
     DEFAULT_GRADING_COMPONENTS,
     DEFAULT_GRADING_PERIODS,
-    distributeDatesAcrossPeriods,
-    FOUR_PERIOD_PRESET,
-    TWO_PERIOD_PRESET
+    distributeDatesAcrossPeriods
 } from '@pages/admin/school-year-management/wizard/wizard.constants';
 
 interface Step3GradingPeriodsConfigProps {
@@ -248,33 +246,6 @@ export default function Step3GradingPeriodsConfig({
         onChangeTerms(updatedTerms);
     }
 
-    // Apply preset with distributed dates
-    function handleApplyPreset(termIndex: number, preset: WizardGradingPeriodItem[]) {
-        const targetTerm = terms[termIndex];
-        if (!targetTerm) return;
-
-        const distributed = distributeDatesAcrossPeriods(
-            targetTerm.start_date || '',
-            targetTerm.end_date || '',
-            preset.length
-        );
-
-        const updatedTerms = [...terms];
-        updatedTerms[termIndex] = {
-            ...targetTerm,
-            grading_periods: preset.map((p, idx) => ({
-                ...p,
-                end_date: distributed[idx]?.end_date || targetTerm.end_date || '',
-                start_date: distributed[idx]?.start_date || targetTerm.start_date || '',
-                components: p.components
-                    ? [...p.components]
-                    : [...DEFAULT_GRADING_COMPONENTS]
-            }))
-        };
-
-        onChangeTerms(updatedTerms);
-    }
-
     // Copy grading period configuration from another term
     function handleCopyPeriodsFromTerm(targetTermIndex: number, sourceTermIndex: number) {
         const targetTerm = terms[targetTermIndex];
@@ -469,37 +440,10 @@ export default function Step3GradingPeriodsConfig({
                                 </div>
                             </div>
 
-                            {/* Preset Dropdown & Copy Settings Option */}
-                            {!disabled && (
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 pb-2 border-b border-slate-100 dark:border-zinc-700/30">
-                                    {/* Presets Dropdown */}
+                            {/* Copy Settings Option */}
+                            {!disabled && terms.length > 1 && (
+                                <div className="flex justify-end pt-1 pb-2 border-b border-slate-100 dark:border-zinc-700/30">
                                     <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                                        <span className="text-xs text-slate-500 flex items-center gap-1 font-medium shrink-0">
-                                            <ScalesIcon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                            Presets:
-                                        </span>
-                                        <select
-                                            aria-label="Select grading periods preset"
-                                            className="w-full sm:w-auto text-xs px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 font-medium border border-slate-300 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors cursor-pointer"
-                                            value=""
-                                            onChange={(e) => {
-                                                if (e.target.value === '3') handleApplyPreset(tIdx, DEFAULT_GRADING_PERIODS);
-                                                else if (e.target.value === '2') handleApplyPreset(tIdx, TWO_PERIOD_PRESET);
-                                                else if (e.target.value === '4') handleApplyPreset(tIdx, FOUR_PERIOD_PRESET);
-                                            }}
-                                        >
-                                            <option disabled value="">
-                                                -- Select Period Preset --
-                                            </option>
-                                            <option value="3">3 Periods (30/30/40%)</option>
-                                            <option value="2">2 Periods (50/50%)</option>
-                                            <option value="4">4 Periods (25/25/25/25%)</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Copy from another term dropdown */}
-                                    {terms.length > 1 && (
-                                        <div className="flex items-center gap-1.5 w-full sm:w-auto">
                                             <span className="text-xs text-slate-500 font-medium hidden sm:inline shrink-0">
                                                 Copy:
                                             </span>
@@ -526,7 +470,6 @@ export default function Step3GradingPeriodsConfig({
                                                 })}
                                             </select>
                                         </div>
-                                    )}
                                 </div>
                             )}
 
@@ -822,17 +765,6 @@ export default function Step3GradingPeriodsConfig({
                                                             )}
 
                                                             <button
-                                                                aria-label="Apply standard 30/30/40 breakdown"
-                                                                className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                title="Apply standard 30/30/40 breakdown"
-                                                                type="button"
-                                                                onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
-                                                            >
-                                                                <ScalesIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-                                                                <span className="hidden sm:inline">Apply Preset (30/30/40)</span>
-                                                                <span className="sm:hidden">Preset</span>
-                                                            </button>
-                                                            <button
                                                                 aria-label="Add Component"
                                                                 className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                                                                 title="Add Component"
@@ -856,17 +788,9 @@ export default function Step3GradingPeriodsConfig({
                                                                     <button
                                                                         className="text-xs text-brand-600 dark:text-brand-400 font-semibold underline cursor-pointer"
                                                                         type="button"
-                                                                        onClick={() => handleUpdatePeriod(tIdx, pIdx, { components: [...DEFAULT_GRADING_COMPONENTS] })}
-                                                                    >
-                                                                    Apply Standard Preset (30/30/40)
-                                                                    </button>
-                                                                    <span className="text-xs text-slate-300 dark:zinc-600">·</span>
-                                                                    <button
-                                                                        className="text-xs text-brand-600 dark:text-brand-400 font-semibold underline cursor-pointer"
-                                                                        type="button"
                                                                         onClick={() => handleAddComponent(tIdx, pIdx)}
                                                                     >
-                                                                    + Add Component
+                                                                        + Add Component
                                                                     </button>
                                                                 </div>
                                                             )}
