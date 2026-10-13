@@ -3,7 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import {
-    ArrowCounterClockwiseIcon,
+    CaretDownIcon,
     GearIcon,
     PlusIcon,
     SunIcon,
@@ -41,6 +41,11 @@ export default function Step4HolidaysConfig({
     const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
     const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
     const [deleteExceptionTarget, setDeleteExceptionTarget] = useState<{ index: number; title: string } | null>(null);
+    const [collapsedExceptions, setCollapsedExceptions] = useState<Record<number, boolean>>({});
+
+    function toggleExceptionCollapse(index: number) {
+        setCollapsedExceptions((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     const { fields, append, remove, replace } = useFieldArray({
         control,
@@ -62,17 +67,6 @@ export default function Step4HolidaysConfig({
             description: ''
         };
         append(newHoliday);
-    }
-
-    function handleResetBlank() {
-        replace([]);
-    }
-
-    function handleResetRowBlank(index: number) {
-        setValue(`holidays.${index}.title`, '', { shouldDirty: true });
-        setValue(`holidays.${index}.start_date`, '', { shouldDirty: true });
-        setValue(`holidays.${index}.end_date`, '', { shouldDirty: true });
-        setValue(`holidays.${index}.description`, '', { shouldDirty: true });
     }
 
     const holidayCount = holidays.filter((h) => h.exception_type === 'Holiday').length;
@@ -101,17 +95,6 @@ export default function Step4HolidaysConfig({
 
                 {!disabled && (
                     <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-700/40">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            onClick={handleResetBlank}
-                        >
-                            Reset to Blank
-                        </CommonButton>
-
                         <CommonButton
                             color="primary"
                             size="small"
@@ -173,30 +156,23 @@ export default function Step4HolidaysConfig({
                                         <span className="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center shrink-0">
                                             #{idx + 1}
                                         </span>
-                                        <CommonInput
-                                            containerClassName="flex-1"
-                                            disabled={disabled}
-                                            placeholder="Holiday / Exception Title (e.g. Independence Day)"
-                                            size="small"
-                                            value={current.title || ''}
-                                            onChange={(e) => {
-                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true });
-                                            }}
-                                        />
+                                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                            {current.title || `Exception #${idx + 1}`}
+                                        </span>
+                                        {current.exception_type && (
+                                            <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                {current.exception_type}
+                                            </span>
+                                        )}
+                                        {current.start_date && (
+                                            <span className="text-xs text-slate-400 shrink-0 hidden md:inline">
+                                                • {current.start_date}{current.end_date && current.end_date !== current.start_date ? ` to ${current.end_date}` : ''}
+                                            </span>
+                                        )}
                                     </div>
 
-                                    {!disabled && (
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                            <CommonButton
-                                                color="inherit"
-                                                size="small"
-                                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
-                                                variant="outlined"
-                                                onClick={() => handleResetRowBlank(idx)}
-                                                title="Reset row to blank"
-                                            >
-                                                <span className="hidden sm:inline">Clear</span>
-                                            </CommonButton>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {!disabled && (
                                             <CommonButton
                                                 color="error"
                                                 size="small"
@@ -212,91 +188,121 @@ export default function Step4HolidaysConfig({
                                             >
                                                 <span className="hidden sm:inline">Remove</span>
                                             </CommonButton>
-                                        </div>
-                                    )}
+                                        )}
+                                        <button
+                                            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                            title={collapsedExceptions[idx] ? 'Expand exception' : 'Collapse exception'}
+                                            type="button"
+                                            aria-label={collapsedExceptions[idx] ? 'Expand exception' : 'Collapse exception'}
+                                            onClick={() => toggleExceptionCollapse(idx)}
+                                        >
+                                            <CaretDownIcon
+                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedExceptions[idx] ? '-rotate-90' : 'rotate-0'}`}
+                                                weight="bold"
+                                            />
+                                            <span className="text-xs hidden sm:inline">{collapsedExceptions[idx] ? 'Expand' : 'Collapse'}</span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                                <div className={collapsedExceptions[idx] ? 'hidden' : 'space-y-4'}>
                                     <div>
-                                        <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                            Exception Type
-                                        </label>
-                                        <select
-                                            aria-label="Select exception type"
-                                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium"
+                                        <CommonInput
                                             disabled={disabled}
-                                            value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
+                                            fullWidth
+                                            isRequired
+                                            label="Holiday / Exception Title"
+                                            placeholder="Holiday / Exception Title (e.g. Independence Day)"
+                                            size="small"
+                                            value={current.title || ''}
                                             onChange={(e) => {
-                                                setValue(
-                                                    `holidays.${idx}.exception_type`,
-                                                    e.target.value as CalendarExceptionType,
-                                                    { shouldDirty: true }
-                                                );
+                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true });
                                             }}
-                                        >
-                                            {optionsToRender.map((opt) => (
-                                                <option key={opt.label} value={opt.label}>
-                                                    {opt.label} {!opt.is_active ? '(Deprecated)' : ''}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        />
                                     </div>
 
-                                    <div>
-                                        <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                            Class Impact
-                                        </label>
-                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                                            <input
-                                                checked={Boolean(current.affects_attendance)}
-                                                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                                                Exception Type
+                                            </label>
+                                            <select
+                                                aria-label="Select exception type"
+                                                className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium"
                                                 disabled={disabled}
-                                                type="checkbox"
+                                                value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                                 onChange={(e) => {
-                                                    setValue(`holidays.${idx}.affects_attendance`, e.target.checked, { shouldDirty: true });
+                                                    setValue(
+                                                        `holidays.${idx}.exception_type`,
+                                                        e.target.value as CalendarExceptionType,
+                                                        { shouldDirty: true }
+                                                    );
+                                                }}
+                                            >
+                                                {optionsToRender.map((opt) => (
+                                                    <option key={opt.label} value={opt.label}>
+                                                        {opt.label} {!opt.is_active ? '(Deprecated)' : ''}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                                                Class Impact
+                                            </label>
+                                            <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                                                <input
+                                                    checked={Boolean(current.affects_attendance)}
+                                                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                                                    disabled={disabled}
+                                                    type="checkbox"
+                                                    onChange={(e) => {
+                                                        setValue(`holidays.${idx}.affects_attendance`, e.target.checked, { shouldDirty: true });
+                                                    }}
+                                                />
+                                                <span className="font-medium">Class Suspended</span>
+                                            </label>
+                                        </div>
+
+                                        <div>
+                                            <CommonDatePicker
+                                                disabled={disabled}
+                                                label="Start Date"
+                                                size="small"
+                                                value={current.start_date || ''}
+                                                onChange={(val) => {
+                                                    setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true });
                                                 }}
                                             />
-                                            <span className="font-medium">Class Suspended</span>
-                                        </label>
+                                        </div>
+
+                                        <div>
+                                            <CommonDatePicker
+                                                disabled={disabled}
+                                                label="End Date"
+                                                size="small"
+                                                value={current.end_date || ''}
+                                                onChange={(val) => {
+                                                    setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true });
+                                                }}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div>
-                                        <CommonDatePicker
+                                        <CommonInput
                                             disabled={disabled}
-                                            label="Start Date"
+                                            fullWidth
+                                            label="Description / Note (Optional)"
+                                            placeholder="e.g. Regular National Non-Working Holiday"
                                             size="small"
-                                            value={current.start_date || ''}
-                                            onChange={(val) => {
-                                                setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true });
+                                            value={current.description || ''}
+                                            onChange={(e) => {
+                                                setValue(`holidays.${idx}.description`, e.target.value, { shouldDirty: true });
                                             }}
                                         />
                                     </div>
-
-                                    <div>
-                                        <CommonDatePicker
-                                            disabled={disabled}
-                                            label="End Date"
-                                            size="small"
-                                            value={current.end_date || ''}
-                                            onChange={(val) => {
-                                                setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true });
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <CommonInput
-                                        disabled={disabled}
-                                        fullWidth
-                                        label="Description / Note (Optional)"
-                                        placeholder="e.g. Regular National Non-Working Holiday"
-                                        size="small"
-                                        value={current.description || ''}
-                                        onChange={(e) => {
-                                            setValue(`holidays.${idx}.description`, e.target.value, { shouldDirty: true });
-                                        }}
-                                    />
                                 </div>
                             </div>
                         );

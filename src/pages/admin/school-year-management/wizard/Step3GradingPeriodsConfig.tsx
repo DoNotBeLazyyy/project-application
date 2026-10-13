@@ -5,13 +5,11 @@ import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    BroomIcon,
+    CaretDownIcon,
     CheckCircleIcon,
-    CopySimpleIcon,
     ListPlusIcon,
     PlusIcon,
     ScalesIcon,
-    ShareNetworkIcon,
     TrashIcon,
     WarningCircleIcon
 } from '@phosphor-icons/react';
@@ -19,9 +17,7 @@ import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
 import { useState } from 'react';
 import { Control, useWatch } from 'react-hook-form';
-import CopyComponentBreakdownModal from '@pages/admin/school-year-management/wizard/CopyComponentBreakdownModal';
 import {
-    DEFAULT_GRADING_COMPONENTS,
     DEFAULT_GRADING_PERIODS,
     distributeDatesAcrossPeriods
 } from '@pages/admin/school-year-management/wizard/wizard.constants';
@@ -40,85 +36,10 @@ export default function Step3GradingPeriodsConfig({
     const terms = useWatch({ control, name: 'terms' }) || [];
     const [deletePeriodTarget, setDeletePeriodTarget] = useState<{ termIndex: number; periodIndex: number; name: string } | null>(null);
     const [focusTarget, setFocusTarget] = useState<{ type: 'period' | 'component'; key: string } | null>(null);
-    const [copyModalState, setCopyModalState] = useState<{
-        open: boolean;
-        termIndex: number;
-        periodIndex: number;
-        termName: string;
-        periodName: string;
-    } | null>(null);
+    const [collapsedPeriods, setCollapsedPeriods] = useState<Record<string, boolean>>({});
 
-    function handleApplyCopiedComponents(
-        components: WizardGradingPeriodComponentItem[],
-        applyToAllInTerm: boolean,
-        sourceLabel: string
-    ) {
-        if (!copyModalState) return;
-        const { termIndex, periodIndex } = copyModalState;
-
-        if (applyToAllInTerm) {
-            handleApplyBreakdownToAllTermPeriods(termIndex, components);
-        }
-        else {
-            handleUpdatePeriod(termIndex, periodIndex, { components });
-            useToastStore.getState()
-                .showToast(
-                    `Component breakdown copied from "${sourceLabel}".`,
-                    'success'
-                );
-        }
-    }
-
-    function handleApplyBreakdownToAllTermPeriods(termIndex: number, components: WizardGradingPeriodComponentItem[]) {
-        const targetTerm = terms[termIndex];
-        if (!targetTerm || !targetTerm.grading_periods) return;
-
-        const updatedPeriods = targetTerm.grading_periods.map((period) => ({
-            ...period,
-            components: components.map((c, i) => ({
-                ...c,
-                id: `comp_all_${Date.now()}_${i}_${Math.random()
-                    .toString(36)
-                    .substring(2, 6)}`
-            }))
-        }));
-
-        const updatedTerms = [...terms];
-        updatedTerms[termIndex] = {
-            ...targetTerm,
-            grading_periods: updatedPeriods
-        };
-
-        onChangeTerms(updatedTerms);
-        useToastStore.getState()
-            .showToast('Component breakdown applied to all grading periods in this term.', 'success');
-    }
-
-    // Clear all grading periods in a term down to 1 blank period
-    function handleClearTermPeriods(termIndex: number) {
-        const targetTerm = terms[termIndex];
-        if (!targetTerm) return;
-
-        const clearedPeriod: WizardGradingPeriodItem = {
-            end_date: '',
-            name: '',
-            sequence: 1,
-            start_date: '',
-            weight: 0,
-            major_exam_start_date: '',
-            major_exam_end_date: '',
-            grade_encoding_start_date: '',
-            grade_encoding_end_date: '',
-            components: []
-        };
-
-        const updatedTerms = [...terms];
-        updatedTerms[termIndex] = {
-            ...targetTerm,
-            grading_periods: [clearedPeriod]
-        };
-
-        onChangeTerms(updatedTerms);
+    function togglePeriodCollapse(key: string) {
+        setCollapsedPeriods((prev) => ({ ...prev, [key]: !prev[key] }));
     }
 
     // Add a period to a specific term
@@ -127,6 +48,7 @@ export default function Step3GradingPeriodsConfig({
         if (!targetTerm) return;
 
         const currentPeriods = targetTerm.grading_periods || [];
+        const nextSequence = currentPeriods.length + 1;
         const newPeriod: WizardGradingPeriodItem = {
             end_date: '',
             name: '',
@@ -232,57 +154,6 @@ export default function Step3GradingPeriodsConfig({
         };
 
         onChangeTerms(updatedTerms);
-    }
-
-    // Copy grading period configuration from another term
-    function handleCopyPeriodsFromTerm(targetTermIndex: number, sourceTermIndex: number) {
-        const targetTerm = terms[targetTermIndex];
-        const sourceTerm = terms[sourceTermIndex];
-        if (!targetTerm || !sourceTerm) return;
-
-        const sourcePeriods = sourceTerm.grading_periods || [];
-        if (sourcePeriods.length === 0) {
-            useToastStore.getState()
-                .showToast(
-                    'Selected source term has no grading periods to copy.',
-                    'warning'
-                );
-            return;
-        }
-
-        const distributed = distributeDatesAcrossPeriods(
-            targetTerm.start_date || '',
-            targetTerm.end_date || '',
-            sourcePeriods.length
-        );
-
-        const newPeriods: WizardGradingPeriodItem[] = sourcePeriods.map((p, idx) => ({
-            end_date: distributed[idx]?.end_date || targetTerm.end_date || '',
-            name: p.name,
-            sequence: idx + 1,
-            start_date: distributed[idx]?.start_date || targetTerm.start_date || '',
-            weight: p.weight,
-            major_exam_start_date: p.major_exam_start_date || '',
-            major_exam_end_date: p.major_exam_end_date || '',
-            grade_encoding_start_date: p.grade_encoding_start_date || '',
-            grade_encoding_end_date: p.grade_encoding_end_date || '',
-            components: p.components
-                ? p.components.map((c) => ({ ...c }))
-                : [...DEFAULT_GRADING_COMPONENTS]
-        }));
-
-        const updatedTerms = [...terms];
-        updatedTerms[targetTermIndex] = {
-            ...targetTerm,
-            grading_periods: newPeriods
-        };
-
-        onChangeTerms(updatedTerms);
-        useToastStore.getState()
-            .showToast(
-                `Copied grading periods from ${sourceTerm.term_type_label || `Term #${sourceTermIndex + 1}`}.`,
-                'info'
-            );
     }
 
     // Add component item to period
@@ -405,16 +276,6 @@ export default function Step3GradingPeriodsConfig({
                                     {!disabled && (
                                         <div className="flex items-center gap-2">
                                             <CommonButton
-                                                color="inherit"
-                                                size="small"
-                                                startIcon={<BroomIcon className="w-3.5 h-3.5" />}
-                                                title="Clear all grading periods for this term"
-                                                variant="outlined"
-                                                onClick={() => handleClearTermPeriods(tIdx)}
-                                            >
-                                                Clear Term
-                                            </CommonButton>
-                                            <CommonButton
                                                 color="primary"
                                                 size="small"
                                                 startIcon={<PlusIcon className="w-3.5 h-3.5" />}
@@ -427,39 +288,6 @@ export default function Step3GradingPeriodsConfig({
                                     )}
                                 </div>
                             </div>
-
-                            {/* Copy Settings Option */}
-                            {!disabled && terms.length > 1 && (
-                                <div className="flex justify-end pt-1 pb-2 border-b border-slate-100 dark:border-zinc-700/30">
-                                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                                            <span className="text-xs text-slate-500 font-medium hidden sm:inline shrink-0">
-                                                Copy:
-                                            </span>
-                                            <select
-                                                aria-label="Copy grading periods from another term"
-                                                className="w-full sm:w-auto text-xs px-2.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-medium border border-brand-200 dark:border-brand-800 focus:outline-none transition-colors cursor-pointer"
-                                                value=""
-                                                onChange={(e) => {
-                                                    if (e.target.value !== '') {
-                                                        handleCopyPeriodsFromTerm(tIdx, Number(e.target.value));
-                                                    }
-                                                }}
-                                            >
-                                                <option disabled value="">
-                                                    Copy settings from Term...
-                                                </option>
-                                                {terms.map((otherT, oIdx) => {
-                                                    if (oIdx === tIdx) return null;
-                                                    return (
-                                                        <option key={otherT.id || oIdx} value={oIdx}>
-                                                            {otherT.term_type_label || `Term #${oIdx + 1}`} ({otherT.grading_periods?.length || 0} periods)
-                                                        </option>
-                                                    );
-                                                })}
-                                            </select>
-                                        </div>
-                                </div>
-                            )}
 
                             {/* Periods List */}
                             <div className="space-y-4">
@@ -512,43 +340,61 @@ export default function Step3GradingPeriodsConfig({
                                         >
                                             {/* Row 1: Entry number and action buttons */}
                                             <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-zinc-700/50 pb-2.5">
-                                                <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                                    #{period.sequence}
-                                                </span>
+                                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                                        #{period.sequence}
+                                                    </span>
+                                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                                        {period.name || `Period #${period.sequence}`}
+                                                    </span>
+                                                    {Number(period.weight) > 0 && (
+                                                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-400">
+                                                            ({period.weight}%)
+                                                        </span>
+                                                    )}
+                                                    {period.start_date && period.end_date && (
+                                                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                                            • {period.start_date} to {period.end_date}
+                                                        </span>
+                                                    )}
+                                                </div>
 
-                                                {!disabled && (
-                                                    <div className="flex items-center gap-1.5">
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    {!disabled && periods.length > 1 && (
                                                         <CommonButton
-                                                            color="inherit"
+                                                            color="error"
                                                             size="small"
-                                                            startIcon={<BroomIcon className="w-3.5 h-3.5" />}
-                                                            title="Clear period fields"
+                                                            startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                            title="Remove period"
                                                             variant="outlined"
-                                                            onClick={() => handleUpdatePeriod(tIdx, pIdx, { name: '', weight: 0, start_date: '', end_date: '', major_exam_start_date: '', major_exam_end_date: '', grade_encoding_start_date: '', grade_encoding_end_date: '', components: [] })}
+                                                            onClick={() => {
+                                                                setDeletePeriodTarget({
+                                                                    termIndex: tIdx,
+                                                                    periodIndex: pIdx,
+                                                                    name: period.name || `Period #${period.sequence}`
+                                                                });
+                                                            }}
                                                         >
-                                                            <span className="hidden sm:inline">Clear</span>
+                                                            <span className="hidden sm:inline">Remove</span>
                                                         </CommonButton>
-                                                        {periods.length > 1 && (
-                                                            <CommonButton
-                                                                color="error"
-                                                                size="small"
-                                                                startIcon={<TrashIcon className="w-3.5 h-3.5" />}
-                                                                title="Remove period"
-                                                                variant="outlined"
-                                                                onClick={() => {
-                                                                    setDeletePeriodTarget({
-                                                                        termIndex: tIdx,
-                                                                        periodIndex: pIdx,
-                                                                        name: period.name || `Period #${period.sequence}`
-                                                                    });
-                                                                }}
-                                                            >
-                                                                <span className="hidden sm:inline">Remove</span>
-                                                            </CommonButton>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                    )}
+                                                    <button
+                                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                                        title={collapsedPeriods[`${tIdx}_${pIdx}`] ? 'Expand period' : 'Collapse period'}
+                                                        type="button"
+                                                        aria-label={collapsedPeriods[`${tIdx}_${pIdx}`] ? 'Expand period' : 'Collapse period'}
+                                                        onClick={() => togglePeriodCollapse(`${tIdx}_${pIdx}`)}
+                                                    >
+                                                        <CaretDownIcon
+                                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedPeriods[`${tIdx}_${pIdx}`] ? '-rotate-90' : 'rotate-0'}`}
+                                                            weight="bold"
+                                                        />
+                                                        <span className="text-xs hidden sm:inline">{collapsedPeriods[`${tIdx}_${pIdx}`] ? 'Expand' : 'Collapse'}</span>
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            <div className={collapsedPeriods[`${tIdx}_${pIdx}`] ? 'hidden' : 'flex flex-col gap-3'}>
 
                                             {/* Row 2: Period name and weight */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -722,37 +568,6 @@ export default function Step3GradingPeriodsConfig({
                                                     {!disabled && (
                                                         <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-end">
                                                             <button
-                                                                aria-label="Copy component breakdown from another period or standard template"
-                                                                className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                title="Copy component breakdown from another period or standard template"
-                                                                type="button"
-                                                                onClick={() => setCopyModalState({
-                                                                    open: true,
-                                                                    termIndex: tIdx,
-                                                                    periodIndex: pIdx,
-                                                                    termName: term.term_type_label || `Term #${tIdx + 1}`,
-                                                                    periodName: period.name || `Period #${pIdx + 1}`
-                                                                })}
-                                                            >
-                                                                <CopySimpleIcon className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-                                                                <span className="hidden sm:inline">Copy Breakdown...</span>
-                                                                <span className="sm:hidden">Copy</span>
-                                                            </button>
-
-                                                            {components.length > 0 && (
-                                                                <button
-                                                                    aria-label="Apply this breakdown to all grading periods in this term"
-                                                                    className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                                                                    title="Apply this breakdown to all grading periods in this term"
-                                                                    type="button"
-                                                                    onClick={() => handleApplyBreakdownToAllTermPeriods(tIdx, components)}
-                                                                >
-                                                                    <ShareNetworkIcon className="w-3.5 h-3.5" />
-                                                                    <span className="hidden sm:inline">Apply to All</span>
-                                                                </button>
-                                                            )}
-
-                                                            <button
                                                                 aria-label="Add Component"
                                                                 className="text-[11px] p-1.5 sm:px-2 sm:py-0.5 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                                                                 title="Add Component"
@@ -838,6 +653,7 @@ export default function Step3GradingPeriodsConfig({
                                                         </div>
                                                     )}
                                             </div>
+                                                </div>
                                         </div>
                                     );
                                 })}
@@ -847,18 +663,6 @@ export default function Step3GradingPeriodsConfig({
                 })}
             </div>
 
-            {copyModalState?.open && (
-                <CopyComponentBreakdownModal
-                    open={copyModalState.open}
-                    targetPeriodIndex={copyModalState.periodIndex}
-                    targetPeriodName={copyModalState.periodName}
-                    targetTermIndex={copyModalState.termIndex}
-                    targetTermName={copyModalState.termName}
-                    terms={terms}
-                    onApply={handleApplyCopiedComponents}
-                    onClose={() => setCopyModalState(null)}
-                />
-            )}
 
             {/* Delete Period Prompt Modal */}
             <DeletePromptModal

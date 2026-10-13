@@ -14,7 +14,7 @@ import { changeMyPassword, getMyProfile, updateMyProfile } from '@services/profi
 import { cancelMyProfileRequest } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { getPrograms } from '@services/program/program.service';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -70,8 +70,8 @@ export default function ProfilePage() {
 
     const isStudentUser = Boolean(profile?.student || profile?.role_labels?.includes('Student'));
 
-    const profileMethods = useForm<ProfileFormValues>({ defaultValues: EMPTY_PROFILE });
-    const passwordMethods = useForm<ChangePasswordFormValues>({ defaultValues: EMPTY_PASSWORD });
+    const profileMethods = useForm<ProfileFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PROFILE });
+    const passwordMethods = useForm<ChangePasswordFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PASSWORD });
 
     useEffect(function() {
         async function loadData() {

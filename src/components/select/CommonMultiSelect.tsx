@@ -76,6 +76,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
         onChange(next.filter((item) => item !== exclusiveValue));
     }
 
+    const isSmall = size === 'small';
     const isNonInteractive = Boolean(disabled || readOnly);
     const labelErrorMessage = label && error ? helperText : undefined;
     const labelDescription = description ?? (label && !error ? helperText : undefined);
@@ -137,7 +138,10 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                 )}
                 renderTags={(tagValue, getTagProps) =>
                     tagValue.map((option, index) => {
-                        const { key, ...tagProps } = getTagProps({ index });
+                        const { key, onDelete, ...otherTagProps } = getTagProps({ index });
+                        const chipProps = isNonInteractive
+                            ? otherTagProps
+                            : { ...otherTagProps, onDelete };
 
                         return (
                             <Chip
@@ -146,80 +150,99 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                         ? undefined
                                         : (
                                             <XIcon
-                                                size={12}
+                                                size={isSmall ? 12 : 14}
                                                 weight="bold"
                                             />
                                         )
                                 }
                                 key={key}
                                 label={option.label}
-                                size="small"
+                                size={isSmall ? 'small' : 'medium'}
+                                title={typeof option.label === 'string' ? option.label : undefined}
                                 variant="outlined"
-                                {...tagProps}
+                                {...chipProps}
                                 sx={{
                                     backgroundColor: isNonInteractive
-                                        ? 'var(--mui-tokens-color-common-white)'
-                                        : 'var(--mui-tokens-color-brand-50)',
+                                        ? 'var(--mui-tokens-color-neutral-100)'
+                                        : 'var(--mui-tokens-color-brand-100)',
                                     borderColor: isNonInteractive
-                                        ? 'var(--mui-tokens-color-brand-500)'
-                                        : 'var(--mui-tokens-color-brand-600)',
+                                        ? 'var(--mui-tokens-color-neutral-300)'
+                                        : 'var(--mui-tokens-color-brand-200)',
                                     borderStyle: 'solid',
                                     borderWidth: '1px',
-                                    color: 'var(--mui-tokens-color-brand-950)',
+                                    borderRadius: 'var(--mui-tokens-radius-full)',
+                                    color: isNonInteractive
+                                        ? 'var(--mui-tokens-color-neutral-800)'
+                                        : 'var(--mui-tokens-color-brand-900)',
                                     fontWeight: 500,
-                                    height: '1.5rem',
+                                    height: 'auto',
+                                    minHeight: isSmall ? '1.5rem' : '1.75rem',
+                                    maxWidth: '100%',
+                                    margin: '2px',
                                     opacity: 1,
+                                    padding: isNonInteractive
+                                        ? '0 var(--mui-tokens-spacing-2)'
+                                        : '0 var(--mui-tokens-spacing-1) 0 var(--mui-tokens-spacing-2)',
                                     transition: 'all 0.15s ease-in-out',
                                     '&:hover': {
                                         backgroundColor: isNonInteractive
-                                            ? 'var(--mui-tokens-color-common-white)'
-                                            : 'var(--mui-tokens-color-brand-100)',
-                                        borderColor: 'var(--mui-tokens-color-brand-700)'
+                                            ? 'var(--mui-tokens-color-neutral-100)'
+                                            : 'var(--mui-tokens-color-brand-200)',
+                                        borderColor: isNonInteractive
+                                            ? 'var(--mui-tokens-color-neutral-300)'
+                                            : 'var(--mui-tokens-color-brand-300)'
                                     },
                                     '& .MuiChip-label': {
-                                        color: 'var(--mui-tokens-color-brand-950)',
-                                        fontSize: 'var(--mui-tokens-fontSize-xs)',
+                                        boxSizing: 'border-box',
+                                        color: isNonInteractive
+                                            ? 'var(--mui-tokens-color-neutral-800)'
+                                            : 'var(--mui-tokens-color-brand-900)',
+                                        display: 'inline-block',
+                                        fontSize: isSmall
+                                            ? 'var(--mui-tokens-fontSize-xs)'
+                                            : 'var(--mui-tokens-fontSize-sm)',
                                         fontWeight: 500,
+                                        lineHeight: 1.3,
+                                        maxWidth: '100%',
                                         opacity: 1,
-                                        paddingLeft: 'var(--mui-tokens-spacing-2)',
-                                        paddingRight: isNonInteractive
-                                            ? 'var(--mui-tokens-spacing-2)'
-                                            : 'var(--mui-tokens-spacing-1)',
-                                        WebkitTextFillColor: 'var(--mui-tokens-color-brand-950)'
+                                        overflow: 'visible',
+                                        padding: '2px 4px',
+                                        textOverflow: 'clip',
+                                        WebkitTextFillColor: isNonInteractive
+                                            ? 'var(--mui-tokens-color-neutral-800)'
+                                            : 'var(--mui-tokens-color-brand-900)',
+                                        whiteSpace: 'normal',
+                                        wordBreak: 'break-word'
                                     },
                                     '& .MuiChip-deleteIcon': {
+                                        alignItems: 'center',
+                                        borderRadius: 'var(--mui-tokens-radius-full)',
                                         color: 'var(--mui-tokens-color-brand-700)',
-                                        cursor: isNonInteractive
-                                            ? 'default'
-                                            : 'pointer',
-                                        fontSize: '0.75rem',
-                                        marginLeft: 'var(--mui-tokens-spacing-2)',
-                                        marginRight: '2px',
-                                        opacity: isNonInteractive
-                                            ? 0.4
-                                            : 1,
-                                        pointerEvents: isNonInteractive
-                                            ? 'none'
-                                            : 'auto',
-                                        transition: 'color 0.15s ease',
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        fontSize: isSmall ? '0.75rem' : '0.875rem',
+                                        justifyContent: 'center',
+                                        margin: '0 2px 0 4px',
+                                        opacity: 1,
+                                        padding: '2px',
+                                        transition: 'all 0.15s ease-in-out',
                                         '&:hover': {
+                                            backgroundColor: 'var(--mui-tokens-color-brand-300)',
                                             color: 'var(--mui-tokens-color-brand-950)'
                                         }
                                     },
                                     '&.Mui-disabled': {
-                                        backgroundColor: 'var(--mui-tokens-color-common-white) !important',
-                                        borderColor: 'var(--mui-tokens-color-brand-500) !important',
-                                        color: 'var(--mui-tokens-color-brand-950) !important',
+                                        backgroundColor: 'var(--mui-tokens-color-neutral-100) !important',
+                                        borderColor: 'var(--mui-tokens-color-neutral-200) !important',
+                                        color: 'var(--mui-tokens-color-neutral-500) !important',
                                         opacity: '1 !important',
                                         '& .MuiChip-label': {
-                                            color: 'var(--mui-tokens-color-brand-950) !important',
+                                            color: 'var(--mui-tokens-color-neutral-500) !important',
                                             opacity: '1 !important',
-                                            WebkitTextFillColor: 'var(--mui-tokens-color-brand-950) !important'
+                                            WebkitTextFillColor: 'var(--mui-tokens-color-neutral-500) !important'
                                         },
                                         '& .MuiChip-deleteIcon': {
-                                            color: 'var(--mui-tokens-color-brand-600) !important',
-                                            opacity: '0.4 !important',
-                                            pointerEvents: 'none'
+                                            display: 'none !important'
                                         }
                                     }
                                 }}

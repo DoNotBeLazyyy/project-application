@@ -178,8 +178,6 @@ export default function UserProfilePromptModal({
 
     return (
         <CommonModal
-            closeOnBackdropClick={!isMandatory}
-            closeOnEscape={!isMandatory}
             fullWidth
             maxWidth="md"
             open={open}

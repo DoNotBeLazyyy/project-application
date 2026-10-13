@@ -2,7 +2,7 @@ import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { formatFieldLabel, getFieldErrorMessage } from '@utils/form.util';
+import { ensureSubmitValidationMode, formatFieldLabel, getFieldErrorMessage } from '@utils/form.util';
 import { useEffect, useMemo } from 'react';
 import { Control, FieldValues, useFormState } from 'react-hook-form';
 
@@ -117,6 +117,7 @@ export default function CommonForm<T extends FieldValues>({
     hasHelper = true,
     helperPlacement = 'label'
 }: CommonFormProps<T>) {
+    ensureSubmitValidationMode(control);
     const { errors, submitCount } = useFormState({ control });
 
     // Determine the first field in form order that currently has a validation error

@@ -9,7 +9,6 @@ import {
     CheckCircleIcon,
     ClockCounterClockwiseIcon,
     EyeIcon,
-    FastForwardIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
     WarningIcon,
@@ -27,6 +26,7 @@ import {
     SaveAcademicYearCalendarPayload,
     SchoolYearOption
 } from '@type/school-year.type';
+import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
@@ -46,7 +46,6 @@ import {
     generateAcademicYearCode,
     generateAcademicYearLabel,
     isSpecialGradeRow,
-    shiftDateByOneYear,
     SourceSchoolYearInfo,
     validateCalendarExceptions,
     validateGradingPeriods,
@@ -103,6 +102,7 @@ export default function AcademicYearWizardModal({
     const defaultValues = DEFAULT_WIZARD_FORM_VALUES;
 
     const methods = useForm<AcademicYearWizardFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues
     });
 
@@ -307,57 +307,6 @@ export default function AcademicYearWizardModal({
             }
         }
         return true;
-    }
-
-    function handleRollForwardOneYear() {
-        const values = getValues();
-        const newStart = shiftDateByOneYear(values.start_date);
-        const newEnd = shiftDateByOneYear(values.end_date);
-
-        let newCode = values.code;
-        let newLabel = values.label;
-        if (newStart && newEnd) {
-            const autoCode = generateAcademicYearCode(newStart, newEnd);
-            const autoLabel = generateAcademicYearLabel(newStart, newEnd);
-            if (autoCode) newCode = autoCode;
-            if (autoLabel) newLabel = autoLabel;
-        }
-
-        const updatedTerms = (values.terms || []).map((t) => ({
-            ...t,
-            start_date: shiftDateByOneYear(t.start_date),
-            end_date: shiftDateByOneYear(t.end_date),
-            enrollment_start_date: t.enrollment_start_date ? shiftDateByOneYear(t.enrollment_start_date) : null,
-            enrollment_end_date: t.enrollment_end_date ? shiftDateByOneYear(t.enrollment_end_date) : null,
-            grading_deadline: t.grading_deadline ? shiftDateByOneYear(t.grading_deadline) : null,
-            grading_periods: (t.grading_periods || []).map((gp) => ({
-                ...gp,
-                start_date: gp.start_date ? shiftDateByOneYear(gp.start_date) : null,
-                end_date: gp.end_date ? shiftDateByOneYear(gp.end_date) : null,
-                major_exam_start_date: gp.major_exam_start_date ? shiftDateByOneYear(gp.major_exam_start_date) : null,
-                major_exam_end_date: gp.major_exam_end_date ? shiftDateByOneYear(gp.major_exam_end_date) : null,
-                grade_encoding_start_date: gp.grade_encoding_start_date ? shiftDateByOneYear(gp.grade_encoding_start_date) : null,
-                grade_encoding_end_date: gp.grade_encoding_end_date ? shiftDateByOneYear(gp.grade_encoding_end_date) : null
-            }))
-        }));
-
-        const updatedHolidays = (values.holidays || []).map((h) => ({
-            ...h,
-            start_date: shiftDateByOneYear(h.start_date),
-            end_date: shiftDateByOneYear(h.end_date)
-        }));
-
-        setValue('start_date', newStart, { shouldDirty: true });
-        setValue('end_date', newEnd, { shouldDirty: true });
-        setValue('code', newCode, { shouldDirty: true });
-        setValue('label', newLabel, { shouldDirty: true });
-        setValue('terms', updatedTerms, { shouldDirty: true });
-        setValue('holidays', updatedHolidays, { shouldDirty: true });
-
-        useToastStore.getState().showToast(
-            'Rolled forward all dates (School Year, Terms, Enrollment Windows, Grading Periods, Holidays & Exceptions) by +1 Year.',
-            'success'
-        );
     }
 
     function handleNext() {
@@ -639,21 +588,6 @@ export default function AcademicYearWizardModal({
                             >
                                 <span>Preview</span>
                             </CommonButton>
-
-                            {!isReadOnly && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<FastForwardIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                                    variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                                    title="Roll Forward +1 Year"
-                                    aria-label="Roll Forward +1 Year"
-                                    onClick={handleRollForwardOneYear}
-                                >
-                                    <span>Roll Forward +1 Year</span>
-                                </CommonButton>
-                            )}
 
                             {schoolYearId && (
                                 <CommonButton

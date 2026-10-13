@@ -8,7 +8,7 @@ import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { LoginFormValues, RoleDashboardPath } from '@type/auth.type';
 import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { isSessionExpiredDueToInactivity } from '@utils/session.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -34,6 +34,7 @@ export default function LoginPage() {
     const [loginError, setLoginError] = useState<string | null>(null);
     const activeRole = useAppStore((state) => state.activeRole);
     const methods = useForm<LoginFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: { email: '', password: '' }
     });
     const { handleSubmit, formState: { isSubmitting } } = methods;

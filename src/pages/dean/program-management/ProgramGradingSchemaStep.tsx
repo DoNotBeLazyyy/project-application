@@ -7,10 +7,11 @@ import {
     PlusCircleIcon,
     ScalesIcon,
     TrashIcon,
-    XCircleIcon
+    CaretDownIcon
 } from '@phosphor-icons/react';
 import { ProgramFormValues } from '@type/program/program.type';
 import { componentRailColor } from '@utils/period-allocation.util';
+import { useState } from 'react';
 import { Control, useController, useWatch } from 'react-hook-form';
 
 interface ProgramGradingSchemaStepProps {

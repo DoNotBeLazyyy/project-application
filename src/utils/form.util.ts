@@ -1,4 +1,6 @@
-import { FieldErrors, FieldValues, Path, UseFormReturn } from 'react-hook-form';
+import {
+    Control, FieldErrors, FieldValues, Path, useForm, UseFormProps, UseFormReturn
+} from 'react-hook-form';
 
 interface ErrorMessageProps<T> {
     key: Path<T>;
@@ -175,3 +177,108 @@ export function checkForMessage<T extends FieldValues>(
     walk(errors, path);
     return { firstError, count, list };
 }
+
+export const DEFAULT_FORM_MODE = 'onSubmit' as const;
+export const DEFAULT_FORM_REVALIDATE_MODE = 'onSubmit' as const;
+
+export const DEFAULT_FORM_OPTIONS = {
+    mode: DEFAULT_FORM_MODE,
+    reValidateMode: DEFAULT_FORM_REVALIDATE_MODE
+} as const;
+
+/**
+ * Ensures that the form control is configured to validate only upon submission,
+ * preventing continuous validation on every keystroke after validation has failed.
+ */
+export function ensureSubmitValidationMode<T extends FieldValues = FieldValues>(
+    control?: Control<T>
+): void {
+    if (!control) return;
+    const c = control as unknown as {
+        _options?: { mode?: string; reValidateMode?: string };
+    };
+    if (c._options) {
+        c._options.mode = DEFAULT_FORM_MODE;
+        c._options.reValidateMode = DEFAULT_FORM_REVALIDATE_MODE;
+    }
+}
+
+/**
+ * Clears an error for a given field from React Hook Form's control state.
+ *
+ * When an error field is modified (e.g. user starts typing), the field error
+ * is removed and validation is deferred until the user submits the form again.
+ */
+export function clearFieldError<T extends FieldValues = FieldValues>(
+    control: Control<T> | undefined,
+    name: string
+): void {
+    if (!control || !name) return;
+
+    ensureSubmitValidationMode(control);
+
+    const c = control as unknown as {
+        _clearErrors?: (name: string) => void;
+        clearErrors?: (name: string) => void;
+        _formState?: { errors: FieldErrors };
+        _subjects?: { state: { next: (payload: unknown) => void } };
+    };
+
+    if (typeof c._clearErrors === 'function') {
+        c._clearErrors(name);
+        return;
+    }
+
+    if (typeof c.clearErrors === 'function') {
+        c.clearErrors(name);
+        return;
+    }
+
+    if (c._formState?.errors) {
+        const segments = name.split('.');
+        let current: Record<string, unknown> | undefined = c._formState.errors as unknown as Record<string, unknown>;
+        for (let i = 0; i < segments.length - 1; i++) {
+            if (!current || typeof current !== 'object') {
+                break;
+            }
+            current = current[segments[i]] as Record<string, unknown> | undefined;
+        }
+        if (current && typeof current === 'object') {
+            Reflect.deleteProperty(current, segments[segments.length - 1]);
+        }
+
+        if (c._subjects?.state?.next) {
+            c._subjects.state.next({ name, errors: c._formState.errors });
+        }
+    }
+}
+
+/**
+ * Standardized application form hook configured with submit-time validation.
+ *
+ * Ensures validation only runs upon form submission, preventing errors
+ * from being evaluated on every keystroke.
+ */
+export function useAppForm<
+    TFieldValues extends FieldValues = FieldValues,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TContext = any,
+    TTransformedValues extends FieldValues | undefined = undefined
+>(
+    props?: UseFormProps<TFieldValues, TContext>
+): UseFormReturn<TFieldValues, TContext, TTransformedValues> {
+    const methods = useForm<TFieldValues, TContext, TTransformedValues>({
+        ...DEFAULT_FORM_OPTIONS,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(props as any)
+    });
+
+    if (methods.control) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (methods.control as any)._clearErrors = methods.clearErrors;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ensureSubmitValidationMode(methods.control as any);
+    }
+
+    return methods;
+}

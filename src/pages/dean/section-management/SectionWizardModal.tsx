@@ -23,6 +23,7 @@ import {
 } from '@services/section.service';
 import { useToastStore } from '@stores/toast.store';
 import { SectionFormValues, SectionScheduleSlot } from '@type/section.type';
+import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -90,6 +91,7 @@ export default function SectionWizardModal({
     const [isEditable, setIsEditable] = useState(true);
 
     const methods = useForm<SectionFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: defaultFormValues
     });
 

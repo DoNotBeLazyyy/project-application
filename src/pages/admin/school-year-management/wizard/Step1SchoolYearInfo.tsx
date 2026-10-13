@@ -3,7 +3,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
-import { BroomIcon, CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
 import { useEffect, useMemo, useRef } from 'react';
 import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
@@ -56,20 +56,6 @@ export default function Step1SchoolYearInfo({
     const userEditedCodeRef = useRef(false);
     const userEditedLabelRef = useRef(false);
     const prevDatesRef = useRef({ end: '', start: '' });
-
-    function handleClearForm() {
-        setValue('start_date', '', { shouldValidate: false, shouldDirty: true });
-        setValue('end_date', '', { shouldValidate: false, shouldDirty: true });
-        setValue('code', '', { shouldValidate: false, shouldDirty: true });
-        setValue('label', '', { shouldValidate: false, shouldDirty: true });
-        setValue('is_active', false, { shouldValidate: false, shouldDirty: true });
-        userEditedCodeRef.current = false;
-        userEditedLabelRef.current = false;
-        prevDatesRef.current = { end: '', start: '' };
-        if (onClearSourceYear) {
-            onClearSourceYear();
-        }
-    }
 
     useEffect(() => {
         userEditedCodeRef.current = false;
@@ -149,25 +135,11 @@ export default function Step1SchoolYearInfo({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Step Header Block with Description & Clear Form Button */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            {/* Step Header Block with Description */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 flex items-center justify-between gap-3 shadow-xs">
                 <div>
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Academic Year Details</h3>
                 </div>
-                {!disabled && (
-                    <CommonButton
-                        color="primary"
-                        size="small"
-                        startIcon={<BroomIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                        variant="outlined"
-                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                        onClick={handleClearForm}
-                        title="Clear form fields in this step"
-                    >
-                        <span className="hidden sm:inline">Clear Form</span>
-                        <span className="sm:hidden">Clear</span>
-                    </CommonButton>
-                )}
             </div>
 
             {/* Duplicate Banner when duplicating from an existing academic year */}
@@ -200,41 +172,6 @@ export default function Step1SchoolYearInfo({
                             Start Blank
                         </CommonButton>
                     )}
-                </div>
-            )}
-
-            {/* Dropdown to copy from existing school year when creating fresh */}
-            {isNew && !sourceSchoolYear && availableSourceYears && availableSourceYears.length > 0 && (
-                <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            <CopySimpleIcon className="w-4 h-4 text-brand-600" weight="bold" />
-                            <span>Duplicate from Existing Academic Year (Optional)</span>
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Copy terms, grading periods, transmutation rules, and thresholds from an existing year instead of setting them up manually.
-                        </p>
-                    </div>
-                    <div className="sm:w-72 shrink-0">
-                        <select
-                            aria-label="Select Academic Year to duplicate configuration"
-                            className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60"
-                            disabled={disabled}
-                            value=""
-                            onChange={(e) => {
-                                if (e.target.value && onSelectSourceYear) {
-                                    onSelectSourceYear(e.target.value);
-                                }
-                            }}
-                        >
-                            <option value="">-- Select Academic Year to Copy --</option>
-                            {availableSourceYears.map((sy) => (
-                                <option key={sy.id} value={sy.id}>
-                                    {sy.label} ({sy.code})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
                 </div>
             )}
 

@@ -7,6 +7,7 @@ import {
     getAssessmentForStudent, getAssessmentQuestionsForStudent, recordFocusEvent, recordHeartbeat, saveStudentAnswer, startAssessmentTimer, submitAssessment
 } from '@services/student-portal.service';
 import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
+import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,7 +28,7 @@ export default function TakeAssessmentPage() {
     const [isStarted, setIsStarted] = useState(false);
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const methods = useForm<Record<string, string>>({ defaultValues: {} });
+    const methods = useForm<Record<string, string>>({ ...DEFAULT_FORM_OPTIONS, defaultValues: {} });
 
     useEffect(function() {
         async function fetchAssessment() {

@@ -4,7 +4,7 @@ import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowCounterClockwiseIcon,
+    CaretDownIcon,
     CheckCircleIcon,
     PlusIcon,
     TrashIcon,
@@ -30,6 +30,12 @@ export default function Step4TransmutationConfig({
     setValue
 }: Step4TransmutationConfigProps) {
     const [deleteRungTarget, setDeleteRungTarget] = useState<{ index: number; label: string } | null>(null);
+    const [collapsedRungs, setCollapsedRungs] = useState<Record<number, boolean>>({});
+
+    function toggleRungCollapse(index: number) {
+        setCollapsedRungs((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
+
     const { fields, append, remove, replace } = useFieldArray({
         control,
         name: 'transmutation_rows'
@@ -52,18 +58,6 @@ export default function Step4TransmutationConfig({
             description: ''
         };
         append(newRow);
-    }
-
-    function handleResetBlank() {
-        replace([]);
-    }
-
-    function handleResetRowBlank(index: number) {
-        setValue(`transmutation_rows.${index}.description`, '', { shouldDirty: true });
-        setValue(`transmutation_rows.${index}.label`, '', { shouldDirty: true });
-        setValue(`transmutation_rows.${index}.max_percentage`, null, { shouldDirty: true });
-        setValue(`transmutation_rows.${index}.min_percentage`, null, { shouldDirty: true });
-        setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
     }
 
     function handleUpdatePercentage(
@@ -164,17 +158,6 @@ export default function Step4TransmutationConfig({
                         <CommonButton
                             color="primary"
                             size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            onClick={handleResetBlank}
-                            title="Reset to Blank"
-                        >
-                            <span className="hidden sm:inline">Reset to Blank</span>
-                        </CommonButton>
-                        <CommonButton
-                            color="primary"
-                            size="small"
                             className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
                             startIcon={<PlusIcon className="w-3.5 h-3.5" />}
                             variant="contained"
@@ -226,23 +209,30 @@ export default function Step4TransmutationConfig({
                         >
                             {/* Row 1: Header with Action Buttons */}
                             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-3">
-                                <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                    #{index + 1}
-                                </span>
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                        #{index + 1}
+                                    </span>
+                                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                        {row.label ? `Grade: ${row.label}` : `Grade Rung #${index + 1}`}
+                                    </span>
+                                    {row.description && (
+                                        <span className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:inline">
+                                            ({row.description})
+                                        </span>
+                                    )}
+                                    {!isCond && row.min_percentage !== null && row.max_percentage !== null && (
+                                        <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                            {row.min_percentage}% - {row.max_percentage}%
+                                        </span>
+                                    )}
+                                    <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${row.is_passing ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'}`}>
+                                        {row.is_passing ? 'Passing' : 'Failing'}
+                                    </span>
+                                </div>
 
-                                {!disabled && (
-                                    <div className="flex items-center gap-1.5">
-                                        <CommonButton
-                                            color="inherit"
-                                            size="small"
-                                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
-                                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
-                                            variant="outlined"
-                                            onClick={() => handleResetRowBlank(index)}
-                                            title="Reset grade rung fields to blank"
-                                        >
-                                            <span className="hidden sm:inline">Clear</span>
-                                        </CommonButton>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    {!disabled && (
                                         <CommonButton
                                             color="error"
                                             size="small"
@@ -259,9 +249,24 @@ export default function Step4TransmutationConfig({
                                         >
                                             <span className="hidden sm:inline">Delete</span>
                                         </CommonButton>
-                                    </div>
-                                )}
+                                    )}
+                                    <button
+                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                        title={collapsedRungs[index] ? 'Expand grade rung' : 'Collapse grade rung'}
+                                        type="button"
+                                        aria-label={collapsedRungs[index] ? 'Expand grade rung' : 'Collapse grade rung'}
+                                        onClick={() => toggleRungCollapse(index)}
+                                    >
+                                        <CaretDownIcon
+                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedRungs[index] ? '-rotate-90' : 'rotate-0'}`}
+                                            weight="bold"
+                                        />
+                                        <span className="text-xs hidden sm:inline">{collapsedRungs[index] ? 'Expand' : 'Collapse'}</span>
+                                    </button>
+                                </div>
                             </div>
+
+                            <div className={collapsedRungs[index] ? 'hidden' : 'space-y-4'}>
 
                             {/* Row 2: Type, Description, and Status */}
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
@@ -407,6 +412,7 @@ export default function Step4TransmutationConfig({
                                     </div>
                                 </div>
                             )}
+                            </div>
                         </div>
                     );
                 })}

@@ -7,7 +7,6 @@ import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
-    BroomIcon,
     CheckCircleIcon,
     FloppyDiskIcon,
     GraduationCapIcon,
@@ -80,17 +79,6 @@ export default function ProgramWizardModal({
             setCurrentStep(initialStep);
         }
     }, [open, initialStep]);
-
-    function handleClearProgramDetails() {
-        setValue('code', '', { shouldDirty: true });
-        setValue('name', '', { shouldDirty: true });
-        setValue('department_id', '', { shouldDirty: true });
-        setValue('program_level_id', '', { shouldDirty: true });
-        setValue('school_year_id', '', { shouldDirty: true });
-        setValue('total_units', '', { shouldDirty: true });
-        setValue('years_duration', '', { shouldDirty: true });
-        setValue('description', '', { shouldDirty: true });
-    }
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
@@ -346,17 +334,6 @@ export default function ProgramWizardModal({
                                     Program Details
                                 </h4>
                             </div>
-                            {!readOnly && (
-                                <button
-                                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer self-start sm:self-auto"
-                                    title="Clear Program Details"
-                                    type="button"
-                                    onClick={handleClearProgramDetails}
-                                >
-                                    <BroomIcon className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Clear</span>
-                                </button>
-                            )}
                         </div>
 
                         <CommonForm

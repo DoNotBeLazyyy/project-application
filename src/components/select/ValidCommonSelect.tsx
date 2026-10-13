@@ -1,6 +1,6 @@
 import CommonSelect, { CommonSelectProps } from '@components/select/CommonSelect';
 import { InputChangeEvent } from '@type/common.type';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -21,6 +21,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
     onChange: onDefaultChange,
     ...props
 }: ValidCommonSelectProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { ref, value, onChange },
         fieldState,
@@ -41,6 +42,9 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
 
     function handleChange(event: InputChangeEvent) {
         if (isNonInteractive) return;
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
         onChange(event);
         onDefaultChange?.(event);
     }

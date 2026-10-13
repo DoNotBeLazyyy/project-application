@@ -28,7 +28,7 @@ export default function SortModal({
 
     function handleCancelClick(event: React.MouseEvent<HTMLButtonElement>) {
         if (onClose) {
-            onClose(event, 'backdropClick');
+            onClose(event, 'escapeKeyDown');
         }
     }
 

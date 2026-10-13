@@ -3,7 +3,7 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
@@ -47,6 +47,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     size = 'large',
     ...props
 }: ValidCommonDateTimePickerProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { ref, value, onChange },
         fieldState,
@@ -78,6 +79,9 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         : undefined);
 
     function handleChange(date: DateTime | null) {
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
         if (isNonInteractive) {
             return;
         }

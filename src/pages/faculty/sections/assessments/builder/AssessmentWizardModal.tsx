@@ -41,7 +41,7 @@ import {
 } from '@type/assessment.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { isPastDateTime } from '@utils/date.util';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -117,8 +117,8 @@ export default function AssessmentWizardModal({
     const [expandedQuestionId, setExpandedQuestionId] = useState('');
     const [isImportOpen, setIsImportOpen] = useState(false);
 
-    const settingsMethods = useForm<AssessmentFormValues>({ defaultValues: DEFAULT_ASSSESSMENT_VALUES });
-    const questionMethods = useForm<QuestionFormValues>({ defaultValues: DEFAULT_QUESTION_VALUES });
+    const settingsMethods = useForm<AssessmentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_ASSSESSMENT_VALUES });
+    const questionMethods = useForm<QuestionFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_QUESTION_VALUES });
 
     const watchedQuestionType = questionMethods.watch('question_type');
     const watchedChoices = questionMethods.watch('choices');

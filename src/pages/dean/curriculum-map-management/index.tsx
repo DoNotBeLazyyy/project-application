@@ -24,7 +24,7 @@ import { getCourses, listCourses } from '@services/course/course.service';
 import { BulkImportResult, CsvTemplateColumn } from '@type/bulk-import.type';
 
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import {
     useCallback, useEffect, useMemo, useRef, useState
 } from 'react';
@@ -207,10 +207,12 @@ export default function CurriculumMapManagement({
     }, [schoolYearId, activeSchoolYearId]);
 
     const createMethods = useForm<CurriculumMapFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: defaultFormValues
     });
 
     const updateMethods = useForm<CurriculumMapFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: defaultFormValues
     });
 

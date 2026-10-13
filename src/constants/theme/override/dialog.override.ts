@@ -2,6 +2,9 @@ import { ComponentTheme } from '@type/common/theme.type';
 
 export const dialogOverrides: ComponentTheme = {
     MuiDialog: {
+        defaultProps: {
+            disableEscapeKeyDown: true
+        },
         styleOverrides: {
             root: { zIndex: 999 },
             paper: ({ theme }) => ({

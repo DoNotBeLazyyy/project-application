@@ -15,7 +15,7 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     BookOpenIcon,
-    BroomIcon,
+    CaretDownIcon,
     CheckCircleIcon,
     FileTextIcon,
     FloppyDiskIcon,
@@ -279,6 +279,16 @@ export default function CourseForm({
     const activeStep = externalActiveStep ?? internalActiveStep;
     const isControlledStep = externalActiveStep !== undefined;
     const { errors } = useFormState({ control });
+    const [collapsedCourseTypes, setCollapsedCourseTypes] = useState<Record<number, boolean>>({});
+    const [collapsedPrereqs, setCollapsedPrereqs] = useState<Record<number, boolean>>({});
+
+    function toggleCourseTypeCollapse(index: number) {
+        setCollapsedCourseTypes((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
+
+    function togglePrereqCollapse(index: number) {
+        setCollapsedPrereqs((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
@@ -449,26 +459,8 @@ export default function CourseForm({
         (prereq) => prereq.prerequisite_kind === 'course'
     ).length;
 
-    function handleClearOverview() {
-        if (setValue) {
-            setValue('title', '', { shouldDirty: true });
-            setValue('code', '', { shouldDirty: true });
-            setValue('department_id', '', { shouldDirty: true });
-            setValue('is_active', true, { shouldDirty: true });
-            setValue('description', '', { shouldDirty: true });
-        }
-    }
-
     function handleAddCourseType() {
         appendCourseType({
-            course_type_id: '',
-            units: 0,
-            credit_hours: 0
-        });
-    }
-
-    function handleClearCourseType(index: number) {
-        updateCourseType(index, {
             course_type_id: '',
             units: 0,
             credit_hours: 0
@@ -481,16 +473,6 @@ export default function CourseForm({
 
     function handleAddPrerequisite() {
         appendPrereq({
-            course_id: '',
-            prerequisite_type: 'Required',
-            prerequisite_kind: 'course',
-            year_level_required: '',
-            minimum_grade: ''
-        });
-    }
-
-    function handleClearPrerequisite(index: number) {
-        updatePrereq(index, {
             course_id: '',
             prerequisite_type: 'Required',
             prerequisite_kind: 'course',
@@ -588,17 +570,6 @@ export default function CourseForm({
                             Overview Data
                         </h4>
                     </div>
-                    {!disabled && (
-                        <button
-                            type="button"
-                            onClick={handleClearOverview}
-                            className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer self-start sm:self-auto"
-                            title="Clear Overview Data"
-                        >
-                            <BroomIcon className="w-4 h-4" />
-                            <span className="hidden sm:inline">Clear</span>
-                        </button>
-                    )}
                 </div>
                 <CommonForm
                     containerClassName="gap-4 grid grid-cols-1 md:grid-cols-6"
@@ -647,26 +618,31 @@ export default function CourseForm({
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
-                            {courseTypeFields.map((field, index) => (
+                            {courseTypeFields.map((field, index) => {
+                                const currentCt = courseTypes[index];
+                                const typeOption = courseTypeOptions.find((opt) => opt.value === currentCt?.course_type_id);
+
+                                return (
                                 <div
                                     key={field.id}
                                     className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs flex flex-col gap-3"
                                 >
                                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                        <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">
-                                            {index + 1}
-                                        </span>
-                                        {!disabled && (
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleClearCourseType(index)}
-                                                    className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                                                    title="Clear Course Type"
-                                                >
-                                                    <BroomIcon className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Clear</span>
-                                                </button>
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold shrink-0">
+                                                {index + 1}
+                                            </span>
+                                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                {typeOption?.label || `Course Type #${index + 1}`}
+                                            </span>
+                                            {currentCt && (Number(currentCt.units) > 0 || Number(currentCt.credit_hours) > 0) && (
+                                                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                    {currentCt.units ?? 0} Units • {currentCt.credit_hours ?? 0} hrs
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            {!disabled && (
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveCourseType(index)}
@@ -676,11 +652,24 @@ export default function CourseForm({
                                                     <TrashIcon className="w-4 h-4" />
                                                     <span className="hidden sm:inline">Remove</span>
                                                 </button>
-                                            </div>
-                                        )}
+                                            )}
+                                            <button
+                                                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                title={collapsedCourseTypes[index] ? 'Expand course type' : 'Collapse course type'}
+                                                type="button"
+                                                aria-label={collapsedCourseTypes[index] ? 'Expand course type' : 'Collapse course type'}
+                                                onClick={() => toggleCourseTypeCollapse(index)}
+                                            >
+                                                <CaretDownIcon
+                                                    className={`w-4 h-4 transition-transform duration-200 ${collapsedCourseTypes[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                    weight="bold"
+                                                />
+                                                <span className="text-xs hidden sm:inline">{collapsedCourseTypes[index] ? 'Expand' : 'Collapse'}</span>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                                    <div className={collapsedCourseTypes[index] ? 'hidden' : 'grid grid-cols-1 sm:grid-cols-3 gap-3 w-full'}>
                                         <div className="w-full">
                                             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                 Course Type
@@ -714,7 +703,8 @@ export default function CourseForm({
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
 
                             {!disabled && courseTypes.length < courseTypeOptions.length && (
                                 <div className="flex justify-end pt-1">
@@ -792,20 +782,21 @@ export default function CourseForm({
                                         key={field.id}
                                     >
                                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                            <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">
-                                                {index + 1}
-                                            </span>
-                                            {!disabled && (
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                                                        title="Clear Prerequisite"
-                                                        type="button"
-                                                        onClick={() => handleClearPrerequisite(index)}
-                                                    >
-                                                        <BroomIcon className="w-4 h-4" />
-                                                        <span className="hidden sm:inline">Clear</span>
-                                                    </button>
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold shrink-0">
+                                                    {index + 1}
+                                                </span>
+                                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                    {isCourseKind
+                                                        ? (allCourseOptions.find((opt) => opt.value === prerequisites?.[index]?.course_id)?.label || `Prerequisite #${index + 1}`)
+                                                        : (prerequisites?.[index]?.year_level_required ? `Year Standing: ${prerequisites?.[index]?.year_level_required}` : `Prerequisite #${index + 1}`)}
+                                                </span>
+                                                <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                    {currentKind === 'course' ? 'Course' : 'Standing'} • {prerequisites?.[index]?.prerequisite_type || 'Required'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                {!disabled && (
                                                     <button
                                                         className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                                                         title="Remove Prerequisite"
@@ -815,60 +806,75 @@ export default function CourseForm({
                                                         <TrashIcon className="w-4 h-4" />
                                                         <span className="hidden sm:inline">Remove</span>
                                                     </button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Row 1: Kind & Course / Year Level */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                                            <div className="w-full">
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                    Kind
-                                                </label>
-                                                <PrerequisiteKindCell
-                                                    control={control}
-                                                    disabled={disabled}
-                                                    rowIndex={index}
-                                                />
-                                            </div>
-                                            <div className="w-full">
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                    Course / Year Level
-                                                </label>
-                                                <PrerequisiteTargetCell
-                                                    control={control}
-                                                    courseOptions={allCourseOptions}
-                                                    disabled={disabled}
-                                                    rowIndex={index}
-                                                />
+                                                )}
+                                                <button
+                                                    className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                                    title={collapsedPrereqs[index] ? 'Expand prerequisite' : 'Collapse prerequisite'}
+                                                    type="button"
+                                                    aria-label={collapsedPrereqs[index] ? 'Expand prerequisite' : 'Collapse prerequisite'}
+                                                    onClick={() => togglePrereqCollapse(index)}
+                                                >
+                                                    <CaretDownIcon
+                                                        className={`w-4 h-4 transition-transform duration-200 ${collapsedPrereqs[index] ? '-rotate-90' : 'rotate-0'}`}
+                                                        weight="bold"
+                                                    />
+                                                    <span className="text-xs hidden sm:inline">{collapsedPrereqs[index] ? 'Expand' : 'Collapse'}</span>
+                                                </button>
                                             </div>
                                         </div>
 
-                                        {/* Row 2: Type & Min Grade (Min Grade shown only when Kind is Course) */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                                            <div className="w-full">
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                    Type
-                                                </label>
-                                                <PrerequisiteTypeCell
-                                                    control={control}
-                                                    disabled={disabled}
-                                                    rowIndex={index}
-                                                />
-                                            </div>
-                                            {isCourseKind && (
+                                        <div className={collapsedPrereqs[index] ? 'hidden' : 'space-y-3'}>
+                                            {/* Row 1: Kind & Course / Year Level */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                                 <div className="w-full">
                                                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                        Min Grade
+                                                        Kind
                                                     </label>
-                                                    <PrerequisiteMinGradeCell
+                                                    <PrerequisiteKindCell
                                                         control={control}
                                                         disabled={disabled}
-                                                        minimumGradeOptions={minimumGradeOptions}
                                                         rowIndex={index}
                                                     />
                                                 </div>
-                                            )}
+                                                <div className="w-full">
+                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                                                        Course / Year Level
+                                                    </label>
+                                                    <PrerequisiteTargetCell
+                                                        control={control}
+                                                        courseOptions={allCourseOptions}
+                                                        disabled={disabled}
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Row 2: Type & Min Grade (Min Grade shown only when Kind is Course) */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                                                <div className="w-full">
+                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                                                        Type
+                                                    </label>
+                                                    <PrerequisiteTypeCell
+                                                        control={control}
+                                                        disabled={disabled}
+                                                        rowIndex={index}
+                                                    />
+                                                </div>
+                                                {isCourseKind && (
+                                                    <div className="w-full">
+                                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                                                            Min Grade
+                                                        </label>
+                                                        <PrerequisiteMinGradeCell
+                                                            control={control}
+                                                            disabled={disabled}
+                                                            minimumGradeOptions={minimumGradeOptions}
+                                                            rowIndex={index}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );

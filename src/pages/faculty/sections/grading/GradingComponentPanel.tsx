@@ -13,7 +13,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -82,7 +82,7 @@ export default function GradingComponentPanel({
 
     // Standalone Create Modal
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const createMethods = useForm<GradingComponentFormValues>({ defaultValues: defaultFormValues });
+    const createMethods = useForm<GradingComponentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: defaultFormValues });
 
     // Sync draftRows with incoming components whenever not actively editing
     useEffect(() => {

@@ -4,7 +4,7 @@ import ValidCommonInput from '@components/input/ValidCommonInput';
 import { EMAIL_PATTERN } from '@constants/validation.constant';
 import { requestPasswordReset } from '@services/auth.service';
 import { ForgotPasswordFormValues } from '@type/auth.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ export default function ForgotPasswordPage() {
     const navigate = useNavigate();
     const [isSent, setIsSent] = useState(false);
     const methods = useForm<ForgotPasswordFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: { email: '' }
     });
     const { handleSubmit, formState: { isSubmitting } } = methods;

@@ -1,6 +1,6 @@
 import CommonInput, { CommonInputProps } from '@components/input/CommonInput';
 import { InputChangeEvent } from '@type/common.type';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonInputProps<T extends FieldValues = FieldValues> = Omit<CommonInputProps, 'value'> & UseControllerProps<T> & {
@@ -18,9 +18,13 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
     onChange: onDefaultChange,
     ...props
 }: ValidCommonInputProps<T>) {
+    ensureSubmitValidationMode(control);
     const { field: { ref, value, onChange }, fieldState, formState } = useController({ control, name, rules });
 
     function handleChange(event: InputChangeEvent) {
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
         onChange(event);
         onDefaultChange?.(event);
     }

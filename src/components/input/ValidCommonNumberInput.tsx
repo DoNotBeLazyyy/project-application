@@ -1,5 +1,5 @@
 import CommonNumberInput, { CommonNumberInputProps } from '@components/input/CommonNumberInput';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonNumberInputProps<T extends FieldValues = FieldValues> =
@@ -16,11 +16,19 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
     error: errorProp,
     ...props
 }: ValidCommonNumberInputProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { ref, value, onChange },
         fieldState,
         formState
     } = useController({ control, name, rules });
+
+    function handleChange(val: any) {
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
+        onChange(val);
+    }
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
@@ -45,7 +53,7 @@ export default function ValidCommonNumberInput<T extends FieldValues = FieldValu
             isFirstError={props.isFirstError ?? isFirstError}
             isRequired={props.isRequired || Boolean(rules?.required)}
             value={value}
-            onChange={onChange} // This now correctly passes the number to RHF
+            onChange={handleChange}
         />
     );
 }

@@ -5,7 +5,7 @@ import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
 import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, FloppyDiskIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { EntityFormMode, EntityFormModeText, EntityFormPageProps } from '@type/entity-form.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -46,7 +46,13 @@ export default function EntityFormPage<TValues extends FieldValues>({
     const [isLoading, setIsLoading] = useState(!isCreate && Boolean(fetchById && id));
     const shouldExitAfterSave = useRef(false);
 
-    const methods = useForm<TValues>({ defaultValues });
+    const methods = useForm<TValues>({
+        ...DEFAULT_FORM_OPTIONS,
+        defaultValues
+    });
+    if (methods.control) {
+        (methods.control as unknown as { _clearErrors?: unknown })._clearErrors = methods.clearErrors;
+    }
     const { control, formState, handleSubmit, reset } = methods;
 
     const mode: EntityFormMode = isCreate

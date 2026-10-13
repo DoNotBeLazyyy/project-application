@@ -2,7 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import { GradeReleaseSchedule, ReleaseScheduleFormValues } from '@type/grade-release.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -24,6 +24,7 @@ export default function ReleaseScheduleForm({
     onSave
 }: ReleaseScheduleFormProps) {
     const methods = useForm<ReleaseScheduleFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: { release_at: '' }
     });
     const {
@@ -57,7 +58,6 @@ export default function ReleaseScheduleForm({
                 },
                 className: 'w-full sm:w-[min(94vw,560px)]'
             }}
-            closeOnBackdropClick={!isSaving}
             formButtonsProps={{
                 cancelProps: {
                     children: 'Cancel',

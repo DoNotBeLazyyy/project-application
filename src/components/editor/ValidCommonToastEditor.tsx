@@ -1,6 +1,7 @@
 import CommonToastEditor, { CommonToastEditorProps } from '@components/editor/CommonToastEditor';
 import FormLabel from '@components/form/FormLabel';
 import { MakeOptional } from '@type/common.type';
+import { clearFieldError, ensureSubmitValidationMode } from '@utils/form.util';
 import { ReactNode } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -32,12 +33,16 @@ export default function ValidCommonToastEditor<T extends FieldValues = FieldValu
     onChange: onExternalChange,
     ...props
 }: ValidCommonToastEditorProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { onBlur, onChange, value },
         fieldState: { error }
     } = useController({ control, name, rules });
 
     function handleChange(val: string) {
+        if (error) {
+            clearFieldError(control, name);
+        }
         onChange(val);
         onExternalChange?.(val);
     }

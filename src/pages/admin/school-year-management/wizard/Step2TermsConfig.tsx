@@ -6,7 +6,7 @@ import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowCounterClockwiseIcon,
+    CaretDownIcon,
     ClockIcon,
     InfoIcon,
     PlusIcon,
@@ -34,6 +34,11 @@ export default function Step2TermsConfig({
     const [termTypes, setTermTypes] = useState<TermTypeOption[]>([]);
     const [isLoadingTypes, setIsLoadingTypes] = useState(false);
     const [deleteTermTarget, setDeleteTermTarget] = useState<{ index: number; name: string } | null>(null);
+    const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
+
+    function toggleCollapse(index: number) {
+        setCollapsedTerms((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
 
     const syEvaluationScope = useWatch({ control, name: 'evaluation_scope' }) || 'Period';
 
@@ -172,52 +177,54 @@ export default function Step2TermsConfig({
                         >
                             {/* Card Header */}
                             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/40 pb-3">
-                                <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center">
-                                    #{index + 1}
-                                </span>
+                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                    <span className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-xs font-bold flex items-center justify-center shrink-0">
+                                        #{index + 1}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                        {currentTerm.term_type_label || `Term #${index + 1}`}
+                                    </span>
+                                    {currentTerm.start_date && currentTerm.end_date && (
+                                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            ({currentTerm.start_date} to {currentTerm.end_date})
+                                        </span>
+                                    )}
+                                </div>
 
-                                {!disabled && (
-                                    <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    {!disabled && fields.length > 1 && (
                                         <button
-                                            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors"
-                                            title="Reset Term Dates to Blank"
+                                            className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
+                                            title="Remove Term"
                                             type="button"
                                             onClick={() => {
-                                                setValue(`terms.${index}.term_type_label`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.term_type_code`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.term_type_id`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.start_date`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.end_date`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.max_units`, undefined as any, { shouldDirty: true });
-                                                setValue(`terms.${index}.enrollment_start_date`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.enrollment_end_date`, '', { shouldDirty: true });
-                                                setValue(`terms.${index}.grading_deadline`, '', { shouldDirty: true });
+                                                setDeleteTermTarget({
+                                                    index,
+                                                    name: currentTerm.term_type_label || `Term #${index + 1}`
+                                                });
                                             }}
                                         >
-                                            <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />
-                                            <span className="hidden sm:inline">Reset to Blank</span>
+                                            <TrashIcon className="w-4 h-4" />
+                                            <span className="hidden sm:inline">Remove</span>
                                         </button>
-
-                                        {fields.length > 1 && (
-                                            <button
-                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
-                                                title="Remove Term"
-                                                type="button"
-                                                onClick={() => {
-                                                    setDeleteTermTarget({
-                                                        index,
-                                                        name: currentTerm.term_type_label || `Term #${index + 1}`
-                                                    });
-                                                }}
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Remove</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
+                                    )}
+                                    <button
+                                        className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                        title={collapsedTerms[index] ? 'Expand Term' : 'Collapse Term'}
+                                        type="button"
+                                        aria-label={collapsedTerms[index] ? 'Expand Term' : 'Collapse Term'}
+                                        onClick={() => toggleCollapse(index)}
+                                    >
+                                        <CaretDownIcon
+                                            className={`w-4 h-4 transition-transform duration-200 ${collapsedTerms[index] ? '-rotate-90' : 'rotate-0'}`}
+                                            weight="bold"
+                                        />
+                                        <span className="text-xs hidden sm:inline">{collapsedTerms[index] ? 'Expand' : 'Collapse'}</span>
+                                    </button>
+                                </div>
                             </div>
 
+                            <div className={collapsedTerms[index] ? 'hidden' : 'space-y-4'}>
                             {/* Warnings/Conflict Alerts */}
                             {otherTermsHaveThisType && (
                                 <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
@@ -380,6 +387,7 @@ export default function Step2TermsConfig({
                                         }}
                                     />
                                 </div>
+                            </div>
                             </div>
                         </div>
                     );

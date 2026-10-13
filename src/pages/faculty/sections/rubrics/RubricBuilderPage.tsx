@@ -6,7 +6,7 @@ import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createRubric, getRubric, updateRubric } from '@services/rubric.service';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { FieldErrors, useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,6 +27,7 @@ export default function RubricBuilderPage() {
     const [isSaving, setIsSaving] = useState(false);
 
     const methods = useForm<RubricFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: DEFAULT_VALUES
     });
 

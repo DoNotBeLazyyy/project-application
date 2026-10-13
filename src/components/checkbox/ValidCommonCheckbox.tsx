@@ -1,5 +1,6 @@
 import Checkbox, { CheckboxProps } from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { clearFieldError, ensureSubmitValidationMode } from '@utils/form.util';
 import { normalizeSx } from '@utils/theme.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
@@ -21,6 +22,7 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
     sx,
     ...props
 }: ValidCommonCheckboxProps<T>) {
+    ensureSubmitValidationMode(control);
     const { field: { value, onChange, ref }, fieldState } = useController({ control, name, rules });
     const helperMessage = fieldState.error?.message ?? helperText;
 
@@ -38,6 +40,9 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                                 name={name}
                                 sx={[{ paddingLeft: 0 }, ...normalizeSx(sx)]}
                                 onChange={function(e) {
+                                    if (fieldState.error) {
+                                        clearFieldError(control, name);
+                                    }
                                     onChange(e.target.checked);
                                 }}
                             />
@@ -55,6 +60,9 @@ export default function ValidCommonCheckbox<T extends FieldValues = FieldValues>
                         name={name}
                         sx={[{ padding: 0.5, width: 'fit-content' }, ...normalizeSx(sx)]}
                         onChange={function(e) {
+                            if (fieldState.error) {
+                                clearFieldError(control, name);
+                            }
                             onChange(e.target.checked);
                         }}
                     />

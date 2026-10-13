@@ -7,7 +7,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { SetPasswordFormValues } from '@type/user.type';
 import { clearAuthUrlError, parseAuthUrlError } from '@utils/auth-error.util';
 import { parseServiceError } from '@utils/error.util';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +20,7 @@ export default function SetPasswordPage() {
     const mountedRef = useRef(true);
 
     const methods = useForm<SetPasswordFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: {
             confirm_password: '',
             password: ''

@@ -1,5 +1,5 @@
 import CommonMultiSelect, { CommonMultiSelectProps } from '@components/select/CommonMultiSelect';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonMultiSelectProps<T extends FieldValues = FieldValues> =
@@ -16,11 +16,19 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
     helperText: helperTextProp,
     ...props
 }: ValidCommonMultiSelectProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { ref, value, onChange },
         fieldState,
         formState
     } = useController({ control, name, rules });
+
+    function handleChange(val: any) {
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
+        onChange(val);
+    }
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const isFirstError = Boolean(fieldState.error && firstErrorKey === name);
@@ -47,7 +55,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             value={Array.isArray(value)
                 ? value
                 : []}
-            onChange={onChange}
+            onChange={handleChange}
         />
     );
 }

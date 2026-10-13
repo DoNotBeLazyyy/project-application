@@ -4,7 +4,7 @@ import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowCounterClockwiseIcon,
+    CaretDownIcon,
     InfoIcon,
     PlusIcon,
     TrashIcon
@@ -32,6 +32,12 @@ export default function Step5ThresholdsConfig({
     setValue
 }: Step5ThresholdsConfigProps) {
     const [deleteThresholdTarget, setDeleteThresholdTarget] = useState<{ index: number; label: string } | null>(null);
+    const [collapsedThresholds, setCollapsedThresholds] = useState<Record<number, boolean>>({});
+
+    function toggleThresholdCollapse(index: number) {
+        setCollapsedThresholds((prev) => ({ ...prev, [index]: !prev[index] }));
+    }
+
     const { append, remove, replace } = useFieldArray({
         control,
         name: 'thresholds'
@@ -45,7 +51,7 @@ export default function Step5ThresholdsConfig({
             code: `custom_threshold_${Date.now()}`,
             is_active: true,
             label: '',
-            max_gwa: null,
+            max_gwa: '',
             min_gwa: null,
             min_subject_grade: null,
             requires_no_failing: true,
@@ -53,19 +59,6 @@ export default function Step5ThresholdsConfig({
             sort_order: thresholds.length + 1
         };
         append(newThreshold);
-    }
-
-    function handleResetBlank() {
-        replace([]);
-    }
-
-    function handleResetThresholdBlank(idx: number) {
-        setValue(`thresholds.${idx}.code`, '', { shouldDirty: true });
-        setValue(`thresholds.${idx}.label`, '', { shouldDirty: true });
-        setValue(`thresholds.${idx}.max_gwa`, '', { shouldDirty: true });
-        setValue(`thresholds.${idx}.min_gwa`, null, { shouldDirty: true });
-        setValue(`thresholds.${idx}.min_subject_grade`, null, { shouldDirty: true });
-        setValue(`thresholds.${idx}.scholarship_discount_pct`, null, { shouldDirty: true });
     }
 
     return (
@@ -78,17 +71,6 @@ export default function Step5ThresholdsConfig({
 
                 {!disabled && (
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3 !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            onClick={handleResetBlank}
-                            title="Reset to Blank"
-                        >
-                            <span className="hidden sm:inline">Reset to Blank</span>
-                        </CommonButton>
                         <CommonButton
                             color="primary"
                             size="small"
@@ -135,23 +117,27 @@ export default function Step5ThresholdsConfig({
                             >
                                 {/* Row 1: Header with Action Buttons */}
                                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-2.5">
-                                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
-                                        #{idx + 1}
-                                    </span>
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
+                                            #{idx + 1}
+                                        </span>
+                                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                            {item.label || `Threshold #${idx + 1}`}
+                                        </span>
+                                        {item.category && (
+                                            <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
+                                                {item.category}
+                                            </span>
+                                        )}
+                                        {item.max_gwa !== '' && item.max_gwa !== null && (
+                                            <span className="text-xs text-slate-400 shrink-0 hidden sm:inline">
+                                                • Max GWA: {item.max_gwa}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                    {!disabled && (
-                                        <div className="flex items-center gap-1.5">
-                                            <CommonButton
-                                                color="inherit"
-                                                size="small"
-                                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
-                                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" />}
-                                                variant="outlined"
-                                                onClick={() => handleResetThresholdBlank(idx)}
-                                                title="Reset threshold fields to blank"
-                                            >
-                                                <span className="hidden sm:inline">Clear</span>
-                                            </CommonButton>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {!disabled && (
                                             <CommonButton
                                                 color="error"
                                                 size="small"
@@ -168,9 +154,24 @@ export default function Step5ThresholdsConfig({
                                             >
                                                 <span className="hidden sm:inline">Delete</span>
                                             </CommonButton>
-                                        </div>
-                                    )}
+                                        )}
+                                        <button
+                                            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                                            title={collapsedThresholds[idx] ? 'Expand threshold' : 'Collapse threshold'}
+                                            type="button"
+                                            aria-label={collapsedThresholds[idx] ? 'Expand threshold' : 'Collapse threshold'}
+                                            onClick={() => toggleThresholdCollapse(idx)}
+                                        >
+                                            <CaretDownIcon
+                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedThresholds[idx] ? '-rotate-90' : 'rotate-0'}`}
+                                                weight="bold"
+                                            />
+                                            <span className="text-xs hidden sm:inline">{collapsedThresholds[idx] ? 'Expand' : 'Collapse'}</span>
+                                        </button>
+                                    </div>
                                 </div>
+
+                                <div className={collapsedThresholds[idx] ? 'hidden' : 'flex flex-col gap-4'}>
 
                                 {/* Row 2: Category and Threshold Name */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -327,6 +328,7 @@ export default function Step5ThresholdsConfig({
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         );
                     })
                 )}

@@ -1,6 +1,6 @@
 import CommonTextarea, { CommonTextareaProps } from '@components/textarea/CommonTextarea';
 import { ChangeEventInputTextarea, MakeOptional } from '@type/common.type';
-import { checkForMessage, formatFieldLabel } from '@utils/form.util';
+import { checkForMessage, clearFieldError, ensureSubmitValidationMode, formatFieldLabel } from '@utils/form.util';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export type ValidCommonTextareaProps<T extends FieldValues = FieldValues> = MakeOptional<CommonTextareaProps, 'value'> & UseControllerProps<T> & {
@@ -30,6 +30,7 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
     onChangeText: onDefaultChange,
     ...props
 }: ValidCommonTextareaProps<T>) {
+    ensureSubmitValidationMode(control);
     const {
         field: { value, ref, onChange },
         fieldState,
@@ -50,6 +51,9 @@ export default function ValidCommonTextarea<T extends FieldValues = FieldValues>
      * and also calls the optional external callback.
      */
     function handleChange(event: ChangeEventInputTextarea) {
+        if (fieldState.error) {
+            clearFieldError(control, name);
+        }
         const newValue = event.target.value;
 
         onChange(newValue);

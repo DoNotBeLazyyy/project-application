@@ -27,7 +27,7 @@ import {
     EligibleSectionRow,
     EnrollmentStudentDetail
 } from '@type/enrollment.type';
-import { formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
@@ -91,6 +91,7 @@ export default function EnrollmentWorkspaceModal({
     const [totalCount, setTotalCount] = useState(0);
 
     const overrideMethods = useForm<EnrollmentOverrideValues>({
+        ...DEFAULT_FORM_OPTIONS,
         defaultValues: defaultOverrideValues,
         shouldUnregister: true
     });

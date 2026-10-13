@@ -10,10 +10,10 @@ export interface CommonModalProps extends DialogProps {
     // Props explicitly intended for the injected CommonCard component
     cardProps?: CommonCardProps;
 
-    // Determines if clicking the dark backdrop should trigger onClose
+    // Determines if clicking the dark backdrop should trigger onClose (defaults to false)
     closeOnBackdropClick?: boolean;
 
-    // Determines if escape key down trigger onClose
+    // Determines if escape key down trigger onClose (defaults to false)
     closeOnEscape?: boolean;
 
     // Alias for open to support isOpen convention
@@ -40,8 +40,9 @@ export interface CommonModalProps extends DialogProps {
  */
 export default function CommonModal({
     cardProps,
-    closeOnBackdropClick = true,
-    closeOnEscape = true,
+    closeOnBackdropClick = false,
+    closeOnEscape = false,
+    disableEscapeKeyDown = true,
     isOpen,
     onClose,
     open,
@@ -126,6 +127,7 @@ export default function CommonModal({
         fullScreen={isFullScreen}
         open={isModalOpen}
         {...props}
+        disableEscapeKeyDown={(props as any).disableEscapeKeyDown ?? disableEscapeKeyDown}
         slotProps={{
             ...slotProps,
             paper: resolvedPaperSlot

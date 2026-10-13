@@ -11,6 +11,7 @@ import { getEvaluationForm, submitEvaluation } from '@services/evaluation.servic
 import { useToastStore } from '@stores/toast.store';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { EvaluationAnswerForm, EvaluationAnswersForm, EvaluationForm, EvaluationSection } from '@type/evaluation.type';
+import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { Path, useFieldArray, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -119,8 +120,8 @@ export default function StudentEvaluations() {
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
 
     const methods = useForm<EvaluationAnswersForm>({
-        defaultValues: { responses: [] },
-        mode: 'onChange'
+        ...DEFAULT_FORM_OPTIONS,
+        defaultValues: { responses: [] }
     });
     const { fields } = useFieldArray({
         control: methods.control,
