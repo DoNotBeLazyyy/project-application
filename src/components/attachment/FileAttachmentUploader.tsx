@@ -1,3 +1,6 @@
+import ImageAttachmentCard from '@components/attachment/ImageAttachmentCard';
+import { useAttachmentUrls } from '@components/attachment/useAttachmentUrls';
+import ImagePreviewModal, { ImagePreviewItem } from '@components/modal/ImagePreviewModal';
 import {
     DownloadSimpleIcon,
     FileArchiveIcon,
@@ -8,13 +11,14 @@ import {
     FilePptIcon,
     FileXlsIcon,
     PaperclipIcon,
+    SpinnerIcon,
     TrashIcon,
     UploadSimpleIcon
 } from '@phosphor-icons/react';
 import { getFileUrl, StorageBucket, uploadFile } from '@services/storage.service';
 import { AttachmentInputDto } from '@type/announcement.type';
-import { formatFileSize, isImageFile } from '@utils/file.util';
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+import { formatFileSize, isImageFile, triggerFileDownload } from '@utils/file.util';
+import React, { ChangeEvent, DragEvent, useRef, useState } from 'react';
 
 export interface FileAttachmentUploaderProps {
     attachments: AttachmentInputDto[];
@@ -52,7 +56,8 @@ function getFileIcon(mimeType: string | null | undefined, fileName: string) {
  * FileAttachmentUploader
  *
  * Reusable file attachment dropzone and manager that uploads files to
- * Supabase Storage and presents attachments as compact fixed-width cards.
+ * Supabase Storage. Image attachments display rich preview thumbnails at the bottom
+ * that can be clicked to open a zoomable, downloadable, and closable lightbox preview.
  */
 export default function FileAttachmentUploader({
     attachments,
@@ -66,6 +71,18 @@ export default function FileAttachmentUploader({
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [previewModalIndex, setPreviewModalIndex] = useState<number | null>(null);
+
+    const { getUrl } = useAttachmentUrls(attachments, bucket);
+
+    const imageAttachments = attachments.filter((att) => isImageFile(att.mime_type ?? null, att.file_name));
+    const otherAttachments = attachments.filter((att) => !isImageFile(att.mime_type ?? null, att.file_name));
+
+    const previewImages: ImagePreviewItem[] = imageAttachments.map((att) => ({
+        fileName: att.file_name,
+        fileSize: att.file_size,
+        url: getUrl(att) || ''
+    }));
 
     async function handleUploadFiles(files: FileList | File[]) {
         if (files.length === 0 || disabled) {
@@ -98,10 +115,10 @@ export default function FileAttachmentUploader({
                     file_name: file.name,
                     file_path: path,
                     file_size: file.size,
-                    mime_type: file.type || null
+                    mime_type: file.type || null,
+                    url: result.data.url
                 });
-            }
-            else if (result.error) {
+            } else if (result.error) {
                 setUploadError(result.error.message || `Failed to upload "${file.name}".`);
             }
         }
@@ -144,31 +161,29 @@ export default function FileAttachmentUploader({
         }
     }
 
-    function handleRemove(indexToRemove: number) {
+    function handleRemoveAttachment(targetAttachment: AttachmentInputDto) {
         if (disabled) {
             return;
         }
 
-        const filtered = attachments.filter((_, idx) => idx !== indexToRemove);
+        const filtered = attachments.filter((att) => att !== targetAttachment);
         onChange(filtered);
     }
 
-    async function handleDownloadFile(attachment: AttachmentInputDto) {
+    async function handleDownloadAttachment(attachment: AttachmentInputDto) {
+        const directUrl = getUrl(attachment);
+        if (directUrl) {
+            await triggerFileDownload(directUrl, attachment.file_name);
+            return;
+        }
+
         if (!attachment.file_path) {
             return;
         }
 
         const result = await getFileUrl(bucket, attachment.file_path);
-
         if (result.data?.url) {
-            const link = document.createElement('a');
-            link.href = result.data.url;
-            link.download = attachment.file_name || 'download';
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            await triggerFileDownload(result.data.url, attachment.file_name);
         }
     }
 
@@ -210,20 +225,34 @@ export default function FileAttachmentUploader({
                     onDrop={handleDrop}
                 >
                     <div className="flex flex-col gap-1.5 items-center pointer-events-none">
-                        <UploadSimpleIcon
-                            className="text-(--mui-palette-text-secondary)"
-                            size={24}
-                            weight="regular"
-                        />
-                        <p className="text-(--mui-palette-text-secondary) text-xs">
-                            <span className="font-medium text-(--mui-tokens-color-brand-900)">
-                                Click to upload
-                            </span>{' '}
-                            or drag and drop files here
-                        </p>
-                        <p className="text-(--mui-palette-text-disabled) text-[11px]">
-                            PDF, DOCX, XLSX, Images, ZIP up to {maxFileSizeMb}MB
-                        </p>
+                        {isUploading ? (
+                            <>
+                                <SpinnerIcon
+                                    className="animate-spin text-(--mui-palette-primary-main)"
+                                    size={24}
+                                />
+                                <p className="text-(--mui-palette-text-secondary) text-xs">
+                                    Uploading attachments...
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <UploadSimpleIcon
+                                    className="text-(--mui-palette-text-secondary)"
+                                    size={24}
+                                    weight="regular"
+                                />
+                                <p className="text-(--mui-palette-text-secondary) text-xs">
+                                    <span className="font-medium text-(--mui-tokens-color-brand-900)">
+                                        Click to upload
+                                    </span>{' '}
+                                    or drag and drop files here
+                                </p>
+                                <p className="text-(--mui-palette-text-disabled) text-[11px]">
+                                    PDF, DOCX, XLSX, Images, ZIP up to {maxFileSizeMb}MB
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
@@ -243,67 +272,109 @@ export default function FileAttachmentUploader({
                 </span>
             )}
 
-            {/* Attached Files List - Fixed-width compact cards */}
-            {attachments.length > 0 && (
-                <div className="flex flex-wrap gap-2.5 pt-1 w-full">
-                    {attachments.map((attachment, index) => (
-                        <div
-                            className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) flex items-center justify-between max-w-full p-2.5 rounded-lg transition-colors w-72"
-                            key={attachment.file_path || index}
-                        >
+            {/* Image Attachments Section - Previews already displayed at the bottom */}
+            {imageAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 pt-1">
+                    {otherAttachments.length > 0 && (
+                        <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
+                            Images ({imageAttachments.length})
+                        </span>
+                    )}
+                    <div className="flex flex-wrap gap-3 w-full">
+                        {imageAttachments.map((attachment, imgIndex) => {
+                            const previewUrl = getUrl(attachment);
+                            return (
+                                <ImageAttachmentCard
+                                    attachment={attachment}
+                                    disabled={disabled}
+                                    key={attachment.file_path || `img-${imgIndex}`}
+                                    previewUrl={previewUrl}
+                                    onDownload={() => handleDownloadAttachment(attachment)}
+                                    onPreview={() => setPreviewModalIndex(imgIndex)}
+                                    onRemove={() => handleRemoveAttachment(attachment)}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Other Document / Non-Image Attachments Section */}
+            {otherAttachments.length > 0 && (
+                <div className="flex flex-col gap-2 pt-1">
+                    {imageAttachments.length > 0 && (
+                        <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
+                            Documents & Files ({otherAttachments.length})
+                        </span>
+                    )}
+                    <div className="flex flex-wrap gap-2.5 w-full">
+                        {otherAttachments.map((attachment, fileIndex) => (
                             <div
-                                className="cursor-pointer flex flex-1 gap-2.5 items-center min-w-0"
-                                role="button"
-                                tabIndex={0}
-                                title={`Download ${attachment.file_name}`}
-                                onClick={() => handleDownloadFile(attachment)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        handleDownloadFile(attachment);
-                                    }
-                                }}
+                                className="bg-(--mui-palette-action-hover) border border-(--mui-palette-divider) flex items-center justify-between max-w-full p-2.5 rounded-lg transition-colors w-72"
+                                key={attachment.file_path || `doc-${fileIndex}`}
                             >
-                                <span className="flex items-center justify-center shrink-0">
-                                    {getFileIcon(attachment.mime_type, attachment.file_name)}
-                                </span>
-                                <div className="flex flex-col min-w-0">
-                                    <span className="font-medium hover:underline text-(--mui-palette-text-primary) text-xs truncate">
-                                        {attachment.file_name}
+                                <div
+                                    className="cursor-pointer flex flex-1 gap-2.5 items-center min-w-0"
+                                    role="button"
+                                    tabIndex={0}
+                                    title={`Download ${attachment.file_name}`}
+                                    onClick={() => handleDownloadAttachment(attachment)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            handleDownloadAttachment(attachment);
+                                        }
+                                    }}
+                                >
+                                    <span className="flex items-center justify-center shrink-0">
+                                        {getFileIcon(attachment.mime_type, attachment.file_name)}
                                     </span>
-                                    {attachment.file_size !== undefined && attachment.file_size !== null && (
-                                        <span className="text-(--mui-palette-text-secondary) text-[11px]">
-                                            {formatFileSize(attachment.file_size)}
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-medium hover:underline text-(--mui-palette-text-primary) text-xs truncate">
+                                            {attachment.file_name}
                                         </span>
+                                        {attachment.file_size !== undefined && attachment.file_size !== null && (
+                                            <span className="text-(--mui-palette-text-secondary) text-[11px]">
+                                                {formatFileSize(attachment.file_size)}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-1 items-center ml-2 shrink-0">
+                                    <button
+                                        aria-label="Download file"
+                                        className="cursor-pointer flex h-7 hover:bg-black/5 hover:text-(--mui-tokens-color-brand-900) items-center justify-center rounded text-(--mui-palette-text-secondary) transition-colors w-7"
+                                        title="Download file"
+                                        type="button"
+                                        onClick={() => handleDownloadAttachment(attachment)}
+                                    >
+                                        <DownloadSimpleIcon size={16} weight="bold" />
+                                    </button>
+                                    {!disabled && (
+                                        <button
+                                            aria-label="Remove attachment"
+                                            className="cursor-pointer flex h-7 hover:bg-red-50 hover:text-(--mui-palette-error-main) items-center justify-center rounded text-(--mui-palette-text-secondary) transition-colors w-7"
+                                            title="Remove attachment"
+                                            type="button"
+                                            onClick={() => handleRemoveAttachment(attachment)}
+                                        >
+                                            <TrashIcon size={16} weight="bold" />
+                                        </button>
                                     )}
                                 </div>
                             </div>
-
-                            <div className="flex gap-1 items-center ml-2 shrink-0">
-                                <button
-                                    aria-label="Download file"
-                                    className="cursor-pointer flex h-7 hover:bg-black/5 hover:text-(--mui-tokens-color-brand-900) items-center justify-center rounded text-(--mui-palette-text-secondary) transition-colors w-7"
-                                    title="Download file"
-                                    type="button"
-                                    onClick={() => handleDownloadFile(attachment)}
-                                >
-                                    <DownloadSimpleIcon size={16} weight="bold" />
-                                </button>
-                                {!disabled && (
-                                    <button
-                                        aria-label="Remove attachment"
-                                        className="cursor-pointer flex h-7 hover:bg-red-50 hover:text-(--mui-palette-error-main) items-center justify-center rounded text-(--mui-palette-text-secondary) transition-colors w-7"
-                                        title="Remove attachment"
-                                        type="button"
-                                        onClick={() => handleRemove(index)}
-                                    >
-                                        <TrashIcon size={16} weight="bold" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
+
+            {/* Image Preview Modal (Lightbox) */}
+            <ImagePreviewModal
+                images={previewImages}
+                initialIndex={previewModalIndex ?? 0}
+                open={previewModalIndex !== null}
+                onClose={() => setPreviewModalIndex(null)}
+            />
         </div>
     );
 }

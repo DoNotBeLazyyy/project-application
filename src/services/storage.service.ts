@@ -57,6 +57,18 @@ export async function uploadFile({
     });
 }
 
+/**
+ * Returns the public storage URL synchronously for public buckets.
+ */
+export function getPublicStorageUrl(bucket: StorageBucket, path: string): string {
+    const { data } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(path);
+
+    return data.publicUrl;
+}
+
+
 export async function getFileUrl(
     bucket: StorageBucket,
     path: string,

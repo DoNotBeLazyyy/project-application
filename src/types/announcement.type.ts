@@ -35,6 +35,7 @@ export interface AttachmentInputDto {
     file_path: string;
     mime_type?: string | null;
     file_size?: number | null;
+    url?: string;
 }
 
 export interface AnnouncementDetail {

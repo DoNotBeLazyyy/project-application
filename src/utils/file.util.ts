@@ -65,3 +65,36 @@ export function exportCsvFile(filename: string, csvContent: string): void {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
+
+/**
+ * Triggers a direct file download in the browser, fetching as a Blob when possible
+ * to prevent browsers from opening images or media in a new tab.
+ */
+export async function triggerFileDownload(url: string, filename: string): Promise<void> {
+    if (!url) return;
+
+    try {
+        const response = await fetch(url, { mode: 'cors' });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch file: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename || 'download';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || 'download';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
