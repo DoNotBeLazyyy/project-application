@@ -12,6 +12,7 @@ import StudentLoadBentoCard, { StudentLoadCardItem, StudentLoadCardState } from 
 import {
     ArrowsClockwiseIcon,
     CalendarBlankIcon,
+    CertificateIcon,
     CheckCircleIcon,
     FunnelIcon,
     GraduationCapIcon,
@@ -20,6 +21,7 @@ import {
     WarningCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
+import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { bulkEnrollStudent, dropEnrollment, getEnrollmentStudentDetail, listEligibleSections } from '@services/enrollment.service';
 import {
     CurrentLoadRow,
@@ -85,6 +87,7 @@ export default function EnrollmentWorkspaceModal({
     const [isSaving, setIsSaving] = useState(false);
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+    const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
     const [recommendedCount, setRecommendedCount] = useState(0);
     const [recommendedAvailableCount, setRecommendedAvailableCount] = useState(0);
@@ -378,19 +381,31 @@ export default function EnrollmentWorkspaceModal({
                             </div>
                         </div>
 
-                        {/* Term Switcher */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-semibold text-(--mui-palette-text-secondary) whitespace-nowrap">
-                                Term:
-                            </span>
-                            <div className="w-full sm:w-64">
-                                <CommonSelect
-                                    fullWidth
-                                    options={termOptions}
-                                    size="small"
-                                    value={termId ?? ''}
-                                    onChange={(event) => setTermId(event.target.value)}
-                                />
+                        {/* Term Switcher & Actions */}
+                        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                            <CommonButton
+                                color="secondary"
+                                size="small"
+                                startIcon={<CertificateIcon size={16} weight="bold" />}
+                                variant="outlined"
+                                onClick={() => setIsCreditModalOpen(true)}
+                            >
+                                Credit Courses
+                            </CommonButton>
+
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <span className="text-xs font-semibold text-(--mui-palette-text-secondary) whitespace-nowrap">
+                                    Term:
+                                </span>
+                                <div className="w-full sm:w-56">
+                                    <CommonSelect
+                                        fullWidth
+                                        options={termOptions}
+                                        size="small"
+                                        value={termId ?? ''}
+                                        onChange={(event) => setTermId(event.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -753,6 +768,24 @@ export default function EnrollmentWorkspaceModal({
                 }}
                 onClose={() => setShowSaveConfirm(false)}
             />
+
+            {/* Transferee Course Crediting Modal */}
+            {isCreditModalOpen && studentId && (
+                <CreditTransfereeCoursesModal
+                    open={isCreditModalOpen}
+                    programCode={detail?.program_code}
+                    programName={detail?.program_name}
+                    studentId={studentId}
+                    studentName={detail?.student_name}
+                    studentNumber={detail?.student_number}
+                    yearLevel={detail?.year_level}
+                    onClose={() => setIsCreditModalOpen(false)}
+                    onSuccess={() => {
+                        loadWorkspace();
+                        onEnrolled();
+                    }}
+                />
+            )}
         </>
     );
-}
+}

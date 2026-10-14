@@ -8,6 +8,7 @@ import EnrollmentStudentGridCard from '@pages/registrar/enrollment-management/En
 import EnrollmentWorkspaceModal from '@pages/registrar/enrollment-management/EnrollmentWorkspaceModal';
 import { useEnrollmentStudentTableConfig } from '@pages/registrar/enrollment-management/useEnrollmentStudentTableConfig';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
+import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { CalendarBlankIcon } from '@phosphor-icons/react';
 import { bulkEnrollStudents, getEnrollmentTargetTerm, listEnrollmentStudents } from '@services/enrollment.service';
 import { getTerms } from '@services/section.service';
@@ -52,6 +53,7 @@ export default function EnrollmentManagement() {
     const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
     const [assignModalStudent, setAssignModalStudent] = useState<EnrollmentStudentRow | null>(null);
+    const [creditModalStudent, setCreditModalStudent] = useState<EnrollmentStudentRow | null>(null);
     const [targetTermId, setTargetTermId] = useState<string | null>(null);
     const [targetTermLabel, setTargetTermLabel] = useState('');
     const [termOptions, setTermOptions] = useState<CommonSelectOption[]>([]);
@@ -129,7 +131,8 @@ export default function EnrollmentManagement() {
 
     const { columnDefs, tableActionConfig } = useEnrollmentStudentTableConfig({
         onManage: handleOpenWorkspace,
-        onAssignProgram: (row) => setAssignModalStudent(row)
+        onAssignProgram: (row) => setAssignModalStudent(row),
+        onCreditCourses: (row) => setCreditModalStudent(row)
     });
 
     async function fetchStudents(
@@ -299,6 +302,21 @@ export default function EnrollmentManagement() {
                     onClose={() => setAssignModalStudent(null)}
                     onSuccess={() => {
                         setAssignModalStudent(null);
+                        handleRefresh();
+                    }}
+                />
+            )}
+            {creditModalStudent && (
+                <CreditTransfereeCoursesModal
+                    open={Boolean(creditModalStudent)}
+                    programCode={creditModalStudent.program_code}
+                    programName={creditModalStudent.program_name}
+                    studentId={creditModalStudent.id}
+                    studentName={creditModalStudent.student_name}
+                    studentNumber={creditModalStudent.student_number}
+                    yearLevel={creditModalStudent.year_level}
+                    onClose={() => setCreditModalStudent(null)}
+                    onSuccess={() => {
                         handleRefresh();
                     }}
                 />

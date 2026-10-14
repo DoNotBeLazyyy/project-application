@@ -142,3 +142,60 @@ export interface ProgramShiftFormValues {
     effective_date: string;
     reason: string;
 }
+
+export interface CreditedCourseRow {
+    curriculum_map_id: string;
+    year_level: number;
+    term_label: string;
+    course_id: string;
+    course_code: string;
+    course_title: string;
+    units: number;
+    lecture_units: number;
+    laboratory_units: number;
+    is_elective: boolean;
+    is_credited: boolean;
+    credited_id?: string | null;
+    previous_school?: string | null;
+    previous_course_code?: string | null;
+    previous_course_title?: string | null;
+    grade_display?: string | null;
+    grade_numeric?: number | null;
+    units_credited?: number | null;
+    remarks?: string | null;
+    credited_at?: string | null;
+    credited_by_name?: string | null;
+    is_passed_locally?: boolean;
+}
+
+export interface StudentCurriculumCreditingResponse {
+    success: boolean;
+    message?: string;
+    student: {
+        id: string;
+        student_number: string;
+        full_name: string;
+        year_level: number;
+        program_id: string;
+        program_code: string;
+        program_name: string;
+    };
+    summary: {
+        total_curriculum_units: number;
+        credited_units: number;
+        credited_count: number;
+    };
+    courses: CreditedCourseRow[];
+}
+
+export interface CreditCoursePayload {
+    student_id: string;
+    course_id: string;
+    previous_school: string;
+    previous_course_code?: string;
+    previous_course_title?: string;
+    grade_display?: string;
+    grade_numeric?: number | null;
+    units_credited?: number | null;
+    remarks?: string;
+}

@@ -1,4 +1,13 @@
 import FormLabel from '@components/form/FormLabel';
+import {
+    INPUT_HEIGHT_LARGE,
+    INPUT_HEIGHT_MEDIUM,
+    INPUT_HEIGHT_SMALL,
+    INPUT_HEIGHT_TOUCH,
+    INPUT_PADDING_LARGE,
+    INPUT_PADDING_MEDIUM,
+    INPUT_PADDING_SMALL
+} from '@constants/theme/input-state.constant';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -27,6 +36,46 @@ export interface CommonDateTimePickerProps extends Omit<DateTimePickerProps, 'va
 
 export type ValidCommonDateTimePickerProps<T extends FieldValues = FieldValues> =
     CommonDateTimePickerProps & UseControllerProps<T>;
+
+function getDateTimepickerSizeSx(size?: 'small' | 'medium' | 'large' | string) {
+    if (size === 'small') {
+        return {
+            '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
+                height: `${INPUT_HEIGHT_SMALL} !important`,
+                maxHeight: `${INPUT_HEIGHT_SMALL} !important`,
+                padding: `${INPUT_PADDING_SMALL} !important`,
+                boxSizing: 'border-box' as const,
+                fontSize: 'var(--mui-tokens-fontSize-xs, 0.75rem)',
+                '@media (pointer: coarse)': {
+                    height: `${INPUT_HEIGHT_TOUCH} !important`,
+                    maxHeight: `${INPUT_HEIGHT_TOUCH} !important`
+                }
+            },
+            '& .MuiInputAdornment-root svg': {
+                height: '1rem !important',
+                width: '1rem !important'
+            }
+        };
+    }
+    if (size === 'large') {
+        return {
+            '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
+                height: `${INPUT_HEIGHT_LARGE} !important`,
+                maxHeight: `${INPUT_HEIGHT_LARGE} !important`,
+                padding: `${INPUT_PADDING_LARGE} !important`,
+                boxSizing: 'border-box' as const
+            }
+        };
+    }
+    return {
+        '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
+            height: `${INPUT_HEIGHT_MEDIUM} !important`,
+            maxHeight: `${INPUT_HEIGHT_MEDIUM} !important`,
+            padding: `${INPUT_PADDING_MEDIUM} !important`,
+            boxSizing: 'border-box' as const
+        }
+    };
+}
 
 export default function ValidCommonDateTimePicker<T extends FieldValues = FieldValues>({
     className,
@@ -224,6 +273,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                 }
                             },
                             sx: [
+                                getDateTimepickerSizeSx(resolvedSize),
                                 ...(disabled
                                     ? [{
                                         pointerEvents: 'none' as const

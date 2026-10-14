@@ -1,6 +1,12 @@
 import { callRpc } from '@services/supabase.wrapper';
 import {
-    CurriculumAudit, ProgramShiftFormValues, StatusChangeFormValues, StudentLifecycleEvent, StudentTranscript
+    CreditCoursePayload,
+    CurriculumAudit,
+    ProgramShiftFormValues,
+    StatusChangeFormValues,
+    StudentCurriculumCreditingResponse,
+    StudentLifecycleEvent,
+    StudentTranscript
 } from '@type/records.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -71,3 +77,37 @@ export async function assignMyProgram(
             : null
     });
 }
+
+export async function getStudentCurriculumForCrediting(
+    studentId: string
+): Promise<ServiceResult<StudentCurriculumCreditingResponse>> {
+    return callRpc<StudentCurriculumCreditingResponse>('fn_get_student_curriculum_for_crediting', {
+        p_student_id: studentId
+    });
+}
+
+export async function creditStudentCourse(
+    payload: CreditCoursePayload
+): Promise<ServiceResult<{ success: boolean; message: string; credited_id?: string }>> {
+    return callRpc<{ success: boolean; message: string; credited_id?: string }>('fn_credit_student_course', {
+        p_course_id: payload.course_id,
+        p_grade_display: payload.grade_display || 'Passed',
+        p_grade_numeric: payload.grade_numeric ?? null,
+        p_previous_course_code: payload.previous_course_code || null,
+        p_previous_course_title: payload.previous_course_title || null,
+        p_previous_school: payload.previous_school,
+        p_remarks: payload.remarks || null,
+        p_student_id: payload.student_id,
+        p_units_credited: payload.units_credited ?? null
+    });
+}
+
+export async function removeCreditedCourse(
+    creditedId: string,
+    reason?: string
+): Promise<ServiceResult<{ success: boolean; message: string }>> {
+    return callRpc<{ success: boolean; message: string }>('fn_remove_credited_course', {
+        p_credited_id: creditedId,
+        p_reason: reason || null
+    });
+}

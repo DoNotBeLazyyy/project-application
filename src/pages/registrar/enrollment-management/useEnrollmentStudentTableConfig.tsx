@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
-import { CopyIcon, EnvelopeSimpleIcon, GraduationCapIcon } from '@phosphor-icons/react';
+import { CertificateIcon, CopyIcon, EnvelopeSimpleIcon, GraduationCapIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { EnrollmentStudentRow, StudentStatus } from '@type/enrollment.type';
 import { MobileCardColDef } from '@type/table.type';
@@ -10,7 +10,9 @@ import { useMemo } from 'react';
 interface UseEnrollmentStudentTableConfigProps {
     onManage: (id: string) => void;
     onAssignProgram?: (row: EnrollmentStudentRow) => void;
+    onCreditCourses?: (row: EnrollmentStudentRow) => void;
 }
+
 
 const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'warning' | 'info'> = {
     Active: 'success',
@@ -22,7 +24,8 @@ const STUDENT_STATUS_VARIANT_MAP: Record<StudentStatus, 'success' | 'error' | 'w
 
 export function useEnrollmentStudentTableConfig({
     onManage,
-    onAssignProgram
+    onAssignProgram,
+    onCreditCourses
 }: UseEnrollmentStudentTableConfigProps) {
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         return [
@@ -117,6 +120,15 @@ export function useEnrollmentStudentTableConfig({
                         </div>
                     ),
                     onClick: () => onAssignProgram(row)
+                }] : []),
+                ...(onCreditCourses ? [{
+                    children: (
+                        <div className="flex gap-2 items-center">
+                            <CertificateIcon size={18} weight="bold" />
+                            <span>Credit Courses (Transferee)</span>
+                        </div>
+                    ),
+                    onClick: () => onCreditCourses(row)
                 }] : []),
                 {
                     preset: 'view',

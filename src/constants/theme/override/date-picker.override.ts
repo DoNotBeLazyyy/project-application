@@ -19,6 +19,32 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
     height: INPUT_HEIGHT_LARGE,
     maxHeight: INPUT_HEIGHT_LARGE,
     padding: INPUT_PADDING_LARGE,
+    '&.MuiPickersInputBase-sizeSmall, &.MuiPickersOutlinedInput-sizeSmall, &.MuiInputBase-sizeSmall, .MuiPickersTextField-root.MuiPickersTextField-sizeSmall &, .MuiPickersTextField-root:has(&.MuiInputBase-sizeSmall) &, .MuiFormControl-root:has(&.MuiInputBase-sizeSmall) &': {
+        height: `${INPUT_HEIGHT_SMALL} !important`,
+        maxHeight: `${INPUT_HEIGHT_SMALL} !important`,
+        padding: `${INPUT_PADDING_SMALL} !important`,
+        ...theme.typography.bodySmall,
+        '@media (pointer: coarse)': {
+            height: `${INPUT_HEIGHT_TOUCH} !important`,
+            maxHeight: `${INPUT_HEIGHT_TOUCH} !important`
+        },
+        '& .MuiInputAdornment-root svg': {
+            height: '1rem !important',
+            width: '1rem !important'
+        }
+    },
+    '&.MuiPickersInputBase-sizeMedium, &.MuiPickersOutlinedInput-sizeMedium, &.MuiInputBase-sizeMedium': {
+        height: `${INPUT_HEIGHT_MEDIUM} !important`,
+        maxHeight: `${INPUT_HEIGHT_MEDIUM} !important`,
+        padding: `${INPUT_PADDING_MEDIUM} !important`,
+        ...theme.typography.bodyNormal
+    },
+    '&.MuiPickersInputBase-sizeLarge, &.MuiPickersOutlinedInput-sizeLarge, &.MuiInputBase-sizeLarge': {
+        height: `${INPUT_HEIGHT_LARGE} !important`,
+        maxHeight: `${INPUT_HEIGHT_LARGE} !important`,
+        padding: `${INPUT_PADDING_LARGE} !important`,
+        ...theme.typography.bodyNormal
+    },
     '&.Mui-disabled *': {
         color: 'var(--mui-tokens-color-neutral-400)',
         WebkitTextFillColor: 'var(--mui-tokens-color-neutral-400)'

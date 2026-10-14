@@ -11354,14 +11354,17 @@ AS $function$
 DECLARE
     v_result JSONB;
 BEGIN
-    PERFORM public.fn_assert_role('Admin');
+    -- Allow both Admin and Dean to inspect evaluation templates
+    PERFORM public.fn_assert_role('Admin', 'Dean');
 
     SELECT jsonb_build_object(
-        'id',          t.id,
-        'title',       t.title,
-        'description', t.description,
-        'is_active',   t.is_active,
-        'sequence',    t.sequence,
+        'id',                     t.id,
+        'title',                  t.title,
+        'description',            t.description,
+        'is_active',              t.is_active,
+        'sequence',               t.sequence,
+        'target_mode',            COALESCE(t.target_mode, 'INCLUDE'),
+        'suggestion_placeholder', t.suggestion_placeholder,
         'program_ids', COALESCE((
             SELECT jsonb_agg(tp.program_id)
             FROM public.evaluation_template_programs tp
@@ -16467,7 +16470,7 @@ DECLARE
     v_base_query TEXT;
     v_where TEXT := 'WHERE t.deleted_at IS NULL';
 BEGIN
-    PERFORM public.fn_assert_role('Admin');
+    PERFORM public.fn_assert_role('Admin', 'Dean');
 
     IF p_search IS NOT NULL AND p_search <> '' THEN
         v_where := v_where || format(
