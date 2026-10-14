@@ -840,6 +840,14 @@ export default function CurriculumMapManagement({
                             value={selectedTermTypeId}
                             onChange={(e) => setSelectedTermTypeId(String(e.target.value))}
                         />
+                        <CommonSelect
+                            fullWidth={false}
+                            options={[{ label: 'All Revisions (Baseline)', value: '' }, ...schoolYearOptions]}
+                            size="large"
+                            sx={{ minWidth: 180, maxWidth: 240 }}
+                            value={selectedSchoolYearId}
+                            onChange={(e) => setSelectedSchoolYearId(String(e.target.value))}
+                        />
                     </div>
                     <div className="flex-none flex items-center">
                         <IconButton

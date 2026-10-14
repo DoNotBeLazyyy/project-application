@@ -15,6 +15,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { createAnnouncement, deleteAnnouncement, listSectionAnnouncements } from '@services/announcement.service';
+import { supabase } from '@services/supabase.client';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { formatShortDate } from '@utils/date.util';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -44,6 +45,25 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
     useEffect(function() {
         if (sectionId) {
             loadAnnouncements();
+
+            const channel = supabase
+                .channel(`realtime:section_announcements:${sectionId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'announcements'
+                    },
+                    function() {
+                        loadAnnouncements();
+                    }
+                )
+                .subscribe();
+
+            return function() {
+                supabase.removeChannel(channel);
+            };
         }
     }, [sectionId]);
 

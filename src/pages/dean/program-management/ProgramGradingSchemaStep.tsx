@@ -66,7 +66,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
         ? periodsField.value
         : DEFAULT_ACADEMIC_YEAR_PERIODS;
 
-    // Default button: resets to inheriting from Academic Year default settings
+    // Default button: resets to inheriting standard institutional default settings
     function handleSetDefault() {
         overrideField.onChange(false);
         periodsField.onChange([]);
@@ -145,7 +145,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {overrideEnabled
                                 ? 'Custom grading schema active for this program.'
-                                : 'Default: Inheriting grading settings from Academic Year.'}
+                                : 'Default: Inheriting standard institutional grading settings.'}
                         </p>
                     </div>
                 </div>
@@ -162,7 +162,7 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                         : (
                             <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
                                 <CheckCircleIcon className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                                <span>Inheriting Academic Year Defaults — Program uses standard university grading settings.</span>
+                                <span>Inheriting Institutional Defaults — Program uses standard university grading settings.</span>
                             </div>
                         )}
                 </div>

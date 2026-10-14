@@ -55,7 +55,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101 (optional)' },
     { key: 'year_level', label: 'Year Level', hint: 'e.g. 1 (optional)' },
     { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)' },
-    { key: 'school_year_code', label: 'School Year Code', hint: 'e.g. SY2024-2025 (optional)' },
+    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'e.g. SY2024-2025 (optional, for curriculum entries)' },
     { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)' },
     { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)' }
 ];

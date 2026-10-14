@@ -53,6 +53,7 @@ export default function UserProfilePromptModal({
     const [postalCode, setPostalCode] = useState('');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
     useEffect(() => {
         if (!open) return;
@@ -73,13 +74,23 @@ export default function UserProfilePromptModal({
     }
 
     async function handleSubmit() {
-        if (!firstName.trim()) {
-            useToastStore.getState().showToast('First name is required.', 'error');
+        setHasAttemptedSubmit(true);
+
+        const hasFirstName = Boolean(firstName.trim());
+        const hasLastName = Boolean(lastName.trim());
+
+        if (!hasFirstName && !hasLastName) {
+            useToastStore.getState().showToast('First name and last name are required to continue.', 'error');
             return;
         }
 
-        if (!lastName.trim()) {
-            useToastStore.getState().showToast('Last name is required.', 'error');
+        if (!hasFirstName) {
+            useToastStore.getState().showToast('First name is required to continue.', 'error');
+            return;
+        }
+
+        if (!hasLastName) {
+            useToastStore.getState().showToast('Last name is required to continue.', 'error');
             return;
         }
 
@@ -127,17 +138,17 @@ export default function UserProfilePromptModal({
                 className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl overflow-hidden',
                 cardHeaderProps: {
                     title: 'Complete Your Profile Information',
-                    subheader: 'Please fill in your user profile information before proceeding to the system.'
+                    subheader: 'Please fill in your user profile information. Fields marked with an asterisk (*) are required to proceed.'
                 }
             }}
         >
             <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto p-4 sm:p-6 pt-0 sm:pt-0 pb-6">
-                <div className="bg-(--mui-palette-primary-50) border border-(--mui-palette-primary-200) rounded-(--mui-tokens-radius-md) p-3 flex gap-3 items-start">
+                <div className="bg-(--mui-palette-primary-50) border border-(--mui-palette-primary-200) rounded-(--mui-tokens-radius-md) p-3.5 flex gap-3 items-start">
                     <UserCircleIcon className="text-(--mui-palette-primary-main) shrink-0 mt-0.5" size={24} />
-                    <div className="text-xs text-(--mui-palette-text-primary)">
-                        <p className="font-semibold mb-0.5">Welcome to AU-JAS!</p>
-                        <p className="text-(--mui-palette-text-secondary)">
-                            Before you can operate, please complete your user profile.
+                    <div className="text-xs text-(--mui-palette-text-primary) flex flex-col gap-1">
+                        <p className="font-semibold text-sm text-(--mui-palette-primary-900)">Welcome to AU-JAS!</p>
+                        <p className="text-(--mui-palette-text-secondary) leading-relaxed">
+                            Before you can use the system, please complete your user profile. Fields marked with an asterisk (<span className="text-(--mui-tokens-color-red-500) font-bold">*</span>) are required — at least <strong className="font-semibold text-(--mui-palette-text-primary)">First Name</strong> and <strong className="font-semibold text-(--mui-palette-text-primary)">Last Name</strong> must be filled before saving. All other fields are optional.
                         </p>
                     </div>
                 </div>
@@ -172,16 +183,23 @@ export default function UserProfilePromptModal({
 
                 {/* Personal Information */}
                 <div className="flex flex-col gap-3">
-                    <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
-                        Personal Information
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="flex items-center justify-between border-b border-(--mui-palette-divider) pb-2">
+                        <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
+                            Personal Information
+                        </span>
+                        <span className="text-xs text-(--mui-palette-text-secondary)">
+                            <span className="text-(--mui-tokens-color-red-500) font-bold mr-0.5">*</span> Required field
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <CommonInput
                             disabled={isSubmitting}
+                            error={hasAttemptedSubmit && !firstName.trim()}
                             fullWidth
+                            helperText={hasAttemptedSubmit && !firstName.trim() ? 'First name is required' : undefined}
+                            isRequired
                             label="First Name"
-                            placeholder="Given name"
-                            required
+                            placeholder="Given name (required)"
                             size="small"
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
@@ -197,16 +215,16 @@ export default function UserProfilePromptModal({
                         />
                         <CommonInput
                             disabled={isSubmitting}
+                            error={hasAttemptedSubmit && !lastName.trim()}
                             fullWidth
+                            helperText={hasAttemptedSubmit && !lastName.trim() ? 'Last name is required' : undefined}
+                            isRequired
                             label="Last Name"
-                            placeholder="Family name"
-                            required
+                            placeholder="Family name (required)"
                             size="small"
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                         />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <CommonInput
                             disabled={isSubmitting}
                             fullWidth
@@ -229,15 +247,14 @@ export default function UserProfilePromptModal({
                             disabled={isSubmitting}
                             fullWidth
                             label="Mobile Number"
-                            placeholder="e.g. 09171234567"
+                            placeholder="e.g. 09171234567 (optional)"
                             size="small"
                             value={mobileNumber}
                             onChange={(e) => setMobileNumber(e.target.value)}
                         />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <CommonDatePicker
                             disabled={isSubmitting}
+                            fullWidth
                             label="Date of Birth"
                             size="small"
                             value={dateOfBirth}
@@ -265,7 +282,7 @@ export default function UserProfilePromptModal({
                             disabled={isSubmitting}
                             fullWidth
                             label="Nationality"
-                            placeholder="e.g. Filipino"
+                            placeholder="e.g. Filipino (optional)"
                             size="small"
                             value={nationality}
                             onChange={(e) => setNationality(e.target.value)}
@@ -275,35 +292,39 @@ export default function UserProfilePromptModal({
 
                 {/* Address Information */}
                 <div className="flex flex-col gap-3">
-                    <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
-                        Address Details (Optional)
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Address Line 1"
-                            placeholder="House / Unit / Street"
-                            size="small"
-                            value={addressLine1}
-                            onChange={(e) => setAddressLine1(e.target.value)}
-                        />
-                        <CommonInput
-                            disabled={isSubmitting}
-                            fullWidth
-                            label="Address Line 2"
-                            placeholder="Barangay / Subdivision"
-                            size="small"
-                            value={addressLine2}
-                            onChange={(e) => setAddressLine2(e.target.value)}
-                        />
+                    <div className="flex items-center justify-between border-b border-(--mui-palette-divider) pb-2">
+                        <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
+                            Address Details (Optional)
+                        </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <CommonInput
+                                disabled={isSubmitting}
+                                fullWidth
+                                label="Address Line 1"
+                                placeholder="House / Unit / Street (optional)"
+                                size="small"
+                                value={addressLine1}
+                                onChange={(e) => setAddressLine1(e.target.value)}
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <CommonInput
+                                disabled={isSubmitting}
+                                fullWidth
+                                label="Address Line 2"
+                                placeholder="Barangay / Subdivision (optional)"
+                                size="small"
+                                value={addressLine2}
+                                onChange={(e) => setAddressLine2(e.target.value)}
+                            />
+                        </div>
                         <CommonInput
                             disabled={isSubmitting}
                             fullWidth
                             label="City"
-                            placeholder="City / Municipality"
+                            placeholder="City / Municipality (optional)"
                             size="small"
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
@@ -312,7 +333,7 @@ export default function UserProfilePromptModal({
                             disabled={isSubmitting}
                             fullWidth
                             label="Province"
-                            placeholder="Province"
+                            placeholder="Province (optional)"
                             size="small"
                             value={province}
                             onChange={(e) => setProvince(e.target.value)}
@@ -321,7 +342,7 @@ export default function UserProfilePromptModal({
                             disabled={isSubmitting}
                             fullWidth
                             label="Postal Code"
-                            placeholder="ZIP / Postal code"
+                            placeholder="ZIP / Postal code (optional)"
                             size="small"
                             value={postalCode}
                             onChange={(e) => setPostalCode(e.target.value)}
@@ -345,7 +366,13 @@ export default function UserProfilePromptModal({
                     ) : (
                         <span />
                     )}
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-3">
+                        {(!firstName.trim() || !lastName.trim()) && (
+                            <span className="text-xs text-(--mui-palette-text-secondary) hidden sm:inline">
+                                <span className="text-(--mui-tokens-color-red-500) font-bold mr-0.5">*</span>
+                                First and Last Name required
+                            </span>
+                        )}
                         {!isMandatory && onClose && (
                             <CommonButton
                                 disabled={isSubmitting}
@@ -358,7 +385,7 @@ export default function UserProfilePromptModal({
                         )}
                         <CommonButton
                             color="primary"
-                            disabled={isSubmitting || !firstName.trim() || !lastName.trim()}
+                            disabled={isSubmitting}
                             loading={isSubmitting}
                             size="small"
                             variant="contained"

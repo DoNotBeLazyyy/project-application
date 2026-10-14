@@ -1,5 +1,6 @@
 import { listMyAnnouncementsFeed } from '@services/announcement.service';
 import { listMyEventsFeed } from '@services/event.service';
+import { supabase } from '@services/supabase.client';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { EventFeedRow } from '@type/event.type';
 import { getRoleFromPath } from '@utils/role-path.util';
@@ -83,6 +84,39 @@ export default function useDashboardFeeds(): UseDashboardFeedsResult {
         return function() {
             window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [refreshFeed]);
+
+    // Real-time updates for announcements and events
+    useEffect(function() {
+        const channel = supabase
+            .channel('realtime:dashboard_feeds')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'announcements'
+                },
+                function() {
+                    refreshFeed(true);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'events'
+                },
+                function() {
+                    refreshFeed(true);
+                }
+            )
+            .subscribe();
+
+        return function() {
+            supabase.removeChannel(channel);
         };
     }, [refreshFeed]);
 

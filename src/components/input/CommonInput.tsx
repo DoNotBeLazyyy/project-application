@@ -216,7 +216,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
-                    isRequired={isRequired}
+                    isRequired={isRequired || props.required}
                     label={label}
                 />
             )}

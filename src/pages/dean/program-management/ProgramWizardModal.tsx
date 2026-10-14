@@ -13,7 +13,6 @@ import {
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
-import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
@@ -61,7 +60,6 @@ export default function ProgramWizardModal({
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, setValue, trigger } = methods;
-    const selectedSchoolYearId = useWatch({ control, name: 'school_year_id' });
     const selectedDepartmentId = useWatch({ control, name: 'department_id' });
     const selectedName = useWatch({ control, name: 'name' });
 
@@ -83,7 +81,6 @@ export default function ProgramWizardModal({
 
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
-    const { schoolYearOptions } = useSchoolYearOptions();
 
     const fields: FormFieldConfig<ProgramFormValues>[] = [
         {
@@ -128,15 +125,6 @@ export default function ProgramWizardModal({
             rules: readOnly
                 ? undefined
                 : { required: 'Please select a program level' },
-            type: 'select'
-        },
-        {
-            disabled: readOnly,
-            fieldProps: { helperText: 'Academic / School Year for this program (optional)' },
-            label: 'Academic Year',
-            name: 'school_year_id',
-            options: schoolYearOptions,
-            rules: undefined,
             type: 'select'
         },
         {
@@ -369,7 +357,6 @@ export default function ProgramWizardModal({
                         initialEntries={(methods.getValues('curriculum_entries') as unknown as CurriculumMapEntry[]) || []}
                         programId={programId}
                         readOnly={readOnly}
-                        schoolYearId={selectedSchoolYearId}
                         onChangeEntries={(newEntries, pendingDeleted) => {
                             setValue('curriculum_entries', newEntries as any, { shouldDirty: true });
                             if (pendingDeleted) {

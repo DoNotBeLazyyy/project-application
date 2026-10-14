@@ -12,10 +12,8 @@ import { useAppStore } from '@stores/app.store';
 import { NotificationRow } from '@type/notification.type';
 import { formatDate } from '@utils/date.util';
 import { resolveNotificationPath } from '@utils/notification.util';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const POLL_INTERVAL_MS = 30000;
 
 const ROW_BASE_CLASS = 'border-l-4 flex gap-3 px-4 py-3 text-left transition-colors w-full';
 const ICON_BASE_CLASS = 'flex h-9 items-center justify-center mt-0.5 rounded-full shrink-0 w-9';
@@ -42,6 +40,11 @@ export default function NotificationBell() {
     const [items, setItems] = useState<NotificationRow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const isOpen = Boolean(anchorEl);
+    const isOpenRef = useRef(isOpen);
+
+    useEffect(function() {
+        isOpenRef.current = isOpen;
+    }, [isOpen]);
 
     async function refreshCount() {
         const result = await getUnreadNotificationCount();
@@ -51,16 +54,10 @@ export default function NotificationBell() {
         }
     }
 
-    // Polling fallback
+    // Initial fetch on mount or when user changes
     useEffect(function() {
         refreshCount();
-
-        const timer = window.setInterval(refreshCount, POLL_INTERVAL_MS);
-
-        return function() {
-            window.clearInterval(timer);
-        };
-    }, []);
+    }, [userId]);
 
     // Instant refresh on tab focus / visibility return
     useEffect(function() {
@@ -85,19 +82,20 @@ export default function NotificationBell() {
             return;
         }
 
+        const normalizedUserId = userId.toLowerCase();
         const channel = supabase
-            .channel(`realtime:notifications:${userId}`)
+            .channel(`realtime:notifications:${normalizedUserId}`)
             .on(
                 'postgres_changes',
                 {
                     event: '*',
+                    filter: `user_id=eq.${normalizedUserId}`,
                     schema: 'public',
-                    table: 'notifications',
-                    filter: `user_id=eq.${userId}`
+                    table: 'notifications'
                 },
                 function() {
                     refreshCount();
-                    if (isOpen) {
+                    if (isOpenRef.current) {
                         loadItems();
                     }
                 }
@@ -107,7 +105,7 @@ export default function NotificationBell() {
         return function() {
             supabase.removeChannel(channel);
         };
-    }, [userId, isOpen]);
+    }, [userId]);
 
     async function loadItems() {
         setIsLoading(true);

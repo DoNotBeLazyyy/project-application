@@ -105,7 +105,7 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
-                    isRequired={isRequired}
+                    isRequired={isRequired || props.required}
                     label={label}
                 />
             )}

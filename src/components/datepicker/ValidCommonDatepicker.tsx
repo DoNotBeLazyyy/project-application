@@ -145,7 +145,7 @@ export function CommonDatePicker({
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
-                    isRequired={isRequired}
+                    isRequired={isRequired || (props as any).required}
                     label={label}
                 />
             )}
