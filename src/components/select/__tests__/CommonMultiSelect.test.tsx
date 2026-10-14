@@ -22,15 +22,18 @@ describe('CommonMultiSelect', () => {
         const firstChip = screen.getByText('1st Year');
         const longChip = screen.getByText('Curriculum Development and Evaluation in Secondary Education');
 
-        expect(firstChip).toBeInTheDocument();
-        expect(longChip).toBeInTheDocument();
+        expect(firstChip)
+            .toBeInTheDocument();
+        expect(longChip)
+            .toBeInTheDocument();
 
         // Check that chip title contains full label
         const chipContainer = longChip.closest('.MuiChip-root');
-        expect(chipContainer).toHaveAttribute(
-            'title',
-            'Curriculum Development and Evaluation in Secondary Education'
-        );
+        expect(chipContainer)
+            .toHaveAttribute(
+                'title',
+                'Curriculum Development and Evaluation in Secondary Education'
+            );
     });
 
     it('calls onChange with updated values when delete icon is clicked', () => {
@@ -44,24 +47,27 @@ describe('CommonMultiSelect', () => {
         );
 
         const deleteIcons = document.querySelectorAll('.MuiChip-deleteIcon');
-        expect(deleteIcons.length).toBe(2);
+        expect(deleteIcons.length)
+            .toBe(2);
 
         fireEvent.click(deleteIcons[0]);
-        expect(handleChange).toHaveBeenCalledWith(['2']);
+        expect(handleChange)
+            .toHaveBeenCalledWith(['2']);
     });
 
     it('does not render delete icons when readOnly or disabled', () => {
         const handleChange = vi.fn();
         const { rerender } = render(
             <CommonMultiSelect
-                readOnly
                 options={options}
+                readOnly
                 value={['1']}
                 onChange={handleChange}
             />
         );
 
-        expect(document.querySelectorAll('.MuiChip-deleteIcon').length).toBe(0);
+        expect(document.querySelectorAll('.MuiChip-deleteIcon').length)
+            .toBe(0);
 
         rerender(
             <CommonMultiSelect
@@ -72,6 +78,35 @@ describe('CommonMultiSelect', () => {
             />
         );
 
-        expect(document.querySelectorAll('.MuiChip-deleteIcon').length).toBe(0);
+        expect(document.querySelectorAll('.MuiChip-deleteIcon').length)
+            .toBe(0);
+    });
+
+    it('displays "No option available" and is disabled/unclickable when options are empty', () => {
+        const handleChange = vi.fn();
+        render(
+            <CommonMultiSelect
+                options={[]}
+                value={[]}
+                onChange={handleChange}
+            />
+        );
+
+        const input = screen.getByPlaceholderText('No option available');
+        expect(input)
+            .toBeInTheDocument();
+        expect(input)
+            .toBeDisabled();
+
+        // Autocomplete popup button should not be clickable or should be disabled
+        const popupBtn = document.querySelector('.MuiAutocomplete-popupIndicator');
+        if (popupBtn) {
+            expect(popupBtn)
+                .toBeDisabled();
+        }
+
+        fireEvent.click(input);
+        expect(screen.queryByRole('presentation')).not.toBeInTheDocument();
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     });
 });

@@ -226,6 +226,8 @@ Navigate to `/admin/profile-verifications` via sidebar.
 
 ### Phase 1.5: Department Management Full CRUD Cycle
 Navigate to `/admin/departments` via sidebar.
+
+#### 1. Interactive Single Department CRUD
 1. **Create:** Click **+ Add Department**.
    * **Name:** `College of Information Security & Defense`
    * **Code:** `CISD`
@@ -236,7 +238,15 @@ Navigate to `/admin/departments` via sidebar.
    * Update Description: `Updated: Premier Center in Cybersecurity & Defense.` ➔ Click **Save**.
 4. **Delete:** Click Action menu (`...`) ➔ **Delete** ➔ Confirm deletion modal.
 
+#### 2. Department Bulk CSV Import Demonstration
+1. Click the Table Action menu (`...`) in the top-right of the table card ➔ Click **Bulk Import (CSV)** (opens `BulkImportModal`).
+2. Download or drag-and-drop the pre-made sample: **[02_departments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/02_departments_bulk_sample.csv)**.
+3. Observe the live CSV validation table displaying *CCS*, *CBA*, and *CAS*.
+4. Click **Import Records** (or review and close).
+5. All uploaded colleges immediately populate the department grid!
+
 ---
+
 
 ### Phase 1.6: Enterprise Academic Year 5-Step Setup Wizard
 Navigate to `/admin/school-years` via sidebar.
@@ -299,6 +309,8 @@ Switch to the **Transmutation** tab:
 
 ### Phase 1.11: Faculty Evaluation Period & Questionnaire 2-Step Wizard
 Navigate to `/admin/evaluations` via sidebar.
+
+#### 1. Evaluation Setup via 2-Step Wizard
 1. Click **+ New Evaluation Template** (opens `EvaluationWizardModal`):
    * **Step 1 (Section Details & Scope):** Title: `Institutional Student Evaluation of Teaching Performance (SETP)`, Scope Mode: `Include selected programs only` (BSIT). Click **Next**.
    * **Step 2 (Evaluation Questions):**
@@ -308,7 +320,14 @@ Navigate to `/admin/evaluations` via sidebar.
 2. Click **Publish Evaluation Period**.
 3. Status changes to **Active**.
 
+#### 2. Evaluation Template Bulk CSV Import Demonstration
+1. In `/admin/evaluations`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the pre-made template: **[11_evaluations_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/11_evaluations_bulk_sample.csv)**.
+3. The preview table parses the evaluation sections and rating questions (*Teaching Effectiveness*, *Classroom Management*).
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 1.12: Role & Permission Matrix Inspector
 Navigate to `/admin/roles` via sidebar.
@@ -397,24 +416,44 @@ Navigate to `/admin/calendar` via sidebar **Calendar**.
 
 ### Phase 2.2: Program Level Management CRUD
 Navigate to `/dean/program-level-management` via sidebar.
+
+#### 1. Manual Program Level CRUD
 1. **Create:** Click **+ Add Program Level**.
    * Level Name: `Undergraduate Honors Accelerated` | Code: `UG-HON` | Rank: `1`. Click **Save**.
 2. **Search:** Search `Honors` in table filter.
 3. **Delete:** Click Delete ➔ Confirm modal to restore clean state.
 
+#### 2. Program Levels Bulk CSV Import Demonstration
+1. In `/dean/program-level-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the ready sample: **[03_program_levels_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/03_program_levels_bulk_sample.csv)**.
+3. Live validation displays *UNDERGRADUATE*, *GRADUATE*, and *DOCTORATE* levels.
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 2.3: Course Type Management CRUD
 Navigate to `/dean/course-type-management` via sidebar.
+
+#### 1. Manual Course Type CRUD
 1. **Create:** Click **+ Add Course Type**.
    * Type Name: `Specialized AI Laboratory` | Code: `AI-LAB` | Is Lab: `True` | Multiplier: `1.5`. Click **Save**.
 2. **Search:** Search `AI-LAB`.
 3. **Delete:** Remove test course type to restore clean state.
 
+#### 2. Course Types Bulk CSV Import Demonstration
+1. In `/dean/course-type-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the ready sample: **[04_course_types_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/04_course_types_bulk_sample.csv)**.
+3. Review parsed entries: *LECTURE (1.0)*, *LABORATORY (1.5)*, *LECTURE_LAB (1.25)*.
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 2.4: Degree Program Catalog & Curriculum Map Management
 Navigate to `/dean/program-management` via sidebar.
+
+#### 1. Degree Program Catalog & Curriculum Breakdown
 1. Open **BS Information Technology (BSIT)**.
 2. Click **Curriculum Map** tab (opens `CurriculumTermTable`).
 3. Review Year 1, 1st Semester course sequence:
@@ -424,6 +463,7 @@ Navigate to `/dean/program-management` via sidebar.
 ---
 
 ### Phase 2.5: Curriculum Map Cloning Engine
+#### 1. Cloning Curriculum Map Across School Years
 1. In the Curriculum Map view, click **Clone Curriculum** (opens `CloneCurriculumModal`).
 2. Review cloning controls:
    * Source Version: Select `Clone from AY 2026-2027 (Baseline)`.
@@ -431,24 +471,49 @@ Navigate to `/dean/program-management` via sidebar.
 3. Explain to the panel: This replicates an entire degree curriculum into the next school year in one click.
 4. Close modal.
 
+#### 2. Curriculum Map Batch CSV Import Demonstration
+1. In the Curriculum Map view (`/dean/program-management`), click Table Actions ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the ready sample: **[07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/07_curriculum_map_bulk_sample.csv)**.
+3. Review the course sequence entries (*COCS101, Year 1, 1ST_SEM* and *IT101, Year 1, 1ST_SEM*).
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 2.6: Course Blueprints & Laboratory Multiplier Validation
 Navigate to `/dean/course-management` via sidebar.
+
+#### 1. Course Blueprint Inspection
 1. Locate and open `COCS101` (Introduction to Computing).
 2. Review blueprint: Lecture Units: `3.0`, Lab Units: `0.0`, Total Units: `3.0`.
 
+#### 2. Course Catalog Bulk CSV Import Demonstration
+1. In `/dean/course-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the ready sample: **[06_courses_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/06_courses_bulk_sample.csv)**.
+3. Review the course entries (*COCS101 - Intro to Computing* and *IT101 - Programming 1* with lecture/lab hours).
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 2.7: Section Scheduling 3-Step Wizard
 Navigate to `/dean/section-management` via sidebar.
+
+#### 1. Interactive Section Scheduling Wizard
 1. Click **+ Add Section** (opens `SectionWizardModal`):
    * **Step 1 (Overview):** Course: `COCS101`, Section Code: `COCS101-001`, Term: `AY 2026-2027 - 1st Semester`, Instructor: **Julius Tolentino** (`juliustolentino.diamond@gmail.com`), Room: `Lab 304`, Max Slots: `40`. Click **Next**.
    * **Step 2 (Schedule Assignment):** Meeting Days: `Mon / Wed`, Time: `08:00 AM - 10:00 AM`, Room: `Lab 304`. Click **Next**.
    * **Step 3 (Grading Schema Settings):** Default Course Schema (Quizzes 20%, Exam 30%, Activity 25%, Project 25%).
 2. Click **Save Section**. Section `COCS101-001` is registered.
 
+#### 2. Section Scheduling Bulk CSV Import Demonstration
+1. In `/dean/section-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
+2. Drag and drop the ready sample: **[08_sections_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/08_sections_bulk_sample.csv)**.
+3. Review the parsed section schedule: *COCS101-001*, Mon/Wed 08:00-10:00 AM, Room Lab 304, 40 slots.
+4. Click **Import Records** (or close).
+
 ---
+
 
 ### Phase 2.8: Faculty Load Assignment 3-Step Wizard
 Navigate to `/dean/faculty-load` via sidebar.
@@ -619,7 +684,9 @@ Click the **Rubrics** tab:
 ---
 
 ### Phase 4.6: Comprehensive 4-Tier Assessment Authoring (Quiz, Exam, Activity, Project)
-Click the **Assessments** tab in section `COCS101-001`. Author all 4 assessment categories:
+Click the **Assessments** tab in section `COCS101-001`.
+
+#### 1. Manual 4-Tier Assessment Authoring
 
 1. **Author Tier 1: Quiz (Weight: 20%)**
    * Click **+ Create Assessment** ➔ Type: `Quiz`, Title: `Quiz 1: Logic Gates`, Total Points: `20`, Weight: `20%`, Duration: `30 Min`.
@@ -634,7 +701,14 @@ Click the **Assessments** tab in section `COCS101-001`. Author all 4 assessment 
    * Click **+ Create Assessment** ➔ Type: `Project`, Title: `Term Project: System Prototype`, Total Points: `100`, Weight: `25%`.
    * Attach Rubric: Select `Standard Assessment Scoring Rubric`. Click **Publish**.
 
+#### 2. Assessment Questions Bulk CSV Import Demonstration
+1. When editing or authoring any assessment (e.g. Quiz 1) in the Assessment Wizard modal, click **Bulk Import Questions (CSV)**.
+2. Drag and drop the ready sample: **[09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/09_assessment_questions_bulk_sample.csv)**.
+3. Review the parsed questions: Multiple Choice (with choices A-D), True/False, and Essay with point weights and answer keys.
+4. Click **Import Questions** ➔ Questions automatically populate the assessment question list!
+
 ---
+
 
 ### Phase 4.7: Interactive Discussion Board & Thread Moderation
 Click the **Discussion** tab:

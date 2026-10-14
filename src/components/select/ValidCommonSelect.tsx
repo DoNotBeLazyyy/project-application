@@ -40,7 +40,8 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
 
-    const isNonInteractive = Boolean(disabled || readOnly);
+    const hasNoOptions = !props.options || props.options.length === 0;
+    const isNonInteractive = Boolean(disabled || readOnly || hasNoOptions);
 
     function handleChange(event: InputChangeEvent) {
         if (isNonInteractive) return;
@@ -113,7 +114,7 @@ export default function ValidCommonSelect<T extends FieldValues = FieldValues>({
             name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
-            disabled={disabled}
+            disabled={disabled || hasNoOptions}
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper

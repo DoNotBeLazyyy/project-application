@@ -26,7 +26,7 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
         formState
     } = useController({ control, name, rules });
 
-    function handleChange(val: any) {
+    function handleChange(val: string[]) {
         if (fieldState.error) {
             clearFieldError(control, name);
         }
@@ -41,8 +41,10 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             : `${formatFieldLabel(name)} is required.`)
         : undefined;
 
+    const hasNoOptions = !props.options || props.options.length === 0;
+
     useEffect(() => {
-        if (isFirstError && !props.disabled && !props.readOnly) {
+        if (isFirstError && !props.disabled && !props.readOnly && !hasNoOptions) {
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
                 if (element) {
@@ -53,11 +55,11 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             }, 50);
             return () => clearTimeout(timer);
         }
-    }, [isFirstError, formState.submitCount, name, props.disabled, props.readOnly]);
+    }, [isFirstError, formState.submitCount, name, props.disabled, props.readOnly, hasNoOptions]);
 
     useEffect(() => {
         function handleFormError(event: Event) {
-            if (props.disabled || props.readOnly) return;
+            if (props.disabled || props.readOnly || hasNoOptions) return;
             const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
             if (detail?.firstErrorField === name || (fieldState.error && isFirstError)) {
                 const element = document.querySelector<HTMLElement>(`[name="${name}"]`);
@@ -73,13 +75,14 @@ export default function ValidCommonMultiSelect<T extends FieldValues = FieldValu
             window.addEventListener(FORM_ERROR_EVENT, handleFormError);
             return () => window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
         }
-    }, [name, isFirstError, fieldState.error, props.disabled, props.readOnly]);
+    }, [name, isFirstError, fieldState.error, props.disabled, props.readOnly, hasNoOptions]);
 
     return (
         <CommonMultiSelect
             name={name}
             {...props}
             defaultOpenErrorTooltip={props.defaultOpenErrorTooltip ?? isFirstError}
+            disabled={props.disabled || hasNoOptions}
             error={errorProp ?? !!fieldState.error}
             helperText={
                 hasHelper

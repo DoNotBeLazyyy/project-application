@@ -197,51 +197,52 @@ export default function StudentProfileVerificationModal({
                 open={open}
                 onClose={onClose}
                 cardProps={{
-                    className: 'flex flex-col max-h-[92dvh] w-full max-w-5xl overflow-hidden',
+                    className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
                     cardHeaderProps: {
+                        className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
                         title: `Verify Student Profile: ${request.student_name}`,
                         subheader: `Student No: ${request.student_number} • Submitted ${new Date(request.created_at).toLocaleString()}`
                     }
                 }}
             >
-                <div className="flex flex-1 flex-col gap-4 min-h-0 overflow-y-auto p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="flex flex-1 flex-col gap-3 sm:gap-4 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-6 pt-0 sm:pt-0">
                     {/* Header Summary Banner */}
-                    <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-4 rounded-lg flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) flex items-center justify-center font-bold text-sm">
+                    <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-(--mui-palette-primary-main)/10 text-(--mui-palette-primary-main) flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                                 {request.student_name.slice(0, 2).toUpperCase()}
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-sm text-(--mui-palette-text-primary) m-0">
+                            <div className="min-w-0">
+                                <h3 className="font-semibold text-xs sm:text-sm text-(--mui-palette-text-primary) m-0 truncate">
                                     {request.student_name}
                                 </h3>
-                                <p className="text-xs text-(--mui-palette-text-secondary) m-0 mt-0.5">
+                                <p className="text-[11px] sm:text-xs text-(--mui-palette-text-secondary) m-0 mt-0.5 truncate">
                                     {request.student_email}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6 text-xs">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs pt-2 sm:pt-0 border-t sm:border-t-0 border-(--mui-palette-divider)">
                             <div className="flex items-center gap-1.5">
-                                <IdentificationCardIcon size={18} className="text-(--mui-palette-primary-main)" />
+                                <IdentificationCardIcon size={16} className="text-(--mui-palette-primary-main) shrink-0" />
                                 <div>
-                                    <span className="text-(--mui-palette-text-secondary) block text-[11px]">Student No</span>
-                                    <span className="font-semibold text-(--mui-palette-text-primary)">{request.student_number}</span>
+                                    <span className="text-(--mui-palette-text-secondary) block text-[10px] sm:text-[11px]">Student No</span>
+                                    <span className="font-semibold text-(--mui-palette-text-primary) text-xs">{request.student_number}</span>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-1.5">
-                                <GraduationCapIcon size={18} className="text-(--mui-palette-info-main)" />
+                                <GraduationCapIcon size={16} className="text-(--mui-palette-info-main) shrink-0" />
                                 <div>
-                                    <span className="text-(--mui-palette-text-secondary) block text-[11px]">Academic Program</span>
-                                    <span className="font-semibold text-(--mui-palette-text-primary)">
+                                    <span className="text-(--mui-palette-text-secondary) block text-[10px] sm:text-[11px]">Academic Program</span>
+                                    <span className="font-semibold text-(--mui-palette-text-primary) text-xs">
                                         {request.program_code} (Year {request.year_level})
                                     </span>
                                 </div>
                             </div>
 
                             <div>
-                                <span className="text-(--mui-palette-text-secondary) block text-[11px]">Status</span>
+                                <span className="text-(--mui-palette-text-secondary) block text-[10px] sm:text-[11px]">Status</span>
                                 <CommonBadgeStatus
                                     label={request.status}
                                     size="small"
@@ -254,35 +255,35 @@ export default function StudentProfileVerificationModal({
                                     }
                                 />
                             </div>
-                        </div>
 
-                        {/* Top quick actions */}
-                        <div className="flex items-center gap-2">
-                            <CommonButton
-                                color="warning"
-                                size="small"
-                                startIcon={<BellIcon size={16} />}
-                                variant="outlined"
-                                onClick={() => setIsNotifyOpen(true)}
-                            >
-                                Notify Student
-                            </CommonButton>
+                            {/* Top quick actions */}
+                            <div className="flex items-center gap-2">
+                                <CommonButton
+                                    color="warning"
+                                    size="small"
+                                    startIcon={<BellIcon size={15} />}
+                                    variant="outlined"
+                                    onClick={() => setIsNotifyOpen(true)}
+                                >
+                                    Notify
+                                </CommonButton>
+                            </div>
                         </div>
                     </div>
 
                     {/* Pending Instructions / Status alert */}
                     {isPending ? (
-                        <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary)">
-                            <PencilSimpleIcon size={20} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
+                        <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-2.5 sm:p-3 rounded-lg flex items-start gap-2.5 text-xs text-(--mui-palette-text-primary) shrink-0">
+                            <PencilSimpleIcon size={18} className="text-(--mui-palette-info-main) shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-semibold m-0 text-sm">Registrar Verification & Edit Mode</p>
-                                <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                                    Compare the student's current profile against their submitted changes below. You can directly edit any field in the "Registrar Verified Value" column if corrections are needed before approving. All changes and notices will be audited in the Registrar Log.
+                                <p className="font-semibold m-0 text-xs sm:text-sm">Registrar Verification & Edit Mode</p>
+                                <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary) text-[11px] sm:text-xs">
+                                    Compare the student's current profile against their submitted changes. You can directly edit any field before approving. All changes and notices will be audited in the Registrar Log.
                                 </p>
                             </div>
                         </div>
                     ) : (
-                        <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-3 rounded-lg text-xs text-(--mui-palette-text-secondary) flex items-center justify-between">
+                        <div className="border border-(--mui-palette-divider) bg-(--mui-palette-background-default) p-2.5 sm:p-3 rounded-lg text-xs text-(--mui-palette-text-secondary) flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shrink-0">
                             <div>
                                 <span>Reviewed by: <strong className="text-(--mui-palette-text-primary)">{request.reviewer_name}</strong></span>
                                 {request.reviewed_at && (
@@ -297,8 +298,8 @@ export default function StudentProfileVerificationModal({
                         </div>
                     )}
 
-                    {/* Side-by-side verification table */}
-                    <div className="border border-(--mui-palette-divider) rounded-lg overflow-hidden">
+                    {/* Desktop Side-by-side verification table */}
+                    <div className="hidden md:block border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
                         <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
                             <div className="col-span-3">Profile Field</div>
                             <div className="col-span-4">Current Value</div>
@@ -385,8 +386,98 @@ export default function StudentProfileVerificationModal({
                         </div>
                     </div>
 
+                    {/* Mobile Responsive Field Cards */}
+                    <div className="flex flex-col gap-2.5 md:hidden">
+                        {DISPLAY_FIELDS.map((field) => {
+                            const currVal = current[field] || '—';
+                            const reqVal = requested[field] || '—';
+                            const editVal = editableValues[field] || '';
+                            const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
+                            const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
+
+                            return (
+                                <div
+                                    key={`mobile-${field}`}
+                                    className={`border rounded-lg p-3 transition-colors ${
+                                        isModifiedByStudent
+                                            ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
+                                            : isEditedByRegistrar
+                                                ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
+                                                : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                        <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
+                                            {FIELD_LABELS[field]}
+                                        </span>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            {isModifiedByStudent && (
+                                                <CommonChip label="Changed" size="small" variant="light" />
+                                            )}
+                                            {isPending && isEditedByRegistrar && (
+                                                <CommonChip label="Registrar Edited" size="small" variant="light" />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 mb-2 text-xs">
+                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block mb-0.5">
+                                            Current Value:
+                                        </span>
+                                        <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                            {currVal}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
+                                            {isPending ? 'Verified Value (Editable):' : 'Final Approved Value:'}
+                                        </span>
+                                        {isPending ? (
+                                            field === 'gender' ? (
+                                                <CommonSelect
+                                                    fullWidth
+                                                    options={GENDER_OPTIONS}
+                                                    size="small"
+                                                    value={String(editVal)}
+                                                    onChange={(e) => handleFieldChange('gender', e.target.value as string)}
+                                                />
+                                            ) : field === 'civil_status' ? (
+                                                <CommonSelect
+                                                    fullWidth
+                                                    options={CIVIL_STATUS_OPTIONS}
+                                                    size="small"
+                                                    value={String(editVal)}
+                                                    onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
+                                                />
+                                            ) : field === 'date_of_birth' ? (
+                                                <CommonDatePicker
+                                                    value={String(editVal || '')}
+                                                    onChange={(val) => handleFieldChange('date_of_birth', val)}
+                                                />
+                                            ) : (
+                                                <CommonInput
+                                                    fullWidth
+                                                    size="small"
+                                                    value={String(editVal)}
+                                                    onChange={(e) => handleFieldChange(field, e.target.value)}
+                                                />
+                                            )
+                                        ) : (
+                                            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
+                                                {request.status === 'Approved with Edits'
+                                                    ? (request.approved_changes?.[field] || reqVal)
+                                                    : reqVal}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
                     {/* Registrar Notes */}
-                    <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex flex-col gap-1 mt-1 shrink-0">
                         <label className="text-xs font-semibold text-(--mui-palette-text-primary)">
                             Registrar Notes & Remarks {isPending && '(Optional — recorded in registrar audit log)'}
                         </label>
@@ -407,7 +498,7 @@ export default function StudentProfileVerificationModal({
 
                     {/* Rejection Drawer / Form */}
                     {isRejectOpen && (
-                        <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-4 rounded-lg flex flex-col gap-3">
+                        <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 sm:p-4 rounded-lg flex flex-col gap-3 shrink-0">
                             <div className="flex items-center gap-2 text-(--mui-palette-error-main) font-semibold text-sm">
                                 <WarningCircleIcon size={20} />
                                 <span>Reject Profile Change Request</span>
@@ -457,47 +548,48 @@ export default function StudentProfileVerificationModal({
                             </div>
                         </div>
                     )}
+                </div>
 
-                    {/* Bottom Action Footer */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-(--mui-palette-divider) mt-auto">
-                        <CommonButton
-                            color="inherit"
-                            disabled={isSubmitting}
-                            size="small"
-                            variant="outlined"
-                            onClick={onClose}
-                        >
-                            Close
-                        </CommonButton>
+                {/* Bottom Action Footer */}
+                <div className="shrink-0 border-t border-(--mui-palette-divider) p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 bg-(--mui-palette-background-default)">
+                    <CommonButton
+                        color="inherit"
+                        disabled={isSubmitting}
+                        size="small"
+                        variant="outlined"
+                        onClick={onClose}
+                        className="order-2 sm:order-1"
+                    >
+                        Close
+                    </CommonButton>
 
-                        {isPending && !isRejectOpen && (
-                            <div className="flex items-center gap-2">
-                                <CommonButton
-                                    color="error"
-                                    disabled={isSubmitting}
-                                    size="small"
-                                    startIcon={<XCircleIcon size={16} />}
-                                    variant="outlined"
-                                    onClick={() => setIsRejectOpen(true)}
-                                >
-                                    Reject Request
-                                </CommonButton>
-                                <CommonButton
-                                    disabled={isSubmitting}
-                                    size="small"
-                                    startIcon={<CheckCircleIcon size={16} />}
-                                    variant="contained"
-                                    onClick={handleApprove}
-                                >
-                                    {isSubmitting
-                                        ? 'Processing...'
-                                        : hasRegistrarEdits
-                                            ? 'Save Edits & Approve'
-                                            : 'Approve Profile'}
-                                </CommonButton>
-                            </div>
-                        )}
-                    </div>
+                    {isPending && !isRejectOpen && (
+                        <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
+                            <CommonButton
+                                color="error"
+                                disabled={isSubmitting}
+                                size="small"
+                                startIcon={<XCircleIcon size={16} />}
+                                variant="outlined"
+                                onClick={() => setIsRejectOpen(true)}
+                            >
+                                Reject Request
+                            </CommonButton>
+                            <CommonButton
+                                disabled={isSubmitting}
+                                size="small"
+                                startIcon={<CheckCircleIcon size={16} />}
+                                variant="contained"
+                                onClick={handleApprove}
+                            >
+                                {isSubmitting
+                                    ? 'Processing...'
+                                    : hasRegistrarEdits
+                                        ? 'Save Edits & Approve'
+                                        : 'Approve Profile'}
+                            </CommonButton>
+                        </div>
+                    )}
                 </div>
             </CommonModal>
 

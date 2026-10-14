@@ -51,11 +51,15 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
     value,
     onChange
 }, ref) => {
-    const selectedOptions = options.filter((option) =>
-        value.includes(String(option.value)));
+    const hasNoOptions = !options || options.length === 0;
+    const resolvedOptions = options ?? [];
+    const selectedOptions = hasNoOptions
+        ? []
+        : resolvedOptions.filter((option) =>
+            value.includes(String(option.value)));
 
     function handleChange(_event: SyntheticEvent, newValue: CommonSelectOption[]) {
-        if (readOnly) {
+        if (readOnly || hasNoOptions) {
             return;
         }
 
@@ -77,9 +81,14 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
     }
 
     const isSmall = size === 'small';
-    const isNonInteractive = Boolean(disabled || readOnly);
-    const labelErrorMessage = label && error ? helperText : undefined;
-    const labelDescription = description ?? (label && !error ? helperText : undefined);
+    const isNonInteractive = Boolean(disabled || readOnly || hasNoOptions);
+    const isDisabled = Boolean(disabled || hasNoOptions);
+    const labelErrorMessage = label && error
+        ? helperText
+        : undefined;
+    const labelDescription = description ?? (label && !error
+        ? helperText
+        : undefined);
 
     return (
         <div
@@ -107,12 +116,12 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                     className
                 )}
                 disableCloseOnSelect
-                disabled={disabled}
+                disabled={isDisabled}
                 fullWidth={fullWidth}
                 getOptionLabel={(option) => option.label}
                 isOptionEqualToValue={(option, val) => option.value === val.value}
                 multiple
-                options={options}
+                options={resolvedOptions}
                 popupIcon={<CaretDownIcon size={16} weight="bold" />}
                 readOnly={readOnly}
                 ref={ref}
@@ -121,11 +130,15 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                         {...params}
                         className={className}
                         error={error}
-                        helperText={label ? undefined : helperText}
+                        helperText={label
+                            ? undefined
+                            : helperText}
                         label=""
-                        placeholder={selectedOptions.length === 0
-                            ? placeholder
-                            : undefined}
+                        placeholder={hasNoOptions
+                            ? 'No option available'
+                            : (selectedOptions.length === 0
+                                ? placeholder
+                                : undefined)}
                         size={size}
                         slotProps={{
                             input: {
@@ -150,15 +163,21 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                         ? undefined
                                         : (
                                             <XIcon
-                                                size={isSmall ? 12 : 14}
+                                                size={isSmall
+                                                    ? 12
+                                                    : 14}
                                                 weight="bold"
                                             />
                                         )
                                 }
                                 key={key}
                                 label={option.label}
-                                size={isSmall ? 'small' : 'medium'}
-                                title={typeof option.label === 'string' ? option.label : undefined}
+                                size={isSmall
+                                    ? 'small'
+                                    : 'medium'}
+                                title={typeof option.label === 'string'
+                                    ? option.label
+                                    : undefined}
                                 variant="outlined"
                                 {...chipProps}
                                 sx={{
@@ -176,7 +195,9 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                         : 'var(--mui-tokens-color-brand-900)',
                                     fontWeight: 500,
                                     height: 'auto',
-                                    minHeight: isSmall ? '1.5rem' : '1.75rem',
+                                    minHeight: isSmall
+                                        ? '1.5rem'
+                                        : '1.75rem',
                                     maxWidth: '100%',
                                     margin: '2px',
                                     opacity: 1,
@@ -220,7 +241,9 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                                         color: 'var(--mui-tokens-color-brand-700)',
                                         cursor: 'pointer',
                                         display: 'inline-flex',
-                                        fontSize: isSmall ? '0.75rem' : '0.875rem',
+                                        fontSize: isSmall
+                                            ? '0.75rem'
+                                            : '0.875rem',
                                         justifyContent: 'center',
                                         margin: '0 2px 0 4px',
                                         opacity: 1,

@@ -1,12 +1,11 @@
 import FormLabel from '@components/form/FormLabel';
 import MenuItem from '@mui/material/MenuItem';
+import { SelectProps } from '@mui/material/Select';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import { StringNum } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import {
-    forwardRef, ReactNode, useEffect, useState
-} from 'react';
+import { forwardRef, ReactNode, useEffect, useState } from 'react';
 
 export type SharedStringSizeProps = 'pagination' | 'xsmall' | 'small' | 'medium' | 'large';
 export interface CommonSelectOption {
@@ -75,7 +74,9 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
     variant = 'outlined',
     ...props
 }, ref) => {
-    const isNonInteractive = Boolean(disabled || readOnly);
+    const hasNoOptions = !options || options.length === 0;
+    const isNonInteractive = Boolean(disabled || readOnly || hasNoOptions);
+    const isDisabled = Boolean(disabled || hasNoOptions);
     const [uncontrolledOpen, setUncontrolledOpen] = useState(Boolean(isFirstError));
 
     useEffect(() => {
@@ -87,7 +88,18 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
     const labelErrorMessage = label && error
         ? helperText
         : undefined;
-    const labelDescription = description ?? (label && !error ? helperText : undefined);
+    const labelDescription = description ?? (label && !error
+        ? helperText
+        : undefined);
+
+    const selectSlot = slotProps?.select as SelectProps | undefined;
+    const selectOpen = hasNoOptions
+        ? false
+        : (selectSlot?.open !== undefined
+            ? selectSlot.open
+            : (isFirstError
+                ? uncontrolledOpen
+                : undefined));
 
     return (
         <div
@@ -111,16 +123,21 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
             )}
             <TextField
                 className={className}
-                disabled={disabled}
+                disabled={isDisabled}
                 error={error}
                 fullWidth={fullWidth}
-                helperText={label ? undefined : helperText}
+                helperText={label
+                    ? undefined
+                    : helperText}
                 label=""
                 ref={ref}
                 select
                 size={size}
                 variant={variant}
                 {...props}
+                {...(hasNoOptions
+                    ? { value: '' }
+                    : {})}
                 slotProps={{
                     ...slotProps,
                     input: {
@@ -129,18 +146,23 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     },
                     select: {
                         displayEmpty: true,
-                        open: (slotProps?.select as any)?.open !== undefined
-                            ? (slotProps?.select as any).open
-                            : (isFirstError ? uncontrolledOpen : undefined),
-                        onOpen: (e: any) => {
+                        open: selectOpen,
+                        onOpen: (e) => {
+                            if (hasNoOptions) return;
                             setUncontrolledOpen(true);
-                            (slotProps?.select as any)?.onOpen?.(e);
+                            selectSlot?.onOpen?.(e);
                         },
-                        onClose: (e: any) => {
+                        onClose: (e) => {
                             setUncontrolledOpen(false);
-                            (slotProps?.select as any)?.onClose?.(e);
+                            selectSlot?.onClose?.(e);
                         },
                         ...slotProps?.select,
+                        ...(hasNoOptions
+                            ? {
+                                open: false,
+                                renderValue: () => 'No option available'
+                            }
+                            : {}),
                         readOnly,
                         IconComponent: (iconProps) => (
                             <CaretDownIcon
@@ -151,14 +173,25 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     }
                 }}
             >
-                {options.map(({ label: optLabel, value }) => (
-                    <MenuItem
-                        key={value}
-                        value={value}
-                    >
-                        {optLabel}
-                    </MenuItem>
-                ))}
+                {hasNoOptions
+                    ? (
+                        <MenuItem
+                            disabled
+                            value=""
+                        >
+                        No option available
+                        </MenuItem>
+                    )
+                    : (
+                        options.map(({ label: optLabel, value }) => (
+                            <MenuItem
+                                key={value}
+                                value={value}
+                            >
+                                {optLabel}
+                            </MenuItem>
+                        ))
+                    )}
             </TextField>
         </div>
     );
