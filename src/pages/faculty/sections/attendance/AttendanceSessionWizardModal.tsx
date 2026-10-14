@@ -592,6 +592,11 @@ export default function AttendanceSessionWizardModal({
                     </div>
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </CommonModal>
     );
 }
