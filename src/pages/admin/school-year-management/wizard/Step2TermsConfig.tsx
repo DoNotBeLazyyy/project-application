@@ -432,6 +432,9 @@ export default function Step2TermsConfig({
                 open={Boolean(deleteTermTarget)}
                 onClose={() => setDeleteTermTarget(null)}
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeleteTermTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deleteTermTarget !== null) {

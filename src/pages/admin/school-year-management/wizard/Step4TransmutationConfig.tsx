@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
@@ -209,10 +210,10 @@ export default function Step4TransmutationConfig({
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                 {/* Type Selector */}
                                 <div className="sm:col-span-4 md:col-span-3">
-                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                        <span>Grade Type</span>
-                                        <CommonInfoTooltip content="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)." size={13} />
-                                    </label>
+                                    <FormLabel
+                                        description="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)."
+                                        label="Grade Type"
+                                    />
                                     <select
                                         className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
                                         disabled={disabled}
@@ -248,10 +249,10 @@ export default function Step4TransmutationConfig({
 
                                 {/* Academic Status Toggle */}
                                 <div className="sm:col-span-3">
-                                    <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                        <span>Status</span>
-                                        <CommonInfoTooltip content="Toggles whether this grade mark grants academic credit (Passing vs Failing)." size={13} />
-                                    </label>
+                                    <FormLabel
+                                        description="Toggles whether this grade mark grants academic credit (Passing vs Failing)."
+                                        label="Status"
+                                    />
                                     <button
                                         className={`w-full h-9 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                                             row.is_passing
@@ -391,6 +392,9 @@ export default function Step4TransmutationConfig({
                 open={Boolean(deleteRungTarget)}
                 onClose={() => setDeleteRungTarget(null)}
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeleteRungTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deleteRungTarget !== null) {

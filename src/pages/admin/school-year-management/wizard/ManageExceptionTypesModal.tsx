@@ -311,6 +311,9 @@ export default function ManageExceptionTypesModal({
                 open={Boolean(deleteTypeTarget)}
                 onClose={() => setDeleteTypeTarget(null)}
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeleteTypeTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deleteTypeTarget) {

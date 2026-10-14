@@ -1,5 +1,6 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import {
@@ -238,9 +239,7 @@ export default function Step4HolidaysConfig({
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                                         <div>
-                                            <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                                Exception Type
-                                            </label>
+                                            <FormLabel label="Exception Type" />
                                             <select
                                                 aria-label="Select exception type"
                                                 className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium"
@@ -263,9 +262,7 @@ export default function Step4HolidaysConfig({
                                         </div>
 
                                         <div>
-                                            <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                                Class Impact
-                                            </label>
+                                            <FormLabel label="Class Impact" />
                                             <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                                                 <input
                                                     checked={Boolean(current.affects_attendance)}
@@ -354,6 +351,9 @@ export default function Step4HolidaysConfig({
                 open={Boolean(deleteExceptionTarget)}
                 onClose={() => setDeleteExceptionTarget(null)}
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeleteExceptionTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deleteExceptionTarget !== null) {

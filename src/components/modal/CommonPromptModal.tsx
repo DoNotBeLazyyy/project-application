@@ -58,6 +58,7 @@ export default function CommonPromptModal({
                 isButtonsFullWidth,
                 cancelProps: {
                     color: 'secondary',
+                    onClick: (e: any) => props.onClose?.(e, 'backdropClick'),
                     variant: 'outlined',
                     ...cancelProps
                 }

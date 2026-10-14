@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonStepperInput from '@components/input/CommonStepperInput';
@@ -218,6 +219,7 @@ function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOption
         <CommonSelect
             disabled={disabled}
             fullWidth
+            label="Course Type"
             name={courseTypeName(rowIndex, 'course_type_id')}
             options={availableOptions}
             placeholder="Select Course Type"

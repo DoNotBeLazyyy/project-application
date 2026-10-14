@@ -81,6 +81,7 @@ export default function CommonActionModal({
                         : {
                             children: 'Cancel',
                             color: 'secondary',
+                            onClick: (e: any) => props.onClose?.(e, 'backdropClick'),
                             variant: 'outlined',
                             ...cancelProps
                         }}

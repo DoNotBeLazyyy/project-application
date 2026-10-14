@@ -809,6 +809,9 @@ export default function Step3GradingPeriodsConfig({
             {/* Delete Period Prompt Modal */}
             <DeletePromptModal
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeletePeriodTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deletePeriodTarget !== null) {

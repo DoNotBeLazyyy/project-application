@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
@@ -188,10 +189,11 @@ export default function Step5ThresholdsConfig({
                                 {/* Row 2: Category and Threshold Name */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Category <span className="text-red-500">*</span></span>
-                                            <CommonInfoTooltip content="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)." size={13} />
-                                        </label>
+                                        <FormLabel
+                                            description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
+                                            isRequired
+                                            label="Category"
+                                        />
                                         <select
                                             className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
                                             disabled={disabled}
@@ -243,10 +245,10 @@ export default function Step5ThresholdsConfig({
                                     </div>
 
                                     <div>
-                                        <label className="flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                            <span>Status</span>
-                                            <CommonInfoTooltip content="Toggles whether this threshold is active for student evaluations." size={13} />
-                                        </label>
+                                        <FormLabel
+                                            description="Toggles whether this threshold is active for student evaluations."
+                                            label="Status"
+                                        />
                                         <button
                                             className={`w-full h-9 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                                                 item.is_active
@@ -364,6 +366,9 @@ export default function Step5ThresholdsConfig({
                 open={Boolean(deleteThresholdTarget)}
                 onClose={() => setDeleteThresholdTarget(null)}
                 formButtonsProps={{
+                    cancelProps: {
+                        onClick: () => setDeleteThresholdTarget(null)
+                    },
                     confirmProps: {
                         onClick: () => {
                             if (deleteThresholdTarget !== null) {
