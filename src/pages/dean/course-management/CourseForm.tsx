@@ -63,6 +63,8 @@ function PrerequisiteKindCell({ control, disabled, rowIndex }: PrerequisiteCellP
         <CommonSelect
             disabled={disabled}
             fullWidth
+            label="Kind"
+            name={prerequisiteName(rowIndex, 'prerequisite_kind')}
             options={PREREQUISITE_KIND_OPTIONS}
             size="small"
             value={String(kind.field.value ?? '')}
@@ -85,13 +87,24 @@ function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: 
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
     const courseId = useController({ control, name: prerequisiteName(rowIndex, 'course_id') });
+    const { errors } = useFormState({ control });
+
+    const targetError = kind === 'standing'
+        ? (errors.prerequisites as any)?.[rowIndex]?.year_level_required
+        : (errors.prerequisites as any)?.[rowIndex]?.course_id;
 
     if (kind === 'standing') {
         return (
             <CommonSelect
                 disabled={disabled}
+                error={Boolean(targetError)}
                 fullWidth
+                helperText={targetError?.message}
+                isRequired
+                label="Course / Year Level"
+                name={prerequisiteName(rowIndex, 'year_level_required')}
                 options={YEAR_LEVEL_STANDING_OPTIONS}
+                placeholder="Select Year Level"
                 size="small"
                 value={String(yearLevel.field.value ?? '')}
                 onChange={(e) => yearLevel.field.onChange(e.target.value)}
@@ -111,8 +124,14 @@ function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: 
     return (
         <CommonSelect
             disabled={disabled}
+            error={Boolean(targetError)}
             fullWidth
+            helperText={targetError?.message}
+            isRequired
+            label="Course / Year Level"
+            name={prerequisiteName(rowIndex, 'course_id')}
             options={availableOptions}
+            placeholder="Select Prerequisite Course"
             size="small"
             value={String(courseId.field.value ?? '')}
             onChange={(e) => courseId.field.onChange(e.target.value)}
@@ -128,6 +147,8 @@ function PrerequisiteTypeCell({ control, disabled, rowIndex }: PrerequisiteCellP
         <CommonSelect
             disabled={disabled}
             fullWidth
+            label="Type"
+            name={prerequisiteName(rowIndex, 'prerequisite_type')}
             options={PREREQUISITE_TYPE_OPTIONS}
             size="small"
             value={String(type.field.value ?? '')}
@@ -159,6 +180,8 @@ function PrerequisiteMinGradeCell({
         <CommonSelect
             disabled={disabled || isLocked}
             fullWidth
+            label="Min Grade"
+            name={prerequisiteName(rowIndex, 'minimum_grade')}
             options={minimumGradeOptions}
             size="small"
             value={isLocked
@@ -292,6 +315,22 @@ export default function CourseForm({
 
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
+
+    useEffect(() => {
+        if (!errors.prerequisites) return;
+        const prereqErrors = errors.prerequisites as any;
+        setCollapsedPrereqs((prev) => {
+            const next = { ...prev };
+            let changed = false;
+            (prerequisites || []).forEach((_, idx) => {
+                if (prereqErrors[idx] && next[idx]) {
+                    next[idx] = false;
+                    changed = true;
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [errors.prerequisites, prerequisites]);
 
     const { departmentOptions, departments } = useDepartmentOptions();
     const { courseTypeOptions } = useCourseTypeOptions();
@@ -829,9 +868,6 @@ export default function CourseForm({
                                             {/* Row 1: Kind & Course / Year Level */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                                 <div className="w-full">
-                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                        Kind
-                                                    </label>
                                                     <PrerequisiteKindCell
                                                         control={control}
                                                         disabled={disabled}
@@ -839,9 +875,6 @@ export default function CourseForm({
                                                     />
                                                 </div>
                                                 <div className="w-full">
-                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                        Course / Year Level
-                                                    </label>
                                                     <PrerequisiteTargetCell
                                                         control={control}
                                                         courseOptions={allCourseOptions}
@@ -854,9 +887,6 @@ export default function CourseForm({
                                             {/* Row 2: Type & Min Grade (Min Grade shown only when Kind is Course) */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                                 <div className="w-full">
-                                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                        Type
-                                                    </label>
                                                     <PrerequisiteTypeCell
                                                         control={control}
                                                         disabled={disabled}
@@ -865,9 +895,6 @@ export default function CourseForm({
                                                 </div>
                                                 {isCourseKind && (
                                                     <div className="w-full">
-                                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-                                                            Min Grade
-                                                        </label>
                                                         <PrerequisiteMinGradeCell
                                                             control={control}
                                                             disabled={disabled}

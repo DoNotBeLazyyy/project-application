@@ -16,17 +16,19 @@ import {
 import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
-import { Control, useFormState, useWatch } from 'react-hook-form';
+import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step3GradingPeriodsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
     disabled?: boolean;
+    setValue?: UseFormSetValue<AcademicYearWizardFormValues>;
     onChangeTerms: (terms: AcademicYearWizardFormValues['terms']) => void;
 }
 
 export default function Step3GradingPeriodsConfig({
     control,
     disabled = false,
+    setValue,
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
@@ -123,6 +125,16 @@ export default function Step3GradingPeriodsConfig({
         periodIndex: number,
         partial: Partial<WizardGradingPeriodItem>
     ) {
+        if (setValue) {
+            Object.entries(partial).forEach(([field, val]) => {
+                setValue(`terms.${termIndex}.grading_periods.${periodIndex}.${field}` as any, val, {
+                    shouldDirty: true,
+                    shouldValidate: true
+                });
+            });
+            return;
+        }
+
         const targetTerm = terms[termIndex];
         if (!targetTerm) return;
 
@@ -215,6 +227,16 @@ export default function Step3GradingPeriodsConfig({
         compIndex: number,
         partial: Partial<WizardGradingPeriodComponentItem>
     ) {
+        if (setValue) {
+            Object.entries(partial).forEach(([field, val]) => {
+                setValue(`terms.${termIndex}.grading_periods.${periodIndex}.components.${compIndex}.${field}` as any, val, {
+                    shouldDirty: true,
+                    shouldValidate: true
+                });
+            });
+            return;
+        }
+
         const targetPeriod = terms[termIndex]?.grading_periods?.[periodIndex];
         if (!targetPeriod) return;
 

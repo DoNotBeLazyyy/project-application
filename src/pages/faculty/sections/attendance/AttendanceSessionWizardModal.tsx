@@ -63,6 +63,7 @@ export default function AttendanceSessionWizardModal({
 }: AttendanceSessionWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
     const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [sessionDateError, setSessionDateError] = useState<string | null>(null);
     const [notes, setNotes] = useState('');
     const [defaultStatus, setDefaultStatus] = useState<AttendanceStatus>('Present');
     const [sessionType, setSessionType] = useState<'Lecture' | 'Laboratory' | 'Online' | 'Activity'>('Lecture');
@@ -82,6 +83,7 @@ export default function AttendanceSessionWizardModal({
         // Reset wizard state
         setCurrentStep(1);
         setSessionDate(new Date().toISOString().split('T')[0]);
+        setSessionDateError(null);
         setNotes('');
         setDefaultStatus('Present');
         setSessionType('Lecture');
@@ -180,10 +182,18 @@ export default function AttendanceSessionWizardModal({
         );
     }, [students, searchQuery]);
 
-    async function handleSaveSession() {
+    function validateStep1(): boolean {
         if (!sessionDate) {
-            showToast('Please select a valid session date.', 'warning');
+            setSessionDateError('Please select a valid session date.');
             setCurrentStep(1);
+            return false;
+        }
+        setSessionDateError(null);
+        return true;
+    }
+
+    async function handleSaveSession() {
+        if (!validateStep1()) {
             return;
         }
 
@@ -270,7 +280,10 @@ export default function AttendanceSessionWizardModal({
                     <ModalStepperHeader
                         currentStep={currentStep}
                         steps={ATTENDANCE_WIZARD_STEPS}
-                        onStepClick={(step) => setCurrentStep(step)}
+                        onStepClick={(step) => {
+                            if (step > currentStep && currentStep === 1 && !validateStep1()) return;
+                            setCurrentStep(step);
+                        }}
                     />
                 </div>
 
@@ -287,12 +300,23 @@ export default function AttendanceSessionWizardModal({
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                            Session Date <span className="text-rose-500">*</span>
-                                        </label>
                                         <CommonDatePicker
+                                            error={Boolean(sessionDateError)}
+                                            helperText={sessionDateError ?? undefined}
+                                            isRequired
+                                            label="Session Date"
+                                            slotProps={{
+                                                textField: {
+                                                    error: Boolean(sessionDateError),
+                                                    helperText: sessionDateError ?? undefined,
+                                                    name: 'session_date'
+                                                }
+                                            }}
                                             value={sessionDate}
-                                            onChange={(val) => setSessionDate(val)}
+                                            onChange={(val) => {
+                                                setSessionDate(val);
+                                                if (sessionDateError) setSessionDateError(null);
+                                            }}
                                         />
                                     </div>
 
@@ -535,7 +559,10 @@ export default function AttendanceSessionWizardModal({
                                 size="small"
                                 endIcon={<ArrowRightIcon size={14} weight="bold" />}
                                 variant="contained"
-                                onClick={() => setCurrentStep((prev) => prev + 1)}
+                                onClick={() => {
+                                    if (currentStep === 1 && !validateStep1()) return;
+                                    setCurrentStep((prev) => prev + 1);
+                                }}
                             >
                                 Continue to Student List
                             </CommonButton>

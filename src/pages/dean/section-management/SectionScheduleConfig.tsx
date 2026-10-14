@@ -1,11 +1,12 @@
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import {
     CalendarDotsIcon, CaretDownIcon, CheckIcon, ClockIcon, PlusCircleIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { DayOfWeek, SectionFormValues, SectionScheduleBlock } from '@type/section.type';
-import { useState } from 'react';
-import { Control, useController } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { Control, useController, useFormContext, useFormState } from 'react-hook-form';
 
 const DAYS_OF_WEEK: { label: string; short: string; value: DayOfWeek }[] = [
     { label: 'Monday', short: 'Mon', value: 'Monday' },
@@ -41,6 +42,10 @@ export default function SectionScheduleConfig({
         name: 'schedules'
     });
 
+    const formContext = useFormContext<SectionFormValues>();
+    const { errors } = useFormState({ control });
+    const scheduleErrors = errors.schedules as any;
+
     const [collapsedSlots, setCollapsedSlots] = useState<Record<number, boolean>>({});
 
     function toggleSlotCollapse(index: number) {
@@ -48,6 +53,21 @@ export default function SectionScheduleConfig({
     }
 
     const blocks: SectionScheduleBlock[] = schedulesValue || [];
+
+    useEffect(() => {
+        if (!scheduleErrors) return;
+        setCollapsedSlots((prev) => {
+            const next = { ...prev };
+            let changed = false;
+            blocks.forEach((_, idx) => {
+                if (scheduleErrors[idx] && next[idx]) {
+                    next[idx] = false;
+                    changed = true;
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [scheduleErrors, blocks]);
 
     function handleAddSlot() {
         const newBlock: SectionScheduleBlock = {
@@ -64,6 +84,12 @@ export default function SectionScheduleConfig({
     }
 
     function handleUpdateSlot(index: number, patch: Partial<SectionScheduleBlock>) {
+        if (patch.time_start !== undefined) {
+            formContext?.clearErrors?.(`schedules.${index}.time_start` as any);
+        }
+        if (patch.time_end !== undefined) {
+            formContext?.clearErrors?.(`schedules.${index}.time_end` as any);
+        }
         const updated = [...blocks];
         updated[index] = { ...updated[index], ...patch };
         onSchedulesChange(updated);
@@ -72,6 +98,8 @@ export default function SectionScheduleConfig({
     function handleToggleDay(index: number, day: DayOfWeek) {
         const target = blocks[index];
         if (!target) return;
+
+        formContext?.clearErrors?.(`schedules.${index}.days` as any);
 
         const currentDays = target.days || [];
         const isSelected = currentDays.includes(day);
@@ -119,6 +147,7 @@ export default function SectionScheduleConfig({
                 : (
                     <div className="flex flex-col gap-3 pt-1">
                         {blocks.map((block, index) => {
+                            const scheduleError = scheduleErrors?.[index];
                             const formattedDays = (block.days || []).length > 0
                                 ? (block.days || []).map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.short || d).join(', ')
                                 : 'No days';
@@ -180,8 +209,11 @@ export default function SectionScheduleConfig({
                                             <CommonInput
                                                 containerClassName="w-full"
                                                 disabled={disabled}
-                                                helperText="Class start time"
+                                                error={Boolean(scheduleError?.time_start)}
+                                                helperText={scheduleError?.time_start?.message || 'Class start time'}
+                                                isRequired
                                                 label="Start Time"
+                                                name={`schedules.${index}.time_start`}
                                                 size="small"
                                                 type="time"
                                                 value={block.time_start || '08:00'}
@@ -190,8 +222,11 @@ export default function SectionScheduleConfig({
                                             <CommonInput
                                                 containerClassName="w-full"
                                                 disabled={disabled}
-                                                helperText="Class end time"
+                                                error={Boolean(scheduleError?.time_end)}
+                                                helperText={scheduleError?.time_end?.message || 'Class end time'}
+                                                isRequired
                                                 label="End Time"
+                                                name={`schedules.${index}.time_end`}
                                                 size="small"
                                                 type="time"
                                                 value={block.time_end || '10:00'}
@@ -213,16 +248,16 @@ export default function SectionScheduleConfig({
                                         {/* Selectable Days (Mon to Sun) */}
                                         <div className="flex flex-col gap-2">
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                                                <div className="flex items-center gap-2">
-                                                    <label className="font-semibold text-slate-700 text-xs dark:text-slate-300">
-                                                        Days of Week
-                                                    </label>
-                                                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                                        ({(block.days || []).length > 0
-                                                            ? (block.days || []).join(', ')
-                                                            : 'None selected'})
-                                                    </span>
-                                                </div>
+                                                <FormLabel
+                                                    errorMessage={scheduleError?.days?.message}
+                                                    isRequired
+                                                    label="Days of Week"
+                                                />
+                                                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                    ({(block.days || []).length > 0
+                                                        ? (block.days || []).join(', ')
+                                                        : 'None selected'})
+                                                </span>
                                             </div>
 
                                             <div className="flex flex-wrap gap-2">

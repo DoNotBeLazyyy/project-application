@@ -25,7 +25,7 @@ import { useToastStore } from '@stores/toast.store';
 import { SectionFormValues, SectionScheduleSlot } from '@type/section.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 
 export const SECTION_WIZARD_STEPS = [
     {
@@ -167,27 +167,35 @@ export default function SectionWizardModal({
         for (let i = 0; i < schedules.length; i++) {
             const slot = schedules[i];
             if (!slot.days || slot.days.length === 0) {
-                useToastStore.getState()
-                    .showToast(
-                        `Schedule Slot #${i + 1} must have at least one day selected.`,
-                        'error'
-                    );
+                methods.setError(`schedules.${i}.days` as any, {
+                    type: 'manual',
+                    message: `Schedule Slot #${i + 1} must have at least one day selected.`
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
-            if (!slot.time_start || !slot.time_end) {
-                useToastStore.getState()
-                    .showToast(
-                        `Schedule Slot #${i + 1}: Both start time and end time are required.`,
-                        'error'
-                    );
+            if (!slot.time_start) {
+                methods.setError(`schedules.${i}.time_start` as any, {
+                    type: 'manual',
+                    message: `Schedule Slot #${i + 1}: Start time is required.`
+                });
+                formErrors(methods.formState.errors, methods);
+                return false;
+            }
+            if (!slot.time_end) {
+                methods.setError(`schedules.${i}.time_end` as any, {
+                    type: 'manual',
+                    message: `Schedule Slot #${i + 1}: End time is required.`
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
             if (slot.time_start >= slot.time_end) {
-                useToastStore.getState()
-                    .showToast(
-                        `Schedule Slot #${i + 1}: Start time must be earlier than end time.`,
-                        'error'
-                    );
+                methods.setError(`schedules.${i}.time_start` as any, {
+                    type: 'manual',
+                    message: `Schedule Slot #${i + 1}: Start time must be earlier than end time.`
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
         }
@@ -198,8 +206,11 @@ export default function SectionWizardModal({
         const values = getValues();
         if (values.override_grading_schema) {
             if (values.grading_override_mode === 'copy_section' && !values.source_section_id) {
-                useToastStore.getState()
-                    .showToast('Please select a source section to copy grading schema from.', 'error');
+                methods.setError('source_section_id', {
+                    type: 'manual',
+                    message: 'Please select a source section to copy grading schema from.'
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
         }
@@ -421,7 +432,7 @@ export default function SectionWizardModal({
                         </div>
                     )
                     : (
-                        <>
+                        <FormProvider {...methods}>
                             {currentStep === 1 && (
                                 <Step1SectionOverview
                                     control={control}
@@ -446,7 +457,7 @@ export default function SectionWizardModal({
                                     disabled={isReadOnly}
                                 />
                             )}
-                        </>
+                        </FormProvider>
                     )}
             </div>
 

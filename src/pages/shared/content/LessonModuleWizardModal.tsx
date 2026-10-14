@@ -92,6 +92,7 @@ export default function LessonModuleWizardModal({
 
     // Step 1 state
     const [title, setTitle] = useState('');
+    const [titleError, setTitleError] = useState<string | null>(null);
     const [description, setDescription] = useState('');
     const [period, setPeriod] = useState('General');
     const [isPublished, setIsPublished] = useState(true);
@@ -107,6 +108,7 @@ export default function LessonModuleWizardModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        setTitleError(null);
         if (!open) {
             setCurrentStep(1);
             setTitle('');
@@ -195,9 +197,11 @@ export default function LessonModuleWizardModal({
 
     function validateStep1(): boolean {
         if (!title.trim()) {
-            useToastStore.getState().showToast('Please enter a module title.', 'error');
+            setTitleError('Please enter a module title.');
+            setCurrentStep(1);
             return false;
         }
+        setTitleError(null);
         return true;
     }
 
@@ -362,15 +366,19 @@ export default function LessonModuleWizardModal({
                     <div className="flex flex-col gap-4">
                         <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Module Title <span className="text-rose-500">*</span>
-                                </label>
                                 <CommonInput
+                                    error={Boolean(titleError)}
                                     fullWidth
+                                    helperText={titleError ?? undefined}
+                                    isRequired
+                                    label="Module Title"
                                     placeholder="e.g. Course Syllabus & Overview or Week 1: Algorithm Analysis"
                                     size="small"
                                     value={title}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                        setTitle(e.target.value);
+                                        if (titleError) setTitleError(null);
+                                    }}
                                 />
                             </div>
 

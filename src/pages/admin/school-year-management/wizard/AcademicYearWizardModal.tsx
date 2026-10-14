@@ -704,6 +704,7 @@ export default function AcademicYearWizardModal({
                             <Step3GradingPeriodsConfig
                                 control={control}
                                 disabled={isReadOnly}
+                                setValue={setValue}
                                 onChangeTerms={(updated) => setValue('terms', updated, { shouldDirty: true })}
                             />
                         )}

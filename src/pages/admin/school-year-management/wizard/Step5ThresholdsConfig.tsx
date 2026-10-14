@@ -124,7 +124,7 @@ export default function Step5ThresholdsConfig({
                     thresholds.map((item, idx) => {
                         return (
                             <div
-                                key={item.id || idx}
+                                key={item.id || `threshold_${idx}`}
                                 className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm transition-all hover:border-slate-300 dark:hover:border-zinc-700 w-full min-w-0"
                             >
                                 {/* Row 1: Header with Action Buttons */}
@@ -213,13 +213,16 @@ export default function Step5ThresholdsConfig({
                                         <CommonInput
                                             description="Official title revealed on student rank lists, certificates, and academic summary cards."
                                             disabled={disabled}
+                                            error={Boolean((errors.thresholds as any)?.[idx]?.label)}
                                             fullWidth
+                                            helperText={(errors.thresholds as any)?.[idx]?.label?.message}
                                             isRequired
                                             label="Threshold Name / Label"
+                                            name={`thresholds.${idx}.label`}
                                             placeholder="e.g. Summa Cum Laude, Full Scholar"
                                             size="small"
                                             value={item.label}
-                                            onChange={(e) => setValue(`thresholds.${idx}.label`, e.target.value, { shouldDirty: true })}
+                                            onChange={(e) => setValue(`thresholds.${idx}.label`, e.target.value, { shouldDirty: true, shouldValidate: true })}
                                         />
                                     </div>
                                 </div>
@@ -287,16 +290,19 @@ export default function Step5ThresholdsConfig({
                                         <CommonNumberInput
                                             description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
                                             disabled={disabled}
+                                            error={Boolean((errors.thresholds as any)?.[idx]?.max_gwa)}
                                             fullWidth
+                                            helperText={(errors.thresholds as any)?.[idx]?.max_gwa?.message}
                                             isRequired
                                             label="Max GWA (Cutoff)"
                                             maxDecimals={2}
                                             minDecimals={2}
+                                            name={`thresholds.${idx}.max_gwa`}
                                             placeholder="1.25"
                                             size="small"
                                             step={0.01}
                                             value={item.max_gwa ?? ''}
-                                            onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined ? '' : val, { shouldDirty: true })}
+                                            onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined ? '' : val, { shouldDirty: true, shouldValidate: true })}
                                         />
                                     </div>
                                 </div>

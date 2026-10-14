@@ -72,81 +72,6 @@ export default function Step4TransmutationConfig({
         append(newRow);
     }
 
-    function handleUpdatePercentage(
-        index: number,
-        field: 'min_percentage' | 'max_percentage',
-        val: number
-    ) {
-        const updatedRows = [...rows];
-        const currentRow = { ...updatedRows[index], [field]: val };
-        updatedRows[index] = currentRow;
-
-        // Skip any special flag rows (DRP, INC) when auto-adjusting adjacent score ladders
-        let nextIndex = index + 1;
-        while (nextIndex < updatedRows.length && isSpecialGradeRow(updatedRows[nextIndex])) {
-            nextIndex++;
-        }
-        let prevIndex = index - 1;
-        while (prevIndex >= 0 && isSpecialGradeRow(updatedRows[prevIndex])) {
-            prevIndex--;
-        }
-
-        const nextRow = nextIndex < updatedRows.length ? updatedRows[nextIndex] : null;
-        const prevRow = prevIndex >= 0 ? updatedRows[prevIndex] : null;
-
-        if (field === 'max_percentage') {
-            if (nextRow && nextRow.min_percentage !== null && nextRow.min_percentage !== undefined) {
-                const currentMin = Number(currentRow.min_percentage) || 0;
-                const nextMin = Number(nextRow.min_percentage) || 0;
-                const isAscending = nextMin >= currentMin;
-                if (isAscending) {
-                    const step = (val % 1 !== 0 || nextMin % 1 !== 0) ? 0.5 : 1;
-                    const newNextMin = Math.min(100, Math.max(0, val + step));
-                    const newNextMax = Math.max(newNextMin, Number(nextRow.max_percentage) || newNextMin);
-                    updatedRows[nextIndex] = {
-                        ...nextRow,
-                        max_percentage: newNextMax,
-                        min_percentage: newNextMin
-                    };
-                }
-            }
-            if (prevRow && prevRow.min_percentage !== null && prevRow.min_percentage !== undefined) {
-                const prevMin = Number(prevRow.min_percentage) || 0;
-                if (val >= prevMin && prevMin > 0) {
-                    const step = (val % 1 !== 0 || prevMin % 1 !== 0) ? 0.5 : 1;
-                    currentRow.max_percentage = Math.max(0, prevMin - step);
-                }
-            }
-        } else if (field === 'min_percentage') {
-            if (nextRow && nextRow.max_percentage !== null && nextRow.max_percentage !== undefined) {
-                const nextMax = Number(nextRow.max_percentage) || 0;
-                if (val <= nextMax) {
-                    const step = (val % 1 !== 0 || nextMax % 1 !== 0) ? 0.5 : 1;
-                    const newNextMax = Math.max(0, Math.min(100, val - step));
-                    const newNextMin = Math.min(newNextMax, Number(nextRow.min_percentage) || 0);
-                    updatedRows[nextIndex] = {
-                        ...nextRow,
-                        max_percentage: newNextMax,
-                        min_percentage: newNextMin
-                    };
-                }
-            }
-            if (prevRow && prevRow.max_percentage !== null && prevRow.max_percentage !== undefined) {
-                const prevMax = Number(prevRow.max_percentage) || 0;
-                if (val <= prevMax) {
-                    const step = (val % 1 !== 0 || prevMax % 1 !== 0) ? 0.5 : 1;
-                    const prevMin = Number(prevRow.min_percentage) || 0;
-                    updatedRows[prevIndex] = {
-                        ...prevRow,
-                        max_percentage: Math.max(prevMin, val - step)
-                    };
-                }
-            }
-        }
-
-        setValue('transmutation_rows', updatedRows, { shouldDirty: true });
-    }
-
     return (
         <div className="flex flex-col gap-6">
             {/* Top Toolbar / Summary Badges */}
@@ -216,7 +141,7 @@ export default function Step4TransmutationConfig({
 
                     return (
                         <div
-                            key={field.id}
+                            key={row.id || field.id || `transmutation_${index}`}
                             className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-4 transition-all"
                         >
                             {/* Row 1: Header with Action Buttons */}
@@ -410,7 +335,13 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             suffixText="%"
                                             value={row.min_percentage ?? ''}
-                                            onChange={(val) => handleUpdatePercentage(index, 'min_percentage', val as any)}
+                                            onChange={(val) => {
+                                                setValue(
+                                                    `transmutation_rows.${index}.min_percentage`,
+                                                    val === undefined ? null : val,
+                                                    { shouldDirty: true, shouldValidate: true }
+                                                );
+                                            }}
                                         />
                                     </div>
 
@@ -431,7 +362,13 @@ export default function Step4TransmutationConfig({
                                             step={0.5}
                                             suffixText="%"
                                             value={row.max_percentage ?? ''}
-                                            onChange={(val) => handleUpdatePercentage(index, 'max_percentage', val as any)}
+                                            onChange={(val) => {
+                                                setValue(
+                                                    `transmutation_rows.${index}.max_percentage`,
+                                                    val === undefined ? null : val,
+                                                    { shouldDirty: true, shouldValidate: true }
+                                                );
+                                            }}
                                         />
                                     </div>
                                 </div>

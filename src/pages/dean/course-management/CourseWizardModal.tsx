@@ -119,13 +119,21 @@ export default function CourseWizardModal({
             for (let i = 0; i < values.prerequisites.length; i++) {
                 const prereq = values.prerequisites[i];
                 if (prereq.prerequisite_kind === 'course' && (!prereq.course_id || !prereq.course_id.trim())) {
-                    useToastStore.getState().showToast(`Prerequisite #${i + 1}: Please select a course or remove the row.`, 'error');
+                    methods.setError(`prerequisites.${i}.course_id` as any, {
+                        type: 'manual',
+                        message: `Prerequisite #${i + 1}: Please select a course or remove the row.`
+                    });
                     setCurrentStep(3);
+                    formErrors(methods.formState.errors, methods);
                     return;
                 }
                 if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required).trim())) {
-                    useToastStore.getState().showToast(`Prerequisite #${i + 1}: Please select a year level standing or remove the row.`, 'error');
+                    methods.setError(`prerequisites.${i}.year_level_required` as any, {
+                        type: 'manual',
+                        message: `Prerequisite #${i + 1}: Please select a year level standing or remove the row.`
+                    });
                     setCurrentStep(3);
+                    formErrors(methods.formState.errors, methods);
                     return;
                 }
             }
