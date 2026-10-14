@@ -43,13 +43,38 @@ function getDateTimepickerSizeSx(size?: 'small' | 'medium' | 'large' | string) {
             '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
                 height: `${INPUT_HEIGHT_SMALL} !important`,
                 maxHeight: `${INPUT_HEIGHT_SMALL} !important`,
-                padding: `${INPUT_PADDING_SMALL} !important`,
+                paddingLeft: 'var(--mui-tokens-spacing-3) !important',
+                paddingRight: 'var(--mui-tokens-spacing-2) !important',
+                paddingTop: '0 !important',
+                paddingBottom: '0 !important',
                 boxSizing: 'border-box' as const,
                 fontSize: 'var(--mui-tokens-fontSize-xs, 0.75rem)',
+                display: 'flex',
+                alignItems: 'center',
                 '@media (pointer: coarse)': {
                     height: `${INPUT_HEIGHT_TOUCH} !important`,
                     maxHeight: `${INPUT_HEIGHT_TOUCH} !important`
                 }
+            },
+            '& .MuiPickersInputBase-sectionsContainer': {
+                padding: '0 !important',
+                marginRight: 'auto'
+            },
+            '& .MuiInputAdornment-root': {
+                marginLeft: 'var(--mui-tokens-spacing-2) !important',
+                marginRight: '0 !important',
+                display: 'flex',
+                alignItems: 'center'
+            },
+            '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+                margin: '0 !important',
+                marginRight: '0 !important',
+                padding: 'var(--mui-tokens-spacing-1) !important',
+                width: '1.75rem !important',
+                height: '1.75rem !important',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
             },
             '& .MuiInputAdornment-root svg': {
                 height: '1rem !important',
@@ -62,8 +87,21 @@ function getDateTimepickerSizeSx(size?: 'small' | 'medium' | 'large' | string) {
             '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
                 height: `${INPUT_HEIGHT_LARGE} !important`,
                 maxHeight: `${INPUT_HEIGHT_LARGE} !important`,
-                padding: `${INPUT_PADDING_LARGE} !important`,
-                boxSizing: 'border-box' as const
+                paddingLeft: 'var(--mui-tokens-spacing-4) !important',
+                paddingRight: 'var(--mui-tokens-spacing-3) !important',
+                paddingTop: '0 !important',
+                paddingBottom: '0 !important',
+                boxSizing: 'border-box' as const,
+                display: 'flex',
+                alignItems: 'center'
+            },
+            '& .MuiInputAdornment-root': {
+                marginLeft: 'var(--mui-tokens-spacing-3) !important',
+                marginRight: '0 !important'
+            },
+            '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+                margin: '0 !important',
+                marginRight: '0 !important'
             }
         };
     }
@@ -71,8 +109,21 @@ function getDateTimepickerSizeSx(size?: 'small' | 'medium' | 'large' | string) {
         '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
             height: `${INPUT_HEIGHT_MEDIUM} !important`,
             maxHeight: `${INPUT_HEIGHT_MEDIUM} !important`,
-            padding: `${INPUT_PADDING_MEDIUM} !important`,
-            boxSizing: 'border-box' as const
+            paddingLeft: 'var(--mui-tokens-spacing-3) !important',
+            paddingRight: 'var(--mui-tokens-spacing-2) !important',
+            paddingTop: '0 !important',
+            paddingBottom: '0 !important',
+            boxSizing: 'border-box' as const,
+            display: 'flex',
+            alignItems: 'center'
+        },
+        '& .MuiInputAdornment-root': {
+            marginLeft: 'var(--mui-tokens-spacing-2) !important',
+            marginRight: '0 !important'
+        },
+        '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+            margin: '0 !important',
+            marginRight: '0 !important'
         }
     };
 }
@@ -242,6 +293,12 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         ...props.slotProps,
                         openPickerButton: {
                             disabled: isNonInteractive,
+                            size: resolvedSize === 'large' ? 'medium' : 'small',
+                            edge: false as any,
+                            sx: {
+                                margin: 0,
+                                marginRight: 0
+                            },
                             ...(typeof props.slotProps?.openPickerButton === 'object'
                                 ? props.slotProps.openPickerButton
                                 : {})

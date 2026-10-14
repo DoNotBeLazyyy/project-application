@@ -18,15 +18,31 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
     boxSizing: 'border-box' as const,
     height: INPUT_HEIGHT_LARGE,
     maxHeight: INPUT_HEIGHT_LARGE,
-    padding: INPUT_PADDING_LARGE,
+    padding: `0 ${INPUT_PADDING_LARGE}`,
+    display: 'flex',
+    alignItems: 'center',
     '&.MuiPickersInputBase-sizeSmall, &.MuiPickersOutlinedInput-sizeSmall, &.MuiInputBase-sizeSmall, .MuiPickersTextField-root.MuiPickersTextField-sizeSmall &, .MuiPickersTextField-root:has(&.MuiInputBase-sizeSmall) &, .MuiFormControl-root:has(&.MuiInputBase-sizeSmall) &': {
         height: `${INPUT_HEIGHT_SMALL} !important`,
         maxHeight: `${INPUT_HEIGHT_SMALL} !important`,
-        padding: `${INPUT_PADDING_SMALL} !important`,
+        paddingLeft: 'var(--mui-tokens-spacing-3) !important',
+        paddingRight: 'var(--mui-tokens-spacing-2) !important',
+        paddingTop: '0 !important',
+        paddingBottom: '0 !important',
         ...theme.typography.bodySmall,
         '@media (pointer: coarse)': {
             height: `${INPUT_HEIGHT_TOUCH} !important`,
             maxHeight: `${INPUT_HEIGHT_TOUCH} !important`
+        },
+        '& .MuiInputAdornment-root': {
+            marginLeft: 'var(--mui-tokens-spacing-2) !important',
+            marginRight: '0 !important'
+        },
+        '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+            margin: '0 !important',
+            marginRight: '0 !important',
+            padding: 'var(--mui-tokens-spacing-1) !important',
+            width: '1.75rem !important',
+            height: '1.75rem !important'
         },
         '& .MuiInputAdornment-root svg': {
             height: '1rem !important',
@@ -36,14 +52,30 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
     '&.MuiPickersInputBase-sizeMedium, &.MuiPickersOutlinedInput-sizeMedium, &.MuiInputBase-sizeMedium': {
         height: `${INPUT_HEIGHT_MEDIUM} !important`,
         maxHeight: `${INPUT_HEIGHT_MEDIUM} !important`,
-        padding: `${INPUT_PADDING_MEDIUM} !important`,
-        ...theme.typography.bodyNormal
+        padding: `0 ${INPUT_PADDING_MEDIUM} !important`,
+        ...theme.typography.bodyNormal,
+        '& .MuiInputAdornment-root': {
+            marginLeft: 'var(--mui-tokens-spacing-2) !important',
+            marginRight: '0 !important'
+        },
+        '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+            margin: '0 !important',
+            marginRight: '0 !important'
+        }
     },
     '&.MuiPickersInputBase-sizeLarge, &.MuiPickersOutlinedInput-sizeLarge, &.MuiInputBase-sizeLarge': {
         height: `${INPUT_HEIGHT_LARGE} !important`,
         maxHeight: `${INPUT_HEIGHT_LARGE} !important`,
-        padding: `${INPUT_PADDING_LARGE} !important`,
-        ...theme.typography.bodyNormal
+        padding: `0 ${INPUT_PADDING_LARGE} !important`,
+        ...theme.typography.bodyNormal,
+        '& .MuiInputAdornment-root': {
+            marginLeft: 'var(--mui-tokens-spacing-3) !important',
+            marginRight: '0 !important'
+        },
+        '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+            margin: '0 !important',
+            marginRight: '0 !important'
+        }
     },
     '&.Mui-disabled *': {
         color: 'var(--mui-tokens-color-neutral-400)',
@@ -54,10 +86,18 @@ const pickersInputRootStyles = ({ theme }: { theme: any }) => ({
         WebkitTextFillColor: 'var(--mui-tokens-color-neutral-800)'
     },
     '& .MuiInputAdornment-root': {
-        marginLeft: 'var(--mui-tokens-spacing-3)'
+        marginLeft: 'var(--mui-tokens-spacing-2)',
+        marginRight: 0,
+        display: 'flex',
+        alignItems: 'center'
     },
-    '& .MuiInputAdornment-root .MuiIconButton-root': {
-        padding: 'var(--mui-tokens-spacing-0)'
+    '& .MuiInputAdornment-root .MuiIconButton-root, & .MuiIconButton-edgeEnd': {
+        margin: 0,
+        marginRight: 0,
+        padding: 'var(--mui-tokens-spacing-1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     '& .MuiInputAdornment-root svg': {
         color: 'var(--mui-tokens-color-neutral-700)',
