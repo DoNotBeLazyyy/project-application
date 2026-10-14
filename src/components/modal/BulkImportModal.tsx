@@ -726,14 +726,14 @@ export default function BulkImportModal<TPayload>({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
                                 <CheckCircleIcon size={18} weight="bold" />
-                                <span>Newly Created Section Offerings ({createdRows.length})</span>
+                                <span>Newly Created {targetEntityName} ({createdCount})</span>
                             </div>
                         </div>
-                        {createdRows.length === 0 ? (
-                            <p className="text-xs text-slate-500 italic py-2">No new sections were created.</p>
-                        ) : (
+                        {createdCount === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No new {entityPlural} were created.</p>
+                        ) : createdDisplayItems.length > 0 ? (
                             <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
-                                {createdRows.map((item, idx) => (
+                                {createdDisplayItems.map((item, idx) => (
                                     <div
                                         key={idx}
                                         className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-emerald-800/60 flex flex-col gap-1 text-xs"
@@ -742,20 +742,45 @@ export default function BulkImportModal<TPayload>({
                                             <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[11px]">
                                                 Row #{item.row}
                                             </span>
-                                            <span>{item.section_code}</span>
+                                            {item.code && (
+                                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">{item.code}</span>
+                                            )}
                                         </div>
-                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1 mt-0.5">
-                                            <span>Course: <strong>{item.course_code || '—'}</strong></span>
-                                            <span>Room: <strong>{item.room || '—'}</strong></span>
-                                        </div>
-                                        {item.faculty_email && (
-                                            <div className="text-[11px] text-slate-500 truncate">
-                                                Faculty: {item.faculty_email}
-                                            </div>
+                                        {item.isSection ? (
+                                            <>
+                                                <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1 mt-0.5">
+                                                    <span>Course: <strong>{item.course_code || '—'}</strong></span>
+                                                    <span>Room: <strong>{item.room || '—'}</strong></span>
+                                                </div>
+                                                {item.faculty_email && (
+                                                    <div className="text-[11px] text-slate-500 truncate">
+                                                        Faculty: {item.faculty_email}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                                                    {item.heading}
+                                                </div>
+                                                {item.details && item.details.length > 0 && (
+                                                    <div className="text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[11px]">
+                                                        {item.details.map((d, dIdx) => (
+                                                            <span key={dIdx}>
+                                                                <span className="font-medium text-slate-600 dark:text-slate-300">{d.label}:</span> {d.value}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 ))}
                             </div>
+                        ) : (
+                            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium py-2">
+                                Successfully created {createdCount} {entityPlural}.
+                            </p>
                         )}
                     </div>
                 )}
@@ -766,12 +791,12 @@ export default function BulkImportModal<TPayload>({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 font-bold text-sm">
                                 <ArrowLineUpIcon size={18} weight="bold" />
-                                <span>Updated Existing Section Offerings ({updatedRows.length})</span>
+                                <span>Updated Existing {targetEntityName} ({updatedCount})</span>
                             </div>
                         </div>
-                        {updatedRows.length === 0 ? (
-                            <p className="text-xs text-slate-500 italic py-2">No existing sections were updated.</p>
-                        ) : (
+                        {updatedCount === 0 ? (
+                            <p className="text-xs text-slate-500 italic py-2">No existing {entityPlural} were updated.</p>
+                        ) : updatedRows.length > 0 ? (
                             <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
                                 {updatedRows.map((item, idx) => (
                                     <div
@@ -782,12 +807,14 @@ export default function BulkImportModal<TPayload>({
                                             <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 text-[11px]">
                                                 Row #{item.row}
                                             </span>
-                                            <span className="font-mono text-blue-700 dark:text-blue-300">{item.section_code}</span>
+                                            <span className="font-mono text-blue-700 dark:text-blue-300">{item.section_code || item.course_code || '—'}</span>
                                         </div>
-                                        <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1">
-                                            <span>Course: <strong>{item.course_code || '—'}</strong></span>
-                                            <span>Room: <strong>{item.room || '—'}</strong></span>
-                                        </div>
+                                        {item.course_code && (
+                                            <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1">
+                                                <span>Course: <strong>{item.course_code || '—'}</strong></span>
+                                                {item.room && <span>Room: <strong>{item.room}</strong></span>}
+                                            </div>
+                                        )}
                                         {item.faculty_email && (
                                             <div className="text-[11px] text-slate-500 truncate">
                                                 Faculty: {item.faculty_email}
@@ -809,12 +836,16 @@ export default function BulkImportModal<TPayload>({
                                             </div>
                                         ) : (
                                             <div className="text-[11px] text-blue-600 dark:text-blue-400 italic">
-                                                Updated existing section record
+                                                Updated existing record
                                             </div>
                                         )}
                                     </div>
                                 ))}
                             </div>
+                        ) : (
+                            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium py-2">
+                                Successfully updated {updatedCount} {entityPlural}.
+                            </p>
                         )}
                     </div>
                 )}
@@ -824,30 +855,42 @@ export default function BulkImportModal<TPayload>({
                     <div className="flex flex-col gap-2 border border-rose-200 dark:border-rose-900 rounded-xl p-3.5 bg-rose-50/40 dark:bg-rose-950/20">
                         <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-sm">
                             <XCircleIcon size={18} weight="bold" />
-                            <span>Blocked / Failed Rows ({structuredErrors.length})</span>
+                            <span>Blocked / Failed Rows ({blockedCount})</span>
                         </div>
-                        {structuredErrors.length === 0 ? (
+                        {blockedCount === 0 ? (
                             <p className="text-xs text-slate-500 italic py-2">No rows were blocked or failed.</p>
-                        ) : (
+                        ) : structuredErrors.length > 0 ? (
                             <div className="h-48">
                                 <CommonTable<BulkImportError>
                                     leadingColumnDefs={errorColumnDefs}
                                     rowData={structuredErrors}
                                 />
                             </div>
+                        ) : (
+                            <div className="flex flex-col gap-2 max-h-48 overflow-auto">
+                                {result?.errors?.map((error, index) => (
+                                    <div
+                                        className="flex gap-2 items-start text-(--mui-palette-error-main)"
+                                        key={index}
+                                    >
+                                        <XCircleIcon className="mt-0.5 shrink-0" size={14} weight="bold" />
+                                        <span className="text-xs">{error}</span>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 )}
 
-                {/* Tab Content 4: Schedule Conflicts */}
+                {/* Tab Content 4: Conflicts */}
                 {activeResultTab === 'conflicts' && (
                     <div className="flex flex-col gap-2 border border-amber-200 dark:border-amber-900 rounded-xl p-3.5 bg-amber-50/40 dark:bg-amber-950/20">
                         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-sm">
                             <WarningCircleIcon size={18} weight="bold" />
-                            <span>Flagged Schedule Conflicts ({conflictsCount})</span>
+                            <span>Flagged Conflicts ({conflictsCount})</span>
                         </div>
                         {conflictsCount === 0 ? (
-                            <p className="text-xs text-slate-500 italic py-2">No schedule conflicts were detected.</p>
+                            <p className="text-xs text-slate-500 italic py-2">No conflicts were detected.</p>
                         ) : conflictRows.length > 0 ? (
                             <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 pr-1">
                                 {conflictRows.map((item, idx) => (
@@ -859,7 +902,7 @@ export default function BulkImportModal<TPayload>({
                                             <span className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 text-[11px]">
                                                 Row #{item.row}
                                             </span>
-                                            <span className="font-mono text-amber-800 dark:text-amber-300">{item.section_code}</span>
+                                            <span className="font-mono text-amber-800 dark:text-amber-300">{item.section_code || item.course_code || '—'}</span>
                                         </div>
                                         <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-1">
                                             <span>Course: <strong>{item.course_code || '—'}</strong></span>
@@ -877,7 +920,7 @@ export default function BulkImportModal<TPayload>({
                                         )}
                                         <div className="mt-1 pt-1.5 border-t border-amber-100 dark:border-zinc-700/50 flex flex-col gap-0.5">
                                             <span className="text-[10px] uppercase font-bold tracking-wider text-rose-500 dark:text-rose-400">
-                                                Double-Booked With:
+                                                Conflict:
                                             </span>
                                             <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 p-1 rounded border border-rose-200/60 dark:border-rose-900/50">
                                                 {item.conflict_with || item.message}
@@ -903,20 +946,6 @@ export default function BulkImportModal<TPayload>({
                                 ))}
                             </div>
                         )}
-                    </div>
-                )}
-
-                {hasStringErrors && !hasStructuredErrors && (
-                    <div className="flex flex-col gap-2 max-h-48 overflow-auto">
-                        {result?.errors.map((error, index) => (
-                            <div
-                                className="flex gap-2 items-start text-(--mui-palette-error-main)"
-                                key={index}
-                            >
-                                <XCircleIcon className="mt-0.5 shrink-0" size={14} weight="bold" />
-                                <span className="text-xs">{error}</span>
-                            </div>
-                        ))}
                     </div>
                 )}
 
