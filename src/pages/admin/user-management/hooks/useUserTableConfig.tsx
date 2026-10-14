@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { MenuOption } from '@components/table/TableActionCell';
 import { TableActionConfig } from '@components/table/useTableConfigs';
+import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import { resendInvite, resetUserPassword } from '@services/user.service';
 import { useToastStore } from '@stores/toast.store';
 import { UserListRow } from '@type/user.type';
@@ -24,11 +25,13 @@ interface UseUserTableConfigProps {
     onRequestDeleteRow: (id: string) => void;
     onEdit: (id: string) => void;
     onView: (id: string) => void;
+    onReactivate?: (id: string) => void;
 }
 
 export function useUserTableConfig({
     onEdit,
-    onView
+    onView,
+    onReactivate
 }: UseUserTableConfigProps) {
     const columnDefs = useMemo<ColDef<UserListRow>[]>(function() {
         return [
@@ -81,6 +84,7 @@ export function useUserTableConfig({
             }
         ];
     }, []);
+
     const tableActionConfig = useCallback(function(onDelete: (id: string) => void): TableActionConfig<UserListRow> {
         return {
             onEditClick: (row: UserListRow) => function() {
@@ -95,10 +99,25 @@ export function useUserTableConfig({
                     preset: 'edit',
                     onClick: () => onEdit(row.id)
                 },
-                {
-                    preset: 'delete',
-                    onClick: () => onDelete(row.id)
-                },
+                row.status === 'Inactive'
+                    ? {
+                        children: (
+                            <div className="flex gap-2 items-center text-emerald-600 font-medium">
+                                <ArrowCounterClockwiseIcon size={20} weight="bold" />
+                                <span>Reactivate</span>
+                            </div>
+                        ),
+                        onClick: () => onReactivate?.(row.id)
+                    }
+                    : {
+                        children: (
+                            <div className="flex gap-2 items-center text-rose-600 font-medium">
+                                <ProhibitIcon size={20} weight="bold" />
+                                <span>Deactivate</span>
+                            </div>
+                        ),
+                        onClick: () => onDelete(row.id)
+                    },
                 {
                     children: (
                         <div className="flex gap-2 items-center">
@@ -119,7 +138,7 @@ export function useUserTableConfig({
                 }
             ]
         };
-    }, [onEdit, onView]);
+    }, [onEdit, onView, onReactivate]);
 
     return { columnDefs, tableActionConfig };
 }

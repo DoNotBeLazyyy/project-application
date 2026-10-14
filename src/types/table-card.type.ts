@@ -32,11 +32,27 @@ export interface TableCardSelectionBarProps {
     selectedCount: number;
     totalCount: number;
     entityName?: string;
+    deleteActionLabel?: string;
+    deleteActionIcon?: ReactNode;
     onSelectAll?: () => void;
     onClearSelection: () => void;
     onDeleteSelected?: () => void;
     isDeleting?: boolean;
     extraActions?: ReactNode;
+}
+
+export interface CommonTableCardDeleteModalProps {
+    title?: string | ((count: number) => string);
+    subTitle?: string;
+    confirmText?: string;
+    actionIcon?: any;
+}
+
+export interface CommonTableCardSelectionBarConfig {
+    entityName?: string;
+    deleteActionLabel?: string;
+    deleteActionIcon?: ReactNode;
+    extraActions?: (selectedIds: string[], clearSelection: () => void) => ReactNode;
 }
 
 export interface CommonTableCardProps<T extends FieldValues> {
@@ -58,6 +74,8 @@ export interface CommonTableCardProps<T extends FieldValues> {
     updateModalProps?: CommonFormModalProps;
     viewModalProps?: CommonFormModalProps;
     uploadCsvModalProps?: UploadCsvModalProps;
+    deleteModalProps?: CommonTableCardDeleteModalProps;
+    selectionBarProps?: CommonTableCardSelectionBarConfig;
     dependencies?: unknown[];
     sortColumns?: SortColumn[];
     tableActionConfig?: TableActionConfig<T> | ((onRequestDeleteRow: (id: string) => void) => TableActionConfig<T>);

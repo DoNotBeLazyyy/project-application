@@ -226,13 +226,15 @@ BEGIN
             user_id,
             title,
             message,
-            type,
+            notification_type,
+            action_url,
             created_by
         ) VALUES (
             v_user_id,
             'Year Level Advanced',
             format('Congratulations! You have completed all required courses for Year %s and have advanced to Year %s.', v_curr_year, v_calculated_year),
-            'Academic',
+            'Enrollment'::public.notification_category_type,
+            '/profile',
             coalesce(auth.uid(), v_user_id)
         );
 
@@ -427,13 +429,15 @@ BEGIN
         user_id,
         title,
         message,
-        type,
+        notification_type,
+        action_url,
         created_by
     ) VALUES (
         v_user_id,
         'Program & Year Level Assigned',
         format('Your academic program has been set to %s (%s), Year Level %s by the Registrar.', v_program_name, v_program_code, v_target_year),
-        'Academic',
+        'Enrollment'::public.notification_category_type,
+        '/profile',
         v_registrar_id
     );
 
@@ -818,13 +822,15 @@ BEGIN
             user_id,
             title,
             message,
-            type,
+            notification_type,
+            action_url,
             created_by
         )
         SELECT u.id,
                format('%s Profile Change Request', v_staff_role),
                format('%s (%s) submitted profile updates requiring Admin approval.', v_user_full_name, v_staff_role),
-               'Administrative',
+               'Account'::public.notification_category_type,
+               '/admin/profile-verifications',
                v_user_id
         FROM public.users u
         INNER JOIN public.user_roles ur ON ur.user_id = u.id AND ur.deleted_at IS NULL
@@ -1236,7 +1242,8 @@ BEGIN
         user_id,
         title,
         message,
-        type,
+        notification_type,
+        action_url,
         created_by
     ) VALUES (
         v_req.user_id,
@@ -1245,7 +1252,8 @@ BEGIN
              THEN 'Your profile changes have been reviewed, adjusted by the Administrator, and approved.'
              ELSE 'Your profile change request has been verified and approved by the Administrator.'
         END,
-        'Administrative',
+        'Account'::public.notification_category_type,
+        '/profile',
         v_admin_id
     );
 
@@ -1306,13 +1314,15 @@ BEGIN
         user_id,
         title,
         message,
-        type,
+        notification_type,
+        action_url,
         created_by
     ) VALUES (
         v_req.user_id,
         'Profile Changes Rejected',
         format('Your profile change request was rejected by the Administrator. Reason: %s', btrim(p_reason)),
-        'Administrative',
+        'Account'::public.notification_category_type,
+        '/profile',
         v_admin_id
     );
 

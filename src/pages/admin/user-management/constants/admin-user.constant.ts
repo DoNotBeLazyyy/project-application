@@ -2,10 +2,11 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 
 export const STATUS_OPTIONS: CommonSelectOption[] = [
-    { label: 'All Statuses', value: 'All' },
+    { label: 'Active & Invited (Default)', value: 'Active_Invited' },
     { label: 'Active', value: 'Active' },
     { label: 'Invited', value: 'Invited' },
-    { label: 'Inactive', value: 'Inactive' }
+    { label: 'Inactive (Deactivated)', value: 'Inactive' },
+    { label: 'All Statuses (including Inactive)', value: 'All' }
 ];
 
 export const CREATE_FORM_ID = 'create-user-form';

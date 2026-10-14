@@ -1,4 +1,6 @@
+import CommonButton from '@components/button/CommonButton';
 import BulkImportModal from '@components/modal/BulkImportModal';
+import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
@@ -7,8 +9,9 @@ import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
 import UserForm from '@pages/admin/user-management/forms/UserForm';
 import { useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
 import UserGridCard from '@pages/admin/user-management/UserGridCard';
+import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import {
-    bulkProvisionUsers, deleteUsers, getUserById, inviteSingleUser, listUsers, resendInvite, resetUserPassword, updateUser
+    bulkProvisionUsers, deactivateUsers, getUserById, inviteSingleUser, listUsers, reactivateUsers, resendInvite, resetUserPassword, updateUser
 } from '@services/user.service';
 import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
@@ -29,6 +32,14 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'role_code', label: 'Role', hint: 'Admin, Faculty, Student, Registrar, Dean' }
 ];
 
+const STATUS_TABS = [
+    { label: 'Active & Invited', value: 'Active_Invited' },
+    { label: 'Active', value: 'Active' },
+    { label: 'Invited', value: 'Invited' },
+    { label: 'Inactive', value: 'Inactive' },
+    { label: 'All Users', value: 'All' }
+];
+
 export default function UserManagement() {
     const [searchParams] = useSearchParams();
     const roleParam = searchParams.get('role') || searchParams.get('role_code');
@@ -38,17 +49,17 @@ export default function UserManagement() {
         ? (roleParam as UserRole)
         : 'All';
 
-    const initialStatus: 'All' | 'Active' | 'Invited' = statusParam === 'Active' || statusParam === 'Invited'
+    const initialStatus = statusParam === 'Active' || statusParam === 'Invited' || statusParam === 'Inactive' || statusParam === 'All'
         ? statusParam
-        : (initialRole !== 'All'
-            ? 'Active'
-            : 'All');
+        : 'Active_Invited';
 
-    const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>(
-        initialRole !== 'All' || initialStatus !== 'All'
-            ? { city: '', province: '', role_code: initialRole, status: initialStatus }
-            : null
-    );
+    const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>({
+        city: '',
+        province: '',
+        role_code: initialRole,
+        status: initialStatus
+    });
+
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
@@ -78,16 +89,14 @@ export default function UserManagement() {
     });
 
     useEffect(function() {
-        if (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean' || statusParam) {
+        if (roleParam || statusParam) {
             const roleCode = (roleParam === 'Student' || roleParam === 'Faculty' || roleParam === 'Admin' || roleParam === 'Registrar' || roleParam === 'Dean')
                 ? (roleParam as UserRole)
                 : 'All';
 
-            const statusVal = statusParam === 'Active' || statusParam === 'Invited' || statusParam === 'All'
-                ? (statusParam as 'All' | 'Active' | 'Invited')
-                : (roleCode !== 'All'
-                    ? 'Active'
-                    : 'All');
+            const statusVal = statusParam === 'Active' || statusParam === 'Invited' || statusParam === 'Inactive' || statusParam === 'All'
+                ? statusParam
+                : 'Active_Invited';
 
             const newFilters: UserFilterValues = {
                 city: '',
@@ -155,10 +164,28 @@ export default function UserManagement() {
         updateMethods.reset();
     }
 
+    async function handleReactivateSingle(id: string) {
+        const result = await reactivateUsers([id]);
+        if (!result.error) {
+            useToastStore.getState().showToast('User reactivated successfully.', 'success');
+            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+        }
+    }
+
+    async function handleBulkReactivate(ids: string[], clearSelection: () => void) {
+        const result = await reactivateUsers(ids);
+        if (!result.error) {
+            clearSelection();
+            useToastStore.getState().showToast(`Successfully reactivated ${ids.length} user(s).`, 'success');
+            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+        }
+    }
+
     const { columnDefs, tableActionConfig } = useUserTableConfig({
         onRequestDeleteRow: function() {},
         onEdit: handleOpenUpdate,
-        onView: handleOpenView
+        onView: handleOpenView,
+        onReactivate: handleReactivateSingle
     });
 
     async function fetchUsers(
@@ -193,8 +220,27 @@ export default function UserManagement() {
     }
 
     function handleFilterReset() {
-        filterMethods.reset();
-        setActiveFilters(null);
+        const resetFilters: UserFilterValues = {
+            city: '',
+            province: '',
+            role_code: 'All',
+            status: 'Active_Invited'
+        };
+        filterMethods.reset(resetFilters);
+        setActiveFilters(resetFilters);
+    }
+
+    function handleStatusTabChange(newStatus: UserFilterValues['status']) {
+        setActiveFilters((prev) => {
+            const updated: UserFilterValues = {
+                city: prev?.city ?? '',
+                province: prev?.province ?? '',
+                role_code: prev?.role_code ?? 'All',
+                status: newStatus
+            };
+            filterMethods.setValue('status', newStatus);
+            return updated;
+        });
     }
 
     async function handleUpdateSubmit(values: UpdateUserFormValues) {
@@ -224,6 +270,14 @@ export default function UserManagement() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <div className="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 px-4 py-1 rounded-xl shadow-2xs shrink-0">
+                <CommonTabMenu
+                    tabs={STATUS_TABS}
+                    value={activeFilters?.status ?? 'Active_Invited'}
+                    onChange={(_, val) => handleStatusTabChange(val as UserFilterValues['status'])}
+                />
+            </div>
+
             <CommonTableCard<UserListRow>
                 cardHeaderProps={{
                     subheader: 'Provision and manage all system users.',
@@ -273,6 +327,31 @@ export default function UserManagement() {
                         setIsCreateOpen(false);
                     }
                 }}
+                deleteModalProps={{
+                    title: (count) => count > 1
+                        ? `Deactivate ${count} users?`
+                        : 'Deactivate this user?',
+                    subTitle: 'This user will lose access to the system, but historical data will be preserved.',
+                    confirmText: 'Yes, Deactivate',
+                    actionIcon: ProhibitIcon
+                }}
+                selectionBarProps={{
+                    entityName: 'User',
+                    deleteActionLabel: 'Deactivate Selected',
+                    deleteActionIcon: <ProhibitIcon size={16} weight="bold" />,
+                    extraActions: (selectedIds, clearSelection) => (
+                        <CommonButton
+                            color="success"
+                            size="small"
+                            variant="outlined"
+                            startIcon={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
+                            onClick={() => handleBulkReactivate(selectedIds, clearSelection)}
+                            title={`Reactivate Selected (${selectedIds.length})`}
+                        >
+                            <span className="hidden sm:inline">Reactivate Selected </span>({selectedIds.length})
+                        </CommonButton>
+                    )
+                }}
                 dependencies={[activeFilters]}
                 filterModalProps={{
                     cardProps: {
@@ -290,12 +369,11 @@ export default function UserManagement() {
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
                     ),
-                    onReset: handleFilterReset,
                     open: isFilterOpen,
                     onClose: function() {
-                        filterMethods.reset();
                         setIsFilterOpen(false);
-                    }
+                    },
+                    onReset: handleFilterReset
                 }}
                 renderGridCard={function(item, isSelected, onToggleSelect, onRequestDeleteRow) {
                     return (
@@ -304,8 +382,9 @@ export default function UserManagement() {
                             row={item}
                             onEdit={handleOpenUpdate}
                             onRequestDelete={onRequestDeleteRow}
+                            onReactivate={handleReactivateSingle}
                             onResendInvite={(email) => resendInvite(email)}
-                            onResetPassword={async(email) => {
+                            onResetPassword={async (email) => {
                                 const { error } = await resetUserPassword(email);
                                 useToastStore.getState()
                                     .showToast(
@@ -398,9 +477,9 @@ export default function UserManagement() {
                 onCreate={function() {
                     setIsCreateOpen(true);
                 }}
-                onDelete={deleteUsers}
+                onDelete={deactivateUsers}
                 onDeleteRow={function(id) {
-                    return deleteUsers([id]);
+                    return deactivateUsers([id]);
                 }}
                 onFetch={fetchUsers}
                 onFilter={() => setIsFilterOpen(true)}

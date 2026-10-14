@@ -27,11 +27,13 @@ export default function CommonTableCard<T extends FieldValues>({
     cardHeaderProps,
     controls,
     createModalProps,
+    deleteModalProps,
     dependencies = [],
     enableInfiniteScroll = true,
     filterModalProps,
     infoContent,
     renderGridCard,
+    selectionBarProps,
     showSubheader = false,
     showViewToggle = false,
     sortColumns,
@@ -268,6 +270,12 @@ export default function CommonTableCard<T extends FieldValues>({
     const effectiveSelectedCount = activeViewMode === 'grid'
         ? gridSelectedIds.size
         : selectedCount;
+
+    const effectiveSelectedIds = activeViewMode === 'grid'
+        ? Array.from(gridSelectedIds)
+        : (gridApi?.getSelectedRows() ?? []).map(function(row) {
+            return String((row as T)[uniqueIdKey]);
+        });
 
     const isGridSelectionActive = activeViewMode === 'grid' && gridSelectedIds.size > 0;
 
@@ -517,6 +525,16 @@ export default function CommonTableCard<T extends FieldValues>({
                         {effectiveSelectedCount > 0
                             ? (
                                 <TableCardSelectionBar
+                                    deleteActionIcon={selectionBarProps?.deleteActionIcon}
+                                    deleteActionLabel={selectionBarProps?.deleteActionLabel}
+                                    entityName={selectionBarProps?.entityName}
+                                    extraActions={selectionBarProps?.extraActions?.(effectiveSelectedIds, function() {
+                                        if (activeViewMode === 'grid') {
+                                            handleClearGridSelection();
+                                        } else {
+                                            gridApi?.deselectAll();
+                                        }
+                                    })}
                                     selectedCount={effectiveSelectedCount}
                                     totalCount={pagination.totalElements}
                                     onClearSelection={function() {
@@ -797,23 +815,27 @@ export default function CommonTableCard<T extends FieldValues>({
                 onClose={handleDiscardCancel}
             />
             <DeletePromptModal
+                actionIconProps={deleteModalProps?.actionIcon ? { icon: deleteModalProps.actionIcon } : undefined}
                 formButtonsProps={{
                     cancelProps: {
                         disabled: isDeleting,
                         onClick: handleCancelDelete
                     },
                     confirmProps: {
+                        children: deleteModalProps?.confirmText ?? (pendingDeleteIds.length > 1 ? 'Yes, Delete' : 'Yes, Delete'),
                         loading: isDeleting,
                         onClick: handleConfirmDelete
                     }
                 }}
                 mainContent={{
-                    title: pendingDeleteIds.length > 1
-                        ? `Delete ${pendingDeleteIds.length} records?`
-                        : 'Delete this record?'
+                    title: deleteModalProps?.title
+                        ? (typeof deleteModalProps.title === 'function' ? deleteModalProps.title(pendingDeleteIds.length) : deleteModalProps.title)
+                        : (pendingDeleteIds.length > 1
+                            ? `Delete ${pendingDeleteIds.length} records?`
+                            : 'Delete this record?')
                 }}
                 open={isDeletePromptOpen}
-                subContent={{ title: 'This action cannot be undone.' }}
+                subContent={{ title: deleteModalProps?.subTitle ?? 'This action cannot be undone.' }}
                 onClose={handleCancelDelete}
             />
         </CommonCard>

@@ -3,6 +3,8 @@ import { TrashIcon } from '@phosphor-icons/react';
 import { TableCardSelectionBarProps } from '@type/table-card.type';
 
 export default function TableCardSelectionBar({
+    deleteActionIcon,
+    deleteActionLabel,
     entityName = 'Record',
     extraActions,
     isDeleting = false,
@@ -52,12 +54,12 @@ export default function TableCardSelectionBar({
                         disabled={isDeleting}
                         size="small"
                         className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
-                        startIcon={<TrashIcon size={16} weight="bold" />}
+                        startIcon={deleteActionIcon ?? <TrashIcon size={16} weight="bold" />}
                         variant="outlined"
                         onClick={onDeleteSelected}
-                        title={`Delete Selected (${selectedCount})`}
+                        title={`${deleteActionLabel ?? 'Delete Selected'} (${selectedCount})`}
                     >
-                        <span className="hidden sm:inline">Delete Selected </span>({selectedCount})
+                        <span className="hidden sm:inline">{deleteActionLabel ?? 'Delete Selected'} </span>({selectedCount})
                     </CommonButton>
                 )}
 

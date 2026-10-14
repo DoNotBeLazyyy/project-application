@@ -1,7 +1,7 @@
 import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
 import {
-    EyeIcon, LockKeyIcon, PaperPlaneTiltIcon, PencilSimpleIcon, TrashIcon
+    ArrowCounterClockwiseIcon, EyeIcon, LockKeyIcon, PaperPlaneTiltIcon, PencilSimpleIcon, ProhibitIcon
 } from '@phosphor-icons/react';
 import { UserListRow } from '@type/user.type';
 
@@ -12,6 +12,7 @@ export interface UserGridCardProps {
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onRequestDelete: (id: string) => void;
+    onReactivate?: (id: string) => void;
     onResendInvite?: (email: string) => void;
     onResetPassword?: (email: string) => void;
 }
@@ -30,6 +31,7 @@ export default function UserGridCard({
     onView,
     onEdit,
     onRequestDelete,
+    onReactivate,
     onResendInvite,
     onResetPassword
 }: UserGridCardProps) {
@@ -48,6 +50,20 @@ export default function UserGridCard({
             icon: <PencilSimpleIcon size={18} weight="bold" />,
             onClick: () => onEdit(row.id)
         },
+        ...(row.status === 'Inactive'
+            ? [{
+                key: 'reactivate',
+                label: 'Reactivate',
+                icon: <ArrowCounterClockwiseIcon size={18} weight="bold" className="text-emerald-600" />,
+                onClick: () => onReactivate?.(row.id)
+            }]
+            : [{
+                key: 'deactivate',
+                label: 'Deactivate',
+                icon: <ProhibitIcon size={18} weight="bold" className="text-rose-600" />,
+                destructive: true,
+                onClick: () => onRequestDelete(row.id)
+            }]),
         ...(onResendInvite && row.status !== 'Active'
             ? [{
                 key: 'resend-invite',
@@ -63,14 +79,7 @@ export default function UserGridCard({
                 icon: <LockKeyIcon size={18} weight="bold" />,
                 onClick: () => onResetPassword(row.email)
             }]
-            : []),
-        {
-            key: 'delete',
-            label: 'Delete',
-            icon: <TrashIcon size={18} weight="bold" />,
-            destructive: true,
-            onClick: () => onRequestDelete(row.id)
-        }
+            : [])
     ];
 
     return (

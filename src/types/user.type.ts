@@ -53,7 +53,7 @@ export interface SetPasswordFormValues {
 
 export interface UserFilterValues {
     role_code: UserRole | 'All';
-    status: 'All' | 'Active' | 'Invited' | 'Inactive';
+    status: 'All' | 'Active' | 'Invited' | 'Inactive' | 'Active_Invited';
     city: string;
     province: string;
 }
