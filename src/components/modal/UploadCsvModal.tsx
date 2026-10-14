@@ -343,6 +343,16 @@ export default function UploadCsvModal({
                         <span className="text-xs">{parseError}</span>
                     </div>
                 )}
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-(--mui-palette-divider)">
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        variant="outlined"
+                        onClick={handleClose}
+                    >
+                        Close
+                    </CommonButton>
+                </div>
             </div>
         );
     }
@@ -377,7 +387,16 @@ export default function UploadCsvModal({
                         rowData={parsedRows}
                     />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2 pt-2 border-t border-(--mui-palette-divider)">
+                    <CommonButton
+                        color="inherit"
+                        disabled={isLoading}
+                        size="small"
+                        variant="outlined"
+                        onClick={handleClose}
+                    >
+                        Cancel
+                    </CommonButton>
                     <CommonButton
                         disabled={isLoading}
                         size="small"
@@ -476,12 +495,13 @@ export default function UploadCsvModal({
             cardProps={{
                 cardHeaderProps: {
                     title: stepTitles[step]
+                },
+                defaultActionProps: {
+                    onClick: handleClose
                 }
             }}
             open={open}
-            onClose={step === 'results'
-                ? handleClose
-                : onClose}
+            onClose={handleClose}
         >
             <div className="max-w-full sm:w-3xl w-full">
                 {step === 'upload' && renderUploadStep()}

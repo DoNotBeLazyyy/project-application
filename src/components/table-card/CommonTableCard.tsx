@@ -157,6 +157,9 @@ export default function CommonTableCard<T extends FieldValues>({
     }
 
     function handleCloseUpdateModal() {
+        if (updateModalProps?.isLoading) {
+            return;
+        }
         if (updateModalProps?.onConfirmClose && !updateModalProps.onConfirmClose()) {
             setIsDiscardOpen(true);
             return;
@@ -206,7 +209,8 @@ export default function CommonTableCard<T extends FieldValues>({
                     );
                 }
             }
-        } finally {
+        }
+        finally {
             setIsDeleting(false);
             setIsDeletePromptOpen(false);
             setPendingDeleteIds([]);
@@ -542,7 +546,8 @@ export default function CommonTableCard<T extends FieldValues>({
                                                 onClick: function() {
                                                     if (controls?.tableButtonsProps?.createButtonProps?.onClick) {
                                                         controls.tableButtonsProps.createButtonProps.onClick();
-                                                    } else {
+                                                    }
+                                                    else {
                                                         onCreate?.();
                                                     }
                                                 }
@@ -603,7 +608,8 @@ export default function CommonTableCard<T extends FieldValues>({
                                         onClick={function() {
                                             if (controls?.tableButtonsProps?.createButtonProps?.onClick) {
                                                 controls.tableButtonsProps.createButtonProps.onClick();
-                                            } else {
+                                            }
+                                            else {
                                                 onCreate?.();
                                             }
                                         }}

@@ -61,8 +61,11 @@ export async function deleteUsers(userIds: string[]): Promise<ServiceResult<null
         return res;
     }
     return callSingle<null>((client) =>
-        client.from('users').update({ status: 'Inactive', updated_at: new Date().toISOString() }).in('id', userIds)
-    );
+        client.from('users')
+            .update({ status: 'Inactive',
+                updated_at: new Date()
+                    .toISOString() })
+            .in('id', userIds));
 }
 
 export async function updateUser(
@@ -76,6 +79,7 @@ export async function updateUser(
         last_name: params.last_name,
         role_codes: params.role_codes,
         department_id: params.department_id || null,
+        redirect_to: `${window.location.origin}/set-password`,
         user_id: userId
     });
 }

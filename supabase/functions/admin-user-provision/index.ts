@@ -145,7 +145,18 @@ Deno.serve(async (request: Request): Promise<Response> => {
             return failure('Email is required.', 400);
         }
 
-        const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
+        const normalizedEmail = email.trim().toLowerCase();
+
+        // If resending invite, ensure user in public.users is not stuck in Inactive status
+        if (action === 'resend_invite') {
+            await adminClient
+                .from('users')
+                .update({ status: 'Invited', updated_at: new Date().toISOString() })
+                .ilike('email', normalizedEmail)
+                .eq('status', 'Inactive');
+        }
+
+        const { error: resetError } = await adminClient.auth.resetPasswordForEmail(normalizedEmail, {
             redirectTo: defaultRedirect
         });
 
@@ -153,7 +164,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
             return failure(resetError.message, 400);
         }
 
-        return success({}, 'Password setup link sent successfully.');
+        const successMessage = action === 'resend_invite'
+            ? 'Invitation setup link sent successfully.'
+            : 'Password reset link sent successfully.';
+
+        return success({}, successMessage);
     }
 
     // 3. Bulk User Provisioning Flow
@@ -241,14 +256,43 @@ Deno.serve(async (request: Request): Promise<Response> => {
             return failure('Missing required user fields for update.', 400);
         }
 
-        if (email) {
+        let emailChanged = false;
+        let isInvitedOrUnactivated = false;
+        const newEmail = email ? email.trim() : null;
+
+        if (newEmail) {
+            const { data: existingAuthData } = await adminClient.auth.admin.getUserById(user_id);
+            const currentAuthEmail = existingAuthData?.user?.email?.trim()?.toLowerCase();
+            if (!currentAuthEmail || newEmail.toLowerCase() !== currentAuthEmail) {
+                emailChanged = true;
+                const { data: publicUser } = await adminClient
+                    .from('users')
+                    .select('status')
+                    .eq('id', user_id)
+                    .single();
+
+                const isInvited = !publicUser?.status || publicUser?.status === 'Invited' || publicUser?.status === 'Inactive';
+                const hasNeverSignedIn = !existingAuthData?.user?.last_sign_in_at;
+                isInvitedOrUnactivated = isInvited || hasNeverSignedIn;
+            }
+
             const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(user_id, {
-                email: email.trim(),
+                email: newEmail,
                 email_confirm: true
             });
 
             if (updateAuthError) {
                 return failure(updateAuthError.message, 400);
+            }
+
+            // Sync user metadata
+            if (first_name || last_name) {
+                await adminClient.auth.admin.updateUserById(user_id, {
+                    user_metadata: {
+                        first_name: first_name.trim(),
+                        last_name: last_name.trim()
+                    }
+                });
             }
         }
 
@@ -257,7 +301,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
             p_first_name: first_name,
             p_last_name: last_name,
             p_role_codes: role_codes,
-            p_email: email ? email.trim() : null,
+            p_email: newEmail,
             p_department_id: body.department_id || null
         });
 
@@ -268,6 +312,33 @@ Deno.serve(async (request: Request): Promise<Response> => {
         const resObj = updateData as { success?: boolean; message?: string } | null;
         if (resObj && resObj.success === false) {
             return failure(resObj.message || 'Failed to update user.', 400);
+        }
+
+        // When email was changed, automatically send the invite / setup link to the new email
+        if (emailChanged && newEmail) {
+            if (isInvitedOrUnactivated) {
+                await adminClient
+                    .from('users')
+                    .update({ status: 'Invited', updated_at: new Date().toISOString() })
+                    .eq('id', user_id);
+            }
+
+            const { error: sendError } = await adminClient.auth.resetPasswordForEmail(newEmail, {
+                redirectTo: defaultRedirect
+            });
+
+            if (sendError) {
+                return success(
+                    { data: updateData, warning: sendError.message },
+                    `User updated, but failed to send invitation setup link to ${newEmail}: ${sendError.message}`
+                );
+            }
+
+            const successMsg = isInvitedOrUnactivated
+                ? `User email updated. An invitation setup link has been sent to ${newEmail}.`
+                : `User email updated. A password reset and access link has been sent to ${newEmail}.`;
+
+            return success({ data: updateData }, successMsg);
         }
 
         return success({ data: updateData }, 'User updated successfully.');

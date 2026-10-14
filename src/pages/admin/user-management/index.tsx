@@ -8,8 +8,9 @@ import UserForm from '@pages/admin/user-management/forms/UserForm';
 import { useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
 import UserGridCard from '@pages/admin/user-management/UserGridCard';
 import {
-    bulkProvisionUsers, deleteUsers, getUserById, inviteSingleUser, listUsers, updateUser
+    bulkProvisionUsers, deleteUsers, getUserById, inviteSingleUser, listUsers, resendInvite, resetUserPassword, updateUser
 } from '@services/user.service';
+import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
@@ -39,7 +40,9 @@ export default function UserManagement() {
 
     const initialStatus: 'All' | 'Active' | 'Invited' = statusParam === 'Active' || statusParam === 'Invited'
         ? statusParam
-        : (initialRole !== 'All' ? 'Active' : 'All');
+        : (initialRole !== 'All'
+            ? 'Active'
+            : 'All');
 
     const [activeFilters, setActiveFilters] = useState<UserFilterValues | null>(
         initialRole !== 'All' || initialStatus !== 'All'
@@ -48,10 +51,12 @@ export default function UserManagement() {
     );
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const createMethods = useForm<AddUserFormValues>({
         defaultValues: {
@@ -80,7 +85,9 @@ export default function UserManagement() {
 
             const statusVal = statusParam === 'Active' || statusParam === 'Invited' || statusParam === 'All'
                 ? (statusParam as 'All' | 'Active' | 'Invited')
-                : (roleCode !== 'All' ? 'Active' : 'All');
+                : (roleCode !== 'All'
+                    ? 'Active'
+                    : 'All');
 
             const newFilters: UserFilterValues = {
                 city: '',
@@ -164,13 +171,19 @@ export default function UserManagement() {
     }
 
     async function handleCreateSubmit(values: AddUserFormValues) {
-        const result = await inviteSingleUser(values);
+        setIsCreating(true);
+        try {
+            const result = await inviteSingleUser(values);
 
-        if (!result.error) {
-            createMethods.reset();
+            if (!result.error) {
+                createMethods.reset();
 
-            setIsCreateOpen(false);
-            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+                setIsCreateOpen(false);
+                setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+            }
+        }
+        finally {
+            setIsCreating(false);
         }
     }
 
@@ -189,17 +202,23 @@ export default function UserManagement() {
             return;
         }
 
-        const result = await updateUser(selectedUserId, {
-            email: values.email.trim(),
-            first_name: values.first_name.trim(),
-            last_name: values.last_name.trim(),
-            role_codes: values.role_codes,
-            department_id: values.department_id || null
-        });
+        setIsUpdating(true);
+        try {
+            const result = await updateUser(selectedUserId, {
+                email: values.email.trim(),
+                first_name: values.first_name.trim(),
+                last_name: values.last_name.trim(),
+                role_codes: values.role_codes,
+                department_id: values.department_id || null
+            });
 
-        if (!result.error) {
-            handleCloseUpdate();
-            setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+            if (!result.error) {
+                handleCloseUpdate();
+                setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
+            }
+        }
+        finally {
+            setIsUpdating(false);
         }
     }
 
@@ -229,16 +248,27 @@ export default function UserManagement() {
                             title: 'Add New User'
                         }
                     },
+                    confirmText: 'Save',
+                    formButtonsProps: {
+                        cancelProps: {
+                            disabled: isCreating
+                        }
+                    },
                     formId: CREATE_FORM_ID,
                     formContent: (
                         <CreateUserForm
                             control={createMethods.control}
+                            disabled={isCreating}
                             id={CREATE_FORM_ID}
                             onSubmit={createMethods.handleSubmit(handleCreateSubmit)}
                         />
                     ),
+                    isLoading: isCreating,
                     open: isCreateOpen,
                     onClose: function() {
+                        if (isCreating) {
+                            return;
+                        }
                         createMethods.reset();
                         setIsCreateOpen(false);
                     }
@@ -274,6 +304,19 @@ export default function UserManagement() {
                             row={item}
                             onEdit={handleOpenUpdate}
                             onRequestDelete={onRequestDeleteRow}
+                            onResendInvite={(email) => resendInvite(email)}
+                            onResetPassword={async(email) => {
+                                const { error } = await resetUserPassword(email);
+                                useToastStore.getState()
+                                    .showToast(
+                                        error
+                                            ? error.message
+                                            : `Password reset link sent to ${email}.`,
+                                        error
+                                            ? 'error'
+                                            : 'success'
+                                    );
+                            }}
                             onToggleSelect={onToggleSelect}
                             onView={handleOpenView}
                         />
@@ -294,23 +337,37 @@ export default function UserManagement() {
                         }
                     },
                     confirmText: 'Save',
+                    formButtonsProps: {
+                        cancelProps: {
+                            disabled: isUpdating
+                        }
+                    },
                     formId: UPDATE_FORM_ID,
                     formContent: (
                         <UserForm
                             control={updateMethods.control}
-                            disabled={false}
+                            disabled={isUpdating}
                             id={UPDATE_FORM_ID}
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit)}
                         />
                     ),
                     isDirty: updateMethods.formState.isDirty,
+                    isLoading: isUpdating,
                     onConfirmClose: function() {
+                        if (isUpdating) {
+                            return false;
+                        }
                         const current = updateMethods.getValues();
                         const snapshot = updateMethods.formState.defaultValues;
                         return JSON.stringify(current) === JSON.stringify(snapshot);
                     },
                     open: isUpdateOpen,
-                    onClose: handleCloseUpdate
+                    onClose: function() {
+                        if (isUpdating) {
+                            return;
+                        }
+                        handleCloseUpdate();
+                    }
                 }}
                 viewModalProps={{
                     cardProps: {
