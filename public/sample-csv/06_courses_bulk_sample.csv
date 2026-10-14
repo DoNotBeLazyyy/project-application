@@ -1,0 +1,3 @@
+code,title,department_code,course_type_code,lecture_units,laboratory_units,credit_hours,description,is_active,prerequisites
+COCS101,Introduction to Computing,CCS,LECTURE,3,0,3,Foundations of computing systems and architecture,true,
+IT101,Computer Programming 1,CCS,LECTURE_LAB,2,1,3,Fundamental programming concepts and syntax,true,

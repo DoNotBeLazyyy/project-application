@@ -1,0 +1,3 @@
+code,name,department_code,program_level_code,years_duration,total_units,description,is_active
+BSIT,Bachelor of Science in Information Technology,CCS,UNDERGRADUATE,4,165,Comprehensive computing and software engineering,true
+BSCS,Bachelor of Science in Computer Science,CCS,UNDERGRADUATE,4,168,Theoretical computer science and algorithm design,true

@@ -9,6 +9,7 @@
 
 ## 📋 Table of Contents
 1. [Master System Credentials & Pre-Seeded Accounts](#1-master-system-credentials--pre-seeded-accounts)
+2. [Ready-to-Use Sample CSV Files Repository](#ready-to-use-sample-csv-files-repository)
 2. [Global Architecture & Oral Defense Highlights](#2-global-architecture--oral-defense-highlights)
 3. [ACT I: System Administrator — Governance, Wizards & Infrastructure](#act-i-system-administrator--governance-wizards--infrastructure)
    - [Phase 1.1: Admin Authentication & Global System Health](#phase-11-admin-authentication--global-system-health)
@@ -99,6 +100,30 @@
 
 ---
 
+
+---
+
+## 📥 Ready-to-Use Sample CSV Files Repository
+
+For all entities supporting CSV Bulk Upload, ready-made, pre-validated sample CSV files are available in this repository. Simply click any file link below to view/copy its content or download directly:
+
+| Entity / Module | Role | Direct File Link | Included Sample Content |
+| :--- | :--- | :--- | :--- |
+| **User Accounts** | Admin | [01_users_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/01_users_bulk_sample.csv) | Alex Mercer (Faculty), Diana Prince (Student), Arthur Curry (Student) |
+| **Departments** | Admin | [02_departments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/02_departments_bulk_sample.csv) | CCS (Computer Studies), CBA (Business), CAS (Arts & Sciences) |
+| **Program Levels** | Dean | [03_program_levels_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/03_program_levels_bulk_sample.csv) | UNDERGRADUATE, GRADUATE, DOCTORATE |
+| **Course Types** | Dean | [04_course_types_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/04_course_types_bulk_sample.csv) | LECTURE (1.0), LABORATORY (1.5), LECTURE_LAB (1.25) |
+| **Degree Programs** | Dean | [05_programs_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/05_programs_bulk_sample.csv) | BSIT (165 Units), BSCS (168 Units) |
+| **Courses & Blueprints** | Dean | [06_courses_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/06_courses_bulk_sample.csv) | COCS101 (Intro to Computing), IT101 (Programming 1) |
+| **Curriculum Maps** | Dean | [07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/07_curriculum_map_bulk_sample.csv) | COCS101 (Year 1, 1st Sem, 3 Units), IT101 (Year 1, 1st Sem, 3 Units) |
+| **Sections & Schedules** | Dean | [08_sections_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/08_sections_bulk_sample.csv) | COCS101-001 (Mon/Wed 8:00-10:00 AM, Room Lab 304, 40 slots) |
+| **Assessment Questions** | Faculty | [09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/09_assessment_questions_bulk_sample.csv) | Multiple Choice, True/False, Essay with points and answer keys |
+| **Student Enrollments** | Registrar | [10_enrollments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/10_enrollments_bulk_sample.csv) | Student 2026-00001 enrolled into Section COCS101-001 |
+| **Evaluation Templates** | Admin | [11_evaluations_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/11_evaluations_bulk_sample.csv) | Teaching Effectiveness, Classroom Management rating questions |
+
+> [!TIP]
+> **Deployment Web Access:** These files are also placed in the public asset directory (`public/sample-csv/`) so you can download them directly from your browser via `https://project-application-two.vercel.app/sample-csv/[filename]` or open them locally on disk.
+
 ## 1. Master System Credentials & Pre-Seeded Accounts
 
 The database is fully configured with distinct, high-entropy credentials for each role. The two accounts requested for live administrative creation are pre-registered in `auth.users` to link immediately upon form submission in Admin User Management.
@@ -184,7 +209,8 @@ Navigate to `/admin/users` via the sidebar.
 1. In `/admin/users`, click the Table Action menu ➔ Click **Bulk Import (CSV)** (opens `BulkImportModal`).
 2. Click **Download CSV Template** ➔ Inspect required columns (`first_name`, `last_name`, `email`, `role_code`).
 3. Note the CSV validation step, row preview table, and batch upload button.
-4. Click **Close**.
+4. **Quick Test with Pre-Made CSV:** You can upload [01_users_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/01_users_bulk_sample.csv) directly without typing.
+5. Click **Close**.
 
 ---
 
@@ -517,7 +543,8 @@ Navigate to `/registrar/enrollment-management`.
 ### Phase 3.6: Registrar Batch Bulk CSV Enrollment Pipeline
 1. In `/registrar/enrollment-management`, click Table Actions ➔ **Bulk Enroll Students (CSV)**.
 2. Inspect template format: pipe-delimited section codes (`2024-00001, COCS101-001|IT101-001`), prerequisite bypass toggles, and conflict reason fields.
-3. Close modal.
+3. **Quick Test with Pre-Made CSV:** Drag and drop [10_enrollments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/10_enrollments_bulk_sample.csv) to test batch student enrollment.
+4. Close modal.
 
 ---
 

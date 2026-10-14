@@ -1,0 +1,4 @@
+code,label,description
+LECTURE,Lecture,Standard lecture instruction
+LABORATORY,Laboratory,Practical hands-on laboratory session
+LECTURE_LAB,Lecture with Laboratory,Combined theory and laboratory session

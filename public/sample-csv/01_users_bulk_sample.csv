@@ -1,0 +1,4 @@
+first_name,last_name,email,role_code,department_code
+Alex,Mercer,alex.mercer@testlms.edu,Faculty,CCS
+Diana,Prince,diana.prince@testlms.edu,Student,CCS
+Arthur,Curry,arthur.curry@testlms.edu,Student,CCS
