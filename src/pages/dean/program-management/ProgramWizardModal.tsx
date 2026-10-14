@@ -2,8 +2,10 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -60,6 +62,12 @@ export default function ProgramWizardModal({
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, setValue, trigger } = methods;
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open && !readOnly && !isSaving,
+        formId: `program-wizard-${programId || 'new'}`
+    });
     const selectedDepartmentId = useWatch({ control, name: 'department_id' });
     const selectedName = useWatch({ control, name: 'name' });
 
@@ -443,6 +451,11 @@ export default function ProgramWizardModal({
                             )}
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </CommonModal>
     );
 }

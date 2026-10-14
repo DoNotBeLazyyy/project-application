@@ -1,6 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
+import { useFormDraft } from '@hooks/useFormDraft';
 import Step1SectionOverview from '@pages/dean/section-management/Step1SectionOverview';
 import Step2SectionSchedule from '@pages/dean/section-management/Step2SectionSchedule';
 import Step3SectionGradingSchema from '@pages/dean/section-management/Step3SectionGradingSchema';
@@ -96,6 +98,12 @@ export default function SectionWizardModal({
     });
 
     const { control, getValues, reset, trigger, setValue } = methods;
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open && !isReadOnly && !isLoading && !isSaving,
+        formId: `section-wizard-${sectionId || 'new'}`
+    });
 
     useEffect(() => {
         if (!open) {
@@ -322,6 +330,7 @@ export default function SectionWizardModal({
                         : 'Section created successfully.',
                     'success'
                 );
+            draftGuard.clearDraft();
             onSuccess();
             onClose();
         }
@@ -525,6 +534,11 @@ export default function SectionWizardModal({
                             )}
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </CommonModal>
     );
 }

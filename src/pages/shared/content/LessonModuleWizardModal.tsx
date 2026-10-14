@@ -2,7 +2,9 @@ import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTextarea from '@components/textarea/CommonTextarea';
 import {
@@ -107,6 +109,18 @@ export default function LessonModuleWizardModal({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isAddingMaterial, setIsAddingMaterial] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const draftGuard = useObjectDraft({
+        defaultValues: { title: '', description: '', period: 'General' },
+        enabled: open && !readOnly && !isSaving,
+        formId: `lesson-module-wizard-${sectionId}-${initialModule?.id || 'new'}`,
+        values: { title, description, period },
+        onRestore: (restored) => {
+            if (restored.title !== undefined) setTitle(restored.title);
+            if (restored.description !== undefined) setDescription(restored.description);
+            if (restored.period !== undefined) setPeriod(restored.period);
+        }
+    });
 
     useEffect(() => {
         setTitleError(null);
@@ -295,6 +309,7 @@ export default function LessonModuleWizardModal({
                 }
             }
 
+            draftGuard.clearDraft();
             useToastStore.getState().showToast('Lesson & syllabus module saved successfully.', 'success');
             onSuccess();
             onClose();
@@ -737,6 +752,11 @@ export default function LessonModuleWizardModal({
                     )}
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </CommonModal>
     );
 }

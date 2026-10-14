@@ -1,7 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -27,6 +29,7 @@ import {
     SchoolYearOption
 } from '@type/school-year.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { ensureUniqueCode, generateAcademicThresholdCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
@@ -115,6 +118,12 @@ export default function AcademicYearWizardModal({
         watch,
         trigger
     } = methods;
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open && !isReadOnly && !isLoading,
+        formId: `academic-year-wizard-${schoolYearId || 'new'}`
+    });
 
     async function loadAndDuplicateSchoolYear(sourceId: string) {
         setIsLoading(true);
@@ -471,36 +480,43 @@ export default function AcademicYearWizardModal({
                     }))
                 }))
             })),
-            p_thresholds: (values.thresholds || []).map((th, idx) => {
-                const labelTrimmed = (th.label || '').trim() || `Threshold #${idx + 1}`;
-                const autoCode = labelTrimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-                return {
-                    id: th.id,
-                    category: th.category || 'Honor',
-                    code: (th.code || '').trim() || autoCode || `threshold_${idx + 1}`,
-                    label: labelTrimmed,
-                    min_gwa:
-                        th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
-                            ? Number(th.min_gwa)
-                            : null,
-                    max_gwa: Number(th.max_gwa) || 1.75,
-                    min_subject_grade:
-                        th.min_subject_grade !== null &&
-                        th.min_subject_grade !== undefined &&
-                        th.min_subject_grade !== ''
-                            ? Number(th.min_subject_grade)
-                            : null,
-                    requires_no_failing: Boolean(th.requires_no_failing),
-                    scholarship_discount_pct:
-                        th.scholarship_discount_pct !== null &&
-                        th.scholarship_discount_pct !== undefined &&
-                        th.scholarship_discount_pct !== ''
-                            ? Number(th.scholarship_discount_pct)
-                            : null,
-                    sort_order: th.sort_order || idx + 1,
-                    is_active: Boolean(th.is_active)
-                };
-            }),
+            p_thresholds: (() => {
+                const existingCodes: string[] = [];
+                return (values.thresholds || []).map((th, idx) => {
+                    const labelTrimmed = (th.label || '').trim() || `Threshold #${idx + 1}`;
+                    const rawCode = (th.code && !th.code.startsWith('custom_threshold_'))
+                        ? th.code.trim()
+                        : generateAcademicThresholdCode(labelTrimmed, existingCodes);
+                    const finalCode = ensureUniqueCode(rawCode, existingCodes);
+                    existingCodes.push(finalCode);
+                    return {
+                        id: th.id,
+                        category: th.category || 'Honor',
+                        code: finalCode,
+                        label: labelTrimmed,
+                        min_gwa:
+                            th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
+                                ? Number(th.min_gwa)
+                                : null,
+                        max_gwa: Number(th.max_gwa) || 1.75,
+                        min_subject_grade:
+                            th.min_subject_grade !== null &&
+                            th.min_subject_grade !== undefined &&
+                            th.min_subject_grade !== ''
+                                ? Number(th.min_subject_grade)
+                                : null,
+                        requires_no_failing: Boolean(th.requires_no_failing),
+                        scholarship_discount_pct:
+                            th.scholarship_discount_pct !== null &&
+                            th.scholarship_discount_pct !== undefined &&
+                            th.scholarship_discount_pct !== ''
+                                ? Number(th.scholarship_discount_pct)
+                                : null,
+                        sort_order: th.sort_order || idx + 1,
+                        is_active: Boolean(th.is_active)
+                    };
+                });
+            })(),
             p_transmutation_rows: (values.transmutation_rows || []).map((r, idx) => {
                 const isSpecial = isSpecialGradeRow(r);
                 return {
@@ -543,6 +559,7 @@ export default function AcademicYearWizardModal({
         setIsSaving(false);
 
         if (!res.error) {
+            draftGuard.clearDraft();
             onSuccess();
             onClose();
         }
@@ -834,6 +851,11 @@ export default function AcademicYearWizardModal({
                     }
                 }}
                 onClose={() => setIsConfirmCloseOpen(false)}
+            />
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
             />
         </CommonModal>
     );

@@ -5,7 +5,9 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
+import { useFormDraft } from '@hooks/useFormDraft';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
@@ -198,6 +200,12 @@ export default function EvaluationWizardModal({
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const [deleteQuestionTarget, setDeleteQuestionTarget] = useState<{ index: number; text: string } | null>(null);
     const { control, handleSubmit, trigger } = methods;
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open && !readOnly && !isSaving,
+        formId: `evaluation-wizard-${templateId || 'new'}`
+    });
 
     useEffect(() => {
         if (open) {
@@ -627,6 +635,11 @@ export default function EvaluationWizardModal({
                     }
                 }}
                 onClose={() => setIsConfirmCloseOpen(false)}
+            />
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
             />
         </CommonModal>
     );

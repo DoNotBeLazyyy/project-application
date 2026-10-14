@@ -1,6 +1,8 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
+import { useFormDraft } from '@hooks/useFormDraft';
 import BulkImportModal from '@components/modal/BulkImportModal';
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
@@ -120,6 +122,12 @@ export default function AssessmentWizardModal({
 
     const settingsMethods = useForm<AssessmentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_ASSSESSMENT_VALUES });
     const questionMethods = useForm<QuestionFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: DEFAULT_QUESTION_VALUES });
+
+    const draftGuard = useFormDraft({
+        control: settingsMethods.control,
+        enabled: open && !readOnly && !isSaving,
+        formId: `assessment-wizard-${sectionId}-${assessmentId || 'new'}`
+    });
 
     const watchedQuestionType = questionMethods.watch('question_type');
     const watchedChoices = questionMethods.watch('choices');
@@ -357,6 +365,7 @@ export default function AssessmentWizardModal({
             if (!activeAssessmentId) {
                 const res = await createAssessment(sectionId, values);
                 if (!res.error) {
+                    draftGuard.clearDraft();
                     useToastStore.getState().showToast('Assessment created successfully.', 'success');
                     onSuccess();
                     onClose();
@@ -364,6 +373,7 @@ export default function AssessmentWizardModal({
             } else {
                 const res = await updateAssessment(activeAssessmentId, values);
                 if (!res.error) {
+                    draftGuard.clearDraft();
                     useToastStore.getState().showToast('Assessment saved successfully.', 'success');
                     onSuccess();
                     onClose();
@@ -862,6 +872,11 @@ export default function AssessmentWizardModal({
                 watchedQuestionType={watchedQuestionType}
                 onClose={handleCloseQuestionModal}
                 onSubmit={handleQuestionSubmit}
+            />
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
             />
         </CommonModal>
     );

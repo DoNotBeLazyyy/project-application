@@ -1,7 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import { useFormDraft } from '@hooks/useFormDraft';
 import CourseForm, { COURSE_FORM_STEPS } from '@pages/dean/course-management/CourseForm';
 import {
     ArrowLeftIcon,
@@ -45,6 +47,12 @@ export default function CourseWizardModal({
 }: CourseWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
     const { control, handleSubmit, setValue, trigger } = methods;
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: open && !readOnly && !isSaving,
+        formId: `course-wizard-${courseId || 'new'}`
+    });
 
     useEffect(() => {
         if (open) {
@@ -138,6 +146,7 @@ export default function CourseWizardModal({
                 }
             }
         }
+        draftGuard.clearDraft();
         onSubmit(values);
     }
 
@@ -310,6 +319,11 @@ export default function CourseWizardModal({
                     )}
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </CommonModal>
     );
 }

@@ -59,7 +59,7 @@ function filterSensitiveFields<T extends Record<string, any>>(values: T): Partia
 
 function hasMeaningfulValues(
     values: Record<string, any> | undefined | null,
-    defaultValues: Record<string, any> | undefined | null
+    defaultValues?: Record<string, any> | undefined | null
 ): boolean {
     if (!values || typeof values !== 'object') {
         return false;
@@ -124,7 +124,15 @@ export function useFormDraft<T extends FieldValues>({
         return `au_draft_${userId}_${base}`;
     }, [enabled, formId, fields, storageKey]);
 
-    // Check for saved draft on mount
+    // Reset prompt state when modal closes
+    useEffect(() => {
+        if (!enabled) {
+            promptHandledRef.current = false;
+            setIsPromptOpen(false);
+        }
+    }, [enabled]);
+
+    // Check for saved draft on mount or when enabled becomes true
     useEffect(() => {
         if (!enabled || !resolvedKey || promptHandledRef.current) {
             return;
@@ -236,6 +244,126 @@ export function useFormDraft<T extends FieldValues>({
 
         useToastStore.getState().showToast('Restored unsaved draft from earlier', 'info');
         onRestore?.(pendingDraft);
+    }
+
+    function handleDiscard() {
+        promptHandledRef.current = true;
+        clearDraft();
+        onDiscard?.();
+    }
+
+    return {
+        clearDraft,
+        handleContinue,
+        handleDiscard,
+        hasDraft: Boolean(pendingDraft),
+        isPromptOpen
+    };
+}
+
+export interface UseObjectDraftOptions<T extends Record<string, any>> {
+    defaultValues?: T;
+    enabled?: boolean;
+    formId: string;
+    onDiscard?: () => void;
+    onRestore: (restoredValues: Partial<T>) => void;
+    values: T;
+}
+
+/**
+ * useObjectDraft
+ *
+ * Saves arbitrary state-based form objects to `sessionStorage` and triggers
+ * restoration prompt when returning. Useful for stepper modals that use React state.
+ */
+export function useObjectDraft<T extends Record<string, any>>({
+    defaultValues,
+    enabled = true,
+    formId,
+    onDiscard,
+    onRestore,
+    values
+}: UseObjectDraftOptions<T>): UseFormDraftResult {
+    const [isPromptOpen, setIsPromptOpen] = useState(false);
+    const [pendingDraft, setPendingDraft] = useState<Partial<T> | null>(null);
+    const promptHandledRef = useRef(false);
+
+    const resolvedKey = useMemo(() => {
+        if (!enabled) return null;
+        const userId = useAppStore.getState().userProfile?.id || useAppStore.getState().session?.user?.id || 'session';
+        return `au_draft_${userId}_${formId}`;
+    }, [enabled, formId]);
+
+    useEffect(() => {
+        if (!enabled) {
+            promptHandledRef.current = false;
+            setIsPromptOpen(false);
+        }
+    }, [enabled]);
+
+    useEffect(() => {
+        if (!enabled || !resolvedKey || promptHandledRef.current) {
+            return;
+        }
+
+        try {
+            const raw = sessionStorage.getItem(resolvedKey);
+            if (!raw) return;
+
+            const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
+            if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultValues)) {
+                setPendingDraft(parsed.values);
+                setIsPromptOpen(true);
+            }
+        } catch {
+            // Ignore
+        }
+    }, [enabled, resolvedKey, defaultValues]);
+
+    useEffect(() => {
+        if (!enabled || !resolvedKey) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            try {
+                if (hasMeaningfulValues(values, defaultValues)) {
+                    const sanitized = filterSensitiveFields(values);
+                    const payload: StoredDraftPayload<T> = {
+                        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+                        timestamp: Date.now(),
+                        values: sanitized as Partial<T>
+                    };
+                    sessionStorage.setItem(resolvedKey, JSON.stringify(payload));
+                }
+            } catch {
+                // Ignore
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [values, enabled, resolvedKey, defaultValues]);
+
+    function clearDraft() {
+        if (resolvedKey) {
+            try {
+                sessionStorage.removeItem(resolvedKey);
+            } catch {
+                // Ignore
+            }
+        }
+        setPendingDraft(null);
+        setIsPromptOpen(false);
+    }
+
+    function handleContinue() {
+        promptHandledRef.current = true;
+        setIsPromptOpen(false);
+
+        if (!pendingDraft) return;
+
+        onRestore(pendingDraft);
+        useToastStore.getState().showToast('Restored unsaved draft from earlier', 'info');
     }
 
     function handleDiscard() {

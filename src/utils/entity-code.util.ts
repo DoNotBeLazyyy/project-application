@@ -55,16 +55,21 @@ export function generateAcronym(text: string, defaultPrefix = 'GEN'): string {
  */
 export function ensureUniqueCode(candidate: string, existingCodes?: string[]): string {
     if (!existingCodes || existingCodes.length === 0) return candidate;
-    const existingSet = new Set(existingCodes.map((c) => c.trim()
-        .toUpperCase()));
+    const existingSet = new Set(existingCodes
+        .filter(Boolean)
+        .map((c) => c.trim()
+            .toUpperCase()));
 
     if (!existingSet.has(candidate.toUpperCase())) return candidate;
 
+    const sep = candidate.toLowerCase() === candidate && candidate.includes('_')
+        ? '_'
+        : '-';
     let seq = 2;
-    let nextCandidate = `${candidate}-${seq}`;
+    let nextCandidate = `${candidate}${sep}${seq}`;
     while (existingSet.has(nextCandidate.toUpperCase())) {
         seq += 1;
-        nextCandidate = `${candidate}-${seq}`;
+        nextCandidate = `${candidate}${sep}${seq}`;
     }
     return nextCandidate;
 }
@@ -331,4 +336,19 @@ export function generateSpecialGradeCode(label: string, existingCodes?: string[]
 
     const acronym = generateAcronym(label, 'SPG');
     return ensureUniqueCode(acronym, existingCodes);
+}
+
+/**
+ * System-generates a unique Academic Threshold Code based on label.
+ * e.g., "Summa Cum Laude" -> "summa_cum_laude", "Good Standing" -> "good_standing"
+ */
+export function generateAcademicThresholdCode(label: string, existingCodes?: string[]): string {
+    if (!label || !label.trim()) return '';
+    const clean = label.trim()
+        .replace(/['’]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    const candidate = clean || 'threshold';
+    return ensureUniqueCode(candidate, existingCodes);
 }

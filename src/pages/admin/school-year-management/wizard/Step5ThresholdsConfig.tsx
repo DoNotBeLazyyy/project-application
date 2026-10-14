@@ -12,8 +12,11 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
+import { generateAcademicThresholdCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
-import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
+import {
+    Control, useFieldArray, useFormState, UseFormSetValue, useWatch
+} from 'react-hook-form';
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -51,7 +54,7 @@ export default function Step5ThresholdsConfig({
         setCollapsedThresholds((prev) => ({ ...prev, [index]: !prev[index] }));
     }
 
-    const { append, remove, replace } = useFieldArray({
+    const { append, remove } = useFieldArray({
         control,
         name: 'thresholds'
     });
@@ -61,7 +64,7 @@ export default function Step5ThresholdsConfig({
     function handleAddThreshold() {
         const newThreshold: WizardThresholdItem = {
             category: 'Honor',
-            code: `custom_threshold_${Date.now()}`,
+            code: '',
             is_active: true,
             label: '',
             max_gwa: '',
@@ -85,13 +88,13 @@ export default function Step5ThresholdsConfig({
                 {!disabled && (
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <CommonButton
+                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
                             color="primary"
                             size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
                             startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                            title="Add Threshold"
                             variant="contained"
                             onClick={handleAddThreshold}
-                            title="Add Threshold"
                         >
                             <span className="hidden sm:inline">Add Threshold</span>
                         </CommonButton>
@@ -125,8 +128,8 @@ export default function Step5ThresholdsConfig({
                     thresholds.map((item, idx) => {
                         return (
                             <div
-                                key={item.id || `threshold_${idx}`}
                                 className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm transition-all hover:border-slate-300 dark:hover:border-zinc-700 w-full min-w-0"
+                                key={item.id || `threshold_${idx}`}
                             >
                                 {/* Row 1: Header with Action Buttons */}
                                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700/50 pb-2.5">
@@ -152,10 +155,11 @@ export default function Step5ThresholdsConfig({
                                     <div className="flex items-center gap-1.5 shrink-0">
                                         {!disabled && (
                                             <CommonButton
+                                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                                 color="error"
                                                 size="small"
-                                                className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-2.5"
                                                 startIcon={<TrashIcon className="w-3.5 h-3.5" />}
+                                                title="Delete threshold"
                                                 variant="outlined"
                                                 onClick={() => {
                                                     setDeleteThresholdTarget({
@@ -163,192 +167,219 @@ export default function Step5ThresholdsConfig({
                                                         label: item.label || `Threshold #${idx + 1}`
                                                     });
                                                 }}
-                                                title="Delete threshold"
                                             >
                                                 <span className="hidden sm:inline">Delete</span>
                                             </CommonButton>
                                         )}
                                         <button
+                                            aria-label={collapsedThresholds[idx]
+                                                ? 'Expand threshold'
+                                                : 'Collapse threshold'}
                                             className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium flex items-center gap-1 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
-                                            title={collapsedThresholds[idx] ? 'Expand threshold' : 'Collapse threshold'}
+                                            title={collapsedThresholds[idx]
+                                                ? 'Expand threshold'
+                                                : 'Collapse threshold'}
                                             type="button"
-                                            aria-label={collapsedThresholds[idx] ? 'Expand threshold' : 'Collapse threshold'}
                                             onClick={() => toggleThresholdCollapse(idx)}
                                         >
                                             <CaretDownIcon
-                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedThresholds[idx] ? '-rotate-90' : 'rotate-0'}`}
+                                                className={`w-4 h-4 transition-transform duration-200 ${collapsedThresholds[idx]
+                                                    ? '-rotate-90'
+                                                    : 'rotate-0'}`}
                                                 weight="bold"
                                             />
-                                            <span className="text-xs hidden sm:inline">{collapsedThresholds[idx] ? 'Expand' : 'Collapse'}</span>
+                                            <span className="text-xs hidden sm:inline">{collapsedThresholds[idx]
+                                                ? 'Expand'
+                                                : 'Collapse'}</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className={collapsedThresholds[idx] ? 'hidden' : 'flex flex-col gap-4'}>
+                                <div
+                                    className={collapsedThresholds[idx]
+                                        ? 'hidden'
+                                        : 'flex flex-col gap-4'}>
 
-                                {/* Row 2: Category and Threshold Name */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <FormLabel
-                                            description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
-                                            isRequired
-                                            label="Category"
-                                        />
-                                        <select
-                                            className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
-                                            disabled={disabled}
-                                            value={item.category}
-                                            onChange={(e) => {
-                                                const cat = e.target.value as AcademicThresholdCategory;
-                                                setValue(`thresholds.${idx}.category`, cat, { shouldDirty: true });
-                                            }}
-                                        >
-                                            {CATEGORY_OPTIONS.map((c) => (
-                                                <option key={c.value} value={c.value}>
-                                                    {c.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <CommonInput
-                                            description="Official title revealed on student rank lists, certificates, and academic summary cards."
-                                            disabled={disabled}
-                                            error={Boolean((errors.thresholds as any)?.[idx]?.label)}
-                                            fullWidth
-                                            helperText={(errors.thresholds as any)?.[idx]?.label?.message}
-                                            isRequired
-                                            label="Threshold Name / Label"
-                                            name={`thresholds.${idx}.label`}
-                                            placeholder="e.g. Summa Cum Laude, Full Scholar"
-                                            size="small"
-                                            value={item.label}
-                                            onChange={(e) => setValue(`thresholds.${idx}.label`, e.target.value, { shouldDirty: true, shouldValidate: true })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 3: Unique Code and Status */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <CommonInput
-                                            description="System identifier code used for automated eligibility queries and SQL rules."
-                                            disabled={disabled}
-                                            fullWidth
-                                            label="Unique Code"
-                                            placeholder="e.g. summa_cum_laude"
-                                            size="small"
-                                            value={item.code}
-                                            onChange={(e) => setValue(`thresholds.${idx}.code`, e.target.value, { shouldDirty: true })}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <FormLabel
-                                            description="Toggles whether this threshold is active for student evaluations."
-                                            label="Status"
-                                        />
-                                        <button
-                                            className={`w-full h-9 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                                item.is_active
-                                                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-400 border border-slate-300 dark:border-zinc-700'
-                                            } disabled:opacity-60`}
-                                            disabled={disabled}
-                                            type="button"
-                                            onClick={() => setValue(`thresholds.${idx}.is_active`, !item.is_active, { shouldDirty: true })}
-                                        >
-                                            {item.is_active ? '✓ Active Threshold' : '✕ Inactive'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Row 4: Min and Max GWA */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <CommonNumberInput
-                                            description="Minimum (best) GWA required for this threshold tier (typically 1.00)."
-                                            disabled={disabled}
-                                            fullWidth
-                                            label="Min GWA"
-                                            maxDecimals={2}
-                                            minDecimals={2}
-                                            placeholder="1.00 (Optional)"
-                                            size="small"
-                                            step={0.01}
-                                            value={item.min_gwa ?? ''}
-                                            onChange={(val) =>
-                                                setValue(
-                                                    `thresholds.${idx}.min_gwa`,
-                                                    val === undefined ? null : val,
-                                                    { shouldDirty: true }
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <CommonNumberInput
-                                            description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
-                                            disabled={disabled}
-                                            error={Boolean((errors.thresholds as any)?.[idx]?.max_gwa)}
-                                            fullWidth
-                                            helperText={(errors.thresholds as any)?.[idx]?.max_gwa?.message}
-                                            isRequired
-                                            label="Max GWA (Cutoff)"
-                                            maxDecimals={2}
-                                            minDecimals={2}
-                                            name={`thresholds.${idx}.max_gwa`}
-                                            placeholder="1.25"
-                                            size="small"
-                                            step={0.01}
-                                            value={item.max_gwa ?? ''}
-                                            onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined ? '' : val, { shouldDirty: true, shouldValidate: true })}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Row 5: Subject Floor Grade and No Failing Checkbox */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <CommonNumberInput
-                                            description="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies."
-                                            disabled={disabled}
-                                            fullWidth
-                                            label="Subject Floor Grade"
-                                            maxDecimals={2}
-                                            minDecimals={2}
-                                            placeholder="Optional (e.g. 2.50)"
-                                            size="small"
-                                            step={0.01}
-                                            value={item.min_subject_grade ?? ''}
-                                            onChange={(val) =>
-                                                setValue(
-                                                    `thresholds.${idx}.min_subject_grade`,
-                                                    val === undefined ? null : val,
-                                                    { shouldDirty: true }
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="h-9 flex items-center px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-                                        <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200 w-full select-none">
-                                            <input
-                                                checked={Boolean(item.requires_no_failing)}
-                                                className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700 shrink-0"
-                                                disabled={disabled}
-                                                type="checkbox"
-                                                onChange={(e) => setValue(`thresholds.${idx}.requires_no_failing`, e.target.checked, { shouldDirty: true })}
+                                    {/* Row 2: Category and Threshold Name */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <FormLabel
+                                                description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
+                                                isRequired
+                                                label="Category"
                                             />
-                                            <span className="truncate">No failing grades permitted</span>
-                                            <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
-                                        </label>
+                                            <select
+                                                className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
+                                                disabled={disabled}
+                                                value={item.category}
+                                                onChange={(e) => {
+                                                    const cat = e.target.value as AcademicThresholdCategory;
+                                                    setValue(`thresholds.${idx}.category`, cat, { shouldDirty: true });
+                                                }}
+                                            >
+                                                {CATEGORY_OPTIONS.map((c) => (
+                                                    <option key={c.value} value={c.value}>
+                                                        {c.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <CommonInput
+                                                description="Official title revealed on student rank lists, certificates, and academic summary cards."
+                                                disabled={disabled}
+                                                error={Boolean((errors.thresholds as any)?.[idx]?.label)}
+                                                fullWidth
+                                                helperText={(errors.thresholds as any)?.[idx]?.label?.message}
+                                                isRequired
+                                                label="Threshold Name / Label"
+                                                name={`thresholds.${idx}.label`}
+                                                placeholder="e.g. Summa Cum Laude, Full Scholar"
+                                                size="small"
+                                                value={item.label}
+                                                onChange={(e) => {
+                                                    const newLabel = e.target.value;
+                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true, shouldValidate: true });
+                                                    const otherCodes = thresholds
+                                                        .map((th, i) => (i !== idx
+                                                            ? th.code
+                                                            : null))
+                                                        .filter(Boolean) as string[];
+                                                    const autoCode = generateAcademicThresholdCode(newLabel, otherCodes);
+                                                    setValue(`thresholds.${idx}.code`, autoCode, { shouldDirty: true });
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Row 3: Unique Code and Status */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                                        <div>
+                                            <CommonInput
+                                                description="System-generated unique academic threshold code."
+                                                disabled={true}
+                                                fullWidth
+                                                label="Unique Code"
+                                                placeholder="e.g. summa_cum_laude"
+                                                size="small"
+                                                value={item.code}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FormLabel
+                                                description="Toggles whether this threshold is active for student evaluations."
+                                                label="Status"
+                                            />
+                                            <button
+                                                className={`w-full h-9 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                                    item.is_active
+                                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-400 border border-slate-300 dark:border-zinc-700'
+                                                } disabled:opacity-60`}
+                                                disabled={disabled}
+                                                type="button"
+                                                onClick={() => setValue(`thresholds.${idx}.is_active`, !item.is_active, { shouldDirty: true })}
+                                            >
+                                                {item.is_active
+                                                    ? '✓ Active Threshold'
+                                                    : '✕ Inactive'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Row 4: Min and Max GWA */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <CommonNumberInput
+                                                description="Minimum (best) GWA required for this threshold tier (typically 1.00)."
+                                                disabled={disabled}
+                                                fullWidth
+                                                label="Min GWA"
+                                                maxDecimals={2}
+                                                minDecimals={2}
+                                                placeholder="1.00 (Optional)"
+                                                size="small"
+                                                step={0.01}
+                                                value={item.min_gwa ?? ''}
+                                                onChange={(val) =>
+                                                    setValue(
+                                                        `thresholds.${idx}.min_gwa`,
+                                                        val === undefined
+                                                            ? null
+                                                            : val,
+                                                        { shouldDirty: true }
+                                                    )
+                                                }
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <CommonNumberInput
+                                                description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
+                                                disabled={disabled}
+                                                error={Boolean((errors.thresholds as any)?.[idx]?.max_gwa)}
+                                                fullWidth
+                                                helperText={(errors.thresholds as any)?.[idx]?.max_gwa?.message}
+                                                isRequired
+                                                label="Max GWA (Cutoff)"
+                                                maxDecimals={2}
+                                                minDecimals={2}
+                                                name={`thresholds.${idx}.max_gwa`}
+                                                placeholder="1.25"
+                                                size="small"
+                                                step={0.01}
+                                                value={item.max_gwa ?? ''}
+                                                onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined
+                                                    ? ''
+                                                    : val, { shouldDirty: true, shouldValidate: true })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Row 5: Subject Floor Grade and No Failing Checkbox */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                                        <div>
+                                            <CommonNumberInput
+                                                description="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies."
+                                                disabled={disabled}
+                                                fullWidth
+                                                label="Subject Floor Grade"
+                                                maxDecimals={2}
+                                                minDecimals={2}
+                                                placeholder="Optional (e.g. 2.50)"
+                                                size="small"
+                                                step={0.01}
+                                                value={item.min_subject_grade ?? ''}
+                                                onChange={(val) =>
+                                                    setValue(
+                                                        `thresholds.${idx}.min_subject_grade`,
+                                                        val === undefined
+                                                            ? null
+                                                            : val,
+                                                        { shouldDirty: true }
+                                                    )
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="h-9 flex items-center px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+                                            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200 w-full select-none">
+                                                <input
+                                                    checked={Boolean(item.requires_no_failing)}
+                                                    className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700 shrink-0"
+                                                    disabled={disabled}
+                                                    type="checkbox"
+                                                    onChange={(e) => setValue(`thresholds.${idx}.requires_no_failing`, e.target.checked, { shouldDirty: true })}
+                                                />
+                                                <span className="truncate">No failing grades permitted</span>
+                                                <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         );
                     })
                 )}
@@ -356,15 +387,6 @@ export default function Step5ThresholdsConfig({
 
             {/* Delete Threshold Prompt Modal */}
             <DeletePromptModal
-                isOpen={Boolean(deleteThresholdTarget)}
-                mainContent={{
-                    title: 'Delete Academic Threshold?'
-                }}
-                subContent={{
-                    title: `Are you sure you want to delete academic threshold "${deleteThresholdTarget?.label}"?`
-                }}
-                open={Boolean(deleteThresholdTarget)}
-                onClose={() => setDeleteThresholdTarget(null)}
                 formButtonsProps={{
                     cancelProps: {
                         onClick: () => setDeleteThresholdTarget(null)
@@ -378,6 +400,15 @@ export default function Step5ThresholdsConfig({
                         }
                     }
                 }}
+                isOpen={Boolean(deleteThresholdTarget)}
+                mainContent={{
+                    title: 'Delete Academic Threshold?'
+                }}
+                open={Boolean(deleteThresholdTarget)}
+                subContent={{
+                    title: `Are you sure you want to delete academic threshold "${deleteThresholdTarget?.label}"?`
+                }}
+                onClose={() => setDeleteThresholdTarget(null)}
             />
         </div>
     );

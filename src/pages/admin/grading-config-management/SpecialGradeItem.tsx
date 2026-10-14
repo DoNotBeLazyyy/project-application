@@ -3,6 +3,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import CommonInput from '@components/input/CommonInput';
 import { MinusCircleIcon } from '@phosphor-icons/react';
 import { SpecialGradeConfig } from '@type/grading-config.type';
+import { generateSpecialGradeCode } from '@utils/entity-code.util';
 import { useForm } from 'react-hook-form';
 
 interface SpecialGradeItemProps {
@@ -38,19 +39,24 @@ export default function SpecialGradeItem({
                     size="small"
                     value={grade.label}
                     onChange={function(e) {
-                        onUpdate('label', e.target.value);
+                        const newLabel = e.target.value;
+                        onUpdate('label', newLabel);
+                        const generated = generateSpecialGradeCode(newLabel);
+                        if (generated) {
+                            onUpdate('code', generated);
+                        }
                     }}
                 />
                 <div className="flex gap-4 items-end">
                     <CommonInput
                         containerClassName="flex-[1] min-w-0"
+                        description="System-generated unique grade code"
+                        disabled={true}
                         fullWidth
                         label="Code"
+                        placeholder="e.g. INC"
                         size="small"
                         value={grade.code}
-                        onChange={function(e) {
-                            onUpdate('code', e.target.value);
-                        }}
                     />
                     <CommonInput
                         containerClassName="flex-[3] min-w-0"

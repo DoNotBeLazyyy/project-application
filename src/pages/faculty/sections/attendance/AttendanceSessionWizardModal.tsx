@@ -2,7 +2,9 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonModal from '@components/modal/CommonModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -76,6 +78,19 @@ export default function AttendanceSessionWizardModal({
     const [isSaving, setIsSaving] = useState(false);
 
     const showToast = useToastStore((s) => s.showToast);
+
+    const draftGuard = useObjectDraft({
+        defaultValues: { notes: '', sessionType: 'Lecture', defaultStatus: 'Present' },
+        enabled: open && !isSaving,
+        formId: `attendance-wizard-${sectionId}`,
+        values: { defaultStatus, notes, sessionDate, sessionType },
+        onRestore: (restored) => {
+            if (restored.notes !== undefined) setNotes(restored.notes);
+            if (restored.sessionType !== undefined) setSessionType(restored.sessionType as any);
+            if (restored.sessionDate !== undefined) setSessionDate(restored.sessionDate);
+            if (restored.defaultStatus !== undefined) setDefaultStatus(restored.defaultStatus as any);
+        }
+    });
 
     // Fetch students when modal opens
     useEffect(() => {
@@ -238,8 +253,8 @@ export default function AttendanceSessionWizardModal({
                 }
             }
 
+            draftGuard.clearDraft();
             showToast('Attendance session recorded successfully.', 'success');
-            setIsSaving(false);
             onSuccess(createdSession);
             onClose();
         } catch (err) {

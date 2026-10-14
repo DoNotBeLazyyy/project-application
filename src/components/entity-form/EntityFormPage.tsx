@@ -1,7 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, FloppyDiskIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { EntityFormMode, EntityFormModeText, EntityFormPageProps } from '@type/entity-form.type';
@@ -100,6 +102,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
             const result = await onCreate?.(values);
 
             if (result && !result.error) {
+                draftGuard.clearDraft();
                 navigate(backTo);
             }
 
@@ -109,6 +112,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
         const result = await onUpdate?.(id, values);
 
         if (result && !result.error) {
+            draftGuard.clearDraft();
             reset(values);
             setIsEditing(false);
 
@@ -154,6 +158,12 @@ export default function EntityFormPage<TValues extends FieldValues>({
         isDirty: formState.isDirty,
         onDiscard: exitEditing,
         onSave: submitHandler
+    });
+
+    const draftGuard = useFormDraft({
+        control,
+        enabled: mode !== 'view' && !isLoading,
+        formId: formId || `entity-form-${id || 'new'}`
     });
 
     return (
@@ -251,6 +261,11 @@ export default function EntityFormPage<TValues extends FieldValues>({
                 onClose={cancelGuard.closePrompt}
                 onDiscard={cancelGuard.confirmDiscard}
                 onSave={cancelGuard.confirmSave}
+            />
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
             />
         </CommonCard>
     );
