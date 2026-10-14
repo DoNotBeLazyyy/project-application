@@ -100,6 +100,19 @@ function escapeCsvValue(value: string): string {
     return value;
 }
 
+export function getTargetEntityName(title?: string, entityName?: string): string {
+    if (entityName?.trim()) return entityName.trim();
+    if (title) {
+        let cleaned = title.trim();
+        cleaned = cleaned.replace(/\s*—\s*(preview|results)\s*$/i, '');
+        cleaned = cleaned.replace(/\s*\(csv\)\s*$/i, '');
+        cleaned = cleaned.replace(/^(bulk\s+)?(import|enroll|upload)\s+/i, '');
+        cleaned = cleaned.trim();
+        if (cleaned) return cleaned;
+    }
+    return 'Records';
+}
+
 function DefaultPreviewCard({
     columns = [],
     index,
@@ -220,6 +233,10 @@ export default function BulkImportModal<TPayload>({
 }: BulkImportModalProps<TPayload>) {
     const activeColumns = useMemo(() => (templateColumns || columns || []).filter(Boolean), [templateColumns, columns]);
     const modalTitle = title || (entityName ? `Bulk Import ${entityName}` : 'Bulk Import');
+    const targetEntityName = getTargetEntityName(modalTitle, entityName);
+    const entityPlural = targetEntityName.toLowerCase().endsWith('s')
+        ? targetEntityName.toLowerCase()
+        : `${targetEntityName.toLowerCase()} records`;
 
     const [step, setStep] = useState<BulkImportStep>('upload');
     const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
@@ -227,6 +244,7 @@ export default function BulkImportModal<TPayload>({
     const [isLoading, setIsLoading] = useState(false);
     const [parseError, setParseError] = useState<string | null>(null);
     const [parseWarning, setParseWarning] = useState<string | null>(null);
+    const [activeResultTab, setActiveResultTab] = useState<'created' | 'updated' | 'blocked' | 'conflicts'>('created');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const previewColumnDefs = useMemo<ColDef<ParsedRow>[]>(function() {
@@ -275,6 +293,7 @@ export default function BulkImportModal<TPayload>({
         setResult(null);
         setParseError(null);
         setParseWarning(null);
+        setActiveResultTab('created');
         onClose();
     }
 
@@ -407,6 +426,13 @@ export default function BulkImportModal<TPayload>({
                 };
 
             setResult(importResult);
+            const created = importResult.created_count ?? importResult.provisioned_count ?? 0;
+            const blocked = importResult.structuredErrors?.length ?? importResult.errors?.length ?? 0;
+            if (created === 0 && blocked > 0) {
+                setActiveResultTab('blocked');
+            } else {
+                setActiveResultTab('created');
+            }
             setStep('results');
             if (!importResult.errors?.length && !importResult.structuredErrors?.length) {
                 onSuccess?.();
@@ -421,6 +447,7 @@ export default function BulkImportModal<TPayload>({
         setParsedRows([]);
         setParseError(null);
         setParseWarning(null);
+        setActiveResultTab('created');
         setStep('upload');
     }
 
@@ -535,8 +562,6 @@ export default function BulkImportModal<TPayload>({
         );
     }
 
-    const [activeResultTab, setActiveResultTab] = useState<'created' | 'updated' | 'blocked' | 'conflicts'>('created');
-
     function renderResultsStep() {
         const hasStructuredErrors = result?.structuredErrors && result.structuredErrors.length > 0;
         const hasStringErrors = result?.errors && result.errors.length > 0;
@@ -552,6 +577,51 @@ export default function BulkImportModal<TPayload>({
         const structuredErrors = result?.structuredErrors ?? [];
         const structuredConflicts = result?.structuredConflicts ?? [];
         const conflictsCount = conflictRows.length > 0 ? conflictRows.length : (result?.structuredConflicts?.length ?? result?.conflicts_count ?? 0);
+
+        // Derive display items for newly created records
+        const failedRowNumbers = new Set(structuredErrors.map((e) => e.row));
+        const createdDisplayItems = createdRows.length > 0
+            ? createdRows.map((item) => ({
+                row: item.row,
+                code: item.section_code,
+                course_code: item.course_code,
+                room: item.room,
+                faculty_email: item.faculty_email,
+                heading: item.section_code || `Row #${item.row}`,
+                details: [] as { label: string; value: string }[],
+                isSection: Boolean(item.section_code)
+            }))
+            : createdCount > 0 && parsedRows.length > 0
+                ? parsedRows
+                    .map((row, idx) => ({ row: idx + 1, data: row }))
+                    .filter((item) => !failedRowNumbers.has(item.row))
+                    .map(({ row, data }) => {
+                        const codeVal = data.code || data.section_code || data.course_code || data.department_code || data.term_label || data.email || '';
+                        const titleVal = data.title || data.label || data.name || (data.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : '');
+                        const primaryHeading = codeVal && titleVal ? `${codeVal} — ${titleVal}` : codeVal || titleVal || `Row #${row}`;
+
+                        const details: { label: string; value: string }[] = [];
+                        for (const col of activeColumns) {
+                            if (!col?.key) continue;
+                            const val = data[col.key];
+                            if (!val || !val.trim()) continue;
+                            if (val === codeVal || val === titleVal) continue;
+                            details.push({ label: col.label || col.key, value: val });
+                            if (details.length >= 3) break;
+                        }
+
+                        return {
+                            row,
+                            code: codeVal,
+                            course_code: undefined,
+                            room: undefined,
+                            faculty_email: undefined,
+                            heading: primaryHeading,
+                            details,
+                            isSection: false
+                        };
+                    })
+                : [];
 
         return (
             <div className="flex flex-col gap-4">

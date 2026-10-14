@@ -85,6 +85,7 @@ export default function StudentProfileVerificationModal({
     const [isFalseInfoFlag, setIsFalseInfoFlag] = useState(false);
     const [isNotifyOpen, setIsNotifyOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showOnlyChanged, setShowOnlyChanged] = useState(true);
 
     useEffect(() => {
         if (!request) return;
@@ -118,6 +119,7 @@ export default function StudentProfileVerificationModal({
         setIsRejectOpen(false);
         setRejectReason('');
         setIsFalseInfoFlag(false);
+        setShowOnlyChanged(true);
     }, [request, open]);
 
     if (!request) return null;
@@ -130,6 +132,15 @@ export default function StudentProfileVerificationModal({
     const hasRegistrarEdits = DISPLAY_FIELDS.some(
         (key) => (editableValues[key] || '') !== (requested[key] || '')
     );
+
+    const changedFields = DISPLAY_FIELDS.filter((field) => {
+        const curr = String(current[field] || '');
+        const req = String(requested[field] || '');
+        const app = String((request.approved_changes as any)?.[field] || '');
+        return curr !== req || (request.status === 'Approved with Edits' && curr !== app);
+    });
+
+    const fieldsToDisplay = showOnlyChanged ? changedFields : DISPLAY_FIELDS;
 
     function handleFieldChange(field: keyof ProfileFormValues, value: string) {
         setEditableValues((prev) => ({
@@ -303,183 +314,225 @@ export default function StudentProfileVerificationModal({
                         </div>
                     )}
 
-                    {/* Desktop Side-by-side verification table */}
-                    <div className="hidden md:block border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
-                        <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
-                            <div className="col-span-3">Profile Field</div>
-                            <div className="col-span-4">Current Value</div>
-                            <div className="col-span-5">
-                                {isPending ? 'Registrar Verified Value (Editable)' : 'Final Approved Value'}
-                            </div>
+                    {/* Verification Fields Section Header / Filter Toggle */}
+                    <div className="flex items-center justify-between gap-2 shrink-0 px-0.5 pt-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-(--mui-palette-text-primary)">
+                                {showOnlyChanged
+                                    ? `Fields with Requested Changes (${changedFields.length})`
+                                    : `All Profile Fields (${DISPLAY_FIELDS.length})`}
+                            </span>
+                            {changedFields.length === 0 && (
+                                <span className="text-[11px] text-(--mui-palette-text-secondary)">
+                                    (No changes detected)
+                                </span>
+                            )}
                         </div>
 
-                        <div className="divide-y divide-(--mui-palette-divider) text-xs">
-                            {DISPLAY_FIELDS.map((field) => {
-                                const currVal = current[field] || '—';
-                                const reqVal = requested[field] || '—';
-                                const editVal = editableValues[field] || '';
-                                const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
-                                const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
-
-                                return (
-                                    <div
-                                        key={field}
-                                        className={`grid grid-cols-12 px-3 py-2.5 items-center transition-colors ${
-                                            isModifiedByStudent
-                                                ? 'bg-(--mui-palette-warning-light)/25'
-                                                : isEditedByRegistrar
-                                                    ? 'bg-(--mui-palette-info-light)/25'
-                                                    : ''
-                                        }`}
-                                    >
-                                        <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
-                                            <span>{FIELD_LABELS[field]}</span>
-                                            {isModifiedByStudent && (
-                                                <CommonChip label="Changed" size="small" variant="light" />
-                                            )}
-                                            {isPending && isEditedByRegistrar && (
-                                                <CommonChip label="Registrar Edited" size="small" variant="light" />
-                                            )}
-                                        </div>
-
-                                        <div className="col-span-4 text-(--mui-palette-text-secondary) pr-3 break-words">
-                                            {currVal}
-                                        </div>
-
-                                        <div className="col-span-5 pr-2">
-                                            {isPending ? (
-                                                field === 'gender' ? (
-                                                    <CommonSelect
-                                                        fullWidth
-                                                        options={GENDER_OPTIONS}
-                                                        size="small"
-                                                        value={String(editVal)}
-                                                        onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                    />
-                                                ) : field === 'civil_status' ? (
-                                                    <CommonSelect
-                                                        fullWidth
-                                                        options={CIVIL_STATUS_OPTIONS}
-                                                        size="small"
-                                                        value={String(editVal)}
-                                                        onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                    />
-                                                ) : field === 'date_of_birth' ? (
-                                                    <CommonDatePicker
-                                                        value={String(editVal || '')}
-                                                        onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                    />
-                                                ) : (
-                                                    <CommonInput
-                                                        fullWidth
-                                                        size="small"
-                                                        value={String(editVal)}
-                                                        onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                    />
-                                                )
-                                            ) : (
-                                                <span className="font-medium text-(--mui-palette-text-primary) break-words">
-                                                    {request.status === 'Approved with Edits'
-                                                        ? (request.approved_changes?.[field] || reqVal)
-                                                        : reqVal}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowOnlyChanged(!showOnlyChanged)}
+                            className="text-[11px] font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
+                        >
+                            {showOnlyChanged
+                                ? `Show all fields (${DISPLAY_FIELDS.length})`
+                                : `Show changed fields only (${changedFields.length})`}
+                        </button>
                     </div>
 
-                    {/* Mobile Responsive Field Cards */}
-                    <div className="flex flex-col gap-2.5 md:hidden">
-                        {DISPLAY_FIELDS.map((field) => {
-                            const currVal = current[field] || '—';
-                            const reqVal = requested[field] || '—';
-                            const editVal = editableValues[field] || '';
-                            const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
-                            const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
-
-                            return (
-                                <div
-                                    key={`mobile-${field}`}
-                                    className={`border rounded-lg p-3 transition-colors ${
-                                        isModifiedByStudent
-                                            ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
-                                            : isEditedByRegistrar
-                                                ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
-                                                : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between gap-2 mb-2">
-                                        <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
-                                            {FIELD_LABELS[field]}
-                                        </span>
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            {isModifiedByStudent && (
-                                                <CommonChip label="Changed" size="small" variant="light" />
-                                            )}
-                                            {isPending && isEditedByRegistrar && (
-                                                <CommonChip label="Registrar Edited" size="small" variant="light" />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 mb-2 text-xs">
-                                        <span className="text-[10px] text-(--mui-palette-text-secondary) block mb-0.5">
-                                            Current Value:
-                                        </span>
-                                        <span className="font-medium text-(--mui-palette-text-primary) break-words">
-                                            {currVal}
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
-                                            {isPending ? 'Verified Value (Editable):' : 'Final Approved Value:'}
-                                        </span>
-                                        {isPending ? (
-                                            field === 'gender' ? (
-                                                <CommonSelect
-                                                    fullWidth
-                                                    options={GENDER_OPTIONS}
-                                                    size="small"
-                                                    value={String(editVal)}
-                                                    onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                />
-                                            ) : field === 'civil_status' ? (
-                                                <CommonSelect
-                                                    fullWidth
-                                                    options={CIVIL_STATUS_OPTIONS}
-                                                    size="small"
-                                                    value={String(editVal)}
-                                                    onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                />
-                                            ) : field === 'date_of_birth' ? (
-                                                <CommonDatePicker
-                                                    value={String(editVal || '')}
-                                                    onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                />
-                                            ) : (
-                                                <CommonInput
-                                                    fullWidth
-                                                    size="small"
-                                                    value={String(editVal)}
-                                                    onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                />
-                                            )
-                                        ) : (
-                                            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
-                                                {request.status === 'Approved with Edits'
-                                                    ? (request.approved_changes?.[field] || reqVal)
-                                                    : reqVal}
-                                            </div>
-                                        )}
+                    {fieldsToDisplay.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-(--mui-palette-text-secondary) border border-dashed border-(--mui-palette-divider) rounded-lg shrink-0">
+                            <p className="m-0 mb-1 font-medium text-(--mui-palette-text-primary)">No modified fields detected.</p>
+                            <p className="m-0 mb-3 text-[11px]">The requested profile values match the current profile values.</p>
+                            <button
+                                type="button"
+                                onClick={() => setShowOnlyChanged(false)}
+                                className="text-xs font-medium text-(--mui-palette-primary-main) hover:underline cursor-pointer bg-transparent border-0 p-0"
+                            >
+                                View all profile fields ({DISPLAY_FIELDS.length})
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Desktop Side-by-side verification table */}
+                            <div className="hidden md:block border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
+                                <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
+                                    <div className="col-span-3">Profile Field</div>
+                                    <div className="col-span-4">Current Value</div>
+                                    <div className="col-span-5">
+                                        {isPending ? 'Registrar Verified Value (Editable)' : 'Final Approved Value'}
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+
+                                <div className="divide-y divide-(--mui-palette-divider) text-xs">
+                                    {fieldsToDisplay.map((field) => {
+                                        const currVal = current[field] || '—';
+                                        const reqVal = requested[field] || '—';
+                                        const editVal = editableValues[field] || '';
+                                        const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
+                                        const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
+
+                                        return (
+                                            <div
+                                                key={field}
+                                                className={`grid grid-cols-12 px-3 py-2.5 items-center transition-colors ${
+                                                    isModifiedByStudent
+                                                        ? 'bg-(--mui-palette-warning-light)/25'
+                                                        : isEditedByRegistrar
+                                                            ? 'bg-(--mui-palette-info-light)/25'
+                                                            : ''
+                                                }`}
+                                            >
+                                                <div className="col-span-3 font-medium text-(--mui-palette-text-primary) flex items-center gap-1.5 flex-wrap">
+                                                    <span>{FIELD_LABELS[field]}</span>
+                                                    {isModifiedByStudent && (
+                                                        <CommonChip label="Changed" size="small" variant="light" />
+                                                    )}
+                                                    {isPending && isEditedByRegistrar && (
+                                                        <CommonChip label="Registrar Edited" size="small" variant="light" />
+                                                    )}
+                                                </div>
+
+                                                <div className="col-span-4 text-(--mui-palette-text-secondary) pr-3 break-words">
+                                                    {currVal}
+                                                </div>
+
+                                                <div className="col-span-5 pr-2">
+                                                    {isPending ? (
+                                                        field === 'gender' ? (
+                                                            <CommonSelect
+                                                                fullWidth
+                                                                options={GENDER_OPTIONS}
+                                                                size="small"
+                                                                value={String(editVal)}
+                                                                onChange={(e) => handleFieldChange('gender', e.target.value as string)}
+                                                            />
+                                                        ) : field === 'civil_status' ? (
+                                                            <CommonSelect
+                                                                fullWidth
+                                                                options={CIVIL_STATUS_OPTIONS}
+                                                                size="small"
+                                                                value={String(editVal)}
+                                                                onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
+                                                            />
+                                                        ) : field === 'date_of_birth' ? (
+                                                            <CommonDatePicker
+                                                                value={String(editVal || '')}
+                                                                onChange={(val) => handleFieldChange('date_of_birth', val)}
+                                                            />
+                                                        ) : (
+                                                            <CommonInput
+                                                                fullWidth
+                                                                size="small"
+                                                                value={String(editVal)}
+                                                                onChange={(e) => handleFieldChange(field, e.target.value)}
+                                                            />
+                                                        )
+                                                    ) : (
+                                                        <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                            {request.status === 'Approved with Edits'
+                                                                ? (request.approved_changes?.[field] || reqVal)
+                                                                : reqVal}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Mobile Responsive Field Cards */}
+                            <div className="flex flex-col gap-2.5 md:hidden">
+                                {fieldsToDisplay.map((field) => {
+                                    const currVal = current[field] || '—';
+                                    const reqVal = requested[field] || '—';
+                                    const editVal = editableValues[field] || '';
+                                    const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
+                                    const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
+
+                                    return (
+                                        <div
+                                            key={`mobile-${field}`}
+                                            className={`border rounded-lg p-3 transition-colors ${
+                                                isModifiedByStudent
+                                                    ? 'border-(--mui-palette-warning-main)/40 bg-(--mui-palette-warning-light)/15'
+                                                    : isEditedByRegistrar
+                                                        ? 'border-(--mui-palette-info-main)/40 bg-(--mui-palette-info-light)/15'
+                                                        : 'border-(--mui-palette-divider) bg-(--mui-palette-background-default)/50'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <span className="font-semibold text-xs text-(--mui-palette-text-primary)">
+                                                    {FIELD_LABELS[field]}
+                                                </span>
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    {isModifiedByStudent && (
+                                                        <CommonChip label="Changed" size="small" variant="light" />
+                                                    )}
+                                                    {isPending && isEditedByRegistrar && (
+                                                        <CommonChip label="Registrar Edited" size="small" variant="light" />
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 mb-2 text-xs">
+                                                <span className="text-[10px] text-(--mui-palette-text-secondary) block mb-0.5">
+                                                    Current Value:
+                                                </span>
+                                                <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                                                    {currVal}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <span className="text-[10px] font-medium text-(--mui-palette-text-secondary) block mb-1">
+                                                    {isPending ? 'Verified Value (Editable):' : 'Final Approved Value:'}
+                                                </span>
+                                                {isPending ? (
+                                                    field === 'gender' ? (
+                                                        <CommonSelect
+                                                            fullWidth
+                                                            options={GENDER_OPTIONS}
+                                                            size="small"
+                                                            value={String(editVal)}
+                                                            onChange={(e) => handleFieldChange('gender', e.target.value as string)}
+                                                        />
+                                                    ) : field === 'civil_status' ? (
+                                                        <CommonSelect
+                                                            fullWidth
+                                                            options={CIVIL_STATUS_OPTIONS}
+                                                            size="small"
+                                                            value={String(editVal)}
+                                                            onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
+                                                        />
+                                                    ) : field === 'date_of_birth' ? (
+                                                        <CommonDatePicker
+                                                            value={String(editVal || '')}
+                                                            onChange={(val) => handleFieldChange('date_of_birth', val)}
+                                                        />
+                                                    ) : (
+                                                        <CommonInput
+                                                            fullWidth
+                                                            size="small"
+                                                            value={String(editVal)}
+                                                            onChange={(e) => handleFieldChange(field, e.target.value)}
+                                                        />
+                                                    )
+                                                ) : (
+                                                    <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
+                                                        {request.status === 'Approved with Edits'
+                                                            ? (request.approved_changes?.[field] || reqVal)
+                                                            : reqVal}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
 
                     {/* Registrar Notes */}
                     <div className="flex flex-col gap-1 mt-1 shrink-0">
