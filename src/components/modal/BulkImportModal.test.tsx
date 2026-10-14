@@ -8,9 +8,9 @@ const MOCK_COLUMNS = [
     { key: 'name', label: 'Name', required: true }
 ];
 
-describe('BulkImportModal & UploadCsvModal Close Buttons', () => {
+describe('Bulk Import Modals - Top Right X Close Button', () => {
     describe('BulkImportModal', () => {
-        it('renders the header close button and triggers onClose when clicked', () => {
+        it('renders the top-right X close button and triggers onClose when clicked', () => {
             const handleClose = vi.fn();
             render(
                 <BulkImportModal
@@ -23,35 +23,20 @@ describe('BulkImportModal & UploadCsvModal Close Buttons', () => {
 
             expect(screen.getByText('Bulk Import Test')).toBeInTheDocument();
 
+            // The header X close button with aria-label="Close"
             const headerCloseBtn = screen.getByLabelText('Close');
             expect(headerCloseBtn).toBeInTheDocument();
 
             fireEvent.click(headerCloseBtn);
             expect(handleClose).toHaveBeenCalledTimes(1);
-        });
 
-        it('renders the upload step close button and triggers onClose when clicked', () => {
-            const handleClose = vi.fn();
-            render(
-                <BulkImportModal
-                    open={true}
-                    templateColumns={MOCK_COLUMNS}
-                    title="Bulk Import Test"
-                    onClose={handleClose}
-                />
-            );
-
-            // Find the bottom "Close" button by its visible text
-            const uploadCloseBtn = screen.getByText('Close');
-            expect(uploadCloseBtn).toBeInTheDocument();
-
-            fireEvent.click(uploadCloseBtn);
-            expect(handleClose).toHaveBeenCalledTimes(1);
+            // Verify no extra bottom Close button exists in upload step
+            expect(screen.queryByText('Close')).toBeNull();
         });
     });
 
     describe('UploadCsvModal', () => {
-        it('renders the header close button and triggers onClose when clicked', () => {
+        it('renders the top-right X close button and triggers onClose when clicked', () => {
             const handleClose = vi.fn();
             render(
                 <UploadCsvModal
@@ -65,30 +50,15 @@ describe('BulkImportModal & UploadCsvModal Close Buttons', () => {
 
             expect(screen.getByText('Upload via CSV')).toBeInTheDocument();
 
+            // The header X close button with aria-label="Close"
             const headerCloseBtn = screen.getByLabelText('Close');
             expect(headerCloseBtn).toBeInTheDocument();
 
             fireEvent.click(headerCloseBtn);
             expect(handleClose).toHaveBeenCalledTimes(1);
-        });
 
-        it('renders the upload step close button and triggers onClose when clicked', () => {
-            const handleClose = vi.fn();
-            render(
-                <UploadCsvModal
-                    open={true}
-                    templateColumns={MOCK_COLUMNS}
-                    title="Upload via CSV"
-                    onBulkImport={vi.fn()}
-                    onClose={handleClose}
-                />
-            );
-
-            const uploadCloseBtn = screen.getByText('Close');
-            expect(uploadCloseBtn).toBeInTheDocument();
-
-            fireEvent.click(uploadCloseBtn);
-            expect(handleClose).toHaveBeenCalledTimes(1);
+            // Verify no extra bottom Close button exists in upload step
+            expect(screen.queryByText('Close')).toBeNull();
         });
     });
 });

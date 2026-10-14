@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonModal from '@components/modal/CommonModal';
 import CommonTable from '@components/table/CommonTable';
 import {
@@ -457,25 +458,15 @@ export default function BulkImportModal<TPayload>({
                         <span className="text-sm">{parseError}</span>
                     </div>
                 )}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-(--mui-palette-divider)">
-                    <CommonButton
-                        color="inherit"
-                        size="small"
-                        startIcon={<ArrowLineDownIcon size={16} weight="bold" />}
-                        variant="outlined"
-                        onClick={downloadTemplate}
-                    >
-                        Download CSV Template
-                    </CommonButton>
-                    <CommonButton
-                        color="inherit"
-                        size="small"
-                        variant="outlined"
-                        onClick={handleClose}
-                    >
-                        Close
-                    </CommonButton>
-                </div>
+                <CommonButton
+                    color="inherit"
+                    size="small"
+                    startIcon={<ArrowLineDownIcon size={16} weight="bold" />}
+                    variant="outlined"
+                    onClick={downloadTemplate}
+                >
+                    Download CSV Template
+                </CommonButton>
             </div>
         );
     }
@@ -530,27 +521,16 @@ export default function BulkImportModal<TPayload>({
                         />
                     </div>
                 )}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-(--mui-palette-divider)">
-                    <CommonButton
-                        color="inherit"
-                        disabled={isLoading}
-                        size="small"
-                        variant="outlined"
-                        onClick={handleClose}
-                    >
-                        Cancel
-                    </CommonButton>
-                    <CommonButton
-                        disabled={isLoading}
-                        size="small"
-                        variant="contained"
-                        onClick={handleConfirmImport}
-                    >
-                        {isLoading
-                            ? 'Importing...'
-                            : `Confirm Import (${parsedRows.length} rows)`}
-                    </CommonButton>
-                </div>
+                <CommonButton
+                    disabled={isLoading}
+                    size="small"
+                    variant="contained"
+                    onClick={handleConfirmImport}
+                >
+                    {isLoading
+                        ? 'Importing...'
+                        : `Confirm Import (${parsedRows.length} rows)`}
+                </CommonButton>
             </div>
         );
     }
@@ -903,6 +883,7 @@ export default function BulkImportModal<TPayload>({
         <CommonModal
             cardProps={{
                 cardHeaderProps: {
+                    action: <ModalCloseIcon onClick={handleClose} />,
                     title: stepTitles[step]
                 },
                 defaultActionProps: {

@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonModal from '@components/modal/CommonModal';
 import CommonTable from '@components/table/CommonTable';
 import {
@@ -343,16 +344,6 @@ export default function UploadCsvModal({
                         <span className="text-xs">{parseError}</span>
                     </div>
                 )}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-(--mui-palette-divider)">
-                    <CommonButton
-                        color="inherit"
-                        size="small"
-                        variant="outlined"
-                        onClick={handleClose}
-                    >
-                        Close
-                    </CommonButton>
-                </div>
             </div>
         );
     }
@@ -387,16 +378,7 @@ export default function UploadCsvModal({
                         rowData={parsedRows}
                     />
                 </div>
-                <div className="flex justify-end gap-2 pt-2 border-t border-(--mui-palette-divider)">
-                    <CommonButton
-                        color="inherit"
-                        disabled={isLoading}
-                        size="small"
-                        variant="outlined"
-                        onClick={handleClose}
-                    >
-                        Cancel
-                    </CommonButton>
+                <div className="flex justify-end">
                     <CommonButton
                         disabled={isLoading}
                         size="small"
@@ -494,6 +476,7 @@ export default function UploadCsvModal({
         <CommonModal
             cardProps={{
                 cardHeaderProps: {
+                    action: <ModalCloseIcon onClick={handleClose} />,
                     title: stepTitles[step]
                 },
                 defaultActionProps: {
