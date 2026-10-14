@@ -62,7 +62,7 @@ export interface GenerateCourseCodeParams {
     departmentCode?: string;
     departmentName?: string;
     title: string;
-    courseCount: number;
+    courseCount?: number;
     existingCodes?: string[];
 }
 
@@ -80,7 +80,7 @@ export function generateCourseCode({
     departmentCode,
     departmentName,
     title,
-    courseCount,
+    courseCount = 0,
     existingCodes = []
 }: GenerateCourseCodeParams): string {
     const acronym = generateTitleAcronym(title);

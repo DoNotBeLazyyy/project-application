@@ -234,7 +234,7 @@ export function validateTerms(
     terms: WizardTermItem[],
     syStartDate?: string,
     syEndDate?: string
-): { isValid: boolean; error?: string } {
+): { isValid: boolean; error?: string; fieldPath?: string; termIndex?: number } {
     if (!terms || terms.length === 0) {
         return {
             error: 'Please declare at least one Term for this academic year.',
@@ -251,7 +251,9 @@ export function validateTerms(
         if (!termName) {
             return {
                 error: `Please specify a Term Type / Name for Term #${i + 1}.`,
-                isValid: false
+                fieldPath: `terms.${i}.term_type_label`,
+                isValid: false,
+                termIndex: i
             };
         }
 
@@ -259,7 +261,9 @@ export function validateTerms(
         if (seenLabels.has(cleanKey)) {
             return {
                 error: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique name.`,
-                isValid: false
+                fieldPath: `terms.${i}.term_type_label`,
+                isValid: false,
+                termIndex: i
             };
         }
         seenLabels.add(cleanKey);
@@ -267,28 +271,36 @@ export function validateTerms(
         if (!t.start_date) {
             return {
                 error: `Please specify a Start Date for ${termName}.`,
-                isValid: false
+                fieldPath: `terms.${i}.start_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
         if (!t.end_date) {
             return {
                 error: `Please specify an End Date for ${termName}.`,
-                isValid: false
+                fieldPath: `terms.${i}.end_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
         if (new Date(t.end_date) < new Date(t.start_date)) {
             return {
                 error: `End Date cannot be before Start Date in ${termName}.`,
-                isValid: false
+                fieldPath: `terms.${i}.end_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
         if (new Date(t.end_date).getTime() === new Date(t.start_date).getTime()) {
             return {
                 error: `End Date must be strictly after Start Date in ${termName}.`,
-                isValid: false
+                fieldPath: `terms.${i}.end_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
@@ -298,7 +310,9 @@ export function validateTerms(
             if (new Date(t.start_date) < new Date(prevTerm.end_date)) {
                 return {
                     error: `Term #${i + 1} (${termName}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.start_date`,
+                    isValid: false,
+                    termIndex: i
                 };
             }
         }
@@ -306,14 +320,18 @@ export function validateTerms(
         if (syStartDate && new Date(t.start_date) < new Date(syStartDate)) {
             return {
                 error: `Term #${i + 1} (${termName}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,
-                isValid: false
+                fieldPath: `terms.${i}.start_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
         if (syEndDate && new Date(t.end_date) > new Date(syEndDate)) {
             return {
                 error: `Term #${i + 1} (${termName}) end date (${t.end_date}) cannot be after the school year end date (${syEndDate}).`,
-                isValid: false
+                fieldPath: `terms.${i}.end_date`,
+                isValid: false,
+                termIndex: i
             };
         }
 
@@ -321,7 +339,9 @@ export function validateTerms(
             if (new Date(t.enrollment_end_date) < new Date(t.enrollment_start_date)) {
                 return {
                     error: `Enrollment End Date cannot be before Enrollment Start Date in ${termName}.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.enrollment_end_date`,
+                    isValid: false,
+                    termIndex: i
                 };
             }
         }

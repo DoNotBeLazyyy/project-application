@@ -5,6 +5,7 @@ import {
 } from '@type/department.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { generateDepartmentCode } from '@utils/entity-code.util';
 
 export async function listDepartments(
     page: number,
@@ -76,11 +77,25 @@ export async function bulkDeleteDepartments(
 export async function bulkCreateDepartments(
     departments: DepartmentBulkRow[]
 ): Promise<DetailedBulkImportResult> {
+    const existingCodes: string[] = [];
+    const normalizedDepartments = departments.map((dept) => {
+        const code = dept.code && dept.code.trim() !== ''
+            ? dept.code.trim()
+            : generateDepartmentCode(dept.name || '', existingCodes);
+        if (code) {
+            existingCodes.push(code);
+        }
+        return {
+            ...dept,
+            code
+        };
+    });
+
     const result = await callRpc<{
         provisioned_count: number;
         errors: BulkImportError[];
     }>('fn_bulk_create_departments', {
-        p_departments: departments
+        p_departments: normalizedDepartments
     });
 
     if (result.error) {

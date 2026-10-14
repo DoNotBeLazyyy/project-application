@@ -34,7 +34,6 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester - Academic Year 2025-2026 (optional, defaults to active term)' },
     { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS (optional)' },
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS 101LEC' },
-    { key: 'section_code', label: 'Section Code', hint: 'e.g. BSCS 1-A (optional, auto-generated if blank)' },
     { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. juliustolentino.diamond@gmail.com (optional)' },
     { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)' },
     { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' },

@@ -1,4 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
+import { generateCourseCode } from '@utils/course.util';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
     CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, CourseOption
@@ -187,10 +188,26 @@ export async function bulkDeleteCourses(
 export async function bulkCreateCourses(
     courses: CourseBulkRow[]
 ): Promise<BulkImportResult> {
+        const existingCodes: string[] = [];
+    const normalizedCourses = courses.map((course) => {
+        const code = course.code?.trim() || generateCourseCode({
+            departmentCode: course.department_code,
+            title: course.title || '',
+            existingCodes
+        });
+        if (code) {
+            existingCodes.push(code);
+        }
+        return {
+            ...course,
+            code
+        };
+    });
+
     const result = await callRpc<{
         provisioned_count: number;
         errors: { row: number; code: string; message: string }[];
-    }>('fn_bulk_create_courses', { p_courses: courses });
+    }>('fn_bulk_create_courses', { p_courses: normalizedCourses });
 
     if (result.error) {
         return { provisioned_count: 0, errors: [result.error.message] };

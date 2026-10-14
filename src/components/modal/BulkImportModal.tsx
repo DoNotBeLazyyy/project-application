@@ -240,6 +240,7 @@ export default function BulkImportModal<TPayload>({
 
     const [step, setStep] = useState<BulkImportStep>('upload');
     const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+    const [mappedRows, setMappedRows] = useState<any[]>([]);
     const [result, setResult] = useState<DetailedBulkImportResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [parseError, setParseError] = useState<string | null>(null);
@@ -290,6 +291,7 @@ export default function BulkImportModal<TPayload>({
     function handleClose() {
         setStep('upload');
         setParsedRows([]);
+        setMappedRows([]);
         setResult(null);
         setParseError(null);
         setParseWarning(null);
@@ -409,6 +411,7 @@ export default function BulkImportModal<TPayload>({
         try {
             const mapper = onMapRow || ((row: ParsedRow) => row as unknown as TPayload);
             const payload = parsedRows.map(mapper);
+            setMappedRows(payload);
             const importFn = onBulkImport || onImport;
             if (!importFn) return;
 
@@ -596,7 +599,8 @@ export default function BulkImportModal<TPayload>({
                     .map((row, idx) => ({ row: idx + 1, data: row }))
                     .filter((item) => !failedRowNumbers.has(item.row))
                     .map(({ row, data }) => {
-                        const codeVal = data.code || data.section_code || data.course_code || data.department_code || data.term_label || data.email || '';
+                        const mapped = mappedRows[row - 1] as Record<string, any> | undefined;
+                        const codeVal = mapped?.code || mapped?.section_code || data.code || data.section_code || data.course_code || data.department_code || data.term_label || data.email || '';
                         const titleVal = data.title || data.label || data.name || (data.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : '');
                         const primaryHeading = codeVal && titleVal ? `${codeVal} — ${titleVal}` : codeVal || titleVal || `Row #${row}`;
 

@@ -3,6 +3,7 @@ import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.typ
 import { CourseTypeBulkRow, CourseTypeFormValues, CourseTypeListRow, CourseTypeOption } from '@type/course/course-type.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
+import { generateCourseTypeCode } from '@utils/entity-code.util';
 
 export async function listCourseTypes(
     page: number,
@@ -65,11 +66,25 @@ export async function deleteCourseType(
 export async function bulkCreateCourseTypes(
     courseTypes: CourseTypeBulkRow[]
 ): Promise<DetailedBulkImportResult> {
+    const existingCodes: string[] = [];
+    const normalizedCourseTypes = courseTypes.map((row) => {
+        const code = row.code && row.code.trim() !== ''
+            ? row.code.trim()
+            : generateCourseTypeCode(row.label || '', existingCodes);
+        if (code) {
+            existingCodes.push(code);
+        }
+        return {
+            ...row,
+            code
+        };
+    });
+
     const result = await callRpc<{
         provisioned_count: number;
         errors: BulkImportError[];
     }>('fn_bulk_create_course_types', {
-        p_course_types: courseTypes
+        p_course_types: normalizedCourseTypes
     });
 
     if (!result.error && result.data) {

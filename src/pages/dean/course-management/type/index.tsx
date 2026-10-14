@@ -12,6 +12,7 @@ import {
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { CourseTypeBulkRow, CourseTypeFormValues, CourseTypeListRow } from '@type/course/course-type.type';
 import { SortStringDto } from '@type/http.type';
+import { generateCourseTypeCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -25,7 +26,6 @@ const CREATE_FORM_ID = 'create-course-type-form';
 const UPDATE_FORM_ID = 'update-course-type-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. LEC' },
     { key: 'label', label: 'Label', hint: 'e.g. Lecture' },
     { key: 'description', label: 'Description', hint: 'e.g. Lecture component (optional)' }
 ];
@@ -277,7 +277,7 @@ export default function CourseTypeManagement() {
                 }}
                 onMapRow={function(row) {
                     return {
-                        code: row.code,
+                        code: row.code?.trim() || generateCourseTypeCode(row.label || ''),
                         description: row.description,
                         label: row.label
                     };

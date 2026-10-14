@@ -16,6 +16,7 @@ import {
 } from '@type/course/course.type';
 import { SortStringDto } from '@type/http.type';
 import { formErrors } from '@utils/form.util';
+import { generateCourseCode } from '@utils/course.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -30,7 +31,6 @@ const CREATE_FORM_ID = 'create-course-form';
 const UPDATE_FORM_ID = 'update-course-form';
 const FILTER_FORM_ID = 'filter-course-form';
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. CS101' },
     { key: 'title', label: 'Title', hint: 'e.g. Introduction to Computing' },
     { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS' },
     { key: 'course_type_code', label: 'Course Type Code', hint: 'e.g. LECTURE' },
@@ -284,7 +284,7 @@ export default function CourseManagement() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={(row) => ({
-                    code: row.code,
+                    code: row.code?.trim() || generateCourseCode({ departmentCode: row.department_code, title: row.title || '' }),
                     title: row.title,
                     department_code: row.department_code,
                     course_type_code: row.course_type_code,

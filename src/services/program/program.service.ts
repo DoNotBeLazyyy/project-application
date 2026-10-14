@@ -7,6 +7,7 @@ import {
     ProgramBulkImportResult, ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow, ProgramOption
 } from '@type/program/program.type';
 import { ServiceResult } from '@type/service.type';
+import { generateProgramCode } from '@utils/entity-code.util';
 import { nullIfBlank } from '@utils/uuid.util';
 
 export async function listPrograms(
@@ -242,9 +243,19 @@ export async function bulkCreatePrograms(
     programs: ProgramBulkRow[]
 ): Promise<BulkImportResult> {
     const uniqueProgramsMap = new Map<string, ProgramBulkRow>();
-    const curriculumRows: CurriculumMapBulkRow[] = [];
+    const existingCodes: string[] = [];
+    const normalizedPrograms = programs.map((row) => {
+        const code = row.code?.trim() || generateProgramCode(row.name || '', existingCodes);
+        if (code) {
+            existingCodes.push(code);
+        }
+        return {
+            ...row,
+            code
+        };
+    });
 
-    for (const row of programs) {
+    for (const row of normalizedPrograms) {
         const codeKey = row.code?.trim().toUpperCase();
         if (codeKey && !uniqueProgramsMap.has(codeKey)) {
             uniqueProgramsMap.set(codeKey, row);

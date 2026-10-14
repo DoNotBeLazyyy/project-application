@@ -12,6 +12,7 @@ import {
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { DepartmentBulkRow, DepartmentFormValues, DepartmentListRow } from '@type/department.type';
 import { SortStringDto } from '@type/http.type';
+import { generateDepartmentCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -25,7 +26,6 @@ const CREATE_FORM_ID = 'create-department-form';
 const UPDATE_FORM_ID = 'update-department-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. CCS' },
     { key: 'name', label: 'Name', hint: 'e.g. College of Computer Studies' },
     { key: 'description', label: 'Description', hint: 'e.g. Department of Computer Studies (optional)' }
 ];
@@ -289,7 +289,7 @@ export default function DepartmentManagement() {
                 }}
                 onMapRow={function(row) {
                     return {
-                        code: row.code,
+                        code: row.code?.trim() || generateDepartmentCode(row.name || ''),
                         description: row.description,
                         name: row.name
                     };

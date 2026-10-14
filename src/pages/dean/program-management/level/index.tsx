@@ -13,6 +13,7 @@ import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramLevelBulkRow, ProgramLevelFormValues, ProgramLevelListRow } from '@type/program/program-level.type';
+import { generateProgramLevelCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
@@ -26,7 +27,6 @@ const CREATE_FORM_ID = 'create-program-level-form';
 const UPDATE_FORM_ID = 'update-program-level-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. UG' },
     { key: 'label', label: 'Label', hint: 'e.g. Undergraduate' },
     { key: 'description', label: 'Description', hint: 'e.g. Undergraduate programs (optional)' }
 ];
@@ -291,7 +291,7 @@ export default function ProgramLevelManagement() {
                 }}
                 onMapRow={function(row) {
                     return {
-                        code: row.code,
+                        code: row.code?.trim() || generateProgramLevelCode(row.label || ''),
                         description: row.description,
                         label: row.label
                     };

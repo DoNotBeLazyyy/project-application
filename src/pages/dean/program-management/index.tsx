@@ -13,6 +13,7 @@ import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow } from '@type/program/program.type';
 import { formErrors } from '@utils/form.util';
+import { generateProgramCode } from '@utils/entity-code.util';
 import { useToastStore } from '@stores/toast.store';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
@@ -42,7 +43,6 @@ const defaultFormValues: ProgramFormValues = {
 };
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. BSCS' },
     { key: 'name', label: 'Name', hint: 'e.g. Bachelor of Science in Computer Science' },
     { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS' },
     { key: 'program_level_code', label: 'Program Level Code', hint: 'e.g. UNDERGRADUATE' },
@@ -288,7 +288,7 @@ export default function ProgramManagement() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={(row) => ({
-                    code: row.code,
+                    code: row.code?.trim() || generateProgramCode(row.name || ''),
                     name: row.name,
                     department_code: row.department_code,
                     program_level_code: row.program_level_code,

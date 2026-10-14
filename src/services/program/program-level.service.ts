@@ -3,6 +3,7 @@ import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.typ
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ProgramLevelBulkRow, ProgramLevelFormValues, ProgramLevelListRow, ProgramLevelOption } from '@type/program/program-level.type';
 import { ServiceResult } from '@type/service.type';
+import { generateProgramLevelCode } from '@utils/entity-code.util';
 
 export async function listProgramLevels(
     page: number,
@@ -65,11 +66,25 @@ export async function deleteProgramLevel(
 export async function bulkCreateProgramLevels(
     programLevels: ProgramLevelBulkRow[]
 ): Promise<DetailedBulkImportResult> {
+    const existingCodes: string[] = [];
+    const normalizedProgramLevels = programLevels.map((row) => {
+        const code = row.code && row.code.trim() !== ''
+            ? row.code.trim()
+            : generateProgramLevelCode(row.label || '', existingCodes);
+        if (code) {
+            existingCodes.push(code);
+        }
+        return {
+            ...row,
+            code
+        };
+    });
+
     const result = await callRpc<{
         provisioned_count: number;
         errors: BulkImportError[];
     }>('fn_bulk_create_program_levels', {
-        p_program_levels: programLevels
+        p_program_levels: normalizedProgramLevels
     });
 
     if (!result.error && result.data) {

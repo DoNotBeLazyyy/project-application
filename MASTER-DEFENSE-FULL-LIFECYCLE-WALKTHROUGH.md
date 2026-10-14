@@ -17,7 +17,7 @@
    - [Phase 1.3: Universal Bulk CSV Import System (Users & Entities)](#phase-13-universal-bulk-csv-import-system-users--entities)
    - [Phase 1.4: Staff Profile Verification Queue & Side-by-Side Diff](#phase-14-staff-profile-verification-queue--side-by-side-diff)
    - [Phase 1.5: Department Management Full CRUD Cycle](#phase-15-department-management-full-crud-cycle)
-   - [Phase 1.6: Enterprise Academic Year 5-Step Setup Wizard](#phase-16-enterprise-academic-year-5-step-setup-wizard)
+   - [Phase 1.6: Enterprise Academic Year Setup Wizard (6-Step Lifecycle Configuration)](#phase-16-enterprise-academic-year-setup-wizard-6-step-lifecycle-configuration)
    - [Phase 1.7: Academic Term Type Sequential Rail Editor](#phase-17-academic-term-type-sequential-rail-editor)
    - [Phase 1.8: Grading Period Composer & 100% Budget Visualizer](#phase-18-grading-period-composer--100-budget-visualizer)
    - [Phase 1.9: Special Grade Rule Condition Builder & Real-Time Dry-Run Sandbox](#phase-19-special-grade-rule-condition-builder--real-time-dry-run-sandbox)
@@ -248,18 +248,176 @@ Navigate to `/admin/departments` via sidebar.
 ---
 
 
-### Phase 1.6: Enterprise Academic Year 5-Step Setup Wizard
+### Phase 1.6: Enterprise Academic Year Setup Wizard (6-Step Lifecycle Configuration)
 Navigate to `/admin/school-years` via sidebar.
-1. Inspect the active school year: **Academic Year 2026–2027** (`AY-2026-2027`, `is_active = true`).
-2. Click **+ Add School Year** (opens `AcademicYearWizardModal`):
-   * **Step 1 (School Year Info):** Code: `AY-2027-2028`, Name: `Academic Year 2027–2028`, Start: `2027-08-01`, End: `2028-05-31`. Click **Next**.
-   * **Step 2 (Terms Config):** Review configured terms (1st Semester, 2nd Semester, Summer). Click **Next**.
-   * **Step 3 (Grading Periods Config):** Review weights (Prelims 30%, Midterms 30%, Finals 40%). Click **Next**.
-   * **Step 4 (Calendar Exceptions & Transmutation):** Inspect holiday exceptions and transmutation defaults. Click **Next**.
-   * **Step 5 (Academic Thresholds):** Min Passing Grade: `3.00`, Retention GWA: `2.75`, Dean's List Cutoff: `1.75`.
-3. Click **Preview Schedule** (opens `AcademicYearSchedulePreviewModal` & `AcademicYearTimelinePreview`).
-4. Click **Save Academic Year Calendar**.
-5. Keep `Is Active = false` for now (will be activated in Phase 8.4).
+1. Inspect the active school year banner: **Academic Year 2026–2027** (`AY-2026-2027`, `is_active = true`).
+2. Click **+ Add School Year** (opens the multi-step `AcademicYearWizardModal`).
+
+---
+
+#### Step 1: Identity & Dates (`Step1SchoolYearInfo`)
+Provide the overarching academic calendar dates. The wizard dynamically computes codes and labels:
+* **Start Date** (`start_date`): Select **`08/01/2027`** (`2027-08-01`)
+* **End Date** (`end_date`): Select **`05/31/2028`** (`2028-05-31`)
+* **Academic Year Code** (`code`): Verified auto-populated: **`AY-2027-2028`** *(Read-only, calculated from dates)*
+* **Academic Year Label** (`label`): Verified auto-populated: **`Academic Year 2027-2028`** *(Read-only, calculated from dates)*
+* **Set as Active Academic Year** (`is_active`): Ensure **`Unchecked / False`** *(Crucial: Keep `AY 2026-2027` active for testing so current operations run normally until Phase 8.4 rollover)*
+* Click **Next →** (bottom right).
+
+---
+
+#### Step 2: Terms & Operational Windows (`Step2TermsConfig`)
+Configure two operational semesters under this academic year. (If not already generated, click **+ Add Term**):
+
+##### Term #1 (1st Semester):
+* **Term Type / Name** (`term_type_label`): Input or Select **`1st Semester`**
+* **Term Start Date** (`start_date`): Select **`08/16/2027`** (`2027-08-16`)
+* **Term End Date** (`end_date`): Select **`12/18/2027`** (`2027-12-18`)
+* **Max Units** (`max_units`): Input **`24`** *(Standard collegiate load ceiling)*
+* **Enrollment Opens** (`enrollment_start_date`): Select **`08/01/2027`** (`2027-08-01`)
+* **Enrollment Closes** (`enrollment_end_date`): Select **`08/15/2027`** (`2027-08-15`)
+* **Grading Deadline** (`grading_deadline`): Select **`12/23/2027`** (`2027-12-23`)
+* **Faculty Evaluation Scope** (`evaluation_scope`): Select **`Per Grading Period`** *(Options: `Per Grading Period`, `Per Term`)*
+
+##### Term #2 (2nd Semester): Click **+ Add Term**
+* **Term Type / Name** (`term_type_label`): Input or Select **`2nd Semester`**
+* **Term Start Date** (`start_date`): Select **`01/10/2028`** (`2028-01-10`)
+* **Term End Date** (`end_date`): Select **`05/20/2028`** (`2028-05-20`)
+* **Max Units** (`max_units`): Input **`24`**
+* **Enrollment Opens** (`enrollment_start_date`): Select **`01/02/2028`** (`2028-01-02`)
+* **Enrollment Closes** (`enrollment_end_date`): Select **`01/09/2028`** (`2028-01-09`)
+* **Grading Deadline** (`grading_deadline`): Select **`05/27/2028`** (`2028-05-27`)
+* **Faculty Evaluation Scope** (`evaluation_scope`): Select **`Per Grading Period`**
+* Click **Next →** (bottom right).
+
+---
+
+#### Step 3: Grading Periods & Weight Allocations (`Step3GradingPeriodsConfig`)
+Configure grading periods for **1st Semester** and **2nd Semester**. The total weight for each term must strictly equal **100%** (validated by the green `Weight: 100% (100%)` badge).
+
+##### For Term 1 (1st Semester):
+* **Period #1 (Prelim):**
+  * **Period Name** (`name`): **`Prelim`**
+  * **Weight (%)** (`weight`): **`30`**
+  * **Period Start Date** (`start_date`): **`08/16/2027`** (`2027-08-16`)
+  * **Period End Date** (`end_date`): **`09/25/2027`** (`2027-09-25`)
+  * **Major Exam Days**:
+    * **Exam Start** (`major_exam_start_date`): **`09/23/2027`**
+    * **Exam End** (`major_exam_end_date`): **`09/25/2027`**
+  * **Grade Encoding Range**:
+    * **Encoding Start** (`grade_encoding_start_date`): **`09/23/2027`**
+    * **Encoding End** (`grade_encoding_end_date`): **`09/28/2027`**
+  * **Grading Component Breakdown** *(Total: 100/100)*:
+    * Component 1: Name: `Quizzes & Short Tasks` | Weight: `30%`
+    * Component 2: Name: `Class Standing & Performance` | Weight: `30%`
+    * Component 3: Name: `Major Exam` | Weight: `40%`
+
+* **Period #2 (Midterm):**
+  * **Period Name** (`name`): **`Midterm`**
+  * **Weight (%)** (`weight`): **`30`**
+  * **Period Start Date** (`start_date`): **`09/26/2027`** (`2027-09-26`)
+  * **Period End Date** (`end_date`): **`11/06/2027`** (`2027-11-06`)
+  * **Major Exam Days**:
+    * **Exam Start** (`major_exam_start_date`): **`11/04/2027`**
+    * **Exam End** (`major_exam_end_date`): **`11/06/2027`**
+  * **Grade Encoding Range**:
+    * **Encoding Start** (`grade_encoding_start_date`): **`11/04/2027`**
+    * **Encoding End** (`grade_encoding_end_date`): **`11/10/2027`**
+  * **Grading Component Breakdown** *(Total: 100/100)*:
+    * Component 1: Name: `Quizzes & Short Tasks` | Weight: `30%`
+    * Component 2: Name: `Class Standing & Performance` | Weight: `30%`
+    * Component 3: Name: `Major Exam` | Weight: `40%`
+
+* **Period #3 (Finals):**
+  * **Period Name** (`name`): **`Finals`**
+  * **Weight (%)** (`weight`): **`40`**
+  * **Period Start Date** (`start_date`): **`11/07/2027`** (`2027-11-07`)
+  * **Period End Date** (`end_date`): **`12/18/2027`** (`2027-12-18`)
+  * **Major Exam Days**:
+    * **Exam Start** (`major_exam_start_date`): **`12/15/2027`**
+    * **Exam End** (`major_exam_end_date`): **`12/18/2027`**
+  * **Grade Encoding Range**:
+    * **Encoding Start** (`grade_encoding_start_date`): **`12/15/2027`**
+    * **Encoding End** (`grade_encoding_end_date`): **`12/23/2027`**
+  * **Grading Component Breakdown** *(Total: 100/100)*:
+    * Component 1: Name: `Quizzes & Short Tasks` | Weight: `30%`
+    * Component 2: Name: `Class Standing & Performance` | Weight: `30%`
+    * Component 3: Name: `Major Exam` | Weight: `40%`
+
+##### For Term 2 (2nd Semester):
+* Ensure default or matching 3-period split:
+  * **Prelim**: Weight `30%` | Start: `01/10/2028` | End: `02/19/2028`
+  * **Midterm**: Weight `30%` | Start: `02/20/2028` | End: `04/02/2028`
+  * **Finals**: Weight `40%` | Start: `04/03/2028` | End: `05/20/2028`
+* Observe that both terms show **`Weight: 100% (100%)`** with a green checkmark.
+* Click **Next →** (bottom right).
+
+---
+
+#### Step 4: Calendar Exceptions & Holiday Overlays (`Step4HolidaysConfig`)
+Demonstrate adding institutional calendar exceptions and holidays:
+1. Click **+ Add Exception**:
+   * **Holiday / Exception Title**: Input **`National Heroes Day`**
+   * **Exception Type** (Dropdown): Select **`Holiday`** *(Options: `Holiday`, `Break`, `Suspension`, `Special Class`, `Exam Day`)*
+   * **Class Impact**: Check **`[x] Class Suspended`** (`affects_attendance = true`)
+   * **Start Date**: Select **`08/30/2027`** (`2027-08-30`)
+   * **End Date**: Select **`08/30/2027`** (`2027-08-30`)
+   * **Description / Note (Optional)**: Input **`Regular National Non-Working Holiday`**
+2. Click **+ Add Exception** (Second entry):
+   * **Holiday / Exception Title**: Input **`Mid-Year Semestral Break`**
+   * **Exception Type**: Select **`Break`**
+   * **Class Impact**: Check **`[x] Class Suspended`**
+   * **Start Date**: Select **`12/19/2027`** (`2027-12-19`)
+   * **End Date**: Select **`01/09/2028`** (`2028-01-09`)
+   * **Description / Note**: Input **`Academic recess between 1st Semester and 2nd Semester`**
+3. *(Optional Feature Showcase)*: Click **Configure Types** button in top toolbar to inspect the `ManageExceptionTypesModal`, then click **Close**.
+4. Click **Next →** (bottom right).
+
+---
+
+#### Step 5: Grade Schema & Transmutation Ladder (`Step4TransmutationConfig`)
+Inspect the collegiate 13-rung transmutation ladder mapping raw percentages to transcript marks:
+* Observe top summary badges: **Total Rungs: 13 | Passing: 9 | Failing / Special: 4**
+* Verify default fixed percentage ranges and conditional marks:
+  * **Rung #1:** Mark: **`1.00`** | Min: **`98%`** | Max: **`100%`** | Description: **`Excellent`** | Status: **`[✓ Passing]`**
+  * **Rung #2:** Mark: **`1.25`** | Min: **`95%`** | Max: **`97%`** | Description: **`Superior`** | Status: **`[✓ Passing]`**
+  * **Rung #3:** Mark: **`1.50`** | Min: **`92%`** | Max: **`94%`** | Description: **`Very Good`** | Status: **`[✓ Passing]`**
+  * **Rung #4:** Mark: **`1.75`** | Min: **`89%`** | Max: **`91%`** | Description: **`Good`** | Status: **`[✓ Passing]`**
+  * **Rung #5:** Mark: **`2.00`** | Min: **`86%`** | Max: **`88%`** | Description: **`Meritorious`** | Status: **`[✓ Passing]`**
+  * **Rung #6:** Mark: **`2.25`** | Min: **`83%`** | Max: **`85%`** | Description: **`Very Satisfactory`** | Status: **`[✓ Passing]`**
+  * **Rung #7:** Mark: **`2.50`** | Min: **`80%`** | Max: **`82%`** | Description: **`Satisfactory`** | Status: **`[✓ Passing]`**
+  * **Rung #8:** Mark: **`2.75`** | Min: **`77%`** | Max: **`79%`** | Description: **`Fairly Satisfactory`** | Status: **`[✓ Passing]`**
+  * **Rung #9:** Mark: **`3.00`** | Min: **`75%`** | Max: **`76%`** | Description: **`Passing`** | Status: **`[✓ Passing]`**
+  * **Rung #10:** Mark: **`4.00`** | Min: **`70%`** | Max: **`74%`** | Description: **`Conditional`** | Status: **`[✕ Failing]`**
+  * **Rung #11:** Mark: **`5.00`** | Min: **`0%`** | Max: **`69%`** | Description: **`Failed`** | Status: **`[✕ Failing]`**
+  * **Rung #12 (Conditional):** Type: **`Conditional`** | Mark: **`INC`** | Description: **`Incomplete Requirements`** | Status: **`[✕ Failing]`**
+  * **Rung #13 (Conditional):** Type: **`Conditional`** | Mark: **`DRP`** | Description: **`Officially Dropped`** | Status: **`[✕ Failing]`**
+* Click **Next →** (bottom right).
+
+---
+
+#### Step 6: Academic Thresholds & Honors (`Step5ThresholdsConfig`)
+Inspect the official academic achievement cutoffs tracking Latin Honors, Scholarships, and Academic Standings:
+* Observe top summary: **Total Academic Thresholds: 7**
+* Verify each configured threshold:
+  1. **Summa Cum Laude**: Category: `Honor (Latin Honors)` | Code: `summa_cum_laude` | Min GWA: `1.00` | Max GWA: `1.25` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+  2. **Magna Cum Laude**: Category: `Honor (Latin Honors)` | Code: `magna_cum_laude` | Min GWA: `1.26` | Max GWA: `1.50` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+  3. **Cum Laude**: Category: `Honor (Latin Honors)` | Code: `cum_laude` | Min GWA: `1.51` | Max GWA: `1.75` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+  4. **Full Academic Scholarship**: Category: `Scholarship (Academic Qualification)` | Code: `academic_scholar_full` | Min GWA: `1.00` | Max GWA: `1.45` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+  5. **Partial Academic Scholarship**: Category: `Scholarship (Academic Qualification)` | Code: `academic_scholar_partial` | Min GWA: `1.46` | Max GWA: `1.75` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+  6. **Good Standing**: Category: `Academic Standing (Retention & Status)` | Code: `good_standing` | Min GWA: `1.00` | Max GWA: `3.00` | Status: `[✓ Active]` | No Failing Grades: `[ ] Unchecked`
+  7. **Dean's List**: Category: `Academic Standing (Retention & Status)` | Code: `deans_list` | Min GWA: `1.00` | Max GWA: `1.75` | Subject Floor Grade: `2.50` | Status: `[✓ Active]` | No Failing Grades: `[x] Checked`
+
+---
+
+#### Step 7: Schedule Timeline Preview & Final Commit
+1. In the modal top header actions, click **Preview** (with the eye icon).
+2. The **Academic Year Schedule & Timeline Preview** modal (`AcademicYearSchedulePreviewModal`) opens:
+   * View the unified Gantt timeline (`AcademicYearTimelinePreview`) displaying the 1st Semester, 2nd Semester, Exam Weeks, Grade Encoding deadlines, and Holiday exception overlays across the entire 10-month span.
+   * Click **Close (✕)** on the preview window.
+3. In the main wizard footer (on Step 6), click the primary button: **Save Academic Year Calendar** (`FloppyDiskIcon`).
+4. The system validates all constraints, closes the modal, and shows a green toast: *"Academic year calendar saved successfully."*
+5. In the school year table, verify **Academic Year 2027–2028** appears with status `Upcoming` (Inactive), while **Academic Year 2026–2027** remains `Active`.
 
 ---
 
