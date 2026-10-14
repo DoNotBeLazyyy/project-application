@@ -59,23 +59,6 @@ export default function NotificationBell() {
         refreshCount();
     }, [userId]);
 
-    // Instant refresh on tab focus / visibility return
-    useEffect(function() {
-        function handleVisibilityOrFocus() {
-            if (document.visibilityState === 'visible') {
-                refreshCount();
-            }
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-        window.addEventListener('focus', handleVisibilityOrFocus);
-
-        return function() {
-            document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-            window.removeEventListener('focus', handleVisibilityOrFocus);
-        };
-    }, []);
-
     // Real-time push notifications via Supabase Realtime
     useEffect(function() {
         if (!userId) {
