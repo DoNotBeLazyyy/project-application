@@ -1,4 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
@@ -384,24 +385,19 @@ export default function LessonModuleWizardModal({
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                        Target Grading Period / Scope
-                                    </label>
                                     <CommonSelect
+                                        containerClassName="w-full"
+                                        description="Students can filter their learning content by grading period."
                                         fullWidth
+                                        label="Target Grading Period / Scope"
                                         options={PERIOD_OPTIONS}
                                         value={period}
                                         onChange={(e: ChangeEvent<HTMLInputElement>) => setPeriod(e.target.value)}
                                     />
-                                    <p className="text-[11px] text-slate-400 mt-1">
-                                        Students can filter their learning content by grading period.
-                                    </p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                        Publication Status
-                                    </label>
+                                    <FormLabel label="Publication Status" />
                                     <div className="flex items-center gap-3 mt-2">
                                         <button
                                             type="button"
@@ -430,10 +426,8 @@ export default function LessonModuleWizardModal({
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Description &amp; Learning Objectives
-                                </label>
                                 <CommonTextarea
+                                    label="Description & Learning Objectives"
                                     maxLength={1000}
                                     placeholder="Outline the key concepts, learning goals, chapter readings, or activity guide for this module..."
                                     value={description}

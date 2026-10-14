@@ -714,9 +714,6 @@ export default function CourseForm({
 
                                     <div className={collapsedCourseTypes[index] ? 'hidden' : 'grid grid-cols-1 sm:grid-cols-3 gap-3 w-full'}>
                                         <div className="w-full">
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Course Type
-                                            </label>
                                             <CourseTypeSelectionCell
                                                 control={control}
                                                 courseTypeOptions={courseTypeOptions}
@@ -725,9 +722,7 @@ export default function CourseForm({
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Units
-                                            </label>
+                                            <FormLabel label="Units" />
                                             <CourseTypeUnitsCell
                                                 control={control}
                                                 disabled={disabled}
@@ -735,9 +730,7 @@ export default function CourseForm({
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                                                Credit Hours
-                                            </label>
+                                            <FormLabel label="Credit Hours" />
                                             <CourseTypeCreditHoursCell
                                                 control={control}
                                                 disabled={disabled}

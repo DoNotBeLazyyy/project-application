@@ -6,6 +6,7 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import FormLabel from '@components/form/FormLabel';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
 import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
@@ -581,9 +582,7 @@ export default function AssessmentWizardModal({
                                     </span>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                Time Limit (Minutes)
-                                            </label>
+                                            <FormLabel label="Time Limit (Minutes)" />
                                             <input
                                                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                                 min={1}
@@ -596,9 +595,7 @@ export default function AssessmentWizardModal({
                                             </p>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                Maximum Attempts
-                                            </label>
+                                            <FormLabel label="Maximum Attempts" />
                                             <input
                                                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                                 min={1}
@@ -743,9 +740,7 @@ export default function AssessmentWizardModal({
                                         />
                                         {!showAllQuestions && (
                                             <div>
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                    Questions Per Page
-                                                </label>
+                                                <FormLabel label="Questions Per Page" />
                                                 <input
                                                     className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                                     min={1}

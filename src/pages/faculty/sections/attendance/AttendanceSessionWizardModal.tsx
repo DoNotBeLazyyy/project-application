@@ -1,5 +1,6 @@
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
+import FormLabel from '@components/form/FormLabel';
 import CommonModal from '@components/modal/CommonModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import {
@@ -321,9 +322,7 @@ export default function AttendanceSessionWizardModal({
                                     </div>
 
                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                            Session Format
-                                        </label>
+                                        <FormLabel label="Session Format" />
                                         <div className="grid grid-cols-2 gap-2">
                                             {(['Lecture', 'Laboratory', 'Online', 'Activity'] as const).map((type) => (
                                                 <button
@@ -344,9 +343,7 @@ export default function AttendanceSessionWizardModal({
                                 </div>
 
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                        Agenda / Topic / Session Notes
-                                    </label>
+                                    <FormLabel label="Agenda / Topic / Session Notes" />
                                     <textarea
                                         rows={3}
                                         value={notes}
