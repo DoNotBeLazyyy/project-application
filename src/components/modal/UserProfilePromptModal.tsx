@@ -138,7 +138,7 @@ export default function UserProfilePromptModal({
                 className: 'flex flex-col max-h-[100dvh] sm:max-h-[85dvh] w-full max-w-2xl overflow-hidden',
                 cardHeaderProps: {
                     title: 'Complete Your Profile Information',
-                    subheader: 'Please fill in your user profile information. Fields marked with an asterisk (*) are required to proceed.'
+                    subheader: 'Please fill in your user profile information.'
                 }
             }}
         >
@@ -148,7 +148,7 @@ export default function UserProfilePromptModal({
                     <div className="text-xs text-(--mui-palette-text-primary) flex flex-col gap-1">
                         <p className="font-semibold text-sm text-(--mui-palette-primary-900)">Welcome to AU-JAS!</p>
                         <p className="text-(--mui-palette-text-secondary) leading-relaxed">
-                            Before you can use the system, please complete your user profile. Fields marked with an asterisk (<span className="text-(--mui-tokens-color-red-500) font-bold">*</span>) are required — at least <strong className="font-semibold text-(--mui-palette-text-primary)">First Name</strong> and <strong className="font-semibold text-(--mui-palette-text-primary)">Last Name</strong> must be filled before saving. All other fields are optional.
+                            Before you can use the system, please complete your user profile.
                         </p>
                     </div>
                 </div>
@@ -183,12 +183,9 @@ export default function UserProfilePromptModal({
 
                 {/* Personal Information */}
                 <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between border-b border-(--mui-palette-divider) pb-2">
+                    <div className="border-b border-(--mui-palette-divider) pb-2">
                         <span className="font-semibold text-xs text-(--mui-palette-text-secondary) uppercase tracking-wide">
                             Personal Information
-                        </span>
-                        <span className="text-xs text-(--mui-palette-text-secondary)">
-                            <span className="text-(--mui-tokens-color-red-500) font-bold mr-0.5">*</span> Required field
                         </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
