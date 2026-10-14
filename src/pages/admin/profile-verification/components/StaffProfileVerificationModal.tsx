@@ -2,6 +2,7 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
+import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonSelect from '@components/select/CommonSelect';
@@ -179,7 +180,11 @@ export default function StaffProfileVerificationModal({
                 onClose={onClose}
                 cardProps={{
                     className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
+                    defaultActionProps: {
+                        onClick: onClose
+                    },
                     cardHeaderProps: {
+                        action: <ModalCloseIcon onClick={onClose} />,
                         className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
                         subheader: `Role: ${request.role_code} • Submitted ${new Date(request.created_at).toLocaleString()}`,
                         title: `Review Staff Profile: ${request.user_name}`
@@ -509,7 +514,11 @@ export default function StaffProfileVerificationModal({
                 open={isRejectOpen}
                 onClose={() => setIsRejectOpen(false)}
                 cardProps={{
+                    defaultActionProps: {
+                        onClick: () => setIsRejectOpen(false)
+                    },
                     cardHeaderProps: {
+                        action: <ModalCloseIcon onClick={() => setIsRejectOpen(false)} />,
                         subheader: `Specify the reason why ${request.user_name}'s profile change is being declined.`,
                         title: 'Reject Profile Change'
                     }

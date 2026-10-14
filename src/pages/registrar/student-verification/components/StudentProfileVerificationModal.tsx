@@ -2,6 +2,7 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { CommonChip } from '@components/badge/CommonChip';
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonSelect from '@components/select/CommonSelect';
@@ -198,7 +199,11 @@ export default function StudentProfileVerificationModal({
                 onClose={onClose}
                 cardProps={{
                     className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
+                    defaultActionProps: {
+                        onClick: onClose
+                    },
                     cardHeaderProps: {
+                        action: <ModalCloseIcon onClick={onClose} />,
                         className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
                         title: `Verify Student Profile: ${request.student_name}`,
                         subheader: `Student No: ${request.student_number} • Submitted ${new Date(request.created_at).toLocaleString()}`
