@@ -11,8 +11,8 @@ import {
 } from '@phosphor-icons/react';
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
-import { useState } from 'react';
-import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -33,6 +33,18 @@ export default function Step5ThresholdsConfig({
 }: Step5ThresholdsConfigProps) {
     const [deleteThresholdTarget, setDeleteThresholdTarget] = useState<{ index: number; label: string } | null>(null);
     const [collapsedThresholds, setCollapsedThresholds] = useState<Record<number, boolean>>({});
+
+    const { errors } = useFormState({ control });
+
+    useEffect(() => {
+        if (errors.thresholds && Array.isArray(errors.thresholds)) {
+            errors.thresholds.forEach((thErr, idx) => {
+                if (thErr) {
+                    setCollapsedThresholds((prev) => ({ ...prev, [idx]: false }));
+                }
+            });
+        }
+    }, [errors]);
 
     function toggleThresholdCollapse(index: number) {
         setCollapsedThresholds((prev) => ({ ...prev, [index]: !prev[index] }));

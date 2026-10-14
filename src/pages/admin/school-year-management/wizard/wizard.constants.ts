@@ -350,7 +350,13 @@ export function validateTerms(
     return { isValid: true };
 }
 
-export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: boolean; error?: string } {
+export function validateGradingPeriods(terms: WizardTermItem[]): {
+    isValid: boolean;
+    error?: string;
+    fieldPath?: string;
+    termIndex?: number;
+    periodIndex?: number;
+} {
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
         const termName = t.term_type_label || `Term #${i + 1}`;
@@ -359,7 +365,8 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
         if (periods.length === 0) {
             return {
                 error: `Please define at least one grading period for ${termName}.`,
-                isValid: false
+                isValid: false,
+                termIndex: i
             };
         }
 
@@ -372,7 +379,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
             if (!p.name || !p.name.trim()) {
                 return {
                     error: `All grading periods in ${termName} must have a name.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.name`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
@@ -380,7 +390,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
             if (seenNames.has(cleanName)) {
                 return {
                     error: `Duplicate grading period name "${p.name}" in ${termName}. Each grading period in a term must have a unique name.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.name`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
             seenNames.add(cleanName);
@@ -388,62 +401,89 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
             if (!p.weight || Number(p.weight) <= 0) {
                 return {
                     error: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.weight`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (!p.start_date || !p.start_date.trim()) {
                 return {
                     error: `Grading period ${periodLabel} in ${termName} must have a Start Date.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.start_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (!p.end_date || !p.end_date.trim()) {
                 return {
                     error: `Grading period ${periodLabel} in ${termName} must have an End Date.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (new Date(p.end_date) < new Date(p.start_date)) {
                 return {
                     error: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (new Date(p.end_date).getTime() === new Date(p.start_date).getTime()) {
                 return {
                     error: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (t.start_date && new Date(p.start_date) < new Date(t.start_date)) {
                 return {
                     error: `Grading period ${periodLabel} start date (${p.start_date}) cannot be before the term start date (${t.start_date}).`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.start_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (t.end_date && new Date(p.end_date) > new Date(t.end_date)) {
                 return {
                     error: `Grading period ${periodLabel} end date (${p.end_date}) cannot be after the term end date (${t.end_date}).`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
             if (p.major_exam_start_date && p.major_exam_end_date && new Date(p.major_exam_end_date) < new Date(p.major_exam_start_date)) {
                 return {
                     error: `Major Exam End Date cannot be before Major Exam Start Date for grading period ${periodLabel} in ${termName}.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.major_exam_end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
 
             if (p.grade_encoding_start_date && p.grade_encoding_end_date && new Date(p.grade_encoding_end_date) < new Date(p.grade_encoding_start_date)) {
                 return {
                     error: `Grade Encoding End Date cannot be before Grade Encoding Start Date for grading period ${periodLabel} in ${termName}.`,
-                    isValid: false
+                    fieldPath: `terms.${i}.grading_periods.${j}.grade_encoding_end_date`,
+                    isValid: false,
+                    periodIndex: j,
+                    termIndex: i
                 };
             }
         }
@@ -452,7 +492,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
         if (totalWeight !== 100) {
             return {
                 error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`,
-                isValid: false
+                fieldPath: `terms.${i}.grading_periods.${periods.length - 1}.weight`,
+                isValid: false,
+                periodIndex: periods.length - 1,
+                termIndex: i
             };
         }
     }
@@ -461,7 +504,7 @@ export function validateGradingPeriods(terms: WizardTermItem[]): { isValid: bool
 
 export function validateTransmutationRows(
     rows: WizardTransmutationRow[]
-): { isValid: boolean; error?: string } {
+): { isValid: boolean; error?: string; fieldPath?: string; rowIndex?: number } {
     if (!rows || rows.length === 0) {
         return {
             error: 'Please define at least one transmutation row / grade ladder.',
@@ -474,7 +517,9 @@ export function validateTransmutationRows(
         if (!r.label || !r.label.trim()) {
             return {
                 error: `Row #${i + 1} must have a Grade Mark / Label (e.g. 1.00, 1.25, INC).`,
-                isValid: false
+                fieldPath: `transmutation_rows.${i}.label`,
+                isValid: false,
+                rowIndex: i
             };
         }
 
@@ -493,28 +538,36 @@ export function validateTransmutationRows(
         if (minPct === null || isNaN(minPct)) {
             return {
                 error: `Row #${i + 1} (${r.label}) must have a Min % specified.`,
-                isValid: false
+                fieldPath: `transmutation_rows.${i}.min_percentage`,
+                isValid: false,
+                rowIndex: i
             };
         }
 
         if (maxPct === null || isNaN(maxPct)) {
             return {
                 error: `Row #${i + 1} (${r.label}) must have a Max % specified.`,
-                isValid: false
+                fieldPath: `transmutation_rows.${i}.max_percentage`,
+                isValid: false,
+                rowIndex: i
             };
         }
 
         if (minPct < 0 || maxPct > 100) {
             return {
                 error: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
-                isValid: false
+                fieldPath: minPct < 0 ? `transmutation_rows.${i}.min_percentage` : `transmutation_rows.${i}.max_percentage`,
+                isValid: false,
+                rowIndex: i
             };
         }
 
         if (minPct > maxPct) {
             return {
                 error: `Row #${i + 1} (${r.label}) Min % (${minPct}) cannot be greater than Max % (${maxPct}).`,
-                isValid: false
+                fieldPath: `transmutation_rows.${i}.min_percentage`,
+                isValid: false,
+                rowIndex: i
             };
         }
     }
@@ -720,21 +773,21 @@ export function validateStep1SchoolYear(
     sourceSchoolYear?: SourceSchoolYearInfo | null,
     existingSchoolYears?: ExistingSchoolYearComparison[] | null,
     currentId?: string | null
-): { isValid: boolean; error?: string } {
+): { isValid: boolean; error?: string; field?: 'start_date' | 'end_date' | 'code' | 'label' } {
     if (!values.start_date) {
-        return { isValid: false, error: 'Please select a Start Date for the school year.' };
+        return { field: 'start_date', isValid: false, error: 'Please select a Start Date for the school year.' };
     }
     if (!values.end_date) {
-        return { isValid: false, error: 'Please select an End Date for the school year.' };
+        return { field: 'end_date', isValid: false, error: 'Please select an End Date for the school year.' };
     }
     if (new Date(values.end_date) <= new Date(values.start_date)) {
-        return { isValid: false, error: 'End Date must be strictly after Start Date.' };
+        return { field: 'end_date', isValid: false, error: 'End Date must be strictly after Start Date.' };
     }
     if (!values.code || !values.code.trim()) {
-        return { isValid: false, error: 'Academic Year Code is required.' };
+        return { field: 'code', isValid: false, error: 'Academic Year Code is required.' };
     }
     if (!values.label || !values.label.trim()) {
-        return { isValid: false, error: 'Academic Year Label is required.' };
+        return { field: 'label', isValid: false, error: 'Academic Year Label is required.' };
     }
 
     const codeConflict = checkSchoolYearCodeConflict(
@@ -744,7 +797,7 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (codeConflict) {
-        return { isValid: false, error: codeConflict };
+        return { field: 'code', isValid: false, error: codeConflict };
     }
 
     const labelConflict = checkSchoolYearLabelConflict(
@@ -754,7 +807,7 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (labelConflict) {
-        return { isValid: false, error: labelConflict };
+        return { field: 'label', isValid: false, error: labelConflict };
     }
 
     const dateConflict = checkSchoolYearDateConflict(
@@ -765,7 +818,7 @@ export function validateStep1SchoolYear(
         sourceSchoolYear
     );
     if (dateConflict) {
-        return { isValid: false, error: dateConflict };
+        return { field: 'start_date', isValid: false, error: dateConflict };
     }
 
     return { isValid: true };
@@ -797,30 +850,38 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
 
 export function validateCalendarExceptions(
     holidays: { title?: string; start_date?: string; end_date?: string }[]
-): { isValid: boolean; error?: string } {
+): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number } {
     if (!holidays) return { isValid: true };
     for (let i = 0; i < holidays.length; i++) {
         const h = holidays[i];
         if (!h.title || !h.title.trim()) {
             return {
+                fieldPath: `holidays.${i}.title`,
+                holidayIndex: i,
                 isValid: false,
                 error: `Holiday/Exception #${i + 1} must have a Title.`
             };
         }
         if (!h.start_date) {
             return {
+                fieldPath: `holidays.${i}.start_date`,
+                holidayIndex: i,
                 isValid: false,
                 error: `Holiday/Exception "${h.title}" must specify a Start Date.`
             };
         }
         if (!h.end_date) {
             return {
+                fieldPath: `holidays.${i}.end_date`,
+                holidayIndex: i,
                 isValid: false,
                 error: `Holiday/Exception "${h.title}" must specify an End Date.`
             };
         }
         if (new Date(h.end_date) < new Date(h.start_date)) {
             return {
+                fieldPath: `holidays.${i}.end_date`,
+                holidayIndex: i,
                 isValid: false,
                 error: `End Date cannot be before Start Date in Holiday/Exception "${h.title}".`
             };

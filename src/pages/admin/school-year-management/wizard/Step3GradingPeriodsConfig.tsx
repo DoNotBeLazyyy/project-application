@@ -15,12 +15,8 @@ import {
 } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
-import { useState } from 'react';
-import { Control, useWatch } from 'react-hook-form';
-import {
-    DEFAULT_GRADING_PERIODS,
-    distributeDatesAcrossPeriods
-} from '@pages/admin/school-year-management/wizard/wizard.constants';
+import { useEffect, useState } from 'react';
+import { Control, useFormState, useWatch } from 'react-hook-form';
 
 interface Step3GradingPeriodsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -38,6 +34,23 @@ export default function Step3GradingPeriodsConfig({
     const [focusTarget, setFocusTarget] = useState<{ type: 'period' | 'component'; key: string } | null>(null);
     const [collapsedPeriods, setCollapsedPeriods] = useState<Record<string, boolean>>({});
     const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
+
+    const { errors } = useFormState({ control });
+
+    useEffect(() => {
+        if (errors.terms && Array.isArray(errors.terms)) {
+            errors.terms.forEach((tErr: any, tIdx: number) => {
+                if (tErr?.grading_periods && Array.isArray(tErr.grading_periods)) {
+                    tErr.grading_periods.forEach((pErr: any, pIdx: number) => {
+                        if (pErr) {
+                            setCollapsedTerms((prev) => ({ ...prev, [tIdx]: false }));
+                            setCollapsedPeriods((prev) => ({ ...prev, [`${tIdx}_${pIdx}`]: false }));
+                        }
+                    });
+                }
+            });
+        }
+    }, [errors]);
 
     function toggleTermCollapse(index: number) {
         setCollapsedTerms((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -317,10 +330,35 @@ export default function Step3GradingPeriodsConfig({
 
                             {/* Periods List */}
                             <div className={collapsedTerms[tIdx] ? 'hidden' : 'space-y-4'}>
-                                {periods.map((period, pIdx) => {
-                                    const prevPeriod = pIdx > 0
+                                {periods.length === 0 ? (
+                                    <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/60 rounded-xl space-y-2 bg-slate-50/40 dark:bg-zinc-800/20">
+                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            No grading periods declared for this term yet.
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            Click &ldquo;Add Period&rdquo; to manually add a grading period (e.g. Prelim, Midterm, Finals).
+                                        </p>
+                                        {!disabled && (
+                                            <div className="pt-1 flex justify-center">
+                                                <CommonButton
+                                                    color="primary"
+                                                    size="small"
+                                                    startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                                    variant="contained"
+                                                    onClick={() => handleAddPeriod(tIdx)}
+                                                >
+                                                    Add Period
+                                                </CommonButton>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    periods.map((period, pIdx) => {
+                                        const prevPeriod = pIdx > 0
                                         ? periods[pIdx - 1]
                                         : null;
+
+                                    const periodErrors = (errors.terms as any)?.[tIdx]?.grading_periods?.[pIdx];
 
                                     // Duplicate name check
                                     const isDuplicateName = periods.some(
@@ -386,7 +424,7 @@ export default function Step3GradingPeriodsConfig({
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                    {!disabled && periods.length > 1 && (
+                                                    {!disabled && (
                                                         <CommonButton
                                                             color="error"
                                                             size="small"
@@ -428,11 +466,11 @@ export default function Step3GradingPeriodsConfig({
                                                     <CommonInput
                                                         description="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)."
                                                         disabled={disabled}
-                                                        error={isDuplicateName}
+                                                        error={Boolean(isDuplicateName || periodErrors?.name)}
                                                         fullWidth
                                                         helperText={isDuplicateName
                                                             ? 'Duplicate name in this term'
-                                                            : undefined}
+                                                            : periodErrors?.name?.message}
                                                         inputRef={(el) => {
                                                             const itemKey = period.id || `term_${tIdx}_period_${pIdx}`;
                                                             if (focusTarget?.type === 'period' && focusTarget.key === itemKey && el) {
@@ -442,6 +480,7 @@ export default function Step3GradingPeriodsConfig({
                                                         }}
                                                         isRequired
                                                         label="Period Name"
+                                                        name={`terms.${tIdx}.grading_periods.${pIdx}.name`}
                                                         placeholder="e.g. Prelim, Midterm, Finals"
                                                         size="small"
                                                         value={period.name}
@@ -453,11 +492,14 @@ export default function Step3GradingPeriodsConfig({
                                                     <CommonNumberInput
                                                         description="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%."
                                                         disabled={disabled}
+                                                        error={Boolean(periodErrors?.weight)}
                                                         fullWidth
+                                                        helperText={periodErrors?.weight?.message}
                                                         isRequired
                                                         label="Weight (%)"
                                                         max={100}
                                                         min={0}
+                                                        name={`terms.${tIdx}.grading_periods.${pIdx}.weight`}
                                                         size="small"
                                                         suffixText="%"
                                                         value={period.weight ?? ''}
@@ -472,13 +514,14 @@ export default function Step3GradingPeriodsConfig({
                                                     <CommonDatePicker
                                                         description="Opening date for coursework and assessment recording in this grading period."
                                                         disabled={disabled}
-                                                        error={hasPrecedingConflict}
+                                                        error={Boolean(hasPrecedingConflict || periodErrors?.start_date)}
                                                         helperText={hasPrecedingConflict
                                                             ? `Overlaps with #${pIdx} end date`
-                                                            : undefined}
+                                                            : periodErrors?.start_date?.message}
                                                         isRequired
                                                         label="Period Start Date"
                                                         size="small"
+                                                        slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.start_date` } }}
                                                         value={period.start_date || ''}
                                                         onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', val)}
                                                     />
@@ -488,13 +531,14 @@ export default function Step3GradingPeriodsConfig({
                                                     <CommonDatePicker
                                                         description="Cut-off date for exams and grade input for this period."
                                                         disabled={disabled}
-                                                        error={hasDateOrderError}
+                                                        error={Boolean(hasDateOrderError || periodErrors?.end_date)}
                                                         helperText={hasDateOrderError
                                                             ? 'Must be after start date'
-                                                            : undefined}
+                                                            : periodErrors?.end_date?.message}
                                                         isRequired
                                                         label="Period End Date"
                                                         size="small"
+                                                        slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.end_date` } }}
                                                         value={period.end_date || ''}
                                                         onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', val)}
                                                     />
@@ -511,17 +555,23 @@ export default function Step3GradingPeriodsConfig({
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
-                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Exam Start</span>
                                                             <CommonDatePicker
                                                                 disabled={disabled}
+                                                                label="Exam Start"
+                                                                size="small"
+                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.major_exam_start_date` } }}
                                                                 value={period.major_exam_start_date || ''}
                                                                 onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_start_date: val })}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Exam End</span>
                                                             <CommonDatePicker
                                                                 disabled={disabled}
+                                                                error={Boolean(periodErrors?.major_exam_end_date)}
+                                                                helperText={periodErrors?.major_exam_end_date?.message}
+                                                                label="Exam End"
+                                                                size="small"
+                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date` } }}
                                                                 value={period.major_exam_end_date || ''}
                                                                 onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_end_date: val })}
                                                             />
@@ -537,17 +587,23 @@ export default function Step3GradingPeriodsConfig({
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
-                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Encoding Start</span>
                                                             <CommonDatePicker
                                                                 disabled={disabled}
+                                                                label="Encoding Start"
+                                                                size="small"
+                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_start_date` } }}
                                                                 value={period.grade_encoding_start_date || ''}
                                                                 onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_start_date: val })}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <span className="block text-[10px] text-slate-500 mb-0.5">Encoding End</span>
                                                             <CommonDatePicker
                                                                 disabled={disabled}
+                                                                error={Boolean(periodErrors?.grade_encoding_end_date)}
+                                                                helperText={periodErrors?.grade_encoding_end_date?.message}
+                                                                label="Encoding End"
+                                                                size="small"
+                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date` } }}
                                                                 value={period.grade_encoding_end_date || ''}
                                                                 onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_end_date: val })}
                                                             />
@@ -720,7 +776,7 @@ export default function Step3GradingPeriodsConfig({
                                                 </div>
                                         </div>
                                     );
-                                })}
+                                }))}
                             </div>
                         </div>
                     );

@@ -243,6 +243,7 @@ export async function bulkCreatePrograms(
     programs: ProgramBulkRow[]
 ): Promise<BulkImportResult> {
     const uniqueProgramsMap = new Map<string, ProgramBulkRow>();
+    const curriculumRows: CurriculumMapBulkRow[] = [];
     const existingCodes: string[] = [];
     const normalizedPrograms = programs.map((row) => {
         const code = row.code?.trim() || generateProgramCode(row.name || '', existingCodes);

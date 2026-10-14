@@ -15,8 +15,8 @@ import {
     ExceptionTypeOptionItem,
     WizardCalendarExceptionItem
 } from '@type/school-year.type';
-import { useState } from 'react';
-import { Control, useFieldArray, UseFormSetValue, useWatch } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
 
 interface Step4HolidaysConfigProps {
@@ -42,6 +42,18 @@ export default function Step4HolidaysConfig({
     const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
     const [deleteExceptionTarget, setDeleteExceptionTarget] = useState<{ index: number; title: string } | null>(null);
     const [collapsedExceptions, setCollapsedExceptions] = useState<Record<number, boolean>>({});
+
+    const { errors } = useFormState({ control });
+
+    useEffect(() => {
+        if (errors.holidays && Array.isArray(errors.holidays)) {
+            errors.holidays.forEach((hErr, idx) => {
+                if (hErr) {
+                    setCollapsedExceptions((prev) => ({ ...prev, [idx]: false }));
+                }
+            });
+        }
+    }, [errors]);
 
     function toggleExceptionCollapse(index: number) {
         setCollapsedExceptions((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -209,14 +221,17 @@ export default function Step4HolidaysConfig({
                                     <div>
                                         <CommonInput
                                             disabled={disabled}
+                                            error={Boolean((errors.holidays as any)?.[idx]?.title)}
                                             fullWidth
+                                            helperText={(errors.holidays as any)?.[idx]?.title?.message}
                                             isRequired
                                             label="Holiday / Exception Title"
+                                            name={`holidays.${idx}.title`}
                                             placeholder="Holiday / Exception Title (e.g. Independence Day)"
                                             size="small"
                                             value={current.title || ''}
                                             onChange={(e) => {
-                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true });
+                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true, shouldValidate: true });
                                             }}
                                         />
                                     </div>
@@ -268,11 +283,15 @@ export default function Step4HolidaysConfig({
                                         <div>
                                             <CommonDatePicker
                                                 disabled={disabled}
+                                                error={Boolean((errors.holidays as any)?.[idx]?.start_date)}
+                                                helperText={(errors.holidays as any)?.[idx]?.start_date?.message}
+                                                isRequired
                                                 label="Start Date"
                                                 size="small"
+                                                slotProps={{ textField: { name: `holidays.${idx}.start_date` } }}
                                                 value={current.start_date || ''}
                                                 onChange={(val) => {
-                                                    setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true });
+                                                    setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true, shouldValidate: true });
                                                 }}
                                             />
                                         </div>
@@ -280,11 +299,15 @@ export default function Step4HolidaysConfig({
                                         <div>
                                             <CommonDatePicker
                                                 disabled={disabled}
+                                                error={Boolean((errors.holidays as any)?.[idx]?.end_date)}
+                                                helperText={(errors.holidays as any)?.[idx]?.end_date?.message}
+                                                isRequired
                                                 label="End Date"
                                                 size="small"
+                                                slotProps={{ textField: { name: `holidays.${idx}.end_date` } }}
                                                 value={current.end_date || ''}
                                                 onChange={(val) => {
-                                                    setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true });
+                                                    setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true, shouldValidate: true });
                                                 }}
                                             />
                                         </div>

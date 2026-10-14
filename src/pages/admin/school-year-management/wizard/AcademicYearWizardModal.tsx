@@ -237,7 +237,10 @@ export default function AcademicYearWizardModal({
             return false;
         }
         if (!result.isValid && result.error) {
-            useToastStore.getState().showToast(result.error, 'error');
+            if (result.field) {
+                methods.setError(result.field, { type: 'manual', message: result.error });
+            }
+            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -248,7 +251,10 @@ export default function AcademicYearWizardModal({
         const values = getValues();
         const result = validateTerms(values.terms || [], values.start_date, values.end_date);
         if (!result.isValid && result.error) {
-            useToastStore.getState().showToast(result.error, 'error');
+            if (result.fieldPath) {
+                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+            }
+            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -260,7 +266,10 @@ export default function AcademicYearWizardModal({
         const terms = values.terms || [];
         const result = validateGradingPeriods(terms);
         if (!result.isValid && result.error) {
-            useToastStore.getState().showToast(result.error, 'error');
+            if (result.fieldPath) {
+                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+            }
+            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -272,7 +281,10 @@ export default function AcademicYearWizardModal({
         const holidays = values.holidays || [];
         const result = validateCalendarExceptions(holidays);
         if (!result.isValid && result.error) {
-            useToastStore.getState().showToast(result.error, 'error');
+            if (result.fieldPath) {
+                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+            }
+            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -284,7 +296,10 @@ export default function AcademicYearWizardModal({
         const rows = values.transmutation_rows || [];
         const result = validateTransmutationRows(rows);
         if (!result.isValid && result.error) {
-            useToastStore.getState().showToast(result.error, 'error');
+            if (result.fieldPath) {
+                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+            }
+            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -298,17 +313,19 @@ export default function AcademicYearWizardModal({
         for (let i = 0; i < thresholds.length; i++) {
             const t = thresholds[i];
             if (!t.label || !t.label.trim()) {
-                useToastStore.getState().showToast(
-                    `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`,
-                    'error'
-                );
+                methods.setError(`thresholds.${i}.label` as any, {
+                    type: 'manual',
+                    message: `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
             if (t.max_gwa === '' || t.max_gwa === null || t.max_gwa === undefined) {
-                useToastStore.getState().showToast(
-                    `Threshold "${t.label}" must specify a Max GWA cutoff.`,
-                    'error'
-                );
+                methods.setError(`thresholds.${i}.max_gwa` as any, {
+                    type: 'manual',
+                    message: `Threshold "${t.label}" must specify a Max GWA cutoff.`
+                });
+                formErrors(methods.formState.errors, methods);
                 return false;
             }
         }
