@@ -1,6 +1,5 @@
 import CommonButton from '@components/button/CommonButton';
 import BulkImportModal from '@components/modal/BulkImportModal';
-import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-management/constants/admin-user.constant';
@@ -30,14 +29,6 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'last_name', label: 'Last Name', hint: 'e.g. Dela Cruz' },
     { key: 'email', label: 'Email', hint: 'e.g. juan@school.edu' },
     { key: 'role_code', label: 'Role', hint: 'Admin, Faculty, Student, Registrar, Dean' }
-];
-
-const STATUS_TABS = [
-    { label: 'Active & Invited', value: 'Active_Invited' },
-    { label: 'Active', value: 'Active' },
-    { label: 'Invited', value: 'Invited' },
-    { label: 'Inactive', value: 'Inactive' },
-    { label: 'All Users', value: 'All' }
 ];
 
 export default function UserManagement() {
@@ -230,19 +221,6 @@ export default function UserManagement() {
         setActiveFilters(resetFilters);
     }
 
-    function handleStatusTabChange(newStatus: UserFilterValues['status']) {
-        setActiveFilters((prev) => {
-            const updated: UserFilterValues = {
-                city: prev?.city ?? '',
-                province: prev?.province ?? '',
-                role_code: prev?.role_code ?? 'All',
-                status: newStatus
-            };
-            filterMethods.setValue('status', newStatus);
-            return updated;
-        });
-    }
-
     async function handleUpdateSubmit(values: UpdateUserFormValues) {
         if (!selectedUserId) {
             return;
@@ -269,15 +247,7 @@ export default function UserManagement() {
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 px-4 py-1 rounded-xl shadow-2xs shrink-0">
-                <CommonTabMenu
-                    tabs={STATUS_TABS}
-                    value={activeFilters?.status ?? 'Active_Invited'}
-                    onChange={(_, val) => handleStatusTabChange(val as UserFilterValues['status'])}
-                />
-            </div>
-
+        <div className="h-full">
             <CommonTableCard<UserListRow>
                 cardHeaderProps={{
                     subheader: 'Provision and manage all system users.',
