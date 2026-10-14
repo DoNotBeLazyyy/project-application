@@ -1,5 +1,7 @@
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { FormField, FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { ComponentPropsForm } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
 import {
@@ -35,6 +37,7 @@ export interface CommonFormProps<T extends FieldValues> {
     control: Control<T>;
     fields: FormFieldConfig<T>[];
     containerClassName?: string;
+    enableDraftRecovery?: boolean;
     formProps?: ComponentPropsForm;
     hasHelper?: boolean;
     helperPlacement?: FormHelperPlacement;
@@ -115,12 +118,28 @@ export default function CommonForm<T extends FieldValues>({
     control,
     fields,
     containerClassName = 'flex flex-col gap-4',
+    enableDraftRecovery,
     formProps,
     hasHelper = true,
     helperPlacement = 'label'
 }: CommonFormProps<T>) {
     ensureSubmitValidationMode(control);
     const { errors, submitCount } = useFormState({ control });
+
+    const isViewOnly = fields.length > 0 && fields.every((f) => f.disabled);
+    const isFilterForm = Boolean(formProps?.id && /filter/i.test(formProps.id));
+    const shouldEnableDraft = enableDraftRecovery ?? (!isViewOnly && !isFilterForm);
+
+    const {
+        handleContinue,
+        handleDiscard,
+        isPromptOpen
+    } = useFormDraft({
+        control,
+        enabled: shouldEnableDraft,
+        fields,
+        formId: formProps?.id
+    });
 
     // Determine the first field in form order that currently has a validation error
     const firstErrorField = useMemo(() => {
@@ -161,13 +180,24 @@ export default function CommonForm<T extends FieldValues>({
         </div>
     );
 
-    if (component === 'div') {
-        return content;
-    }
-
-    return (
+    const formElement = component === 'div' ? (
+        content
+    ) : (
         <form {...formProps}>
             {content}
         </form>
+    );
+
+    return (
+        <>
+            {formElement}
+            {shouldEnableDraft && (
+                <DraftRecoveryPromptModal
+                    open={isPromptOpen}
+                    onContinue={handleContinue}
+                    onDiscard={handleDiscard}
+                />
+            )}
+        </>
     );
 }

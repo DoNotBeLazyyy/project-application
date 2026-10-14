@@ -5,6 +5,8 @@ import UnsavedChangesPrompt from '@components/modal/UnsavedChangesPrompt';
 import { useUnsavedChangesGuard } from '@hooks/useUnsavedChangesGuard';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { createRubric, getRubric, updateRubric } from '@services/rubric.service';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
@@ -121,6 +123,11 @@ export default function RubricBuilderPage() {
         isDirty: formState.isDirty,
         onDiscard: navigateToRubrics,
         onSave: submitHandler
+    });
+
+    const draftGuard = useFormDraft({
+        control,
+        formId: `rubric-builder-${rubricId}`
     });
 
     return (
@@ -263,6 +270,11 @@ export default function RubricBuilderPage() {
                 onClose={backGuard.closePrompt}
                 onDiscard={backGuard.confirmDiscard}
                 onSave={backGuard.confirmSave}
+            />
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
             />
         </CommonCard>
     );
