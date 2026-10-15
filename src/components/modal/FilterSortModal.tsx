@@ -2,6 +2,7 @@ import CommonFormModal, { CommonFormModalProps } from '@components/modal/CommonF
 import SortFieldsEditor from '@components/modal/sort-modal/SortFieldsEditor';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import { SortStringDto } from '@type/http.type';
+import { normalizeSx } from '@utils/theme.util';
 import { useEffect, useState } from 'react';
 
 export interface FilterSortModalProps extends CommonFormModalProps {
@@ -58,7 +59,7 @@ export default function FilterSortModal({
                 ...cardProps
             }}
             confirmText={rest.confirmText ?? 'Apply Changes'}
-            containerClassName={rest.containerClassName ?? 'w-full max-w-full sm:w-[32rem]'}
+            containerClassName={rest.containerClassName ?? 'w-full'}
             formButtonsProps={{
                 ...rest.formButtonsProps,
                 confirmProps: {
@@ -67,15 +68,15 @@ export default function FilterSortModal({
                 }
             }}
             formContent={
-                <div className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-5 w-full">
+                    <div className="flex flex-col gap-3 w-full">
                         <span className="font-bold text-(--mui-palette-brand-700) text-xs tracking-wider uppercase">
                             Filter Options
                         </span>
                         {formContent}
                     </div>
-                    <div className="bg-(--mui-palette-grey-200) h-px" />
-                    <div className="flex flex-col gap-3">
+                    <div className="bg-(--mui-palette-grey-200) h-px w-full" />
+                    <div className="flex flex-col gap-3 w-full">
                         <span className="font-bold text-(--mui-palette-warning-dark) text-xs tracking-wider uppercase">
                             Sort Configuration
                         </span>
@@ -91,6 +92,15 @@ export default function FilterSortModal({
             onReset={onReset
                 ? handleResetClick
                 : undefined}
+            sx={[
+                {
+                    '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                        maxWidth: { xs: 'calc(100% - 2rem)', sm: '34rem' },
+                        width: { xs: 'calc(100% - 2rem)', sm: '100%' }
+                    }
+                },
+                ...normalizeSx(rest.sx)
+            ]}
         />
     );
 }

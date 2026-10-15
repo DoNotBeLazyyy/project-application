@@ -183,7 +183,10 @@ export default function CommonForm<T extends FieldValues>({
     const formElement = component === 'div' ? (
         content
     ) : (
-        <form {...formProps}>
+        <form
+            {...formProps}
+            className={classMerge('w-full', formProps?.className)}
+        >
             {content}
         </form>
     );

@@ -1,6 +1,7 @@
 import CommonFormModal, { CommonFormModalProps } from '@components/modal/CommonFormModal';
 import FilterSortModal, { FilterSortModalProps } from '@components/modal/FilterSortModal';
 import SortModal, { SortModalProps } from '@components/modal/sort-modal/SortModal';
+import { normalizeSx } from '@utils/theme.util';
 
 export interface TableModalsProps {
     createModalProps?: CommonFormModalProps;
@@ -27,7 +28,21 @@ export default function TableModals({
                 {...viewModalProps}
                 hideCancel
             />}
-            {filterModalProps && <CommonFormModal {...filterModalProps} />}
+            {filterModalProps && (
+                <CommonFormModal
+                    containerClassName="w-full"
+                    {...filterModalProps}
+                    sx={[
+                        {
+                            '& .MuiDialog-paper:not(.MuiDialog-paperFullScreen)': {
+                                maxWidth: { xs: 'calc(100% - 2rem)', sm: '34rem' },
+                                width: { xs: 'calc(100% - 2rem)', sm: '100%' }
+                            }
+                        },
+                        ...normalizeSx(filterModalProps.sx)
+                    ]}
+                />
+            )}
             {sortModalProps && <SortModal {...sortModalProps} />}
             {filterSortModalProps && <FilterSortModal {...filterSortModalProps} />}
         </>

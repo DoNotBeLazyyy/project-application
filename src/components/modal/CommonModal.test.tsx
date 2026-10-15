@@ -2,6 +2,7 @@ import CommonActionModal from '@components/modal/CommonActionModal';
 import CommonFormModal from '@components/modal/CommonFormModal';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
+import FilterSortModal from '@components/modal/FilterSortModal';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -112,6 +113,24 @@ describe('CommonModal & Derived Modals', () => {
                 fireEvent.click(backdrop);
                 expect(handleClose).not.toHaveBeenCalled();
             }
+        });
+    });
+
+    describe('FilterSortModal', () => {
+        it('renders filter form content and sort configuration with full width', () => {
+            render(
+                <FilterSortModal
+                    open={true}
+                    currentSort={[]}
+                    sortColumns={[{ field: 'name', label: 'Name' }]}
+                    formContent={<div data-testid="filter-form-content">Filter Form Inputs</div>}
+                    onApplySort={vi.fn()}
+                />
+            );
+
+            expect(screen.getByText('Filter Options')).toBeInTheDocument();
+            expect(screen.getByTestId('filter-form-content')).toBeInTheDocument();
+            expect(screen.getByText('Sort Configuration')).toBeInTheDocument();
         });
     });
 });
