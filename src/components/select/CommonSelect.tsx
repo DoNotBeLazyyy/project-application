@@ -93,13 +93,12 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
         : undefined);
 
     const selectSlot = slotProps?.select as SelectProps | undefined;
-    const selectOpen = hasNoOptions
-        ? false
-        : (selectSlot?.open !== undefined
-            ? selectSlot.open
-            : (isFirstError
-                ? uncontrolledOpen
-                : undefined));
+    const isControlledOpen = selectSlot?.open !== undefined || Boolean(isFirstError);
+    const selectOpen = selectSlot?.open !== undefined
+        ? selectSlot.open
+        : (isFirstError
+            ? uncontrolledOpen
+            : undefined);
 
     return (
         <div
@@ -135,9 +134,9 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                 size={size}
                 variant={variant}
                 {...props}
-                {...(hasNoOptions
-                    ? { value: '' }
-                    : {})}
+                {...(props.value !== undefined
+                    ? { value: props.value }
+                    : (hasNoOptions ? { value: '' } : {}))}
                 slotProps={{
                     ...slotProps,
                     input: {
@@ -146,7 +145,7 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                     },
                     select: {
                         displayEmpty: true,
-                        open: selectOpen,
+                        ...(isControlledOpen ? { open: selectOpen } : {}),
                         onOpen: (e) => {
                             if (hasNoOptions) return;
                             setUncontrolledOpen(true);
@@ -156,10 +155,9 @@ const CommonSelect = forwardRef<HTMLDivElement, CommonSelectProps>(({
                             setUncontrolledOpen(false);
                             selectSlot?.onClose?.(e);
                         },
-                        ...slotProps?.select,
+                        ...selectSlot,
                         ...(hasNoOptions
                             ? {
-                                open: false,
                                 renderValue: () => 'No option available'
                             }
                             : {}),

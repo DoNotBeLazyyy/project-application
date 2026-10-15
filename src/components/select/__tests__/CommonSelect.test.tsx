@@ -57,4 +57,40 @@ describe('CommonSelect', () => {
         const combobox = screen.getByRole('combobox');
         expect(combobox).not.toHaveAttribute('aria-disabled', 'true');
     });
+
+    it('opens the menu after options load asynchronously', () => {
+        const { rerender } = render(
+            <CommonSelect
+                options={[]}
+                value=""
+            />
+        );
+
+        rerender(
+            <CommonSelect
+                options={[
+                    { label: 'Option 1', value: '1' },
+                    { label: 'Option 2', value: '2' }
+                ]}
+                value=""
+            />
+        );
+
+        const combobox = screen.getByRole('combobox');
+        fireEvent.mouseDown(combobox);
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+        // Click Option 1
+        fireEvent.click(screen.getByText('Option 1'));
+        rerender(
+            <CommonSelect
+                options={[
+                    { label: 'Option 1', value: '1' },
+                    { label: 'Option 2', value: '2' }
+                ]}
+                value="1"
+            />
+        );
+        expect(screen.getAllByText('Option 1').length).toBeGreaterThanOrEqual(1);
+    });
 });
