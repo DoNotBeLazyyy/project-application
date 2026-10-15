@@ -211,6 +211,7 @@ export default function SchoolYearManagement() {
                 schoolYearId={historySchoolYearId}
                 schoolYearLabel={historySchoolYearLabel}
                 onClose={handleCloseHistory}
+                onReverted={triggerRefresh}
             />
         </div>
     );

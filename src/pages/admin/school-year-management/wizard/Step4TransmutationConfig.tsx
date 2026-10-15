@@ -142,7 +142,7 @@ export default function Step4TransmutationConfig({
 
                     return (
                         <div
-                            key={row.id || field.id || `transmutation_${index}`}
+                            key={field.id}
                             className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-4 transition-all"
                         >
                             {/* Row 1: Header with Action Buttons */}
@@ -286,7 +286,7 @@ export default function Step4TransmutationConfig({
                                             value={row.label}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.special_code`, val.trim().toUpperCase(), { shouldDirty: true });
                                             }}
@@ -312,7 +312,7 @@ export default function Step4TransmutationConfig({
                                             onChange={(e) => {
                                                 const val = e.target.value;
                                                 const numeric = parseFloat(val);
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.transmuted_grade`, isNaN(numeric) ? null : numeric, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.special_code`, null, { shouldDirty: true });
                                             }}
@@ -340,7 +340,7 @@ export default function Step4TransmutationConfig({
                                                 setValue(
                                                     `transmutation_rows.${index}.min_percentage`,
                                                     val === undefined ? null : val,
-                                                    { shouldDirty: true, shouldValidate: true }
+                                                    { shouldDirty: true }
                                                 );
                                             }}
                                         />
@@ -367,7 +367,7 @@ export default function Step4TransmutationConfig({
                                                 setValue(
                                                     `transmutation_rows.${index}.max_percentage`,
                                                     val === undefined ? null : val,
-                                                    { shouldDirty: true, shouldValidate: true }
+                                                    { shouldDirty: true }
                                                 );
                                             }}
                                         />

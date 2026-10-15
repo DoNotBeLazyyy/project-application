@@ -240,7 +240,7 @@ export default function Step5ThresholdsConfig({
                                                 value={item.label}
                                                 onChange={(e) => {
                                                     const newLabel = e.target.value;
-                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true, shouldValidate: true });
+                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true });
                                                     const otherCodes = thresholds
                                                         .map((th, i) => (i !== idx
                                                             ? th.code
@@ -333,7 +333,7 @@ export default function Step5ThresholdsConfig({
                                                 value={item.max_gwa ?? ''}
                                                 onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined
                                                     ? ''
-                                                    : val, { shouldDirty: true, shouldValidate: true })}
+                                                    : val, { shouldDirty: true })}
                                             />
                                         </div>
                                     </div>

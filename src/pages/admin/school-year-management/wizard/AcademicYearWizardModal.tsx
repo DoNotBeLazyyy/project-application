@@ -78,8 +78,8 @@ const DEFAULT_WIZARD_FORM_VALUES: AcademicYearWizardFormValues = {
     max_units_per_term: 24,
     start_date: '',
     terms: [],
-    thresholds: [],
-    transmutation_rows: []
+    thresholds: DEFAULT_ACADEMIC_THRESHOLDS,
+    transmutation_rows: DEFAULT_TRANSMUTATION_ROWS
 };
 
 export default function AcademicYearWizardModal({
@@ -815,6 +815,42 @@ export default function AcademicYearWizardModal({
                 schoolYearId={schoolYearId}
                 schoolYearLabel={watch('label')}
                 onClose={() => setIsHistoryModalOpen(false)}
+                onReverted={() => {
+                    if (schoolYearId) {
+                        getAcademicYearCalendarDetails(schoolYearId).then((res) => {
+                            if (res.data) {
+                                const data = res.data;
+                                reset({
+                                    code: data.code || '',
+                                    end_date: data.end_date || '',
+                                    evaluation_scope: data.evaluation_scope || 'Period',
+                                    holidays: data.holidays || [],
+                                    id: data.id,
+                                    is_active: Boolean(data.is_active),
+                                    label: data.label || '',
+                                    max_units_per_term: data.max_units_per_term ?? 24,
+                                    start_date: data.start_date || '',
+                                    terms: (data.terms && data.terms.length > 0 ? data.terms : []).map((t) => ({
+                                        ...t,
+                                        max_units: t.max_units ?? 24,
+                                        evaluation_scope: t.evaluation_scope || data.evaluation_scope || 'Period'
+                                    })),
+                                    thresholds: data.thresholds || [],
+                                    transmutation_rows: (data.transmutation_rows || []).map((r) => {
+                                        const isSpecial = isSpecialGradeRow(r);
+                                        return {
+                                            ...r,
+                                            max_percentage: isSpecial ? null : r.max_percentage,
+                                            min_percentage: isSpecial ? null : r.min_percentage,
+                                            transmuted_grade: isSpecial ? null : r.transmuted_grade
+                                        };
+                                    })
+                                });
+                            }
+                        });
+                        onSuccess();
+                    }
+                }}
             />
 
             {/* Schedule & Holiday Overlay Preview Modal */}

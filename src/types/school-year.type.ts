@@ -1,5 +1,6 @@
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { EvaluationScope } from '@type/evaluation.type';
+export type { EvaluationScope };
 
 export interface SchoolYearListRow {
     id: string;

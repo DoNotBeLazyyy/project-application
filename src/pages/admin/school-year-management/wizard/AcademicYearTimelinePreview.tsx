@@ -205,7 +205,7 @@ export default function AcademicYearTimelinePreview({
 
     return (
         <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 shadow-sm space-y-4 min-w-0">
-            <div className="flex items-center justify-between gap-2 text-xs border-b border-slate-100 dark:border-zinc-700/50 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs border-b border-slate-100 dark:border-zinc-700/50 pb-3">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
                     <CalendarDotsIcon className="w-4 h-4 text-brand-600 shrink-0" weight="bold" />
                     <span>Academic Year Schedule & Key Happenings</span>
@@ -219,19 +219,19 @@ export default function AcademicYearTimelinePreview({
             {timelineEvents.length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">No events or terms configured yet.</p>
             ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[60vh] sm:max-h-96 overflow-y-auto pr-1">
                     {timelineEvents.map((evt) => {
                         const style = categoryBadges[evt.category];
                         return (
                             <div
                                 key={evt.id}
-                                className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-100 dark:border-zinc-700/50 bg-slate-50/50 dark:bg-zinc-800/40 text-xs hover:bg-slate-100/70 dark:hover:bg-zinc-700/40 transition-colors"
+                                className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 p-3 rounded-xl border border-slate-100 dark:border-zinc-700/50 bg-slate-50/50 dark:bg-zinc-800/40 text-xs hover:bg-slate-100/70 dark:hover:bg-zinc-700/40 transition-colors"
                             >
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <span className={`px-2 py-0.5 rounded-md font-mono font-bold text-[11px] shrink-0 ${style.bg} ${style.text}`}>
+                                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                    <span className={`px-2.5 py-1 rounded-md font-mono font-bold text-[11px] shrink-0 self-start ${style.bg} ${style.text}`}>
                                         {evt.formattedDate}
                                     </span>
-                                    <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                    <span className="font-semibold text-slate-800 dark:text-slate-200 break-words whitespace-normal leading-relaxed pt-0.5">
                                         {evt.label}
                                     </span>
                                 </div>
