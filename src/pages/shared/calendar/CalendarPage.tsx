@@ -13,9 +13,7 @@ import {
     ListBulletsIcon,
     PlusIcon
 } from '@phosphor-icons/react';
-import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { changeMonthUtil } from '@utils/calendar.util';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
@@ -157,12 +155,14 @@ export default function CalendarPage() {
     };
 
     const pickerDateValue = useMemo(() => {
-        return DateTime.fromJSDate(viewMode === 'day' ? selectedDate : currentDate);
+        return DateTime.fromJSDate(viewMode === 'day' ? selectedDate : currentDate).toISODate() || '';
     }, [viewMode, selectedDate, currentDate]);
 
-    const handlePickerChange = (val: DateTime | null) => {
-        if (!val || !val.isValid) return;
-        const nextDate = val.toJSDate();
+    const handlePickerChange = (dateStr: string) => {
+        if (!dateStr) return;
+        const dt = DateTime.fromISO(dateStr);
+        if (!dt.isValid) return;
+        const nextDate = dt.toJSDate();
         setCurrentDate(nextDate);
         setSelectedDate(nextDate);
     };
@@ -255,51 +255,25 @@ export default function CalendarPage() {
                             </button>
 
                             <div className="w-[135px] sm:w-[165px]">
-                                <LocalizationProvider dateAdapter={AdapterLuxon}>
-                                    <DatePicker
-                                        format={viewMode === 'month' || viewMode === 'agenda' ? 'MMMM yyyy' : 'MMM d, yyyy'}
-                                        slotProps={{
-                                            actionBar: {
-                                                actions: ['today', 'accept']
-                                            },
-                                            textField: {
-                                                size: 'small',
-                                                sx: {
-                                                    '& .MuiInputBase-root': {
-                                                        height: '34px !important',
-                                                        maxHeight: '34px !important',
-                                                        fontSize: '0.8125rem !important',
-                                                        fontWeight: 600,
-                                                        paddingRight: '4px !important',
-                                                        paddingLeft: '6px !important',
-                                                        borderRadius: '10px',
-                                                        backgroundColor: 'var(--mui-palette-background-paper)'
-                                                    },
-                                                    '& .MuiInputBase-input': {
-                                                        padding: '0 !important',
-                                                        textAlign: 'center',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.8125rem !important',
-                                                        fontWeight: 600,
-                                                        color: 'var(--mui-palette-text-primary)'
-                                                    },
-                                                    '& .MuiInputAdornment-root .MuiIconButton-root': {
-                                                        padding: '2px !important',
-                                                        width: '24px !important',
-                                                        height: '24px !important',
-                                                        color: 'var(--mui-palette-primary-main)'
-                                                    },
-                                                    '& .MuiInputAdornment-root svg': {
-                                                        width: '16px !important',
-                                                        height: '16px !important'
-                                                    }
+                                <CommonDatePicker
+                                    containerClassName="w-full"
+                                    format={viewMode === 'month' || viewMode === 'agenda' ? 'MMMM yyyy' : 'MMM d, yyyy'}
+                                    fullWidth
+                                    hasToday
+                                    size="small"
+                                    slotProps={{
+                                        textField: {
+                                            sx: {
+                                                '& .MuiInputBase-input': {
+                                                    textAlign: 'center',
+                                                    cursor: 'pointer'
                                                 }
                                             }
-                                        }}
-                                        value={pickerDateValue}
-                                        onChange={handlePickerChange}
-                                    />
-                                </LocalizationProvider>
+                                        }
+                                    }}
+                                    value={pickerDateValue}
+                                    onChange={handlePickerChange}
+                                />
                             </div>
 
                             <button

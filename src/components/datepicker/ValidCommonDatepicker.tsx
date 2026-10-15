@@ -16,7 +16,7 @@ import {
     checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
@@ -31,6 +31,7 @@ export interface CommonDatePickerProps extends Omit<DatePickerProps, 'value' | '
     helperText?: string;
     fullWidth?: boolean;
     hasHelper?: boolean;
+    hasToday?: boolean;
     size?: 'small' | 'medium' | 'large';
 }
 
@@ -45,12 +46,13 @@ export interface StandaloneCommonDatePickerProps extends Omit<DatePickerProps, '
     isRequired?: boolean;
     defaultOpenErrorTooltip?: boolean;
     isFirstError?: boolean;
-    value?: string | null;
+    value?: string | DateTime | Date | null;
     onChange: (dateStr: string) => void;
     error?: boolean;
     helperText?: string;
     fullWidth?: boolean;
     hasHelper?: boolean;
+    hasToday?: boolean;
     disabled?: boolean;
     readOnly?: boolean;
     size?: 'small' | 'medium' | 'large';
@@ -156,6 +158,7 @@ export function CommonDatePicker({
     error: errorProp,
     fullWidth = true,
     hasHelper = false,
+    hasToday = false,
     helperText: helperTextProp,
     isFirstError,
     isRequired,
@@ -169,9 +172,16 @@ export function CommonDatePicker({
 }: StandaloneCommonDatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
-    const resolvedValue = value
-        ? DateTime.fromISO(value)
-        : null;
+    const resolvedValue = useMemo(() => {
+        if (!value) return null;
+        if (DateTime.isDateTime(value)) return value;
+        if (value instanceof Date) return DateTime.fromJSDate(value);
+        if (typeof value === 'string') {
+            const parsed = DateTime.fromISO(value);
+            return parsed.isValid ? parsed : DateTime.fromJSDate(new Date(value));
+        }
+        return null;
+    }, [value]);
 
     const isNonInteractive = Boolean(disabled || readOnly);
 
@@ -229,6 +239,16 @@ export function CommonDatePicker({
     const { className: externalClassName, onFocus: externalOnFocus, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
     const resolvedSize = externalSize ?? size;
 
+    const externalActionBarProps = typeof props.slotProps?.actionBar === 'object'
+        ? props.slotProps.actionBar
+        : undefined;
+    const resolvedActionBar = hasToday
+        ? {
+            actions: ['today'] as const,
+            ...externalActionBarProps
+        }
+        : externalActionBarProps;
+
     return (
         <div
             className={
@@ -260,6 +280,7 @@ export function CommonDatePicker({
                     readOnly={readOnly}
                     slotProps={{
                         ...props.slotProps,
+                        ...(resolvedActionBar ? { actionBar: resolvedActionBar } : {}),
                         openPickerButton: {
                             disabled: isNonInteractive,
                             size: resolvedSize === 'large' ? 'medium' : 'small',
@@ -332,6 +353,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     error: errorProp,
     fullWidth = true,
     hasHelper = true,
+    hasToday = false,
     helperText: helperTextProp,
     isFirstError,
     isRequired,
@@ -351,9 +373,16 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     } = useController({ control, name, rules });
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
-    const resolvedValue = value
-        ? DateTime.fromISO(value)
-        : null;
+    const resolvedValue = useMemo(() => {
+        if (!value) return null;
+        if (DateTime.isDateTime(value)) return value;
+        if (value instanceof Date) return DateTime.fromJSDate(value);
+        if (typeof value === 'string') {
+            const parsed = DateTime.fromISO(value);
+            return parsed.isValid ? parsed : DateTime.fromJSDate(new Date(value));
+        }
+        return null;
+    }, [value]);
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const resolvedIsFirstError = isFirstError ?? Boolean(fieldState.error && firstErrorKey === name);
@@ -451,6 +480,16 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     const { className: externalClassName, onFocus: externalOnFocus, size: externalSize, ...restTextFieldProps } = externalTextFieldProps ?? {};
     const resolvedSize = externalSize ?? size;
 
+    const externalActionBarProps = typeof props.slotProps?.actionBar === 'object'
+        ? props.slotProps.actionBar
+        : undefined;
+    const resolvedActionBar = hasToday
+        ? {
+            actions: ['today'] as const,
+            ...externalActionBarProps
+        }
+        : externalActionBarProps;
+
     return (
         <div
             className={
@@ -484,6 +523,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                     readOnly={readOnly}
                     slotProps={{
                         ...props.slotProps,
+                        ...(resolvedActionBar ? { actionBar: resolvedActionBar } : {}),
                         openPickerButton: {
                             disabled: isNonInteractive,
                             size: resolvedSize === 'large' ? 'medium' : 'small',
