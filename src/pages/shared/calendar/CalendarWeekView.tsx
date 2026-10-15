@@ -53,8 +53,9 @@ export function CalendarWeekView({
     }, []);
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col">
-            {/* Header: Weekdays */}
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-x-auto flex flex-col">
+            <div className="min-w-[620px] flex flex-col">
+                {/* Header: Weekdays */}
             <div className="grid grid-cols-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-800/50">
                 <div className="p-3 text-center text-xs font-semibold text-neutral-400 dark:text-neutral-500 border-r border-neutral-200/80 dark:border-neutral-800">
                     Time
@@ -172,6 +173,7 @@ export function CalendarWeekView({
                         </div>
                     );
                 })}
+            </div>
             </div>
         </div>
     );

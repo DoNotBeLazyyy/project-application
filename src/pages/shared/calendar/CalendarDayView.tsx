@@ -59,7 +59,7 @@ export function CalendarDayView({
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col">
             {/* Day Header */}
-            <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-800/40 flex items-center justify-between">
+            <div className="p-3.5 sm:p-5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="text-xl font-bold text-neutral-900 dark:text-white">
@@ -122,7 +122,7 @@ export function CalendarDayView({
                     return (
                         <div key={hour} className="flex min-h-[72px] group">
                             {/* Time Axis */}
-                            <div className="w-24 p-3 text-right pr-4 text-xs font-semibold text-neutral-400 dark:text-neutral-500 border-r border-neutral-200/80 dark:border-neutral-800 shrink-0 select-none bg-neutral-50/30 dark:bg-neutral-900/30">
+                            <div className="w-16 sm:w-24 p-2 sm:p-3 text-right pr-2 sm:pr-4 text-[11px] sm:text-xs font-semibold text-neutral-400 dark:text-neutral-500 border-r border-neutral-200/80 dark:border-neutral-800 shrink-0 select-none bg-neutral-50/30 dark:bg-neutral-900/30">
                                 {hourLabel}
                             </div>
 

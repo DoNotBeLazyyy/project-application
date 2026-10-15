@@ -70,8 +70,8 @@ export function CalendarAgendaView({
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col">
             {/* Search Header */}
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-800/30 flex items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-md">
+            <div className="p-3 sm:p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+                <div className="relative flex-1 w-full sm:max-w-md">
                     <input
                         className="w-full px-3.5 py-2 pl-9 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                         placeholder="Search items, instructors, or rooms..."
@@ -85,13 +85,13 @@ export function CalendarAgendaView({
                     />
                 </div>
 
-                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 shrink-0">
+                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 shrink-0 self-end sm:self-auto">
                     {filteredEvents.length} {filteredEvents.length === 1 ? 'result' : 'results'}
                 </div>
             </div>
 
             {/* List Body */}
-            <div className="overflow-y-auto max-h-[640px] p-4 divide-y divide-neutral-200/60 dark:divide-neutral-800/60 space-y-4">
+            <div className="p-3 sm:p-4 divide-y divide-neutral-200/60 dark:divide-neutral-800/60 space-y-4">
                 {groupedEvents.length === 0 ? (
                     <div className="p-12 text-center text-neutral-400 dark:text-neutral-500 flex flex-col items-center justify-center">
                         <CalendarBlankIcon className="mb-2 opacity-50" size={40} />

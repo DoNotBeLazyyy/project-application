@@ -1,4 +1,5 @@
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
+import CalendarActionMenu from '@pages/shared/calendar/CalendarActionMenu';
 import { CalendarAgendaView } from '@pages/shared/calendar/CalendarAgendaView';
 import { CalendarEventDetailModal } from '@pages/shared/calendar/CalendarEventDetailModal';
 import { CalendarMiniMonth } from '@pages/shared/calendar/CalendarMiniMonth';
@@ -153,5 +154,52 @@ describe('Calendar Component Rendering Tests', () => {
         const closeBtn = screen.getByRole('button', { name: /^close$/i });
         fireEvent.click(closeBtn);
         expect(onClose).toHaveBeenCalled();
+    });
+
+    it('renders CalendarActionMenu and triggers view mode and category changes', () => {
+        const onSelectViewMode = vi.fn();
+        const onToggleCategory = vi.fn();
+        const onSelectAllCategories = vi.fn();
+        const onToday = vi.fn();
+        const onReload = vi.fn();
+        const onCreateEvent = vi.fn();
+
+        render(
+            <CalendarActionMenu
+                activeCategories={new Set(['event', 'academic'])}
+                canCreateEvents={true}
+                isLoading={false}
+                viewMode="month"
+                onCreateEvent={onCreateEvent}
+                onReload={onReload}
+                onSelectAllCategories={onSelectAllCategories}
+                onSelectViewMode={onSelectViewMode}
+                onToday={onToday}
+                onToggleCategory={onToggleCategory}
+            />
+        );
+
+        // Kebab trigger button exists
+        const menuBtn = screen.getByRole('button', { name: /calendar options and filters/i });
+        expect(menuBtn).toBeInTheDocument();
+
+        // Open menu
+        fireEvent.click(menuBtn);
+
+        // Sections exist
+        expect(screen.getByText('View Mode')).toBeInTheDocument();
+        expect(screen.getByText('Filter Categories')).toBeInTheDocument();
+        expect(screen.getByText('Actions')).toBeInTheDocument();
+
+        // View Mode buttons
+        const weekBtn = screen.getByRole('button', { name: /week view/i });
+        fireEvent.click(weekBtn);
+        expect(onSelectViewMode).toHaveBeenCalledWith('week');
+
+        // Re-open menu to test category toggle
+        fireEvent.click(menuBtn);
+        const academicItem = screen.getByText('Academic Milestones');
+        fireEvent.click(academicItem);
+        expect(onToggleCategory).toHaveBeenCalledWith('academic');
     });
 });

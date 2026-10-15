@@ -16,6 +16,7 @@ import {
 import { changeMonthUtil } from '@utils/calendar.util';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CalendarActionMenu from './CalendarActionMenu';
 import { CalendarAgendaView } from './CalendarAgendaView';
 import { CalendarDayView } from './CalendarDayView';
 import { CalendarEventDetailModal } from './CalendarEventDetailModal';
@@ -165,28 +166,30 @@ export default function CalendarPage() {
 
     return (
         <CommonCard
-            className="flex flex-col h-full min-h-0 w-full overflow-hidden"
+            className="flex flex-col min-h-full md:h-full w-full overflow-visible md:overflow-hidden"
+            infoContent={roleSubtitle}
             cardHeaderProps={{
                 title: (
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                            <CalendarBlankIcon size={22} weight="duotone" />
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                            <CalendarBlankIcon className="sm:hidden" size={18} weight="duotone" />
+                            <CalendarBlankIcon className="hidden sm:inline" size={22} weight="duotone" />
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0">
+                        <div className="min-w-0">
+                            <h1 className="text-base sm:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 truncate">
                                 Academic & Campus Calendar
                             </h1>
-                            <p className="text-xs text-(--mui-palette-text-secondary) mt-0.5 m-0">
+                            <p className="text-xs text-(--mui-palette-text-secondary) mt-0.5 m-0 hidden sm:block">
                                 {roleSubtitle}
                             </p>
                         </div>
                     </div>
                 ),
                 action: (
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-2 pt-0.5">
                         <button
                             aria-label="Refresh calendar data"
-                            className="p-2 rounded-xl border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                            className="hidden sm:flex p-2 rounded-xl border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                             title="Reload Calendar"
                             type="button"
                             onClick={() => reload()}
@@ -195,31 +198,50 @@ export default function CalendarPage() {
                         </button>
 
                         {canCreateEvents && (
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                startIcon={<PlusIcon size={16} />}
-                                variant="contained"
-                                onClick={() => {
-                                    const rolePath = currentRole.toLowerCase();
-                                    navigate(`/${rolePath}/event-management/new`);
-                                }}
-                            >
-                                Create Event
-                            </CommonButton>
+                            <div className="hidden sm:block">
+                                <CommonButton
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<PlusIcon size={16} />}
+                                    variant="contained"
+                                    onClick={() => {
+                                        const rolePath = currentRole.toLowerCase();
+                                        navigate(`/${rolePath}/event-management/new`);
+                                    }}
+                                >
+                                    Create Event
+                                </CommonButton>
+                            </div>
                         )}
+
+                        <CalendarActionMenu
+                            activeCategories={activeCategories}
+                            canCreateEvents={canCreateEvents}
+                            isLoading={isLoading}
+                            viewMode={viewMode}
+                            onCreateEvent={() => {
+                                const rolePath = currentRole.toLowerCase();
+                                navigate(`/${rolePath}/event-management/new`);
+                            }}
+                            onReload={reload}
+                            onSelectAllCategories={handleSelectAllCategories}
+                            onSelectViewMode={setViewMode}
+                            onToday={handleToday}
+                            onToggleCategory={toggleCategory}
+                        />
                     </div>
                 )
             }}
         >
             {/* Navigation & View Toggle Toolbar + Filter Row */}
-            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 p-4 flex flex-col gap-3">
+            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-3 py-2 sm:p-4 flex flex-col gap-2.5">
                 {/* Date Navigation & View Mode Switcher */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
                     {/* Date Jump Controls */}
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-                        <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between w-full md:w-auto gap-2">
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                             <CommonButton
+                                className="px-2 sm:px-3 text-xs"
                                 size="small"
                                 variant="outlined"
                                 onClick={handleToday}
@@ -244,13 +266,20 @@ export default function CalendarPage() {
                             </button>
                         </div>
 
-                        <h2 className="text-base font-bold text-(--mui-palette-text-primary) min-w-[150px] text-center md:text-left m-0">
-                            {currentHeading}
-                        </h2>
+                        <div className="flex items-center gap-2">
+                            {activeCategories.size < CALENDAR_CATEGORIES.length && (
+                                <span className="md:hidden text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                    Filtered ({activeCategories.size}/{CALENDAR_CATEGORIES.length})
+                                </span>
+                            )}
+                            <h2 className="text-sm sm:text-base font-bold text-(--mui-palette-text-primary) min-w-[110px] text-right md:text-left m-0 truncate">
+                                {currentHeading}
+                            </h2>
+                        </div>
                     </div>
 
-                    {/* View Switcher Buttons */}
-                    <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-xl w-full md:w-auto justify-center">
+                    {/* View Switcher Buttons (Desktop) */}
+                    <div className="hidden md:flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-xl w-full md:w-auto justify-center">
                         <button
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                                 viewMode === 'month'
@@ -302,8 +331,8 @@ export default function CalendarPage() {
                     </div>
                 </div>
 
-                {/* Filter Categories Chips */}
-                <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
+                {/* Filter Categories Chips (Desktop) */}
+                <div className="hidden md:flex items-center gap-2 flex-wrap text-xs pt-1">
                     <span className="font-semibold text-(--mui-palette-text-secondary) flex items-center gap-1 mr-1">
                         <FunnelIcon size={14} /> Filter:
                     </span>
@@ -340,7 +369,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Main Calendar View Area - Full Width */}
-            <div className="flex-1 min-h-0 overflow-auto p-4 md:p-6">
+            <div className="flex-1 min-h-0 md:overflow-auto p-2 sm:p-4 md:p-6">
                 {isLoading && events.length === 0 ? (
                     <div className="p-16 flex justify-center">
                         <PageLoadingFallback />
