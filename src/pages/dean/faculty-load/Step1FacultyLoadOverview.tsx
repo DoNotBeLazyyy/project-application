@@ -123,7 +123,7 @@ export default function Step1FacultyLoadOverview({
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg leading-tight">
-                                {faculty.faculty_name}
+                                {faculty?.faculty_name || 'Faculty Member'}
                             </h3>
                             <CommonBadgeStatus
                                 label={loadStatus.label}
@@ -131,7 +131,7 @@ export default function Step1FacultyLoadOverview({
                             />
                         </div>
                         <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {faculty.email} {termLabel
+                            {faculty?.email || ''} {termLabel
                                 ? `· Term: ${termLabel}`
                                 : ''}
                         </span>

@@ -1,6 +1,22 @@
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import React, { Component, ComponentType, lazy, ReactElement, ReactNode, Suspense } from 'react';
 
+export function isChunkLoadError(error: unknown): boolean {
+    if (!error) return false;
+    const err = error as { name?: string; message?: string };
+    const name = err.name || '';
+    const message = err.message || '';
+    return (
+        name === 'ChunkLoadError' ||
+        message.includes('dynamically imported module') ||
+        message.includes('Failed to fetch dynamically imported module') ||
+        message.includes('Importing a module script failed') ||
+        message.includes('error loading dynamically imported module') ||
+        message.includes('MIME type') ||
+        message.includes('Loading chunk')
+    );
+}
+
 // Helper to retry dynamic imports when a chunk fails to load after a new deployment
 function lazyWithRetry<P extends object>(
     factory: () => Promise<{ default: ComponentType<P> }>
@@ -12,11 +28,13 @@ function lazyWithRetry<P extends object>(
             sessionStorage.removeItem(pageAlreadyReloadedKey);
             return component;
         } catch (error: any) {
-            const hasReloaded = sessionStorage.getItem(pageAlreadyReloadedKey);
-            if (!hasReloaded) {
-                sessionStorage.setItem(pageAlreadyReloadedKey, 'true');
-                window.location.reload();
-                return new Promise<{ default: ComponentType<P> }>(() => {});
+            if (isChunkLoadError(error)) {
+                const hasReloaded = sessionStorage.getItem(pageAlreadyReloadedKey);
+                if (!hasReloaded) {
+                    sessionStorage.setItem(pageAlreadyReloadedKey, 'true');
+                    window.location.reload();
+                    return new Promise<{ default: ComponentType<P> }>(() => {});
+                }
             }
             throw error;
         }
@@ -43,13 +61,7 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
     }
 
     componentDidCatch(error: Error) {
-        const isChunkError =
-            error.message?.includes('dynamically imported module') ||
-            error.message?.includes('Failed to fetch dynamically imported module') ||
-            error.message?.includes('Importing a module script failed') ||
-            error.message?.includes('MIME type');
-
-        if (isChunkError) {
+        if (isChunkLoadError(error)) {
             const pageAlreadyReloadedKey = 'chunk_reload_retry_' + window.location.pathname;
             if (!sessionStorage.getItem(pageAlreadyReloadedKey)) {
                 sessionStorage.setItem(pageAlreadyReloadedKey, 'true');
@@ -60,24 +72,50 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
 
     render() {
         if (this.state.hasError) {
+            const isChunk = isChunkLoadError(this.state.error);
+
+            if (isChunk) {
+                return (
+                    <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
+                        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 max-w-md flex flex-col items-center gap-3">
+                            <h3 className="text-base font-bold text-blue-900 dark:text-blue-200">
+                                New App Version Available
+                            </h3>
+                            <p className="text-xs text-blue-700 dark:text-blue-300">
+                                A new deployment was published. Please reload the page to load the latest components.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    sessionStorage.clear();
+                                    window.location.reload();
+                                }}
+                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
+                            >
+                                Reload Page
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
-                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 max-w-md flex flex-col items-center gap-3">
-                        <h3 className="text-base font-bold text-blue-900 dark:text-blue-200">
-                            New App Version Available
+                    <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 max-w-md flex flex-col items-center gap-3">
+                        <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">
+                            Failed to Load Page
                         </h3>
-                        <p className="text-xs text-blue-700 dark:text-blue-300">
-                            A new deployment was published. Please reload the page to load the latest components.
+                        <p className="text-xs text-rose-700 dark:text-rose-300">
+                            {this.state.error?.message || 'An unexpected error occurred while loading this page.'}
                         </p>
                         <button
                             type="button"
                             onClick={() => {
-                                sessionStorage.clear();
-                                window.location.reload();
+                                this.setState({ hasError: false, error: null });
                             }}
-                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
+                            className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs shadow transition-colors cursor-pointer"
                         >
-                            Reload Page
+                            Try Again
                         </button>
                     </div>
                 </div>
@@ -94,15 +132,14 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
  * @returns A ReactElement wrapped in ErrorBoundary and Suspense with PageLoadingFallback.
  */
 export function lazyElement<P extends object>(
-    factory: () => Promise<{ default: ComponentType<P> }>,
-    props?: P
+    factory: () => Promise<{ default: ComponentType<P> }>
 ): ReactElement {
     const LazyComponent = lazyWithRetry(factory);
 
     return (
         <LazyErrorBoundary>
             <Suspense fallback={<PageLoadingFallback />}>
-                <LazyComponent {...(props as P)} />
+                <LazyComponent />
             </Suspense>
         </LazyErrorBoundary>
     );

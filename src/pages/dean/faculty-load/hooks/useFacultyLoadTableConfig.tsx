@@ -52,18 +52,22 @@ export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps
                 field: 'conflict_count',
                 flex: 2,
                 headerName: 'Schedule',
-                cellRenderer: (params: { data: FacultyLoadRow }) => (
-                    <div className="flex h-full items-center">
-                        <CommonBadgeStatus
-                            label={params.data.conflict_count > 0
-                                ? `${params.data.conflict_count} conflict(s)`
-                                : 'No conflicts'}
-                            variant={params.data.conflict_count > 0
-                                ? 'error'
-                                : 'success'}
-                        />
-                    </div>
-                )
+                cellRenderer: (params: { data?: FacultyLoadRow }) => {
+                    if (!params?.data) return null;
+                    const count = Number(params.data.conflict_count) || 0;
+                    return (
+                        <div className="flex h-full items-center">
+                            <CommonBadgeStatus
+                                label={count > 0
+                                    ? `${count} conflict(s)`
+                                    : 'No conflicts'}
+                                variant={count > 0
+                                    ? 'error'
+                                    : 'success'}
+                            />
+                        </div>
+                    );
+                }
             }
         ];
     }, []);
@@ -74,16 +78,16 @@ export function useFacultyLoadTableConfig(props?: UseFacultyLoadTableConfigProps
         return function(): TableActionConfig<FacultyLoadRow> {
             return {
                 onEditClick: (row: FacultyLoadRow) => () => {
-                    onEdit?.(row.id);
+                    if (row?.id) onEdit?.(row.id);
                 },
                 menuOptions: (row: FacultyLoadRow): MenuOption[] => [
-                    ...(onView
+                    ...(onView && row?.id
                         ? [{
                             preset: 'view' as const,
                             onClick: () => onView(row.id)
                         }]
                         : []),
-                    ...(onEdit
+                    ...(onEdit && row?.id
                         ? [{
                             preset: 'edit' as const,
                             onClick: () => onEdit(row.id)

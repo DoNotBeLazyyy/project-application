@@ -114,16 +114,40 @@ export default function FacultyLoadWizardModal({
         try {
             const res = await getFacultyLoadDetail(facultyId, termId);
             if (res.data) {
+                if ((res.data as any).success === false) {
+                    showToast((res.data as any).message || 'Faculty record not found.', 'error');
+                    setDetail(null);
+                    setInitialSections([]);
+                    setStagedSections([]);
+                    return;
+                }
+
                 setDetail(res.data);
-                const fetchedSections = res.data.sections || [];
+                const rawSections = res.data.sections || (res.data as any).assigned_sections || [];
+                const fetchedSections: FacultyLoadSection[] = rawSections.map((s: any) => ({
+                    ...s,
+                    section_id: s.section_id || s.id,
+                    units: Number(s.units) || Number(s.total_units) || 0,
+                    lecture_units: Number(s.lecture_units) || 0,
+                    lab_units: Number(s.lab_units) || Number(s.laboratory_units) || 0,
+                    max_slots: Number(s.max_slots) || 40,
+                    enrolled_count: Number(s.enrolled_count) || 0,
+                    faculty_id: s.faculty_id || facultyId,
+                    faculty_name: s.faculty_name || res.data?.faculty?.faculty_name || '',
+                    term_label: s.term_label || 'Active Term',
+                    schedules: s.schedules || []
+                }));
                 setInitialSections(fetchedSections);
                 setStagedSections(fetchedSections);
             }
         }
+        catch (err: any) {
+            showToast(err?.message || 'Failed to load faculty details.', 'error');
+        }
         finally {
             setIsLoading(false);
         }
-    }, [facultyId, termId]);
+    }, [facultyId, termId, showToast]);
 
     useEffect(() => {
         if (open && facultyId) {
@@ -141,7 +165,7 @@ export default function FacultyLoadWizardModal({
 
     // Calculate dynamic conflicts for staged sections
     const activeConflicts = useMemo<FacultyScheduleConflict[]>(() => {
-        const localConflicts = evaluateSectionConflicts(stagedSections, detail?.faculty.faculty_name);
+        const localConflicts = evaluateSectionConflicts(stagedSections, detail?.faculty?.faculty_name);
 
         // Merge with any backend-reported room conflicts that apply to remaining staged sections
         const backendConflicts = detail?.conflicts || [];
@@ -240,12 +264,12 @@ export default function FacultyLoadWizardModal({
                     course_code: s.course_code || 'COURSE',
                     course_title: s.course_title || 'Course Title',
                     term_id: s.term_id,
-                    term_label: s.term_label || detail?.sections[0]?.term_label || 'Current Term',
+                    term_label: s.term_label || stagedSections[0]?.term_label || detail?.sections?.[0]?.term_label || 'Current Term',
                     program_id: s.program_id,
                     program_code: s.program_code,
                     program_name: s.program_name,
                     faculty_id: facultyId,
-                    faculty_name: detail?.faculty.faculty_name,
+                    faculty_name: detail?.faculty?.faculty_name || '',
                     room: s.room,
                     max_slots: Number(s.max_slots) || 40,
                     enrolled_count: Number(s.enrolled_count) || 0,
@@ -378,7 +402,7 @@ export default function FacultyLoadWizardModal({
                                     {isReadOnly
                                         ? 'Faculty Teaching Load Details'
                                         : 'Edit Faculty Teaching Load'}
-                                    {detail?.faculty
+                                    {detail?.faculty?.faculty_name
                                         ? ` — ${detail.faculty.faculty_name}`
                                         : ''}
                                 </h2>
@@ -432,7 +456,7 @@ export default function FacultyLoadWizardModal({
                                 <p className="text-xs text-slate-500">Loading faculty load records...</p>
                             </div>
                         )
-                        : detail
+                        : (detail && detail.faculty)
                             ? (
                                 <>
                                     {currentStep === 1 && (
@@ -440,7 +464,7 @@ export default function FacultyLoadWizardModal({
                                             conflicts={activeConflicts}
                                             faculty={detail.faculty}
                                             sections={stagedSections}
-                                            termLabel={detail.sections[0]?.term_label}
+                                            termLabel={stagedSections[0]?.term_label || detail.sections?.[0]?.term_label}
                                         />
                                     )}
 
@@ -468,7 +492,7 @@ export default function FacultyLoadWizardModal({
                             )
                             : (
                                 <div className="text-center py-12 text-xs text-slate-500">
-                            Faculty record could not be loaded.
+                                    Faculty record could not be loaded.
                                 </div>
                             )}
                 </div>

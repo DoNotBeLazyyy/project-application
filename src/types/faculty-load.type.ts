@@ -92,13 +92,17 @@ export interface FacultyScheduleConflict {
 }
 
 export interface FacultyLoadDetail {
-    faculty: {
+    faculty?: {
         id: string;
         faculty_name: string;
         email: string;
     };
-    sections: FacultyLoadSection[];
+    sections?: FacultyLoadSection[];
+    assigned_sections?: FacultyLoadSection[];
+    available_sections?: FacultyLoadSection[];
     conflicts?: FacultyScheduleConflict[];
+    success?: boolean;
+    message?: string;
 }
 
 export interface FacultyLoadAssignmentInput {
