@@ -4,7 +4,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
     ArrowsClockwiseIcon,
-    CalendarBlankIcon,
     CalendarDotsIcon,
     CheckIcon,
     ClockIcon,
@@ -30,7 +29,6 @@ export interface CalendarActionMenuProps {
     onReload: () => void;
     onSelectAllCategories: () => void;
     onSelectViewMode: (mode: CalendarViewMode) => void;
-    onToday: () => void;
     onToggleCategory: (category: CalendarEventCategory) => void;
 }
 
@@ -50,7 +48,6 @@ export default function CalendarActionMenu({
     onReload,
     onSelectAllCategories,
     onSelectViewMode,
-    onToday,
     onToggleCategory
 }: CalendarActionMenuProps) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -285,20 +282,6 @@ export default function CalendarActionMenu({
                         </div>
                     </MenuItem>
                 )}
-
-                <MenuItem
-                    className="py-1.5 px-3 text-xs"
-                    dense
-                    onClick={() => {
-                        handleCloseMenu();
-                        onToday();
-                    }}
-                >
-                    <div className="flex gap-2 items-center">
-                        <CalendarBlankIcon size={16} />
-                        <span>Jump to Today</span>
-                    </div>
-                </MenuItem>
 
                 <MenuItem
                     className="py-1.5 px-3 text-xs"

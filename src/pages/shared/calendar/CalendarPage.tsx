@@ -13,7 +13,11 @@ import {
     ListBulletsIcon,
     PlusIcon
 } from '@phosphor-icons/react';
+import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { changeMonthUtil } from '@utils/calendar.util';
+import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CalendarActionMenu from './CalendarActionMenu';
@@ -98,12 +102,6 @@ export default function CalendarPage() {
         }
     };
 
-    const handleToday = () => {
-        const today = new Date();
-        setCurrentDate(today);
-        setSelectedDate(today);
-    };
-
     const toggleCategory = (catId: CalendarEventCategory) => {
         setActiveCategories((prev) => {
             const next = new Set(prev);
@@ -139,28 +137,35 @@ export default function CalendarPage() {
         setViewMode('day');
     };
 
-    // Formatted current title
-    const currentHeading = useMemo(() => {
-        if (viewMode === 'day') {
-            return selectedDate.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
+    const VIEW_MODE_LABELS: Record<CalendarViewMode, { label: string; icon: React.ReactNode }> = {
+        month: {
+            label: 'Month View',
+            icon: <GridFourIcon className="text-blue-600" size={14} weight="bold" />
+        },
+        week: {
+            label: 'Week View',
+            icon: <CalendarDotsIcon className="text-blue-600" size={14} weight="bold" />
+        },
+        day: {
+            label: 'Day View',
+            icon: <ClockIcon className="text-blue-600" size={14} weight="bold" />
+        },
+        agenda: {
+            label: 'Agenda View',
+            icon: <ListBulletsIcon className="text-blue-600" size={14} weight="bold" />
         }
-        if (viewMode === 'week') {
-            const startOfWeek = new Date(currentDate);
-            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
+    };
 
-            return `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-        }
-        return currentDate.toLocaleDateString('en-US', {
-            month: 'long',
-            year: 'numeric'
-        });
-    }, [currentDate, selectedDate, viewMode]);
+    const pickerDateValue = useMemo(() => {
+        return DateTime.fromJSDate(viewMode === 'day' ? selectedDate : currentDate);
+    }, [viewMode, selectedDate, currentDate]);
+
+    const handlePickerChange = (val: DateTime | null) => {
+        if (!val || !val.isValid) return;
+        const nextDate = val.toJSDate();
+        setCurrentDate(nextDate);
+        setSelectedDate(nextDate);
+    };
 
     const canCreateEvents = currentRole === 'Admin' || currentRole === 'Dean' || currentRole === 'Registrar' || currentRole === 'Faculty';
 
@@ -226,7 +231,6 @@ export default function CalendarPage() {
                             onReload={reload}
                             onSelectAllCategories={handleSelectAllCategories}
                             onSelectViewMode={setViewMode}
-                            onToday={handleToday}
                             onToggleCategory={toggleCategory}
                         />
                     </div>
@@ -237,28 +241,70 @@ export default function CalendarPage() {
             <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-3 py-2 sm:p-4 flex flex-col gap-2.5">
                 {/* Date Navigation & View Mode Switcher */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
-                    {/* Date Jump Controls */}
-                    <div className="flex items-center justify-between w-full md:w-auto gap-2">
+                    {/* Date Navigation with DatePicker wrapped by arrows & View Mode Label */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-center justify-between w-full md:w-auto gap-2">
+                        {/* Left & Right arrows wrapping DatePicker */}
                         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                            <CommonButton
-                                className="px-2 sm:px-3 text-xs"
-                                size="small"
-                                variant="outlined"
-                                onClick={handleToday}
-                            >
-                                Today
-                            </CommonButton>
                             <button
                                 aria-label="Previous"
-                                className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                className="p-1.5 sm:p-2 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
                                 type="button"
                                 onClick={handlePrev}
                             >
                                 <CaretLeftIcon size={16} />
                             </button>
+
+                            <div className="w-[135px] sm:w-[165px]">
+                                <LocalizationProvider dateAdapter={AdapterLuxon}>
+                                    <DatePicker
+                                        format={viewMode === 'month' || viewMode === 'agenda' ? 'MMMM yyyy' : 'MMM d, yyyy'}
+                                        slotProps={{
+                                            actionBar: {
+                                                actions: ['today', 'accept']
+                                            },
+                                            textField: {
+                                                size: 'small',
+                                                sx: {
+                                                    '& .MuiInputBase-root': {
+                                                        height: '34px !important',
+                                                        maxHeight: '34px !important',
+                                                        fontSize: '0.8125rem !important',
+                                                        fontWeight: 600,
+                                                        paddingRight: '4px !important',
+                                                        paddingLeft: '6px !important',
+                                                        borderRadius: '10px',
+                                                        backgroundColor: 'var(--mui-palette-background-paper)'
+                                                    },
+                                                    '& .MuiInputBase-input': {
+                                                        padding: '0 !important',
+                                                        textAlign: 'center',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.8125rem !important',
+                                                        fontWeight: 600,
+                                                        color: 'var(--mui-palette-text-primary)'
+                                                    },
+                                                    '& .MuiInputAdornment-root .MuiIconButton-root': {
+                                                        padding: '2px !important',
+                                                        width: '24px !important',
+                                                        height: '24px !important',
+                                                        color: 'var(--mui-palette-primary-main)'
+                                                    },
+                                                    '& .MuiInputAdornment-root svg': {
+                                                        width: '16px !important',
+                                                        height: '16px !important'
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                        value={pickerDateValue}
+                                        onChange={handlePickerChange}
+                                    />
+                                </LocalizationProvider>
+                            </div>
+
                             <button
                                 aria-label="Next"
-                                className="p-1.5 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                className="p-1.5 sm:p-2 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
                                 type="button"
                                 onClick={handleNext}
                             >
@@ -266,15 +312,18 @@ export default function CalendarPage() {
                             </button>
                         </div>
 
+                        {/* View Mode Label & Active Filter indicator */}
                         <div className="flex items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-neutral-800/80 text-(--mui-palette-text-primary) border border-(--mui-palette-divider) shrink-0">
+                                {VIEW_MODE_LABELS[viewMode].icon}
+                                <span>{VIEW_MODE_LABELS[viewMode].label}</span>
+                            </div>
+
                             {activeCategories.size < CALENDAR_CATEGORIES.length && (
-                                <span className="md:hidden text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                <span className="md:hidden text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
                                     Filtered ({activeCategories.size}/{CALENDAR_CATEGORIES.length})
                                 </span>
                             )}
-                            <h2 className="text-sm sm:text-base font-bold text-(--mui-palette-text-primary) min-w-[110px] text-right md:text-left m-0 truncate">
-                                {currentHeading}
-                            </h2>
                         </div>
                     </div>
 

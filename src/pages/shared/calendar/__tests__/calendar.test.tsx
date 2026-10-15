@@ -160,7 +160,6 @@ describe('Calendar Component Rendering Tests', () => {
         const onSelectViewMode = vi.fn();
         const onToggleCategory = vi.fn();
         const onSelectAllCategories = vi.fn();
-        const onToday = vi.fn();
         const onReload = vi.fn();
         const onCreateEvent = vi.fn();
 
@@ -174,7 +173,6 @@ describe('Calendar Component Rendering Tests', () => {
                 onReload={onReload}
                 onSelectAllCategories={onSelectAllCategories}
                 onSelectViewMode={onSelectViewMode}
-                onToday={onToday}
                 onToggleCategory={onToggleCategory}
             />
         );
