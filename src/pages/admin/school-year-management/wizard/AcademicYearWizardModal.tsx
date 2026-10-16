@@ -28,7 +28,7 @@ import {
     SaveAcademicYearCalendarPayload,
     SchoolYearOption
 } from '@type/school-year.type';
-import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { announceFormError, DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { ensureUniqueCode, generateAcademicThresholdCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -308,6 +308,11 @@ export default function AcademicYearWizardModal({
             if (result.fieldPath) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
             }
+            announceFormError({
+                count: 1,
+                message: result.error,
+                firstErrorField: result.fieldPath
+            });
             formErrors(methods.formState.errors, methods);
             return false;
         }

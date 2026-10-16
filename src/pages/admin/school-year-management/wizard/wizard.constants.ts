@@ -512,6 +512,9 @@ export function validateTransmutationRows(
         };
     }
 
+    let prevRow: WizardTransmutationRow | null = null;
+    let prevIndex: number = -1;
+
     for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
         if (!r.label || !r.label.trim()) {
@@ -570,6 +573,29 @@ export function validateTransmutationRows(
                 rowIndex: i
             };
         }
+
+        if (prevRow !== null) {
+            const prevMin = Number(prevRow.min_percentage);
+            if (minPct >= prevMin) {
+                return {
+                    error: `Row #${i + 1} (${r.label}) Min % (${minPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
+                    fieldPath: `transmutation_rows.${i}.min_percentage`,
+                    isValid: false,
+                    rowIndex: i
+                };
+            }
+            if (maxPct >= prevMin) {
+                return {
+                    error: `Row #${i + 1} (${r.label}) Max % (${maxPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
+                    fieldPath: `transmutation_rows.${i}.max_percentage`,
+                    isValid: false,
+                    rowIndex: i
+                };
+            }
+        }
+
+        prevRow = r;
+        prevIndex = i;
     }
 
     return { isValid: true };
