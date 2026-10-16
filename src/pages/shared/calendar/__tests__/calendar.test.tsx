@@ -189,15 +189,14 @@ describe('Calendar Component Rendering Tests', () => {
         expect(screen.getByText('Filter Categories')).toBeInTheDocument();
         expect(screen.getByText('Actions')).toBeInTheDocument();
 
-        // View Mode buttons
+        // Test category toggle while menu is open
+        const academicItem = screen.getByText('Academic Deadlines');
+        fireEvent.click(academicItem);
+        expect(onToggleCategory).toHaveBeenCalledWith('academic');
+
+        // View Mode buttons (triggers onSelectViewMode and closes menu)
         const weekBtn = screen.getByRole('button', { name: /week view/i });
         fireEvent.click(weekBtn);
         expect(onSelectViewMode).toHaveBeenCalledWith('week');
-
-        // Re-open menu to test category toggle
-        fireEvent.click(menuBtn);
-        const academicItem = screen.getByText('Academic Milestones');
-        fireEvent.click(academicItem);
-        expect(onToggleCategory).toHaveBeenCalledWith('academic');
     });
 });

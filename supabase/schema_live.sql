@@ -17127,11 +17127,16 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.fn_list_my_announcements_feed(p_page integer DEFAULT 1, p_size integer DEFAULT 20, p_search text DEFAULT NULL::text)
- RETURNS jsonb
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
+CREATE OR REPLACE FUNCTION public.fn_list_my_announcements_feed(
+    p_page integer DEFAULT 1,
+    p_size integer DEFAULT 20,
+    p_search text DEFAULT NULL::text,
+    p_role text DEFAULT NULL::text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
 AS $function$
 DECLARE
     v_uid UUID := auth.uid();
@@ -17146,37 +17151,145 @@ BEGIN
     v_where := format(
         'WHERE a.deleted_at IS NULL
            AND (a.published_at IS NULL OR a.published_at <= now())
-           AND (a.expires_at IS NULL OR a.expires_at > now())
-           AND (
+           AND (a.expires_at IS NULL OR a.expires_at > now())'
+    );
+
+    IF p_role = 'Student' THEN
+        -- New unenrolled students see campus Global announcements, but NEVER Section announcements
+        -- unless actively enrolled in that specific section.
+        v_where := v_where || format(
+            ' AND (
+                a.target_audience = ''Global''
+                OR (
+                    a.target_audience = ''Student''
+                    AND EXISTS (
+                        SELECT 1 FROM public.enrollments e_any
+                        JOIN public.students st_any ON st_any.id = e_any.student_id AND st_any.deleted_at IS NULL
+                        WHERE st_any.user_id = %L
+                          AND e_any.status = ''Enrolled''
+                          AND e_any.deleted_at IS NULL
+                    )
+                )
+                OR (a.target_audience = ''Section'' AND (
+                    EXISTS (
+                        SELECT 1 FROM public.announcement_sections asx
+                        JOIN public.enrollments e ON e.section_id = asx.section_id
+                            AND e.status = ''Enrolled'' AND e.deleted_at IS NULL
+                        JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
+                        WHERE asx.announcement_id = a.id
+                          AND asx.deleted_at IS NULL
+                          AND st.user_id = %L
+                    )
+                    OR (a.section_id IS NOT NULL AND EXISTS (
+                        SELECT 1 FROM public.enrollments e
+                        JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
+                        WHERE e.section_id = a.section_id
+                          AND e.status = ''Enrolled''
+                          AND e.deleted_at IS NULL
+                          AND st.user_id = %L
+                    ))
+                ))
+            )',
+            v_uid, v_uid, v_uid
+        );
+    ELSIF p_role = 'Faculty' THEN
+        -- Faculty members only see their own created items, Global/Faculty items,
+        -- or Section items for sections they personally teach (never other professors' sections)
+        v_where := v_where || format(
+            ' AND (
+                a.created_by = %L
+                OR a.target_audience IN (''Global'', ''Faculty'')
+                OR (a.target_audience = ''Section'' AND (
+                    EXISTS (
+                        SELECT 1 FROM public.announcement_sections asx
+                        JOIN public.sections s ON s.id = asx.section_id AND s.deleted_at IS NULL
+                        WHERE asx.announcement_id = a.id
+                          AND asx.deleted_at IS NULL
+                          AND s.faculty_id = %L
+                    )
+                    OR (a.section_id IS NOT NULL AND EXISTS (
+                        SELECT 1 FROM public.sections s
+                        WHERE s.id = a.section_id
+                          AND s.faculty_id = %L
+                          AND s.deleted_at IS NULL
+                    ))
+                ))
+            )',
+            v_uid, v_uid, v_uid
+        );
+    ELSIF p_role IS NOT NULL AND p_role <> '' THEN
+        -- Staff roles (Admin, Dean, Registrar): own items, non-section role items, or Global
+        v_where := v_where || format(
+            ' AND (
+                a.created_by = %L
+                OR (a.created_by_role = %L AND a.target_audience <> ''Section'')
+                OR a.target_audience = ''Global''
+            )',
+            v_uid, p_role
+        );
+    ELSE
+        -- Fallback when p_role is omitted
+        v_where := v_where || format(
+            ' AND (
                 a.created_by = %L
                 OR a.target_audience = ''Global''
-                OR (a.target_audience IN (''Faculty'', ''Student'')
+                OR (
+                    a.target_audience = ''Faculty''
                     AND EXISTS (
                         SELECT 1 FROM public.user_roles ur
                         JOIN public.roles r ON r.id = ur.role_id AND r.deleted_at IS NULL
                         WHERE ur.user_id = %L AND ur.deleted_at IS NULL AND ur.revoked_at IS NULL
-                          AND r.code = a.target_audience::text
-                    ))
-                OR (a.target_audience = ''Section''
+                          AND r.code = ''Faculty''
+                    )
+                )
+                OR (
+                    a.target_audience = ''Student''
                     AND EXISTS (
-                        SELECT 1 FROM public.announcement_sections asx
-                        WHERE asx.announcement_id = a.id AND asx.deleted_at IS NULL
-                          AND (
-                              EXISTS (
-                                  SELECT 1 FROM public.enrollments e
-                                  JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
-                                  WHERE st.user_id = %L AND e.section_id = asx.section_id
-                                    AND e.status = ''Enrolled'' AND e.deleted_at IS NULL
+                        SELECT 1 FROM public.enrollments e
+                        JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
+                        WHERE st.user_id = %L AND e.status = ''Enrolled'' AND e.deleted_at IS NULL
+                    )
+                )
+                OR (
+                    a.target_audience = ''Section''
+                    AND (
+                        EXISTS (
+                            SELECT 1 FROM public.announcement_sections asx
+                            WHERE asx.announcement_id = a.id AND asx.deleted_at IS NULL
+                              AND (
+                                  EXISTS (
+                                      SELECT 1 FROM public.enrollments e
+                                      JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
+                                      WHERE st.user_id = %L AND e.section_id = asx.section_id
+                                        AND e.status = ''Enrolled'' AND e.deleted_at IS NULL
+                                  )
+                                  OR EXISTS (
+                                      SELECT 1 FROM public.sections s
+                                      WHERE s.id = asx.section_id AND s.faculty_id = %L AND s.deleted_at IS NULL
+                                  )
                               )
-                              OR EXISTS (
-                                  SELECT 1 FROM public.sections s
-                                  WHERE s.id = asx.section_id AND s.faculty_id = %L AND s.deleted_at IS NULL
-                              )
-                          )
-                    ))
-           )',
-        v_uid, v_uid, v_uid, v_uid
-    );
+                        )
+                        OR (
+                            a.section_id IS NOT NULL
+                            AND (
+                                EXISTS (
+                                    SELECT 1 FROM public.enrollments e
+                                    JOIN public.students st ON st.id = e.student_id AND st.deleted_at IS NULL
+                                    WHERE st.user_id = %L AND e.section_id = a.section_id
+                                      AND e.status = ''Enrolled'' AND e.deleted_at IS NULL
+                                )
+                                OR EXISTS (
+                                    SELECT 1 FROM public.sections s
+                                    WHERE s.id = a.section_id AND s.faculty_id = %L AND s.deleted_at IS NULL
+                                )
+                            )
+                        )
+                    )
+                )
+            )',
+            v_uid, v_uid, v_uid, v_uid, v_uid, v_uid, v_uid
+        );
+    END IF;
 
     IF p_search IS NOT NULL AND p_search <> '' THEN
         v_where := v_where || format(
@@ -17196,6 +17309,28 @@ BEGIN
             a.published_at,
             a.created_at,
             trim(concat(u.first_name, '' '', u.last_name)) AS author_name,
+            (
+                SELECT count(*)
+                FROM public.announcement_attachments aa
+                WHERE aa.announcement_id = a.id AND aa.deleted_at IS NULL
+            ) AS attachment_count,
+            COALESCE(
+                (
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            ''id'', aa.id,
+                            ''file_name'', aa.file_name,
+                            ''file_path'', aa.file_path,
+                            ''mime_type'', aa.mime_type,
+                            ''file_size'', aa.file_size
+                        )
+                        ORDER BY aa.created_at
+                    )
+                    FROM public.announcement_attachments aa
+                    WHERE aa.announcement_id = a.id AND aa.deleted_at IS NULL
+                ),
+                ''[]''::jsonb
+            ) AS attachments,
             COUNT(*) OVER() AS total_count
         FROM public.announcements a
         LEFT JOIN public.users u ON u.id = a.created_by
@@ -17205,9 +17340,8 @@ BEGIN
 
     RETURN public.fn_build_pageable_dto(v_base_query, p_page, p_size, NULL, 'a.is_pinned DESC, a.published_at DESC NULLS LAST, a.created_at DESC');
 END;
-$function$
+$function$;
 ;
-
 CREATE OR REPLACE FUNCTION public.fn_list_my_evaluations_json(p_page integer DEFAULT 1, p_size integer DEFAULT 10, p_search text DEFAULT NULL::text, p_sort jsonb DEFAULT NULL::jsonb, p_status text DEFAULT NULL::text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -17310,11 +17444,15 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.fn_list_my_events_feed(p_from timestamp with time zone, p_to timestamp with time zone)
- RETURNS jsonb
- LANGUAGE plpgsql
- STABLE SECURITY DEFINER
- SET search_path TO 'public'
+CREATE OR REPLACE FUNCTION public.fn_list_my_events_feed(
+    p_from timestamp with time zone,
+    p_to timestamp with time zone,
+    p_role text DEFAULT NULL::text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
 AS $function$
 DECLARE
     v_uid UUID := auth.uid();
@@ -17336,45 +17474,152 @@ BEGIN
             e.target_audience,
             e.start_at,
             e.end_at,
-            e.all_day
+            e.all_day,
+            (
+                SELECT count(*)
+                FROM public.event_attachments ea
+                WHERE ea.event_id = e.id AND ea.deleted_at IS NULL
+            ) AS attachment_count,
+            COALESCE(
+                (
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'id', ea.id,
+                            'file_name', ea.file_name,
+                            'file_path', ea.file_path,
+                            'mime_type', ea.mime_type,
+                            'file_size', ea.file_size
+                        )
+                        ORDER BY ea.created_at
+                    )
+                    FROM public.event_attachments ea
+                    WHERE ea.event_id = e.id AND ea.deleted_at IS NULL
+                ),
+                '[]'::jsonb
+            ) AS attachments
         FROM public.events e
         WHERE e.deleted_at IS NULL
           AND e.start_at < p_to
           AND (COALESCE(e.end_at, e.start_at) >= p_from)
           AND (
-                e.target_audience = 'Global'
-                OR (e.target_audience IN ('Faculty', 'Student')
-                    AND EXISTS (
-                        SELECT 1 FROM public.user_roles ur
-                        JOIN public.roles r ON r.id = ur.role_id AND r.deleted_at IS NULL
-                        WHERE ur.user_id = v_uid AND ur.deleted_at IS NULL AND ur.revoked_at IS NULL
-                          AND r.code = e.target_audience::text
-                    ))
-                OR (e.target_audience = 'Section'
-                    AND EXISTS (
-                        SELECT 1 FROM public.event_sections esx
-                        WHERE esx.event_id = e.id AND esx.deleted_at IS NULL
+              CASE
+                  WHEN p_role = 'Student' THEN
+                      e.target_audience = 'Global'
+                      OR (
+                          e.target_audience = 'Student'
+                          AND EXISTS (
+                              SELECT 1 FROM public.enrollments en_any
+                              JOIN public.students st_any ON st_any.id = en_any.student_id AND st_any.deleted_at IS NULL
+                              WHERE st_any.user_id = v_uid
+                                AND en_any.status = 'Enrolled'
+                                AND en_any.deleted_at IS NULL
+                          )
+                      )
+                      OR (e.target_audience = 'Section' AND (
+                          EXISTS (
+                              SELECT 1 FROM public.event_sections esx
+                              JOIN public.enrollments en ON en.section_id = esx.section_id
+                                  AND en.status = 'Enrolled' AND en.deleted_at IS NULL
+                              JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
+                              WHERE esx.event_id = e.id
+                                AND esx.deleted_at IS NULL
+                                AND st.user_id = v_uid
+                          )
+                          OR (e.section_id IS NOT NULL AND EXISTS (
+                              SELECT 1 FROM public.enrollments en
+                              JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
+                              WHERE en.section_id = e.section_id
+                                AND en.status = 'Enrolled'
+                                AND en.deleted_at IS NULL
+                                AND st.user_id = v_uid
+                          ))
+                      ))
+                  WHEN p_role = 'Faculty' THEN
+                      e.created_by = v_uid
+                      OR e.target_audience IN ('Global', 'Faculty')
+                      OR (e.target_audience = 'Section' AND (
+                          EXISTS (
+                              SELECT 1 FROM public.event_sections esx
+                              JOIN public.sections s ON s.id = esx.section_id AND s.deleted_at IS NULL
+                              WHERE esx.event_id = e.id
+                                AND esx.deleted_at IS NULL
+                                AND s.faculty_id = v_uid
+                          )
+                          OR (e.section_id IS NOT NULL AND EXISTS (
+                              SELECT 1 FROM public.sections s
+                              WHERE s.id = e.section_id
+                                AND s.faculty_id = v_uid
+                                AND s.deleted_at IS NULL
+                          ))
+                      ))
+                  WHEN p_role IS NOT NULL AND p_role <> '' THEN
+                      e.created_by = v_uid
+                      OR (e.created_by_role = p_role AND e.target_audience <> 'Section')
+                      OR e.target_audience = 'Global'
+                  ELSE
+                      e.created_by = v_uid
+                      OR e.target_audience = 'Global'
+                      OR (
+                          e.target_audience = 'Faculty'
+                          AND EXISTS (
+                              SELECT 1 FROM public.user_roles ur
+                              JOIN public.roles r ON r.id = ur.role_id AND r.deleted_at IS NULL
+                              WHERE ur.user_id = v_uid AND ur.deleted_at IS NULL AND ur.revoked_at IS NULL
+                                AND r.code = 'Faculty'
+                          )
+                      )
+                      OR (
+                          e.target_audience = 'Student'
+                          AND EXISTS (
+                              SELECT 1 FROM public.enrollments en
+                              JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
+                              WHERE st.user_id = v_uid AND en.status = 'Enrolled' AND en.deleted_at IS NULL
+                          )
+                      )
+                      OR (
+                          e.target_audience = 'Section'
                           AND (
                               EXISTS (
-                                  SELECT 1 FROM public.enrollments en
-                                  JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
-                                  WHERE st.user_id = v_uid AND en.section_id = esx.section_id
-                                    AND en.status = 'Enrolled' AND en.deleted_at IS NULL
+                                  SELECT 1 FROM public.event_sections esx
+                                  WHERE esx.event_id = e.id AND esx.deleted_at IS NULL
+                                    AND (
+                                        EXISTS (
+                                            SELECT 1 FROM public.enrollments en
+                                            JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
+                                            WHERE st.user_id = v_uid AND en.section_id = esx.section_id
+                                              AND en.status = 'Enrolled' AND en.deleted_at IS NULL
+                                        )
+                                        OR EXISTS (
+                                            SELECT 1 FROM public.sections s
+                                            WHERE s.id = esx.section_id AND s.faculty_id = v_uid AND s.deleted_at IS NULL
+                                        )
+                                    )
                               )
-                              OR EXISTS (
-                                  SELECT 1 FROM public.sections s
-                                  WHERE s.id = esx.section_id AND s.faculty_id = v_uid AND s.deleted_at IS NULL
+                              OR (
+                                  e.section_id IS NOT NULL
+                                  AND (
+                                      EXISTS (
+                                          SELECT 1 FROM public.enrollments en
+                                          JOIN public.students st ON st.id = en.student_id AND st.deleted_at IS NULL
+                                          WHERE st.user_id = v_uid AND en.section_id = e.section_id
+                                            AND en.status = 'Enrolled' AND en.deleted_at IS NULL
+                                      )
+                                      OR EXISTS (
+                                          SELECT 1 FROM public.sections s
+                                          WHERE s.id = e.section_id AND s.faculty_id = v_uid AND s.deleted_at IS NULL
+                                      )
+                                  )
                               )
                           )
-                    ))
+                      )
+              END
           )
     ) t;
 
     RETURN v_result;
 END;
-$function$
+$function$;
 ;
-
 CREATE OR REPLACE FUNCTION public.fn_list_my_grades(p_page integer DEFAULT 1, p_size integer DEFAULT 20, p_sort jsonb DEFAULT NULL::jsonb, p_term_id uuid DEFAULT NULL::uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
