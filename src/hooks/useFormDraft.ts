@@ -105,6 +105,7 @@ export function useFormDraft<T extends FieldValues>({
     const [isPromptOpen, setIsPromptOpen] = useState(false);
     const [pendingDraft, setPendingDraft] = useState<Partial<T> | null>(null);
     const promptHandledRef = useRef(false);
+    const hasCheckedRef = useRef(false);
 
     const { isDirty, isSubmitSuccessful } = useFormState({ control });
     const currentValues = useWatch({ control });
@@ -128,13 +129,14 @@ export function useFormDraft<T extends FieldValues>({
     useEffect(() => {
         if (!enabled) {
             promptHandledRef.current = false;
+            hasCheckedRef.current = false;
             setIsPromptOpen(false);
         }
     }, [enabled]);
 
     // Check for saved draft on mount or when enabled becomes true
     useEffect(() => {
-        if (!enabled || !resolvedKey || promptHandledRef.current) {
+        if (!enabled || !resolvedKey || promptHandledRef.current || hasCheckedRef.current) {
             return;
         }
 
@@ -148,6 +150,7 @@ export function useFormDraft<T extends FieldValues>({
             const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
 
             if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultVals)) {
+                hasCheckedRef.current = true;
                 setPendingDraft(parsed.values);
                 setIsPromptOpen(true);
             }
@@ -287,6 +290,13 @@ export function useObjectDraft<T extends Record<string, any>>({
     const [isPromptOpen, setIsPromptOpen] = useState(false);
     const [pendingDraft, setPendingDraft] = useState<Partial<T> | null>(null);
     const promptHandledRef = useRef(false);
+    const hasCheckedRef = useRef(false);
+
+    const defaultValuesRef = useRef(defaultValues);
+    defaultValuesRef.current = defaultValues;
+
+    const valuesRef = useRef(values);
+    valuesRef.current = values;
 
     const resolvedKey = useMemo(() => {
         if (!enabled) return null;
@@ -297,12 +307,13 @@ export function useObjectDraft<T extends Record<string, any>>({
     useEffect(() => {
         if (!enabled) {
             promptHandledRef.current = false;
+            hasCheckedRef.current = false;
             setIsPromptOpen(false);
         }
     }, [enabled]);
 
     useEffect(() => {
-        if (!enabled || !resolvedKey || promptHandledRef.current) {
+        if (!enabled || !resolvedKey || promptHandledRef.current || hasCheckedRef.current) {
             return;
         }
 
@@ -311,14 +322,23 @@ export function useObjectDraft<T extends Record<string, any>>({
             if (!raw) return;
 
             const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
-            if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultValues)) {
+            if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultValuesRef.current)) {
+                hasCheckedRef.current = true;
                 setPendingDraft(parsed.values);
                 setIsPromptOpen(true);
             }
         } catch {
             // Ignore
         }
-    }, [enabled, resolvedKey, defaultValues]);
+    }, [enabled, resolvedKey]);
+
+    const serializedValues = useMemo(() => {
+        try {
+            return JSON.stringify(values);
+        } catch {
+            return '';
+        }
+    }, [values]);
 
     useEffect(() => {
         if (!enabled || !resolvedKey) {
@@ -327,8 +347,9 @@ export function useObjectDraft<T extends Record<string, any>>({
 
         const timer = setTimeout(() => {
             try {
-                if (hasMeaningfulValues(values, defaultValues)) {
-                    const sanitized = filterSensitiveFields(values);
+                const currentVals = valuesRef.current;
+                if (hasMeaningfulValues(currentVals, defaultValuesRef.current)) {
+                    const sanitized = filterSensitiveFields(currentVals);
                     const payload: StoredDraftPayload<T> = {
                         pathname: typeof window !== 'undefined' ? window.location.pathname : '',
                         timestamp: Date.now(),
@@ -342,7 +363,7 @@ export function useObjectDraft<T extends Record<string, any>>({
         }, 400);
 
         return () => clearTimeout(timer);
-    }, [values, enabled, resolvedKey, defaultValues]);
+    }, [serializedValues, enabled, resolvedKey]);
 
     function clearDraft() {
         if (resolvedKey) {

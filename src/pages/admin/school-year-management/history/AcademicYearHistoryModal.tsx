@@ -1,21 +1,19 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
+import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import {
     ArrowCounterClockwiseIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
     ArrowsLeftRightIcon,
     CalendarDotsIcon,
-    CaretDownIcon,
-    CaretUpIcon,
     CheckCircleIcon,
     ClockCounterClockwiseIcon,
-    EyeIcon,
     GraduationCapIcon,
     InfoIcon,
-    ListBulletsIcon,
     ScalesIcon,
     SunIcon,
-    UserIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { getAcademicYearHistory, saveAcademicYearCalendar } from '@services/school-year.service';
@@ -25,12 +23,14 @@ import {
     AcademicYearHistoryItem,
     SaveAcademicYearCalendarPayload,
     WizardCalendarExceptionItem,
+    WizardGradingPeriodItem,
     WizardTermItem,
     WizardThresholdItem,
     WizardTransmutationRow
 } from '@type/school-year.type';
 import { formatShortDate } from '@utils/date.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { WIZARD_STEPS } from '../wizard/wizard.constants';
 
 interface AcademicYearHistoryModalProps {
     open: boolean;
@@ -39,8 +39,6 @@ interface AcademicYearHistoryModalProps {
     onClose: () => void;
     onReverted?: () => void;
 }
-
-type HistoryMode = 'timeline' | 'view' | 'compare';
 
 interface EnrichedHistoryItem extends AcademicYearHistoryItem {
     versionNum: number;
@@ -59,11 +57,10 @@ export default function AcademicYearHistoryModal({
     const [history, setHistory] = useState<AcademicYearHistoryItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isReverting, setIsReverting] = useState(false);
-    const [activeMode, setActiveMode] = useState<HistoryMode>('timeline');
-    const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
+    const [currentStep, setCurrentStep] = useState(1);
     const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
-    const [compareVersionAId, setCompareVersionAId] = useState<string | null>(null);
-    const [compareVersionBId, setCompareVersionBId] = useState<string | null>(null);
+    const [isCompareMode, setIsCompareMode] = useState(false);
+    const [comparedVersionId, setComparedVersionId] = useState<string | null>(null);
     const [revertTargetEntry, setRevertTargetEntry] = useState<EnrichedHistoryItem | null>(null);
 
     const loadHistory = useCallback(async () => {
@@ -74,13 +71,12 @@ export default function AcademicYearHistoryModal({
             if (res.data) {
                 setHistory(res.data);
                 if (res.data.length > 0) {
-                    setExpandedEntryId(res.data[0].id);
                     setSelectedVersionId(res.data[0].id);
-                    setCompareVersionBId(res.data[0].id);
                     if (res.data.length > 1) {
-                        setCompareVersionAId(res.data[1].id);
+                        setComparedVersionId(res.data[1].id);
                     } else {
-                        setCompareVersionAId(res.data[0].id);
+                        setComparedVersionId(null);
+                        setIsCompareMode(false);
                     }
                 }
             }
@@ -92,11 +88,10 @@ export default function AcademicYearHistoryModal({
     useEffect(() => {
         if (!open || !schoolYearId) {
             setHistory([]);
-            setExpandedEntryId(null);
+            setCurrentStep(1);
             setSelectedVersionId(null);
-            setCompareVersionAId(null);
-            setCompareVersionBId(null);
-            setActiveMode('timeline');
+            setIsCompareMode(false);
+            setComparedVersionId(null);
             setRevertTargetEntry(null);
             return;
         }
@@ -134,36 +129,20 @@ export default function AcademicYearHistoryModal({
         return enrichedHistory.find((v) => v.id === selectedVersionId) || enrichedHistory[0] || null;
     }, [enrichedHistory, selectedVersionId]);
 
-    const compareVersionA = useMemo(() => {
-        return enrichedHistory.find((v) => v.id === compareVersionAId) || enrichedHistory[1] || enrichedHistory[0] || null;
-    }, [enrichedHistory, compareVersionAId]);
+    const comparedVersion = useMemo(() => {
+        if (enrichedHistory.length <= 1) return null;
+        const found = enrichedHistory.find((v) => v.id === comparedVersionId);
+        if (found && found.id !== selectedVersion?.id) return found;
+        return enrichedHistory.find((v) => v.id !== selectedVersion?.id) || enrichedHistory[1] || null;
+    }, [enrichedHistory, comparedVersionId, selectedVersion]);
 
-    const compareVersionB = useMemo(() => {
-        return enrichedHistory.find((v) => v.id === compareVersionBId) || enrichedHistory[0] || null;
-    }, [enrichedHistory, compareVersionBId]);
+    const hasMultipleVersions = enrichedHistory.length > 1;
 
-    function toggleExpand(id: string) {
-        setExpandedEntryId((prev) => (prev === id ? null : id));
-    }
-
-    function handleOpenViewVersion(id: string) {
-        setSelectedVersionId(id);
-        setActiveMode('view');
-    }
-
-    function handleOpenCompare(versionAId: string, versionBId?: string) {
-        setCompareVersionAId(versionAId);
-        if (versionBId) {
-            setCompareVersionBId(versionBId);
-        } else if (enrichedHistory.length > 0) {
-            setCompareVersionBId(enrichedHistory[0].id);
-        }
-        setActiveMode('compare');
-    }
-
-    function handleSwapCompareVersions() {
-        setCompareVersionAId(compareVersionBId);
-        setCompareVersionBId(compareVersionAId);
+    function handleSwapVersions() {
+        if (!selectedVersion || !comparedVersion) return;
+        const prevSelected = selectedVersion.id;
+        setSelectedVersionId(comparedVersion.id);
+        setComparedVersionId(prevSelected);
     }
 
     async function handleExecuteRevert() {
@@ -205,7 +184,6 @@ export default function AcademicYearHistoryModal({
             );
             setRevertTargetEntry(null);
             await loadHistory();
-            setActiveMode('timeline');
             onReverted?.();
         } catch (err: any) {
             useToastStore.getState().showToast(
@@ -216,6 +194,8 @@ export default function AcademicYearHistoryModal({
             setIsReverting(false);
         }
     }
+
+    const currentStepConfig = WIZARD_STEPS.find((s) => s.step === currentStep) || WIZARD_STEPS[0];
 
     return (
         <CommonModal
@@ -243,6 +223,11 @@ export default function AcademicYearHistoryModal({
                                     {schoolYearLabel}
                                 </span>
                             )}
+                            {enrichedHistory.length > 0 && (
+                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400 font-medium">
+                                    {enrichedHistory.length} {enrichedHistory.length === 1 ? 'version' : 'versions'}
+                                </span>
+                            )}
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                             Audit trail, version inspection, historical comparison, and snapshot reversion.
@@ -252,7 +237,7 @@ export default function AcademicYearHistoryModal({
 
                 <button
                     aria-label="Close"
-                    className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                     title="Close"
                     type="button"
                     onClick={onClose}
@@ -261,65 +246,120 @@ export default function AcademicYearHistoryModal({
                 </button>
             </div>
 
-            {/* Mode Switcher Bar */}
-            <div className="px-3.5 sm:px-5 py-2.5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/80 flex flex-wrap items-center justify-between gap-2 shrink-0">
-                <div className="grid grid-cols-3 w-full sm:w-auto p-1 rounded-xl bg-slate-200/80 dark:bg-zinc-800 text-xs font-semibold gap-1">
-                    <button
-                        className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg transition-all ${
-                            activeMode === 'timeline'
-                                ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs font-bold'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setActiveMode('timeline')}
+            {/* Top Controls Bar: Version Selector Dropdown & Comparison Toggle */}
+            <div className="px-3.5 sm:px-5 py-2.5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                {/* Left: Version Selector Dropdown */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                        Version:
+                    </label>
+                    <select
+                        aria-label="Select Academic Year Version"
+                        className="h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer max-w-full sm:max-w-xs truncate"
+                        value={selectedVersion?.id || ''}
+                        onChange={(e) => setSelectedVersionId(e.target.value)}
                     >
-                        <ListBulletsIcon className="w-4 h-4 shrink-0" weight="bold" />
-                        <span>Timeline</span>
-                    </button>
-                    <button
-                        className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg transition-all ${
-                            activeMode === 'view'
-                                ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs font-bold'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setActiveMode('view')}
-                    >
-                        <EyeIcon className="w-4 h-4 shrink-0" weight="bold" />
-                        <span>View Version</span>
-                    </button>
-                    <button
-                        className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg transition-all ${
-                            activeMode === 'compare'
-                                ? 'bg-white dark:bg-zinc-900 text-brand-600 dark:text-brand-400 shadow-xs font-bold'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                        }`}
-                        type="button"
-                        onClick={() => setActiveMode('compare')}
-                    >
-                        <ArrowsLeftRightIcon className="w-4 h-4 shrink-0" weight="bold" />
-                        <span>Compare</span>
-                    </button>
+                        {enrichedHistory.map((item) => (
+                            <option key={item.id} value={item.id}>
+                                {item.versionLabel} — {item.formattedDate} ({item.action})
+                            </option>
+                        ))}
+                    </select>
+
+                    {selectedVersion?.isCurrentActive ? (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 shrink-0">
+                            <CheckCircleIcon className="w-3.5 h-3.5 shrink-0" weight="bold" />
+                            Active
+                        </span>
+                    ) : (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 shrink-0">
+                            Archived
+                        </span>
+                    )}
+
+                    {selectedVersion && !selectedVersion.isCurrentActive && (
+                        <CommonButton
+                            className="min-w-0 px-2.5 py-1 text-xs"
+                            color="primary"
+                            size="small"
+                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
+                            variant="outlined"
+                            onClick={() => setRevertTargetEntry(selectedVersion)}
+                        >
+                            Revert to v{selectedVersion.versionNum}
+                        </CommonButton>
+                    )}
                 </div>
 
-                {enrichedHistory.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Active: <strong className="text-slate-700 dark:text-slate-300">v{enrichedHistory[0].versionNum}</strong></span>
-                        <span className="text-slate-300 dark:text-zinc-700">•</span>
-                        <span>{enrichedHistory.length} total {enrichedHistory.length === 1 ? 'version' : 'versions'}</span>
+                {/* Right: Compare Toggle (ONLY visible when there are multiple versions) */}
+                {hasMultipleVersions && (
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <button
+                            aria-pressed={isCompareMode}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
+                                isCompareMode
+                                    ? 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border-brand-300 dark:border-brand-700 shadow-xs'
+                                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700'
+                            }`}
+                            type="button"
+                            onClick={() => setIsCompareMode((prev) => !prev)}
+                        >
+                            <ArrowsLeftRightIcon className="w-4 h-4" weight="bold" />
+                            <span>Compare</span>
+                        </button>
+
+                        {isCompareMode && comparedVersion && (
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-slate-400">with:</span>
+                                <select
+                                    aria-label="Select Version to Compare"
+                                    className="h-8 px-2.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+                                    value={comparedVersion.id}
+                                    onChange={(e) => setComparedVersionId(e.target.value)}
+                                >
+                                    {enrichedHistory
+                                        .filter((v) => v.id !== selectedVersion?.id)
+                                        .map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.versionLabel} — {item.formattedDate}
+                                            </option>
+                                        ))}
+                                </select>
+
+                                <button
+                                    className="p-1.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                                    title="Swap Base and Comparison Versions"
+                                    type="button"
+                                    onClick={handleSwapVersions}
+                                >
+                                    <ArrowsLeftRightIcon className="w-3.5 h-3.5" weight="bold" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 bg-slate-50/60 dark:bg-zinc-900/50 min-h-[300px]">
+            {/* Academic Year Stepper Header */}
+            <ModalStepperHeader
+                currentStep={currentStep}
+                readOnly
+                steps={WIZARD_STEPS.map((s) => ({
+                    step: s.step,
+                    title: s.title,
+                    subtitle: s.subtitle
+                }))}
+                onStepClick={(step) => setCurrentStep(step)}
+            />
+
+            {/* Stepper Content Area */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/60 dark:bg-zinc-900/50 min-h-[340px]">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
                         <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs text-slate-500">Loading audit history & versions...</p>
+                        <p className="text-xs text-slate-500">Loading academic year history & versions...</p>
                     </div>
-                ) : enrichedHistory.length === 0 ? (
+                ) : !selectedVersion ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
                         <InfoIcon className="w-10 h-10 text-slate-400" />
                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -329,308 +369,61 @@ export default function AcademicYearHistoryModal({
                             Any changes or revisions made to this academic year will be versioned and recorded here.
                         </p>
                     </div>
+                ) : isCompareMode && comparedVersion ? (
+                    /* COMPARISON STEP VIEW */
+                    <StepComparisonContent
+                        comparedVersion={comparedVersion}
+                        currentStep={currentStep}
+                        selectedVersion={selectedVersion}
+                    />
                 ) : (
-                    <>
-                        {/* 1. TIMELINE MODE */}
-                        {activeMode === 'timeline' && (
-                            <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-2.5 sm:before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200 dark:before:bg-zinc-800">
-                                {enrichedHistory.map((entry) => {
-                                    const isExpanded = expandedEntryId === entry.id;
-                                    const isCreated = entry.action === 'CREATED';
-                                    const snap = entry.snapshot;
-
-                                    return (
-                                        <div key={entry.id} className="relative group min-w-0">
-                                            {/* Timeline Pin */}
-                                            <div
-                                                className={`absolute -left-6 sm:-left-8 top-2 w-5 h-5 rounded-full border-2 bg-white dark:bg-zinc-900 flex items-center justify-center ${
-                                                    entry.isCurrentActive
-                                                        ? 'border-emerald-500 text-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-950/60'
-                                                        : isCreated
-                                                        ? 'border-blue-500 text-blue-500'
-                                                        : 'border-slate-400 text-slate-400'
-                                                }`}
-                                            >
-                                                <div
-                                                    className={`w-2 h-2 rounded-full ${
-                                                        entry.isCurrentActive
-                                                            ? 'bg-emerald-500'
-                                                            : isCreated
-                                                            ? 'bg-blue-500'
-                                                            : 'bg-slate-400'
-                                                    }`}
-                                                />
-                                            </div>
-
-                                            {/* History Card */}
-                                            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs overflow-hidden transition-all hover:border-slate-300 dark:hover:border-zinc-700">
-                                                <div className="p-3.5 sm:p-4 flex flex-col gap-3">
-                                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
-                                                        <div className="space-y-1.5 min-w-0 flex-1">
-                                                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                                                                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300">
-                                                                    v{entry.versionNum}
-                                                                </span>
-
-                                                                {entry.isCurrentActive ? (
-                                                                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
-                                                                        <CheckCircleIcon className="w-3.5 h-3.5 shrink-0" weight="bold" />
-                                                                        Active Version
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400">
-                                                                        Archived
-                                                                    </span>
-                                                                )}
-
-                                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                                                                    isCreated
-                                                                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                                                                        : 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-slate-300'
-                                                                }`}>
-                                                                    {entry.action}
-                                                                </span>
-
-                                                                <span className="text-xs text-slate-500 font-medium">
-                                                                    {entry.formattedDate}
-                                                                </span>
-                                                            </div>
-
-                                                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 break-words">
-                                                                {entry.change_summary || `${entry.action} academic year record.`}
-                                                            </p>
-
-                                                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-0.5">
-                                                                <div className="flex items-center gap-1">
-                                                                    <UserIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                                    <span>{entry.changed_by_name || 'System Administrator'}</span>
-                                                                </div>
-                                                                <span className="text-slate-300 dark:text-zinc-700">•</span>
-                                                                <span className="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-zinc-800 text-[10px] font-medium text-slate-600 dark:text-slate-400">
-                                                                    {entry.changed_by_role || 'Admin'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Actions Toolbar */}
-                                                        <div className="flex flex-wrap items-center gap-1.5 self-start shrink-0 pt-1 sm:pt-0">
-                                                            <button
-                                                                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1"
-                                                                title="View full version details"
-                                                                type="button"
-                                                                onClick={() => handleOpenViewVersion(entry.id)}
-                                                            >
-                                                                <EyeIcon className="w-3.5 h-3.5" weight="bold" />
-                                                                <span>View</span>
-                                                            </button>
-
-                                                            <button
-                                                                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1"
-                                                                title="Compare with another version"
-                                                                type="button"
-                                                                onClick={() => handleOpenCompare(entry.id)}
-                                                            >
-                                                                <ArrowsLeftRightIcon className="w-3.5 h-3.5" weight="bold" />
-                                                                <span className="hidden sm:inline">Compare</span>
-                                                            </button>
-
-                                                            {!entry.isCurrentActive && (
-                                                                <button
-                                                                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/50 dark:hover:bg-brand-900/60 border border-brand-200 dark:border-brand-800 transition-colors flex items-center gap-1"
-                                                                    title="Revert configuration to this version"
-                                                                    type="button"
-                                                                    onClick={() => setRevertTargetEntry(entry)}
-                                                                >
-                                                                    <ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />
-                                                                    <span>Revert</span>
-                                                                </button>
-                                                            )}
-
-                                                            <button
-                                                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                                                                title={isExpanded ? 'Hide snapshot summary' : 'Show snapshot summary'}
-                                                                type="button"
-                                                                onClick={() => toggleExpand(entry.id)}
-                                                            >
-                                                                {isExpanded ? (
-                                                                    <CaretUpIcon className="w-4 h-4" weight="bold" />
-                                                                ) : (
-                                                                    <CaretDownIcon className="w-4 h-4" weight="bold" />
-                                                                )}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Collapsible Quick Snapshot Breakdown */}
-                                                    {isExpanded && snap && (
-                                                        <div className="border-t border-slate-100 dark:border-zinc-800 pt-3 space-y-3 text-xs">
-                                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                                                                        Code & Label
-                                                                    </span>
-                                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">
-                                                                        {snap.code} — {snap.label}
-                                                                    </p>
-                                                                </div>
-
-                                                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                                                                        Schedule Dates
-                                                                    </span>
-                                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">
-                                                                        {formatShortDate(snap.start_date || '')} — {formatShortDate(snap.end_date || '')}
-                                                                    </p>
-                                                                </div>
-
-                                                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                                                                        Terms & Holidays
-                                                                    </span>
-                                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                                                                        {snap.terms_count ?? (snap.terms?.length || 0)} Terms • {snap.holidays_count ?? (snap.holidays?.length || 0)} Holidays
-                                                                    </p>
-                                                                </div>
-
-                                                                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                                                                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                                                                        Schema & Thresholds
-                                                                    </span>
-                                                                    <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                                                                        {snap.transmutation_rows_count ?? (snap.transmutation_rows?.length || 0)} Grades • {snap.thresholds_count ?? (snap.thresholds?.length || 0)} Rules
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* 2. VIEW VERSION MODE */}
-                        {activeMode === 'view' && selectedVersion && (
-                            <div className="space-y-4">
-                                {/* Top Controls Bar: Version Selector & Revert Action */}
-                                <div className="p-3 sm:p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                            Select Version:
-                                        </label>
-                                        <select
-                                            className="h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
-                                            value={selectedVersion.id}
-                                            onChange={(e) => setSelectedVersionId(e.target.value)}
-                                        >
-                                            {enrichedHistory.map((item) => (
-                                                <option key={item.id} value={item.id}>
-                                                    {item.versionLabel} — {item.formattedDate} ({item.action})
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                        {selectedVersion.isCurrentActive ? (
-                                            <span className="self-start sm:self-auto text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
-                                                <CheckCircleIcon className="w-3.5 h-3.5 shrink-0" weight="bold" />
-                                                Active Version
-                                            </span>
-                                        ) : (
-                                            <span className="self-start sm:self-auto text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500">
-                                                Archived Revision
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {!selectedVersion.isCurrentActive && (
-                                        <CommonButton
-                                            className="w-full sm:w-auto"
-                                            color="primary"
-                                            size="small"
-                                            startIcon={<ArrowCounterClockwiseIcon className="w-4 h-4" weight="bold" />}
-                                            variant="contained"
-                                            onClick={() => setRevertTargetEntry(selectedVersion)}
-                                        >
-                                            Revert to Version {selectedVersion.versionNum}
-                                        </CommonButton>
-                                    )}
-                                </div>
-
-                                {/* Full Snapshot Breakdown */}
-                                <VersionDetailsPanel snapshot={selectedVersion.snapshot} />
-                            </div>
-                        )}
-
-                        {/* 3. COMPARE MODE */}
-                        {activeMode === 'compare' && (
-                            <div className="space-y-4">
-                                {/* Compare Header & Version Pickers */}
-                                <div className="p-3 sm:p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        {/* Version A Picker */}
-                                        <div className="flex-1 min-w-0">
-                                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                                                Version A (Base):
-                                            </label>
-                                            <select
-                                                className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
-                                                value={compareVersionA?.id || ''}
-                                                onChange={(e) => setCompareVersionAId(e.target.value)}
-                                            >
-                                                {enrichedHistory.map((item) => (
-                                                    <option key={item.id} value={item.id}>
-                                                        {item.versionLabel} — {item.formattedDate}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {/* Swap Button */}
-                                        <div className="flex justify-center sm:pt-5 shrink-0">
-                                            <button
-                                                className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors"
-                                                title="Swap comparison versions"
-                                                type="button"
-                                                onClick={handleSwapCompareVersions}
-                                            >
-                                                <ArrowsLeftRightIcon className="w-4 h-4" weight="bold" />
-                                            </button>
-                                        </div>
-
-                                        {/* Version B Picker */}
-                                        <div className="flex-1 min-w-0">
-                                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                                                Version B (Comparison):
-                                            </label>
-                                            <select
-                                                className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
-                                                value={compareVersionB?.id || ''}
-                                                onChange={(e) => setCompareVersionBId(e.target.value)}
-                                            >
-                                                {enrichedHistory.map((item) => (
-                                                    <option key={item.id} value={item.id}>
-                                                        {item.versionLabel} — {item.formattedDate}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Comparison Grid */}
-                                {compareVersionA && compareVersionB && (
-                                    <VersionComparisonView
-                                        versionA={compareVersionA}
-                                        versionB={compareVersionB}
-                                        onRevert={(entry) => setRevertTargetEntry(entry)}
-                                    />
-                                )}
-                            </div>
-                        )}
-                    </>
+                    /* DEFAULT BASE STEP VIEW */
+                    <StepBaseContent
+                        currentStep={currentStep}
+                        version={selectedVersion}
+                    />
                 )}
+            </div>
+
+            {/* Bottom Footer: Stepper Navigation Buttons */}
+            <div className="px-4 sm:px-6 py-3 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between gap-3 shrink-0">
+                <CommonButton
+                    color="inherit"
+                    disabled={currentStep <= 1}
+                    size="small"
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" weight="bold" />}
+                    variant="outlined"
+                    onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                >
+                    Previous
+                </CommonButton>
+
+                <div className="text-xs text-slate-500 font-medium">
+                    Step {currentStep} of {WIZARD_STEPS.length}: <span className="font-bold text-slate-700 dark:text-slate-300">{currentStepConfig.title}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {currentStep < WIZARD_STEPS.length ? (
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            endIcon={<ArrowRightIcon className="w-4 h-4" weight="bold" />}
+                            variant="contained"
+                            onClick={() => setCurrentStep((prev) => Math.min(WIZARD_STEPS.length, prev + 1))}
+                        >
+                            Next Step
+                        </CommonButton>
+                    ) : (
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            variant="contained"
+                            onClick={onClose}
+                        >
+                            Close
+                        </CommonButton>
+                    )}
+                </div>
             </div>
 
             {/* Revert Confirmation Dialog */}
@@ -665,198 +458,329 @@ export default function AcademicYearHistoryModal({
 }
 
 /**
- * VersionDetailsPanel
+ * StepBaseContent
  *
- * Full structured view of an academic year snapshot
+ * Renders the data of a single version corresponding to the active stepper step.
  */
-function VersionDetailsPanel({ snapshot: snap }: { snapshot?: AcademicYearHistoryItem['snapshot'] }) {
+function StepBaseContent({
+    currentStep,
+    version
+}: {
+    currentStep: number;
+    version: EnrichedHistoryItem;
+}) {
+    const snap = version.snapshot;
     if (!snap) {
         return <p className="text-xs text-slate-500 text-center py-6">No snapshot data available.</p>;
     }
 
+    const terms: WizardTermItem[] = snap.terms || [];
+    const holidays: WizardCalendarExceptionItem[] = snap.holidays || [];
+    const transmutationRows: WizardTransmutationRow[] = snap.transmutation_rows || [];
+    const thresholds: WizardThresholdItem[] = snap.thresholds || [];
+
+    const totalGradingPeriods = terms.reduce(
+        (acc, t) => acc + (t.grading_periods?.length || 0),
+        0
+    );
+
     return (
         <div className="space-y-4">
-            {/* Identity & System Details Card */}
-            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                    <CalendarDotsIcon className="w-4 h-4 text-brand-600" weight="bold" />
-                    <span>Identity, Dates & System Configuration</span>
-                </div>
+            {/* Step 1: Identity & Dates */}
+            {currentStep === 1 && (
+                <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <CalendarDotsIcon className="w-4 h-4 text-brand-600" weight="bold" />
+                            <span>Academic Year Identity & Operational Schedule</span>
+                        </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Code</span>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">{snap.code || '—'}</p>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Label</span>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">{snap.label || '—'}</p>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Start Date</span>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{formatShortDate(snap.start_date || '') || '—'}</p>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">End Date</span>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{formatShortDate(snap.end_date || '') || '—'}</p>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Status</span>
-                        <span className={`inline-block font-bold text-[10px] px-2 py-0.5 rounded-full mt-0.5 ${
-                            snap.is_active
-                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600 dark:bg-zinc-700 dark:text-slate-300'
-                        }`}>
-                            {snap.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Max Units / Scope</span>
-                        <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                            {snap.max_units_per_term ?? 24} Units • {snap.evaluation_scope || 'Period'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Terms & Grading Periods */}
-            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                    <CalendarDotsIcon className="w-4 h-4 text-emerald-600" weight="bold" />
-                    <span>Academic Terms & Grading Periods ({snap.terms?.length || 0})</span>
-                </div>
-
-                {(!snap.terms || snap.terms.length === 0) ? (
-                    <p className="text-xs text-slate-500 py-2">No terms declared in this version.</p>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {snap.terms.map((t, idx) => (
-                            <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 space-y-2 text-xs">
-                                <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                                    <span className="text-sm">{t.term_type_label || `Term #${idx + 1}`}</span>
-                                    <span className="text-slate-500 font-normal">
-                                        {formatShortDate(t.start_date)} — {formatShortDate(t.end_date)}
-                                    </span>
-                                </div>
-
-                                <div className="text-[11px] text-slate-500 space-y-0.5">
-                                    {t.enrollment_start_date && (
-                                        <p>Enrollment: {formatShortDate(t.enrollment_start_date)} — {formatShortDate(t.enrollment_end_date)}</p>
-                                    )}
-                                    {t.grading_deadline && (
-                                        <p>Grade Submission Deadline: {formatShortDate(t.grading_deadline)}</p>
-                                    )}
-                                </div>
-
-                                {t.grading_periods && t.grading_periods.length > 0 && (
-                                    <div className="pt-1.5 border-t border-slate-200/60 dark:border-zinc-700/60">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Grading Periods</span>
-                                        <div className="flex flex-wrap gap-1">
-                                            {t.grading_periods.map((gp, gpIdx) => (
-                                                <span key={gpIdx} className="px-2 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-semibold text-[11px] text-slate-700 dark:text-slate-300">
-                                                    {gp.name} ({gp.weight}%)
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Code</span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">{snap.code || '—'}</p>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
 
-            {/* Transmutation Schema Ladder */}
-            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                    <ScalesIcon className="w-4 h-4 text-purple-600" weight="bold" />
-                    <span>Grade Transmutation Ladder ({snap.transmutation_rows?.length || 0} rungs)</span>
-                </div>
-
-                {(!snap.transmutation_rows || snap.transmutation_rows.length === 0) ? (
-                    <p className="text-xs text-slate-500 py-2">No transmutation schema defined in this version.</p>
-                ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                        {snap.transmutation_rows.map((row, rIdx) => (
-                            <div key={rIdx} className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs">
-                                <div className="flex items-center justify-between font-bold">
-                                    <span className="text-brand-600 dark:text-brand-400">{row.label}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                                        row.is_passing
-                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
-                                    }`}>
-                                        {row.is_passing ? 'Pass' : 'Fail'}
-                                    </span>
-                                </div>
-                                <div className="text-[11px] text-slate-500 mt-0.5">
-                                    {row.is_conditional ? (
-                                        <span>Status Code: {row.special_code || row.label}</span>
-                                    ) : (
-                                        <span>{row.min_percentage}% — {row.max_percentage}%</span>
-                                    )}
-                                </div>
-                                {row.description && (
-                                    <p className="text-[10px] text-slate-400 truncate mt-0.5">{row.description}</p>
-                                )}
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Label</span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 break-words mt-0.5">{snap.label || '—'}</p>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
 
-            {/* Academic Thresholds */}
-            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                    <GraduationCapIcon className="w-4 h-4 text-brand-600" weight="bold" />
-                    <span>Academic Thresholds & Cutoffs ({snap.thresholds?.length || 0} rules)</span>
-                </div>
-
-                {(!snap.thresholds || snap.thresholds.length === 0) ? (
-                    <p className="text-xs text-slate-500 py-2">No academic thresholds defined in this version.</p>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                        {snap.thresholds.map((th, thIdx) => (
-                            <div key={thIdx} className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs space-y-1">
-                                <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                                    <span>{th.label}</span>
-                                    <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-700 text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                                        {th.category}
-                                    </span>
-                                </div>
-                                <div className="text-[11px] text-slate-500 space-y-0.5">
-                                    <p>Max GWA Cutoff: <strong>≤ {th.max_gwa}</strong></p>
-                                    {th.min_subject_grade && <p>Subject Floor: <strong>≤ {th.min_subject_grade}</strong></p>}
-                                    {th.requires_no_failing && <p className="text-amber-600 dark:text-amber-400 font-medium">No failing marks allowed</p>}
-                                </div>
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Start Date</span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{formatShortDate(snap.start_date || '') || '—'}</p>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
 
-            {/* Holidays / Exceptions */}
-            {snap.holidays && snap.holidays.length > 0 && (
-                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                        <SunIcon className="w-4 h-4 text-amber-500" weight="bold" />
-                        <span>Calendar Exceptions & Holidays ({snap.holidays.length})</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {snap.holidays.map((h, hIdx) => (
-                            <div key={hIdx} className="p-2 rounded bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs">
-                                <p className="font-semibold text-slate-800 dark:text-slate-200 break-words">{h.title}</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
-                                    {h.exception_type} • {formatShortDate(h.start_date)}{h.end_date && h.end_date !== h.start_date ? ` — ${formatShortDate(h.end_date)}` : ''}
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">End Date</span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{formatShortDate(snap.end_date || '') || '—'}</p>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Status</span>
+                                <span className={`inline-block font-bold text-[10px] px-2 py-0.5 rounded-full mt-0.5 ${
+                                    snap.is_active
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                        : 'bg-slate-100 text-slate-600 dark:bg-zinc-700 dark:text-slate-300'
+                                }`}>
+                                    {snap.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Max Units / Scope</span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                                    {snap.max_units_per_term ?? 24} Units • {snap.evaluation_scope || 'Period'}
                                 </p>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Audit Details */}
+                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                Recorded by <strong className="text-slate-700 dark:text-slate-300">{version.changed_by_name || 'System Administrator'}</strong> ({version.changed_by_role || 'Admin'})
+                            </div>
+                            <div className="text-[11px] font-medium">
+                                Action: <span className="font-bold text-slate-700 dark:text-slate-300 uppercase">{version.action}</span> • {version.formattedDate}
+                            </div>
+                        </div>
                     </div>
+                </div>
+            )}
+
+            {/* Step 2: Terms & Windows */}
+            {currentStep === 2 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <CalendarDotsIcon className="w-4 h-4 text-emerald-600" weight="bold" />
+                            <span>Academic Terms & Operational Windows ({terms.length})</span>
+                        </div>
+                        <span className="text-xs text-slate-500 font-medium">{terms.length} {terms.length === 1 ? 'term' : 'terms'}</span>
+                    </div>
+
+                    {terms.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-6 text-center">No academic terms declared in this version.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {terms.map((t, idx) => (
+                                <div key={idx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 space-y-2.5 text-xs">
+                                    <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
+                                        <span className="text-sm text-brand-700 dark:text-brand-300">{t.term_type_label || `Term #${idx + 1}`}</span>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                            t.status === 'Ongoing'
+                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                : 'bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-slate-300'
+                                        }`}>
+                                            {t.status || 'Upcoming'}
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-1 text-slate-600 dark:text-slate-300">
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400">Term Schedule:</span>
+                                            <span className="font-semibold">{formatShortDate(t.start_date)} — {formatShortDate(t.end_date)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400">Enrollment Window:</span>
+                                            <span className="font-semibold">
+                                                {t.enrollment_start_date ? `${formatShortDate(t.enrollment_start_date)} — ${formatShortDate(t.enrollment_end_date)}` : '—'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400">Grading Deadline:</span>
+                                            <span className="font-semibold">{t.grading_deadline ? formatShortDate(t.grading_deadline) : '—'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Step 3: Grading Periods */}
+            {currentStep === 3 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <CalendarDotsIcon className="w-4 h-4 text-blue-600" weight="bold" />
+                            <span>Grading Periods Breakdown ({totalGradingPeriods} periods across {terms.length} terms)</span>
+                        </div>
+                    </div>
+
+                    {terms.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-6 text-center">No terms available to display grading periods.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {terms.map((t, tIdx) => {
+                                const gps: WizardGradingPeriodItem[] = t.grading_periods || [];
+                                const totalWeight = gps.reduce((sum, gp) => sum + (Number(gp.weight) || 0), 0);
+
+                                return (
+                                    <div key={tIdx} className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 space-y-2.5 text-xs">
+                                        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-zinc-700/80 pb-2">
+                                            <div>
+                                                <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                                                    {t.term_type_label || `Term #${tIdx + 1}`}
+                                                </span>
+                                                <span className="text-xs text-slate-400 ml-2 font-normal">
+                                                    ({formatShortDate(t.start_date)} — {formatShortDate(t.end_date)})
+                                                </span>
+                                            </div>
+                                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                                                totalWeight === 100
+                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                                            }`}>
+                                                Total Weight: {totalWeight}%
+                                            </span>
+                                        </div>
+
+                                        {gps.length === 0 ? (
+                                            <p className="text-xs text-slate-500 py-2">No grading periods configured for this term.</p>
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                                                {gps.map((gp, gpIdx) => (
+                                                    <div key={gpIdx} className="p-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 space-y-1">
+                                                        <div className="flex items-center justify-between font-bold">
+                                                            <span className="text-slate-800 dark:text-slate-200">{gp.name}</span>
+                                                            <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold text-[11px]">
+                                                                {gp.weight}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-500">
+                                                            <span>Sequence #{gp.sequence || gpIdx + 1}</span>
+                                                            {gp.start_date && (
+                                                                <p className="mt-0.5">{formatShortDate(gp.start_date)} — {formatShortDate(gp.end_date)}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Step 4: Calendar Exceptions & Holidays */}
+            {currentStep === 4 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <SunIcon className="w-4 h-4 text-amber-500" weight="bold" />
+                            <span>Calendar Exceptions & Holidays ({holidays.length})</span>
+                        </div>
+                    </div>
+
+                    {holidays.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-6 text-center">No calendar exceptions or holidays recorded in this version.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                            {holidays.map((h, hIdx) => (
+                                <div key={hIdx} className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs space-y-1.5">
+                                    <div className="flex items-start justify-between gap-1 font-bold text-slate-800 dark:text-slate-200">
+                                        <span className="break-words">{h.title}</span>
+                                        <span className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-[10px] shrink-0 font-bold">
+                                            {h.exception_type}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-500">
+                                        {formatShortDate(h.start_date)}{h.end_date && h.end_date !== h.start_date ? ` — ${formatShortDate(h.end_date)}` : ''}
+                                    </p>
+                                    {h.affects_attendance !== undefined && (
+                                        <span className="inline-block text-[10px] text-slate-400">
+                                            {h.affects_attendance ? '• Affects Attendance' : '• Does Not Affect Attendance'}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Step 5: Grade Schema (Transmutation Ladder) */}
+            {currentStep === 5 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <ScalesIcon className="w-4 h-4 text-purple-600" weight="bold" />
+                            <span>Grade Transmutation Ladder ({transmutationRows.length} rungs)</span>
+                        </div>
+                    </div>
+
+                    {transmutationRows.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-6 text-center">No transmutation schema defined in this version.</p>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {transmutationRows.map((row, rIdx) => (
+                                <div key={rIdx} className="p-2.5 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs space-y-1">
+                                    <div className="flex items-center justify-between font-bold">
+                                        <span className="text-brand-600 dark:text-brand-400 text-sm">{row.label}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                                            row.is_passing
+                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                                        }`}>
+                                            {row.is_passing ? 'Pass' : 'Fail'}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-slate-500">
+                                        {row.is_conditional ? (
+                                            <span>Special: {row.special_code || row.label}</span>
+                                        ) : (
+                                            <span>{row.min_percentage}% — {row.max_percentage}%</span>
+                                        )}
+                                    </div>
+                                    {row.description && (
+                                        <p className="text-[10px] text-slate-400 truncate mt-0.5">{row.description}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Step 6: Academic Thresholds */}
+            {currentStep === 6 && (
+                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
+                            <GraduationCapIcon className="w-4 h-4 text-brand-600" weight="bold" />
+                            <span>Academic Thresholds & Cutoffs ({thresholds.length} rules)</span>
+                        </div>
+                    </div>
+
+                    {thresholds.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-6 text-center">No academic thresholds defined in this version.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                            {thresholds.map((th, thIdx) => (
+                                <div key={thIdx} className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 text-xs space-y-1.5">
+                                    <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
+                                        <span>{th.label}</span>
+                                        <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-700 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                            {th.category}
+                                        </span>
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 space-y-0.5">
+                                        <p>Max GWA Cutoff: <strong>≤ {th.max_gwa}</strong></p>
+                                        {th.min_subject_grade && <p>Subject Floor: <strong>≤ {th.min_subject_grade}</strong></p>}
+                                        {th.requires_no_failing && <p className="text-amber-600 dark:text-amber-400 font-medium">No failing marks allowed</p>}
+                                        {th.scholarship_discount_pct && (
+                                            <p className="text-emerald-600 dark:text-emerald-400 font-medium">Discount: {th.scholarship_discount_pct}%</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -864,198 +788,177 @@ function VersionDetailsPanel({ snapshot: snap }: { snapshot?: AcademicYearHistor
 }
 
 /**
- * VersionComparisonView
+ * StepComparisonContent
  *
- * Side-by-side on desktop, stacked on mobile comparison between two versions
+ * Side-by-side / diff comparison for the active step between Base Version and Compared Version.
  */
-function VersionComparisonView({
-    versionA,
-    versionB,
-    onRevert
+function StepComparisonContent({
+    currentStep,
+    selectedVersion,
+    comparedVersion
 }: {
-    versionA: EnrichedHistoryItem;
-    versionB: EnrichedHistoryItem;
-    onRevert: (entry: EnrichedHistoryItem) => void;
+    currentStep: number;
+    selectedVersion: EnrichedHistoryItem;
+    comparedVersion: EnrichedHistoryItem;
 }) {
-    const snapA = versionA.snapshot;
-    const snapB = versionB.snapshot;
-
-    const diffChecks = [
-        {
-            label: 'Code',
-            valA: snapA?.code || '—',
-            valB: snapB?.code || '—',
-            changed: snapA?.code !== snapB?.code
-        },
-        {
-            label: 'Label',
-            valA: snapA?.label || '—',
-            valB: snapB?.label || '—',
-            changed: snapA?.label !== snapB?.label
-        },
-        {
-            label: 'Start Date',
-            valA: formatShortDate(snapA?.start_date || '') || '—',
-            valB: formatShortDate(snapB?.start_date || '') || '—',
-            changed: snapA?.start_date !== snapB?.start_date
-        },
-        {
-            label: 'End Date',
-            valA: formatShortDate(snapA?.end_date || '') || '—',
-            valB: formatShortDate(snapB?.end_date || '') || '—',
-            changed: snapA?.end_date !== snapB?.end_date
-        },
-        {
-            label: 'Active Status',
-            valA: snapA?.is_active ? 'Active' : 'Inactive',
-            valB: snapB?.is_active ? 'Active' : 'Inactive',
-            changed: Boolean(snapA?.is_active) !== Boolean(snapB?.is_active)
-        },
-        {
-            label: 'Evaluation Scope',
-            valA: snapA?.evaluation_scope || 'Period',
-            valB: snapB?.evaluation_scope || 'Period',
-            changed: snapA?.evaluation_scope !== snapB?.evaluation_scope
-        },
-        {
-            label: 'Terms Count',
-            valA: `${snapA?.terms?.length || snapA?.terms_count || 0} terms`,
-            valB: `${snapB?.terms?.length || snapB?.terms_count || 0} terms`,
-            changed: (snapA?.terms?.length || snapA?.terms_count || 0) !== (snapB?.terms?.length || snapB?.terms_count || 0)
-        },
-        {
-            label: 'Transmutation Rungs',
-            valA: `${snapA?.transmutation_rows?.length || snapA?.transmutation_rows_count || 0} grades`,
-            valB: `${snapB?.transmutation_rows?.length || snapB?.transmutation_rows_count || 0} grades`,
-            changed: (snapA?.transmutation_rows?.length || snapA?.transmutation_rows_count || 0) !== (snapB?.transmutation_rows?.length || snapB?.transmutation_rows_count || 0)
-        },
-        {
-            label: 'Academic Thresholds',
-            valA: `${snapA?.thresholds?.length || snapA?.thresholds_count || 0} rules`,
-            valB: `${snapB?.thresholds?.length || snapB?.thresholds_count || 0} rules`,
-            changed: (snapA?.thresholds?.length || snapA?.thresholds_count || 0) !== (snapB?.thresholds?.length || snapB?.thresholds_count || 0)
-        },
-        {
-            label: 'Holidays Count',
-            valA: `${snapA?.holidays?.length || snapA?.holidays_count || 0} exceptions`,
-            valB: `${snapB?.holidays?.length || snapB?.holidays_count || 0} exceptions`,
-            changed: (snapA?.holidays?.length || snapA?.holidays_count || 0) !== (snapB?.holidays?.length || snapB?.holidays_count || 0)
-        }
-    ];
-
-    const totalDiffs = diffChecks.filter((d) => d.changed).length;
+    const snapA = selectedVersion.snapshot;
+    const snapB = comparedVersion.snapshot;
 
     return (
         <div className="space-y-4">
-            {/* Diff Summary Bar */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs">
+            {/* Comparison Overview Banner */}
+            <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                        Comparing v{versionA.versionNum} vs v{versionB.versionNum}:
+                        Comparing v{selectedVersion.versionNum} (Base) vs v{comparedVersion.versionNum} (Target):
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${
-                        totalDiffs > 0
-                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                            : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    }`}>
-                        {totalDiffs > 0 ? `${totalDiffs} configurations differ` : 'Identical configurations'}
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full font-bold text-[11px] bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                        Step {currentStep} Comparison
                     </span>
                 </div>
             </div>
 
-            {/* Core Attributes Diff Table */}
-            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs overflow-hidden">
-                <div className="p-3 bg-slate-50 dark:bg-zinc-800/60 border-b border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Configuration Comparison Table
-                </div>
-
-                <div className="divide-y divide-slate-100 dark:divide-zinc-800 text-xs">
-                    <div className="grid grid-cols-12 p-2.5 font-bold bg-slate-50/50 dark:bg-zinc-800/30 text-[11px] text-slate-400 uppercase tracking-wider">
-                        <div className="col-span-4 sm:col-span-3">Setting</div>
-                        <div className="col-span-4 sm:col-span-4">Version {versionA.versionNum} (Base)</div>
-                        <div className="col-span-4 sm:col-span-5">Version {versionB.versionNum} (Target)</div>
-                    </div>
-
-                    {diffChecks.map((diff, idx) => (
-                        <div
-                            key={idx}
-                            className={`grid grid-cols-12 p-2.5 items-center ${
-                                diff.changed
-                                    ? 'bg-amber-50/60 dark:bg-amber-950/20'
-                                    : 'hover:bg-slate-50/40 dark:hover:bg-zinc-800/20'
-                            }`}
-                        >
-                            <div className="col-span-4 sm:col-span-3 font-medium text-slate-700 dark:text-slate-300">
-                                {diff.label}
-                            </div>
-                            <div className="col-span-4 sm:col-span-4 text-slate-600 dark:text-slate-400 break-words pr-2">
-                                {diff.valA}
-                            </div>
-                            <div className="col-span-4 sm:col-span-5 flex items-center justify-between gap-1 break-words">
-                                <span className={diff.changed ? 'font-bold text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400'}>
-                                    {diff.valB}
-                                </span>
-                                {diff.changed && (
-                                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 shrink-0">
-                                        Changed
-                                    </span>
-                                )}
-                            </div>
+            {/* Step 1 Comparison: Identity & Dates */}
+            {currentStep === 1 && (
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs overflow-hidden">
+                    <div className="divide-y divide-slate-100 dark:divide-zinc-800 text-xs">
+                        <div className="grid grid-cols-12 p-2.5 font-bold bg-slate-50/50 dark:bg-zinc-800/30 text-[11px] text-slate-400 uppercase tracking-wider">
+                            <div className="col-span-4">Attribute</div>
+                            <div className="col-span-4">v{selectedVersion.versionNum} (Base)</div>
+                            <div className="col-span-4">v{comparedVersion.versionNum} (Target)</div>
                         </div>
-                    ))}
-                </div>
-            </div>
 
-            {/* Side-by-Side (Desktop) / Stacked (Mobile) Detailed Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Column A */}
-                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5">
-                        <div>
-                            <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                Version {versionA.versionNum}
-                            </span>
-                            <p className="text-[11px] text-slate-500">{versionA.formattedDate}</p>
-                        </div>
-                        {!versionA.isCurrentActive && (
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
-                                variant="outlined"
-                                onClick={() => onRevert(versionA)}
-                            >
-                                Revert to v{versionA.versionNum}
-                            </CommonButton>
-                        )}
+                        {[
+                            { label: 'Code', a: snapA?.code || '—', b: snapB?.code || '—' },
+                            { label: 'Label', a: snapA?.label || '—', b: snapB?.label || '—' },
+                            { label: 'Start Date', a: formatShortDate(snapA?.start_date || '') || '—', b: formatShortDate(snapB?.start_date || '') || '—' },
+                            { label: 'End Date', a: formatShortDate(snapA?.end_date || '') || '—', b: formatShortDate(snapB?.end_date || '') || '—' },
+                            { label: 'Status', a: snapA?.is_active ? 'Active' : 'Inactive', b: snapB?.is_active ? 'Active' : 'Inactive' },
+                            { label: 'Scope', a: snapA?.evaluation_scope || 'Period', b: snapB?.evaluation_scope || 'Period' },
+                            { label: 'Max Units', a: `${snapA?.max_units_per_term ?? 24} Units`, b: `${snapB?.max_units_per_term ?? 24} Units` }
+                        ].map((item, idx) => {
+                            const changed = item.a !== item.b;
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`grid grid-cols-12 p-2.5 items-center ${
+                                        changed ? 'bg-amber-50/60 dark:bg-amber-950/20' : 'hover:bg-slate-50/40 dark:hover:bg-zinc-800/20'
+                                    }`}
+                                >
+                                    <div className="col-span-4 font-medium text-slate-700 dark:text-slate-300">
+                                        {item.label}
+                                    </div>
+                                    <div className="col-span-4 text-slate-600 dark:text-slate-400 break-words pr-2">
+                                        {item.a}
+                                    </div>
+                                    <div className="col-span-4 flex items-center justify-between gap-1 break-words">
+                                        <span className={changed ? 'font-bold text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400'}>
+                                            {item.b}
+                                        </span>
+                                        {changed && (
+                                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 shrink-0">
+                                                Diff
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                    <VersionDetailsPanel snapshot={versionA.snapshot} />
                 </div>
+            )}
 
-                {/* Column B */}
-                <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5">
-                        <div>
-                            <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                Version {versionB.versionNum}
-                            </span>
-                            <p className="text-[11px] text-slate-500">{versionB.formattedDate}</p>
+            {/* Step 2 Comparison: Terms & Windows */}
+            {currentStep === 2 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-brand-50 dark:bg-brand-950/50 rounded-lg font-bold text-xs text-brand-700 dark:text-brand-300">
+                            Version {selectedVersion.versionNum} (Base) — {(snapA?.terms || []).length} Terms
                         </div>
-                        {!versionB.isCurrentActive && (
-                            <CommonButton
-                                color="primary"
-                                size="small"
-                                startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
-                                variant="outlined"
-                                onClick={() => onRevert(versionB)}
-                            >
-                                Revert to v{versionB.versionNum}
-                            </CommonButton>
-                        )}
+                        <StepBaseContent currentStep={2} version={selectedVersion} />
                     </div>
-                    <VersionDetailsPanel snapshot={versionB.snapshot} />
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 rounded-lg font-bold text-xs text-slate-700 dark:text-slate-300">
+                            Version {comparedVersion.versionNum} (Target) — {(snapB?.terms || []).length} Terms
+                        </div>
+                        <StepBaseContent currentStep={2} version={comparedVersion} />
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {/* Step 3 Comparison: Grading Periods */}
+            {currentStep === 3 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-brand-50 dark:bg-brand-950/50 rounded-lg font-bold text-xs text-brand-700 dark:text-brand-300">
+                            Version {selectedVersion.versionNum} (Base)
+                        </div>
+                        <StepBaseContent currentStep={3} version={selectedVersion} />
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 rounded-lg font-bold text-xs text-slate-700 dark:text-slate-300">
+                            Version {comparedVersion.versionNum} (Target)
+                        </div>
+                        <StepBaseContent currentStep={3} version={comparedVersion} />
+                    </div>
+                </div>
+            )}
+
+            {/* Step 4 Comparison: Calendar Exceptions & Holidays */}
+            {currentStep === 4 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-brand-50 dark:bg-brand-950/50 rounded-lg font-bold text-xs text-brand-700 dark:text-brand-300">
+                            Version {selectedVersion.versionNum} (Base) — {(snapA?.holidays || []).length} Exceptions
+                        </div>
+                        <StepBaseContent currentStep={4} version={selectedVersion} />
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 rounded-lg font-bold text-xs text-slate-700 dark:text-slate-300">
+                            Version {comparedVersion.versionNum} (Target) — {(snapB?.holidays || []).length} Exceptions
+                        </div>
+                        <StepBaseContent currentStep={4} version={comparedVersion} />
+                    </div>
+                </div>
+            )}
+
+            {/* Step 5 Comparison: Grade Schema */}
+            {currentStep === 5 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-brand-50 dark:bg-brand-950/50 rounded-lg font-bold text-xs text-brand-700 dark:text-brand-300">
+                            Version {selectedVersion.versionNum} (Base) — {(snapA?.transmutation_rows || []).length} Rungs
+                        </div>
+                        <StepBaseContent currentStep={5} version={selectedVersion} />
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 rounded-lg font-bold text-xs text-slate-700 dark:text-slate-300">
+                            Version {comparedVersion.versionNum} (Target) — {(snapB?.transmutation_rows || []).length} Rungs
+                        </div>
+                        <StepBaseContent currentStep={5} version={comparedVersion} />
+                    </div>
+                </div>
+            )}
+
+            {/* Step 6 Comparison: Academic Thresholds */}
+            {currentStep === 6 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-brand-50 dark:bg-brand-950/50 rounded-lg font-bold text-xs text-brand-700 dark:text-brand-300">
+                            Version {selectedVersion.versionNum} (Base) — {(snapA?.thresholds || []).length} Rules
+                        </div>
+                        <StepBaseContent currentStep={6} version={selectedVersion} />
+                    </div>
+                    <div className="space-y-3">
+                        <div className="p-2.5 bg-slate-100 dark:bg-zinc-800 rounded-lg font-bold text-xs text-slate-700 dark:text-slate-300">
+                            Version {comparedVersion.versionNum} (Target) — {(snapB?.thresholds || []).length} Rules
+                        </div>
+                        <StepBaseContent currentStep={6} version={comparedVersion} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

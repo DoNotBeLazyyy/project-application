@@ -2,9 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
-import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useObjectDraft } from '@hooks/useFormDraft';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTextarea from '@components/textarea/CommonTextarea';
 import {
@@ -33,7 +31,7 @@ import { uploadFile } from '@services/storage.service';
 import { useToastStore } from '@stores/toast.store';
 import { ContentModule, CourseMaterial, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 export const LESSON_MODULE_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -110,20 +108,21 @@ export default function LessonModuleWizardModal({
     const [isAddingMaterial, setIsAddingMaterial] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const draftGuard = useObjectDraft({
-        defaultValues: { title: '', description: '', period: 'General' },
-        enabled: open && !readOnly && !isSaving,
-        formId: `lesson-module-wizard-${sectionId}-${initialModule?.id || 'new'}`,
-        values: { title, description, period },
-        onRestore: (restored) => {
-            if (restored.title !== undefined) setTitle(restored.title);
-            if (restored.description !== undefined) setDescription(restored.description);
-            if (restored.period !== undefined) setPeriod(restored.period);
-        }
-    });
-
     useEffect(() => {
         setTitleError(null);
+        // Clear any old draft keys in sessionStorage for this module wizard
+        try {
+            const prefix = `lesson-module-wizard-${sectionId}`;
+            for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                const key = sessionStorage.key(i);
+                if (key && key.includes(prefix)) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+        } catch {
+            // Ignore
+        }
+
         if (!open) {
             setCurrentStep(1);
             setTitle('');
@@ -220,11 +219,43 @@ export default function LessonModuleWizardModal({
         return true;
     }
 
+    function commitPendingMaterialIfValid(): boolean {
+        if (!isAddingMaterial || !newMaterialTitle.trim()) {
+            return true;
+        }
+
+        if (newMaterialType === 'Link') {
+            if (!newMaterialUrl.trim()) {
+                useToastStore.getState().showToast('Please provide a valid URL for the link resource, or cancel the resource form.', 'error');
+                return false;
+            }
+        } else if (!selectedFile) {
+            useToastStore.getState().showToast('Please choose a file to attach to your resource, or cancel the resource form.', 'error');
+            return false;
+        }
+
+        const newStaged: StagedMaterial = {
+            id: generateId(),
+            title: newMaterialTitle.trim(),
+            description: newMaterialDesc.trim(),
+            material_type: newMaterialType,
+            external_url: newMaterialType === 'Link' ? newMaterialUrl.trim() : undefined,
+            file: selectedFile || undefined,
+            isExisting: false
+        };
+
+        setStagedMaterials((prev) => [...prev, newStaged]);
+        handleResetMaterialForm();
+        useToastStore.getState().showToast(`Added "${newStaged.title}" to module.`, 'success');
+        return true;
+    }
+
     function handleNext() {
         if (currentStep === 1) {
             if (!validateStep1()) return;
             setCurrentStep(2);
         } else if (currentStep === 2) {
+            if (!commitPendingMaterialIfValid()) return;
             setCurrentStep(3);
         }
     }
@@ -246,11 +277,13 @@ export default function LessonModuleWizardModal({
             return;
         }
         if (currentStep === 1 && !validateStep1()) return;
+        if (currentStep === 2 && !commitPendingMaterialIfValid()) return;
         setCurrentStep(stepNumber);
     }
 
     async function handleSaveModule() {
         if (!validateStep1()) return;
+        if (currentStep === 2 && !commitPendingMaterialIfValid()) return;
 
         setIsSaving(true);
         try {
@@ -277,24 +310,38 @@ export default function LessonModuleWizardModal({
                 }
             }
 
-            // Save new materials
+            // Sync materials
             if (moduleId) {
+                // If editing, delete any existing materials that were removed
+                if (isEdit && initialModule?.materials) {
+                    const removedMaterials = initialModule.materials.filter(
+                        (orig) => !stagedMaterials.some((s) => s.id === orig.id)
+                    );
+                    for (const rem of removedMaterials) {
+                        await deleteMaterial(rem.id);
+                    }
+                }
+
+                // Save new materials
                 const pendingUploads = stagedMaterials.filter((m) => !m.isExisting);
 
                 for (const item of pendingUploads) {
                     if (item.material_type === 'Link') {
-                        await createMaterial({
+                        const matRes = await createMaterial({
                             moduleId,
                             title: item.title,
                             description: item.description || null,
                             materialType: 'Link',
                             externalUrl: item.external_url || ''
                         });
+                        if (matRes.error) {
+                            useToastStore.getState().showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
+                        }
                     } else if (item.file) {
                         const path = `${sectionId}/${moduleId}/${generateId()}-${item.file.name}`;
                         const uploadRes = await uploadFile({ bucket: 'materials', file: item.file, path });
                         if (!uploadRes.error) {
-                            await createMaterial({
+                            const matRes = await createMaterial({
                                 moduleId,
                                 title: item.title,
                                 description: item.description || null,
@@ -304,12 +351,16 @@ export default function LessonModuleWizardModal({
                                 fileSizeBytes: item.file.size,
                                 mimeType: item.file.type || null
                             });
+                            if (matRes.error) {
+                                useToastStore.getState().showToast(`Failed to add resource "${item.title}": ${matRes.error.message}`, 'error');
+                            }
+                        } else {
+                            useToastStore.getState().showToast(`Failed to upload file for "${item.title}": ${uploadRes.error.message}`, 'error');
                         }
                     }
                 }
             }
 
-            draftGuard.clearDraft();
             useToastStore.getState().showToast('Lesson & syllabus module saved successfully.', 'success');
             onSuccess();
             onClose();
@@ -481,12 +532,11 @@ export default function LessonModuleWizardModal({
                             {isAddingMaterial ? (
                                 <div className="border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/50 p-4 rounded-xl flex flex-col gap-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                            Resource Title <span className="text-rose-500">*</span>
-                                        </label>
                                         <CommonInput
                                             fullWidth
+                                            label="Resource Title"
                                             placeholder="e.g. Official Course Syllabus (AY 2025-2026)"
+                                            required
                                             size="small"
                                             value={newMaterialTitle}
                                             onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterialTitle(e.target.value)}
@@ -495,11 +545,9 @@ export default function LessonModuleWizardModal({
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                Resource Type
-                                            </label>
                                             <CommonSelect
                                                 fullWidth
+                                                label="Resource Type"
                                                 options={MATERIAL_TYPE_OPTIONS}
                                                 value={newMaterialType}
                                                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -510,22 +558,19 @@ export default function LessonModuleWizardModal({
 
                                         {newMaterialType === 'Link' ? (
                                             <div>
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                    External URL <span className="text-rose-500">*</span>
-                                                </label>
                                                 <CommonInput
                                                     fullWidth
+                                                    label="External URL"
                                                     placeholder="https://..."
+                                                    required
                                                     size="small"
                                                     value={newMaterialUrl}
                                                     onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterialUrl(e.target.value)}
                                                 />
                                             </div>
                                         ) : (
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                                    File Attachment <span className="text-rose-500">*</span>
-                                                </label>
+                                            <div className="flex flex-col">
+                                                <FormLabel label="File Attachment" required />
                                                 <input
                                                     className="hidden"
                                                     ref={fileInputRef}
@@ -548,10 +593,8 @@ export default function LessonModuleWizardModal({
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                            Description &amp; Notes
-                                        </label>
                                         <CommonTextarea
+                                            label="Description & Notes"
                                             maxLength={500}
                                             placeholder="Optional instructions or reading guide for this file..."
                                             value={newMaterialDesc}
@@ -752,11 +795,6 @@ export default function LessonModuleWizardModal({
                     )}
                 </div>
             </div>
-            <DraftRecoveryPromptModal
-                open={draftGuard.isPromptOpen}
-                onContinue={draftGuard.handleContinue}
-                onDiscard={draftGuard.handleDiscard}
-            />
         </CommonModal>
     );
 }
