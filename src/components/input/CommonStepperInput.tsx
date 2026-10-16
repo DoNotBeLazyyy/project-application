@@ -1,5 +1,6 @@
 import CommonInput from '@components/input/CommonInput';
 import { MinusIcon, PlusIcon } from '@phosphor-icons/react';
+import { stripLeadingZeros } from '@utils/input.util';
 import React, { forwardRef, useCallback } from 'react';
 
 export interface CommonStepperInputProps {
@@ -50,11 +51,12 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (!onChange) return;
-        if (e.target.value === '') {
+        const normalized = stripLeadingZeros(e.target.value);
+        if (normalized === '') {
             onChange(undefined as any);
             return;
         }
-        const raw = parseFloat(e.target.value);
+        const raw = parseFloat(normalized);
         if (isNaN(raw)) {
             onChange(undefined as any);
             return;

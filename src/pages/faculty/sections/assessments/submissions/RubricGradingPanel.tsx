@@ -1,6 +1,7 @@
 import CommonButton from '@components/button/CommonButton';
 import { CheckCircleIcon } from '@phosphor-icons/react';
 import { RubricEvaluationInput, SubmissionRubric } from '@type/rubric.type';
+import { stripLeadingZeros } from '@utils/input.util';
 
 interface RubricGradingPanelProps {
     draftEvaluations: RubricEvaluationInput[];
@@ -86,7 +87,9 @@ export default function RubricGradingPanel({
                                         type="number"
                                         value={draft.points_earned}
                                         onChange={function(e) {
-                                            onPointsChange(criterion.id, Number(e.target.value));
+                                            const val = stripLeadingZeros(e.target.value);
+                                            e.target.value = val;
+                                            onPointsChange(criterion.id, Number(val));
                                         }}
                                     />
                                     <span className="text-(--mui-palette-text-secondary) text-xs">

@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { stripLeadingZeros } from '@utils/input.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -344,7 +345,11 @@ export default function GradingComponentPanel({
                                             min={1}
                                             max={100}
                                             value={row.weight || ''}
-                                            onChange={(e) => handleRowWeightChange(row.id, parseInt(e.target.value, 10))}
+                                            onChange={(e) => {
+                                                const val = stripLeadingZeros(e.target.value);
+                                                e.target.value = val;
+                                                handleRowWeightChange(row.id, parseInt(val, 10));
+                                            }}
                                             className="w-16 px-2.5 py-1.5 text-xs sm:text-sm font-mono font-bold text-right rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50/70 dark:bg-zinc-800/80 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                                         />
                                         <span className="text-xs font-mono font-bold text-slate-500">%</span>

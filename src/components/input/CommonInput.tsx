@@ -6,7 +6,7 @@ import {
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { buildElementChangeEvent, clearInputElement, hasClearableValue } from '@utils/input.util';
+import { buildElementChangeEvent, clearInputElement, hasClearableValue, stripLeadingZeros } from '@utils/input.util';
 import {
     forwardRef, InputHTMLAttributes, MouseEvent, MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState
 } from 'react';
@@ -89,7 +89,17 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     const inputSlotProps = slotProps?.input as InputBaseProps | undefined;
     const htmlInputSlotProps = slotProps?.htmlInput as InputHTMLAttributes<HTMLInputElement> | undefined;
     const isReadOnly = Boolean(readOnly) || Boolean(inputSlotProps?.readOnly) || Boolean(htmlInputSlotProps?.readOnly);
+    const isNumberType = type === 'number'
+        || htmlInputSlotProps?.type === 'number'
+        || htmlInputSlotProps?.inputMode === 'numeric'
+        || htmlInputSlotProps?.inputMode === 'decimal';
     const isControlled = value !== undefined;
+    const resolvedValue = isNumberType && typeof value === 'string'
+        ? stripLeadingZeros(value)
+        : value;
+    const resolvedDefaultValue = isNumberType && typeof props.defaultValue === 'string'
+        ? stripLeadingZeros(props.defaultValue)
+        : props.defaultValue;
 
     /*
      * `helperText` carries the validation message while `error` is set and the
@@ -108,9 +118,9 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
 
     useEffect(function() {
         if (isControlled) {
-            setHasContent(hasClearableValue(value));
+            setHasContent(hasClearableValue(resolvedValue));
         }
-    }, [isControlled, value]);
+    }, [isControlled, resolvedValue]);
 
     const handleAssignInputRef = useCallback(function(element: HTMLInputElement | null) {
         inputElementRef.current = element;
@@ -126,6 +136,22 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
     }, [inputRef]);
 
     function handleChange(event: ChangeEventInputTextarea) {
+        if (isNumberType && 'value' in event.target) {
+            const inputElement = event.target as HTMLInputElement;
+            const prevVal = inputElement.value;
+            const normalized = stripLeadingZeros(prevVal);
+            if (normalized !== prevVal) {
+                const currentCursor = inputElement.selectionStart;
+                const lengthDiff = prevVal.length - normalized.length;
+                inputElement.value = normalized;
+                if (currentCursor !== null && inputElement.setSelectionRange) {
+                    const nextCursor = Math.max(0, currentCursor - lengthDiff);
+                    requestAnimationFrame(() => {
+                        inputElement.setSelectionRange(nextCursor, nextCursor);
+                    });
+                }
+            }
+        }
         setHasContent(event.target.value.length > 0);
         onChange?.(event);
     }
@@ -238,7 +264,8 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
                     ? 'text'
                     : type
                 }
-                value={value}
+                defaultValue={resolvedDefaultValue}
+                value={resolvedValue}
                 onChange={handleChange}
             />
         </div>

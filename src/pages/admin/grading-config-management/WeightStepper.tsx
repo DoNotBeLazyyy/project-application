@@ -1,5 +1,6 @@
 import { MinusIcon, PlusIcon } from '@phosphor-icons/react';
 import { classMerge } from '@utils/css.util';
+import { stripLeadingZeros } from '@utils/input.util';
 import { toWeight } from '@utils/period-allocation.util';
 
 export interface WeightStepperProps {
@@ -59,7 +60,9 @@ export default function WeightStepper({
                     type="number"
                     value={toWeight(value)}
                     onChange={function(event) {
-                        onChange(Number(event.target.value));
+                        const val = stripLeadingZeros(event.target.value);
+                        event.target.value = val;
+                        onChange(Number(val));
                     }}
                 />
                 <span className="font-bold text-(--mui-palette-text-secondary) text-xs">%</span>

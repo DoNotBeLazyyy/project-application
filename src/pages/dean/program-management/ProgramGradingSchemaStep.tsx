@@ -10,6 +10,7 @@ import {
     TrashIcon
 } from '@phosphor-icons/react';
 import { ProgramFormValues } from '@type/program/program.type';
+import { stripLeadingZeros } from '@utils/input.util';
 import { componentRailColor } from '@utils/period-allocation.util';
 import { useState } from 'react';
 import { Control, useController, useWatch } from 'react-hook-form';
@@ -305,7 +306,11 @@ export default function ProgramGradingSchemaStep({ control, disabled = false }: 
                                                     disabled={disabled}
                                                     type="number"
                                                     value={comp.weight}
-                                                    onChange={(e) => handleUpdateComponentWeight(pIdx, cIdx, Number(e.target.value))}
+                                                    onChange={(e) => {
+                                                        const val = stripLeadingZeros(e.target.value);
+                                                        e.target.value = val;
+                                                        handleUpdateComponentWeight(pIdx, cIdx, Number(val));
+                                                    }}
                                                 />
                                                 <span className="text-[10px] text-slate-400">%</span>
                                             </div>

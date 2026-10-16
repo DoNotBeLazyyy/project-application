@@ -1,6 +1,8 @@
 import CommonInput, { CommonInputProps } from '@components/input/CommonInput';
 import { InputAdornment } from '@mui/material';
+import { stripLeadingZeros } from '@utils/input.util';
 import { forwardRef, useCallback, useState } from 'react';
+
 
 export type CommonNumberInputProps = Omit<CommonInputProps, 'onChange' | 'value'> & {
     value?: number | string;
@@ -73,8 +75,9 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
         if (maxDigits && Math.floor(Math.abs(newValue))
             .toString().length > maxDigits) return;
 
+        setDraft(null);
         onChange(Number(newValue.toFixed(maxDecimals)));
-    }, [numericValue, onChange, step, allowNegative, maxDigits, maxDecimals, min, max]);
+    }, [numericValue, onChange, step, props.disabled, props.readOnly, allowNegative, maxDigits, maxDecimals, min, max]);
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
         if (e.key === 'ArrowUp') {
@@ -100,7 +103,22 @@ const CommonNumberInput = forwardRef<HTMLDivElement, CommonNumberInputProps>(({
         if (maxDigits && parts[0].replace('-', '').length > maxDigits) return;
         if (parts[1] && parts[1].length > maxDecimals) return;
 
+        const inputElement = e.target;
+        const currentCursor = inputElement.selectionStart;
+        const prevLength = rawValue.length;
+
+        rawValue = stripLeadingZeros(rawValue);
+
+        const lengthDiff = prevLength - rawValue.length;
+
         setDraft(rawValue);
+
+        if (inputElement && lengthDiff > 0 && currentCursor !== null && inputElement.setSelectionRange) {
+            const nextCursor = Math.max(0, currentCursor - lengthDiff);
+            requestAnimationFrame(() => {
+                inputElement.setSelectionRange(nextCursor, nextCursor);
+            });
+        }
 
         if (onChange) {
             if (rawValue === '' || rawValue === '-' || rawValue === '.') {

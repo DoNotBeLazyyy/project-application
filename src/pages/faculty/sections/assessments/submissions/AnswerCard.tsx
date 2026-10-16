@@ -1,5 +1,6 @@
 import { getFileUrl } from '@services/storage.service';
 import { GradeAnswerUpdate, SubmissionAnswer } from '@type/assessment.type';
+import { stripLeadingZeros } from '@utils/input.util';
 
 const MANUAL_GRADE_TYPES = ['Essay', 'Short Answer', 'File Upload'];
 
@@ -107,7 +108,9 @@ export default function AnswerCard({
                             type="number"
                             value={draftAnswer.points_earned}
                             onChange={function(e) {
-                                onPointsChange(answer.id, Number(e.target.value));
+                                const val = stripLeadingZeros(e.target.value);
+                                e.target.value = val;
+                                onPointsChange(answer.id, Number(val));
                             }}
                         />
                         <span className="text-(--mui-palette-text-secondary) text-xs">
