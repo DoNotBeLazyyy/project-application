@@ -134,7 +134,7 @@ class LazyErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
 export function lazyElement<P extends object>(
     factory: () => Promise<{ default: ComponentType<P> }>
 ): ReactElement {
-    const LazyComponent = lazyWithRetry(factory);
+    const LazyComponent = lazyWithRetry(factory) as ComponentType<any>;
 
     return (
         <LazyErrorBoundary>

@@ -11,6 +11,7 @@ import {
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { PickersActionBarAction } from '@mui/x-date-pickers/PickersActionBar';
 import { classMerge } from '@utils/css.util';
 import {
     checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
@@ -244,7 +245,7 @@ export function CommonDatePicker({
         : undefined;
     const resolvedActionBar = hasToday
         ? {
-            actions: ['today'] as const,
+            actions: ['today'] as PickersActionBarAction[],
             ...externalActionBarProps
         }
         : externalActionBarProps;
@@ -376,7 +377,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
     const resolvedValue = useMemo(() => {
         if (!value) return null;
         if (DateTime.isDateTime(value)) return value;
-        if (value instanceof Date) return DateTime.fromJSDate(value);
+        if ((value as unknown) instanceof Date) return DateTime.fromJSDate(value as Date);
         if (typeof value === 'string') {
             const parsed = DateTime.fromISO(value);
             return parsed.isValid ? parsed : DateTime.fromJSDate(new Date(value));
@@ -485,7 +486,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         : undefined;
     const resolvedActionBar = hasToday
         ? {
-            actions: ['today'] as const,
+            actions: ['today'] as PickersActionBarAction[],
             ...externalActionBarProps
         }
         : externalActionBarProps;

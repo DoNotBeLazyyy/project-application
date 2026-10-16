@@ -570,7 +570,7 @@ export default function LessonModuleWizardModal({
                                             </div>
                                         ) : (
                                             <div className="flex flex-col">
-                                                <FormLabel label="File Attachment" required />
+                                                <FormLabel label="File Attachment" isRequired />
                                                 <input
                                                     className="hidden"
                                                     ref={fileInputRef}
