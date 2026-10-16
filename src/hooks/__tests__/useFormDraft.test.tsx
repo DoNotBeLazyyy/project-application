@@ -1,6 +1,9 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import CommonFormModal from '@components/modal/CommonFormModal';
+import { hasRealFormChanges } from '@hooks/useFormDraft';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -42,6 +45,46 @@ function TestComponent({
     );
 }
 
+function TestModalForm({
+    defaultValues = { department: 'Science', description: 'Initial desc', name: 'Biology' },
+    formId = 'modal-test-form',
+    onModalClosed
+}: {
+    defaultValues?: TestFormValues;
+    formId?: string;
+    onModalClosed?: () => void;
+}) {
+    const [open, setOpen] = useState(true);
+    const { control, handleSubmit } = useForm<TestFormValues>({
+        defaultValues
+    });
+
+    return (
+        <div>
+            {!open && (
+                <button type="button" onClick={() => setOpen(true)}>
+                    Reopen Modal
+                </button>
+            )}
+            <CommonFormModal
+                open={open}
+                formId={formId}
+                formContent={
+                    <CommonForm
+                        control={control}
+                        fields={testFields}
+                        formProps={{ id: formId, onSubmit: handleSubmit(() => {}) }}
+                    />
+                }
+                onClose={() => {
+                    setOpen(false);
+                    onModalClosed?.();
+                }}
+            />
+        </div>
+    );
+}
+
 describe('useFormDraft & CommonForm draft restoration', () => {
     beforeEach(() => {
         sessionStorage.clear();
@@ -60,8 +103,6 @@ describe('useFormDraft & CommonForm draft restoration', () => {
             values: { name: 'Restored Biology', description: 'Bio department draft' }
         };
 
-        // Key includes user prefix (defaulting to session or userId)
-        const keys = Object.keys(sessionStorage);
         sessionStorage.setItem('au_draft_session_test-form', JSON.stringify(draftPayload));
 
         render(<TestComponent />);
@@ -131,4 +172,102 @@ describe('useFormDraft & CommonForm draft restoration', () => {
 
         expect(screen.queryByText(/Restore Unsaved Draft\?/i)).not.toBeInTheDocument();
     });
+
+    it('treats editing and reverting back to original value as no real changes and clears sessionStorage', async () => {
+        expect(
+            hasRealFormChanges(
+                { name: 'Biology', description: 'Initial desc', department: 'Science' },
+                { name: 'Biology', description: 'Initial desc', department: 'Science' }
+            )
+        ).toBe(false);
+
+        const onModalClosed = vi.fn();
+        render(<TestModalForm onModalClosed={onModalClosed} />);
+
+        const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+        expect(nameInput.value).toBe('Biology');
+
+        // Edit value -> real change occurs and draft is saved
+        fireEvent.change(nameInput, { target: { value: 'Biology Updated' } });
+        await waitFor(() => {
+            expect(sessionStorage.getItem('au_draft_session_modal-test-form')).not.toBeNull();
+        });
+
+        // Revert value back to original 'Biology' -> no real change and draft is removed
+        fireEvent.change(nameInput, { target: { value: 'Biology' } });
+        await waitFor(() => {
+            expect(sessionStorage.getItem('au_draft_session_modal-test-form')).toBeNull();
+        });
+
+        // Clicking Cancel closes immediately without Discard prompt
+        const cancelBtn = screen.getByRole('button', { name: /^Cancel$/i });
+        fireEvent.click(cancelBtn);
+
+        expect(screen.queryByText(/Discard unsaved changes\?/i)).not.toBeInTheDocument();
+        expect(onModalClosed).toHaveBeenCalledTimes(1);
+    });
+
+    it('prompts Discard or Continue Editing when closing a form with real changes, and clears draft on Discard', async () => {
+        const onModalClosed = vi.fn();
+        render(<TestModalForm onModalClosed={onModalClosed} />);
+
+        const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+        fireEvent.change(nameInput, { target: { value: 'Biology II' } });
+
+        await waitFor(() => {
+            expect(sessionStorage.getItem('au_draft_session_modal-test-form')).not.toBeNull();
+        });
+
+        // Attempt to close via Cancel button
+        const cancelBtn = screen.getByRole('button', { name: /^Cancel$/i });
+        fireEvent.click(cancelBtn);
+
+        // Prompt should appear
+        expect(screen.getByText(/Discard unsaved changes\?/i)).toBeInTheDocument();
+        expect(onModalClosed).not.toHaveBeenCalled();
+
+        // Click Continue Editing -> stays open, draft still present
+        const continueEditingBtn = screen.getByRole('button', { name: /Continue Editing/i });
+        fireEvent.click(continueEditingBtn);
+
+        await waitFor(() => {
+            expect(screen.queryByText(/Discard unsaved changes\?/i)).not.toBeInTheDocument();
+        });
+        expect(onModalClosed).not.toHaveBeenCalled();
+        expect(sessionStorage.getItem('au_draft_session_modal-test-form')).not.toBeNull();
+
+        // Attempt to close again and click Discard -> closes and clears draft so Restore Unsaved Draft will not appear
+        fireEvent.click(cancelBtn);
+        const discardBtn = screen.getByRole('button', { name: /^Discard$/i });
+        fireEvent.click(discardBtn);
+
+        expect(onModalClosed).toHaveBeenCalledTimes(1);
+        expect(sessionStorage.getItem('au_draft_session_modal-test-form')).toBeNull();
+
+        // Reopen modal -> should NOT show Restore Unsaved Draft
+        const reopenBtn = screen.getByRole('button', { name: /Reopen Modal/i, hidden: true });
+        fireEvent.click(reopenBtn);
+        expect(screen.queryByText(/Restore Unsaved Draft\?/i)).not.toBeInTheDocument();
+    });
+
+    it('keeps draft in sessionStorage for Restore Unsaved Draft only when form closes unexpectedly (unmounts without programmed close)', async () => {
+        const { unmount } = render(<TestModalForm />);
+
+        const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+        fireEvent.change(nameInput, { target: { value: 'Unexpected Crash Edit' } });
+
+        await waitFor(() => {
+            expect(sessionStorage.getItem('au_draft_session_modal-test-form')).not.toBeNull();
+        });
+
+        // Simulate unexpected unmount (e.g., tab reload or route crash while modal is still open)
+        unmount();
+
+        expect(sessionStorage.getItem('au_draft_session_modal-test-form')).not.toBeNull();
+
+        // Remounting the form now prompts Restore Unsaved Draft
+        render(<TestModalForm />);
+        expect(screen.getByText(/Restore Unsaved Draft\?/i)).toBeInTheDocument();
+    });
 });
+

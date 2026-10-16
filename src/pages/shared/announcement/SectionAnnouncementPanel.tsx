@@ -1,9 +1,12 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import CommonModal from '@components/modal/CommonModal';
 import CommonTextarea from '@components/textarea/CommonTextarea';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import {
     CalendarBlankIcon,
     MegaphoneIcon,
@@ -18,22 +21,48 @@ import { createAnnouncement, deleteAnnouncement, listSectionAnnouncements } from
 import { supabase } from '@services/supabase.client';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { formatShortDate } from '@utils/date.util';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { getRoleFromPath } from '@utils/role-path.util';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 
 interface SectionAnnouncementPanelProps {
     canManage?: boolean;
     sectionId: string;
 }
 
+const DEFAULT_ANNOUNCEMENT_DRAFT = {
+    title: '',
+    content: '',
+    isPinned: false
+};
+
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
     const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [isPinned, setIsPinned] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+    const currentDraftValues = useMemo(() => ({
+        title,
+        content,
+        isPinned
+    }), [title, content, isPinned]);
+
+    const draftGuard = useObjectDraft({
+        formId: `section-announcement-create-${sectionId}`,
+        values: currentDraftValues,
+        defaultValues: DEFAULT_ANNOUNCEMENT_DRAFT,
+        onRestore: (restored) => {
+            setTitle(restored.title ?? '');
+            setContent(restored.content ?? '');
+            setIsPinned(Boolean(restored.isPinned));
+        },
+        enabled: isCreateOpen
+    });
 
     async function loadAnnouncements() {
         const result = await listSectionAnnouncements(sectionId);
@@ -68,6 +97,8 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
     }, [sectionId]);
 
     function resetComposer() {
+        draftGuard.clearDraft();
+        setIsDiscardOpen(false);
         setIsCreateOpen(false);
         setTitle('');
         setContent('');
@@ -75,19 +106,30 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         setIsPosting(false);
     }
 
+    function handleRequestCloseComposer() {
+        if (draftGuard.hasRealChanges) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        resetComposer();
+    }
+
     async function handlePostAnnouncement() {
         if (!title.trim() || !content.trim() || isPosting) return;
 
         setIsPosting(true);
-        const result = await createAnnouncement({
-            attachments: [],
-            content: content.trim(),
-            expires_at: '',
-            is_pinned: isPinned,
-            section_ids: [sectionId],
-            target_audience: 'Section',
-            title: title.trim()
-        });
+        const result = await createAnnouncement(
+            {
+                attachments: [],
+                content: content.trim(),
+                expires_at: '',
+                is_pinned: isPinned,
+                section_ids: [sectionId],
+                target_audience: 'Section',
+                title: title.trim()
+            },
+            getRoleFromPath(window.location.pathname)
+        );
         setIsPosting(false);
 
         if (!result.error) {
@@ -220,7 +262,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                 fullWidth
                 maxWidth="sm"
                 open={isCreateOpen}
-                onClose={resetComposer}
+                onClose={handleRequestCloseComposer}
             >
                 <div className="flex flex-col bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden p-5 sm:p-6 gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
@@ -234,7 +276,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                         </div>
                         <button
                             type="button"
-                            onClick={resetComposer}
+                            onClick={handleRequestCloseComposer}
                             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                         >
                             <XIcon size={18} weight="bold" />
@@ -282,7 +324,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                         <CommonButton
                             size="small"
                             variant="outlined"
-                            onClick={resetComposer}
+                            onClick={handleRequestCloseComposer}
                             disabled={isPosting}
                         >
                             Cancel
@@ -299,6 +341,18 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                     </div>
                 </div>
             </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={resetComposer}
+            />
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
 
             {/* Delete Confirmation Modal */}
             <DeletePromptModal

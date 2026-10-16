@@ -3,6 +3,7 @@ import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import CommonSelect from '@components/select/CommonSelect';
 import {
     CaretDownIcon,
     GearIcon,
@@ -239,11 +240,15 @@ export default function Step4HolidaysConfig({
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                                         <div>
-                                            <FormLabel label="Exception Type" />
-                                            <select
-                                                aria-label="Select exception type"
-                                                className="w-full h-9 px-3 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium"
+                                            <CommonSelect
                                                 disabled={disabled}
+                                                fullWidth
+                                                label="Exception Type"
+                                                options={optionsToRender.map((opt) => ({
+                                                    label: `${opt.label}${!opt.is_active ? ' (Deprecated)' : ''}`,
+                                                    value: opt.label
+                                                }))}
+                                                size="small"
                                                 value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                                 onChange={(e) => {
                                                     setValue(
@@ -252,21 +257,18 @@ export default function Step4HolidaysConfig({
                                                         { shouldDirty: true }
                                                     );
                                                 }}
-                                            >
-                                                {optionsToRender.map((opt) => (
-                                                    <option key={opt.label} value={opt.label}>
-                                                        {opt.label} {!opt.is_active ? '(Deprecated)' : ''}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            />
                                         </div>
 
-                                        <div>
-                                            <FormLabel label="Class Impact" />
-                                            <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                                        <div className="flex flex-col gap-(--mui-tokens-spacing-2) relative">
+                                            <FormLabel
+                                                className="tw_body_small_bold"
+                                                label="Class Impact"
+                                            />
+                                            <label className={`flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 select-none ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
                                                 <input
                                                     checked={Boolean(current.affects_attendance)}
-                                                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                                                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-100"
                                                     disabled={disabled}
                                                     type="checkbox"
                                                     onChange={(e) => {

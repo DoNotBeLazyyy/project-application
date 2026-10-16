@@ -64,6 +64,8 @@ export default function ProgramLevelForm({
         const generated = generateProgramLevelCode(watchedLabel || '');
         if (generated) {
             setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        } else if (!watchedLabel?.trim()) {
+            setValue('code', '', { shouldValidate: false, shouldDirty: false });
         }
     }, [watchedLabel, disabled, isCreate, setValue]);
 

@@ -5,7 +5,10 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import {
     BuildingsIcon,
@@ -20,7 +23,7 @@ import { approveStaffProfileRequest, rejectStaffProfileRequest } from '@services
 import { useToastStore } from '@stores/toast.store';
 import { StaffProfileRequestRow } from '@type/admin-verification.type';
 import { ProfileFormValues } from '@type/profile.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface StaffProfileVerificationModalProps {
     open: boolean;
@@ -66,43 +69,77 @@ const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
     'postal_code'
 ];
 
+function buildInitialEditableValues(request: StaffProfileRequestRow | null): ProfileFormValues {
+    const requested = (request?.requested_changes || {}) as Record<string, any>;
+    const approved = (request?.approved_changes || {}) as Record<string, any>;
+    const baseValues: Record<string, any> = request?.status === 'Approved with Edits' ? approved : requested;
+
+    return {
+        address_line1: baseValues.address_line1 || '',
+        address_line2: baseValues.address_line2 || '',
+        city: baseValues.city || '',
+        civil_status: baseValues.civil_status || '',
+        date_of_birth: baseValues.date_of_birth || '',
+        first_name: baseValues.first_name || '',
+        gender: baseValues.gender || '',
+        last_name: baseValues.last_name || '',
+        middle_name: baseValues.middle_name || '',
+        mobile_number: baseValues.mobile_number || '',
+        nationality: baseValues.nationality || '',
+        postal_code: baseValues.postal_code || '',
+        preferred_name: baseValues.preferred_name || '',
+        province: baseValues.province || '',
+        suffix: baseValues.suffix || ''
+    };
+}
+
 export default function StaffProfileVerificationModal({
     open,
     onClose,
     request,
     onSuccess
 }: StaffProfileVerificationModalProps) {
-    const [editableValues, setEditableValues] = useState<ProfileFormValues>({} as ProfileFormValues);
+    const [editableValues, setEditableValues] = useState<ProfileFormValues>(() => buildInitialEditableValues(request));
     const [adminNotes, setAdminNotes] = useState('');
     const [isRejectOpen, setIsRejectOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showOnlyChanged, setShowOnlyChanged] = useState(true);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+    const [isConfirmRejectCloseOpen, setIsConfirmRejectCloseOpen] = useState(false);
+
+    const initialDraftValues = useMemo(() => ({
+        adminNotes: request?.admin_notes || '',
+        editableValues: buildInitialEditableValues(request),
+        rejectReason: ''
+    }), [request]);
+
+    const currentDraftValues = useMemo(() => ({
+        adminNotes,
+        editableValues,
+        rejectReason
+    }), [adminNotes, editableValues, rejectReason]);
+
+    const isPending = request?.status === 'Pending';
+
+    const draftGuard = useObjectDraft({
+        defaultValues: initialDraftValues,
+        enabled: open && Boolean(isPending && request?.id),
+        formId: request?.id ? `staff-profile-verification-${request.id}` : 'staff-profile-verification',
+        onRestore: (restored) => {
+            if (restored.editableValues) setEditableValues(restored.editableValues);
+            if (restored.adminNotes !== undefined) setAdminNotes(restored.adminNotes);
+            if (restored.rejectReason !== undefined) {
+                setRejectReason(restored.rejectReason);
+                if (restored.rejectReason.trim()) setIsRejectOpen(true);
+            }
+        },
+        values: currentDraftValues
+    });
 
     useEffect(() => {
         if (!request) return;
-        const requested = (request.requested_changes || {}) as Record<string, any>;
-        const approved = (request.approved_changes || {}) as Record<string, any>;
-        const baseValues: Record<string, any> = request.status === 'Approved with Edits' ? approved : requested;
-
-        setEditableValues({
-            address_line1: baseValues.address_line1 || '',
-            address_line2: baseValues.address_line2 || '',
-            city: baseValues.city || '',
-            civil_status: baseValues.civil_status || '',
-            date_of_birth: baseValues.date_of_birth || '',
-            first_name: baseValues.first_name || '',
-            gender: baseValues.gender || '',
-            last_name: baseValues.last_name || '',
-            middle_name: baseValues.middle_name || '',
-            mobile_number: baseValues.mobile_number || '',
-            nationality: baseValues.nationality || '',
-            postal_code: baseValues.postal_code || '',
-            preferred_name: baseValues.preferred_name || '',
-            province: baseValues.province || '',
-            suffix: baseValues.suffix || ''
-        });
-
+        setEditableValues(buildInitialEditableValues(request));
         setAdminNotes(request.admin_notes || '');
         setIsRejectOpen(false);
         setRejectReason('');
@@ -111,7 +148,6 @@ export default function StaffProfileVerificationModal({
 
     if (!request) return null;
 
-    const isPending = request.status === 'Pending';
     const current = (request.current_values || {}) as Record<string, any>;
     const requested = (request.requested_changes || {}) as Record<string, any>;
 
@@ -127,6 +163,42 @@ export default function StaffProfileVerificationModal({
     });
 
     const fieldsToDisplay = showOnlyChanged ? changedFields : DISPLAY_FIELDS;
+
+    function handleAttemptClose() {
+        if (isSubmitting) return;
+        if (isPending && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardChanges() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        setEditableValues(buildInitialEditableValues(request));
+        setAdminNotes(request?.admin_notes || '');
+        setRejectReason('');
+        setIsRejectOpen(false);
+        onClose();
+    }
+
+    function handleAttemptRejectClose() {
+        if (isSubmitting) return;
+        if (rejectReason.trim()) {
+            setIsConfirmRejectCloseOpen(true);
+            return;
+        }
+        setRejectReason('');
+        setIsRejectOpen(false);
+    }
+
+    function handleDiscardRejectChanges() {
+        setIsConfirmRejectCloseOpen(false);
+        setRejectReason('');
+        setIsRejectOpen(false);
+    }
 
     function handleFieldChange(field: keyof ProfileFormValues, value: string) {
         setEditableValues((prev) => ({
@@ -152,6 +224,7 @@ export default function StaffProfileVerificationModal({
         setIsSubmitting(false);
 
         if (!result.error) {
+            draftGuard.clearDraft();
             useToastStore.getState().showToast(
                 hasAdminEdits
                     ? 'Staff profile changes approved with administrator edits and applied.'
@@ -175,6 +248,7 @@ export default function StaffProfileVerificationModal({
         setIsSubmitting(false);
 
         if (!result.error) {
+            draftGuard.clearDraft();
             useToastStore.getState().showToast('Profile change request rejected.', 'info');
             setIsRejectOpen(false);
             onSuccess?.();
@@ -188,14 +262,14 @@ export default function StaffProfileVerificationModal({
                 fullWidth
                 maxWidth="lg"
                 open={open}
-                onClose={onClose}
+                onClose={handleAttemptClose}
                 cardProps={{
                     className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
                     defaultActionProps: {
-                        onClick: onClose
+                        onClick: handleAttemptClose
                     },
                     cardHeaderProps: {
-                        action: <ModalCloseIcon onClick={onClose} />,
+                        action: <ModalCloseIcon onClick={handleAttemptClose} />,
                         className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
                         subheader: `Role: ${request.role_code} • Submitted ${new Date(request.created_at).toLocaleString()}`,
                         title: `Review Staff Profile: ${request.user_name}`
@@ -529,7 +603,7 @@ export default function StaffProfileVerificationModal({
 
                 {/* Footer Actions */}
                 <div className="shrink-0 border-t border-(--mui-palette-divider) p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 bg-(--mui-palette-background-default)">
-                    <CommonButton color="inherit" size="small" variant="outlined" onClick={onClose} className="order-2 sm:order-1">
+                    <CommonButton color="inherit" size="small" variant="outlined" onClick={handleAttemptClose} className="order-2 sm:order-1">
                         Close
                     </CommonButton>
 
@@ -565,13 +639,13 @@ export default function StaffProfileVerificationModal({
             <CommonModal
                 maxWidth="sm"
                 open={isRejectOpen}
-                onClose={() => setIsRejectOpen(false)}
+                onClose={handleAttemptRejectClose}
                 cardProps={{
                     defaultActionProps: {
-                        onClick: () => setIsRejectOpen(false)
+                        onClick: handleAttemptRejectClose
                     },
                     cardHeaderProps: {
-                        action: <ModalCloseIcon onClick={() => setIsRejectOpen(false)} />,
+                        action: <ModalCloseIcon onClick={handleAttemptRejectClose} />,
                         subheader: `Specify the reason why ${request.user_name}'s profile change is being declined.`,
                         title: 'Reject Profile Change'
                     }
@@ -598,7 +672,7 @@ export default function StaffProfileVerificationModal({
                             disabled={isSubmitting}
                             size="small"
                             variant="outlined"
-                            onClick={() => setIsRejectOpen(false)}
+                            onClick={handleAttemptRejectClose}
                         >
                             Back
                         </CommonButton>
@@ -614,6 +688,23 @@ export default function StaffProfileVerificationModal({
                     </div>
                 </div>
             </CommonModal>
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardChanges}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmRejectCloseOpen}
+                onContinueEditing={() => setIsConfirmRejectCloseOpen(false)}
+                onDiscard={handleDiscardRejectChanges}
+            />
         </>
     );
 }
+

@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
@@ -61,6 +62,7 @@ export default function ProgramWizardModal({
     onSwitchToEdit
 }: ProgramWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const { control, handleSubmit, setValue, trigger } = methods;
 
     const draftGuard = useFormDraft({
@@ -72,11 +74,15 @@ export default function ProgramWizardModal({
     const selectedName = useWatch({ control, name: 'name' });
 
     useEffect(() => {
-        if (!isEditing && selectedName) {
-            const currentCode = methods.getValues('code');
-            const generated = generateProgramCode(selectedName);
-            if (generated && (!currentCode || currentCode !== generated)) {
-                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        if (!isEditing) {
+            if (selectedName) {
+                const currentCode = methods.getValues('code');
+                const generated = generateProgramCode(selectedName);
+                if (generated && (!currentCode || currentCode !== generated)) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                }
+            } else {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
         }
     }, [isEditing, selectedName, setValue, methods]);
@@ -84,6 +90,7 @@ export default function ProgramWizardModal({
     useEffect(() => {
         if (open) {
             setCurrentStep(initialStep);
+            setIsConfirmCloseOpen(false);
         }
     }, [open, initialStep]);
 
@@ -228,8 +235,26 @@ export default function ProgramWizardModal({
     }
 
     function handleCloseModal() {
+        if (isSaving) return;
+        if (!readOnly && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
         setCurrentStep(1);
         onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        setCurrentStep(1);
+        onClose();
+    }
+
+    function handleFormSubmit(values: ProgramFormValues) {
+        draftGuard.clearDraft();
+        onSubmit(values);
     }
 
     return (
@@ -442,7 +467,7 @@ export default function ProgramWizardModal({
                                     size="medium"
                                     startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                                     variant="contained"
-                                    onClick={handleSubmit(onSubmit, handleFormErrors)}
+                                    onClick={handleSubmit(handleFormSubmit, handleFormErrors)}
                                 >
                                     {isSaving
                                         ? 'Saving Program...'
@@ -455,6 +480,11 @@ export default function ProgramWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
             />
         </CommonModal>
     );

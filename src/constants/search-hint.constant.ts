@@ -9,7 +9,7 @@ export const SEARCH_HINTS: Record<string, readonly string[]> = {
     ],
     courses: ['Course code', 'Course title'],
     courseTypes: ['Course type name', 'Course type code'],
-    departments: ['Department code', 'Department name'],
+    departments: ['Department code', 'Department name', 'Dean name', 'Faculty name'],
     enrollmentStudents: [
         'Student number',
         'First name',

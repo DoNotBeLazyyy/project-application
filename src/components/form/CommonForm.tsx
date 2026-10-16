@@ -138,7 +138,8 @@ export default function CommonForm<T extends FieldValues>({
         control,
         enabled: shouldEnableDraft,
         fields,
-        formId: formProps?.id
+        formId: formProps?.id,
+        isAutoFormDraft: true
     });
 
     // Determine the first field in form order that currently has a validation error

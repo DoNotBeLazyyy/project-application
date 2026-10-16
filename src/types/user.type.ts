@@ -61,5 +61,13 @@ export interface UserFilterValues {
 export interface UserOption {
     id: string;
     full_name: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    status?: string;
+    role_code?: string;
     role_label: string;
+    department_id?: string | null;
+    department_code?: string | null;
+    department_name?: string | null;
 }

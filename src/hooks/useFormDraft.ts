@@ -1,7 +1,7 @@
 import { FormFieldConfig } from '@components/form/FormField';
 import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Control, FieldValues, useFormState, useWatch } from 'react-hook-form';
 
 export interface UseFormDraftOptions<T extends FieldValues> {
@@ -10,6 +10,7 @@ export interface UseFormDraftOptions<T extends FieldValues> {
     fields?: FormFieldConfig<T>[];
     storageKey?: string;
     enabled?: boolean;
+    isAutoFormDraft?: boolean;
     onRestore?: (restoredValues: Partial<T>) => void;
     onDiscard?: () => void;
 }
@@ -19,7 +20,36 @@ export interface UseFormDraftResult {
     handleContinue: () => void;
     handleDiscard: () => void;
     hasDraft: boolean;
+    hasRealChanges: boolean;
     isPromptOpen: boolean;
+}
+
+export interface FormDraftModalRegistration {
+    clearDraft: () => void;
+    hasRealChanges: boolean;
+}
+
+export interface FormDraftModalContextValue {
+    registerDraft: (id: string, entry: FormDraftModalRegistration) => void;
+    unregisterDraft: (id: string) => void;
+}
+
+export const FormDraftModalContext = createContext<FormDraftModalContextValue | null>(null);
+
+export function useFormDraftModalContext(): FormDraftModalContextValue | null {
+    return useContext(FormDraftModalContext);
+}
+
+// Track primary (explicit) useFormDraft instances per react-hook-form Control object
+// so nested CommonForms sharing the same Control don't create duplicate drafts/prompts.
+const activeControlDraftOwners = new WeakMap<object, string>();
+
+// Track active draft controllers by formId so parent modals/containers can clear drafts on discard.
+const activeFormIdDrafts = new Map<string, FormDraftModalRegistration>();
+
+export function getFormDraftByFormId(formId?: string): FormDraftModalRegistration | undefined {
+    if (!formId) return undefined;
+    return activeFormIdDrafts.get(formId);
 }
 
 interface StoredDraftPayload<T> {
@@ -32,6 +62,131 @@ const SENSITIVE_KEY_REGEX = /password|token|secret|pin|credit_?card|cvv/i;
 
 function isSensitiveKey(key: string): boolean {
     return SENSITIVE_KEY_REGEX.test(key);
+}
+
+function isEmptyFormPrimitive(val: unknown): boolean {
+    return val === undefined || val === null || val === '';
+}
+
+/**
+ * Deeply compares two form values to determine whether they are semantically equal.
+ * Treats `undefined`, `null`, and `''` as equivalent empty states, handles boolean `false`
+ * vs unset, numeric strings vs numbers, arrays, Date instances, and nested plain objects.
+ */
+export function areFormValuesEqual(
+    a: unknown,
+    b: unknown,
+    options?: { ignoreSensitive?: boolean }
+): boolean {
+    if (Object.is(a, b)) {
+        return true;
+    }
+
+    if (isEmptyFormPrimitive(a) && isEmptyFormPrimitive(b)) {
+        return true;
+    }
+
+    if (typeof a === 'boolean' && isEmptyFormPrimitive(b)) {
+        return a === false;
+    }
+    if (typeof b === 'boolean' && isEmptyFormPrimitive(a)) {
+        return b === false;
+    }
+
+    if (
+        (typeof a === 'number' && typeof b === 'string' && b.trim() !== '') ||
+        (typeof b === 'number' && typeof a === 'string' && a.trim() !== '')
+    ) {
+        const numA = Number(a);
+        const numB = Number(b);
+        if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+            return numA === numB;
+        }
+    }
+
+    if (Array.isArray(a) && a.length === 0 && isEmptyFormPrimitive(b)) {
+        return true;
+    }
+    if (Array.isArray(b) && b.length === 0 && isEmptyFormPrimitive(a)) {
+        return true;
+    }
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) {
+            return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (!areFormValuesEqual(a[i], b[i], options)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    if (a instanceof Date && b instanceof Date) {
+        return a.getTime() === b.getTime();
+    }
+
+    if (
+        typeof a === 'object' &&
+        a !== null &&
+        typeof b === 'object' &&
+        b !== null &&
+        !Array.isArray(a) &&
+        !Array.isArray(b)
+    ) {
+        const objA = a as Record<string, unknown>;
+        const objB = b as Record<string, unknown>;
+        const keys = new Set([...Object.keys(objA), ...Object.keys(objB)]);
+        for (const key of keys) {
+            if (options?.ignoreSensitive && isSensitiveKey(key)) {
+                continue;
+            }
+            if (!areFormValuesEqual(objA[key], objB[key], options)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Determines whether a real change literally occurred between `values` and `defaultValues`.
+ * If a user edits an existing or new record and reverts it back to the way it was,
+ * this returns `false`.
+ */
+export function hasRealFormChanges(
+    values: Record<string, any> | undefined | null,
+    defaultValues?: Record<string, any> | undefined | null,
+    options?: { ignoreSensitive?: boolean }
+): boolean {
+    if (!values || typeof values !== 'object') {
+        return false;
+    }
+
+    const keys = new Set([
+        ...Object.keys(values),
+        ...(defaultValues && typeof defaultValues === 'object'
+            ? Object.keys(defaultValues).filter((k) => k in values)
+            : [])
+    ]);
+
+    for (const key of keys) {
+        if (options?.ignoreSensitive && isSensitiveKey(key)) {
+            continue;
+        }
+
+        const val = values[key];
+        const defaultVal = defaultValues ? defaultValues[key] : undefined;
+
+        if (!areFormValuesEqual(val, defaultVal, options)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function filterSensitiveFields<T extends Record<string, any>>(values: T): Partial<T> {
@@ -61,30 +216,7 @@ function hasMeaningfulValues(
     values: Record<string, any> | undefined | null,
     defaultValues?: Record<string, any> | undefined | null
 ): boolean {
-    if (!values || typeof values !== 'object') {
-        return false;
-    }
-
-    for (const [key, val] of Object.entries(values)) {
-        if (isSensitiveKey(key)) {
-            continue;
-        }
-
-        const defaultVal = defaultValues ? defaultValues[key] : undefined;
-
-        // Check if value exists and is different from empty/default
-        if (val !== undefined && val !== null && val !== '') {
-            if (Array.isArray(val) && val.length === 0) {
-                continue;
-            }
-
-            if (JSON.stringify(val) !== JSON.stringify(defaultVal)) {
-                return true;
-            }
-        }
-    }
-
-    return false;
+    return hasRealFormChanges(values, defaultValues, { ignoreSensitive: true });
 }
 
 /**
@@ -98,21 +230,55 @@ export function useFormDraft<T extends FieldValues>({
     enabled = true,
     fields,
     formId,
+    isAutoFormDraft = false,
     storageKey,
     onDiscard,
     onRestore
 }: UseFormDraftOptions<T>): UseFormDraftResult {
+    const instanceId = useId();
+    const modalContext = useFormDraftModalContext();
     const [isPromptOpen, setIsPromptOpen] = useState(false);
     const [pendingDraft, setPendingDraft] = useState<Partial<T> | null>(null);
     const promptHandledRef = useRef(false);
     const hasCheckedRef = useRef(false);
+    const hasWrittenDraftRef = useRef(false);
 
-    const { isDirty, isSubmitSuccessful } = useFormState({ control });
+    // Register explicit (non-auto) draft hook as the primary owner for this `control`
+    useEffect(() => {
+        if (!control || isAutoFormDraft || !enabled) {
+            return;
+        }
+        activeControlDraftOwners.set(control as object, instanceId);
+        return () => {
+            if (activeControlDraftOwners.get(control as object) === instanceId) {
+                activeControlDraftOwners.delete(control as object);
+            }
+        };
+    }, [control, isAutoFormDraft, enabled, instanceId]);
+
+    const hasParentControlOwner = Boolean(
+        isAutoFormDraft &&
+        control &&
+        activeControlDraftOwners.has(control as object) &&
+        activeControlDraftOwners.get(control as object) !== instanceId
+    );
+
+    const effectiveEnabled = enabled && !hasParentControlOwner;
+
+    const { isSubmitSuccessful } = useFormState({ control });
     const currentValues = useWatch({ control });
+
+    const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+    const liveValues = (currentValues ??
+        (control as unknown as { _formValues?: Record<string, any> })._formValues) as Record<string, any> | undefined;
+
+    const hasRealChanges = useMemo(() => {
+        return hasRealFormChanges(liveValues, defaultVals);
+    }, [liveValues, defaultVals]);
 
     // Derive a unique and secure storage key
     const resolvedKey = useMemo(() => {
-        if (!enabled) return null;
+        if (!effectiveEnabled) return null;
         if (storageKey) return `au_draft_${storageKey}`;
 
         const pathname = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : '';
@@ -123,22 +289,25 @@ export function useFormDraft<T extends FieldValues>({
         const userId = useAppStore.getState().userProfile?.id || useAppStore.getState().session?.user?.id || 'session';
 
         return `au_draft_${userId}_${base}`;
-    }, [enabled, formId, fields, storageKey]);
+    }, [effectiveEnabled, formId, fields, storageKey]);
 
     // Reset prompt state when modal closes
     useEffect(() => {
-        if (!enabled) {
+        if (!effectiveEnabled) {
             promptHandledRef.current = false;
             hasCheckedRef.current = false;
+            hasWrittenDraftRef.current = false;
             setIsPromptOpen(false);
         }
-    }, [enabled]);
+    }, [effectiveEnabled]);
 
     // Check for saved draft on mount or when enabled becomes true
     useEffect(() => {
-        if (!enabled || !resolvedKey || promptHandledRef.current || hasCheckedRef.current) {
+        if (!effectiveEnabled || !resolvedKey || promptHandledRef.current || hasCheckedRef.current) {
             return;
         }
+
+        hasCheckedRef.current = true;
 
         try {
             const raw = sessionStorage.getItem(resolvedKey);
@@ -147,43 +316,44 @@ export function useFormDraft<T extends FieldValues>({
             }
 
             const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
-            const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+            const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
 
-            if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultVals)) {
-                hasCheckedRef.current = true;
+            if (parsed && parsed.values && hasMeaningfulValues(parsed.values, currentDefaultVals)) {
                 setPendingDraft(parsed.values);
                 setIsPromptOpen(true);
+            } else {
+                sessionStorage.removeItem(resolvedKey);
             }
         } catch {
             // Ignore sessionStorage read errors
         }
-    }, [enabled, resolvedKey, control]);
+    }, [effectiveEnabled, resolvedKey, control]);
 
-    // Debounced draft saving while user modifies inputs
+    // Save draft while user modifies inputs, and remove draft if user reverts back to original values
     useEffect(() => {
-        if (!enabled || !resolvedKey) {
+        if (!effectiveEnabled || !resolvedKey || !hasCheckedRef.current || isPromptOpen || pendingDraft) {
             return;
         }
 
-        const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
-        const timer = setTimeout(() => {
-            try {
-                if (hasMeaningfulValues(currentValues, defaultVals)) {
-                    const sanitized = filterSensitiveFields(currentValues);
-                    const payload: StoredDraftPayload<T> = {
-                        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
-                        timestamp: Date.now(),
-                        values: sanitized as Partial<T>
-                    };
-                    sessionStorage.setItem(resolvedKey, JSON.stringify(payload));
-                }
-            } catch {
-                // Ignore storage quota or permission errors
+        const currentDefaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
+        try {
+            if (hasMeaningfulValues(currentValues, currentDefaultVals)) {
+                const sanitized = filterSensitiveFields(currentValues);
+                const payload: StoredDraftPayload<T> = {
+                    pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+                    timestamp: Date.now(),
+                    values: sanitized as Partial<T>
+                };
+                sessionStorage.setItem(resolvedKey, JSON.stringify(payload));
+                hasWrittenDraftRef.current = true;
+            } else if (hasWrittenDraftRef.current) {
+                sessionStorage.removeItem(resolvedKey);
+                hasWrittenDraftRef.current = false;
             }
-        }, 400);
-
-        return () => clearTimeout(timer);
-    }, [currentValues, enabled, resolvedKey, control]);
+        } catch {
+            // Ignore storage quota or permission errors
+        }
+    }, [currentValues, effectiveEnabled, resolvedKey, control, isPromptOpen, pendingDraft]);
 
     // Automatically remove draft when form is successfully submitted
     useEffect(() => {
@@ -193,13 +363,14 @@ export function useFormDraft<T extends FieldValues>({
             } catch {
                 // Ignore
             }
+            hasWrittenDraftRef.current = false;
             setPendingDraft(null);
         }
     }, [isSubmitSuccessful, resolvedKey]);
 
-    // Warn on reload if form has unsaved modifications
+    // Warn on reload if form has real unsaved modifications
     useEffect(() => {
-        if (!enabled || !isDirty) {
+        if (!effectiveEnabled || !hasRealChanges) {
             return;
         }
 
@@ -210,7 +381,7 @@ export function useFormDraft<T extends FieldValues>({
 
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [enabled, isDirty]);
+    }, [effectiveEnabled, hasRealChanges]);
 
     function clearDraft() {
         if (resolvedKey) {
@@ -220,17 +391,49 @@ export function useFormDraft<T extends FieldValues>({
                 // Ignore
             }
         }
+        hasWrittenDraftRef.current = false;
         setPendingDraft(null);
         setIsPromptOpen(false);
     }
 
+    const clearDraftRef = useRef(clearDraft);
+    clearDraftRef.current = clearDraft;
+
+    // Register with enclosing modal context and formId lookup
+    useEffect(() => {
+        const entry: FormDraftModalRegistration = {
+            clearDraft: () => clearDraftRef.current(),
+            hasRealChanges
+        };
+
+        if (modalContext) {
+            modalContext.registerDraft(instanceId, entry);
+        }
+        if (formId) {
+            activeFormIdDrafts.set(formId, entry);
+        }
+
+        return () => {
+            if (modalContext) {
+                modalContext.unregisterDraft(instanceId);
+            }
+            if (formId && activeFormIdDrafts.get(formId) === entry) {
+                activeFormIdDrafts.delete(formId);
+            }
+        };
+    }, [modalContext, instanceId, formId, hasRealChanges]);
+
     function handleContinue() {
         promptHandledRef.current = true;
+        const draftToRestore = pendingDraft;
+        setPendingDraft(null);
         setIsPromptOpen(false);
 
-        if (!pendingDraft) {
+        if (!draftToRestore) {
             return;
         }
+
+        hasWrittenDraftRef.current = true;
 
         // Apply restored draft values to react-hook-form
         const controlAny = control as unknown as {
@@ -240,13 +443,13 @@ export function useFormDraft<T extends FieldValues>({
 
         if (typeof controlAny._reset === 'function') {
             controlAny._reset(
-                { ...(controlAny._formValues || {}), ...pendingDraft },
+                { ...(controlAny._formValues || {}), ...draftToRestore },
                 { keepDefaultValues: true }
             );
         }
 
         useToastStore.getState().showToast('Restored unsaved draft from earlier', 'info');
-        onRestore?.(pendingDraft);
+        onRestore?.(draftToRestore);
     }
 
     function handleDiscard() {
@@ -260,6 +463,7 @@ export function useFormDraft<T extends FieldValues>({
         handleContinue,
         handleDiscard,
         hasDraft: Boolean(pendingDraft),
+        hasRealChanges,
         isPromptOpen
     };
 }
@@ -287,16 +491,23 @@ export function useObjectDraft<T extends Record<string, any>>({
     onRestore,
     values
 }: UseObjectDraftOptions<T>): UseFormDraftResult {
+    const instanceId = useId();
+    const modalContext = useFormDraftModalContext();
     const [isPromptOpen, setIsPromptOpen] = useState(false);
     const [pendingDraft, setPendingDraft] = useState<Partial<T> | null>(null);
     const promptHandledRef = useRef(false);
     const hasCheckedRef = useRef(false);
+    const hasWrittenDraftRef = useRef(false);
 
     const defaultValuesRef = useRef(defaultValues);
     defaultValuesRef.current = defaultValues;
 
     const valuesRef = useRef(values);
     valuesRef.current = values;
+
+    const hasRealChanges = useMemo(() => {
+        return hasRealFormChanges(values, defaultValues);
+    }, [values, defaultValues]);
 
     const resolvedKey = useMemo(() => {
         if (!enabled) return null;
@@ -308,6 +519,7 @@ export function useObjectDraft<T extends Record<string, any>>({
         if (!enabled) {
             promptHandledRef.current = false;
             hasCheckedRef.current = false;
+            hasWrittenDraftRef.current = false;
             setIsPromptOpen(false);
         }
     }, [enabled]);
@@ -317,15 +529,18 @@ export function useObjectDraft<T extends Record<string, any>>({
             return;
         }
 
+        hasCheckedRef.current = true;
+
         try {
             const raw = sessionStorage.getItem(resolvedKey);
             if (!raw) return;
 
             const parsed = JSON.parse(raw) as StoredDraftPayload<T>;
             if (parsed && parsed.values && hasMeaningfulValues(parsed.values, defaultValuesRef.current)) {
-                hasCheckedRef.current = true;
                 setPendingDraft(parsed.values);
                 setIsPromptOpen(true);
+            } else {
+                sessionStorage.removeItem(resolvedKey);
             }
         } catch {
             // Ignore
@@ -341,29 +556,29 @@ export function useObjectDraft<T extends Record<string, any>>({
     }, [values]);
 
     useEffect(() => {
-        if (!enabled || !resolvedKey) {
+        if (!enabled || !resolvedKey || !hasCheckedRef.current || isPromptOpen || pendingDraft) {
             return;
         }
 
-        const timer = setTimeout(() => {
-            try {
-                const currentVals = valuesRef.current;
-                if (hasMeaningfulValues(currentVals, defaultValuesRef.current)) {
-                    const sanitized = filterSensitiveFields(currentVals);
-                    const payload: StoredDraftPayload<T> = {
-                        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
-                        timestamp: Date.now(),
-                        values: sanitized as Partial<T>
-                    };
-                    sessionStorage.setItem(resolvedKey, JSON.stringify(payload));
-                }
-            } catch {
-                // Ignore
+        try {
+            const currentVals = valuesRef.current;
+            if (hasMeaningfulValues(currentVals, defaultValuesRef.current)) {
+                const sanitized = filterSensitiveFields(currentVals);
+                const payload: StoredDraftPayload<T> = {
+                    pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+                    timestamp: Date.now(),
+                    values: sanitized as Partial<T>
+                };
+                sessionStorage.setItem(resolvedKey, JSON.stringify(payload));
+                hasWrittenDraftRef.current = true;
+            } else if (hasWrittenDraftRef.current) {
+                sessionStorage.removeItem(resolvedKey);
+                hasWrittenDraftRef.current = false;
             }
-        }, 400);
-
-        return () => clearTimeout(timer);
-    }, [serializedValues, enabled, resolvedKey]);
+        } catch {
+            // Ignore
+        }
+    }, [serializedValues, enabled, resolvedKey, isPromptOpen, pendingDraft]);
 
     function clearDraft() {
         if (resolvedKey) {
@@ -373,17 +588,47 @@ export function useObjectDraft<T extends Record<string, any>>({
                 // Ignore
             }
         }
+        hasWrittenDraftRef.current = false;
         setPendingDraft(null);
         setIsPromptOpen(false);
     }
 
+    const clearDraftRef = useRef(clearDraft);
+    clearDraftRef.current = clearDraft;
+
+    useEffect(() => {
+        const entry: FormDraftModalRegistration = {
+            clearDraft: () => clearDraftRef.current(),
+            hasRealChanges
+        };
+
+        if (modalContext) {
+            modalContext.registerDraft(instanceId, entry);
+        }
+        if (formId) {
+            activeFormIdDrafts.set(formId, entry);
+        }
+
+        return () => {
+            if (modalContext) {
+                modalContext.unregisterDraft(instanceId);
+            }
+            if (formId && activeFormIdDrafts.get(formId) === entry) {
+                activeFormIdDrafts.delete(formId);
+            }
+        };
+    }, [modalContext, instanceId, formId, hasRealChanges]);
+
     function handleContinue() {
         promptHandledRef.current = true;
+        const draftToRestore = pendingDraft;
+        setPendingDraft(null);
         setIsPromptOpen(false);
 
-        if (!pendingDraft) return;
+        if (!draftToRestore) return;
 
-        onRestore(pendingDraft);
+        hasWrittenDraftRef.current = true;
+        onRestore(draftToRestore);
         useToastStore.getState().showToast('Restored unsaved draft from earlier', 'info');
     }
 
@@ -398,6 +643,8 @@ export function useObjectDraft<T extends Record<string, any>>({
         handleContinue,
         handleDiscard,
         hasDraft: Boolean(pendingDraft),
+        hasRealChanges,
         isPromptOpen
     };
 }
+

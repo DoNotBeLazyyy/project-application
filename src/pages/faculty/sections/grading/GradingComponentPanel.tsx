@@ -2,6 +2,9 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
+import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowsClockwiseIcon,
     CheckCircleIcon,
@@ -83,7 +86,34 @@ export default function GradingComponentPanel({
 
     // Standalone Create Modal
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isDiscardCreateOpen, setIsDiscardCreateOpen] = useState(false);
     const createMethods = useForm<GradingComponentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: defaultFormValues });
+
+    const createDraft = useFormDraft<GradingComponentFormValues>({
+        formId: CREATE_FORM_ID,
+        control: createMethods.control,
+        onRestore: (restoredValues) => {
+            createMethods.reset({ ...defaultFormValues, ...restoredValues }, { keepDefaultValues: true });
+        },
+        enabled: isCreateOpen
+    });
+
+    function handleRequestCloseCreate() {
+        if (createDraft.hasRealChanges) {
+            setIsDiscardCreateOpen(true);
+            return;
+        }
+        createDraft.clearDraft();
+        createMethods.reset(defaultFormValues);
+        setIsCreateOpen(false);
+    }
+
+    function handleConfirmDiscardCreate() {
+        createDraft.clearDraft();
+        setIsDiscardCreateOpen(false);
+        createMethods.reset(defaultFormValues);
+        setIsCreateOpen(false);
+    }
 
     // Sync draftRows with incoming components whenever not actively editing
     useEffect(() => {
@@ -212,6 +242,8 @@ export default function GradingComponentPanel({
     // Modal Create
     async function handleCreateSubmit(values: GradingComponentFormValues) {
         await onCreate(values);
+        createDraft.clearDraft();
+        setIsDiscardCreateOpen(false);
         createMethods.reset(defaultFormValues);
         setIsCreateOpen(false);
     }
@@ -458,7 +490,7 @@ export default function GradingComponentPanel({
                     }
                 }}
                 open={isCreateOpen}
-                onClose={() => setIsCreateOpen(false)}
+                onClose={handleRequestCloseCreate}
             >
                 <div className="flex flex-col gap-4 max-w-full sm:w-96 w-full">
                     <CommonForm
@@ -475,7 +507,7 @@ export default function GradingComponentPanel({
                             color="inherit"
                             size="small"
                             variant="outlined"
-                            onClick={() => setIsCreateOpen(false)}
+                            onClick={handleRequestCloseCreate}
                         >
                             Cancel
                         </CommonButton>
@@ -490,6 +522,18 @@ export default function GradingComponentPanel({
                     </div>
                 </div>
             </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardCreateOpen}
+                onContinueEditing={() => setIsDiscardCreateOpen(false)}
+                onDiscard={handleConfirmDiscardCreate}
+            />
+
+            <DraftRecoveryPromptModal
+                open={createDraft.isPromptOpen}
+                onContinue={createDraft.handleContinue}
+                onDiscard={createDraft.handleDiscard}
+            />
         </div>
     );
 }

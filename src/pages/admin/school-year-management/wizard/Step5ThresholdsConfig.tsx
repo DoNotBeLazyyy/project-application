@@ -3,6 +3,7 @@ import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CaretDownIcon,
@@ -206,26 +207,20 @@ export default function Step5ThresholdsConfig({
                                     {/* Row 2: Category, Threshold Name, and Status */}
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                         <div className="sm:col-span-4 md:col-span-3">
-                                            <FormLabel
+                                            <CommonSelect
                                                 description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
+                                                disabled={disabled}
+                                                fullWidth
                                                 isRequired
                                                 label="Category"
-                                            />
-                                            <select
-                                                className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
-                                                disabled={disabled}
+                                                options={CATEGORY_OPTIONS}
+                                                size="small"
                                                 value={item.category}
                                                 onChange={(e) => {
                                                     const cat = e.target.value as AcademicThresholdCategory;
                                                     setValue(`thresholds.${idx}.category`, cat, { shouldDirty: true });
                                                 }}
-                                            >
-                                                {CATEGORY_OPTIONS.map((c) => (
-                                                    <option key={c.value} value={c.value}>
-                                                        {c.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            />
                                         </div>
 
                                         <div className="sm:col-span-5 md:col-span-6">
@@ -255,8 +250,9 @@ export default function Step5ThresholdsConfig({
                                             />
                                         </div>
 
-                                        <div className="sm:col-span-3">
+                                        <div className="sm:col-span-3 flex flex-col gap-(--mui-tokens-spacing-2) relative">
                                             <FormLabel
+                                                className="tw_body_small_bold"
                                                 description="Toggles whether this threshold is active for student evaluations."
                                                 label="Status"
                                             />
@@ -265,7 +261,7 @@ export default function Step5ThresholdsConfig({
                                                     item.is_active
                                                         ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-800 dark:text-slate-400 border border-slate-300 dark:border-zinc-700'
-                                                } disabled:opacity-60`}
+                                                } ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
                                                 disabled={disabled}
                                                 type="button"
                                                 onClick={() => setValue(`thresholds.${idx}.is_active`, !item.is_active, { shouldDirty: true })}

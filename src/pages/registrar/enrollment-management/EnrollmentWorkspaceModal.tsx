@@ -4,6 +4,7 @@ import CommonInput from '@components/input/CommonInput';
 import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import { InputAdornment } from '@mui/material';
 import AvailableSectionBentoCard from '@pages/registrar/enrollment-management/AvailableSectionBentoCard';
@@ -243,7 +244,10 @@ export default function EnrollmentWorkspaceModal({
         setSaveErrorMessage(null);
     }
 
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+
     function handleClose() {
+        setIsDiscardOpen(false);
         setDetail(null);
         setAvailableSections([]);
         setStagedNewSections([]);
@@ -254,6 +258,14 @@ export default function EnrollmentWorkspaceModal({
         filterMethods.reset(defaultSectionFilters);
         setSaveErrorMessage(null);
         onClose();
+    }
+
+    function handleRequestClose() {
+        if (totalChanges > 0) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        handleClose();
     }
 
     function handleSearchSubmit() {
@@ -330,7 +342,7 @@ export default function EnrollmentWorkspaceModal({
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Close',
-                        onClick: handleClose
+                        onClick: handleRequestClose
                     },
                     confirmProps: {
                         children: isSaving ? 'Saving Changes...' : (
@@ -348,7 +360,7 @@ export default function EnrollmentWorkspaceModal({
                     }
                 }}
                 open={open}
-                onClose={handleClose}
+                onClose={handleRequestClose}
             >
                 <div className="flex flex-col gap-4">
                     {/* Student Info & Term Header Banner */}
@@ -786,6 +798,12 @@ export default function EnrollmentWorkspaceModal({
                     }}
                 />
             )}
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={handleClose}
+            />
         </>
     );
 }

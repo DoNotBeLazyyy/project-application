@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { useFormDraft } from '@hooks/useFormDraft';
@@ -111,6 +112,7 @@ export default function AssessmentWizardModal({
     const [activeAssessmentId, setActiveAssessmentId] = useState<string>(isNew ? '' : assessmentId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
     const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
     const [attachments, setAttachments] = useState<AssessmentAttachment[]>([]);
@@ -502,6 +504,22 @@ export default function AssessmentWizardModal({
         }
     ];
 
+    function handleCloseModal() {
+        if (isSaving) return;
+        if (!readOnly && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        onClose();
+    }
+
     return (
         <CommonModal
             cardProps={{
@@ -510,7 +528,7 @@ export default function AssessmentWizardModal({
             fullWidth
             maxWidth="lg"
             open={open}
-            onClose={onClose}
+            onClose={handleCloseModal}
         >
             {/* Modal Top Header */}
             <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
@@ -538,7 +556,7 @@ export default function AssessmentWizardModal({
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close"
                             type="button"
-                            onClick={onClose}
+                            onClick={handleCloseModal}
                         >
                             <XIcon className="w-5 h-5" />
                         </button>
@@ -877,6 +895,11 @@ export default function AssessmentWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
             />
         </CommonModal>
     );

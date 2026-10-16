@@ -2,9 +2,12 @@ import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTextarea from '@components/textarea/CommonTextarea';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -108,22 +111,80 @@ export default function LessonModuleWizardModal({
     const [isAddingMaterial, setIsAddingMaterial] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+
+    const initialPeriod = useMemo(() => {
+        if (!initialModule) return 'General';
+        const titleLower = initialModule.title.toLowerCase();
+        const descLower = (initialModule.description ?? '').toLowerCase();
+        if (titleLower.includes('prelim') || descLower.includes('prelim')) return 'Prelim';
+        if (titleLower.includes('midterm') || descLower.includes('midterm')) return 'Midterm';
+        if (titleLower.includes('semi-final') || descLower.includes('semi-final')) return 'Semi-Final';
+        if (titleLower.includes('final') || descLower.includes('final')) return 'Finals';
+        return 'General';
+    }, [initialModule]);
+
+    const defaultDraftValues = useMemo(() => ({
+        title: initialModule?.title ?? '',
+        description: initialModule?.description ?? '',
+        period: initialPeriod,
+        isPublished: initialModule?.is_published ?? true
+    }), [initialModule, initialPeriod]);
+
+    const currentDraftValues = useMemo(() => ({
+        title,
+        description,
+        period,
+        isPublished
+    }), [title, description, period, isPublished]);
+
+    const draftGuard = useObjectDraft({
+        formId: initialModule?.id
+            ? `lesson-module-wizard-${sectionId}-${initialModule.id}`
+            : `lesson-module-wizard-${sectionId}-create`,
+        values: currentDraftValues,
+        defaultValues: defaultDraftValues,
+        onRestore: (restored) => {
+            setTitle(restored.title ?? '');
+            setDescription(restored.description ?? '');
+            setPeriod(restored.period ?? 'General');
+            setIsPublished(restored.isPublished ?? true);
+        },
+        enabled: open && !readOnly
+    });
+
+    const hasMaterialsChanges = useMemo(() => {
+        const origMaterials = initialModule?.materials || [];
+        if (stagedMaterials.length !== origMaterials.length) return true;
+        if (stagedMaterials.some((m) => !m.isExisting)) return true;
+        if (origMaterials.some((orig) => !stagedMaterials.some((s) => s.id === orig.id))) return true;
+        if (
+            isAddingMaterial
+            && (Boolean(newMaterialTitle.trim())
+                || Boolean(newMaterialDesc.trim())
+                || Boolean(newMaterialUrl.trim())
+                || Boolean(selectedFile))
+        ) {
+            return true;
+        }
+        return false;
+    }, [
+        initialModule,
+        stagedMaterials,
+        isAddingMaterial,
+        newMaterialTitle,
+        newMaterialDesc,
+        newMaterialUrl,
+        selectedFile
+    ]);
+
+    const hasRealChanges = !readOnly && (draftGuard.hasRealChanges || hasMaterialsChanges);
+
     useEffect(() => {
         setTitleError(null);
-        // Clear any old draft keys in sessionStorage for this module wizard
-        try {
-            const prefix = `lesson-module-wizard-${sectionId}`;
-            for (let i = sessionStorage.length - 1; i >= 0; i--) {
-                const key = sessionStorage.key(i);
-                if (key && key.includes(prefix)) {
-                    sessionStorage.removeItem(key);
-                }
-            }
-        } catch {
-            // Ignore
-        }
 
         if (!open) {
+            setIsDiscardOpen(false);
             setCurrentStep(1);
             setTitle('');
             setDescription('');
@@ -138,15 +199,7 @@ export default function LessonModuleWizardModal({
             setTitle(initialModule.title);
             setDescription(initialModule.description ?? '');
             setIsPublished(initialModule.is_published);
-
-            // Infer period from title or description
-            const titleLower = initialModule.title.toLowerCase();
-            const descLower = (initialModule.description ?? '').toLowerCase();
-            if (titleLower.includes('prelim') || descLower.includes('prelim')) setPeriod('Prelim');
-            else if (titleLower.includes('midterm') || descLower.includes('midterm')) setPeriod('Midterm');
-            else if (titleLower.includes('semi-final') || descLower.includes('semi-final')) setPeriod('Semi-Final');
-            else if (titleLower.includes('final') || descLower.includes('final')) setPeriod('Finals');
-            else setPeriod('General');
+            setPeriod(initialPeriod);
 
             setStagedMaterials(
                 (initialModule.materials || []).map((m) => ({
@@ -165,7 +218,22 @@ export default function LessonModuleWizardModal({
             setIsPublished(true);
             setStagedMaterials([]);
         }
-    }, [open, initialModule]);
+    }, [open, initialModule, initialPeriod]);
+
+    function handleRequestClose() {
+        if (hasRealChanges) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleConfirmDiscard() {
+        draftGuard.clearDraft();
+        setIsDiscardOpen(false);
+        onClose();
+    }
 
     function handleResetMaterialForm() {
         setNewMaterialTitle('');
@@ -361,6 +429,7 @@ export default function LessonModuleWizardModal({
                 }
             }
 
+            draftGuard.clearDraft();
             useToastStore.getState().showToast('Lesson & syllabus module saved successfully.', 'success');
             onSuccess();
             onClose();
@@ -375,6 +444,7 @@ export default function LessonModuleWizardModal({
     );
 
     return (
+        <>
         <CommonModal
             cardProps={{
                 className: 'w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[92vh]'
@@ -382,7 +452,7 @@ export default function LessonModuleWizardModal({
             fullWidth
             maxWidth="lg"
             open={open}
-            onClose={onClose}
+            onClose={handleRequestClose}
         >
             {/* Modal Top Header */}
             <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
@@ -410,7 +480,7 @@ export default function LessonModuleWizardModal({
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close"
                             type="button"
-                            onClick={onClose}
+                            onClick={handleRequestClose}
                         >
                             <XIcon className="w-5 h-5" />
                         </button>
@@ -796,5 +866,18 @@ export default function LessonModuleWizardModal({
                 </div>
             </div>
         </CommonModal>
+
+        <DiscardChangesPromptModal
+            open={isDiscardOpen}
+            onContinueEditing={() => setIsDiscardOpen(false)}
+            onDiscard={handleConfirmDiscard}
+        />
+
+        <DraftRecoveryPromptModal
+            open={draftGuard.isPromptOpen}
+            onContinue={draftGuard.handleContinue}
+            onDiscard={draftGuard.handleDiscard}
+        />
+        </>
     );
 }

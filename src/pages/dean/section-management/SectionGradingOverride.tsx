@@ -14,7 +14,7 @@ import {
 import { getGradingPeriodTemplates } from '@services/grading-config.service';
 import { SectionFormValues, SectionGradingPeriodOverride } from '@type/section.type';
 import { componentRailColor } from '@utils/period-allocation.util';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Control, useController, useWatch } from 'react-hook-form';
 
 interface SectionGradingOverrideProps {
@@ -71,33 +71,37 @@ export default function SectionGradingOverride({
         field: { value: periodsValue, onChange: onPeriodsChange }
     } = useController({ control, name: 'grading_periods' });
 
-    // Initialize default periods whenever empty
-    useEffect(function() {
-        if (!periodsValue || periodsValue.length === 0) {
-            async function fetchTemplates() {
-                const res = await getGradingPeriodTemplates();
-                if (res.data && res.data.length > 0) {
-                    const mapped: SectionGradingPeriodOverride[] = res.data.map((item, idx) => ({
-                        id: item.id,
-                        name: item.name || `Period ${idx + 1}`,
-                        sequence: item.sequence || idx + 1,
-                        weight: Number(item.weight) || 0,
-                        components: (item.components || []).map((comp) => ({
-                            name: comp.name,
-                            weight: Number(comp.weight) || 0
-                        }))
-                    }));
-                    onPeriodsChange(mapped);
-                }
-                else {
-                    onPeriodsChange(DEFAULT_FALLBACK_PERIODS);
-                }
-            }
-            fetchTemplates();
-        }
-    }, [periodsValue, onPeriodsChange]);
+    const [defaultPeriods, setDefaultPeriods] = useState<SectionGradingPeriodOverride[]>(DEFAULT_FALLBACK_PERIODS);
 
-    const periods: SectionGradingPeriodOverride[] = periodsValue || DEFAULT_FALLBACK_PERIODS;
+    // Fetch template periods for display without mutating form state unless override is enabled
+    useEffect(function() {
+        let isMounted = true;
+        async function fetchTemplates() {
+            const res = await getGradingPeriodTemplates();
+            if (!isMounted) return;
+            if (res.data && res.data.length > 0) {
+                const mapped: SectionGradingPeriodOverride[] = res.data.map((item, idx) => ({
+                    id: item.id,
+                    name: item.name || `Period ${idx + 1}`,
+                    sequence: item.sequence || idx + 1,
+                    weight: Number(item.weight) || 0,
+                    components: (item.components || []).map((comp) => ({
+                        name: comp.name,
+                        weight: Number(comp.weight) || 0
+                    }))
+                }));
+                setDefaultPeriods(mapped);
+            }
+        }
+        fetchTemplates();
+        return function() {
+            isMounted = false;
+        };
+    }, []);
+
+    const periods: SectionGradingPeriodOverride[] = (periodsValue && periodsValue.length > 0)
+        ? periodsValue
+        : defaultPeriods;
 
     function enableOverrideIfNeeded() {
         if (!overrideEnabled) {

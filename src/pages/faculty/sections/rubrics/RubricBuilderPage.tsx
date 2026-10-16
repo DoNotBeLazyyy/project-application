@@ -79,6 +79,11 @@ export default function RubricBuilderPage() {
         navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
     }
 
+    const draftGuard = useFormDraft({
+        control,
+        formId: `rubric-builder-${rubricId}`
+    });
+
     async function onSubmit(values: RubricFormValues) {
         setIsSaving(true);
 
@@ -97,6 +102,7 @@ export default function RubricBuilderPage() {
                 const result = await createRubric(sectionId, titleTrimmed, descTrimmed, criteria);
 
                 if (!result.error) {
+                    draftGuard.clearDraft();
                     navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
                 }
             }
@@ -104,6 +110,7 @@ export default function RubricBuilderPage() {
                 const result = await updateRubric(rubricId, titleTrimmed, descTrimmed, criteria);
 
                 if (!result.error) {
+                    draftGuard.clearDraft();
                     navigate(`/faculty/sections/${sectionId}?tab=rubrics`);
                 }
             }
@@ -120,14 +127,12 @@ export default function RubricBuilderPage() {
     const submitHandler = handleSubmit(onSubmit, handleFormError);
 
     const backGuard = useUnsavedChangesGuard({
-        isDirty: formState.isDirty,
-        onDiscard: navigateToRubrics,
+        isDirty: draftGuard.hasRealChanges,
+        onDiscard: function() {
+            draftGuard.clearDraft();
+            navigateToRubrics();
+        },
         onSave: submitHandler
-    });
-
-    const draftGuard = useFormDraft({
-        control,
-        formId: `rubric-builder-${rubricId}`
     });
 
     return (
@@ -157,7 +162,7 @@ export default function RubricBuilderPage() {
                         </div>
                     </div>
                     <CommonButton
-                        disabled={isSaving || (!isNew && !formState.isDirty)}
+                        disabled={isSaving || (!isNew && !draftGuard.hasRealChanges)}
                         size="small"
                         type="submit"
                         variant="contained"

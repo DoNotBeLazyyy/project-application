@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
@@ -46,6 +47,7 @@ export default function CourseWizardModal({
     onSwitchToEdit
 }: CourseWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const { control, handleSubmit, setValue, trigger } = methods;
 
     const draftGuard = useFormDraft({
@@ -57,6 +59,7 @@ export default function CourseWizardModal({
     useEffect(() => {
         if (open) {
             setCurrentStep(initialStep);
+            setIsConfirmCloseOpen(false);
         }
     }, [open, initialStep]);
 
@@ -118,6 +121,19 @@ export default function CourseWizardModal({
     }
 
     function handleCloseModal() {
+        if (isSaving) return;
+        if (!readOnly && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        setCurrentStep(1);
+        onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
         setCurrentStep(1);
         onClose();
     }
@@ -323,6 +339,11 @@ export default function CourseWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
             />
         </CommonModal>
     );

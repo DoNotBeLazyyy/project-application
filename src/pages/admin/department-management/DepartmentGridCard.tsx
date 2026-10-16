@@ -16,7 +16,7 @@ export interface DepartmentGridCardProps {
  * DepartmentGridCard
  *
  * Grid (bento) representation of a department row for Admin.
- * Name as hero title and code as subtitle.
+ * Name as hero title, code as subtitle, and Dean & Faculty count as metrics.
  */
 export default function DepartmentGridCard({
     row,
@@ -26,6 +26,8 @@ export default function DepartmentGridCard({
     onEdit,
     onRequestDelete
 }: DepartmentGridCardProps) {
+    const facultyCount = row.faculty_count ?? 0;
+
     return (
         <CommonBentoCard
             actionMenu={(
@@ -55,6 +57,10 @@ export default function DepartmentGridCard({
                 />
             )}
             isSelected={isSelected}
+            metrics={[
+                { label: 'Dean', value: row.dean_name || 'Unassigned' },
+                { label: 'Faculty', value: `${facultyCount} ${facultyCount === 1 ? 'Member' : 'Members'}` }
+            ]}
             selectVariant="button"
             status=""
             subtitle={row.code}

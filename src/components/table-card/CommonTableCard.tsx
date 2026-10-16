@@ -2,7 +2,6 @@ import CommonButton from '@components/button/CommonButton';
 import CommonBentoCard from '@components/card/CommonBentoCard';
 import CommonCard from '@components/card/CommonCard';
 import CommonEmptyState from '@components/empty/CommonEmptyState';
-import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import TableModals from '@components/modal/TableModals';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
@@ -97,7 +96,6 @@ export default function CommonTableCard<T extends FieldValues>({
 
     const [activeViewMode, setActiveViewMode] = useState<'table' | 'grid'>(viewMode);
     const [isSortOpen, setIsSortOpen] = useState(false);
-    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [isDeletePromptOpen, setIsDeletePromptOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
@@ -156,26 +154,6 @@ export default function CommonTableCard<T extends FieldValues>({
         if (event.key === 'Enter') {
             handleSearchSubmit();
         }
-    }
-
-    function handleCloseUpdateModal() {
-        if (updateModalProps?.isLoading) {
-            return;
-        }
-        if (updateModalProps?.onConfirmClose && !updateModalProps.onConfirmClose()) {
-            setIsDiscardOpen(true);
-            return;
-        }
-        updateModalProps?.onClose?.({}, 'escapeKeyDown');
-    }
-
-    function handleDiscardConfirm() {
-        setIsDiscardOpen(false);
-        updateModalProps?.onClose?.({}, 'escapeKeyDown');
-    }
-
-    function handleDiscardCancel() {
-        setIsDiscardOpen(false);
     }
 
     function triggerDeletePrompt(ids: string[]) {
@@ -783,14 +761,7 @@ export default function CommonTableCard<T extends FieldValues>({
                         open: isSortOpen
                     }
                     : undefined}
-                updateModalProps={
-                    updateModalProps
-                        ? {
-                            ...updateModalProps,
-                            onClose: handleCloseUpdateModal
-                        }
-                        : undefined
-                }
+                updateModalProps={updateModalProps}
                 viewModalProps={viewModalProps}
             />
 
@@ -798,22 +769,6 @@ export default function CommonTableCard<T extends FieldValues>({
                 <UploadCsvModal {...uploadCsvModalProps} />
             )}
 
-            <ConfirmPromptModal
-                formButtonsProps={{
-                    cancelProps: {
-                        onClick: handleDiscardCancel
-                    },
-                    confirmProps: {
-                        children: 'Discard',
-                        color: 'error',
-                        onClick: handleDiscardConfirm
-                    }
-                }}
-                mainContent={{ title: 'Discard unsaved changes?' }}
-                open={isDiscardOpen}
-                subContent={{ title: 'Your changes will be lost. This cannot be undone.' }}
-                onClose={handleDiscardCancel}
-            />
             <DeletePromptModal
                 actionIconProps={deleteModalProps?.actionIcon ? { icon: deleteModalProps.actionIcon } : undefined}
                 formButtonsProps={{

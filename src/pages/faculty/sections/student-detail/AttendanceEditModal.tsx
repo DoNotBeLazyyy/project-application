@@ -1,14 +1,17 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import { attendanceStatusVariant, formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { saveAttendanceRecords } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import { AttendanceStatus, StudentAttendanceRow } from '@type/faculty.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const STATUS_OPTIONS: { label: string; value: AttendanceStatus }[] = [
     { label: 'Present', value: 'Present' },
@@ -27,6 +30,30 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
     const [status, setStatus] = useState<AttendanceStatus>('Present');
     const [remarks, setRemarks] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+
+    const defaultDraftValues = useMemo(() => ({
+        status: record?.status ?? ('Present' as AttendanceStatus),
+        remarks: record?.remarks ?? ''
+    }), [record]);
+
+    const currentDraftValues = useMemo(() => ({
+        status,
+        remarks
+    }), [status, remarks]);
+
+    const draftGuard = useObjectDraft({
+        formId: record?.record_id
+            ? `attendance-edit-modal-${record.record_id}`
+            : 'attendance-edit-modal',
+        values: currentDraftValues,
+        defaultValues: defaultDraftValues,
+        onRestore: (restored) => {
+            setStatus(restored.status ?? 'Present');
+            setRemarks(restored.remarks ?? '');
+        },
+        enabled: Boolean(record)
+    });
 
     const isUnchanged = Boolean(record)
         && status === record?.status
@@ -36,8 +63,25 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
         if (record) {
             setStatus(record.status);
             setRemarks(record.remarks ?? '');
+        } else {
+            setIsDiscardOpen(false);
         }
     }, [record]);
+
+    function handleRequestClose() {
+        if (draftGuard.hasRealChanges) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleConfirmDiscard() {
+        draftGuard.clearDraft();
+        setIsDiscardOpen(false);
+        onClose();
+    }
 
     async function handleSave() {
         if (!record) {
@@ -58,6 +102,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
             if (result.error) {
                 useToastStore.getState().showToast(result.error.message || 'Failed to update attendance record.', 'error');
             } else {
+                draftGuard.clearDraft();
                 useToastStore.getState().showToast('Attendance record updated successfully.', 'success');
                 onSaved();
                 onClose();
@@ -70,93 +115,107 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
     }
 
     return (
-        <CommonModal
-            cardProps={{ className: 'flex flex-col gap-5 w-full sm:w-[min(92vw,460px)]' }}
-            open={Boolean(record)}
-            onClose={onClose}
-        >
-            <div className="flex items-start justify-between">
-                <div className="flex flex-col gap-1">
-                    <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                        Edit Attendance
-                    </span>
-                    <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                        {record
-                            ? formatSessionDate(record.session_date)
-                            : ''}
-                    </h2>
+        <>
+            <CommonModal
+                cardProps={{ className: 'flex flex-col gap-5 w-full sm:w-[min(92vw,460px)]' }}
+                open={Boolean(record)}
+                onClose={handleRequestClose}
+            >
+                <div className="flex items-start justify-between">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
+                            Edit Attendance
+                        </span>
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
+                            {record
+                                ? formatSessionDate(record.session_date)
+                                : ''}
+                        </h2>
+                    </div>
+                    <button
+                        className="hover:bg-(--mui-palette-action-hover) p-1 rounded text-(--mui-palette-text-secondary) transition-colors"
+                        title="Close"
+                        onClick={handleRequestClose}
+                    >
+                        <XIcon size={18} weight="bold" />
+                    </button>
                 </div>
-                <button
-                    className="hover:bg-(--mui-palette-action-hover) p-1 rounded text-(--mui-palette-text-secondary) transition-colors"
-                    title="Close"
-                    onClick={onClose}
-                >
-                    <XIcon size={18} weight="bold" />
-                </button>
-            </div>
 
-            {record?.notes && (
-                <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-secondary) text-sm">
-                    {record.notes}
-                </p>
-            )}
+                {record?.notes && (
+                    <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-secondary) text-sm">
+                        {record.notes}
+                    </p>
+                )}
 
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center justify-between">
-                    <label className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Status
-                    </label>
-                    <CommonBadgeStatus
-                        label={status}
-                        variant={attendanceStatusVariant(status)}
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 items-center justify-between">
+                        <label className="font-medium text-(--mui-palette-text-primary) text-sm">
+                            Status
+                        </label>
+                        <CommonBadgeStatus
+                            label={status}
+                            variant={attendanceStatusVariant(status)}
+                        />
+                    </div>
+                    <CommonSelect
+                        fullWidth
+                        options={STATUS_OPTIONS}
+                        size="small"
+                        value={status}
+                        onChange={function(e: ChangeEventInputTextarea) {
+                            setStatus(e.target.value as AttendanceStatus);
+                        }}
                     />
                 </div>
-                <CommonSelect
-                    fullWidth
-                    options={STATUS_OPTIONS}
-                    size="small"
-                    value={status}
-                    onChange={function(e: ChangeEventInputTextarea) {
-                        setStatus(e.target.value as AttendanceStatus);
-                    }}
-                />
-            </div>
 
-            <div className="flex flex-col gap-1">
-                <label className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Remarks
-                </label>
-                <textarea
-                    className="border border-(--mui-palette-divider) focus:border-(--mui-palette-primary-main) outline-none px-3 py-2 resize-none rounded text-sm transition-colors"
-                    placeholder="Optional remarks..."
-                    rows={3}
-                    value={remarks}
-                    onChange={function(e) {
-                        setRemarks(e.target.value);
-                    }}
-                />
-            </div>
+                <div className="flex flex-col gap-1">
+                    <label className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        Remarks
+                    </label>
+                    <textarea
+                        className="border border-(--mui-palette-divider) focus:border-(--mui-palette-primary-main) outline-none px-3 py-2 resize-none rounded text-sm transition-colors"
+                        placeholder="Optional remarks..."
+                        rows={3}
+                        value={remarks}
+                        onChange={function(e) {
+                            setRemarks(e.target.value);
+                        }}
+                    />
+                </div>
 
-            <div className="flex gap-2 justify-end">
-                <CommonButton
-                    color="inherit"
-                    size="small"
-                    variant="outlined"
-                    onClick={onClose}
-                >
-                    Cancel
-                </CommonButton>
-                <CommonButton
-                    disabled={isSaving || isUnchanged}
-                    size="small"
-                    variant="contained"
-                    onClick={handleSave}
-                >
-                    {isSaving
-                        ? 'Saving...'
-                        : 'Save'}
-                </CommonButton>
-            </div>
-        </CommonModal>
+                <div className="flex gap-2 justify-end">
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        variant="outlined"
+                        onClick={handleRequestClose}
+                    >
+                        Cancel
+                    </CommonButton>
+                    <CommonButton
+                        disabled={isSaving || isUnchanged}
+                        size="small"
+                        variant="contained"
+                        onClick={handleSave}
+                    >
+                        {isSaving
+                            ? 'Saving...'
+                            : 'Save'}
+                    </CommonButton>
+                </div>
+            </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={handleConfirmDiscard}
+            />
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
+        </>
     );
 }

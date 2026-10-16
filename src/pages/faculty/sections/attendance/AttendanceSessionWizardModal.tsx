@@ -2,6 +2,7 @@ import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { useObjectDraft } from '@hooks/useFormDraft';
@@ -64,12 +65,14 @@ export default function AttendanceSessionWizardModal({
     onClose,
     onSuccess
 }: AttendanceSessionWizardModalProps) {
+    const defaultSessionDate = useMemo(() => new Date().toISOString().split('T')[0], [open]);
     const [currentStep, setCurrentStep] = useState(1);
     const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [sessionDateError, setSessionDateError] = useState<string | null>(null);
     const [notes, setNotes] = useState('');
     const [defaultStatus, setDefaultStatus] = useState<AttendanceStatus>('Present');
     const [sessionType, setSessionType] = useState<'Lecture' | 'Laboratory' | 'Online' | 'Activity'>('Lecture');
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
     const [students, setStudents] = useState<SectionStudent[]>([]);
     const [isLoadingStudents, setIsLoadingStudents] = useState(false);
@@ -80,7 +83,7 @@ export default function AttendanceSessionWizardModal({
     const showToast = useToastStore((s) => s.showToast);
 
     const draftGuard = useObjectDraft({
-        defaultValues: { notes: '', sessionType: 'Lecture', defaultStatus: 'Present' },
+        defaultValues: { notes: '', sessionType: 'Lecture', defaultStatus: 'Present', sessionDate: defaultSessionDate },
         enabled: open && !isSaving,
         formId: `attendance-wizard-${sectionId}`,
         values: { defaultStatus, notes, sessionDate, sessionType },
@@ -92,18 +95,25 @@ export default function AttendanceSessionWizardModal({
         }
     });
 
+    const hasStudentDraftChanges = useMemo(
+        () => Object.values(studentDrafts).some((d) => d.status !== 'Present' || Boolean(d.remarks?.trim())),
+        [studentDrafts]
+    );
+    const hasRealChanges = draftGuard.hasRealChanges || hasStudentDraftChanges;
+
     // Fetch students when modal opens
     useEffect(() => {
         if (!open || !sectionId) return;
 
         // Reset wizard state
         setCurrentStep(1);
-        setSessionDate(new Date().toISOString().split('T')[0]);
+        setSessionDate(defaultSessionDate);
         setSessionDateError(null);
         setNotes('');
         setDefaultStatus('Present');
         setSessionType('Lecture');
         setSearchQuery('');
+        setIsConfirmCloseOpen(false);
 
         async function fetchRoster() {
             setIsLoadingStudents(true);
@@ -263,6 +273,22 @@ export default function AttendanceSessionWizardModal({
         }
     }
 
+    function handleCloseModal() {
+        if (isSaving) return;
+        if (hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        onClose();
+    }
+
     if (!open) return null;
 
     return (
@@ -270,7 +296,7 @@ export default function AttendanceSessionWizardModal({
             fullWidth
             maxWidth="md"
             open={open}
-            onClose={onClose}
+            onClose={handleCloseModal}
         >
             <div className="flex flex-col h-[85vh] max-h-[760px] bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-slate-100 rounded-2xl overflow-hidden">
                 {/* Stepper Header */}
@@ -286,7 +312,7 @@ export default function AttendanceSessionWizardModal({
                         </div>
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleCloseModal}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                         >
                             <XIcon size={18} weight="bold" />
@@ -547,7 +573,7 @@ export default function AttendanceSessionWizardModal({
                     <CommonButton
                         size="small"
                         variant="outlined"
-                        onClick={onClose}
+                        onClick={handleCloseModal}
                         disabled={isSaving}
                     >
                         Cancel
@@ -596,6 +622,11 @@ export default function AttendanceSessionWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
             />
         </CommonModal>
     );

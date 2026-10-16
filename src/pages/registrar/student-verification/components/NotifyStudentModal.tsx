@@ -1,11 +1,14 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import { PaperPlaneTiltIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { sendStudentProfileNotification } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface NotifyStudentModalProps {
     open: boolean;
@@ -62,6 +65,12 @@ const TEMPLATE_DEFAULTS: Record<string, { title: string; message: string }> = {
     }
 };
 
+const INITIAL_NOTIFY_VALUES = {
+    selectedTemplate: 'notice_inaccurate',
+    title: TEMPLATE_DEFAULTS.notice_inaccurate.title,
+    message: TEMPLATE_DEFAULTS.notice_inaccurate.message
+};
+
 export default function NotifyStudentModal({
     open,
     onClose,
@@ -70,16 +79,59 @@ export default function NotifyStudentModal({
     studentNumber,
     onSuccess
 }: NotifyStudentModalProps) {
-    const [selectedTemplate, setSelectedTemplate] = useState('notice_inaccurate');
-    const [title, setTitle] = useState(TEMPLATE_DEFAULTS.notice_inaccurate.title);
-    const [message, setMessage] = useState(TEMPLATE_DEFAULTS.notice_inaccurate.message);
+    const [selectedTemplate, setSelectedTemplate] = useState(INITIAL_NOTIFY_VALUES.selectedTemplate);
+    const [title, setTitle] = useState(INITIAL_NOTIFY_VALUES.title);
+    const [message, setMessage] = useState(INITIAL_NOTIFY_VALUES.message);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+
+    const currentValues = useMemo(() => ({
+        selectedTemplate,
+        title,
+        message
+    }), [selectedTemplate, title, message]);
+
+    const draftGuard = useObjectDraft({
+        defaultValues: INITIAL_NOTIFY_VALUES,
+        enabled: open,
+        formId: studentId ? `notify-student-${studentId}` : 'notify-student-form',
+        onRestore: (restored) => {
+            if (restored.selectedTemplate !== undefined) setSelectedTemplate(restored.selectedTemplate);
+            if (restored.title !== undefined) setTitle(restored.title);
+            if (restored.message !== undefined) setMessage(restored.message);
+        },
+        values: currentValues
+    });
+
+    function resetToInitial() {
+        setSelectedTemplate(INITIAL_NOTIFY_VALUES.selectedTemplate);
+        setTitle(INITIAL_NOTIFY_VALUES.title);
+        setMessage(INITIAL_NOTIFY_VALUES.message);
+    }
+
+    function handleAttemptClose() {
+        if (isSubmitting) return;
+        if (draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        resetToInitial();
+        onClose();
+    }
+
+    function handleDiscardChanges() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        resetToInitial();
+        onClose();
+    }
 
     function handleTemplateChange(templateKey: string) {
         setSelectedTemplate(templateKey);
         const tpl = TEMPLATE_DEFAULTS[templateKey] || TEMPLATE_DEFAULTS.custom;
-        if (tpl.title) setTitle(tpl.title);
-        if (tpl.message) setMessage(tpl.message);
+        setTitle(tpl.title);
+        setMessage(tpl.message);
     }
 
     async function handleSend() {
@@ -98,6 +150,8 @@ export default function NotifyStudentModal({
         setIsSubmitting(false);
 
         if (!result.error) {
+            draftGuard.clearDraft();
+            resetToInitial();
             useToastStore.getState().showToast('Notification sent to student and recorded in Registrar Log.', 'success');
             onSuccess?.();
             onClose();
@@ -105,82 +159,95 @@ export default function NotifyStudentModal({
     }
 
     return (
-        <CommonModal
-            fullWidth
-            maxWidth="sm"
-            open={open}
-            onClose={onClose}
-            cardProps={{
-                cardHeaderProps: {
-                    title: 'Send Notification to Student',
-                    subheader: `Recipient: ${studentName || 'Student'} (${studentNumber || 'N/A'})`
-                }
-            }}
-        >
-            <div className="flex flex-col gap-4 p-4 pt-0">
-                <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
-                    <WarningCircleIcon size={22} className="text-(--mui-palette-error-main) shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-semibold m-0 text-sm">Official Registrar Notification</p>
-                        <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                            This notification will be immediately dispatched to the student's notification center and recorded in the Registrar Log audit trail.
-                        </p>
+        <>
+            <CommonModal
+                fullWidth
+                maxWidth="sm"
+                open={open}
+                onClose={handleAttemptClose}
+                cardProps={{
+                    cardHeaderProps: {
+                        title: 'Send Notification to Student',
+                        subheader: `Recipient: ${studentName || 'Student'} (${studentNumber || 'N/A'})`
+                    }
+                }}
+            >
+                <div className="flex flex-col gap-4 p-4 pt-0">
+                    <div className="border border-(--mui-palette-error-main) bg-(--mui-palette-error-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
+                        <WarningCircleIcon size={22} className="text-(--mui-palette-error-main) shrink-0 mt-0.5" />
+                        <div>
+                            <p className="font-semibold m-0 text-sm">Official Registrar Notification</p>
+                            <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
+                                This notification will be immediately dispatched to the student's notification center and recorded in the Registrar Log audit trail.
+                            </p>
+                        </div>
+                    </div>
+
+                    <CommonSelect
+                        fullWidth
+                        label="Notice Template"
+                        options={TEMPLATE_OPTIONS}
+                        size="small"
+                        value={selectedTemplate}
+                        onChange={(e) => handleTemplateChange(e.target.value as string)}
+                    />
+
+                    <CommonInput
+                        disabled={isSubmitting}
+                        fullWidth
+                        label="Notification Title"
+                        required
+                        size="small"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-(--mui-palette-text-secondary)">
+                            Message Content <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            className="w-full border border-(--mui-palette-divider) rounded-md p-2.5 text-xs bg-(--mui-palette-background-default) text-(--mui-palette-text-primary) focus:outline-none focus:ring-1 focus:ring-(--mui-palette-primary-main) min-h-[100px] resize-y"
+                            disabled={isSubmitting}
+                            placeholder="Provide details on the discrepancy or instructions for the student..."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex gap-2 justify-end mt-2">
+                        <CommonButton
+                            color="inherit"
+                            disabled={isSubmitting}
+                            size="small"
+                            variant="outlined"
+                            onClick={handleAttemptClose}
+                        >
+                            Cancel
+                        </CommonButton>
+                        <CommonButton
+                            disabled={isSubmitting || !title.trim() || !message.trim()}
+                            size="small"
+                            startIcon={<PaperPlaneTiltIcon size={16} />}
+                            variant="contained"
+                            onClick={handleSend}
+                        >
+                            {isSubmitting ? 'Sending...' : 'Send Notification'}
+                        </CommonButton>
                     </div>
                 </div>
-
-                <CommonSelect
-                    fullWidth
-                    label="Notice Template"
-                    options={TEMPLATE_OPTIONS}
-                    size="small"
-                    value={selectedTemplate}
-                    onChange={(e) => handleTemplateChange(e.target.value as string)}
-                />
-
-                <CommonInput
-                    disabled={isSubmitting}
-                    fullWidth
-                    label="Notification Title"
-                    required
-                    size="small"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-
-                <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-(--mui-palette-text-secondary)">
-                        Message Content <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        className="w-full border border-(--mui-palette-divider) rounded-md p-2.5 text-xs bg-(--mui-palette-background-default) text-(--mui-palette-text-primary) focus:outline-none focus:ring-1 focus:ring-(--mui-palette-primary-main) min-h-[100px] resize-y"
-                        disabled={isSubmitting}
-                        placeholder="Provide details on the discrepancy or instructions for the student..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                    />
-                </div>
-
-                <div className="flex gap-2 justify-end mt-2">
-                    <CommonButton
-                        color="inherit"
-                        disabled={isSubmitting}
-                        size="small"
-                        variant="outlined"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </CommonButton>
-                    <CommonButton
-                        disabled={isSubmitting || !title.trim() || !message.trim()}
-                        size="small"
-                        startIcon={<PaperPlaneTiltIcon size={16} />}
-                        variant="contained"
-                        onClick={handleSend}
-                    >
-                        {isSubmitting ? 'Sending...' : 'Send Notification'}
-                    </CommonButton>
-                </div>
-            </div>
-        </CommonModal>
+            </CommonModal>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardChanges}
+            />
+        </>
     );
 }
+

@@ -3,7 +3,10 @@ import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import {
@@ -71,6 +74,7 @@ export default function CreditTransfereeCoursesModal({
     // Sub-modal for crediting/editing a specific course
     const [activeCourse, setActiveCourse] = useState<CreditedCourseRow | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isDiscardFormOpen, setIsDiscardFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     // Form fields
@@ -84,6 +88,52 @@ export default function CreditTransfereeCoursesModal({
 
     // Remember last used school name for rapid sequential entry
     const [rememberedSchool, setRememberedSchool] = useState('');
+
+    const defaultCreditFormValues = useMemo(() => ({
+        previousSchool: activeCourse?.previous_school || rememberedSchool || '',
+        previousCourseCode: activeCourse?.previous_course_code || '',
+        previousCourseTitle: activeCourse?.previous_course_title || '',
+        gradeDisplay: activeCourse?.grade_display || 'Passed',
+        gradeNumeric: activeCourse?.grade_numeric ? String(activeCourse.grade_numeric) : '',
+        unitsCredited: String(activeCourse?.units_credited ?? activeCourse?.units ?? 3.0),
+        remarks: activeCourse?.remarks || 'Credited per TOR evaluation'
+    }), [activeCourse, rememberedSchool]);
+
+    const currentCreditFormValues = useMemo(() => ({
+        previousSchool,
+        previousCourseCode,
+        previousCourseTitle,
+        gradeDisplay,
+        gradeNumeric,
+        unitsCredited,
+        remarks
+    }), [
+        previousSchool,
+        previousCourseCode,
+        previousCourseTitle,
+        gradeDisplay,
+        gradeNumeric,
+        unitsCredited,
+        remarks
+    ]);
+
+    const creditDraftGuard = useObjectDraft({
+        formId: activeCourse?.course_id
+            ? `credit-transferee-course-${studentId ?? 'student'}-${activeCourse.course_id}`
+            : `credit-transferee-course-${studentId ?? 'student'}`,
+        values: currentCreditFormValues,
+        defaultValues: defaultCreditFormValues,
+        onRestore: (restored) => {
+            setPreviousSchool(restored.previousSchool ?? '');
+            setPreviousCourseCode(restored.previousCourseCode ?? '');
+            setPreviousCourseTitle(restored.previousCourseTitle ?? '');
+            setGradeDisplay(restored.gradeDisplay ?? 'Passed');
+            setGradeNumeric(restored.gradeNumeric ?? '');
+            setUnitsCredited(restored.unitsCredited ?? '3.0');
+            setRemarks(restored.remarks ?? '');
+        },
+        enabled: isFormOpen && Boolean(activeCourse)
+    });
 
     // Revocation prompt state
     const [courseToRevoke, setCourseToRevoke] = useState<CreditedCourseRow | null>(null);
@@ -111,6 +161,7 @@ export default function CreditTransfereeCoursesModal({
             setSelectedStatusFilter('all');
             setActiveCourse(null);
             setIsFormOpen(false);
+            setIsDiscardFormOpen(false);
         }
     }, [open, studentId]);
 
@@ -127,8 +178,18 @@ export default function CreditTransfereeCoursesModal({
     }
 
     function handleCloseCreditForm() {
+        creditDraftGuard.clearDraft();
+        setIsDiscardFormOpen(false);
         setIsFormOpen(false);
         setActiveCourse(null);
+    }
+
+    function handleRequestCloseCreditForm() {
+        if (creditDraftGuard.hasRealChanges) {
+            setIsDiscardFormOpen(true);
+            return;
+        }
+        handleCloseCreditForm();
     }
 
     async function handleSaveCredit() {
@@ -524,7 +585,7 @@ export default function CreditTransfereeCoursesModal({
                     formButtonsProps={{
                         cancelProps: {
                             children: 'Cancel',
-                            onClick: handleCloseCreditForm
+                            onClick: handleRequestCloseCreditForm
                         },
                         confirmProps: {
                             children: isSaving ? 'Saving Credit...' : (activeCourse.is_credited ? 'Update Credit' : 'Confirm & Credit Course'),
@@ -533,7 +594,7 @@ export default function CreditTransfereeCoursesModal({
                         }
                     }}
                     open={isFormOpen}
-                    onClose={handleCloseCreditForm}
+                    onClose={handleRequestCloseCreditForm}
                 >
                     <div className="flex flex-col gap-3.5 py-1">
                         {/* Course Target Overview */}
@@ -676,6 +737,18 @@ export default function CreditTransfereeCoursesModal({
                     onClose={() => setCourseToRevoke(null)}
                 />
             )}
+
+            <DiscardChangesPromptModal
+                open={isDiscardFormOpen}
+                onContinueEditing={() => setIsDiscardFormOpen(false)}
+                onDiscard={handleCloseCreditForm}
+            />
+
+            <DraftRecoveryPromptModal
+                open={creditDraftGuard.isPromptOpen}
+                onContinue={creditDraftGuard.handleContinue}
+                onDiscard={creditDraftGuard.handleDiscard}
+            />
         </>
     );
 }

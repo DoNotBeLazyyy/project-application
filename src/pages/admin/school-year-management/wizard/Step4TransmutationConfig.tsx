@@ -3,6 +3,7 @@ import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import CommonNumberInput from '@components/input/CommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
+import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CaretDownIcon,
@@ -210,13 +211,16 @@ export default function Step4TransmutationConfig({
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                 {/* Type Selector */}
                                 <div className="sm:col-span-4 md:col-span-3">
-                                    <FormLabel
+                                    <CommonSelect
                                         description="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)."
-                                        label="Grade Type"
-                                    />
-                                    <select
-                                        className="w-full h-9 px-3 text-xs font-semibold rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:border-none disabled:bg-transparent disabled:appearance-none disabled:p-0 disabled:font-medium cursor-pointer"
                                         disabled={disabled}
+                                        fullWidth
+                                        label="Grade Type"
+                                        options={[
+                                            { label: 'Fixed Range', value: 'fixed' },
+                                            { label: 'Conditional', value: 'conditional' }
+                                        ]}
+                                        size="small"
                                         value={isCond ? 'conditional' : 'fixed'}
                                         onChange={(e) => {
                                             const nextCond = e.target.value === 'conditional';
@@ -227,10 +231,7 @@ export default function Step4TransmutationConfig({
                                             setValue(`transmutation_rows.${index}.transmuted_grade`, nextCond ? null : (isNaN(numeric) ? null : numeric), { shouldDirty: true });
                                             setValue(`transmutation_rows.${index}.special_code`, nextCond ? row.label.trim().toUpperCase() : null, { shouldDirty: true });
                                         }}
-                                    >
-                                        <option value="fixed">Fixed Range</option>
-                                        <option value="conditional">Conditional</option>
-                                    </select>
+                                    />
                                 </div>
 
                                 {/* Description */}
@@ -248,8 +249,9 @@ export default function Step4TransmutationConfig({
                                 </div>
 
                                 {/* Academic Status Toggle */}
-                                <div className="sm:col-span-3">
+                                <div className="sm:col-span-3 flex flex-col gap-(--mui-tokens-spacing-2) relative">
                                     <FormLabel
+                                        className="tw_body_small_bold"
                                         description="Toggles whether this grade mark grants academic credit (Passing vs Failing)."
                                         label="Status"
                                     />
@@ -258,7 +260,7 @@ export default function Step4TransmutationConfig({
                                             row.is_passing
                                                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                                                 : 'bg-rose-100 text-rose-800 hover:bg-rose-200 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
-                                        } disabled:opacity-60`}
+                                        } ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
                                         disabled={disabled}
                                         type="button"
                                         onClick={() => setValue(`transmutation_rows.${index}.is_passing`, !row.is_passing, { shouldDirty: true })}

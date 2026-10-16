@@ -42,7 +42,10 @@ export async function createDepartment(
     return callRpc<null>('fn_create_department', {
         p_code: params.code,
         p_description: params.description || null,
-        p_name: params.name
+        p_faculty_ids: params.faculty_ids ?? [],
+        p_head_user_id: params.dean_id || null,
+        p_name: params.name,
+        p_sync_personnel: true
     });
 }
 
@@ -54,7 +57,10 @@ export async function updateDepartment(
         p_code: params.code,
         p_department_id: departmentId,
         p_description: params.description || null,
-        p_name: params.name
+        p_faculty_ids: params.faculty_ids ?? [],
+        p_head_user_id: params.dean_id || null,
+        p_name: params.name,
+        p_sync_personnel: true
     });
 }
 

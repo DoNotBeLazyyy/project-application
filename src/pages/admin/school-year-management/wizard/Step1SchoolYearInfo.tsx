@@ -65,7 +65,16 @@ export default function Step1SchoolYearInfo({
 
     useEffect(() => {
         if (!startDate || !endDate) {
+            const hadPreviousDates = Boolean(prevDatesRef.current.start && prevDatesRef.current.end);
             prevDatesRef.current = { end: endDate || '', start: startDate || '' };
+            if (isNew && !sourceSchoolYear && hadPreviousDates && !startDate && !endDate) {
+                if (!userEditedCodeRef.current) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: false });
+                }
+                if (!userEditedLabelRef.current) {
+                    setValue('label', '', { shouldValidate: false, shouldDirty: false });
+                }
+            }
             return;
         }
 
@@ -123,12 +132,6 @@ export default function Step1SchoolYearInfo({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Step Header Block with Description */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 flex items-center justify-between gap-3 shadow-xs">
-                <div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Academic Year Details</h3>
-                </div>
-            </div>
 
             {/* Duplicate Banner when duplicating from an existing academic year */}
             {sourceSchoolYear && (

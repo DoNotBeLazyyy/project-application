@@ -2,10 +2,14 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { CHOICE_BASED_TYPES } from '@constants/faculty.constant';
+import { useFormDraft } from '@hooks/useFormDraft';
 import ChoiceBuilder from '@pages/faculty/sections/assessments/builder/ChoiceBuilder';
 import { AssessmentQuestion, QuestionFormValues, QuestionType } from '@type/assessment.type';
 import { formErrors } from '@utils/form.util';
+import { useEffect, useState } from 'react';
 import { FieldErrors, UseFormReturn } from 'react-hook-form';
 
 const QUESTION_FORM_ID = 'question-form';
@@ -33,7 +37,7 @@ interface QuestionModalProps {
 
 export default function QuestionModal({
     editingQuestion,
-    isDirty,
+    isDirty: _isDirty,
     isOpen,
     methods,
     watchedChoices,
@@ -41,6 +45,40 @@ export default function QuestionModal({
     onClose,
     onSubmit
 }: QuestionModalProps) {
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+
+    const draftGuard = useFormDraft({
+        control: methods.control,
+        enabled: isOpen,
+        formId: `${QUESTION_FORM_ID}-${editingQuestion?.id || 'new'}`
+    });
+
+    useEffect(() => {
+        if (!isOpen) {
+            setIsConfirmCloseOpen(false);
+        }
+    }, [isOpen]);
+
+    function handleCloseModal() {
+        if (draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    async function handleFormSubmit(values: QuestionFormValues) {
+        draftGuard.clearDraft();
+        await onSubmit(values);
+    }
+
     function handleError(errors: FieldErrors<QuestionFormValues>) {
         formErrors(errors, methods);
     }
@@ -129,19 +167,23 @@ export default function QuestionModal({
                     title: editingQuestion
                         ? 'Edit Question'
                         : 'Add Question'
+                },
+                defaultActionProps: {
+                    onClick: handleCloseModal
                 }
             }}
             open={isOpen}
-            onClose={onClose}
+            onClose={handleCloseModal}
         >
             <div className="flex flex-col gap-4 max-w-full sm:w-200 w-full">
                 <CommonForm
                     containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
                     control={methods.control}
+                    enableDraftRecovery={false}
                     fields={baseFields}
                     formProps={{
                         id: QUESTION_FORM_ID,
-                        onSubmit: methods.handleSubmit(onSubmit, handleError)
+                        onSubmit: methods.handleSubmit(handleFormSubmit, handleError)
                     }}
                 />
                 {CHOICE_BASED_TYPES.includes(watchedQuestionType) && (
@@ -159,12 +201,12 @@ export default function QuestionModal({
                         color="inherit"
                         size="small"
                         variant="outlined"
-                        onClick={onClose}
+                        onClick={handleCloseModal}
                     >
                         Cancel
                     </CommonButton>
                     <CommonButton
-                        disabled={editingQuestion !== null && !isDirty}
+                        disabled={editingQuestion !== null && !draftGuard.hasRealChanges}
                         form={QUESTION_FORM_ID}
                         size="small"
                         type="submit"
@@ -176,6 +218,16 @@ export default function QuestionModal({
                     </CommonButton>
                 </div>
             </div>
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
+            />
         </CommonModal>
     );
 }

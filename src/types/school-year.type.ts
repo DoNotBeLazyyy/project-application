@@ -142,6 +142,7 @@ export interface SaveAcademicYearCalendarPayload {
     p_max_units_per_term?: number;
     p_evaluation_scope?: EvaluationScope;
     p_holidays?: WizardCalendarExceptionItem[];
+    p_revert_history_id?: string | null;
 }
 
 export interface AcademicYearWizardFormValues {
@@ -169,6 +170,7 @@ export interface AcademicYearHistoryItem {
     changed_by_email: string | null;
     changed_by_role: string | null;
     change_summary: string | null;
+    is_active_version?: boolean;
     snapshot: {
         id?: string;
         code?: string;

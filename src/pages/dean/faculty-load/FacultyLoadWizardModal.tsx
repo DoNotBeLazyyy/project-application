@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import Step1FacultyLoadOverview from '@pages/dean/faculty-load/Step1FacultyLoadOverview';
 import Step2FacultyLoadSectionList from '@pages/dean/faculty-load/Step2FacultyLoadSectionList';
@@ -371,10 +372,26 @@ export default function FacultyLoadWizardModal({
         }
     }
 
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+
     function handleCancel() {
         // Revert staged to initial
         setStagedSections(initialSections);
         setIsReadOnly(true);
+    }
+
+    function handleRequestClose() {
+        if (!isReadOnly && hasChanges) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        onClose();
+    }
+
+    function handleConfirmDiscard() {
+        setIsDiscardOpen(false);
+        setStagedSections(initialSections);
+        onClose();
     }
 
     const currentStepConfig = FACULTY_LOAD_STEPS.find((s) => s.step === currentStep);
@@ -388,7 +405,7 @@ export default function FacultyLoadWizardModal({
                 fullWidth
                 maxWidth="lg"
                 open={open}
-                onClose={onClose}
+                onClose={handleRequestClose}
             >
                 {/* Stepper Top Header */}
                 <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
@@ -431,7 +448,7 @@ export default function FacultyLoadWizardModal({
                                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 title="Close"
                                 type="button"
-                                onClick={onClose}
+                                onClick={handleRequestClose}
                             >
                                 <XIcon className="w-5 h-5" />
                             </button>
@@ -647,6 +664,12 @@ export default function FacultyLoadWizardModal({
                     </div>
                 </CommonModal>
             )}
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={handleConfirmDiscard}
+            />
         </>
     );
 }

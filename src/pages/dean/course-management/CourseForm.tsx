@@ -356,9 +356,13 @@ export default function CourseForm({
     useEffect(() => {
         if (!hasInitializedDeptRef.current && isDean && userProfile?.department_id && !watchedDepartmentId && setValue) {
             hasInitializedDeptRef.current = true;
-            setValue('department_id', userProfile.department_id, { shouldValidate: false });
+            const controlAny = control as unknown as { _defaultValues?: Record<string, unknown> };
+            if (controlAny._defaultValues) {
+                controlAny._defaultValues.department_id = userProfile.department_id;
+            }
+            setValue('department_id', userProfile.department_id, { shouldValidate: false, shouldDirty: false });
         }
-    }, [isDean, userProfile, watchedDepartmentId, setValue]);
+    }, [isDean, userProfile, watchedDepartmentId, setValue, control]);
 
     useEffect(() => {
         let isMounted = true;
@@ -381,7 +385,11 @@ export default function CourseForm({
     // System generate course code for new course creation
     useEffect(() => {
         if (excludeCourseId || !setValue) return;
-        if (!watchedDepartmentId || !watchedTitle) return;
+        if (!watchedTitle?.trim()) {
+            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+            return;
+        }
+        if (!watchedDepartmentId) return;
 
         const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
         const generatedCode = generateCourseCode({
@@ -463,12 +471,12 @@ export default function CourseForm({
             gridCols: 3
         },
         {
-            disabled: disabled || Boolean(isDean && userProfile?.department_id),
+            disabled: disabled || isDean,
             fieldProps: { helperText: 'Department that owns this course' },
             label: 'Department',
             name: 'department_id',
-            options: isDean && userProfile?.department_id
-                ? departmentOptions.filter((d) => d.value === userProfile.department_id)
+            options: isDean
+                ? departmentOptions.filter((d) => d.value === userProfile?.department_id)
                 : departmentOptions,
             rules: disabled
                 ? undefined

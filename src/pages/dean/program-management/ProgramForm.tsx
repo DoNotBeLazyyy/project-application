@@ -46,16 +46,24 @@ export default function ProgramForm({
     useEffect(() => {
         if (!hasInitializedDeptRef.current && isDean && userProfile?.department_id && !getValues('department_id')) {
             hasInitializedDeptRef.current = true;
-            setValue('department_id', userProfile.department_id, { shouldValidate: false });
+            const controlAny = control as unknown as { _defaultValues?: Record<string, unknown> };
+            if (controlAny._defaultValues) {
+                controlAny._defaultValues.department_id = userProfile.department_id;
+            }
+            setValue('department_id', userProfile.department_id, { shouldValidate: false, shouldDirty: false });
         }
-    }, [isDean, userProfile, setValue, getValues]);
+    }, [isDean, userProfile, setValue, getValues, control]);
 
     useEffect(() => {
-        if (!programId && programName) {
-            const currentCode = getValues('code');
-            const generated = generateProgramCode(programName);
-            if (generated && (!currentCode || currentCode !== generated)) {
-                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+        if (!programId) {
+            if (programName) {
+                const currentCode = getValues('code');
+                const generated = generateProgramCode(programName);
+                if (generated && (!currentCode || currentCode !== generated)) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                }
+            } else {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
         }
     }, [programName, programId, setValue, getValues]);
@@ -84,12 +92,12 @@ export default function ProgramForm({
             gridCols: 1
         },
         {
-            disabled: disabled || Boolean(isDean && userProfile?.department_id),
+            disabled: disabled || isDean,
             fieldProps: { helperText: 'Department that owns this program' },
             label: 'Department',
             name: 'department_id',
-            options: isDean && userProfile?.department_id
-                ? departmentOptions.filter((d) => d.value === userProfile.department_id)
+            options: isDean
+                ? departmentOptions.filter((d) => d.value === userProfile?.department_id)
                 : departmentOptions,
             rules: disabled
                 ? undefined

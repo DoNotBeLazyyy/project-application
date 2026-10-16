@@ -2,7 +2,10 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonModal from '@components/modal/CommonModal';
 import BulkImportModal from '@components/modal/BulkImportModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { useFormDraft } from '@hooks/useFormDraft';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -216,6 +219,44 @@ export default function CurriculumMapManagement({
         defaultValues: defaultFormValues
     });
 
+    const updateDefaultValues = useMemo<CurriculumMapFormValues>(() => {
+        if (!selectedEntry) return defaultFormValues;
+        return {
+            course_id: selectedEntry.course_id,
+            year_level: String(selectedEntry.year_level),
+            term_type_id: selectedEntry.term_type_id,
+            sequence: String(selectedEntry.sequence),
+            is_elective: selectedEntry.is_elective,
+            lecture_units: String(selectedEntry.lecture_units ?? 0),
+            laboratory_units: String(selectedEntry.laboratory_units ?? 0),
+            units: String(selectedEntry.units ?? selectedEntry.total_units ?? 0),
+            type_units: selectedEntry.type_units ?? {}
+        };
+    }, [selectedEntry]);
+
+    const createDraft = useFormDraft<CurriculumMapFormValues>({
+        formId: CREATE_FORM_ID,
+        control: createMethods.control,
+        onRestore: (restoredValues) => {
+            createMethods.reset({ ...defaultFormValues, ...restoredValues }, { keepDefaultValues: true });
+        },
+        enabled: isCreateOpen
+    });
+
+    const updateDraft = useFormDraft<CurriculumMapFormValues>({
+        formId: selectedEntry?.id
+            ? `${UPDATE_FORM_ID}-${selectedEntry.id}`
+            : UPDATE_FORM_ID,
+        control: updateMethods.control,
+        onRestore: (restoredValues) => {
+            updateMethods.reset({ ...updateDefaultValues, ...restoredValues }, { keepDefaultValues: true });
+        },
+        enabled: isUpdateOpen
+    });
+
+    const [isDiscardCreateOpen, setIsDiscardCreateOpen] = useState(false);
+    const [isDiscardUpdateOpen, setIsDiscardUpdateOpen] = useState(false);
+
     useEffect(() => {
         if (initialEntries && initialEntries.length > 0 && entries.length === 0) {
             setEntries(initialEntries);
@@ -269,6 +310,23 @@ export default function CurriculumMapManagement({
         setIsCreateOpen(true);
     }
 
+    function handleRequestCloseCreate() {
+        if (createDraft.hasRealChanges) {
+            setIsDiscardCreateOpen(true);
+            return;
+        }
+        createDraft.clearDraft();
+        setIsCreateOpen(false);
+        createMethods.reset(defaultFormValues);
+    }
+
+    function handleConfirmDiscardCreate() {
+        createDraft.clearDraft();
+        setIsDiscardCreateOpen(false);
+        setIsCreateOpen(false);
+        createMethods.reset(defaultFormValues);
+    }
+
     function handleOpenView(entry: CurriculumMapEntry) {
         setSelectedEntry(entry);
         updateMethods.reset({
@@ -286,9 +344,19 @@ export default function CurriculumMapManagement({
     }
 
     function handleCloseUpdate() {
+        updateDraft.clearDraft();
+        setIsDiscardUpdateOpen(false);
         setIsUpdateOpen(false);
         setSelectedEntry(null);
         updateMethods.reset(defaultFormValues);
+    }
+
+    function handleRequestCloseUpdate() {
+        if (updateDraft.hasRealChanges) {
+            setIsDiscardUpdateOpen(true);
+            return;
+        }
+        handleCloseUpdate();
     }
 
     function handleCloseView() {
@@ -463,6 +531,8 @@ export default function CurriculumMapManagement({
             }
         }
 
+        createDraft.clearDraft();
+        setIsDiscardCreateOpen(false);
         setIsCreateOpen(false);
         createMethods.reset(defaultFormValues);
     }
@@ -994,9 +1064,7 @@ export default function CurriculumMapManagement({
                 }}
                 maxWidth="md"
                 open={isCreateOpen}
-                onClose={function() {
-                    setIsCreateOpen(false);
-                }}
+                onClose={handleRequestCloseCreate}
             >
                 <div className="flex flex-col gap-4">
                     <CurriculumMapForm
@@ -1016,9 +1084,7 @@ export default function CurriculumMapManagement({
                             color="inherit"
                             size="small"
                             variant="outlined"
-                            onClick={function() {
-                                setIsCreateOpen(false);
-                            }}
+                            onClick={handleRequestCloseCreate}
                         >
                             Cancel
                         </CommonButton>
@@ -1043,7 +1109,7 @@ export default function CurriculumMapManagement({
                 }}
                 maxWidth="md"
                 open={isUpdateOpen}
-                onClose={handleCloseUpdate}
+                onClose={handleRequestCloseUpdate}
             >
                 <div className="flex flex-col gap-4">
                     <CurriculumMapForm
@@ -1064,12 +1130,12 @@ export default function CurriculumMapManagement({
                             color="inherit"
                             size="small"
                             variant="outlined"
-                            onClick={handleCloseUpdate}
+                            onClick={handleRequestCloseUpdate}
                         >
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!updateMethods.formState.isDirty}
+                            disabled={!updateDraft.hasRealChanges}
                             form={UPDATE_FORM_ID}
                             size="small"
                             type="submit"
@@ -1080,6 +1146,29 @@ export default function CurriculumMapManagement({
                     </div>
                 </div>
             </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardCreateOpen}
+                onContinueEditing={() => setIsDiscardCreateOpen(false)}
+                onDiscard={handleConfirmDiscardCreate}
+            />
+
+            <DiscardChangesPromptModal
+                open={isDiscardUpdateOpen}
+                onContinueEditing={() => setIsDiscardUpdateOpen(false)}
+                onDiscard={handleCloseUpdate}
+            />
+
+            <DraftRecoveryPromptModal
+                open={createDraft.isPromptOpen}
+                onContinue={createDraft.handleContinue}
+                onDiscard={createDraft.handleDiscard}
+            />
+            <DraftRecoveryPromptModal
+                open={updateDraft.isPromptOpen}
+                onContinue={updateDraft.handleContinue}
+                onDiscard={updateDraft.handleDiscard}
+            />
             <CommonModal
                 cardProps={{
                     cardHeaderProps: {

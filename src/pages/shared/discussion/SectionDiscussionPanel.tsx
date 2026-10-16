@@ -1,7 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonTextarea from '@components/textarea/CommonTextarea';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import DiscussionThreadView from '@pages/shared/discussion/DiscussionThreadView';
 import {
@@ -20,7 +23,7 @@ import { useToastStore } from '@stores/toast.store';
 import { DiscussionAttachmentPayload, DiscussionThreadRow } from '@type/discussion.type';
 import { formatDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
-import { ChangeEvent, ClipboardEvent, useEffect, useState } from 'react';
+import { ChangeEvent, ClipboardEvent, useEffect, useMemo, useState } from 'react';
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const COMPOSE_TEXTAREA_SX = {
@@ -32,6 +35,11 @@ const COMPOSE_TEXTAREA_SX = {
     }
 };
 
+const DEFAULT_DISCUSSION_DRAFT = {
+    title: '',
+    body: ''
+};
+
 interface SectionDiscussionPanelProps {
     sectionId: string;
 }
@@ -41,11 +49,30 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
     const [filterMode, setFilterMode] = useState<'All' | 'Pinned' | 'Unanswered' | 'Resolved'>('All');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [files, setFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const showToast = useToastStore((s) => s.showToast);
+
+    const currentDraftValues = useMemo(() => ({
+        title,
+        body
+    }), [title, body]);
+
+    const draftGuard = useObjectDraft({
+        formId: `section-discussion-create-${sectionId}`,
+        values: currentDraftValues,
+        defaultValues: DEFAULT_DISCUSSION_DRAFT,
+        onRestore: (restored) => {
+            setTitle(restored.title ?? '');
+            setBody(restored.body ?? '');
+        },
+        enabled: isCreateOpen
+    });
+
+    const hasRealChanges = draftGuard.hasRealChanges || files.length > 0;
 
     async function loadThreads() {
         const result = await listSectionThreads(sectionId, 1, 50, '', []);
@@ -66,11 +93,21 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     });
 
     function resetComposer() {
+        draftGuard.clearDraft();
+        setIsDiscardOpen(false);
         setIsCreateOpen(false);
         setTitle('');
         setBody('');
         setFiles([]);
         setIsUploading(false);
+    }
+
+    function handleRequestCloseComposer() {
+        if (hasRealChanges) {
+            setIsDiscardOpen(true);
+            return;
+        }
+        resetComposer();
     }
 
     function handleAddFiles(added: File[]) {
@@ -267,7 +304,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                 fullWidth
                 maxWidth="sm"
                 open={isCreateOpen}
-                onClose={resetComposer}
+                onClose={handleRequestCloseComposer}
             >
                 <div className="flex flex-col bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden p-5 sm:p-6 gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
@@ -281,7 +318,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                         </div>
                         <button
                             type="button"
-                            onClick={resetComposer}
+                            onClick={handleRequestCloseComposer}
                             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                         >
                             <XIcon size={18} weight="bold" />
@@ -333,7 +370,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                         <CommonButton
                             size="small"
                             variant="outlined"
-                            onClick={resetComposer}
+                            onClick={handleRequestCloseComposer}
                             disabled={isUploading}
                         >
                             Cancel
@@ -350,6 +387,18 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     </div>
                 </div>
             </CommonModal>
+
+            <DiscardChangesPromptModal
+                open={isDiscardOpen}
+                onContinueEditing={() => setIsDiscardOpen(false)}
+                onDiscard={resetComposer}
+            />
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import { useFormDraft } from '@hooks/useFormDraft';
@@ -91,6 +92,7 @@ export default function SectionWizardModal({
     const [isSaving, setIsSaving] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(initialReadOnly);
     const [isEditable, setIsEditable] = useState(true);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
     const methods = useForm<SectionFormValues>({
         ...DEFAULT_FORM_OPTIONS,
@@ -111,6 +113,7 @@ export default function SectionWizardModal({
             reset(defaultFormValues);
             setIsReadOnly(initialReadOnly);
             setIsEditable(true);
+            setIsConfirmCloseOpen(false);
             return;
         }
 
@@ -341,6 +344,22 @@ export default function SectionWizardModal({
 
     const currentStepConfig = SECTION_WIZARD_STEPS.find((s) => s.step === currentStep);
 
+    function handleCloseModal() {
+        if (isSaving) return;
+        if (!isReadOnly && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardAndClose() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        onClose();
+    }
+
     return (
         <CommonModal
             cardProps={{
@@ -349,7 +368,7 @@ export default function SectionWizardModal({
             fullWidth
             maxWidth="lg"
             open={open}
-            onClose={onClose}
+            onClose={handleCloseModal}
         >
             {/* Modal Top Header (Exactly matching Academic Year Stepper Modal Header) */}
             <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
@@ -396,7 +415,7 @@ export default function SectionWizardModal({
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                             title="Close"
                             type="button"
-                            onClick={onClose}
+                            onClick={handleCloseModal}
                         >
                             <XIcon className="w-5 h-5" />
                         </button>
@@ -510,7 +529,7 @@ export default function SectionWizardModal({
                                     color="primary"
                                     size="medium"
                                     variant="contained"
-                                    onClick={onClose}
+                                    onClick={handleCloseModal}
                                 >
                             Close
                                 </CommonButton>
@@ -538,6 +557,11 @@ export default function SectionWizardModal({
                 open={draftGuard.isPromptOpen}
                 onContinue={draftGuard.handleContinue}
                 onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardAndClose}
             />
         </CommonModal>
     );

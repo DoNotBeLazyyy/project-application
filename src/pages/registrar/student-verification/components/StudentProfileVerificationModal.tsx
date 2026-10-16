@@ -5,7 +5,10 @@ import CommonButton from '@components/button/CommonButton';
 import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
+import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
+import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import { useObjectDraft } from '@hooks/useFormDraft';
 import {
     BellIcon,
     CheckCircleIcon,
@@ -21,7 +24,7 @@ import { approveStudentProfileRequest, rejectStudentProfileRequest } from '@serv
 import { useToastStore } from '@stores/toast.store';
 import { ProfileFormValues } from '@type/profile.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface StudentProfileVerificationModalProps {
     open: boolean;
@@ -72,13 +75,41 @@ const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
     'year_level'
 ];
 
+function buildInitialStudentEditableValues(request: StudentProfileRequestRow | null): ProfileFormValues {
+    const requested = (request?.requested_changes || {}) as Record<string, any>;
+    const approved = (request?.approved_changes || {}) as Record<string, any>;
+    const baseValues: Record<string, any> = request?.status === 'Approved with Edits' ? approved : requested;
+
+    return {
+        address_line1: baseValues.address_line1 || '',
+        address_line2: baseValues.address_line2 || '',
+        city: baseValues.city || '',
+        civil_status: baseValues.civil_status || '',
+        date_of_birth: baseValues.date_of_birth || '',
+        first_name: baseValues.first_name || '',
+        gender: baseValues.gender || '',
+        last_name: baseValues.last_name || '',
+        middle_name: baseValues.middle_name || '',
+        mobile_number: baseValues.mobile_number || '',
+        nationality: baseValues.nationality || '',
+        postal_code: baseValues.postal_code || '',
+        preferred_name: baseValues.preferred_name || '',
+        province: baseValues.province || '',
+        suffix: baseValues.suffix || '',
+        program_id: baseValues.program_id || '',
+        program_code: baseValues.program_code || '',
+        program_name: baseValues.program_name || '',
+        year_level: baseValues.year_level ? String(baseValues.year_level) : ''
+    };
+}
+
 export default function StudentProfileVerificationModal({
     open,
     onClose,
     request,
     onSuccess
 }: StudentProfileVerificationModalProps) {
-    const [editableValues, setEditableValues] = useState<ProfileFormValues>({} as ProfileFormValues);
+    const [editableValues, setEditableValues] = useState<ProfileFormValues>(() => buildInitialStudentEditableValues(request));
     const [registrarNotes, setRegistrarNotes] = useState('');
     const [isRejectOpen, setIsRejectOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
@@ -86,35 +117,43 @@ export default function StudentProfileVerificationModal({
     const [isNotifyOpen, setIsNotifyOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showOnlyChanged, setShowOnlyChanged] = useState(true);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+
+    const initialDraftValues = useMemo(() => ({
+        editableValues: buildInitialStudentEditableValues(request),
+        isFalseInfoFlag: false,
+        registrarNotes: request?.registrar_notes || '',
+        rejectReason: ''
+    }), [request]);
+
+    const currentDraftValues = useMemo(() => ({
+        editableValues,
+        isFalseInfoFlag,
+        registrarNotes,
+        rejectReason
+    }), [editableValues, isFalseInfoFlag, registrarNotes, rejectReason]);
+
+    const isPending = request?.status === 'Pending';
+
+    const draftGuard = useObjectDraft({
+        defaultValues: initialDraftValues,
+        enabled: open && Boolean(isPending && request?.id),
+        formId: request?.id ? `student-profile-verification-${request.id}` : 'student-profile-verification',
+        onRestore: (restored) => {
+            if (restored.editableValues) setEditableValues(restored.editableValues);
+            if (restored.registrarNotes !== undefined) setRegistrarNotes(restored.registrarNotes);
+            if (restored.isFalseInfoFlag !== undefined) setIsFalseInfoFlag(restored.isFalseInfoFlag);
+            if (restored.rejectReason !== undefined) {
+                setRejectReason(restored.rejectReason);
+                if (restored.rejectReason.trim() || restored.isFalseInfoFlag) setIsRejectOpen(true);
+            }
+        },
+        values: currentDraftValues
+    });
 
     useEffect(() => {
         if (!request) return;
-        const requested = (request.requested_changes || {}) as Record<string, any>;
-        const approved = (request.approved_changes || {}) as Record<string, any>;
-        const baseValues: Record<string, any> = request.status === 'Approved with Edits' ? approved : requested;
-
-        setEditableValues({
-            address_line1: baseValues.address_line1 || '',
-            address_line2: baseValues.address_line2 || '',
-            city: baseValues.city || '',
-            civil_status: baseValues.civil_status || '',
-            date_of_birth: baseValues.date_of_birth || '',
-            first_name: baseValues.first_name || '',
-            gender: baseValues.gender || '',
-            last_name: baseValues.last_name || '',
-            middle_name: baseValues.middle_name || '',
-            mobile_number: baseValues.mobile_number || '',
-            nationality: baseValues.nationality || '',
-            postal_code: baseValues.postal_code || '',
-            preferred_name: baseValues.preferred_name || '',
-            province: baseValues.province || '',
-            suffix: baseValues.suffix || '',
-            program_id: baseValues.program_id || '',
-            program_code: baseValues.program_code || '',
-            program_name: baseValues.program_name || '',
-            year_level: baseValues.year_level ? String(baseValues.year_level) : ''
-        });
-
+        setEditableValues(buildInitialStudentEditableValues(request));
         setRegistrarNotes(request.registrar_notes || '');
         setIsRejectOpen(false);
         setRejectReason('');
@@ -124,7 +163,6 @@ export default function StudentProfileVerificationModal({
 
     if (!request) return null;
 
-    const isPending = request.status === 'Pending';
     const current = request.current_values || {};
     const requested = request.requested_changes || {};
 
@@ -141,6 +179,27 @@ export default function StudentProfileVerificationModal({
     });
 
     const fieldsToDisplay = showOnlyChanged ? changedFields : DISPLAY_FIELDS;
+
+    function handleAttemptClose() {
+        if (isSubmitting) return;
+        if (isPending && draftGuard.hasRealChanges) {
+            setIsConfirmCloseOpen(true);
+            return;
+        }
+        draftGuard.clearDraft();
+        onClose();
+    }
+
+    function handleDiscardChanges() {
+        setIsConfirmCloseOpen(false);
+        draftGuard.clearDraft();
+        setEditableValues(buildInitialStudentEditableValues(request));
+        setRegistrarNotes(request?.registrar_notes || '');
+        setRejectReason('');
+        setIsFalseInfoFlag(false);
+        setIsRejectOpen(false);
+        onClose();
+    }
 
     function handleFieldChange(field: keyof ProfileFormValues, value: string) {
         setEditableValues((prev) => ({
@@ -166,6 +225,7 @@ export default function StudentProfileVerificationModal({
         setIsSubmitting(false);
 
         if (!result.error) {
+            draftGuard.clearDraft();
             useToastStore.getState().showToast(
                 hasRegistrarEdits
                     ? 'Student profile changes approved with registrar adjustments and recorded in Registrar Log.'
@@ -189,6 +249,7 @@ export default function StudentProfileVerificationModal({
         setIsSubmitting(false);
 
         if (!result.error) {
+            draftGuard.clearDraft();
             useToastStore.getState().showToast(
                 isFalseInfoFlag
                     ? 'Profile change request rejected as false information and recorded in Registrar Log.'
@@ -207,14 +268,14 @@ export default function StudentProfileVerificationModal({
                 fullWidth
                 maxWidth="lg"
                 open={open}
-                onClose={onClose}
+                onClose={handleAttemptClose}
                 cardProps={{
                     className: 'flex flex-col h-[100dvh] sm:h-[90dvh] max-h-[100dvh] sm:max-h-[90dvh] w-full max-w-5xl overflow-hidden',
                     defaultActionProps: {
-                        onClick: onClose
+                        onClick: handleAttemptClose
                     },
                     cardHeaderProps: {
-                        action: <ModalCloseIcon onClick={onClose} />,
+                        action: <ModalCloseIcon onClick={handleAttemptClose} />,
                         className: 'shrink-0 p-3.5 sm:p-5 pb-2 sm:pb-3',
                         title: `Verify Student Profile: ${request.student_name}`,
                         subheader: `Student No: ${request.student_number} • Submitted ${new Date(request.created_at).toLocaleString()}`
@@ -615,7 +676,7 @@ export default function StudentProfileVerificationModal({
                         disabled={isSubmitting}
                         size="small"
                         variant="outlined"
-                        onClick={onClose}
+                        onClick={handleAttemptClose}
                         className="order-2 sm:order-1"
                     >
                         Close
@@ -659,6 +720,18 @@ export default function StudentProfileVerificationModal({
                 onClose={() => setIsNotifyOpen(false)}
                 onSuccess={() => onSuccess?.()}
             />
+
+            <DraftRecoveryPromptModal
+                open={draftGuard.isPromptOpen}
+                onContinue={draftGuard.handleContinue}
+                onDiscard={draftGuard.handleDiscard}
+            />
+            <DiscardChangesPromptModal
+                open={isConfirmCloseOpen}
+                onContinueEditing={() => setIsConfirmCloseOpen(false)}
+                onDiscard={handleDiscardChanges}
+            />
         </>
     );
 }
+

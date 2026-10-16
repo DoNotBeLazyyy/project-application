@@ -571,14 +571,14 @@ export default function AcademicYearWizardModal({
     }
 
     function handleRequestClose() {
-        if (!isReadOnly && isDirty) {
+        if (isSaving) return;
+        if (!isReadOnly && draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
         } else {
+            draftGuard.clearDraft();
             onClose();
         }
     }
-
-    const currentStepConfig = WIZARD_STEPS.find((s) => s.step === currentStep);
 
     return (
         <CommonModal
@@ -772,11 +772,6 @@ export default function AcademicYearWizardModal({
                     Back
                 </CommonButton>
 
-                {/* Step indicator on desktop */}
-                <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 6 — {currentStepConfig?.title}
-                </div>
-
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
                     {currentStep < 6 ? (
@@ -887,6 +882,7 @@ export default function AcademicYearWizardModal({
                         color: 'error',
                         onClick: () => {
                             setIsConfirmCloseOpen(false);
+                            draftGuard.clearDraft();
                             onClose();
                         }
                     }

@@ -283,9 +283,11 @@ export default function EvaluationWizardModal({
     }
 
     function handleCloseModal() {
-        if (!readOnly && methods.formState.isDirty) {
+        if (isSaving) return;
+        if (!readOnly && draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
         } else {
+            draftGuard.clearDraft();
             setCurrentStep(1);
             onClose();
         }
@@ -629,6 +631,7 @@ export default function EvaluationWizardModal({
                         color: 'error',
                         onClick: () => {
                             setIsConfirmCloseOpen(false);
+                            draftGuard.clearDraft();
                             setCurrentStep(1);
                             onClose();
                         }

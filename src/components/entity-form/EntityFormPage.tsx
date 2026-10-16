@@ -127,12 +127,20 @@ export default function EntityFormPage<TValues extends FieldValues>({
         formErrors(errors, methods);
     });
 
+    const draftGuard = useFormDraft({
+        control,
+        enabled: mode !== 'view' && !isLoading,
+        formId: formId || `entity-form-${id || 'new'}`
+    });
+
     function navigateBack() {
+        draftGuard.clearDraft();
         reset();
         navigate(backTo);
     }
 
     function exitEditing() {
+        draftGuard.clearDraft();
         reset();
 
         if (isCreate || !fetchById) {
@@ -149,21 +157,15 @@ export default function EntityFormPage<TValues extends FieldValues>({
     }
 
     const backGuard = useUnsavedChangesGuard({
-        isDirty: formState.isDirty,
+        isDirty: draftGuard.hasRealChanges,
         onDiscard: navigateBack,
         onSave: saveThenNavigateBack
     });
 
     const cancelGuard = useUnsavedChangesGuard({
-        isDirty: formState.isDirty,
+        isDirty: draftGuard.hasRealChanges,
         onDiscard: exitEditing,
         onSave: submitHandler
-    });
-
-    const draftGuard = useFormDraft({
-        control,
-        enabled: mode !== 'view' && !isLoading,
-        formId: formId || `entity-form-${id || 'new'}`
     });
 
     return (
@@ -214,7 +216,7 @@ export default function EntityFormPage<TValues extends FieldValues>({
                                 Cancel
                             </CommonButton>
                             <CommonButton
-                                disabled={(!isCreate && !formState.isDirty) || formState.isSubmitting}
+                                disabled={(!isCreate && !draftGuard.hasRealChanges) || formState.isSubmitting}
                                 loading={formState.isSubmitting}
                                 form={formId}
                                 size="small"

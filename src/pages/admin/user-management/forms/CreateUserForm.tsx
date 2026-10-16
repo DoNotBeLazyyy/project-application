@@ -1,10 +1,9 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useRoleOptions } from '@pages/admin/role-management/hooks/useRoleOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { AddUserFormValues } from '@type/user.type';
-import { Control, useWatch } from 'react-hook-form';
+import { Control } from 'react-hook-form';
 
 interface CreateUserFormProps extends ComponentPropsForm {
     control: Control<AddUserFormValues>;
@@ -17,8 +16,6 @@ export default function CreateUserForm({
     ...formProps
 }: CreateUserFormProps) {
     const { roleOptions } = useRoleOptions();
-    const { departmentOptions } = useDepartmentOptions();
-    const selectedRole = useWatch({ control, name: 'role_code' });
 
     const fields: FormFieldConfig<AddUserFormValues>[] = [
         {
@@ -51,18 +48,6 @@ export default function CreateUserForm({
             rules: { required: 'Required' }
         }
     ];
-
-    if (selectedRole === 'Dean') {
-        fields.push({
-            disabled,
-            label: 'Department',
-            name: 'department_id',
-            type: 'select',
-            options: departmentOptions,
-            rules: { required: 'Department is required for Dean' },
-            fieldProps: { helperText: 'Department governed by this Dean.' }
-        });
-    }
 
     return (
         <CommonForm
