@@ -150,6 +150,9 @@ export default function Step5ThresholdsConfig({
                                                 • Max GWA: {item.max_gwa}
                                             </span>
                                         )}
+                                        <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${item.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-slate-400'}`}>
+                                            {item.is_active ? 'Active' : 'Inactive'}
+                                        </span>
                                     </div>
 
                                     <div className="flex items-center gap-1.5 shrink-0">
@@ -200,9 +203,9 @@ export default function Step5ThresholdsConfig({
                                         ? 'hidden'
                                         : 'flex flex-col gap-4'}>
 
-                                    {/* Row 2: Category and Threshold Name */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
+                                    {/* Row 2: Category, Threshold Name, and Status */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                                        <div className="sm:col-span-4 md:col-span-3">
                                             <FormLabel
                                                 description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
                                                 isRequired
@@ -225,7 +228,7 @@ export default function Step5ThresholdsConfig({
                                             </select>
                                         </div>
 
-                                        <div>
+                                        <div className="sm:col-span-5 md:col-span-6">
                                             <CommonInput
                                                 description="Official title revealed on student rank lists, certificates, and academic summary cards."
                                                 disabled={disabled}
@@ -251,23 +254,8 @@ export default function Step5ThresholdsConfig({
                                                 }}
                                             />
                                         </div>
-                                    </div>
 
-                                    {/* Row 3: Unique Code and Status */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-                                        <div>
-                                            <CommonInput
-                                                description="System-generated unique academic threshold code."
-                                                disabled={true}
-                                                fullWidth
-                                                label="Unique Code"
-                                                placeholder="e.g. summa_cum_laude"
-                                                size="small"
-                                                value={item.code}
-                                            />
-                                        </div>
-
-                                        <div>
+                                        <div className="sm:col-span-3">
                                             <FormLabel
                                                 description="Toggles whether this threshold is active for student evaluations."
                                                 label="Status"
