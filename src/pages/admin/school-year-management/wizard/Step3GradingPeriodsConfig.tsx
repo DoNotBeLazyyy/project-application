@@ -647,11 +647,13 @@ export default function Step3GradingPeriodsConfig({
                                                                 <ListPlusIcon className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
                                                                 Grading Component Breakdown
                                                             </span>
-                                                            <CommonInfoTooltip
-                                                                className="shrink-0"
-                                                                content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
-                                                                size={13}
-                                                            />
+                                                            <span className="inline-flex align-middle ml-1 whitespace-nowrap">
+                                                                <CommonInfoTooltip
+                                                                    className="shrink-0"
+                                                                    content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
+                                                                    size={13}
+                                                                />
+                                                            </span>
                                                         </div>
 
                                                         {/* Simple 100/100 badge - positioned on right side in mobile and desktop */}
