@@ -286,16 +286,16 @@ export default function SystemSettings() {
                         )
                     }
                     <div className="flex flex-col gap-2 items-center sm:items-start">
-                        <div className="flex gap-(--mui-tokens-spacing-3) items-center">
-                            <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                                Institution Logo
-                            </h2>
-                            <CommonInfoTooltip
-                                content="JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed documents."
-                                label="About the institution logo"
-                                size={16}
-                            />
-                        </div>
+                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                            Institution Logo
+                            <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                                <CommonInfoTooltip
+                                    content="JPG, PNG, WEBP, or SVG. The logo appears on portal headers and printed documents."
+                                    label="About the institution logo"
+                                    size={16}
+                                />
+                            </span>
+                        </h2>
                         <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                             <CommonButton
                                 loading={isUploadingLogo}

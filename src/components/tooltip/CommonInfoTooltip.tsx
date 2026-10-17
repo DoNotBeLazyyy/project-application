@@ -205,7 +205,7 @@ export default function CommonInfoTooltip({
                     aria-label={label}
                     className={
                         classMerge(
-                            'cursor-pointer inline-flex items-center justify-center rounded-full shrink-0 transition-colors',
+                            'cursor-pointer inline-flex items-center justify-center rounded-full shrink-0 transition-colors align-middle',
                             idleClassName,
                             isOpen && openClassName,
                             className
