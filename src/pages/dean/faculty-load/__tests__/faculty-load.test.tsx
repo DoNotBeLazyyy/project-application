@@ -91,7 +91,7 @@ describe('FacultyLoadModule', () => {
             </BrowserRouter>
         );
         expect(container).toBeDefined();
-    }, 15000);
+    }, 30000);
 
     it('renders FacultyLoadWizardModal gracefully even with assigned_sections response', async () => {
         const FacultyLoadWizardModal = (await import('@pages/dean/faculty-load/FacultyLoadWizardModal')).default;

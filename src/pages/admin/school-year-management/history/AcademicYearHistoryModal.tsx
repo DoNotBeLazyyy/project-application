@@ -1703,12 +1703,14 @@ function StepBaseContent({
                                                                     </div>
 
                                                                     <div className="space-y-1.5 bg-slate-100/70 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-slate-200/80 dark:border-zinc-700/50">
-                                                                        <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                                                        <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                                                             <span>Grade Encoding Range</span>
-                                                                            <CommonInfoTooltip
-                                                                                content="Official window during which faculty members can encode and submit grades for this period."
-                                                                                size={12}
-                                                                            />
+                                                                            <span className="inline-flex align-middle ml-1 whitespace-nowrap">
+                                                                                <CommonInfoTooltip
+                                                                                    content="Official window during which faculty members can encode and submit grades for this period."
+                                                                                    size={12}
+                                                                                />
+                                                                            </span>
                                                                         </div>
                                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                             <div>
@@ -1741,11 +1743,13 @@ function StepBaseContent({
                                                                                 <ListPlusIcon className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
                                                                                 Grading Component Breakdown
                                                                             </span>
-                                                                            <CommonInfoTooltip
-                                                                                className="shrink-0"
-                                                                                content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
-                                                                                size={13}
-                                                                            />
+                                                                            <span className="inline-flex align-middle ml-1 whitespace-nowrap">
+                                                                                <CommonInfoTooltip
+                                                                                    className="shrink-0"
+                                                                                    content="Component weight breakdown for this grading period (e.g., Quizzes: 30%, Performance Tasks: 30%, Major Exam: 40%). Total component weight must equal 100%."
+                                                                                    size={13}
+                                                                                />
+                                                                            </span>
                                                                         </div>
 
                                                                         <span
