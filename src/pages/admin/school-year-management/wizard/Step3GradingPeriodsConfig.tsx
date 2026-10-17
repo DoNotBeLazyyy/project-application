@@ -571,9 +571,11 @@ export default function Step3GradingPeriodsConfig({
                                             <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/40 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {/* Major Examination Days */}
                                                 <div className="space-y-1.5 bg-slate-100/70 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-slate-200/80 dark:border-zinc-700/50">
-                                                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                                    <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                                         <span>Major Examination Day(s)</span>
-                                                        <CommonInfoTooltip content="Date or date range reserved for major examinations (e.g. Midterm Exams, Final Exams)." size={12} />
+                                                        <span className="inline-flex align-middle ml-1 whitespace-nowrap">
+                                                            <CommonInfoTooltip content="Date or date range reserved for major examinations (e.g. Midterm Exams, Final Exams)." size={12} />
+                                                        </span>
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
@@ -603,9 +605,11 @@ export default function Step3GradingPeriodsConfig({
 
                                                 {/* Grade Encoding Range */}
                                                 <div className="space-y-1.5 bg-slate-100/70 dark:bg-zinc-800/60 p-2.5 rounded-lg border border-slate-200/80 dark:border-zinc-700/50">
-                                                    <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                                                    <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                                         <span>Grade Encoding Range</span>
-                                                        <CommonInfoTooltip content="Official window during which faculty members can encode and submit grades for this period." size={12} />
+                                                        <span className="inline-flex align-middle ml-1 whitespace-nowrap">
+                                                            <CommonInfoTooltip content="Official window during which faculty members can encode and submit grades for this period." size={12} />
+                                                        </span>
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>

@@ -297,9 +297,11 @@ export default function Step1SchoolYearInfo({
             <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <ShieldCheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span>Set as Active Academic Year</span>
-                        <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        Set as Active Academic Year
+                        <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                            <CommonInfoTooltip content="When active, new student enrollments, curriculum schedules, and faculty grade submissions default to this academic year." size={14} />
+                        </span>
                     </span>
                 </div>
                 <ValidCommonCheckbox
