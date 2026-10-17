@@ -139,14 +139,14 @@ export default function SpecialGradeForm({
             />
 
             <div className="flex flex-col gap-3">
-                <div className="flex gap-1.5 items-center">
-                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                        What this mark means
+                <div className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                    What this mark means
+                    <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                        <CommonInfoTooltip
+                            content="These settings decide what happens to a student who carries this mark. They apply the moment the mark is on the record, whether the system proposed it or a person typed it in."
+                            label="About these settings"
+                        />
                     </span>
-                    <CommonInfoTooltip
-                        content="These settings decide what happens to a student who carries this mark. They apply the moment the mark is on the record, whether the system proposed it or a person typed it in."
-                        label="About these settings"
-                    />
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -212,16 +212,16 @@ export default function SpecialGradeForm({
             </div>
 
             <div className="flex flex-col gap-3">
-                <div className="flex gap-1.5 items-center">
-                    <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                        Conditions
+                <div className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                    Conditions
+                    <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                        <CommonInfoTooltip
+                            content={isAutoDetected
+                                ? CONDITIONS_HELP
+                                : CONDITIONS_HELP_INACTIVE}
+                            label="How conditions are used"
+                        />
                     </span>
-                    <CommonInfoTooltip
-                        content={isAutoDetected
-                            ? CONDITIONS_HELP
-                            : CONDITIONS_HELP_INACTIVE}
-                        label="How conditions are used"
-                    />
                 </div>
 
                 <div className="flex flex-col gap-1">
