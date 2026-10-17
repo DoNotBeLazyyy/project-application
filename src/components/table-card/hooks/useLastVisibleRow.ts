@@ -29,7 +29,7 @@ export function useLastVisibleRow({
     useEffect(function() {
         const rootEl = root.current;
 
-        if (!rootEl || !enabled || rowCount === 0) {
+        if (!rootEl || !enabled || rowCount === 0 || typeof IntersectionObserver === 'undefined') {
             setLastVisibleRow(0);
             return;
         }

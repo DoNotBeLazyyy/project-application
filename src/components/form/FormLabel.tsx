@@ -56,37 +56,39 @@ export default function FormLabel({
         <span
             className={
                 classMerge(
-                    'flex font-medium gap-(--mui-tokens-spacing-2) items-center min-h-6 text-(--mui-palette-text-primary) text-sm',
+                    'inline-block font-medium min-h-6 text-(--mui-palette-text-primary) text-sm leading-snug',
                     className
                 )
             }
         >
-            <span className="min-w-0">
-                {label}
-            </span>
+            <span>{label}</span>
 
             {isRequired && (
-                <span className="text-(--mui-tokens-color-red-500) text-(length:--mui-tokens-fontSize-lg) leading-none">
+                <span className="text-(--mui-tokens-color-red-500) text-(length:--mui-tokens-fontSize-lg) leading-none ml-0.5 align-middle">
                     *
                 </span>
             )}
 
             {description && (
-                <CommonInfoTooltip
-                    content={description}
-                    label="About this field"
-                    size={16}
-                />
+                <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                    <CommonInfoTooltip
+                        content={description}
+                        label="About this field"
+                        size={16}
+                    />
+                </span>
             )}
 
             {errorMessage && (
-                <CommonInfoTooltip
-                    content={errorMessage}
-                    defaultOpen={Boolean(defaultOpenErrorTooltip || isFirstError)}
-                    label="This field has a problem"
-                    size={16}
-                    variant="error"
-                />
+                <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                    <CommonInfoTooltip
+                        content={errorMessage}
+                        defaultOpen={Boolean(defaultOpenErrorTooltip || isFirstError)}
+                        label="This field has a problem"
+                        size={16}
+                        variant="error"
+                    />
+                </span>
             )}
         </span>
     );

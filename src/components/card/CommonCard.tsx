@@ -55,9 +55,11 @@ const CommonCard = forwardRef<HTMLDivElement, CommonCardProps>(({
             title={
                 infoContent
                     ? (
-                        <span className="gap-(--mui-tokens-spacing-3) inline-flex items-center">
+                        <span>
                             {cardHeaderProps.title}
-                            <CommonInfoTooltip content={infoContent} />
+                            <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                                <CommonInfoTooltip content={infoContent} />
+                            </span>
                         </span>
                     )
                     : cardHeaderProps.title

@@ -598,7 +598,7 @@ export default function AcademicYearWizardModal({
                             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0">
                                 <CalendarDotsIcon className="w-5 h-5" />
                             </div>
-                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                            <div className="min-w-0">
                                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
                                     {schoolYearId
                                         ? isReadOnly
@@ -607,15 +607,17 @@ export default function AcademicYearWizardModal({
                                         : sourceSchoolYear
                                         ? `Duplicate Academic Year: ${sourceSchoolYear.label}`
                                         : 'Create Academic Year & Calendar'}
+                                    <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
+                                        <CommonInfoTooltip
+                                            content={
+                                                sourceSchoolYear
+                                                    ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
+                                                    : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'
+                                            }
+                                            size={16}
+                                        />
+                                    </span>
                                 </h2>
-                                <CommonInfoTooltip
-                                    content={
-                                        sourceSchoolYear
-                                            ? `Duplicating configuration from ${sourceSchoolYear.code}. Enter a new academic year identity and dates.`
-                                            : 'Unified setup for operational dates, terms, grading periods, grade schema, and academic thresholds.'
-                                    }
-                                    size={16}
-                                />
                             </div>
                         </div>
 
