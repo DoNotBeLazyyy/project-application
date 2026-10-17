@@ -602,37 +602,31 @@ export default function StaffProfileVerificationModal({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="shrink-0 border-t border-(--mui-palette-divider) p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 bg-(--mui-palette-background-default)">
-                    <CommonButton color="inherit" size="small" variant="outlined" onClick={handleAttemptClose} className="order-2 sm:order-1">
-                        Close
-                    </CommonButton>
+                {isPending && (
+                    <div className="shrink-0 border-t border-(--mui-palette-divider) p-3 sm:p-4 flex items-center justify-end gap-2 bg-(--mui-palette-background-default)">
+                        <CommonButton
+                            color="error"
+                            disabled={isSubmitting}
+                            size="small"
+                            startIcon={<XCircleIcon size={16} />}
+                            variant="outlined"
+                            onClick={() => setIsRejectOpen(true)}
+                        >
+                            Reject Request
+                        </CommonButton>
 
-                    {isPending && (
-                        <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
-                            <CommonButton
-                                color="error"
-                                disabled={isSubmitting}
-                                size="small"
-                                startIcon={<XCircleIcon size={16} />}
-                                variant="outlined"
-                                onClick={() => setIsRejectOpen(true)}
-                            >
-                                Reject Request
-                            </CommonButton>
-
-                            <CommonButton
-                                color="success"
-                                disabled={isSubmitting}
-                                size="small"
-                                startIcon={<CheckCircleIcon size={16} />}
-                                variant="contained"
-                                onClick={handleApprove}
-                            >
-                                {hasAdminEdits ? 'Approve with Edits' : 'Approve Profile'}
-                            </CommonButton>
-                        </div>
-                    )}
-                </div>
+                        <CommonButton
+                            color="success"
+                            disabled={isSubmitting}
+                            size="small"
+                            startIcon={<CheckCircleIcon size={16} />}
+                            variant="contained"
+                            onClick={handleApprove}
+                        >
+                            {hasAdminEdits ? 'Approve with Edits' : 'Approve Profile'}
+                        </CommonButton>
+                    </div>
+                )}
             </CommonModal>
 
             {/* Rejection Prompt Modal */}

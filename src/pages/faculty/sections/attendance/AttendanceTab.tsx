@@ -14,7 +14,7 @@ import {
     AttendanceSession,
     AttendanceStatus
 } from '@type/faculty.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface AttendanceTabProps {
     sectionId: string;
@@ -26,8 +26,16 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [draftRecords, setDraftRecords] = useState<AttendanceRecordUpdate[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isDirty, setIsDirty] = useState(false);
     const [mobileView, setMobileView] = useState<'sessions' | 'records'>('sessions');
+
+    const isDirty = useMemo(() => {
+        if (draftRecords.length === 0 || records.length === 0) return false;
+        return draftRecords.some((d) => {
+            const orig = records.find((r) => r.id === d.id);
+            if (!orig) return true;
+            return orig.status !== d.status || (orig.remarks ?? '') !== (d.remarks ?? '');
+        });
+    }, [draftRecords, records]);
 
     useEffect(function() {
         fetchSessions();
@@ -58,7 +66,6 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     remarks: r.remarks ?? ''
                 }))
             );
-            setIsDirty(false);
         }
     }
 
@@ -92,21 +99,24 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
         setDraftRecords((prev) =>
             prev.map((r) => (r.id === recordId ? { ...r, status } : r))
         );
-        setIsDirty(true);
     }
 
     function handleMarkAllPresent() {
         setDraftRecords((prev) =>
             prev.map((r) => ({ ...r, status: 'Present' }))
         );
-        setIsDirty(true);
     }
 
     async function handleSave() {
         if (!selectedSession) return;
         const result = await saveAttendanceRecords(selectedSession.id, draftRecords);
         if (!result.error) {
-            setIsDirty(false);
+            setRecords((prev) =>
+                prev.map((r) => {
+                    const d = draftRecords.find((x) => x.id === r.id);
+                    return d ? { ...r, status: d.status, remarks: d.remarks } : r;
+                })
+            );
         }
     }
 

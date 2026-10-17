@@ -17,6 +17,7 @@ import { generateProgramLevelCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm, UseFormReturn } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -52,6 +53,8 @@ export default function ProgramLevelManagement() {
     const updateMethods = useForm<ProgramLevelFormValues>({
         defaultValues: defaultFormValues
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     const viewMethods = useForm<ProgramLevelFormValues>({
         defaultValues: defaultFormValues
@@ -239,11 +242,9 @@ export default function ProgramLevelManagement() {
                             )}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
+                    isDirty: isUpdateRealDirty,
                     onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                        return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
                     onClose: handleCloseUpdate

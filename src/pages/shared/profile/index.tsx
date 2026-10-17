@@ -19,6 +19,7 @@ import { getPrograms } from '@services/program/program.service';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 type ProfileTab = 'details' | 'security';
 
@@ -78,6 +79,8 @@ export default function ProfilePage() {
 
     const profileMethods = useForm<ProfileFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PROFILE });
     const passwordMethods = useForm<ChangePasswordFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: EMPTY_PASSWORD });
+    const isProfileRealDirty = useHasRealChanges(profileMethods.control);
+    const isPasswordRealDirty = useHasRealChanges(passwordMethods.control);
 
     useEffect(function() {
         async function loadData() {
@@ -276,7 +279,7 @@ export default function ProfilePage() {
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2">
                                 <CommonButton
-                                    disabled={!profileMethods.formState.isDirty || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
+                                    disabled={!isProfileRealDirty || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                                     size="small"
                                     variant="outlined"
                                     onClick={() => profileMethods.reset()}
@@ -284,7 +287,7 @@ export default function ProfilePage() {
                                     Reset
                                 </CommonButton>
                                 <CommonButton
-                                    disabled={!profileMethods.formState.isDirty || profileMethods.formState.isSubmitting || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
+                                    disabled={!isProfileRealDirty || profileMethods.formState.isSubmitting || Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                                     loading={profileMethods.formState.isSubmitting}
                                     form={PROFILE_FORM_ID}
                                     size="small"
@@ -319,7 +322,7 @@ export default function ProfilePage() {
                         />
                         <div className="flex">
                             <CommonButton
-                                disabled={!passwordMethods.formState.isDirty || passwordMethods.formState.isSubmitting}
+                                disabled={!isPasswordRealDirty || passwordMethods.formState.isSubmitting}
                                 loading={passwordMethods.formState.isSubmitting}
                                 form={PASSWORD_FORM_ID}
                                 size="small"

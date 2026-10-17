@@ -56,6 +56,10 @@ export default function TruncatedText({
 
         measure();
 
+        if (typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
         const observer = new ResizeObserver(measure);
         observer.observe(element);
 

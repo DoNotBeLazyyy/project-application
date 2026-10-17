@@ -17,6 +17,7 @@ export interface CommonFormModalProps extends CommonActionModalProps {
     isLoading?: boolean;
     onConfirmClose?: () => boolean;
     onReset?: () => void;
+    requireRealChanges?: boolean;
 }
 
 export default function CommonFormModal({
@@ -30,6 +31,7 @@ export default function CommonFormModal({
     hideCancel = false,
     isDirty,
     isLoading,
+    requireRealChanges,
     sx,
     onClose,
     onConfirmClose: _onConfirmClose,
@@ -90,11 +92,11 @@ export default function CommonFormModal({
             : (_onConfirmClose ? !_onConfirmClose() : Boolean(isDirty))
     );
 
-    const isConfirmDisabledByDirty = isDirty !== undefined && (
-        hasDraftRegistrations
-            ? !hasRegisteredRealChanges
-            : isDirty === false
-    );
+    const isConfirmDisabledByDirty = hasDraftRegistrations
+        ? (requireRealChanges || isDirty !== undefined) && !hasRegisteredRealChanges
+        : isDirty !== undefined
+            ? isDirty === false
+            : Boolean(requireRealChanges);
 
     function handleCloseModal() {
         if (isLoading || confirmProps?.loading) {

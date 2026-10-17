@@ -297,7 +297,7 @@ export default function SectionThresholdModal({
 
                                             <div className="flex gap-1 ml-auto">
                                                 <CommonButton
-                                                    disabled={isBusy || drafts[key] === undefined}
+                                                    disabled={isBusy || drafts[key] === undefined || drafts[key] === (override ? override.value : institutionValue)}
                                                     size="small"
                                                     startIcon={<CheckIcon size={14} weight="bold" />}
                                                     variant="outlined"

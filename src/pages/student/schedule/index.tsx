@@ -14,6 +14,7 @@ import {
 } from '@utils/schedule-color.util';
 import { ReactNode, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const DAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const WEEKDAYS: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -399,6 +400,7 @@ export default function StudentSchedule() {
         defaultValues: { color: SCHEDULE_COLOR_PALETTE[0] },
         mode: 'onChange'
     });
+    const isColorRealDirty = useHasRealChanges(colorMethods.control);
 
     const selectedColor = normalizeHexColor(colorMethods.watch('color')) ?? SCHEDULE_COLOR_PALETTE[0];
 
@@ -849,7 +851,7 @@ export default function StudentSchedule() {
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!colorMethods.formState.isDirty}
+                            disabled={!isColorRealDirty}
                             size="small"
                             variant="contained"
                             onClick={colorMethods.handleSubmit(handleSaveColor)}

@@ -23,7 +23,12 @@ export default function TableModals({
     return (
         <>
             {createModalProps && <CommonFormModal {...createModalProps} />}
-            {updateModalProps && <CommonFormModal {...updateModalProps} />}
+            {updateModalProps && (
+                <CommonFormModal
+                    requireRealChanges
+                    {...updateModalProps}
+                />
+            )}
             {viewModalProps && <CommonFormModal
                 {...viewModalProps}
                 hideCancel

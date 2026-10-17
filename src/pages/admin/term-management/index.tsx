@@ -18,6 +18,7 @@ import { TagIcon } from '@phosphor-icons/react';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import { useNavigate } from 'react-router-dom';
 
 const SORT_COLUMNS: SortColumn[] = [
@@ -68,6 +69,8 @@ export default function TermManagement() {
     const updateMethods = useForm<TermFormValues>({
         defaultValues: defaultFormValues
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     async function loadIntoForm(id: string) {
         const result = await getTermById(id);
@@ -302,11 +305,9 @@ export default function TermManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
+                    isDirty: isUpdateRealDirty,
                     onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                        return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
                     onClose: handleCloseUpdate

@@ -9,6 +9,7 @@ import { isPastDateTime } from '@utils/date.util';
 import { formErrors } from '@utils/form.util';
 import { useEffect } from 'react';
 import { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SETTINGS_FORM_ID = 'assessment-settings-form';
 
@@ -23,7 +24,7 @@ const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
 
 interface AssessmentSettingsFormProps {
     componentOptions: CommonSelectOption[];
-    isDirty: boolean;
+    isDirty?: boolean;
     isNew: boolean;
     isSaving: boolean;
     methods: UseFormReturn<AssessmentFormValues>;
@@ -38,6 +39,7 @@ export default function AssessmentSettingsForm({
     methods,
     onSubmit
 }: AssessmentSettingsFormProps) {
+    const hasRealChanges = useHasRealChanges(methods.control);
     const showAllQuestions = methods.watch('show_all_questions');
     const allowPastDates = methods.watch('allow_past_dates');
 
@@ -226,7 +228,7 @@ export default function AssessmentSettingsForm({
                 </p>
             </div>
             <CommonButton
-                disabled={isSaving || (!isNew && !isDirty)}
+                disabled={isSaving || (!isNew && !hasRealChanges)}
                 form={SETTINGS_FORM_ID}
                 size="small"
                 type="submit"

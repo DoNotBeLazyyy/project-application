@@ -16,6 +16,7 @@ import { generateCourseTypeCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -49,6 +50,7 @@ export default function CourseTypeManagement() {
     const updateMethods = useForm<CourseTypeFormValues>({
         defaultValues: defaultFormValues
     });
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
@@ -225,11 +227,9 @@ export default function CourseTypeManagement() {
                             )}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
+                    isDirty: isUpdateRealDirty,
                     onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                        return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
                     onClose: handleCloseUpdate

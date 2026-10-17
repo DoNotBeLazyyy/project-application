@@ -291,6 +291,7 @@ export default function ManageExceptionTypesModal({
                 </CommonButton>
                 <CommonButton
                     color="primary"
+                    disabled={!isDirty}
                     size="small"
                     variant="contained"
                     onClick={handleSave}

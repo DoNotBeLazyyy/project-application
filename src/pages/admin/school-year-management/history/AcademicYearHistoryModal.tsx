@@ -9,6 +9,8 @@ import ModalStepperHeader from '@components/modal/ModalStepperHeader';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import Checkbox from '@mui/material/Checkbox';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import {
     ArrowCounterClockwiseIcon,
     ArrowLeftIcon,
@@ -18,6 +20,7 @@ import {
     CheckCircleIcon,
     ClockCounterClockwiseIcon,
     ClockIcon,
+    DotsThreeVerticalIcon,
     EyeIcon,
     InfoIcon,
     ListPlusIcon,
@@ -297,6 +300,7 @@ export default function AcademicYearHistoryModal({
     const [comparedVersionId, setComparedVersionId] = useState<string | null>(null);
     const [compareViewMode, setCompareViewMode] = useState<CompareViewMode>('modified');
     const [revertTargetEntry, setRevertTargetEntry] = useState<EnrichedHistoryItem | null>(null);
+    const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<null | HTMLElement>(null);
 
     const loadHistory = useCallback(async (preferredSelectedId?: string | null) => {
         if (!schoolYearId) return;
@@ -340,6 +344,7 @@ export default function AcademicYearHistoryModal({
             setComparedVersionId(null);
             setCompareViewMode('modified');
             setRevertTargetEntry(null);
+            setMobileMenuAnchorEl(null);
             return;
         }
         loadHistory();
@@ -504,8 +509,15 @@ export default function AcademicYearHistoryModal({
                                     {enrichedHistory.length} {enrichedHistory.length === 1 ? 'version' : 'versions'}
                                 </span>
                             )}
+                            <span className="sm:hidden inline-flex items-center shrink-0">
+                                <CommonInfoTooltip
+                                    content="Audit trail, version inspection, original vs. modified toggle comparison, and snapshot reversion."
+                                    label="About Academic Year History"
+                                    size={14}
+                                />
+                            </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                        <p className="hidden sm:block text-xs text-slate-500 mt-0.5 leading-relaxed">
                             Audit trail, version inspection, original vs. modified toggle comparison, and snapshot reversion.
                         </p>
                     </div>
@@ -526,7 +538,7 @@ export default function AcademicYearHistoryModal({
             <div className="px-3.5 sm:px-5 py-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-900/90 shrink-0 space-y-2.5">
                 {!isCompareMode ? (
                     /* Single Version Inspection Bar — Selector color indicates Active (green) vs Archived (amber/slate) */
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div className="flex items-center justify-between gap-2.5">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
                                 Version:
@@ -557,14 +569,29 @@ export default function AcademicYearHistoryModal({
                                             value={item.id}
                                             className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                         >
-                                            {item.versionLabel} — {item.formattedDate} ({item.action})
+                                            {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
                                         </option>
                                     ))}
                                 </select>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-2 shrink-0">
+                        {/* Mobile Action Controls: Kebab Menu */}
+                        {(hasMultipleVersions || (selectedVersion && !selectedVersion.isCurrentActive)) && (
+                            <div className="flex sm:hidden items-center shrink-0">
+                                <button
+                                    aria-label="Version actions"
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer shadow-2xs shrink-0"
+                                    type="button"
+                                    onClick={(e) => setMobileMenuAnchorEl(e.currentTarget)}
+                                >
+                                    <DotsThreeVerticalIcon className="w-4 h-4" weight="bold" />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Desktop Action Controls */}
+                        <div className="hidden sm:flex items-center justify-end gap-2 shrink-0">
                             {selectedVersion && !selectedVersion.isCurrentActive && (
                                 <CommonButton
                                     className="min-w-0 px-2.5 py-1.5 text-xs"
@@ -635,7 +662,7 @@ export default function AcademicYearHistoryModal({
                             </div>
 
                             {/* Right Side: Total Differences Pill, Revert, & Exit Compare */}
-                            <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
+                            <div className="flex items-center justify-between sm:justify-end gap-2">
                                 <span
                                     className={`text-[11px] font-bold px-2.5 py-1 rounded-full border shrink-0 ${
                                         totalDiffCount > 0
@@ -648,28 +675,43 @@ export default function AcademicYearHistoryModal({
                                         : 'No differences'}
                                 </span>
 
-                                {activeDisplayVersion && !activeDisplayVersion.isCurrentActive && (
-                                    <CommonButton
-                                        className="min-w-0 px-2.5 py-1 text-xs"
-                                        color="primary"
-                                        size="small"
-                                        startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
-                                        variant="outlined"
-                                        onClick={() => setRevertTargetEntry(activeDisplayVersion)}
+                                {/* Mobile Actions Kebab Menu */}
+                                <div className="flex sm:hidden items-center shrink-0">
+                                    <button
+                                        aria-label="Compare actions"
+                                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer shadow-2xs shrink-0"
+                                        type="button"
+                                        onClick={(e) => setMobileMenuAnchorEl(e.currentTarget)}
                                     >
-                                        Revert to v{activeDisplayVersion.versionNum}
-                                    </CommonButton>
-                                )}
+                                        <DotsThreeVerticalIcon className="w-4 h-4" weight="bold" />
+                                    </button>
+                                </div>
 
-                                <button
-                                    aria-pressed={isCompareMode}
-                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold transition-all border bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border-brand-300 dark:border-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/60 cursor-pointer shrink-0"
-                                    type="button"
-                                    onClick={() => setIsCompareMode(false)}
-                                >
-                                    <XIcon className="w-3.5 h-3.5" weight="bold" />
-                                    <span>Exit Compare</span>
-                                </button>
+                                {/* Desktop Action Controls */}
+                                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                                    {activeDisplayVersion && !activeDisplayVersion.isCurrentActive && (
+                                        <CommonButton
+                                            className="min-w-0 px-2.5 py-1 text-xs"
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<ArrowCounterClockwiseIcon className="w-3.5 h-3.5" weight="bold" />}
+                                            variant="outlined"
+                                            onClick={() => setRevertTargetEntry(activeDisplayVersion)}
+                                        >
+                                            Revert to v{activeDisplayVersion.versionNum}
+                                        </CommonButton>
+                                    )}
+
+                                    <button
+                                        aria-pressed={isCompareMode}
+                                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold transition-all border bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border-brand-300 dark:border-brand-700 hover:bg-brand-100 dark:hover:bg-brand-900/60 cursor-pointer shrink-0"
+                                        type="button"
+                                        onClick={() => setIsCompareMode(false)}
+                                    >
+                                        <XIcon className="w-3.5 h-3.5" weight="bold" />
+                                        <span>Exit Compare</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -719,14 +761,14 @@ export default function AcademicYearHistoryModal({
                                                     value={item.id}
                                                     className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                 >
-                                                    {item.versionLabel} — {item.formattedDate} ({item.action})
+                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
                                                 </option>
                                             ))}
                                     </select>
                                 </div>
 
-                                {/* Swap Original & Modified Button */}
-                                <div className="flex justify-center">
+                                {/* Swap Original & Modified Button (Desktop only; on mobile it is in the 3-dots menu) */}
+                                <div className="hidden sm:flex justify-center">
                                     <button
                                         className="p-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs shrink-0"
                                         title="Swap Original and Modified versions"
@@ -780,7 +822,7 @@ export default function AcademicYearHistoryModal({
                                                     value={item.id}
                                                     className="bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100"
                                                 >
-                                                    {item.versionLabel} — {item.formattedDate} ({item.action})
+                                                    {item.versionLabel} — {item.formattedDate} ({item.action}){item.isCurrentActive ? ' [Active]' : ''}
                                                 </option>
                                             ))}
                                     </select>
@@ -790,6 +832,95 @@ export default function AcademicYearHistoryModal({
                     </div>
                 )}
             </div>
+
+            {/* Mobile Actions Dropdown Menu */}
+            <Menu
+                anchorEl={mobileMenuAnchorEl}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={Boolean(mobileMenuAnchorEl)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            minWidth: 190,
+                            borderRadius: '0.75rem',
+                            p: 0.5,
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
+                        }
+                    }
+                }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                onClose={() => setMobileMenuAnchorEl(null)}
+            >
+                {!isCompareMode ? (
+                    <div>
+                        {selectedVersion && !selectedVersion.isCurrentActive && (
+                            <MenuItem
+                                onClick={() => {
+                                    setMobileMenuAnchorEl(null);
+                                    setRevertTargetEntry(selectedVersion);
+                                }}
+                            >
+                                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                    <ArrowCounterClockwiseIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <span>Revert to v{selectedVersion.versionNum}</span>
+                                </div>
+                            </MenuItem>
+                        )}
+                        {hasMultipleVersions && (
+                            <MenuItem
+                                onClick={() => {
+                                    setMobileMenuAnchorEl(null);
+                                    setCompareViewMode('modified');
+                                    setIsCompareMode(true);
+                                }}
+                            >
+                                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                    <ArrowsLeftRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <span>Compare Versions</span>
+                                </div>
+                            </MenuItem>
+                        )}
+                    </div>
+                ) : (
+                    <div>
+                        <MenuItem
+                            onClick={() => {
+                                setMobileMenuAnchorEl(null);
+                                handleSwapVersions();
+                            }}
+                        >
+                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                <ArrowsLeftRightIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                <span>Swap Original &amp; Modified</span>
+                            </div>
+                        </MenuItem>
+                        {activeDisplayVersion && !activeDisplayVersion.isCurrentActive && (
+                            <MenuItem
+                                onClick={() => {
+                                    setMobileMenuAnchorEl(null);
+                                    setRevertTargetEntry(activeDisplayVersion);
+                                }}
+                            >
+                                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                    <ArrowCounterClockwiseIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" weight="bold" />
+                                    <span>Revert to v{activeDisplayVersion.versionNum}</span>
+                                </div>
+                            </MenuItem>
+                        )}
+                        <MenuItem
+                            onClick={() => {
+                                setMobileMenuAnchorEl(null);
+                                setIsCompareMode(false);
+                            }}
+                        >
+                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                                <XIcon className="w-4 h-4 text-slate-500" weight="bold" />
+                                <span>Exit Compare</span>
+                            </div>
+                        </MenuItem>
+                    </div>
+                )}
+            </Menu>
 
             {/* Academic Year Stepper Header with Step Difference Indicators */}
             <ModalStepperHeader

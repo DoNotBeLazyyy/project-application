@@ -576,6 +576,7 @@ export default function EvaluationWizardModal({
                         !readOnly && (
                             <CommonButton
                                 color="primary"
+                                disabled={isSaving || (Boolean(templateId) && !draftGuard.hasRealChanges)}
                                 loading={isSaving}
                                 size="small"
                                 startIcon={<FloppyDiskIcon className="w-4 h-4" />}

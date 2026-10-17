@@ -4,6 +4,7 @@ import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import { useRoleTableConfig } from '@pages/admin/role-management/hooks/useRoleTableConfig';
 import RoleForm from '@pages/admin/role-management/RoleForm';
 import RoleGridCard from '@pages/admin/role-management/RoleGridCard';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import {
     createRole, deleteRole, getRoleById, listRoles, updateRole
 } from '@services/role.service';
@@ -42,6 +43,8 @@ export default function RoleManagement() {
             label: ''
         }
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     function triggerRefresh() {
         setRefreshKey((prev) => prev + 1);
@@ -213,11 +216,9 @@ export default function RoleManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
+                    isDirty: isUpdateRealDirty,
                     onConfirmClose: function() {
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                        return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
                     onClose: handleCloseUpdate

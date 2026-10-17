@@ -591,11 +591,11 @@ export default function AcademicYearWizardModal({
             onClose={handleRequestClose}
         >
             {/* Modal Top Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+            <div className="p-3.5 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
                 <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-col gap-2.5 min-w-0 flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 flex items-center justify-center shrink-0">
                                 <CalendarDotsIcon className="w-5 h-5" />
                             </div>
                             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
@@ -619,19 +619,19 @@ export default function AcademicYearWizardModal({
                             </div>
                         </div>
 
-                        {/* Actions positioned below the title */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:pl-13">
+                        {/* Actions: on desktop (sm:) sits alongside the title; on mobile (< sm) enters a new line as icon-only */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                             <CommonButton
                                 color="primary"
                                 size="small"
                                 startIcon={<EyeIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                 variant="outlined"
-                                className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                className="min-w-0 px-2 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-1.5"
                                 title="Preview"
                                 aria-label="Preview"
                                 onClick={() => setIsPreviewModalOpen(true)}
                             >
-                                <span>Preview</span>
+                                <span className="hidden sm:inline">Preview</span>
                             </CommonButton>
 
                             {schoolYearId && (
@@ -640,12 +640,12 @@ export default function AcademicYearWizardModal({
                                     size="small"
                                     startIcon={<ClockCounterClockwiseIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                     variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                    className="min-w-0 px-2 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-1.5"
                                     title="History"
                                     aria-label="History"
                                     onClick={() => setIsHistoryModalOpen(true)}
                                 >
-                                    <span>History</span>
+                                    <span className="hidden sm:inline">History</span>
                                 </CommonButton>
                             )}
 
@@ -655,19 +655,19 @@ export default function AcademicYearWizardModal({
                                     size="small"
                                     startIcon={<PencilSimpleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
                                     variant="outlined"
-                                    className="min-w-0 px-2.5 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                                    className="min-w-0 px-2 sm:px-3 text-xs !bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-1.5"
                                     title="Edit"
                                     aria-label="Edit"
                                     onClick={() => setIsReadOnly(false)}
                                 >
-                                    <span>Edit</span>
+                                    <span className="hidden sm:inline">Edit</span>
                                 </CommonButton>
                             )}
                         </div>
                     </div>
 
                     <button
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
+                        className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                         title="Close"
                         aria-label="Close"
                         type="button"
@@ -797,7 +797,7 @@ export default function AcademicYearWizardModal({
                     ) : (
                         <CommonButton
                             color="primary"
-                            disabled={isLoading || isSaving}
+                            disabled={isLoading || isSaving || (Boolean(schoolYearId) && !draftGuard.hasRealChanges)}
                             size="medium"
                             startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                             variant="contained"

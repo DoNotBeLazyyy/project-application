@@ -21,6 +21,7 @@ import {
 } from '@type/user.type';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 import { useSearchParams } from 'react-router-dom';
 
 const UPDATE_FORM_ID = 'update-user-form';
@@ -110,6 +111,8 @@ export default function UserManagement() {
             department_id: ''
         }
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     async function loadUserIntoForm(userId: string) {
         const result = await getUserById(userId);
@@ -400,15 +403,13 @@ export default function UserManagement() {
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit)}
                         />
                     ),
-                    isDirty: updateMethods.formState.isDirty,
+                    isDirty: isUpdateRealDirty,
                     isLoading: isUpdating,
                     onConfirmClose: function() {
                         if (isUpdating) {
                             return false;
                         }
-                        const current = updateMethods.getValues();
-                        const snapshot = updateMethods.formState.defaultValues;
-                        return JSON.stringify(current) === JSON.stringify(snapshot);
+                        return !isUpdateRealDirty;
                     },
                     open: isUpdateOpen,
                     onClose: function() {

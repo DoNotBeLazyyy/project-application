@@ -589,7 +589,7 @@ export default function CreditTransfereeCoursesModal({
                         },
                         confirmProps: {
                             children: isSaving ? 'Saving Credit...' : (activeCourse.is_credited ? 'Update Credit' : 'Confirm & Credit Course'),
-                            disabled: isSaving,
+                            disabled: isSaving || (Boolean(activeCourse?.is_credited) && !creditDraftGuard.hasRealChanges),
                             onClick: handleSaveCredit
                         }
                     }}

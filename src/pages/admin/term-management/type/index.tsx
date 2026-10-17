@@ -15,6 +15,7 @@ import { TermTypeFormValues } from '@type/term/term-type.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const CREATE_FORM_ID = 'create-term-type-form';
 const UPDATE_FORM_ID = 'update-term-type-form';
@@ -83,6 +84,8 @@ export default function TermTypeManagement() {
     const updateMethods = useForm<TermTypeFormValues>({
         defaultValues: DEFAULT_FORM_VALUES
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     useEffect(function() {
         if (selectedItem) {
@@ -250,6 +253,8 @@ export default function TermTypeManagement() {
                     />
                 )}
                 formId={UPDATE_FORM_ID}
+                isDirty={isUpdateRealDirty}
+                requireRealChanges
                 open={isUpdateOpen}
                 sx={{
                     '& .MuiDialog-paper': {

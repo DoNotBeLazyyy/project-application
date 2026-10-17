@@ -60,8 +60,8 @@ export async function getAcademicYearCalendarDetails(
 
 export async function saveAcademicYearCalendar(
     payload: SaveAcademicYearCalendarPayload
-): Promise<ServiceResult<{ success: boolean; message: string; school_year_id: string }>> {
-    const baseParams: Record<string, unknown> = {
+): Promise<ServiceResult<{ success: boolean; message: string; school_year_id: string; has_real_change?: boolean }>> {
+    const params: Record<string, unknown> = {
         p_code: payload.p_code,
         p_end_date: payload.p_end_date,
         p_is_active: payload.p_is_active,
@@ -73,127 +73,14 @@ export async function saveAcademicYearCalendar(
         p_transmutation_rows: payload.p_transmutation_rows,
         p_max_units_per_term: payload.p_max_units_per_term ? Number(payload.p_max_units_per_term) : 24,
         p_evaluation_scope: payload.p_evaluation_scope || 'Period',
-        p_holidays: payload.p_holidays || []
+        p_holidays: payload.p_holidays || [],
+        p_revert_history_id: payload.p_revert_history_id || null
     };
 
-    if (payload.p_revert_history_id && payload.p_school_year_id) {
-        // First try the 13-arg RPC with p_revert_history_id (silent so fallback doesn't flash toast)
-        const revertRpcRes = await callRpc<{ success: boolean; message: string; school_year_id: string }>(
-            'fn_save_academic_year_calendar',
-            {
-                ...baseParams,
-                p_revert_history_id: payload.p_revert_history_id
-            },
-            { silent: true }
-        );
-
-        if (!revertRpcRes.error) {
-            return revertRpcRes;
-        }
-
-        // Fallback when remote DB still has the 12-arg RPC:
-        // 1. Snapshot existing history IDs before saving
-        const { data: beforeRows } = await supabase
-            .from('school_year_histories')
-            .select('id, changes')
-            .eq('school_year_id', payload.p_school_year_id)
-            .is('deleted_at', null);
-
-        const existingIds = new Set((beforeRows || []).map((r) => r.id));
-
-        // 2. Execute the 12-arg RPC silently to synchronize tables
-        const fallbackRes = await callRpc<{ success: boolean; message: string; school_year_id: string }>(
-            'fn_save_academic_year_calendar',
-            baseParams,
-            { silent: true }
-        );
-
-        if (fallbackRes.error) {
-            return fallbackRes;
-        }
-
-        // 3. Soft-delete any newly created history row so revert does NOT create a new version,
-        // and persist active version marker on the target history row
-        const { data: afterRows } = await supabase
-            .from('school_year_histories')
-            .select('id, changes')
-            .eq('school_year_id', payload.p_school_year_id)
-            .is('deleted_at', null)
-            .order('changed_at', { ascending: false });
-
-        if (afterRows && afterRows.length > 0) {
-            const newlyCreatedIds = afterRows
-                .filter((r) => !existingIds.has(r.id) && r.id !== payload.p_revert_history_id)
-                .map((r) => r.id);
-
-            if (newlyCreatedIds.length > 0) {
-                await supabase
-                    .from('school_year_histories')
-                    .update({ deleted_at: new Date().toISOString() })
-                    .in('id', newlyCreatedIds);
-            }
-
-            // Mark target version as active in changes metadata for all remaining rows
-            const remainingRows = afterRows.filter((r) => !newlyCreatedIds.includes(r.id));
-            await Promise.all(
-                remainingRows.map((r) => {
-                    const currentChanges =
-                        r.changes && typeof r.changes === 'object' ? (r.changes as Record<string, unknown>) : {};
-                    return supabase
-                        .from('school_year_histories')
-                        .update({
-                            changes: {
-                                ...currentChanges,
-                                is_active_version: r.id === payload.p_revert_history_id
-                            }
-                        })
-                        .eq('id', r.id);
-                })
-            );
-        }
-
-        return fallbackRes;
-    }
-
-    // Normal create/update save
-    const res = await callRpc<{ success: boolean; message: string; school_year_id: string }>(
+    return callRpc<{ success: boolean; message: string; school_year_id: string; has_real_change?: boolean }>(
         'fn_save_academic_year_calendar',
-        baseParams
+        params
     );
-
-    // Ensure the newly created latest version is the active version
-    const savedSyId = res.data?.school_year_id || payload.p_school_year_id;
-    if (!res.error && savedSyId) {
-        const { data: rows } = await supabase
-            .from('school_year_histories')
-            .select('id, changes')
-            .eq('school_year_id', savedSyId)
-            .is('deleted_at', null)
-            .order('changed_at', { ascending: false });
-
-        if (rows && rows.length > 0) {
-            const newestId = rows[0].id;
-            await Promise.all(
-                rows.map((r) => {
-                    const currentChanges =
-                        r.changes && typeof r.changes === 'object' ? (r.changes as Record<string, unknown>) : {};
-                    const shouldBeActive = r.id === newestId;
-                    if (currentChanges.is_active_version === shouldBeActive) return Promise.resolve();
-                    return supabase
-                        .from('school_year_histories')
-                        .update({
-                            changes: {
-                                ...currentChanges,
-                                is_active_version: shouldBeActive
-                            }
-                        })
-                        .eq('id', r.id);
-                })
-            );
-        }
-    }
-
-    return res;
 }
 
 export async function getAcademicYearHistory(

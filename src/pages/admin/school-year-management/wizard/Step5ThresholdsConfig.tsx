@@ -80,28 +80,21 @@ export default function Step5ThresholdsConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Top Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Total Academic Thresholds: <span className="text-brand-600 dark:text-brand-400 font-bold">{thresholds.length}</span>
+            {!disabled && (
+                <div className="flex justify-end items-center gap-2">
+                    <CommonButton
+                        className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                        color="primary"
+                        size="small"
+                        startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                        title="Add Threshold"
+                        variant="contained"
+                        onClick={handleAddThreshold}
+                    >
+                        <span className="hidden sm:inline">Add Threshold</span>
+                    </CommonButton>
                 </div>
-
-                {!disabled && (
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <CommonButton
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                            color="primary"
-                            size="small"
-                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                            title="Add Threshold"
-                            variant="contained"
-                            onClick={handleAddThreshold}
-                        >
-                            <span className="hidden sm:inline">Add Threshold</span>
-                        </CommonButton>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Thresholds List / Cards */}
             <div className="flex flex-col gap-4">

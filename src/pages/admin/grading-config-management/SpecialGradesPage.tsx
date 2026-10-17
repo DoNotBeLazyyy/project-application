@@ -15,6 +15,7 @@ import { ServiceResult } from '@type/service.type';
 import { formErrors } from '@utils/form.util';
 import { useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -151,6 +152,8 @@ export default function SpecialGradesPage() {
     const updateMethods = useForm<SpecialGradeFormValues>({
         defaultValues: DEFAULT_FORM_VALUES
     });
+
+    const isUpdateRealDirty = useHasRealChanges(updateMethods.control);
 
     function refreshList() {
         setActiveFilters((prev) => ({ ...prev } as SpecialGradeFilterValues));
@@ -472,7 +475,10 @@ export default function SpecialGradesPage() {
                     />
                 ),
                 formId: UPDATE_FORM_ID,
-                isDirty: updateMethods.formState.isDirty,
+                isDirty: isUpdateRealDirty,
+                onConfirmClose: function() {
+                    return !isUpdateRealDirty;
+                },
                 open: isUpdateOpen,
                 onClose: handleCloseUpdate
             }}

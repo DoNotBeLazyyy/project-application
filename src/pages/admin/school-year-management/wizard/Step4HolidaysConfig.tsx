@@ -83,55 +83,32 @@ export default function Step4HolidaysConfig({
         append(newHoliday);
     }
 
-    const holidayCount = holidays.filter((h) => h.exception_type === 'Holiday').length;
-    const breakCount = holidays.filter((h) => h.exception_type === 'Break').length;
-    const suspensionCount = holidays.filter((h) => h.exception_type === 'Suspension').length;
-    const otherCount = holidays.length - (holidayCount + breakCount + suspensionCount);
-
     return (
         <div className="space-y-6">
-            {/* Top Toolbar / Action Bar */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-xs space-y-3">
-                <div className="space-y-0.5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
-                        <SunIcon className="w-5 h-5 text-amber-500 shrink-0" />
-                        <span>Calendar Exceptions & Holiday Overlays</span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Total Exceptions: <span className="font-bold text-slate-900 dark:text-slate-100">{holidays.length}</span>
-                        {holidays.length > 0 && (
-                            <span className="ml-2 text-slate-400">
-                                ({holidayCount} Holidays, {breakCount} Breaks, {suspensionCount} Suspensions{otherCount > 0 ? `, ${otherCount} Other` : ''})
-                            </span>
-                        )}
-                    </p>
+            {!disabled && (
+                <div className="flex justify-end items-center gap-2 flex-wrap">
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        startIcon={<GearIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                        variant="outlined"
+                        className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
+                        onClick={() => setIsManageTypesOpen(true)}
+                    >
+                        Configure Types
+                    </CommonButton>
+
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                        variant="contained"
+                        onClick={handleAddHoliday}
+                    >
+                        Add Exception
+                    </CommonButton>
                 </div>
-
-                {!disabled && (
-                    <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-700/40">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<GearIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                            variant="outlined"
-                            className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
-                            onClick={() => setIsManageTypesOpen(true)}
-                        >
-                            Configure Types
-                        </CommonButton>
-
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                            variant="contained"
-                            onClick={handleAddHoliday}
-                        >
-                            Add Exception
-                        </CommonButton>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Holiday Exception Cards List (Full Width) */}
             {fields.length === 0 ? (

@@ -307,7 +307,7 @@ export default function DepartmentWizardModal({
                     ) : (
                         <CommonButton
                             color="primary"
-                            disabled={isSaving}
+                            disabled={isSaving || (Boolean(departmentId) && !draftGuard.hasRealChanges)}
                             loading={isSaving}
                             size="medium"
                             startIcon={<FloppyDiskIcon className="w-4 h-4" />}

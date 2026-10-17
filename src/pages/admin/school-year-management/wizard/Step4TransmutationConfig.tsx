@@ -7,11 +7,9 @@ import CommonSelect from '@components/select/CommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CaretDownIcon,
-    CheckCircleIcon,
     PlusIcon,
     TrashIcon,
-    WarningCircleIcon,
-    XCircleIcon
+    WarningCircleIcon
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
 import { useEffect, useState } from 'react';
@@ -57,9 +55,6 @@ export default function Step4TransmutationConfig({
 
     const rows = useWatch({ control, name: 'transmutation_rows' }) || [];
 
-    const passingCount = rows.filter((r) => r.is_passing).length;
-    const nonPassingCount = rows.length - passingCount;
-
     function handleAddRow() {
         const newRow: WizardTransmutationRow = {
             label: '',
@@ -76,38 +71,21 @@ export default function Step4TransmutationConfig({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Top Toolbar / Summary Badges */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/60 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-700 text-slate-800 dark:text-slate-200">
-                        Total Rungs: {rows.length}
-                    </span>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
-                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                        Passing: {passingCount}
-                    </span>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
-                        <XCircleIcon className="w-3.5 h-3.5" />
-                        Failing / Special: {nonPassingCount}
-                    </span>
+            {!disabled && (
+                <div className="flex justify-end items-center gap-2">
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
+                        startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                        variant="contained"
+                        onClick={handleAddRow}
+                        title="Add Grade Row"
+                    >
+                        <span className="hidden sm:inline">Add Grade Row</span>
+                    </CommonButton>
                 </div>
-
-                {!disabled && (
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <CommonButton
-                            color="primary"
-                            size="small"
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2.5 sm:px-3"
-                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
-                            variant="contained"
-                            onClick={handleAddRow}
-                            title="Add Grade Row"
-                        >
-                            <span className="hidden sm:inline">Add Grade Row</span>
-                        </CommonButton>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Empty State */}
             {rows.length === 0 && (

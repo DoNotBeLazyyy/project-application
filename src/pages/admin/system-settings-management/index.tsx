@@ -10,6 +10,7 @@ import { SystemSettingsFormValues } from '@type/system-settings.type';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
+import { useHasRealChanges } from '@hooks/useHasRealChanges';
 
 const SETTINGS_FORM_ID = 'system-settings-form';
 
@@ -33,6 +34,7 @@ export default function SystemSettings() {
             allowed_upload_types: 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
         }
     });
+    const hasRealChanges = useHasRealChanges(methods.control);
 
     useEffect(function() {
         async function loadSettings() {
@@ -229,7 +231,7 @@ export default function SystemSettings() {
                 action: (
                     <div className="flex gap-2 items-center justify-end">
                         <CommonButton
-                            disabled={!methods.formState.isDirty}
+                            disabled={!hasRealChanges}
                             size="small"
                             variant="outlined"
                             onClick={handleCancel}
@@ -237,7 +239,7 @@ export default function SystemSettings() {
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!methods.formState.isDirty}
+                            disabled={!hasRealChanges}
                             form={SETTINGS_FORM_ID}
                             size="small"
                             type="submit"
