@@ -630,6 +630,7 @@ export default function StaffProfileVerificationModal({
                         <CommonButton
                             color="success"
                             disabled={isSubmitting}
+                            loading={isSubmitting}
                             size="small"
                             startIcon={<CheckCircleIcon size={16} />}
                             variant="contained"
@@ -685,6 +686,7 @@ export default function StaffProfileVerificationModal({
                         <CommonButton
                             color="error"
                             disabled={isSubmitting || !rejectReason.trim()}
+                            loading={isSubmitting}
                             size="small"
                             variant="contained"
                             onClick={handleRejectSubmit}
