@@ -846,6 +846,7 @@ export default function AcademicYearWizardModal({
                         <CommonButton
                             color="primary"
                             disabled={isLoading || isSaving || (Boolean(schoolYearId) && !draftGuard.hasRealChanges)}
+                            loading={isSaving}
                             size="medium"
                             startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                             variant="contained"

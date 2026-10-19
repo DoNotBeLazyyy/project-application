@@ -403,6 +403,7 @@ export default function StudentEvaluations() {
                     <div className="border-(--mui-palette-divider) border-t flex gap-2 justify-end pt-4">
                         <CommonButton
                             disabled={isSubmitting}
+                            loading={isSubmitting}
                             variant="contained"
                             onClick={handleSubmit}
                         >

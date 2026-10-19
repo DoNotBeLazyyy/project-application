@@ -356,6 +356,7 @@ export default function EnrollmentWorkspaceModal({
                             </div>
                         ),
                         disabled: totalChanges === 0 || isSaving,
+                        loading: isSaving,
                         onClick: () => setShowSaveConfirm(true)
                     }
                 }}
@@ -768,6 +769,7 @@ export default function EnrollmentWorkspaceModal({
                     confirmProps: {
                         children: isSaving ? 'Applying...' : 'Yes, Apply Changes',
                         disabled: isSaving,
+                        loading: isSaving,
                         onClick: overrideMethods.handleSubmit(handleExecuteSave, handleSaveValidationFailed)
                     }
                 }}

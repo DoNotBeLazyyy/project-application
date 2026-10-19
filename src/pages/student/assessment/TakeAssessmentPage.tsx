@@ -327,7 +327,7 @@ export default function TakeAssessmentPage() {
                 {!assessment.show_all_questions && (
                     <CommonButton
                         color="inherit"
-                        disabled={currentPage === 0}
+                        disabled={currentPage === 0 || isSubmitting}
                         size="small"
                         startIcon={<ArrowLeftIcon size={14} weight="bold" />}
                         variant="outlined"
@@ -346,6 +346,7 @@ export default function TakeAssessmentPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:ml-auto">
                     {!assessment.show_all_questions && !isLastPage && (
                         <CommonButton
+                            disabled={isSubmitting}
                             endIcon={<ArrowRightIcon size={14} weight="bold" />}
                             size="small"
                             variant="outlined"
@@ -364,6 +365,7 @@ export default function TakeAssessmentPage() {
                     {(assessment.show_all_questions || isLastPage) && (
                         <CommonButton
                             disabled={isSubmitting}
+                            loading={isSubmitting}
                             size="small"
                             variant="contained"
                             onClick={handleSubmit}
