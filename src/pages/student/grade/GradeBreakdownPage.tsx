@@ -85,7 +85,10 @@ export default function GradeBreakdownPage() {
         : 0;
 
     return (
-        <CommonCard className="flex flex-col gap-4 h-full overflow-y-auto p-4 w-full">
+        <CommonCard
+            className="flex flex-col gap-4 min-h-full p-4 w-full"
+            style={{ overflow: 'visible' }}
+        >
             <div className="flex gap-3 items-center">
                 <CommonButton
                     color="inherit"
@@ -238,10 +241,10 @@ export default function GradeBreakdownPage() {
                                 How this grade was computed
                             </span>
                             <span className="text-(--mui-palette-text-secondary) text-xs">
-                                {`Each component score is scaled by its weight, summed to ${formatScore(Number(weightedTotal.toFixed(2)))} of ${breakdown.total_component_weight} total component points, then converted to a percentage for the raw grade.`}
+                                {`Each component score is calculated from your earned assessment points against total component points, scaled by the component weight (summing to ${formatScore(Number(weightedTotal.toFixed(2)))} of ${breakdown.total_component_weight} total component points) to yield your Raw Grade.`}
                             </span>
                             <span className="text-(--mui-palette-text-secondary) text-xs">
-                                Assessments that are not yet graded are excluded from both the earned and the maximum points, so they do not pull your grade down.
+                                Your raw grade percentage is then converted into the official transmuted grade based on the institutional grading table. Assessments without submissions or scores receive 0 points toward the released component grade.
                             </span>
                         </div>
                     )}

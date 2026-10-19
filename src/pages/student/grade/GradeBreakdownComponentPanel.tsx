@@ -15,6 +15,15 @@ interface ItemRowProps {
 }
 
 function ItemRow({ item }: ItemRowProps) {
+    const isUnsubmitted = !item.submission_status || item.submission_status === 'Not Started';
+    const isPendingReview = item.submission_status === 'Submitted' && item.earned_points === null;
+    const earnedDisplay = item.earned_points !== null
+        ? formatScore(item.earned_points)
+        : (isUnsubmitted ? '0' : '—');
+    const percentDisplay = item.earned_points !== null
+        ? formatPercent(item.earned_points, item.max_points)
+        : (isUnsubmitted ? '0%' : '—');
+
     return (
         <div className="border-t border-(--mui-palette-divider) gap-2 grid grid-cols-12 items-center px-3 py-2">
             <div className="col-span-12 flex flex-col gap-0.5 sm:col-span-5">
@@ -37,19 +46,24 @@ function ItemRow({ item }: ItemRowProps) {
                         Late
                     </span>
                 )}
-                {!item.is_counted && (
+                {isPendingReview && (
                     <span className="block mt-0.5 text-(--mui-palette-text-secondary) text-xs">
-                        Not counted yet
+                        Pending review
+                    </span>
+                )}
+                {isUnsubmitted && !item.is_counted && (
+                    <span className="block mt-0.5 text-(--mui-palette-text-secondary) text-xs">
+                        No submission (0 pts)
                     </span>
                 )}
             </div>
             <div className="col-span-4 sm:col-span-2 text-(--mui-palette-text-primary) text-right text-sm">
-                {formatScore(item.earned_points)}
+                {earnedDisplay}
                 {' / '}
                 {item.max_points}
             </div>
             <div className="col-span-3 sm:col-span-2 text-(--mui-palette-text-secondary) text-right text-sm">
-                {formatPercent(item.earned_points, item.max_points)}
+                {percentDisplay}
             </div>
         </div>
     );
@@ -59,23 +73,36 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
     const [isExpanded, setIsExpanded] = useState<boolean>(defaultExpanded);
 
     const hasItems = component.items.length > 0;
-    const percentage = component.max_points > 0
-        ? (component.earned_points / component.max_points) * 100
-        : 0;
+    const totalItemMax = component.items.reduce(function(acc, item) {
+        return acc + (item.max_points || 0);
+    }, 0);
+    const effectiveMaxPoints = component.max_points > 0 ? component.max_points : totalItemMax;
+
+    const percentage = effectiveMaxPoints > 0
+        ? (component.earned_points / effectiveMaxPoints) * 100
+        : (component.percentage ?? 0);
+
     const rotationClass = isExpanded
         ? 'rotate-90'
         : '';
     const caretColorClass = hasItems
         ? 'text-(--mui-palette-text-secondary)'
         : 'text-(--mui-palette-text-disabled)';
-    const gradedLabel = component.graded_count === 1
-        ? 'graded item'
-        : 'graded items';
+
+    const effectiveGradedCount = component.items.filter(
+        (item) => item.is_counted || item.earned_points !== null
+    ).length;
+    const gradedCountDisplay = component.graded_count > 0 ? component.graded_count : effectiveGradedCount;
+
     const itemSummary = hasItems
-        ? `${component.graded_count} ${gradedLabel}`
+        ? `${gradedCountDisplay} of ${component.items.length} graded`
         : 'No assessments';
-    const pendingSummary = component.pending_count > 0
-        ? ` · ${component.pending_count} not yet graded`
+
+    const pendingReviewCount = component.items.filter(
+        (item) => item.submission_status === 'Submitted' && item.earned_points === null
+    ).length;
+    const pendingSummary = pendingReviewCount > 0
+        ? ` · ${pendingReviewCount} pending review`
         : '';
 
     return (
@@ -111,11 +138,17 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
                             type="bar"
                         />
                     </div>
-                    <div className="flex flex-col gap-0.5 text-right w-24">
+                    <div className="flex flex-col gap-0.5 text-right min-w-[7rem]">
                         <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
-                            {formatScore(component.earned_points)}
-                            {' / '}
-                            {component.max_points}
+                            {effectiveMaxPoints > 0 ? (
+                                <>
+                                    {formatScore(component.earned_points)}
+                                    {' / '}
+                                    {effectiveMaxPoints}
+                                </>
+                            ) : (
+                                '—'
+                            )}
                         </span>
                         <span className="text-(--mui-palette-text-secondary) text-xs">
                             {`${formatScore(component.weighted_score)} of ${component.weight} pts`}
