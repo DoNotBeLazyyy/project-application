@@ -69,6 +69,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
     }, [record]);
 
     function handleRequestClose() {
+        if (isSaving) return;
         if (draftGuard.hasRealChanges) {
             setIsDiscardOpen(true);
             return;
@@ -186,6 +187,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                 <div className="flex gap-2 justify-end">
                     <CommonButton
                         color="inherit"
+                        disabled={isSaving}
                         size="small"
                         variant="outlined"
                         onClick={handleRequestClose}
@@ -194,6 +196,7 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                     </CommonButton>
                     <CommonButton
                         disabled={isSaving || isUnchanged}
+                        loading={isSaving}
                         size="small"
                         variant="contained"
                         onClick={handleSave}
