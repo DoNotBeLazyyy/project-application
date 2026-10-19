@@ -229,6 +229,7 @@ export default function AssessmentSettingsForm({
             </div>
             <CommonButton
                 disabled={isSaving || (!isNew && !hasRealChanges)}
+                loading={isSaving}
                 form={SETTINGS_FORM_ID}
                 size="small"
                 type="submit"

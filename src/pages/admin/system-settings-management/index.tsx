@@ -231,7 +231,7 @@ export default function SystemSettings() {
                 action: (
                     <div className="flex gap-2 items-center justify-end">
                         <CommonButton
-                            disabled={!hasRealChanges}
+                            disabled={!hasRealChanges || methods.formState.isSubmitting}
                             size="small"
                             variant="outlined"
                             onClick={handleCancel}
@@ -239,7 +239,8 @@ export default function SystemSettings() {
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!hasRealChanges}
+                            disabled={!hasRealChanges || methods.formState.isSubmitting}
+                            loading={methods.formState.isSubmitting}
                             form={SETTINGS_FORM_ID}
                             size="small"
                             type="submit"

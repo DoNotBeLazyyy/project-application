@@ -289,6 +289,7 @@ export default function BulkImportModal<TPayload>({
     }, []);
 
     function handleClose() {
+        if (isLoading) return;
         setStep('upload');
         setParsedRows([]);
         setMappedRows([]);
@@ -514,6 +515,7 @@ export default function BulkImportModal<TPayload>({
                     </p>
                     <CommonButton
                         color="inherit"
+                        disabled={isLoading}
                         size="small"
                         variant="outlined"
                         onClick={handleReupload}
@@ -553,6 +555,7 @@ export default function BulkImportModal<TPayload>({
                 )}
                 <CommonButton
                     disabled={isLoading}
+                    loading={isLoading}
                     size="small"
                     variant="contained"
                     onClick={handleConfirmImport}

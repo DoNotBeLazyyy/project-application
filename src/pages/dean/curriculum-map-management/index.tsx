@@ -1082,6 +1082,7 @@ export default function CurriculumMapManagement({
                     <div className="flex gap-2 justify-end">
                         <CommonButton
                             color="inherit"
+                            disabled={createMethods.formState.isSubmitting}
                             size="small"
                             variant="outlined"
                             onClick={handleRequestCloseCreate}
@@ -1089,6 +1090,8 @@ export default function CurriculumMapManagement({
                             Cancel
                         </CommonButton>
                         <CommonButton
+                            disabled={createMethods.formState.isSubmitting}
+                            loading={createMethods.formState.isSubmitting}
                             form={CREATE_FORM_ID}
                             size="small"
                             type="submit"
@@ -1128,6 +1131,7 @@ export default function CurriculumMapManagement({
                     <div className="flex gap-2 justify-end">
                         <CommonButton
                             color="inherit"
+                            disabled={updateMethods.formState.isSubmitting}
                             size="small"
                             variant="outlined"
                             onClick={handleRequestCloseUpdate}
@@ -1135,7 +1139,8 @@ export default function CurriculumMapManagement({
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={!updateDraft.hasRealChanges}
+                            disabled={!updateDraft.hasRealChanges || updateMethods.formState.isSubmitting}
+                            loading={updateMethods.formState.isSubmitting}
                             form={UPDATE_FORM_ID}
                             size="small"
                             type="submit"

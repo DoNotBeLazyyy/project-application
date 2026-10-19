@@ -50,7 +50,7 @@ export default function CommonFormModal({
             const prev = registeredDraftsRef.current.get(id);
             registeredDraftsRef.current.set(id, entry);
             clearCallbacksRef.current.set(id, entry.clearDraft);
-            if (!prev || prev.hasRealChanges !== entry.hasRealChanges) {
+            if (!prev || prev.hasRealChanges !== entry.hasRealChanges || prev.isSubmitting !== entry.isSubmitting) {
                 setDraftVersion((v) => v + 1);
             }
         },
@@ -84,6 +84,8 @@ export default function CommonFormModal({
     const registeredList = Array.from(registeredDraftsRef.current.values());
     const hasDraftRegistrations = registeredList.length > 0 || Boolean(formIdDraft);
     const hasRegisteredRealChanges = registeredList.some((d) => d.hasRealChanges) || Boolean(formIdDraft?.hasRealChanges);
+    const isFormSubmitting = registeredList.some((d) => Boolean(d.isSubmitting)) || Boolean(formIdDraft?.isSubmitting);
+    const isModalLoading = Boolean(isLoading) || Boolean(confirmProps?.loading) || isFormSubmitting;
 
     const isFilterOrSortModal = Boolean(onReset) || Boolean(formId && /filter|sort/i.test(formId));
     const hasRealChanges = !hideCancel && !isFilterOrSortModal && (
@@ -99,7 +101,7 @@ export default function CommonFormModal({
             : Boolean(requireRealChanges);
 
     function handleCloseModal() {
-        if (isLoading || confirmProps?.loading) {
+        if (isModalLoading) {
             return;
         }
         if (hasRealChanges) {
@@ -145,17 +147,18 @@ export default function CommonFormModal({
                             color: 'secondary',
                             variant: 'outlined',
                             onClick: handleCloseModal,
+                            disabled: isModalLoading,
                             ...cancelProps
                         },
                     confirmProps: {
                         children: confirmText,
-                        disabled: isConfirmDisabledByDirty || Boolean(isLoading) || Boolean(confirmProps?.disabled) || Boolean(confirmProps?.loading),
-                        loading: Boolean(isLoading) || Boolean(confirmProps?.loading),
                         form: formId,
                         type: formId
                             ? 'submit'
                             : 'button',
-                        ...confirmProps
+                        ...confirmProps,
+                        disabled: isConfirmDisabledByDirty || isModalLoading || Boolean(confirmProps?.disabled),
+                        loading: isModalLoading
                     },
                     resetProps: onReset
                         ? {
@@ -163,9 +166,10 @@ export default function CommonFormModal({
                             color: 'secondary',
                             variant: 'outlined',
                             onClick: onReset,
+                            disabled: isModalLoading,
                             ...resetProps
                         }
-                        : resetProps
+                        : (resetProps ? { ...resetProps, disabled: isModalLoading || Boolean(resetProps.disabled) } : undefined)
                 }}
                 fullScreen={fullScreen}
                 hideCancel={hideCancel}

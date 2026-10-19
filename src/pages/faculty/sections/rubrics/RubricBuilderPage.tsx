@@ -142,6 +142,7 @@ export default function RubricBuilderPage() {
                     <div className="flex gap-3 items-center">
                         <CommonButton
                             color="inherit"
+                            disabled={isSaving}
                             size="small"
                             startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                             type="button"
@@ -163,6 +164,7 @@ export default function RubricBuilderPage() {
                     </div>
                     <CommonButton
                         disabled={isSaving || (!isNew && !draftGuard.hasRealChanges)}
+                        loading={isSaving}
                         size="small"
                         type="submit"
                         variant="contained"

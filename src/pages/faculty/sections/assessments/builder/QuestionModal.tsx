@@ -60,6 +60,7 @@ export default function QuestionModal({
     }, [isOpen]);
 
     function handleCloseModal() {
+        if (methods.formState.isSubmitting) return;
         if (draftGuard.hasRealChanges) {
             setIsConfirmCloseOpen(true);
             return;
@@ -199,6 +200,7 @@ export default function QuestionModal({
                 <div className="flex gap-2 justify-end">
                     <CommonButton
                         color="inherit"
+                        disabled={methods.formState.isSubmitting}
                         size="small"
                         variant="outlined"
                         onClick={handleCloseModal}
@@ -206,7 +208,8 @@ export default function QuestionModal({
                         Cancel
                     </CommonButton>
                     <CommonButton
-                        disabled={editingQuestion !== null && !draftGuard.hasRealChanges}
+                        disabled={(editingQuestion !== null && !draftGuard.hasRealChanges) || methods.formState.isSubmitting}
+                        loading={methods.formState.isSubmitting}
                         form={QUESTION_FORM_ID}
                         size="small"
                         type="submit"

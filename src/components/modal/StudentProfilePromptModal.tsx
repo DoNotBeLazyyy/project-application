@@ -245,6 +245,7 @@ export default function StudentProfilePromptModal({
                     )}
                     <CommonButton
                         disabled={isSubmitting || !firstName.trim() || !lastName.trim()}
+                        loading={isSubmitting}
                         size="small"
                         variant="contained"
                         onClick={handleSubmit}

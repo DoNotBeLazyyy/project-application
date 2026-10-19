@@ -37,6 +37,7 @@ export default function FormButtons({
     isButtonsFullWidth,
     resetProps
 }: FormButtonsProps) {
+    const isConfirmLoading = Boolean(confirmProps?.loading);
     const commonProps = {
         fullWidth: isButtonsFullWidth,
         size: 'small' as const
@@ -54,10 +55,12 @@ export default function FormButtons({
             {resetProps && <CommonButton
                 {...commonProps}
                 {...resetProps}
+                disabled={Boolean(resetProps.disabled) || isConfirmLoading}
             />}
             {cancelProps && <CommonButton
                 {...commonProps}
                 {...cancelProps}
+                disabled={Boolean(cancelProps.disabled) || isConfirmLoading}
             />}
             {confirmProps && <CommonButton
                 {...commonProps}

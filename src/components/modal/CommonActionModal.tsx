@@ -17,18 +17,37 @@ export default function CommonActionModal({
     containerClassName,
     formButtonsProps,
     hideCancel = false,
+    onClose,
     ...props
 }: CommonActionModalProps) {
     const { isMobile } = useBreakpoint();
     const isFullScreen = props.fullScreen ?? isMobile;
-    const { cancelProps, className } = formButtonsProps ?? {};
+    const { cancelProps, className, confirmProps } = formButtonsProps ?? {};
+    const isConfirmLoading = Boolean(confirmProps?.loading);
+
+    const handleClose = (event: any, reason: any) => {
+        if (isConfirmLoading) {
+            return;
+        }
+        onClose?.(event, reason);
+    };
 
     return (
         <CommonModal
             fullScreen={isFullScreen}
             {...props}
+            onClose={handleClose}
             cardProps={{
                 ...cardProps,
+                defaultActionProps: cardProps?.defaultActionProps
+                    ? {
+                        ...cardProps.defaultActionProps,
+                        onClick: (e: any) => {
+                            if (isConfirmLoading) return;
+                            cardProps.defaultActionProps?.onClick?.(e);
+                        }
+                    }
+                    : undefined,
                 sx: [
                     {
                         display: 'flex',
@@ -81,8 +100,9 @@ export default function CommonActionModal({
                         : {
                             children: 'Cancel',
                             color: 'secondary',
-                            onClick: (e: any) => props.onClose?.(e, 'backdropClick'),
+                            onClick: (e: any) => handleClose(e, 'backdropClick'),
                             variant: 'outlined',
+                            disabled: isConfirmLoading,
                             ...cancelProps
                         }}
                     className={

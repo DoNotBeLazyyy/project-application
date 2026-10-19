@@ -25,10 +25,9 @@ import {
     PlusIcon,
     TrashIcon
 } from '@phosphor-icons/react';
-import { useAppStore } from '@stores/app.store';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
@@ -303,7 +302,7 @@ export default function CourseForm({
     const [internalActiveStep, setInternalActiveStep] = useState<number>(1);
     const activeStep = externalActiveStep ?? internalActiveStep;
     const isControlledStep = externalActiveStep !== undefined;
-    const { errors } = useFormState({ control });
+    const { errors, isSubmitting } = useFormState({ control });
     const [collapsedCourseTypes, setCollapsedCourseTypes] = useState<Record<number, boolean>>({});
     const [collapsedPrereqs, setCollapsedPrereqs] = useState<Record<number, boolean>>({});
 
@@ -348,21 +347,6 @@ export default function CourseForm({
         codes: []
     });
 
-    const userProfile = useAppStore((state) => state.userProfile);
-    const activeRole = useAppStore((state) => state.activeRole);
-    const isDean = activeRole === 'Dean';
-
-    const hasInitializedDeptRef = useRef(false);
-    useEffect(() => {
-        if (!hasInitializedDeptRef.current && isDean && userProfile?.department_id && !watchedDepartmentId && setValue) {
-            hasInitializedDeptRef.current = true;
-            const controlAny = control as unknown as { _defaultValues?: Record<string, unknown> };
-            if (controlAny._defaultValues) {
-                controlAny._defaultValues.department_id = userProfile.department_id;
-            }
-            setValue('department_id', userProfile.department_id, { shouldValidate: false, shouldDirty: false });
-        }
-    }, [isDean, userProfile, watchedDepartmentId, setValue, control]);
 
     useEffect(() => {
         let isMounted = true;
@@ -471,13 +455,11 @@ export default function CourseForm({
             gridCols: 3
         },
         {
-            disabled: disabled || isDean,
+            disabled: disabled || departmentOptions.length === 0,
             fieldProps: { helperText: 'Department that owns this course' },
             label: 'Department',
             name: 'department_id',
-            options: isDean
-                ? departmentOptions.filter((d) => d.value === userProfile?.department_id)
-                : departmentOptions,
+            options: departmentOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a department' },
@@ -960,6 +942,8 @@ export default function CourseForm({
                         ) : (
                             <CommonButton
                                 color="primary"
+                                disabled={isSubmitting}
+                                loading={isSubmitting}
                                 form={formProps.id}
                                 size="medium"
                                 startIcon={<FloppyDiskIcon className="w-4 h-4" />}

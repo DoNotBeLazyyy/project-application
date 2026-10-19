@@ -99,6 +99,7 @@ export default function GradingComponentPanel({
     });
 
     function handleRequestCloseCreate() {
+        if (createMethods.formState.isSubmitting) return;
         if (createDraft.hasRealChanges) {
             setIsDiscardCreateOpen(true);
             return;
@@ -505,6 +506,7 @@ export default function GradingComponentPanel({
                     <div className="flex gap-2 justify-end">
                         <CommonButton
                             color="inherit"
+                            disabled={createMethods.formState.isSubmitting}
                             size="small"
                             variant="outlined"
                             onClick={handleRequestCloseCreate}
@@ -512,6 +514,8 @@ export default function GradingComponentPanel({
                             Cancel
                         </CommonButton>
                         <CommonButton
+                            disabled={createMethods.formState.isSubmitting}
+                            loading={createMethods.formState.isSubmitting}
                             form={CREATE_FORM_ID}
                             size="small"
                             type="submit"

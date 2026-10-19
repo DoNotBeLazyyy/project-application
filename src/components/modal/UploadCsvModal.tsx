@@ -159,6 +159,7 @@ export default function UploadCsvModal({
     }, []);
 
     function handleClose() {
+        if (isLoading) return;
         setStep('upload');
         setParsedRows([]);
         setResult(null);
@@ -359,6 +360,7 @@ export default function UploadCsvModal({
                     </p>
                     <CommonButton
                         color="inherit"
+                        disabled={isLoading}
                         size="small"
                         variant="outlined"
                         onClick={handleReupload}
@@ -381,6 +383,7 @@ export default function UploadCsvModal({
                 <div className="flex justify-end">
                     <CommonButton
                         disabled={isLoading}
+                        loading={isLoading}
                         size="small"
                         variant="contained"
                         onClick={handleConfirmImport}

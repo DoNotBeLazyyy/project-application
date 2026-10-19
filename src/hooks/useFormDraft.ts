@@ -27,6 +27,7 @@ export interface UseFormDraftResult {
 export interface FormDraftModalRegistration {
     clearDraft: () => void;
     hasRealChanges: boolean;
+    isSubmitting?: boolean;
 }
 
 export interface FormDraftModalContextValue {
@@ -265,7 +266,7 @@ export function useFormDraft<T extends FieldValues>({
 
     const effectiveEnabled = enabled && !hasParentControlOwner;
 
-    const { isSubmitSuccessful } = useFormState({ control });
+    const { isSubmitSuccessful, isSubmitting } = useFormState({ control });
     const currentValues = useWatch({ control });
 
     const defaultVals = (control as unknown as { _defaultValues?: Record<string, any> })._defaultValues;
@@ -403,7 +404,8 @@ export function useFormDraft<T extends FieldValues>({
     useEffect(() => {
         const entry: FormDraftModalRegistration = {
             clearDraft: () => clearDraftRef.current(),
-            hasRealChanges
+            hasRealChanges,
+            isSubmitting
         };
 
         if (modalContext) {
@@ -421,7 +423,7 @@ export function useFormDraft<T extends FieldValues>({
                 activeFormIdDrafts.delete(formId);
             }
         };
-    }, [modalContext, instanceId, formId, hasRealChanges]);
+    }, [modalContext, instanceId, formId, hasRealChanges, isSubmitting]);
 
     function handleContinue() {
         promptHandledRef.current = true;

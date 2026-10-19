@@ -1,7 +1,7 @@
 import Button, { ButtonProps } from '@mui/material/Button';
 import { CircleNotchIcon } from '@phosphor-icons/react';
 import { classMerge } from '@utils/css.util';
-import { ReactNode, forwardRef } from 'react';
+import { ReactNode, forwardRef, useEffect, useRef, useState } from 'react';
 
 export interface CommonButtonProps extends ButtonProps {
     // Loading icon
@@ -36,8 +36,19 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
     startIcon,
     ...props
 }, ref) => {
-    const isLoading = loading === true; // Per-button loading state flag
-    const isDisabled = disabled || isLoading; // Disable when explicitly disabled or loading
+    const isHandlingRef = useRef(false);
+    const isMountedRef = useRef(true);
+    const [asyncLoading, setAsyncLoading] = useState(false);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    const isLoading = loading !== undefined ? loading === true : asyncLoading; // Per-button loading state flag
+    const isDisabled = Boolean(disabled) || isLoading; // Disable when explicitly disabled or loading
     const spinner = loadingIcon ?? <CircleNotchIcon className="animate-spin" />;
 
     const resolvedStartIcon = isLoading
@@ -47,6 +58,32 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
     const resolvedEndIcon = isLoading
         ? (endIcon && !startIcon ? spinner : null)
         : (startIcon ? null : (endIcon ?? null));
+
+    const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (isDisabled || isHandlingRef.current) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        if (props.onClick) {
+            try {
+                const result = props.onClick(event);
+                if (result && typeof (result as any).then === 'function') {
+                    isHandlingRef.current = true;
+                    if (loading === undefined) {
+                        setAsyncLoading(true);
+                    }
+                    await result;
+                }
+            } finally {
+                isHandlingRef.current = false;
+                if (isMountedRef.current && loading === undefined) {
+                    setAsyncLoading(false);
+                }
+            }
+        }
+    };
 
     return <Button
         className={
@@ -60,6 +97,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
         ref={ref}
         startIcon={resolvedStartIcon}
         {...props}
+        onClick={handleClick}
     />;
 });
 CommonButton.displayName = 'CommonButton';
