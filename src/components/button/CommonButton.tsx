@@ -68,7 +68,7 @@ const CommonButton = forwardRef<HTMLButtonElement, CommonButtonProps>(({
 
         if (props.onClick) {
             try {
-                const result = props.onClick(event);
+                const result: unknown = props.onClick(event);
                 if (result && typeof (result as any).then === 'function') {
                     isHandlingRef.current = true;
                     if (loading === undefined) {

@@ -87,7 +87,7 @@ export default function CourseWizardModal({
                 });
                 hasError = true;
             }
-            if (ct.units === '' || ct.units === undefined || ct.units === null) {
+            if ((ct.units as unknown) === '' || ct.units === undefined || ct.units === null) {
                 methods.setError(`course_types.${i}.units` as any, {
                     type: 'manual',
                     message: `Course Type #${i + 1}: Units is required.`
@@ -116,7 +116,7 @@ export default function CourseWizardModal({
                 }
             }
 
-            if (ct.credit_hours === '' || ct.credit_hours === undefined || ct.credit_hours === null) {
+            if ((ct.credit_hours as unknown) === '' || ct.credit_hours === undefined || ct.credit_hours === null) {
                 methods.setError(`course_types.${i}.credit_hours` as any, {
                     type: 'manual',
                     message: `Course Type #${i + 1}: Credit hours is required.`

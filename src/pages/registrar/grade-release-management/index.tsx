@@ -190,6 +190,10 @@ export default function GradeRelease() {
                 const sectionsResult = await listSectionGradeSubmissions(selectedTermId, selectedPeriodId);
                 if (sectionsResult.data) {
                     setSectionRows(sectionsResult.data);
+                    setInspectedSection((prev) => {
+                        if (!prev) return null;
+                        return sectionsResult.data?.find((s) => s.section_id === prev.section_id) ?? prev;
+                    });
                 }
             }
         } catch (err) {

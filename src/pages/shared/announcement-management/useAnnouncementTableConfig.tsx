@@ -163,7 +163,7 @@ export function useAnnouncementTableConfig({
                         }] : []),
                         ...(canManage ? [{
                             onClick: () => onDelete(row.id),
-                            preset: 'delete'
+                            preset: 'delete' as const
                         }] : [])
                     ];
                 },

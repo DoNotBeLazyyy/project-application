@@ -33,7 +33,7 @@ export interface TableActionCellBaseProps<TData> {
     actionContainerClassName?: string;
     actionIconClassName?: string;
     menuOptions?: (data: TData) => MenuOption[];
-    onEditClick?: (data: TData) => VoidFunction;
+    onEditClick?: (data: TData) => VoidFunction | undefined;
 }
 
 export type TableActionCellRendererParams<TData> = ICellRendererParams<TData> & TableActionCellBaseProps<TData>;

@@ -278,7 +278,7 @@ function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCel
             min={0}
             placeholder="Enter units (0 - 10)"
             step={0.5}
-            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : units.field.value}
+            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : (units.field.value as string | number)}
             onChange={(val) => units.field.onChange(val === undefined ? '' : val)}
         />
     );
@@ -322,7 +322,7 @@ function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseT
             min={0}
             placeholder="Enter credit hours (0 - 20)"
             step={0.5}
-            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : creditHours.field.value}
+            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : (creditHours.field.value as string | number)}
             onChange={(val) => creditHours.field.onChange(val === undefined ? '' : val)}
         />
     );

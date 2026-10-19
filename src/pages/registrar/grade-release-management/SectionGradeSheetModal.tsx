@@ -126,12 +126,53 @@ export default function SectionGradeSheetModal({
         }
     }
 
+    const effectiveStatus = useMemo(function() {
+        if (!students.length) return section?.submission_status ?? 'Draft';
+        const total = students.length;
+        const released = students.filter((s) => s.status === 'Released').length;
+        const approved = students.filter((s) => s.status === 'Approved').length;
+        const submitted = students.filter((s) => s.status === 'Submitted').length;
+
+        if (released === total && total > 0) return 'Released';
+        if (approved + released === total && total > 0) return 'Approved';
+        if (submitted > 0) return 'Submitted';
+        return section?.submission_status ?? 'Draft';
+    }, [students, section]);
+
+    const hasUnreleasedGrades = useMemo(function() {
+        if (!students.length) {
+            return Boolean(
+                section &&
+                section.submission_status !== 'Released' &&
+                section.submission_status !== 'No Enrollees' &&
+                section.graded_count > 0
+            );
+        }
+        const hasSubmitted = students.some((s) => s.status === 'Submitted');
+        if (hasSubmitted) return true;
+
+        return students.some((s) => s.status !== 'Released' && s.is_evaluation_completed);
+    }, [students, section]);
+
     const canReleaseSection = Boolean(
         section &&
-        section.submission_status !== 'Released' &&
-        section.submission_status !== 'No Enrollees' &&
-        section.graded_count > 0
+        effectiveStatus !== 'Released' &&
+        effectiveStatus !== 'No Enrollees' &&
+        hasUnreleasedGrades
     );
+
+    const confirmButtonLabel = useMemo(function() {
+        if (effectiveStatus === 'Released') {
+            return 'All Grades Released';
+        }
+        if (effectiveStatus === 'Approved') {
+            if (!hasUnreleasedGrades && stats.evalBlocked > 0) {
+                return 'Awaiting Student Evaluations';
+            }
+            return 'Release to Students';
+        }
+        return 'Approve & Release';
+    }, [effectiveStatus, hasUnreleasedGrades, stats.evalBlocked]);
 
     if (!section) {
         return null;
@@ -156,7 +197,7 @@ export default function SectionGradeSheetModal({
                         children: (
                             <div className="flex gap-1.5 items-center">
                                 <SealCheckIcon size={16} weight="bold" />
-                                <span>{section.submission_status === 'Approved' ? 'Release to Students' : 'Approve & Release'}</span>
+                                <span>{confirmButtonLabel}</span>
                             </div>
                         ),
                         disabled: !canReleaseSection || isReleasing,
@@ -184,7 +225,7 @@ export default function SectionGradeSheetModal({
                                 </span>
                             )}
                             <span className="text-(--mui-palette-text-secondary)">
-                                Status: <CommonBadgeStatus label={section.submission_status} variant={resolveGradeStatusVariant(section.submission_status)} />
+                                Status: <CommonBadgeStatus label={effectiveStatus} variant={resolveGradeStatusVariant(effectiveStatus)} />
                             </span>
                         </div>
                     </div>

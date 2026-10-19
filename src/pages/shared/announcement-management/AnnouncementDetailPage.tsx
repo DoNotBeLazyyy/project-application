@@ -6,7 +6,7 @@ import EventViewerCard from '@pages/shared/announcement-management/EventViewerCa
 import { createAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
 import { createEvent, getEventById, updateEvent } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
-import { CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
+import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
 import { canManageCommunication } from '@utils/communication.util';
