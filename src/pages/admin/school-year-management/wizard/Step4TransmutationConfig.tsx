@@ -12,7 +12,8 @@ import {
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
-import { useEffect, useState } from 'react';
+import { checkForMessage, clearFieldError } from '@utils/form.util';
+import { useEffect, useMemo, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
     isSpecialGradeRow
@@ -33,6 +34,7 @@ export default function Step4TransmutationConfig({
     const [collapsedRungs, setCollapsedRungs] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
+    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.transmutation_rows && Array.isArray(errors.transmutation_rows)) {
@@ -222,7 +224,10 @@ export default function Step4TransmutationConfig({
                                         placeholder="e.g. Excellent, Incomplete, Dropped"
                                         size="small"
                                         value={row.description || ''}
-                                        onChange={(e) => setValue(`transmutation_rows.${index}.description`, e.target.value, { shouldDirty: true })}
+                                        onChange={(e) => {
+                                            clearFieldError(control, `transmutation_rows.${index}.description`);
+                                            setValue(`transmutation_rows.${index}.description`, e.target.value, { shouldDirty: true });
+                                        }}
                                     />
                                 </div>
 
@@ -249,15 +254,22 @@ export default function Step4TransmutationConfig({
                             </div>
 
                             {/* Row 3: Mark, Min and Max (when Fixed Range) vs Mark only (when Conditional) */}
-                            {isCond ? (
+                            {(() => {
+                                const isLabelFirstError = firstErrorKey === `transmutation_rows.${index}.label`;
+                                const isMinFirstError = firstErrorKey === `transmutation_rows.${index}.min_percentage`;
+                                const isMaxFirstError = firstErrorKey === `transmutation_rows.${index}.max_percentage`;
+
+                                return isCond ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
                                         <CommonInput
+                                            defaultOpenErrorTooltip={isLabelFirstError}
                                             description="Status grade code (e.g. INC, DRP, W, NFE)."
                                             disabled={disabled}
                                             error={Boolean((errors.transmutation_rows as any)?.[index]?.label)}
                                             fullWidth
                                             helperText={(errors.transmutation_rows as any)?.[index]?.label?.message}
+                                            isFirstError={isLabelFirstError}
                                             isRequired
                                             label="Mark / Grade"
                                             name={`transmutation_rows.${index}.label`}
@@ -265,8 +277,10 @@ export default function Step4TransmutationConfig({
                                             size="small"
                                             value={row.label}
                                             onChange={(e) => {
+                                                clearFieldError(control, `transmutation_rows.${index}.label`);
+                                                clearFieldError(control, 'transmutation_rows');
                                                 const val = e.target.value;
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
                                                 setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.special_code`, val.trim().toUpperCase(), { shouldDirty: true });
                                             }}
@@ -278,11 +292,13 @@ export default function Step4TransmutationConfig({
                                     {/* Mark / Grade */}
                                     <div>
                                         <CommonInput
+                                            defaultOpenErrorTooltip={isLabelFirstError}
                                             description="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)."
                                             disabled={disabled}
                                             error={Boolean((errors.transmutation_rows as any)?.[index]?.label)}
                                             fullWidth
                                             helperText={(errors.transmutation_rows as any)?.[index]?.label?.message}
+                                            isFirstError={isLabelFirstError}
                                             isRequired
                                             label="Mark / Grade"
                                             name={`transmutation_rows.${index}.label`}
@@ -290,9 +306,11 @@ export default function Step4TransmutationConfig({
                                             size="small"
                                             value={row.label}
                                             onChange={(e) => {
+                                                clearFieldError(control, `transmutation_rows.${index}.label`);
+                                                clearFieldError(control, 'transmutation_rows');
                                                 const val = e.target.value;
                                                 const numeric = parseFloat(val);
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true });
+                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
                                                 setValue(`transmutation_rows.${index}.transmuted_grade`, isNaN(numeric) ? null : numeric, { shouldDirty: true });
                                                 setValue(`transmutation_rows.${index}.special_code`, null, { shouldDirty: true });
                                             }}
@@ -302,11 +320,13 @@ export default function Step4TransmutationConfig({
                                     {/* Min % */}
                                     <div>
                                         <CommonNumberInput
+                                            defaultOpenErrorTooltip={isMinFirstError}
                                             description="Minimum raw percentage required for this fixed grade mark."
                                             disabled={disabled}
                                             error={Boolean((errors.transmutation_rows as any)?.[index]?.min_percentage)}
                                             fullWidth
                                             helperText={(errors.transmutation_rows as any)?.[index]?.min_percentage?.message}
+                                            isFirstError={isMinFirstError}
                                             isRequired
                                             label="Min %"
                                             max={100}
@@ -317,10 +337,12 @@ export default function Step4TransmutationConfig({
                                             suffixText="%"
                                             value={row.min_percentage ?? ''}
                                             onChange={(val) => {
+                                                clearFieldError(control, `transmutation_rows.${index}.min_percentage`);
+                                                clearFieldError(control, 'transmutation_rows');
                                                 setValue(
                                                     `transmutation_rows.${index}.min_percentage`,
                                                     val === undefined ? null : val,
-                                                    { shouldDirty: true }
+                                                    { shouldDirty: true, shouldValidate: true }
                                                 );
                                             }}
                                         />
@@ -329,11 +351,13 @@ export default function Step4TransmutationConfig({
                                     {/* Max % */}
                                     <div>
                                         <CommonNumberInput
+                                            defaultOpenErrorTooltip={isMaxFirstError}
                                             description="Maximum raw percentage allocated to this fixed grade mark."
                                             disabled={disabled}
                                             error={Boolean((errors.transmutation_rows as any)?.[index]?.max_percentage)}
                                             fullWidth
                                             helperText={(errors.transmutation_rows as any)?.[index]?.max_percentage?.message}
+                                            isFirstError={isMaxFirstError}
                                             isRequired
                                             label="Max %"
                                             max={100}
@@ -344,20 +368,37 @@ export default function Step4TransmutationConfig({
                                             suffixText="%"
                                             value={row.max_percentage ?? ''}
                                             onChange={(val) => {
+                                                clearFieldError(control, `transmutation_rows.${index}.max_percentage`);
+                                                clearFieldError(control, 'transmutation_rows');
                                                 setValue(
                                                     `transmutation_rows.${index}.max_percentage`,
                                                     val === undefined ? null : val,
-                                                    { shouldDirty: true }
+                                                    { shouldDirty: true, shouldValidate: true }
                                                 );
                                             }}
                                         />
                                     </div>
                                 </div>
-                            )}
+                            );
+                            })()}
                             </div>
                         </div>
                     );
                 })}
+
+                {!disabled && fields.length > 0 && (
+                    <div className="flex justify-start pt-1">
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                            variant="contained"
+                            onClick={handleAddRow}
+                        >
+                            Add Grade Row
+                        </CommonButton>
+                    </div>
+                )}
             </div>
 
             {/* Delete Grade Rung Prompt Modal */}

@@ -16,7 +16,8 @@ import {
 import { getTermTypes } from '@services/term/term-type.service';
 import { AcademicYearWizardFormValues, WizardTermItem } from '@type/school-year.type';
 import { TermTypeOption } from '@type/term/term-type.type';
-import { useEffect, useState } from 'react';
+import { checkForMessage, clearFieldError } from '@utils/form.util';
+import { useEffect, useMemo, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step2TermsConfigProps {
@@ -40,6 +41,7 @@ export default function Step2TermsConfig({
     }
 
     const { errors } = useFormState({ control });
+    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.terms && Array.isArray(errors.terms)) {
@@ -265,11 +267,13 @@ export default function Step2TermsConfig({
                                 {/* Term Type Input */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                                     <CommonInput
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.term_type_label`}
                                         description="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)."
                                         disabled={disabled}
                                         error={Boolean(otherTermsHaveThisType || (errors.terms as any)?.[index]?.term_type_label)}
                                         fullWidth
                                         helperText={otherTermsHaveThisType ? 'Duplicate term name' : (errors.terms as any)?.[index]?.term_type_label?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.term_type_label`}
                                         isRequired
                                         label="Term Type / Name"
                                         name={`terms.${index}.term_type_label`}
@@ -277,6 +281,7 @@ export default function Step2TermsConfig({
                                         size="small"
                                         value={currentTerm.term_type_label || ''}
                                         onChange={(e) => {
+                                            clearFieldError(control, `terms.${index}.term_type_label`);
                                             const newLabel = e.target.value;
                                             const matched = termTypes.find((t) => t.label.toLowerCase() === newLabel.trim().toLowerCase());
                                             setValue(`terms.${index}.term_type_label`, newLabel, { shouldDirty: true, shouldValidate: true });
@@ -293,43 +298,55 @@ export default function Step2TermsConfig({
                                 {/* Term Start Date */}
                                 <div>
                                     <CommonDatePicker
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.start_date`}
                                         description="Official date when classes begin for this term."
                                         disabled={disabled}
                                         error={Boolean(hasPrecedingConflict || (errors.terms as any)?.[index]?.start_date)}
                                         helperText={hasPrecedingConflict ? 'Start date conflicts with preceding term' : (errors.terms as any)?.[index]?.start_date?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.start_date`}
                                         isRequired
                                         label="Term Start Date"
                                         size="small"
                                         slotProps={{ textField: { name: `terms.${index}.start_date` } }}
                                         value={currentTerm.start_date || ''}
-                                        onChange={(val) => handleUpdateTermDate(index, 'start_date', val)}
+                                        onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.start_date`);
+                                            handleUpdateTermDate(index, 'start_date', val);
+                                        }}
                                     />
                                 </div>
 
                                 {/* Term End Date */}
                                 <div>
                                     <CommonDatePicker
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.end_date`}
                                         description="Official date when classes conclude for this term."
                                         disabled={disabled}
                                         error={Boolean(hasDateOrderError || (errors.terms as any)?.[index]?.end_date)}
                                         helperText={hasDateOrderError ? 'End date must be after start date' : (errors.terms as any)?.[index]?.end_date?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.end_date`}
                                         isRequired
                                         label="Term End Date"
                                         size="small"
                                         slotProps={{ textField: { name: `terms.${index}.end_date` } }}
                                         value={currentTerm.end_date || ''}
-                                        onChange={(val) => handleUpdateTermDate(index, 'end_date', val)}
+                                        onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.end_date`);
+                                            handleUpdateTermDate(index, 'end_date', val);
+                                        }}
                                     />
                                 </div>
 
                                 {/* Max Credit Units for this term */}
                                 <div>
                                     <CommonNumberInput
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.max_units`}
                                         description="Maximum credit units a student can register for in this term (1 - 60)."
                                         disabled={disabled}
                                         error={Boolean((errors.terms as any)?.[index]?.max_units)}
                                         fullWidth
                                         helperText={(errors.terms as any)?.[index]?.max_units?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.max_units`}
                                         isRequired
                                         label="Max Units"
                                         max={60}
@@ -339,6 +356,7 @@ export default function Step2TermsConfig({
                                         size="small"
                                         value={currentTerm.max_units ?? ''}
                                         onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.max_units`);
                                             setValue(`terms.${index}.max_units`, val as any, { shouldDirty: true, shouldValidate: true });
                                         }}
                                     />
@@ -347,15 +365,18 @@ export default function Step2TermsConfig({
                                 {/* Enrollment Start Date */}
                                 <div>
                                     <CommonDatePicker
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.enrollment_start_date`}
                                         description="Date when student course registration and online enrollment opens."
                                         disabled={disabled}
                                         error={Boolean((errors.terms as any)?.[index]?.enrollment_start_date)}
                                         helperText={(errors.terms as any)?.[index]?.enrollment_start_date?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.enrollment_start_date`}
                                         label="Enrollment Opens"
                                         size="small"
                                         slotProps={{ textField: { name: `terms.${index}.enrollment_start_date` } }}
                                         value={currentTerm.enrollment_start_date || ''}
                                         onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.enrollment_start_date`);
                                             setValue(`terms.${index}.enrollment_start_date`, val, { shouldDirty: true, shouldValidate: true });
                                         }}
                                     />
@@ -364,15 +385,18 @@ export default function Step2TermsConfig({
                                 {/* Enrollment End Date */}
                                 <div>
                                     <CommonDatePicker
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.enrollment_end_date`}
                                         description="Final date for student course registration, late enrollment, and add-drop requests."
                                         disabled={disabled}
                                         error={Boolean((errors.terms as any)?.[index]?.enrollment_end_date)}
                                         helperText={(errors.terms as any)?.[index]?.enrollment_end_date?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.enrollment_end_date`}
                                         label="Enrollment Closes"
                                         size="small"
                                         slotProps={{ textField: { name: `terms.${index}.enrollment_end_date` } }}
                                         value={currentTerm.enrollment_end_date || ''}
                                         onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.enrollment_end_date`);
                                             setValue(`terms.${index}.enrollment_end_date`, val, { shouldDirty: true, shouldValidate: true });
                                         }}
                                     />
@@ -381,15 +405,18 @@ export default function Step2TermsConfig({
                                 {/* Grading Submission Deadline */}
                                 <div>
                                     <CommonDatePicker
+                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.grading_deadline`}
                                         description="Final deadline for faculty to encode and submit final grades."
                                         disabled={disabled}
                                         error={Boolean((errors.terms as any)?.[index]?.grading_deadline)}
                                         helperText={(errors.terms as any)?.[index]?.grading_deadline?.message}
+                                        isFirstError={firstErrorKey === `terms.${index}.grading_deadline`}
                                         label="Grading Deadline"
                                         size="small"
                                         slotProps={{ textField: { name: `terms.${index}.grading_deadline` } }}
                                         value={currentTerm.grading_deadline || ''}
                                         onChange={(val) => {
+                                            clearFieldError(control, `terms.${index}.grading_deadline`);
                                             setValue(`terms.${index}.grading_deadline`, val, { shouldDirty: true, shouldValidate: true });
                                         }}
                                     />
@@ -419,6 +446,21 @@ export default function Step2TermsConfig({
                     );
                 })}
             </div>
+
+            {!disabled && fields.length > 0 && (
+                <div className="flex justify-end pt-2">
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        startIcon={<PlusIcon className="w-4 h-4" />}
+                        variant="contained"
+                        onClick={handleAddTerm}
+                        title="Add Term"
+                    >
+                        Add Term
+                    </CommonButton>
+                </div>
+            )}
 
             {/* Delete Term Prompt */}
             <DeletePromptModal

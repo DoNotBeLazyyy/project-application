@@ -1,4 +1,5 @@
 import { CommonChip } from '@components/badge/CommonChip';
+import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import {
@@ -9,6 +10,7 @@ import {
 } from '@phosphor-icons/react';
 import { AnnouncementAudience, AnnouncementFeedRow } from '@type/announcement.type';
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface AnnouncementsFeedCardProps {
     announcements: AnnouncementFeedRow[];
@@ -36,6 +38,13 @@ function formatPublishedAt(announcement: AnnouncementFeedRow): string {
 export { AnnouncementDetailModal };
 
 export default function AnnouncementsFeedCard({ announcements, error }: AnnouncementsFeedCardProps) {
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const roleSegment = pathname.split('/')[1] || 'student';
+    const viewAllUrl = roleSegment === 'student'
+        ? '/student/announcement-management'
+        : `/${roleSegment}/announcement-management?mode=viewing`;
+
     const [detailAnnouncement, setDetailAnnouncement] = useState<AnnouncementFeedRow | null>(null);
 
     function handleClose() {
@@ -45,6 +54,16 @@ export default function AnnouncementsFeedCard({ announcements, error }: Announce
     return (
         <CommonCard
             cardHeaderProps={{
+                action: (
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        variant="text"
+                        onClick={() => navigate(viewAllUrl)}
+                    >
+                        View all
+                    </CommonButton>
+                ),
                 subheader: 'The latest posts addressed to you.',
                 title: 'Announcements'
             }}

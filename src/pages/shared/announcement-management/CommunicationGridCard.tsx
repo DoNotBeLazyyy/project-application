@@ -2,24 +2,31 @@ import BentoCardActionMenu from '@components/card/BentoCardActionMenu';
 import CommonBentoCard from '@components/card/CommonBentoCard';
 import { EyeIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { CommunicationListRow } from '@type/announcement.type';
+import { canManageCommunication } from '@utils/communication.util';
 import { formatShortDate } from '@utils/date.util';
 
 export interface CommunicationGridCardProps {
+    currentUserId?: string | null;
+    currentUserRole?: string | null;
     isSelected: boolean;
     row: CommunicationListRow;
-    onEdit: (id: string) => void;
-    onRequestDelete: (id: string) => void;
-    onToggleSelect: () => void;
+    onEdit?: (id: string) => void;
+    onRequestDelete?: (id: string) => void;
+    onToggleSelect?: () => void;
     onView: (id: string) => void;
+    isViewingOnly?: boolean;
 }
 
 export default function CommunicationGridCard({
+    currentUserId,
+    currentUserRole,
     isSelected,
     row,
     onEdit,
     onRequestDelete,
     onToggleSelect,
-    onView
+    onView,
+    isViewingOnly = false
 }: CommunicationGridCardProps) {
     let status = 'Announcement';
     if (row.item_type === 'Event') {
@@ -33,6 +40,8 @@ export default function CommunicationGridCard({
         ? `${row.section_count || 1} Section(s)`
         : row.target_audience;
 
+    const canManage = !isViewingOnly && canManageCommunication(row, currentUserId, currentUserRole);
+
     return (
         <CommonBentoCard
             actionMenu={(
@@ -44,19 +53,19 @@ export default function CommunicationGridCard({
                             label: 'View',
                             onClick: () => onView(row.id)
                         },
-                        {
+                        ...(canManage && onEdit ? [{
                             icon: <PencilSimpleIcon size={18} weight="bold" />,
                             key: 'edit',
                             label: 'Edit',
                             onClick: () => onEdit(row.id)
-                        },
-                        {
+                        }] : []),
+                        ...(canManage && onRequestDelete ? [{
                             destructive: true,
                             icon: <TrashIcon size={18} weight="bold" />,
                             key: 'delete',
                             label: 'Delete',
                             onClick: () => onRequestDelete(row.id)
-                        }
+                        }] : [])
                     ]}
                     ariaLabel="Communication item actions"
                 />
@@ -73,11 +82,11 @@ export default function CommunicationGridCard({
                     ? [{ label: 'Attachments', value: `${row.attachment_count}` }]
                     : [])
             ]}
-            selectVariant="button"
+            selectVariant={isViewingOnly || !canManage ? undefined : 'button'}
             status={status}
             title={row.title}
             onClick={() => onView(row.id)}
-            onToggleSelect={onToggleSelect}
+            onToggleSelect={isViewingOnly || !canManage ? undefined : onToggleSelect}
         />
     );
 }

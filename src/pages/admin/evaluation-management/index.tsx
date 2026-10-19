@@ -57,18 +57,22 @@ const DEFAULT_FORM_VALUES: EvaluationTemplateForm = {
     description: '',
     is_active: true,
     sequence: '1',
-    target_mode: 'INCLUDE',
+    target_mode: 'ALL',
     suggestion_placeholder: '',
     program_ids: [],
     questions: DEFAULT_QUESTIONS
 };
 
-function formatPrograms(programIds: string[]): string {
-    if (!programIds.length) {
+function formatPrograms(programIds: string[], targetMode?: string): string {
+    if (!targetMode || targetMode === 'ALL' || !programIds.length) {
         return 'All programs';
     }
 
-    return 'Selected only';
+    if (targetMode === 'EXCLUDE') {
+        return `Exclude (${programIds.length})`;
+    }
+
+    return `Include (${programIds.length})`;
 }
 
 export default function EvaluationManagement() {
@@ -117,7 +121,7 @@ export default function EvaluationManagement() {
                 description: res.data.description ?? '',
                 is_active: res.data.is_active,
                 sequence: String(res.data.sequence ?? 1),
-                target_mode: res.data.target_mode ?? 'INCLUDE',
+                target_mode: res.data.target_mode ?? 'ALL',
                 suggestion_placeholder: res.data.suggestion_placeholder ?? '',
                 program_ids: res.data.program_ids ?? [],
                 questions: res.data.questions.length
@@ -181,7 +185,19 @@ export default function EvaluationManagement() {
     async function handleCreateSubmit(values: EvaluationTemplateForm) {
         setIsSaving(true);
         try {
-            const res = await createEvaluationTemplate(values);
+            const sanitizedValues: EvaluationTemplateForm = {
+                ...values,
+                title: values.title.trim(),
+                description: values.description ? values.description.trim() : '',
+                suggestion_placeholder: values.suggestion_placeholder ? values.suggestion_placeholder.trim() : '',
+                target_mode: values.target_mode || 'ALL',
+                program_ids: values.target_mode === 'ALL' ? [] : (values.program_ids ?? []),
+                questions: (values.questions ?? []).map((q) => ({
+                    ...q,
+                    question_text: q.question_text.trim()
+                }))
+            };
+            const res = await createEvaluationTemplate(sanitizedValues);
             if (!res.error) {
                 useToastStore.getState().showToast('Evaluation section created successfully.', 'success');
                 handleCloseCreate();
@@ -201,6 +217,8 @@ export default function EvaluationManagement() {
                 title: values.title.trim(),
                 description: values.description ? values.description.trim() : '',
                 suggestion_placeholder: values.suggestion_placeholder ? values.suggestion_placeholder.trim() : '',
+                target_mode: values.target_mode || 'ALL',
+                program_ids: values.target_mode === 'ALL' ? [] : (values.program_ids ?? []),
                 questions: (values.questions ?? []).map((q) => ({
                     ...q,
                     question_text: q.question_text.trim()
@@ -240,7 +258,8 @@ export default function EvaluationManagement() {
                 headerName: 'Programs',
                 sortable: false,
                 valueGetter: (params) => formatPrograms(
-                    params.data?.program_ids ?? []
+                    params.data?.program_ids ?? [],
+                    params.data?.target_mode
                 )
             },
             {
@@ -321,7 +340,8 @@ export default function EvaluationManagement() {
                         <EvaluationTemplateGridCard
                             isSelected={isSelected}
                             programsLabel={formatPrograms(
-                                item.program_ids ?? []
+                                item.program_ids ?? [],
+                                item.target_mode
                             )}
                             row={item}
                             onEdit={function(id) {

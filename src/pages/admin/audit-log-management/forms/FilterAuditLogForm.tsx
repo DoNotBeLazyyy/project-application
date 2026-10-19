@@ -9,41 +9,61 @@ import { Control } from 'react-hook-form';
 interface FilterAuditLogFormProps extends ComponentPropsForm {
     control: Control<AuditLogFilterValues>;
     tableOptions: CommonSelectOption[];
+    eventOptions?: CommonSelectOption[];
+    operatorOptions?: CommonSelectOption[];
+    actionOptions?: CommonSelectOption[];
 }
 
 export default function FilterAuditLogForm({
     control,
     tableOptions,
+    eventOptions = [],
+    operatorOptions = [],
+    actionOptions = ACTION_OPTIONS,
     ...formProps
 }: FilterAuditLogFormProps) {
     const fields: FormFieldConfig<AuditLogFilterValues>[] = [
         {
-            label: 'Action',
+            label: 'Action Type',
             name: 'action',
-            options: ACTION_OPTIONS,
+            options: actionOptions,
             type: 'select'
         },
         {
-            label: 'Table',
+            label: 'Transaction Event',
+            name: 'event_name',
+            options: [{ label: 'All Events', value: 'All' }, ...eventOptions],
+            type: 'select'
+        },
+        {
+            label: 'Target Entity / Table',
             name: 'table_name',
             options: [{ label: 'All Tables', value: 'All' }, ...tableOptions],
             type: 'select'
         },
         {
-            label: 'From',
+            label: 'Operator / Performed By',
+            name: 'changed_by',
+            options: [{ label: 'All Operators', value: 'All' }, ...operatorOptions],
+            type: 'select'
+        },
+        {
+            label: 'Date From',
             name: 'date_from',
             type: 'date'
         },
         {
-            label: 'To',
+            label: 'Date To',
             name: 'date_to',
             type: 'date'
         }
     ];
 
-    return <CommonForm
-        control={control}
-        fields={fields}
-        formProps={formProps}
-    />;
+    return (
+        <CommonForm
+            control={control}
+            fields={fields}
+            formProps={formProps}
+        />
+    );
 }

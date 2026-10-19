@@ -144,7 +144,8 @@ export default function AiAssistant() {
     const lastMessage = messages[messages.length - 1];
     const canShowFollowUps = !isSending
         && suggestions.length > 0
-        && (!lastMessage || (lastMessage.role === 'assistant' && !lastMessage.isFailed));
+        && lastMessage?.role === 'assistant'
+        && !lastMessage.isFailed;
 
     useEffect(function() {
         if (scrollRef.current) {

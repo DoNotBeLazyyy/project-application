@@ -1,6 +1,7 @@
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import CalendarActionMenu from '@pages/shared/calendar/CalendarActionMenu';
 import { CalendarAgendaView } from '@pages/shared/calendar/CalendarAgendaView';
+import { CalendarDayView } from '@pages/shared/calendar/CalendarDayView';
 import { CalendarEventDetailModal } from '@pages/shared/calendar/CalendarEventDetailModal';
 import { CalendarMiniMonth } from '@pages/shared/calendar/CalendarMiniMonth';
 import { CalendarMonthView } from '@pages/shared/calendar/CalendarMonthView';
@@ -198,5 +199,27 @@ describe('Calendar Component Rendering Tests', () => {
         const weekBtn = screen.getByRole('button', { name: /week view/i });
         fireEvent.click(weekBtn);
         expect(onSelectViewMode).toHaveBeenCalledWith('week');
+    });
+
+    it('renders CalendarDayView without redundant day header text and shows timeline slots', () => {
+        const onSelectEvent = vi.fn();
+        const testDate = new Date(2026, 8, 27); // Sunday, September 27, 2026
+
+        render(
+            <CalendarDayView
+                date={testDate}
+                events={[]}
+                onSelectEvent={onSelectEvent}
+            />
+        );
+
+        // Day header items should be removed
+        expect(screen.queryByText('Sunday')).toBeNull();
+        expect(screen.queryByText(/September 27, 2026/i)).toBeNull();
+        expect(screen.queryByText(/Scheduled Items/i)).toBeNull();
+
+        // Hourly timeline is present
+        expect(screen.getByText('7:00 AM')).toBeInTheDocument();
+        expect(screen.getByText('12:00 PM')).toBeInTheDocument();
     });
 });

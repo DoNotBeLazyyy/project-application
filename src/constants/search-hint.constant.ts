@@ -2,10 +2,11 @@ export const SEARCH_HINTS: Record<string, readonly string[]> = {
     academicThresholds: ['Threshold code', 'Threshold label', 'Category'],
     announcements: ['Title', 'Content'],
     auditLogs: [
-        'Changed by name',
-        'Student name',
-        'Field changed',
-        'Change reason'
+        'Transaction event (e.g. USER_PROVISIONED)',
+        'Action type (INSERT, UPDATE, DELETE)',
+        'Entity or table name',
+        'Operator or user name',
+        'Summary description'
     ],
     courses: ['Course code', 'Course title'],
     courseTypes: ['Course type name', 'Course type code'],

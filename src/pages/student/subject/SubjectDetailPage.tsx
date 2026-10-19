@@ -26,37 +26,46 @@ export default function SubjectDetailPage() {
     const [attendance, setAttendance] = useState<StudentSubjectAttendanceItem[] | null>(null);
     const [grades, setGrades] = useState<SubjectGradeItem[] | null>(null);
 
+    const effectiveEnrollmentId = subject?.enrollment_id || enrollmentId;
+
     useEffect(function() {
         if (!enrollmentId) return;
 
         async function fetchSubject() {
             const result = await getSubjectDetail(enrollmentId);
-            if (result.data) setSubject(result.data);
+            if (result.data) {
+                setSubject(result.data);
+                // If the parameter was a sectionId rather than enrollmentId, smoothly sync to canonical enrollment URL
+                if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
+                    navigate(`/student/subjects/${result.data.enrollment_id}`, { replace: true });
+                }
+            }
         }
 
         fetchSubject();
-    }, [enrollmentId]);
+    }, [enrollmentId, navigate]);
 
     useEffect(function() {
-        if (!enrollmentId) return;
+        if (!effectiveEnrollmentId) return;
 
         async function fetchAssessments() {
-            const result = await getSubjectAssessments(enrollmentId);
+            const result = await getSubjectAssessments(effectiveEnrollmentId);
             if (result.data) setAssessments(result.data);
         }
 
         async function fetchAttendance() {
-            const result = await getSubjectAttendance(enrollmentId);
+            const result = await getSubjectAttendance(effectiveEnrollmentId);
             if (result.data) setAttendance(result.data);
         }
 
         if (activeTab === 'assessments' && assessments === null) fetchAssessments();
         if (activeTab === 'attendance' && attendance === null) fetchAttendance();
         if (activeTab === 'grades' && grades === null) fetchGrades();
-    }, [activeTab, assessments, attendance, enrollmentId, grades]);
+    }, [activeTab, assessments, attendance, effectiveEnrollmentId, grades]);
 
     async function fetchGrades() {
-        const result = await getSubjectGrades(enrollmentId);
+        if (!effectiveEnrollmentId) return;
+        const result = await getSubjectGrades(effectiveEnrollmentId);
         if (result.data) setGrades(result.data);
     }
 
@@ -154,7 +163,7 @@ export default function SubjectDetailPage() {
                 {activeTab === 'assessments' && (
                     <SubjectAssessmentList
                         assessments={assessments ?? []}
-                        enrollmentId={enrollmentId}
+                        enrollmentId={effectiveEnrollmentId}
                     />
                 )}
                 {activeTab === 'attendance' && (
@@ -162,7 +171,7 @@ export default function SubjectDetailPage() {
                 )}
                 {activeTab === 'grades' && (
                     <SubjectGradeList
-                        enrollmentId={enrollmentId}
+                        enrollmentId={effectiveEnrollmentId}
                         grades={grades ?? []}
                     />
                 )}

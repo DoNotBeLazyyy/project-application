@@ -326,7 +326,7 @@ export default function BulkImportModal<TPayload>({
 
         const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
         const missingHeaders = (activeColumns || []).filter(
-            (col) => !matchedColumns.some((matched) => matched?.key === col.key)
+            (col) => col.required !== false && !matchedColumns.some((matched) => matched?.key === col.key)
         )
             .map((col) => col.label);
 

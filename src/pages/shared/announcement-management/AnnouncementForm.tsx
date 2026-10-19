@@ -14,6 +14,7 @@ import { Control, useController, useWatch } from 'react-hook-form';
 export interface AnnouncementFormProps extends ComponentPropsForm {
     control: Control<CommunicationFormValues>;
     disabled?: boolean;
+    isTypeDisabled?: boolean;
 }
 
 export const ITEM_TYPE_OPTIONS: CommonSelectOption[] = [
@@ -41,6 +42,7 @@ function validateSections(value: unknown): string | true {
 export default function AnnouncementForm({
     control,
     disabled,
+    isTypeDisabled = false,
     ...formProps
 }: AnnouncementFormProps) {
     const activeRole = useAppStore((s) => s.activeRole);
@@ -103,6 +105,19 @@ export default function AnnouncementForm({
         name: 'description'
     });
 
+    const {
+        field: { value: itemTypeValue, onChange: setItemType }
+    } = useController({
+        control,
+        name: 'item_type'
+    });
+
+    useEffect(function() {
+        if (isTypeDisabled && itemTypeValue !== 'Event') {
+            setItemType('Event');
+        }
+    }, [isTypeDisabled, itemTypeValue, setItemType]);
+
     useEffect(function() {
         if (isFacultyOnly && audienceValue !== 'Section') {
             setTargetAudience('Section');
@@ -156,12 +171,16 @@ export default function AnnouncementForm({
             ]
             : []),
         {
-            disabled,
-            fieldProps: { helperText: 'Select whether this post is an Announcement or a scheduled Event' },
+            disabled: disabled || isTypeDisabled,
+            fieldProps: {
+                helperText: isTypeDisabled
+                    ? 'Event post for the campus calendar'
+                    : 'Select whether this post is an Announcement or a scheduled Event'
+            },
             label: 'Type',
             name: 'item_type',
             options: ITEM_TYPE_OPTIONS,
-            rules: disabled
+            rules: disabled || isTypeDisabled
                 ? undefined
                 : { required: 'Type is required' },
             type: 'select'

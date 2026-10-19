@@ -1,7 +1,5 @@
 import {
-    CalendarBlankIcon,
     ClockIcon,
-    GraduationCapIcon,
     MapPinIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
@@ -47,44 +45,11 @@ export function CalendarDayView({
         return events.filter((ev) => !ev.allDay && isSameDay(ev.start, date));
     }, [events, date]);
 
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-    const fullDateStr = date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-    });
-
-    const isToday = isSameDay(date, new Date());
-
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col">
-            {/* Day Header */}
-            <div className="p-3.5 sm:p-5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-neutral-900 dark:text-white">
-                            {dayName}
-                        </span>
-                        {isToday && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                                Today
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        {fullDateStr}
-                    </div>
-                </div>
-
-                <div className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
-                    {allDayEvents.length + timedEvents.length} Scheduled{' '}
-                    {allDayEvents.length + timedEvents.length === 1 ? 'Item' : 'Items'}
-                </div>
-            </div>
-
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">
             {/* All-Day Events Section */}
             {allDayEvents.length > 0 && (
-                <div className="p-4 bg-neutral-50/40 dark:bg-neutral-800/20 border-b border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                <div className="p-4 bg-neutral-50/40 dark:bg-neutral-800/20 border-b border-neutral-200/80 dark:border-neutral-800 space-y-2 shrink-0">
                     <div className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                         All-Day Items & Milestones
                     </div>
@@ -114,7 +79,7 @@ export function CalendarDayView({
             )}
 
             {/* Hourly Schedule Timeline */}
-            <div className="overflow-y-auto max-h-[640px] divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
+            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
                 {HOURS.map((hour) => {
                     const hourLabel = `${hour % 12 === 0 ? 12 : hour % 12}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
                     const slotEvents = timedEvents.filter((ev) => ev.start.getHours() === hour);

@@ -1,8 +1,7 @@
-import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
+import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
-    ArrowsClockwiseIcon,
     CalendarBlankIcon,
     CalendarDotsIcon,
     CaretLeftIcon,
@@ -10,14 +9,13 @@ import {
     ClockIcon,
     FunnelIcon,
     GridFourIcon,
-    ListBulletsIcon,
-    PlusIcon
+    ListBulletsIcon
 } from '@phosphor-icons/react';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { changeMonthUtil } from '@utils/calendar.util';
 import { DateTime } from 'luxon';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarActionMenu from './CalendarActionMenu';
 import { CalendarAgendaView } from './CalendarAgendaView';
 import { CalendarDayView } from './CalendarDayView';
@@ -34,6 +32,7 @@ import { useCalendarData } from './useCalendarData';
 
 export default function CalendarPage() {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -171,80 +170,48 @@ export default function CalendarPage() {
 
     return (
         <CommonCard
-            className="flex flex-col min-h-full md:h-full w-full overflow-visible md:overflow-hidden"
-            infoContent={roleSubtitle}
+            className="flex flex-col h-full w-full overflow-hidden"
             cardHeaderProps={{
                 title: (
-                    <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
                             <CalendarBlankIcon className="sm:hidden" size={18} weight="duotone" />
                             <CalendarBlankIcon className="hidden sm:inline" size={22} weight="duotone" />
                         </div>
-                        <div className="min-w-0">
-                            <h1 className="text-base sm:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 truncate">
-                                Academic & Campus Calendar
-                            </h1>
-                            <p className="text-xs text-(--mui-palette-text-secondary) mt-0.5 m-0 hidden sm:block">
-                                {roleSubtitle}
-                            </p>
-                        </div>
+                        <h1 className="text-sm sm:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 inline-flex items-center gap-1.5 flex-wrap min-w-0">
+                            <span>Academic & Campus Calendar</span>
+                            <CommonInfoTooltip content={roleSubtitle} />
+                        </h1>
                     </div>
                 ),
                 action: (
-                    <div className="flex items-center gap-2 pt-0.5">
-                        <button
-                            aria-label="Refresh calendar data"
-                            className="hidden sm:flex p-2 rounded-xl border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                            title="Reload Calendar"
-                            type="button"
-                            onClick={() => reload()}
-                        >
-                            <ArrowsClockwiseIcon className={isLoading ? 'animate-spin' : ''} size={18} />
-                        </button>
-
-                        {canCreateEvents && (
-                            <div className="hidden sm:block">
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PlusIcon size={16} />}
-                                    variant="contained"
-                                    onClick={() => {
-                                        const rolePath = currentRole.toLowerCase();
-                                        navigate(`/${rolePath}/event-management/new`);
-                                    }}
-                                >
-                                    Create Event
-                                </CommonButton>
-                            </div>
-                        )}
-
-                        <CalendarActionMenu
-                            activeCategories={activeCategories}
-                            canCreateEvents={canCreateEvents}
-                            isLoading={isLoading}
-                            viewMode={viewMode}
-                            onCreateEvent={() => {
-                                const rolePath = currentRole.toLowerCase();
-                                navigate(`/${rolePath}/event-management/new`);
-                            }}
-                            onReload={reload}
-                            onSelectAllCategories={handleSelectAllCategories}
-                            onSelectViewMode={setViewMode}
-                            onToggleCategory={toggleCategory}
-                        />
-                    </div>
+                    <CalendarActionMenu
+                        activeCategories={activeCategories}
+                        canCreateEvents={canCreateEvents}
+                        isLoading={isLoading}
+                        viewMode={viewMode}
+                        onCreateEvent={() => {
+                            const rolePath = currentRole.toLowerCase();
+                            navigate(`/${rolePath}/announcement-management/new?type=Event`, {
+                                state: { from: pathname }
+                            });
+                        }}
+                        onReload={reload}
+                        onSelectAllCategories={handleSelectAllCategories}
+                        onSelectViewMode={setViewMode}
+                        onToggleCategory={toggleCategory}
+                    />
                 )
             }}
         >
             {/* Navigation & View Toggle Toolbar + Filter Row */}
-            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-3 py-2 sm:p-4 flex flex-col gap-2.5">
+            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-3 py-2 sm:p-4 flex flex-col gap-2.5 shrink-0">
                 {/* Date Navigation & View Mode Switcher */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
                     {/* Date Navigation with DatePicker wrapped by arrows & View Mode Label */}
                     <div className="flex flex-wrap sm:flex-nowrap items-center justify-between w-full md:w-auto gap-2">
                         {/* Left & Right arrows wrapping DatePicker */}
-                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto">
                             <button
                                 aria-label="Previous"
                                 className="p-1.5 sm:p-2 rounded-lg border border-(--mui-palette-divider) text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
@@ -254,7 +221,7 @@ export default function CalendarPage() {
                                 <CaretLeftIcon size={16} />
                             </button>
 
-                            <div className="w-[135px] sm:w-[165px]">
+                            <div className="flex-1 min-w-0 sm:w-[165px] sm:flex-initial">
                                 <CommonDatePicker
                                     containerClassName="w-full"
                                     format={viewMode === 'month' || viewMode === 'agenda' ? 'MMMM yyyy' : 'MMM d, yyyy'}
@@ -287,7 +254,7 @@ export default function CalendarPage() {
                         </div>
 
                         {/* View Mode Label & Active Filter indicator */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center w-full sm:w-auto sm:justify-start gap-2">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-neutral-800/80 text-(--mui-palette-text-primary) border border-(--mui-palette-divider) shrink-0">
                                 {VIEW_MODE_LABELS[viewMode].icon}
                                 <span>{VIEW_MODE_LABELS[viewMode].label}</span>
@@ -392,7 +359,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Main Calendar View Area - Full Width */}
-            <div className="flex-1 min-h-0 md:overflow-auto p-2 sm:p-4 md:p-6">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-2 sm:p-4 md:p-6">
                 {isLoading && events.length === 0 ? (
                     <div className="p-16 flex justify-center">
                         <PageLoadingFallback />

@@ -101,21 +101,15 @@ export const deanRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management');
-                }),
+                element: <Navigate replace to="/dean/announcement-management" />,
                 path: 'event-management'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management/EventDetailPage');
-                }),
+                element: <Navigate replace to="/dean/announcement-management/new?type=Event" />,
                 path: 'event-management/new'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management/EventDetailPage');
-                }),
+                element: <Navigate replace to="/dean/announcement-management" />,
                 path: 'event-management/:id'
             },
             {

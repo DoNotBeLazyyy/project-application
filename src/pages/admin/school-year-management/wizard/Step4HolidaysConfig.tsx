@@ -17,7 +17,8 @@ import {
     ExceptionTypeOptionItem,
     WizardCalendarExceptionItem
 } from '@type/school-year.type';
-import { useEffect, useState } from 'react';
+import { checkForMessage, clearFieldError } from '@utils/form.util';
+import { useEffect, useMemo, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
 
@@ -46,6 +47,7 @@ export default function Step4HolidaysConfig({
     const [collapsedExceptions, setCollapsedExceptions] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
+    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.holidays && Array.isArray(errors.holidays)) {
@@ -199,10 +201,12 @@ export default function Step4HolidaysConfig({
                                 <div className={collapsedExceptions[idx] ? 'hidden' : 'space-y-4'}>
                                     <div>
                                         <CommonInput
+                                            defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.title`}
                                             disabled={disabled}
                                             error={Boolean((errors.holidays as any)?.[idx]?.title)}
                                             fullWidth
                                             helperText={(errors.holidays as any)?.[idx]?.title?.message}
+                                            isFirstError={firstErrorKey === `holidays.${idx}.title`}
                                             isRequired
                                             label="Holiday / Exception Title"
                                             name={`holidays.${idx}.title`}
@@ -210,6 +214,8 @@ export default function Step4HolidaysConfig({
                                             size="small"
                                             value={current.title || ''}
                                             onChange={(e) => {
+                                                clearFieldError(control, `holidays.${idx}.title`);
+                                                clearFieldError(control, 'holidays');
                                                 setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true, shouldValidate: true });
                                             }}
                                         />
@@ -228,6 +234,8 @@ export default function Step4HolidaysConfig({
                                                 size="small"
                                                 value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
                                                 onChange={(e) => {
+                                                    clearFieldError(control, `holidays.${idx}.exception_type`);
+                                                    clearFieldError(control, 'holidays');
                                                     setValue(
                                                         `holidays.${idx}.exception_type`,
                                                         e.target.value as CalendarExceptionType,
@@ -258,15 +266,19 @@ export default function Step4HolidaysConfig({
 
                                         <div>
                                             <CommonDatePicker
+                                                defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.start_date`}
                                                 disabled={disabled}
                                                 error={Boolean((errors.holidays as any)?.[idx]?.start_date)}
                                                 helperText={(errors.holidays as any)?.[idx]?.start_date?.message}
+                                                isFirstError={firstErrorKey === `holidays.${idx}.start_date`}
                                                 isRequired
                                                 label="Start Date"
                                                 size="small"
                                                 slotProps={{ textField: { name: `holidays.${idx}.start_date` } }}
                                                 value={current.start_date || ''}
                                                 onChange={(val) => {
+                                                    clearFieldError(control, `holidays.${idx}.start_date`);
+                                                    clearFieldError(control, 'holidays');
                                                     setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true, shouldValidate: true });
                                                 }}
                                             />
@@ -274,15 +286,19 @@ export default function Step4HolidaysConfig({
 
                                         <div>
                                             <CommonDatePicker
+                                                defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.end_date`}
                                                 disabled={disabled}
                                                 error={Boolean((errors.holidays as any)?.[idx]?.end_date)}
                                                 helperText={(errors.holidays as any)?.[idx]?.end_date?.message}
+                                                isFirstError={firstErrorKey === `holidays.${idx}.end_date`}
                                                 isRequired
                                                 label="End Date"
                                                 size="small"
                                                 slotProps={{ textField: { name: `holidays.${idx}.end_date` } }}
                                                 value={current.end_date || ''}
                                                 onChange={(val) => {
+                                                    clearFieldError(control, `holidays.${idx}.end_date`);
+                                                    clearFieldError(control, 'holidays');
                                                     setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true, shouldValidate: true });
                                                 }}
                                             />
@@ -298,6 +314,7 @@ export default function Step4HolidaysConfig({
                                             size="small"
                                             value={current.description || ''}
                                             onChange={(e) => {
+                                                clearFieldError(control, `holidays.${idx}.description`);
                                                 setValue(`holidays.${idx}.description`, e.target.value, { shouldDirty: true });
                                             }}
                                         />
@@ -306,6 +323,20 @@ export default function Step4HolidaysConfig({
                             </div>
                         );
                     })}
+
+                    {!disabled && fields.length > 0 && (
+                        <div className="flex justify-start pt-1">
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                variant="contained"
+                                onClick={handleAddHoliday}
+                            >
+                                Add Exception
+                            </CommonButton>
+                        </div>
+                    )}
                 </div>
             )}
 

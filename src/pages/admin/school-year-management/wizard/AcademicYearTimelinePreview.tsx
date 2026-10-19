@@ -1,4 +1,3 @@
-import { CalendarDotsIcon, CalendarIcon, SunIcon } from '@phosphor-icons/react';
 import { WizardCalendarExceptionItem, WizardTermItem } from '@type/school-year.type';
 import { useMemo } from 'react';
 
@@ -204,12 +203,8 @@ export default function AcademicYearTimelinePreview({
     };
 
     return (
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 shadow-sm space-y-4 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs border-b border-slate-100 dark:border-zinc-700/50 pb-3">
-                <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
-                    <CalendarDotsIcon className="w-4 h-4 text-brand-600 shrink-0" weight="bold" />
-                    <span>Academic Year Schedule & Key Happenings</span>
-                </div>
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700/80 shadow-sm space-y-3 sm:space-y-4 min-w-0 flex flex-col">
+            <div className="flex items-center justify-end gap-2 text-xs border-b border-slate-100 dark:border-zinc-700/50 pb-2.5">
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                     {formatTimelineDate(startDate)} — {formatTimelineDate(endDate)}
                 </div>
@@ -219,7 +214,7 @@ export default function AcademicYearTimelinePreview({
             {timelineEvents.length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-4">No events or terms configured yet.</p>
             ) : (
-                <div className="space-y-2.5 max-h-[60vh] sm:max-h-96 overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[60vh] sm:max-h-96 overflow-y-auto pr-1 pb-20 sm:pb-3">
                     {timelineEvents.map((evt) => {
                         const style = categoryBadges[evt.category];
                         return (

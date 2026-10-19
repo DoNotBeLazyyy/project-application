@@ -356,6 +356,7 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
     fieldPath?: string;
     termIndex?: number;
     periodIndex?: number;
+    isToastOnly?: boolean;
 } {
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
@@ -486,13 +487,37 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                     termIndex: i
                 };
             }
+
+            // Grading components validation
+            const components = p.components || [];
+            if (components.length > 0) {
+                const compTotalWeight = components.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
+                if (compTotalWeight > 100) {
+                    return {
+                        error: `Grading component weights for ${periodLabel} in ${termName} equal ${compTotalWeight}%. Grading components are not allowed to exceed 100%.`,
+                        isToastOnly: true,
+                        isValid: false,
+                        periodIndex: j,
+                        termIndex: i
+                    };
+                }
+                if (compTotalWeight !== 100) {
+                    return {
+                        error: `Grading component weights for ${periodLabel} in ${termName} equal ${compTotalWeight}%. The total component weight must sum to 100%.`,
+                        isToastOnly: true,
+                        isValid: false,
+                        periodIndex: j,
+                        termIndex: i
+                    };
+                }
+            }
         }
 
         const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
         if (totalWeight !== 100) {
             return {
                 error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`,
-                fieldPath: `terms.${i}.grading_periods.${periods.length - 1}.weight`,
+                isToastOnly: true,
                 isValid: false,
                 periodIndex: periods.length - 1,
                 termIndex: i

@@ -1,6 +1,7 @@
 import '@components/editor/toastui-editor-theme.css';
 import ImagePreviewModal, { ImagePreviewItem } from '@components/modal/ImagePreviewModal';
 import Editor, { EditorInstance } from '@toast-ui/editor';
+import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 import { useEffect, useRef, useState } from 'react';
 
 export interface RichContentReaderProps {
@@ -58,6 +59,7 @@ export default function RichContentReader({
             const viewer = Editor.factory({
                 el: containerRef.current,
                 initialValue: trimmed,
+                plugins: [colorSyntax],
                 viewer: true
             });
             instanceRef.current = viewer;

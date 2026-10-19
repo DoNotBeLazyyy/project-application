@@ -143,6 +143,7 @@ export interface StudentAssessment {
     attempts_used?: number;
     has_active_submission?: boolean;
     latest_submission_status?: string | null;
+    enrollment_id?: string;
 }
 
 export interface StudentQuestionChoice {
@@ -211,6 +212,7 @@ export interface StudentResultAnswer {
 export interface StudentAssessmentResult {
     submission_id: string | null;
     assessment_id: string;
+    enrollment_id?: string;
     title: string;
     description: string | null;
     assessment_type: AssessmentType;

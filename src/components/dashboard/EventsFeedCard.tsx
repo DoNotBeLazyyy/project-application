@@ -1,3 +1,4 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import { EventDetailModal } from '@components/modal/EventDetailModal';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@phosphor-icons/react';
 import { EventFeedRow } from '@type/event.type';
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface EventsFeedCardProps {
     events: EventFeedRow[];
@@ -35,6 +37,13 @@ function formatEventStart(event: EventFeedRow): string {
 export { EventDetailModal };
 
 export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const roleSegment = pathname.split('/')[1] || 'student';
+    const viewAllUrl = roleSegment === 'student'
+        ? '/student/announcement-management'
+        : `/${roleSegment}/announcement-management?mode=viewing`;
+
     const [detailEvent, setDetailEvent] = useState<EventFeedRow | null>(null);
 
     function handleClose() {
@@ -44,6 +53,16 @@ export default function EventsFeedCard({ events, error }: EventsFeedCardProps) {
     return (
         <CommonCard
             cardHeaderProps={{
+                action: (
+                    <CommonButton
+                        color="primary"
+                        size="small"
+                        variant="text"
+                        onClick={() => navigate(viewAllUrl)}
+                    >
+                        View all
+                    </CommonButton>
+                ),
                 subheader: 'What is coming up in the next 30 days.',
                 title: 'Upcoming Events'
             }}

@@ -1,1 +1,0 @@
-export { default } from '@pages/dean/section-management/Step3SectionGradingSchema';

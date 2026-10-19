@@ -1,0 +1,4 @@
+first_name,last_name,email,role_code,department_code
+ErrolFacSample,Tutor,errol.sample.fac@testlms.edu,Faculty,CCS-ERROL
+ErrolStudSample1,One,errol.sample.stud1@testlms.edu,Student,CCS-ERROL
+ErrolStudSample2,Two,errol.sample.stud2@testlms.edu,Student,CCS-ERROL

@@ -3,13 +3,10 @@ import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
 import {
-    BuildingsIcon,
-    ChalkboardTeacherIcon,
     CheckCircleIcon,
     MagnifyingGlassIcon,
     PlusIcon,
     TrashIcon,
-    UserCheckIcon,
     UserCircleIcon,
     UsersIcon,
     XIcon
@@ -256,95 +253,15 @@ export default function DepartmentForm({
 
     return (
         <div className="flex flex-col gap-4">
-            {/* STEP 1: DEPARTMENT DETAILS & QUICK ROSTER SUMMARY */}
+            {/* STEP 1: DEPARTMENT DETAILS */}
             {activeStep === 1 && (
-                <div className="flex flex-col gap-4">
-                    <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col gap-4">
-                        <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-zinc-800 pb-3">
-                            <BuildingsIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
-                            <div>
-                                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                    Department Identity & Details
-                                </h4>
-                                <p className="text-xs text-slate-500">
-                                    Configure the academic department name and description.
-                                </p>
-                            </div>
-                        </div>
-
-                        <CommonForm
-                            control={control}
-                            fields={fields}
-                            formProps={formProps}
-                            hasHelper
-                        />
-                    </div>
-
-                    {/* Quick Personnel Lookup Summary Card */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                                    <UserCheckIcon className="w-5 h-5" weight="bold" />
-                                </div>
-                                <div className="min-w-0">
-                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
-                                        Assigned Dean
-                                    </span>
-                                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate block">
-                                        {selectedDean ? selectedDean.full_name : 'Unassigned'}
-                                    </span>
-                                    {selectedDean?.email && (
-                                        <span className="text-xs text-slate-500 truncate block">
-                                            {selectedDean.email}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            {onStepChange && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    variant="text"
-                                    onClick={() => onStepChange(2)}
-                                >
-                                    {disabled ? 'View Dean' : 'Manage'}
-                                </CommonButton>
-                            )}
-                        </div>
-
-                        <div className="bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                                    <ChalkboardTeacherIcon className="w-5 h-5" weight="bold" />
-                                </div>
-                                <div className="min-w-0">
-                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
-                                        Department Faculty
-                                    </span>
-                                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate block">
-                                        {assignedFacultyList.length} Faculty {assignedFacultyList.length === 1 ? 'Member' : 'Members'}
-                                    </span>
-                                    <span className="text-xs text-slate-500 truncate block">
-                                        {assignedFacultyList.length > 0
-                                            ? assignedFacultyList.slice(0, 2).map((f) => f.full_name).join(', ')
-                                              + (assignedFacultyList.length > 2 ? ` +${assignedFacultyList.length - 2} more` : '')
-                                            : 'No faculty assigned yet'}
-                                    </span>
-                                </div>
-                            </div>
-                            {onStepChange && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    variant="text"
-                                    onClick={() => onStepChange(3)}
-                                >
-                                    {disabled ? 'View Faculty' : 'Manage'}
-                                </CommonButton>
-                            )}
-                        </div>
-                    </div>
+                <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col gap-4">
+                    <CommonForm
+                        control={control}
+                        fields={fields}
+                        formProps={formProps}
+                        hasHelper
+                    />
                 </div>
             )}
 
@@ -353,33 +270,6 @@ export default function DepartmentForm({
                 <div className="flex flex-col gap-4">
                     {/* Current Dean Card */}
                     <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col gap-3">
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <UserCheckIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
-                                <div>
-                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                        Assigned Department Dean
-                                    </h4>
-                                    <p className="text-xs text-slate-500">
-                                        {watchedName
-                                            ? `Academic leader governing ${watchedName}${watchedCode ? ` (${watchedCode})` : ''}.`
-                                            : 'Academic leader governing this department.'}
-                                    </p>
-                                </div>
-                            </div>
-                            {!disabled && selectedDean && (
-                                <CommonButton
-                                    color="error"
-                                    size="small"
-                                    startIcon={<XIcon className="w-3.5 h-3.5" />}
-                                    variant="outlined"
-                                    onClick={() => handleSelectDean('')}
-                                >
-                                    Unassign Dean
-                                </CommonButton>
-                            )}
-                        </div>
-
                         {selectedDean ? (
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200/70 dark:border-brand-800/60">
                                 <div className="flex items-center gap-3 min-w-0">
@@ -406,9 +296,22 @@ export default function DepartmentForm({
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-                                    <CheckCircleIcon className="w-4 h-4" weight="fill" />
-                                    <span>Assigned to Department</span>
+                                <div className="flex items-center gap-2.5 shrink-0">
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                        <CheckCircleIcon className="w-4 h-4" weight="fill" />
+                                        <span>Assigned to Department</span>
+                                    </div>
+                                    {!disabled && (
+                                        <CommonButton
+                                            color="error"
+                                            size="small"
+                                            startIcon={<XIcon className="w-3.5 h-3.5" />}
+                                            variant="outlined"
+                                            onClick={() => handleSelectDean('')}
+                                        >
+                                            Unassign Dean
+                                        </CommonButton>
+                                    )}
                                 </div>
                             </div>
                         ) : (
@@ -550,28 +453,9 @@ export default function DepartmentForm({
                 <div className="flex flex-col gap-4">
                     {/* Assigned Faculty Roster Card (Lookup + Unassign) */}
                     <div className="bg-white dark:bg-zinc-800/80 p-5 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col gap-3">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <ChalkboardTeacherIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                                            Assigned Department Faculty
-                                        </h4>
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 font-bold">
-                                            {assignedFacultyList.length}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500">
-                                        {disabled
-                                            ? 'Directory of all faculty members assigned to this department.'
-                                            : 'Review or remove faculty members assigned to this department.'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {assignedFacultyList.length > 0 && (
-                                <div className="relative min-w-[220px]">
+                        {assignedFacultyList.length > 0 && (
+                            <div className="flex justify-end pb-1">
+                                <div className="relative w-full sm:w-64">
                                     <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                     <input
                                         className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
@@ -581,8 +465,8 @@ export default function DepartmentForm({
                                         onChange={(e) => setAssignedFacultySearch(e.target.value)}
                                     />
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         {assignedFacultyList.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-8 px-4 rounded-xl border border-dashed border-slate-300 dark:border-zinc-700 bg-slate-50/50 dark:bg-zinc-900/30 text-center gap-2">

@@ -41,6 +41,8 @@ export interface CommonFormProps<T extends FieldValues> {
     formProps?: ComponentPropsForm;
     hasHelper?: boolean;
     helperPlacement?: FormHelperPlacement;
+    defaultOpenErrorTooltip?: boolean;
+    autoOpenFirstErrorTooltip?: boolean;
 }
 
 interface CommonFormRowProps<T extends FieldValues> {
@@ -49,6 +51,7 @@ interface CommonFormRowProps<T extends FieldValues> {
     hasHelper: boolean;
     helperPlacement: FormHelperPlacement;
     isFirstError?: boolean;
+    defaultOpenErrorTooltip?: boolean;
 }
 
 /**
@@ -57,6 +60,7 @@ interface CommonFormRowProps<T extends FieldValues> {
  */
 function CommonFormRow<T extends FieldValues>({
     control,
+    defaultOpenErrorTooltip,
     field,
     hasHelper,
     helperPlacement,
@@ -89,7 +93,8 @@ function CommonFormRow<T extends FieldValues>({
         >
             {!isSelfLabelled && (
                 <FormLabel
-                    defaultOpenErrorTooltip={isFirstError}
+                    autoOpenErrorTooltip={defaultOpenErrorTooltip}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip}
                     description={hasHelper && isOnLabel
                         ? description
                         : undefined}
@@ -106,6 +111,7 @@ function CommonFormRow<T extends FieldValues>({
               */}
             <FormField
                 control={control}
+                defaultOpenErrorTooltip={defaultOpenErrorTooltip}
                 field={field}
                 hasHelper={hasHelper && !isOnLabel}
             />
@@ -121,7 +127,9 @@ export default function CommonForm<T extends FieldValues>({
     enableDraftRecovery,
     formProps,
     hasHelper = true,
-    helperPlacement = 'label'
+    helperPlacement = 'label',
+    defaultOpenErrorTooltip,
+    autoOpenFirstErrorTooltip
 }: CommonFormProps<T>) {
     ensureSubmitValidationMode(control);
     const { errors, submitCount } = useFormState({ control });
@@ -162,6 +170,8 @@ export default function CommonForm<T extends FieldValues>({
         });
     }, [firstErrorField, submitCount]);
 
+    const resolvedAutoOpenErrorTooltip = defaultOpenErrorTooltip ?? autoOpenFirstErrorTooltip ?? true;
+
     const content = (
         <div className={containerClassName}>
             {fields.map(function(field) {
@@ -170,10 +180,11 @@ export default function CommonForm<T extends FieldValues>({
                 return (
                     <CommonFormRow
                         control={control}
+                        defaultOpenErrorTooltip={resolvedAutoOpenErrorTooltip ? isFirstError : false}
                         field={field}
                         hasHelper={hasHelper}
                         helperPlacement={helperPlacement}
-                        isFirstError={isFirstError}
+                        isFirstError={resolvedAutoOpenErrorTooltip ? isFirstError : false}
                         key={field.name as string}
                     />
                 );

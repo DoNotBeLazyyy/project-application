@@ -19,6 +19,7 @@ export interface EventListRow {
     all_day: boolean;
     created_at: string;
     created_by: string | null;
+    created_by_role?: string | null;
     author_name: string | null;
     section_count: number;
     attachment_count?: number;
@@ -36,6 +37,7 @@ export interface EventDetail {
     all_day: boolean;
     created_at: string;
     created_by: string | null;
+    created_by_role?: string | null;
     author_name: string | null;
     section_ids: string[];
     sections: AnnouncementSectionRef[];

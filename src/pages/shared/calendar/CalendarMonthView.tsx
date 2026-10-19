@@ -42,9 +42,9 @@ export function CalendarMonthView({
     }, []);
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">
             {/* Weekday headers */}
-            <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/40 text-center text-[11px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 py-2 sm:py-3">
+            <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/40 text-center text-[11px] sm:text-xs font-semibold text-neutral-500 dark:text-neutral-400 py-2 sm:py-3 shrink-0">
                 {WEEKDAY_NAMES.map((d, idx) => (
                     <div
                         key={d}
@@ -57,7 +57,7 @@ export function CalendarMonthView({
             </div>
 
             {/* Days Grid */}
-            <div className="grid grid-cols-7 divide-x divide-y divide-neutral-200/70 dark:divide-neutral-800/70 bg-neutral-100/40 dark:bg-neutral-900/40">
+            <div className="grid grid-cols-7 divide-x divide-y divide-neutral-200/70 dark:divide-neutral-800/70 bg-neutral-100/40 dark:bg-neutral-900/40 overflow-y-auto flex-1 min-h-0">
                 {calendarDays.map((dayItem: CalendarDay, index: number) => {
                     const cellDate = new Date(dayItem.date + 'T00:00:00');
                     const isSelected =

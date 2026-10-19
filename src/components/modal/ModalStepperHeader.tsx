@@ -117,7 +117,7 @@ export default function ModalStepperHeader({
 
             {/* Quick Step Diff Indicator Strip when comparing versions */}
             {hasDiffTracking && (
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                <div className="hidden sm:grid sm:grid-cols-6 gap-1.5">
                     {steps.map((s) => {
                         const isCurrent = s.step === currentStep;
                         const diffCount = s.diffCount ?? 0;

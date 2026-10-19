@@ -221,11 +221,6 @@ export function CommonDatePicker({
         }
     }
 
-    useEffect(() => {
-        if ((isFirstError || defaultOpenErrorTooltip) && !isNonInteractive) {
-            setIsOpen(true);
-        }
-    }, [isFirstError, defaultOpenErrorTooltip, isNonInteractive]);
 
     const labelErrorMessage = label && errorProp
         ? helperTextProp
@@ -263,7 +258,7 @@ export function CommonDatePicker({
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
-                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isRequired={isRequired || (props as any).required}
@@ -443,7 +438,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
 
     useEffect(() => {
         if (resolvedIsFirstError && !isNonInteractive) {
-            setIsOpen(true);
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
@@ -460,7 +454,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
             if (isNonInteractive) return;
             const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
             if (detail?.firstErrorField === name || (fieldState.error && resolvedIsFirstError)) {
-                setIsOpen(true);
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
                     element.focus({ preventScroll: true });
@@ -504,7 +497,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
-                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || resolvedIsFirstError}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? resolvedIsFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isFirstError={resolvedIsFirstError}

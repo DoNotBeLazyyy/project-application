@@ -2,7 +2,7 @@ export type EvaluationQuestionType = 'Rating' | 'Multiple Choice' | 'Open Ended'
 
 export type EvaluationScope = 'Period' | 'Term';
 
-export type EvaluationTargetMode = 'INCLUDE' | 'EXCLUDE';
+export type EvaluationTargetMode = 'ALL' | 'INCLUDE' | 'EXCLUDE';
 
 export interface EvaluationQuestionForm {
     id?: string;

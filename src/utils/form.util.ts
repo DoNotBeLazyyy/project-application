@@ -128,7 +128,9 @@ export function focusAndOpenFirstErrorField(
 
     setTimeout(() => {
         const escaped = name.replace(/\./g, '\\.');
-        const selector = `[name="${name}"], [id="${name}"], [data-field-name="${name}"], [name="${escaped}"], #${escaped}`;
+        const altName = name === 'description' ? 'content' : (name === 'content' ? 'description' : undefined);
+        const selector = `[name="${name}"], [id="${name}"], [data-field-name~="${name}"], [data-field-name="${name}"], [name="${escaped}"], #${escaped}` +
+            (altName ? `, [name="${altName}"], [id="${altName}"], [data-field-name~="${altName}"], [data-field-name="${altName}"]` : '');
         let element = document.querySelector<HTMLElement>(selector);
 
         if (!element) {
@@ -161,10 +163,17 @@ export function focusAndOpenFirstErrorField(
                 container?.querySelector('.MuiDatePicker-root, .MuiDateTimePicker-root')
             );
 
+            // 3. Check for Toast UI Editor or contenteditable
+            const editorEditable = container?.querySelector<HTMLElement>(
+                '.toastui-editor-contents, [contenteditable="true"], .ProseMirror'
+            );
+
             const textInput = container?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ||
                 (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element : null);
 
-            if (textInput) {
+            if (editorEditable) {
+                editorEditable.focus({ preventScroll: true });
+            } else if (textInput) {
                 textInput.focus({ preventScroll: true });
             } else {
                 element.focus({ preventScroll: true });

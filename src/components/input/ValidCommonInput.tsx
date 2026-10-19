@@ -46,7 +46,9 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
                     element.focus({ preventScroll: true });
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (typeof element.scrollIntoView === 'function') {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
             }, 50);
             return () => clearTimeout(timer);
@@ -61,7 +63,9 @@ export default function ValidCommonInput<T extends FieldValues = FieldValues>({
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
                     element.focus({ preventScroll: true });
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (typeof element.scrollIntoView === 'function') {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
             }
         }

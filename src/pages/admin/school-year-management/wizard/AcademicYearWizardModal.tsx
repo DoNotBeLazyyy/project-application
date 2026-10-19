@@ -28,7 +28,7 @@ import {
     SaveAcademicYearCalendarPayload,
     SchoolYearOption
 } from '@type/school-year.type';
-import { announceFormError, DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { announceFormError, DEFAULT_FORM_OPTIONS, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formErrors } from '@utils/form.util';
 import { ensureUniqueCode, generateAcademicThresholdCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -108,6 +108,12 @@ export default function AcademicYearWizardModal({
         ...DEFAULT_FORM_OPTIONS,
         defaultValues
     });
+
+    if (methods.control) {
+        (methods.control as any)._clearErrors = methods.clearErrors;
+        (methods.control as any).clearErrors = methods.clearErrors;
+        ensureSubmitValidationMode(methods.control as any);
+    }
 
     const {
         control,
@@ -248,8 +254,13 @@ export default function AcademicYearWizardModal({
         if (!result.isValid && result.error) {
             if (result.field) {
                 methods.setError(result.field, { type: 'manual', message: result.error });
+                focusAndOpenFirstErrorField(result.field, methods);
+                announceFormError({
+                    count: 1,
+                    message: result.error,
+                    firstErrorField: result.field
+                });
             }
-            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -262,8 +273,13 @@ export default function AcademicYearWizardModal({
         if (!result.isValid && result.error) {
             if (result.fieldPath) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+                focusAndOpenFirstErrorField(result.fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: result.error,
+                    firstErrorField: result.fieldPath
+                });
             }
-            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -275,10 +291,21 @@ export default function AcademicYearWizardModal({
         const terms = values.terms || [];
         const result = validateGradingPeriods(terms);
         if (!result.isValid && result.error) {
-            if (result.fieldPath) {
+            if (result.isToastOnly || !result.fieldPath) {
+                useToastStore.getState().showToast(result.error, 'error');
+                announceFormError({
+                    count: 1,
+                    message: result.error
+                });
+            } else {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+                focusAndOpenFirstErrorField(result.fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: result.error,
+                    firstErrorField: result.fieldPath
+                });
             }
-            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -292,8 +319,13 @@ export default function AcademicYearWizardModal({
         if (!result.isValid && result.error) {
             if (result.fieldPath) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+                focusAndOpenFirstErrorField(result.fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: result.error,
+                    firstErrorField: result.fieldPath
+                });
             }
-            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -307,13 +339,13 @@ export default function AcademicYearWizardModal({
         if (!result.isValid && result.error) {
             if (result.fieldPath) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
+                focusAndOpenFirstErrorField(result.fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: result.error,
+                    firstErrorField: result.fieldPath
+                });
             }
-            announceFormError({
-                count: 1,
-                message: result.error,
-                firstErrorField: result.fieldPath
-            });
-            formErrors(methods.formState.errors, methods);
             return false;
         }
         return true;
@@ -327,19 +359,33 @@ export default function AcademicYearWizardModal({
         for (let i = 0; i < thresholds.length; i++) {
             const t = thresholds[i];
             if (!t.label || !t.label.trim()) {
-                methods.setError(`thresholds.${i}.label` as any, {
+                const fieldPath = `thresholds.${i}.label`;
+                const msg = `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`;
+                methods.setError(fieldPath as any, {
                     type: 'manual',
-                    message: `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`
+                    message: msg
                 });
-                formErrors(methods.formState.errors, methods);
+                focusAndOpenFirstErrorField(fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: msg,
+                    firstErrorField: fieldPath
+                });
                 return false;
             }
             if (t.max_gwa === '' || t.max_gwa === null || t.max_gwa === undefined) {
-                methods.setError(`thresholds.${i}.max_gwa` as any, {
+                const fieldPath = `thresholds.${i}.max_gwa`;
+                const msg = `Threshold "${t.label}" must specify a Max GWA cutoff.`;
+                methods.setError(fieldPath as any, {
                     type: 'manual',
-                    message: `Threshold "${t.label}" must specify a Max GWA cutoff.`
+                    message: msg
                 });
-                formErrors(methods.formState.errors, methods);
+                focusAndOpenFirstErrorField(fieldPath, methods);
+                announceFormError({
+                    count: 1,
+                    message: msg,
+                    firstErrorField: fieldPath
+                });
                 return false;
             }
         }
@@ -818,40 +864,9 @@ export default function AcademicYearWizardModal({
                 schoolYearLabel={watch('label')}
                 onClose={() => setIsHistoryModalOpen(false)}
                 onReverted={() => {
-                    if (schoolYearId) {
-                        getAcademicYearCalendarDetails(schoolYearId).then((res) => {
-                            if (res.data) {
-                                const data = res.data;
-                                reset({
-                                    code: data.code || '',
-                                    end_date: data.end_date || '',
-                                    evaluation_scope: data.evaluation_scope || 'Period',
-                                    holidays: data.holidays || [],
-                                    id: data.id,
-                                    is_active: Boolean(data.is_active),
-                                    label: data.label || '',
-                                    max_units_per_term: data.max_units_per_term ?? 24,
-                                    start_date: data.start_date || '',
-                                    terms: (data.terms && data.terms.length > 0 ? data.terms : []).map((t) => ({
-                                        ...t,
-                                        max_units: t.max_units ?? 24,
-                                        evaluation_scope: t.evaluation_scope || data.evaluation_scope || 'Period'
-                                    })),
-                                    thresholds: data.thresholds || [],
-                                    transmutation_rows: (data.transmutation_rows || []).map((r) => {
-                                        const isSpecial = isSpecialGradeRow(r);
-                                        return {
-                                            ...r,
-                                            max_percentage: isSpecial ? null : r.max_percentage,
-                                            min_percentage: isSpecial ? null : r.min_percentage,
-                                            transmuted_grade: isSpecial ? null : r.transmuted_grade
-                                        };
-                                    })
-                                });
-                            }
-                        });
-                        onSuccess();
-                    }
+                    draftGuard.clearDraft();
+                    onSuccess();
+                    onClose();
                 }}
             />
 

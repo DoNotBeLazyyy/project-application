@@ -15,7 +15,8 @@ import {
 } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
-import { useEffect, useState } from 'react';
+import { checkForMessage, clearFieldError } from '@utils/form.util';
+import { useEffect, useMemo, useState } from 'react';
 import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step3GradingPeriodsConfigProps {
@@ -38,6 +39,7 @@ export default function Step3GradingPeriodsConfig({
     const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
+    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.terms && Array.isArray(errors.terms)) {
@@ -125,6 +127,10 @@ export default function Step3GradingPeriodsConfig({
         periodIndex: number,
         partial: Partial<WizardGradingPeriodItem>
     ) {
+        Object.keys(partial).forEach((field) => {
+            clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.${field}`);
+        });
+
         if (setValue) {
             Object.entries(partial).forEach(([field, val]) => {
                 setValue(`terms.${termIndex}.grading_periods.${periodIndex}.${field}` as any, val, {
@@ -132,7 +138,6 @@ export default function Step3GradingPeriodsConfig({
                     shouldValidate: true
                 });
             });
-            return;
         }
 
         const targetTerm = terms[termIndex];
@@ -160,6 +165,15 @@ export default function Step3GradingPeriodsConfig({
         field: 'start_date' | 'end_date',
         value: string
     ) {
+        clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.${field}`);
+
+        if (setValue) {
+            setValue(`terms.${termIndex}.grading_periods.${periodIndex}.${field}` as any, value, {
+                shouldDirty: true,
+                shouldValidate: true
+            });
+        }
+
         const targetTerm = terms[termIndex];
         if (!targetTerm) return;
 
@@ -227,6 +241,10 @@ export default function Step3GradingPeriodsConfig({
         compIndex: number,
         partial: Partial<WizardGradingPeriodComponentItem>
     ) {
+        Object.keys(partial).forEach((field) => {
+            clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.components.${compIndex}.${field}`);
+        });
+
         if (setValue) {
             Object.entries(partial).forEach(([field, val]) => {
                 setValue(`terms.${termIndex}.grading_periods.${periodIndex}.components.${compIndex}.${field}` as any, val, {
@@ -234,7 +252,6 @@ export default function Step3GradingPeriodsConfig({
                     shouldValidate: true
                 });
             });
-            return;
         }
 
         const targetPeriod = terms[termIndex]?.grading_periods?.[periodIndex];
@@ -486,6 +503,7 @@ export default function Step3GradingPeriodsConfig({
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
                                                     <CommonInput
+                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.name`}
                                                         description="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)."
                                                         disabled={disabled}
                                                         error={Boolean(isDuplicateName || periodErrors?.name)}
@@ -500,6 +518,7 @@ export default function Step3GradingPeriodsConfig({
                                                                 setFocusTarget(null);
                                                             }
                                                         }}
+                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.name`}
                                                         isRequired
                                                         label="Period Name"
                                                         name={`terms.${tIdx}.grading_periods.${pIdx}.name`}
@@ -512,11 +531,13 @@ export default function Step3GradingPeriodsConfig({
 
                                                 <div>
                                                     <CommonNumberInput
+                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.weight`}
                                                         description="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%."
                                                         disabled={disabled}
                                                         error={Boolean(periodErrors?.weight)}
                                                         fullWidth
                                                         helperText={periodErrors?.weight?.message}
+                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.weight`}
                                                         isRequired
                                                         label="Weight (%)"
                                                         max={100}
@@ -534,12 +555,14 @@ export default function Step3GradingPeriodsConfig({
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
                                                     <CommonDatePicker
+                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.start_date`}
                                                         description="Opening date for coursework and assessment recording in this grading period."
                                                         disabled={disabled}
                                                         error={Boolean(hasPrecedingConflict || periodErrors?.start_date)}
                                                         helperText={hasPrecedingConflict
                                                             ? `Overlaps with #${pIdx} end date`
                                                             : periodErrors?.start_date?.message}
+                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.start_date`}
                                                         isRequired
                                                         label="Period Start Date"
                                                         size="small"
@@ -551,12 +574,14 @@ export default function Step3GradingPeriodsConfig({
 
                                                 <div>
                                                     <CommonDatePicker
+                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.end_date`}
                                                         description="Cut-off date for exams and grade input for this period."
                                                         disabled={disabled}
                                                         error={Boolean(hasDateOrderError || periodErrors?.end_date)}
                                                         helperText={hasDateOrderError
                                                             ? 'Must be after start date'
                                                             : periodErrors?.end_date?.message}
+                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.end_date`}
                                                         isRequired
                                                         label="Period End Date"
                                                         size="small"
@@ -590,9 +615,11 @@ export default function Step3GradingPeriodsConfig({
                                                         </div>
                                                         <div>
                                                             <CommonDatePicker
+                                                                defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date`}
                                                                 disabled={disabled}
                                                                 error={Boolean(periodErrors?.major_exam_end_date)}
                                                                 helperText={periodErrors?.major_exam_end_date?.message}
+                                                                isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date`}
                                                                 label="Exam End"
                                                                 size="small"
                                                                 slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date` } }}
@@ -624,9 +651,11 @@ export default function Step3GradingPeriodsConfig({
                                                         </div>
                                                         <div>
                                                             <CommonDatePicker
+                                                                defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date`}
                                                                 disabled={disabled}
                                                                 error={Boolean(periodErrors?.grade_encoding_end_date)}
                                                                 helperText={periodErrors?.grade_encoding_end_date?.message}
+                                                                isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date`}
                                                                 label="Encoding End"
                                                                 size="small"
                                                                 slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date` } }}
@@ -708,10 +737,14 @@ export default function Step3GradingPeriodsConfig({
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    )
-                                                    : (
+                                                    ) : (
                                                         <div className="space-y-2">
-                                                            {components.map((comp, cIdx) => (
+                                                            {components.map((comp, cIdx) => {
+                                                                const compErrors = (periodErrors as any)?.components?.[cIdx];
+                                                                const isNameFirstError = firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.name`;
+                                                                const isWeightFirstError = firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.weight`;
+
+                                                                return (
                                                                 <div
                                                                     className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 bg-white dark:bg-zinc-800 p-2.5 sm:p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
                                                                     key={comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`}
@@ -750,8 +783,11 @@ export default function Step3GradingPeriodsConfig({
                                                                         </span>
                                                                         <CommonInput
                                                                             containerClassName="w-full"
+                                                                            defaultOpenErrorTooltip={isNameFirstError}
                                                                             disabled={disabled}
+                                                                            error={Boolean(compErrors?.name)}
                                                                             fullWidth
+                                                                            helperText={compErrors?.name?.message}
                                                                             inputRef={(el) => {
                                                                                 const itemKey = comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`;
                                                                                 if (focusTarget?.type === 'component' && focusTarget.key === itemKey && el) {
@@ -759,6 +795,8 @@ export default function Step3GradingPeriodsConfig({
                                                                                     setFocusTarget(null);
                                                                                 }
                                                                             }}
+                                                                            isFirstError={isNameFirstError}
+                                                                            name={`terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.name`}
                                                                             placeholder="e.g. Quizzes, Midterm Exam, Recitation"
                                                                             size="small"
                                                                             value={comp.name}
@@ -773,10 +811,15 @@ export default function Step3GradingPeriodsConfig({
                                                                         </span>
                                                                         <CommonNumberInput
                                                                             containerClassName="w-full"
+                                                                            defaultOpenErrorTooltip={isWeightFirstError}
                                                                             disabled={disabled}
+                                                                            error={Boolean(compErrors?.weight)}
                                                                             fullWidth
+                                                                            helperText={compErrors?.weight?.message}
+                                                                            isFirstError={isWeightFirstError}
                                                                             max={100}
                                                                             min={0}
+                                                                            name={`terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.weight`}
                                                                             placeholder="Weight"
                                                                             size="small"
                                                                             suffixText="%"
@@ -797,7 +840,23 @@ export default function Step3GradingPeriodsConfig({
                                                                         </button>
                                                                     )}
                                                                 </div>
-                                                            ))}
+                                                                );
+                                                            })}
+
+                                                            {!disabled && components.length > 0 && (
+                                                                <div className="flex justify-start pt-1">
+                                                                    <button
+                                                                        aria-label="Add Component"
+                                                                        className="text-xs px-2.5 py-1 rounded bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                                                                        title="Add Component"
+                                                                        type="button"
+                                                                        onClick={() => handleAddComponent(tIdx, pIdx)}
+                                                                    >
+                                                                        <PlusIcon className="w-3.5 h-3.5" />
+                                                                        <span>Add Component</span>
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                             </div>
@@ -805,6 +864,20 @@ export default function Step3GradingPeriodsConfig({
                                         </div>
                                     );
                                 }))}
+
+                                {!disabled && periods.length > 0 && (
+                                    <div className="flex justify-start pt-1">
+                                        <CommonButton
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                                            variant="outlined"
+                                            onClick={() => handleAddPeriod(tIdx)}
+                                        >
+                                            Add Period
+                                        </CommonButton>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );

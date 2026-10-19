@@ -1,5 +1,5 @@
 import { lazyElement } from '@utils/lazy.util';
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 
 export const studentRoutes: RouteObject[] = [
     {
@@ -85,6 +85,38 @@ export const studentRoutes: RouteObject[] = [
                     return import('@pages/shared/calendar/CalendarPage');
                 }),
                 path: 'calendar'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management');
+                }),
+                path: 'announcement-management'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
+                }),
+                path: 'announcement-management/:id'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management');
+                }),
+                path: 'announcements'
+            },
+            {
+                element: lazyElement(function() {
+                    return import('@pages/shared/announcement-management/AnnouncementDetailPage');
+                }),
+                path: 'announcements/:id'
+            },
+            {
+                element: <Navigate replace to="/student/announcement-management" />,
+                path: 'event-management'
+            },
+            {
+                element: <Navigate replace to="/student/announcement-management" />,
+                path: 'event-management/:id'
             }
         ]
     }

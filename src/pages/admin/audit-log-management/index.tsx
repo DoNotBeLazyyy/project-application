@@ -6,7 +6,7 @@ import AuditLogDetailContent from '@pages/admin/audit-log-management/components/
 import { FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/audit-log-management/constants/audit-log.constant';
 import FilterAuditLogForm from '@pages/admin/audit-log-management/forms/FilterAuditLogForm';
 import { useAuditLogTableConfig } from '@pages/admin/audit-log-management/hooks/useAuditLogTableConfig';
-import { getAuditLogTables, listGradeAuditLogs } from '@services/audit-log.service';
+import { getAuditLogFilters, listAuditLogs } from '@services/audit-log.service';
 import { AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
 import { SortStringDto } from '@type/http.type';
 import { useEffect, useRef, useState } from 'react';
@@ -15,38 +15,36 @@ import { useForm } from 'react-hook-form';
 const EMPTY_FILTERS: AuditLogFilterValues = {
     action: 'All',
     table_name: 'All',
+    event_name: 'All',
+    changed_by: 'All',
     date_from: '',
     date_to: ''
 };
 
 function toTitleCase(value: string): string {
-    return value.replace(/_/g, ' ')
+    return value
+        .replace(/_/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatDate(value: string): string {
-    return new Date(value)
-        .toLocaleString('en-PH', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
-}
-
-function formatPeriodLabel(raw: string): string {
-    if (!raw) return '';
-    return raw
-        .replace(/\bAY\s*(\d{2})-(\d{2})\b/i, (_, y1, y2) => `(A.Y. 20${y1} - 20${y2})`)
-        .replace(/\bSem\b/i, 'Sem');
+    return new Date(value).toLocaleString('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
 }
 
 export default function AuditLogManagement() {
     const [activeFilters, setActiveFilters] = useState<AuditLogFilterValues | null>(null);
+    const [quickAction, setQuickAction] = useState<string>('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [tableOptions, setTableOptions] = useState<CommonSelectOption[]>([]);
+    const [eventOptions, setEventOptions] = useState<CommonSelectOption[]>([]);
+    const [operatorOptions, setOperatorOptions] = useState<CommonSelectOption[]>([]);
     const [selectedLog, setSelectedLog] = useState<AuditLogRow | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
 
@@ -54,18 +52,34 @@ export default function AuditLogManagement() {
 
     const filterMethods = useForm<AuditLogFilterValues>({ defaultValues: EMPTY_FILTERS });
 
-    const { columnDefs } = useAuditLogTableConfig();
+    function handleOpenView(logOrId: AuditLogRow | string) {
+        if (typeof logOrId === 'string') {
+            const found = rowsMapRef.current.get(logOrId);
+            if (found) {
+                setSelectedLog(found);
+                setIsViewOpen(true);
+            }
+        } else {
+            setSelectedLog(logOrId);
+            setIsViewOpen(true);
+        }
+    }
+
+    const { columnDefs } = useAuditLogTableConfig({
+        onViewPayload: handleOpenView
+    });
 
     useEffect(function() {
-        async function loadTableOptions() {
-            const result = await getAuditLogTables();
-
+        async function loadFilters() {
+            const result = await getAuditLogFilters();
             if (result.data) {
-                setTableOptions(result.data);
+                if (result.data.tables) setTableOptions(result.data.tables);
+                if (result.data.events) setEventOptions(result.data.events);
+                if (result.data.operators) setOperatorOptions(result.data.operators);
             }
         }
 
-        loadTableOptions();
+        loadFilters();
     }, []);
 
     async function fetchAuditLogs(
@@ -74,7 +88,13 @@ export default function AuditLogManagement() {
         search: string,
         sort: SortStringDto[]
     ) {
-        const result = await listGradeAuditLogs(page, size, search, sort, activeFilters);
+        // Merge active filters with quick action chip if set
+        const effectiveFilters: AuditLogFilterValues = {
+            ...(activeFilters || EMPTY_FILTERS),
+            action: quickAction !== 'All' ? quickAction : (activeFilters?.action || 'All')
+        };
+
+        const result = await listAuditLogs(page, size, search, sort, effectiveFilters);
         if (result.data?.content) {
             result.data.content.forEach(function(item: AuditLogRow) {
                 rowsMapRef.current.set(item.id, item);
@@ -85,26 +105,24 @@ export default function AuditLogManagement() {
 
     function handleFilterSubmit(values: AuditLogFilterValues) {
         setActiveFilters(values);
+        if (values.action && values.action !== 'All') {
+            setQuickAction(values.action);
+        }
         setIsFilterOpen(false);
     }
 
     function handleFilterReset() {
-        filterMethods.reset();
+        filterMethods.reset(EMPTY_FILTERS);
         setActiveFilters(null);
+        setQuickAction('All');
     }
 
-    function handleOpenView(logOrId: AuditLogRow | string) {
-        if (typeof logOrId === 'string') {
-            const found = rowsMapRef.current.get(logOrId);
-            if (found) {
-                setSelectedLog(found);
-                setIsViewOpen(true);
-            }
-        }
-        else {
-            setSelectedLog(logOrId);
-            setIsViewOpen(true);
-        }
+    function handleQuickActionChange(action: string) {
+        setQuickAction(action);
+        setActiveFilters((prev) => ({
+            ...(prev || EMPTY_FILTERS),
+            action
+        }));
     }
 
     function handleCloseView() {
@@ -113,28 +131,22 @@ export default function AuditLogManagement() {
     }
 
     function renderAuditBentoCard(item: AuditLogRow) {
-        const periodLabel = item.grading_period_name
-            ? formatPeriodLabel(item.grading_period_name)
-            : '—';
-
         const metrics = [
             {
                 label: 'Action',
                 value: item.action
             },
             {
-                label: 'User',
+                label: 'Operator',
                 value: item.changed_by_name || 'System'
             },
             {
                 label: 'Date',
-                value: item.changed_at
-                    ? formatDate(item.changed_at)
-                    : '—'
+                value: item.changed_at ? formatDate(item.changed_at) : '—'
             },
             {
-                label: 'Grading Period',
-                value: periodLabel
+                label: 'Entity',
+                value: item.table_name ? toTitleCase(item.table_name) : '—'
             }
         ];
 
@@ -145,14 +157,8 @@ export default function AuditLogManagement() {
                 hasCheckbox={false}
                 metrics={metrics}
                 status={undefined}
-                subtitle={item.student_name
-                    ? `${item.student_name}${item.section_code
-                        ? ` • ${item.section_code}`
-                        : ''}`
-                    : (item.section_code || undefined)}
-                title={item.table_name
-                    ? toTitleCase(item.table_name)
-                    : 'Audit Record'}
+                subtitle={`${toTitleCase(item.table_name || 'Entity')} • ${item.changed_by_name || 'System'}`}
+                title={item.event_name || 'Transaction'}
                 onClick={function() {
                     handleOpenView(item);
                 }}
@@ -162,29 +168,66 @@ export default function AuditLogManagement() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            {/* Quick Action Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2 px-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1">
+                    Action Type:
+                </span>
+                {[
+                    { label: 'All Actions', value: 'All' },
+                    { label: 'INSERT (Create)', value: 'INSERT' },
+                    { label: 'UPDATE (Modify)', value: 'UPDATE' },
+                    { label: 'DELETE (Remove)', value: 'DELETE' }
+                ].map((pill) => {
+                    const isSelected = quickAction === pill.value;
+                    return (
+                        <button
+                            key={pill.value}
+                            type="button"
+                            onClick={() => handleQuickActionChange(pill.value)}
+                            className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer shadow-2xs ${
+                                isSelected
+                                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100'
+                                    : 'bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-750'
+                            }`}
+                        >
+                            {pill.label}
+                        </button>
+                    );
+                })}
+            </div>
+
             <CommonTableCard<AuditLogRow>
                 cardHeaderProps={{
-                    subheader: 'Every recorded grade and grading-schema change, with who changed it and why.',
-                    title: 'Grade Audit Log'
+                    subheader: 'Immutable forensic audit trail tracking all system mutations, user provisioning, and transactional state diffs.',
+                    title: 'Forensic Audit Logs'
                 }}
                 controls={{
                     tableInputProps: {
                         searchHints: SEARCH_HINTS.auditLogs
                     }
                 }}
-                dependencies={[activeFilters]}
+                dependencies={[activeFilters, quickAction]}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {
-                            subheader: 'Narrow the audit trail by action, table, or date range.',
-                            title: 'Audit Log Filters'
+                            subheader: 'Filter system transactions by action type, entity, transaction event, operator, or date range.',
+                            title: 'Forensic Audit Filters'
                         }
                     },
                     confirmText: 'Apply Filters',
                     formContent: (
                         <FilterAuditLogForm
+                            actionOptions={[
+                                { label: 'All Actions', value: 'All' },
+                                { label: 'INSERT (Create)', value: 'INSERT' },
+                                { label: 'UPDATE (Modify)', value: 'UPDATE' },
+                                { label: 'DELETE (Remove)', value: 'DELETE' }
+                            ]}
                             control={filterMethods.control}
+                            eventOptions={eventOptions}
                             id={FILTER_FORM_ID}
+                            operatorOptions={operatorOptions}
                             tableOptions={tableOptions}
                             onSubmit={filterMethods.handleSubmit(handleFilterSubmit)}
                         />
@@ -192,7 +235,7 @@ export default function AuditLogManagement() {
                     formId: FILTER_FORM_ID,
                     open: isFilterOpen,
                     onClose: function() {
-                        filterMethods.reset();
+                        filterMethods.reset(activeFilters || EMPTY_FILTERS);
                         setIsFilterOpen(false);
                     },
                     onReset: handleFilterReset
@@ -209,9 +252,9 @@ export default function AuditLogManagement() {
                     cardProps: {
                         cardHeaderProps: {
                             subheader: selectedLog
-                                ? `${selectedLog.changed_by_name || 'System'} • ${selectedLog.action} on ${toTitleCase(selectedLog.table_name || '')}`
-                                : 'Detailed audit trail record',
-                            title: 'Audit Log Details'
+                                ? `${selectedLog.event_name} • ${selectedLog.action} on ${toTitleCase(selectedLog.table_name || '')} by ${selectedLog.changed_by_name || 'System'}`
+                                : 'Detailed forensic transaction record',
+                            title: 'JSON Payload Inspector'
                         }
                     },
                     confirmText: 'Close',

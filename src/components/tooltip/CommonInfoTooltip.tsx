@@ -4,7 +4,7 @@ import Tooltip, { TooltipProps } from '@mui/material/Tooltip';
 import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { KeyboardEventButtonElement } from '@type/common.type';
 import { classMerge } from '@utils/css.util';
-import { FORM_ERROR_EVENT } from '@utils/form.util';
+import { FORM_ERROR_EVENT, FormErrorEventDetail } from '@utils/form.util';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 
 export type CommonInfoTooltipVariant = 'info' | 'error';
@@ -15,6 +15,11 @@ export interface CommonInfoTooltipProps {
 
     // Additional class name for the trigger button
     className?: string;
+
+    /**
+     * Whether the tooltip should automatically open when a form error occurs
+     */
+    autoOpenOnError?: boolean;
 
     /**
      * Whether the tooltip is open by default (e.g. for first invalid field)
@@ -72,6 +77,7 @@ const VARIANT_STYLES = {
  * <CommonInfoTooltip content="Enter the minimum % for each grade." />
  */
 export default function CommonInfoTooltip({
+    autoOpenOnError = true,
     className,
     content,
     defaultOpen = false,
@@ -100,10 +106,40 @@ export default function CommonInfoTooltip({
     }, [defaultOpen, content]);
 
     useEffect(() => {
-        function handleFormError() {
-            if (defaultOpen) {
+        function handleFormError(event: Event) {
+            if (!autoOpenOnError) {
+                return;
+            }
+            const detail = (event as CustomEvent<FormErrorEventDetail>)?.detail;
+            if (defaultOpen && content) {
                 pinnedAtRef.current = Date.now();
                 setIsPinned(true);
+                return;
+            }
+            if (variant === 'error' && detail?.firstErrorField && buttonRef.current && content) {
+                const container = buttonRef.current.closest('.flex-col, .MuiFormControl-root, .common_input_container') || buttonRef.current.parentElement;
+                if (container) {
+                    const errorField = detail.firstErrorField;
+                    const altField = errorField === 'description' ? 'content' : (errorField === 'content' ? 'description' : undefined);
+                    const escaped = errorField.replace(/\./g, '\\.');
+                    const isDirectMatch = Boolean(
+                        container.getAttribute('data-field-name')?.split(/\s+/).includes(errorField) ||
+                        (altField && container.getAttribute('data-field-name')?.split(/\s+/).includes(altField)) ||
+                        container.getAttribute('name') === errorField ||
+                        container.id === errorField ||
+                        (altField && (container.getAttribute('name') === altField || container.id === altField))
+                    );
+                    const matchedInput = isDirectMatch
+                        ? container
+                        : container.querySelector(
+                            `[name="${errorField}"], [id="${errorField}"], [data-field-name~="${errorField}"], [data-field-name="${errorField}"], [name="${escaped}"], #${escaped}` +
+                            (altField ? `, [name="${altField}"], [id="${altField}"], [data-field-name~="${altField}"], [data-field-name="${altField}"]` : '')
+                        );
+                    if (matchedInput) {
+                        pinnedAtRef.current = Date.now();
+                        setIsPinned(true);
+                    }
+                }
             }
         }
 
@@ -113,7 +149,7 @@ export default function CommonInfoTooltip({
                 window.removeEventListener(FORM_ERROR_EVENT, handleFormError);
             };
         }
-    }, [defaultOpen]);
+    }, [autoOpenOnError, defaultOpen, content, variant]);
 
     const isOpen = controlledIsOpen ?? (isPinned || isHovered);
     const {
@@ -147,7 +183,7 @@ export default function CommonInfoTooltip({
                 }
             }
             if (event.target instanceof Element) {
-                if (event.target.closest('.MuiPopover-root, .MuiMenu-root, .MuiPickersPopper-root, .MuiAutocomplete-popper, .MuiDialog-root')) {
+                if (event.target.closest('.MuiPopover-root, .MuiMenu-root, .MuiPickersPopper-root, .MuiAutocomplete-popper, .MuiDialog-root, .toastui-editor')) {
                     return;
                 }
             }

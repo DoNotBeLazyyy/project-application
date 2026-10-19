@@ -308,10 +308,14 @@ export default function AssessmentResultPage() {
     useEffect(function() {
         async function fetchResult() {
             const response = await getMyAssessmentResult(enrollmentId, assessmentId);
-            if (response.data) setResult(response.data);
+            if (response.data) {
+                setResult(response.data);
+                if (response.data.enrollment_id && response.data.enrollment_id !== enrollmentId) {
+                    navigate(`/student/subjects/${response.data.enrollment_id}/assessments/${assessmentId}/result`, { replace: true });
+                }
+            }
             setIsLoaded(true);
         }
-
         fetchResult();
     }, [assessmentId, enrollmentId]);
 
@@ -329,7 +333,7 @@ export default function AssessmentResultPage() {
                     startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                     variant="outlined"
                     onClick={function() {
-                        navigate(`/student/subjects/${enrollmentId}`);
+                        navigate(`/student/subjects/${result?.enrollment_id || enrollmentId}`);
                     }}
                 >
                     Back

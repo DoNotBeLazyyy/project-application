@@ -53,10 +53,10 @@ export function CalendarWeekView({
     }, []);
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-x-auto flex flex-col">
-            <div className="min-w-[620px] flex flex-col">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-x-auto flex flex-col flex-1 min-h-0">
+            <div className="min-w-[620px] flex-1 min-h-0 flex flex-col">
                 {/* Header: Weekdays */}
-            <div className="grid grid-cols-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-800/50">
+            <div className="grid grid-cols-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-800/50 shrink-0">
                 <div className="p-3 text-center text-xs font-semibold text-neutral-400 dark:text-neutral-500 border-r border-neutral-200/80 dark:border-neutral-800">
                     Time
                 </div>
@@ -92,7 +92,7 @@ export function CalendarWeekView({
             </div>
 
             {/* All Day Banner Row */}
-            <div className="grid grid-cols-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/20 text-xs">
+            <div className="grid grid-cols-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/40 dark:bg-neutral-800/20 text-xs shrink-0">
                 <div className="p-2 text-center text-[11px] font-medium text-neutral-400 border-r border-neutral-200/80 dark:border-neutral-800">
                     All-day
                 </div>
@@ -124,7 +124,7 @@ export function CalendarWeekView({
             </div>
 
             {/* Hourly Schedule Body */}
-            <div className="overflow-y-auto max-h-[600px] divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
+            <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
                 {HOURS.map((hour) => {
                     const hourLabel = `${hour % 12 === 0 ? 12 : hour % 12} ${hour >= 12 ? 'PM' : 'AM'}`;
 

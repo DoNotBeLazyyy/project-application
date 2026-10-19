@@ -119,7 +119,7 @@ export default function NotificationBell() {
 
         handleClose();
 
-        const target = resolveNotificationPath(item.action_url, activeRole);
+        const target = resolveNotificationPath(item.action_url, activeRole, item.notification_type);
 
         if (target) {
             if (target.startsWith('?')) {

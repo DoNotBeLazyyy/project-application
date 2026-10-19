@@ -1,5 +1,5 @@
 import { lazyElement } from '@utils/lazy.util';
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 
 export const registrarRoutes: RouteObject[] = [
     {
@@ -63,21 +63,15 @@ export const registrarRoutes: RouteObject[] = [
                 path: 'announcement-management/:id'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management');
-                }),
+                element: <Navigate replace to="/registrar/announcement-management" />,
                 path: 'event-management'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management/EventDetailPage');
-                }),
+                element: <Navigate replace to="/registrar/announcement-management/new?type=Event" />,
                 path: 'event-management/new'
             },
             {
-                element: lazyElement(function() {
-                    return import('@pages/shared/event-management/EventDetailPage');
-                }),
+                element: <Navigate replace to="/registrar/announcement-management" />,
                 path: 'event-management/:id'
             },
             {

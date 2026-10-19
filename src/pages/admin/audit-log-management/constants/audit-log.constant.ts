@@ -5,15 +5,15 @@ export const FILTER_FORM_ID = 'filter-audit-log-form';
 
 export const ACTION_OPTIONS: CommonSelectOption[] = [
     { label: 'All Actions', value: 'All' },
-    { label: 'Insert', value: 'Insert' },
-    { label: 'Update', value: 'Update' },
-    { label: 'Delete', value: 'Delete' }
+    { label: 'INSERT (Create)', value: 'INSERT' },
+    { label: 'UPDATE (Modify)', value: 'UPDATE' },
+    { label: 'DELETE (Remove)', value: 'DELETE' }
 ];
 
 export const SORT_COLUMNS: SortColumn[] = [
-    { field: 'changed_at', label: 'Date' },
-    { field: 'action', label: 'Action' },
-    { field: 'table_name', label: 'Table' },
-    { field: 'changed_by_name', label: 'Changed By' },
-    { field: 'student_name', label: 'Student' }
+    { field: 'created_at', label: 'Timestamp' },
+    { field: 'action', label: 'Action Type' },
+    { field: 'event_name', label: 'Transaction Event' },
+    { field: 'table_name', label: 'Entity / Table' },
+    { field: 'changed_by_name', label: 'Operator' }
 ];

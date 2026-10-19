@@ -28,8 +28,9 @@ const SORT_COLUMNS: SortColumn[] = [
 ];
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
+    { key: 'code', label: 'Code', hint: 'e.g. CCS (optional)', required: false },
     { key: 'name', label: 'Name', hint: 'e.g. College of Computer Studies' },
-    { key: 'description', label: 'Description', hint: 'e.g. Department of Computer Studies (optional)' }
+    { key: 'description', label: 'Description', hint: 'e.g. Department of Computer Studies (optional)', required: false }
 ];
 
 const DEFAULT_FORM_VALUES: DepartmentFormValues = {

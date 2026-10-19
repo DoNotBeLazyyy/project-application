@@ -1,0 +1,2 @@
+code,name,department_code,program_level_code,years_duration,total_units,description,is_active
+MICO-BSCS,Bachelor of Science in Computer Science,CCS-MICO,UNDERGRADUATE,4,168,Mico Computer Science and Algorithms Program,true

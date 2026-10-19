@@ -1,6 +1,7 @@
 import '@components/editor/toastui-editor-theme.css';
 import { uploadFile } from '@services/storage.service';
 import Editor, { EditorInstance } from '@toast-ui/editor';
+import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
 import {
     forwardRef,
     useEffect,
@@ -130,6 +131,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
             const viewer = Editor.factory({
                 el: containerRef.current,
                 initialValue: currentVal,
+                plugins: [colorSyntax],
                 viewer: true
             });
             instanceRef.current = viewer;
@@ -182,6 +184,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
             initialEditType,
             initialValue: currentVal,
             placeholder,
+            plugins: [colorSyntax],
             previewStyle,
             toolbarItems: [
                 ['heading', 'bold', 'italic', 'strike'],
@@ -231,6 +234,7 @@ const CommonToastEditor = forwardRef<CommonToastEditorRef, CommonToastEditorProp
                     const viewer = Editor.factory({
                         el: containerRef.current,
                         initialValue: value,
+                        plugins: [colorSyntax],
                         viewer: true
                     });
                     instanceRef.current = viewer;

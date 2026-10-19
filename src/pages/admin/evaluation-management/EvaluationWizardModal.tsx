@@ -46,6 +46,7 @@ export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
 ];
 
 const TARGET_MODE_OPTIONS = [
+    { label: 'All programs (show to all students)', value: 'ALL' },
     { label: 'Include selected programs only', value: 'INCLUDE' },
     { label: 'Exclude selected programs (show to all others)', value: 'EXCLUDE' }
 ];
@@ -227,8 +228,17 @@ export default function EvaluationWizardModal({
     const targetMode = useWatch({
         control,
         name: 'target_mode',
-        defaultValue: 'INCLUDE'
+        defaultValue: 'ALL'
     });
+
+    useEffect(() => {
+        if (targetMode === 'ALL') {
+            const current = methods.getValues('program_ids');
+            if (current && current.length > 0) {
+                methods.setValue('program_ids', []);
+            }
+        }
+    }, [targetMode, methods]);
 
     function handleAddQuestion() {
         append(DEFAULT_QUESTION);
@@ -327,27 +337,31 @@ export default function EvaluationWizardModal({
             name: 'target_mode',
             label: 'Program Target Mode',
             disabled: readOnly,
+            fullWidth: targetMode === 'ALL',
+            gridCols: targetMode === 'ALL' ? 2 : 1,
             options: TARGET_MODE_OPTIONS,
             type: 'select',
             fieldProps: {
-                helperText: targetMode === 'EXCLUDE'
+                helperText: targetMode === 'ALL'
+                    ? 'This evaluation section applies institution-wide to students in all programs.'
+                    : targetMode === 'EXCLUDE'
                     ? 'Selected programs will be excluded from this section.'
                     : 'Only selected programs will be included in this section.'
             }
         },
-        {
-            name: 'program_ids',
+        ...(targetMode !== 'ALL' ? [{
+            name: 'program_ids' as const,
             label: 'Programs',
             disabled: readOnly,
             options: programOptions,
-            type: 'multi-select',
+            type: 'multi-select' as const,
             fieldProps: {
-                placeholder: 'All programs',
+                placeholder: 'Select programs',
                 helperText: targetMode === 'EXCLUDE'
-                    ? 'Students in selected programs will NOT see this section. (Leave empty for all programs).'
-                    : 'Only students in selected programs will see this section. (Leave empty for all programs).'
+                    ? 'Students in selected programs will NOT see this section.'
+                    : 'Only students in selected programs will see this section.'
             }
-        },
+        }] : []),
         {
             name: 'is_active',
             disabled: readOnly,
@@ -476,63 +490,67 @@ export default function EvaluationWizardModal({
 
                 {currentStep === 2 && (
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 shrink-0 shadow-xs">
-                            <div className="flex items-center gap-2.5">
-                                <ListChecksIcon className="w-5 h-5 text-brand-600 dark:text-brand-400 shrink-0" weight="bold" />
-                                <div>
-                                    <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                                        Evaluation Questions ({fields.length})
-                                    </h3>
-                                </div>
-                            </div>
-
-                            {!readOnly && (
-                                <CommonButton
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<PlusCircleIcon weight="bold" />}
-                                    variant="contained"
-                                    onClick={handleAddQuestion}
-                                >
-                                    Add Question
-                                </CommonButton>
-                            )}
-                        </div>
-
                         <div className="flex flex-col gap-3">
                             {fields.length === 0 ? (
-                                <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/80 rounded-xl flex flex-col items-center justify-center gap-2 bg-white dark:bg-zinc-800/50">
+                                <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-zinc-700/80 rounded-xl flex flex-col items-center justify-center gap-3 bg-white dark:bg-zinc-800/50">
                                     <InfoIcon className="w-8 h-8 text-slate-400" />
                                     <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                                         No Questions Added Yet
                                     </p>
                                     <p className="text-xs text-slate-500">
-                                        Click "+ Add Question" above to add the first evaluation item.
+                                        Click &quot;+ Add Question&quot; below to add the first evaluation item.
                                     </p>
+                                    {!readOnly && (
+                                        <CommonButton
+                                            color="primary"
+                                            size="small"
+                                            startIcon={<PlusCircleIcon weight="bold" />}
+                                            variant="contained"
+                                            onClick={handleAddQuestion}
+                                        >
+                                            Add Question
+                                        </CommonButton>
+                                    )}
                                 </div>
                             ) : (
-                                fields.slice(0, visibleCount).map((fieldItem, idx) => (
-                                    <EvaluationQuestionItem
-                                        control={control}
-                                        disabled={readOnly}
-                                        index={idx}
-                                        key={fieldItem.id}
-                                        total={fields.length}
-                                        onMove={(fromIdx, toIdx) => move(fromIdx, toIdx)}
-                                        onRemove={(removeIdx) => {
-                                            const qText = methods.getValues(`questions.${removeIdx}.question_text` as const);
-                                            setDeleteQuestionTarget({
-                                                index: removeIdx,
-                                                text: qText ? `"${qText.length > 50 ? qText.slice(0, 50) + '...' : qText}"` : `Question #${removeIdx + 1}`
-                                            });
-                                        }}
-                                    />
-                                ))
-                            )}
+                                <>
+                                    {fields.slice(0, visibleCount).map((fieldItem, idx) => (
+                                        <EvaluationQuestionItem
+                                            control={control}
+                                            disabled={readOnly}
+                                            index={idx}
+                                            key={fieldItem.id}
+                                            total={fields.length}
+                                            onMove={(fromIdx, toIdx) => move(fromIdx, toIdx)}
+                                            onRemove={(removeIdx) => {
+                                                const qText = methods.getValues(`questions.${removeIdx}.question_text` as const);
+                                                setDeleteQuestionTarget({
+                                                    index: removeIdx,
+                                                    text: qText ? `"${qText.length > 50 ? qText.slice(0, 50) + '...' : qText}"` : `Question #${removeIdx + 1}`
+                                                });
+                                            }}
+                                        />
+                                    ))}
 
-                            <div className="py-1 text-center text-xs text-slate-500" ref={sentinelRef}>
-                                {hasMore ? 'Loading more questions...' : ''}
-                            </div>
+                                    <div className="py-1 text-center text-xs text-slate-500" ref={sentinelRef}>
+                                        {hasMore ? 'Loading more questions...' : ''}
+                                    </div>
+
+                                    {!readOnly && (
+                                        <div className="flex justify-start pt-1">
+                                            <CommonButton
+                                                color="primary"
+                                                size="small"
+                                                startIcon={<PlusCircleIcon weight="bold" />}
+                                                variant="contained"
+                                                onClick={handleAddQuestion}
+                                            >
+                                                Add Question
+                                            </CommonButton>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
@@ -540,16 +558,7 @@ export default function EvaluationWizardModal({
 
             {/* Modal Bottom Footer */}
             <div className="p-4 sm:px-6 sm:py-4 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shrink-0">
-                <CommonButton
-                    color="inherit"
-                    size="small"
-                    variant="outlined"
-                    onClick={handleCloseModal}
-                >
-                    {readOnly ? 'Close' : 'Cancel'}
-                </CommonButton>
-
-                <div className="flex items-center gap-2">
+                <div>
                     {currentStep > 1 && (
                         <CommonButton
                             color="inherit"
@@ -561,7 +570,9 @@ export default function EvaluationWizardModal({
                             Back
                         </CommonButton>
                     )}
+                </div>
 
+                <div>
                     {currentStep < 2 ? (
                         <CommonButton
                             color="primary"

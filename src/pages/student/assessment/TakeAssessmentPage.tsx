@@ -35,10 +35,14 @@ export default function TakeAssessmentPage() {
             const result = await getAssessmentForStudent(assessmentId, enrollmentId);
             if (result.data) {
                 setAssessment(result.data);
+                const canonicalEnrollmentId = result.data.enrollment_id || enrollmentId;
+                if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
+                    navigate(`/student/subjects/${result.data.enrollment_id}/assessments/${assessmentId}`, { replace: true });
+                }
                 const used = result.data.attempts_used ?? 0;
                 const max = result.data.max_attempts ?? 1;
                 if (used >= max && !result.data.has_active_submission) {
-                    navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result?already_submitted=true`, { replace: true });
+                    navigate(`/student/subjects/${canonicalEnrollmentId}/assessments/${assessmentId}/result?already_submitted=true`, { replace: true });
                 }
             }
         }
@@ -157,7 +161,7 @@ export default function TakeAssessmentPage() {
             const result = await submitAssessment(submissionId);
             if (!result.error) {
                 if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-                navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result?submitted=true`);
+                navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result?submitted=true`);
             }
         }
         finally {
@@ -196,7 +200,7 @@ export default function TakeAssessmentPage() {
                     startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                     variant="outlined"
                     onClick={function() {
-                        navigate(`/student/subjects/${enrollmentId}`);
+                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}`);
                     }}
                 >
                     Back
@@ -265,7 +269,7 @@ export default function TakeAssessmentPage() {
                                     size="small"
                                     variant="contained"
                                     onClick={function() {
-                                        navigate(`/student/subjects/${enrollmentId}/assessments/${assessmentId}/result`);
+                                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
                                     }}
                                 >
                                 View Results

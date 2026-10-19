@@ -2,16 +2,17 @@ import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
 import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
-import { useEventBasePath } from '@pages/shared/event-management/useEventBasePath';
-import EventViewerCard from '@pages/shared/event-management/EventViewerCard';
+import EventViewerCard from '@pages/shared/announcement-management/EventViewerCard';
 import { createAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
 import { createEvent, getEventById, updateEvent } from '@services/event.service';
+import { useAppStore } from '@stores/app.store';
 import { CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
 import { ServiceResult } from '@type/service.type';
+import { canManageCommunication } from '@utils/communication.util';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 const FORM_ID = 'communication-form';
@@ -38,15 +39,22 @@ function toDateInput(value: string | null | undefined): string {
 
 export default function AnnouncementDetailPage() {
     const announcementBasePath = useAnnouncementBasePath();
-    const eventBasePath = useEventBasePath();
     const location = useLocation();
     const { pathname } = location;
     const [searchParams] = useSearchParams();
 
+    const currentUserId = useAppStore((s) => s.userProfile?.id || s.session?.user?.id);
+    const currentRole = getRoleFromPath(pathname);
+    const [loadedItem, setLoadedItem] = useState<{
+        created_by?: string | null;
+        created_by_role?: string | null;
+        target_audience?: AnnouncementAudience;
+    } | null>(null);
+
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
-    const basePath = (location.state as { from?: string } | null)?.from || (isEventUrl ? eventBasePath : announcementBasePath);
+    const basePath = (location.state as { from?: string } | null)?.from || announcementBasePath;
     const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
-    const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
+    const isFacultyOnly = currentRole === 'Faculty';
 
     const defaultValues: CommunicationFormValues = useMemo(function() {
         return {
@@ -78,6 +86,11 @@ export default function AnnouncementDetailPage() {
             const eventRes = await getEventById(id, { silent: true });
             if (eventRes.data) {
                 const d = eventRes.data;
+                setLoadedItem({
+                    created_by: d.created_by,
+                    created_by_role: d.created_by_role,
+                    target_audience: d.target_audience
+                });
                 return {
                     data: {
                         all_day: d.all_day,
@@ -85,6 +98,8 @@ export default function AnnouncementDetailPage() {
                         author_name: d.author_name ?? 'Staff',
                         content: d.description ?? '',
                         created_at: d.created_at,
+                        created_by: d.created_by,
+                        created_by_role: d.created_by_role,
                         description: d.description ?? '',
                         end_at: toDateInput(d.end_at),
                         expires_at: '',
@@ -106,6 +121,11 @@ export default function AnnouncementDetailPage() {
             const annResult = await getAnnouncementById(id, { silent: true });
             if (annResult.data) {
                 const d = annResult.data;
+                setLoadedItem({
+                    created_by: d.created_by,
+                    created_by_role: d.created_by_role,
+                    target_audience: d.target_audience
+                });
                 return {
                     data: {
                         all_day: false,
@@ -113,6 +133,8 @@ export default function AnnouncementDetailPage() {
                         author_name: d.author_name ?? '—',
                         content: d.content,
                         created_at: d.created_at,
+                        created_by: d.created_by,
+                        created_by_role: d.created_by_role,
                         description: d.content,
                         end_at: '',
                         expires_at: d.expires_at ?? '',
@@ -136,6 +158,11 @@ export default function AnnouncementDetailPage() {
             const annResult = await getAnnouncementById(id, { silent: true });
             if (annResult.data) {
                 const d = annResult.data;
+                setLoadedItem({
+                    created_by: d.created_by,
+                    created_by_role: d.created_by_role,
+                    target_audience: d.target_audience
+                });
                 return {
                     data: {
                         all_day: false,
@@ -143,6 +170,8 @@ export default function AnnouncementDetailPage() {
                         author_name: d.author_name ?? '—',
                         content: d.content,
                         created_at: d.created_at,
+                        created_by: d.created_by,
+                        created_by_role: d.created_by_role,
                         description: d.content,
                         end_at: '',
                         expires_at: d.expires_at ?? '',
@@ -164,6 +193,11 @@ export default function AnnouncementDetailPage() {
             const evtResult = await getEventById(id, { silent: true });
             if (evtResult.data) {
                 const d = evtResult.data;
+                setLoadedItem({
+                    created_by: d.created_by,
+                    created_by_role: d.created_by_role,
+                    target_audience: d.target_audience
+                });
                 return {
                     data: {
                         all_day: d.all_day,
@@ -171,6 +205,8 @@ export default function AnnouncementDetailPage() {
                         author_name: d.author_name ?? 'Staff',
                         content: d.description ?? '',
                         created_at: d.created_at,
+                        created_by: d.created_by,
+                        created_by_role: d.created_by_role,
                         description: d.description ?? '',
                         end_at: toDateInput(d.end_at),
                         expires_at: '',
@@ -235,7 +271,11 @@ export default function AnnouncementDetailPage() {
     }
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
-        const isFacultyOnly = getRoleFromPath(pathname) === 'Faculty';
+        if (!canEdit) {
+            return { data: null, error: { message: 'You do not have permission to edit this item.' } as any };
+        }
+
+        const isFacultyOnly = currentRole === 'Faculty';
         const audience = isFacultyOnly ? 'Section' : (values.target_audience || 'Global');
         let sectionIds = (audience === 'Section' ? (sanitizeUuidArray(values.section_ids ?? []) ?? []) : []);
 
@@ -274,9 +314,15 @@ export default function AnnouncementDetailPage() {
         });
     }
 
+    const isStudent = currentRole === 'Student';
+    const canEdit = !isStudent && (
+        !loadedItem || canManageCommunication(loadedItem, currentUserId, currentRole)
+    );
+
     return (
         <EntityFormPage<CommunicationFormValues>
             backTo={basePath}
+            canEdit={canEdit}
             defaultValues={defaultValues}
             fetchById={fetchCommunicationItem}
             formId={FORM_ID}
@@ -288,6 +334,7 @@ export default function AnnouncementDetailPage() {
                         control={control}
                         disabled={disabled}
                         id={id}
+                        isTypeDisabled={isEventUrl}
                         onSubmit={onSubmit}
                     />
                 );

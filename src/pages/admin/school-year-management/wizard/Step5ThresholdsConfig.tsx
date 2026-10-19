@@ -14,7 +14,8 @@ import {
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
 import { generateAcademicThresholdCode } from '@utils/entity-code.util';
-import { useEffect, useState } from 'react';
+import { checkForMessage, clearFieldError } from '@utils/form.util';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Control, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
@@ -40,6 +41,7 @@ export default function Step5ThresholdsConfig({
     const [collapsedThresholds, setCollapsedThresholds] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
+    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.thresholds && Array.isArray(errors.thresholds)) {
@@ -218,11 +220,13 @@ export default function Step5ThresholdsConfig({
 
                                         <div className="sm:col-span-5 md:col-span-6">
                                             <CommonInput
+                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.label`}
                                                 description="Official title revealed on student rank lists, certificates, and academic summary cards."
                                                 disabled={disabled}
                                                 error={Boolean((errors.thresholds as any)?.[idx]?.label)}
                                                 fullWidth
                                                 helperText={(errors.thresholds as any)?.[idx]?.label?.message}
+                                                isFirstError={firstErrorKey === `thresholds.${idx}.label`}
                                                 isRequired
                                                 label="Threshold Name / Label"
                                                 name={`thresholds.${idx}.label`}
@@ -230,8 +234,10 @@ export default function Step5ThresholdsConfig({
                                                 size="small"
                                                 value={item.label}
                                                 onChange={(e) => {
+                                                    clearFieldError(control, `thresholds.${idx}.label`);
+                                                    clearFieldError(control, 'thresholds');
                                                     const newLabel = e.target.value;
-                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true });
+                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true, shouldValidate: true });
                                                     const otherCodes = thresholds
                                                         .map((th, i) => (i !== idx
                                                             ? th.code
@@ -270,35 +276,42 @@ export default function Step5ThresholdsConfig({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <CommonNumberInput
+                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.min_gwa`}
                                                 description="Minimum (best) GWA required for this threshold tier (typically 1.00)."
                                                 disabled={disabled}
                                                 fullWidth
+                                                isFirstError={firstErrorKey === `thresholds.${idx}.min_gwa`}
                                                 label="Min GWA"
                                                 maxDecimals={2}
                                                 minDecimals={2}
+                                                name={`thresholds.${idx}.min_gwa`}
                                                 placeholder="1.00 (Optional)"
                                                 size="small"
                                                 step={0.01}
                                                 value={item.min_gwa ?? ''}
-                                                onChange={(val) =>
+                                                onChange={(val) => {
+                                                    clearFieldError(control, `thresholds.${idx}.min_gwa`);
+                                                    clearFieldError(control, 'thresholds');
                                                     setValue(
                                                         `thresholds.${idx}.min_gwa`,
                                                         val === undefined
                                                             ? null
                                                             : val,
                                                         { shouldDirty: true }
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                             />
                                         </div>
 
                                         <div>
                                             <CommonNumberInput
+                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.max_gwa`}
                                                 description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
                                                 disabled={disabled}
                                                 error={Boolean((errors.thresholds as any)?.[idx]?.max_gwa)}
                                                 fullWidth
                                                 helperText={(errors.thresholds as any)?.[idx]?.max_gwa?.message}
+                                                isFirstError={firstErrorKey === `thresholds.${idx}.max_gwa`}
                                                 isRequired
                                                 label="Max GWA (Cutoff)"
                                                 maxDecimals={2}
@@ -308,9 +321,13 @@ export default function Step5ThresholdsConfig({
                                                 size="small"
                                                 step={0.01}
                                                 value={item.max_gwa ?? ''}
-                                                onChange={(val) => setValue(`thresholds.${idx}.max_gwa`, val === undefined
-                                                    ? ''
-                                                    : val, { shouldDirty: true })}
+                                                onChange={(val) => {
+                                                    clearFieldError(control, `thresholds.${idx}.max_gwa`);
+                                                    clearFieldError(control, 'thresholds');
+                                                    setValue(`thresholds.${idx}.max_gwa`, val === undefined
+                                                        ? ''
+                                                        : val, { shouldDirty: true, shouldValidate: true });
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -319,25 +336,30 @@ export default function Step5ThresholdsConfig({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                                         <div>
                                             <CommonNumberInput
+                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.min_subject_grade`}
                                                 description="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies."
                                                 disabled={disabled}
                                                 fullWidth
+                                                isFirstError={firstErrorKey === `thresholds.${idx}.min_subject_grade`}
                                                 label="Subject Floor Grade"
                                                 maxDecimals={2}
                                                 minDecimals={2}
+                                                name={`thresholds.${idx}.min_subject_grade`}
                                                 placeholder="Optional (e.g. 2.50)"
                                                 size="small"
                                                 step={0.01}
                                                 value={item.min_subject_grade ?? ''}
-                                                onChange={(val) =>
+                                                onChange={(val) => {
+                                                    clearFieldError(control, `thresholds.${idx}.min_subject_grade`);
+                                                    clearFieldError(control, 'thresholds');
                                                     setValue(
                                                         `thresholds.${idx}.min_subject_grade`,
                                                         val === undefined
                                                             ? null
                                                             : val,
                                                         { shouldDirty: true }
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                             />
                                         </div>
 
@@ -359,6 +381,20 @@ export default function Step5ThresholdsConfig({
                             </div>
                         );
                     })
+                )}
+
+                {!disabled && thresholds.length > 0 && (
+                    <div className="flex justify-start pt-1">
+                        <CommonButton
+                            color="primary"
+                            size="small"
+                            startIcon={<PlusIcon className="w-3.5 h-3.5" />}
+                            variant="contained"
+                            onClick={handleAddThreshold}
+                        >
+                            Add Threshold
+                        </CommonButton>
+                    </div>
                 )}
             </div>
 

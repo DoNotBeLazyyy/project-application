@@ -4,8 +4,8 @@ import { UserRole } from '@type/app.type';
 const NOTIFICATION_SEGMENT_ALIASES: Record<string, string> = {
     announcements: 'announcement-management',
     'announcement-management': 'announcement-management',
-    events: 'event-management',
-    'event-management': 'event-management'
+    events: 'announcement-management',
+    'event-management': 'announcement-management'
 };
 
 const ROLES_WITH_CONTENT_ROUTES: UserRole[] = ['Admin', 'Dean', 'Faculty', 'Registrar'];
@@ -17,13 +17,39 @@ function isRoleHomeSegment(segment: string): boolean {
 
 export function resolveNotificationPath(
     actionUrl: string | null,
-    activeRole: UserRole | null
+    activeRole: UserRole | null,
+    notificationType?: string | null
 ): string | null {
     if (!actionUrl || !activeRole) {
         return null;
     }
 
-    const cleanUrl = actionUrl.replace(/\\/g, '/');
+    let cleanUrl = actionUrl.replace(/\\/g, '/');
+
+    // Faculty routing normalizations
+    if (activeRole === 'Faculty') {
+        if (cleanUrl.startsWith('/faculty/subjects/')) {
+            cleanUrl = cleanUrl.replace('/faculty/subjects/', '/faculty/sections/');
+        }
+
+        // Deep link into assessment submissions page if hitting specific assessment without subpath
+        if (/^\/faculty\/sections\/[^/]+\/assessments\/[^/?]+$/.test(cleanUrl)) {
+            cleanUrl = `${cleanUrl}/submissions`;
+        } else if (/^\/faculty\/sections\/[^/?]+$/.test(cleanUrl) && notificationType === 'Assessment') {
+            cleanUrl = `${cleanUrl}?tab=assessments`;
+        }
+    }
+
+    // Student routing normalizations
+    if (activeRole === 'Student') {
+        if (cleanUrl.startsWith('/student/sections/')) {
+            cleanUrl = cleanUrl.replace('/student/sections/', '/student/subjects/');
+        }
+        if (cleanUrl.startsWith('/faculty/sections/')) {
+            cleanUrl = cleanUrl.replace('/faculty/sections/', '/student/subjects/');
+        }
+    }
+
     const segments = cleanUrl.split('/')
         .filter(Boolean);
 

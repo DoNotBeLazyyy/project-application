@@ -55,7 +55,7 @@ export async function createEvaluationTemplate(
         p_sequence: Number(template.sequence || 1),
         p_program_ids: mapProgramIds(template),
         p_questions: mapQuestions(template),
-        p_target_mode: template.target_mode || 'INCLUDE',
+        p_target_mode: template.target_mode || 'ALL',
         p_suggestion_placeholder: template.suggestion_placeholder || null
     });
 }
@@ -72,7 +72,7 @@ export async function updateEvaluationTemplate(
         p_sequence: Number(template.sequence || 1),
         p_program_ids: mapProgramIds(template),
         p_questions: mapQuestions(template),
-        p_target_mode: template.target_mode || 'INCLUDE',
+        p_target_mode: template.target_mode || 'ALL',
         p_suggestion_placeholder: template.suggestion_placeholder || null
     });
 }
@@ -127,6 +127,9 @@ export async function submitEvaluation(
 }
 
 function mapProgramIds(template: EvaluationTemplateForm): string[] | null {
+    if (template.target_mode === 'ALL') {
+        return null;
+    }
     return template.program_ids?.length
         ? template.program_ids
         : null;

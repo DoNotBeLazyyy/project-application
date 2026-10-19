@@ -103,7 +103,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
-                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || isFirstError}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isRequired={isRequired}

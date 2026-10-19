@@ -220,7 +220,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
 
     useEffect(() => {
         if (resolvedIsFirstError && !isNonInteractive) {
-            setIsOpen(true);
             const timer = setTimeout(() => {
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
@@ -237,7 +236,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
             if (isNonInteractive) return;
             const detail = (event as CustomEvent<FormErrorEventDetail>).detail;
             if (detail?.firstErrorField === name || (fieldState.error && resolvedIsFirstError)) {
-                setIsOpen(true);
                 const element = document.querySelector<HTMLInputElement>(`[name="${name}"]`);
                 if (element) {
                     element.focus({ preventScroll: true });
@@ -271,7 +269,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
             {label && (
                 <FormLabel
                     className={classMerge('tw_body_small_bold', labelClassName)}
-                    defaultOpenErrorTooltip={defaultOpenErrorTooltip || resolvedIsFirstError}
+                    defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? resolvedIsFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
                     isRequired={isRequired || Boolean(rules?.required)}

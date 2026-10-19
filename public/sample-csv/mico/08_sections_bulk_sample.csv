@@ -1,0 +1,2 @@
+term_label,program_code,course_code,section_code,faculty_email,room,max_slots,status,schedule_days,schedule_time_start,schedule_time_end,schedule_room
+,MICO-BSCS,MICO-CS101,MICO-SEC-201,mico.faculty@example.com,MICO-LAB-201,40,Open,"Monday, Wednesday",10:00,12:00,MICO-LAB-201

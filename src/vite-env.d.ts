@@ -24,6 +24,7 @@ declare module '@toast-ui/editor' {
             initialEditType?: string;
             initialValue?: string;
             placeholder?: string;
+            plugins?: unknown[];
             previewStyle?: string;
             toolbarItems?: (string | string[])[][];
             usageStatistics?: boolean;
@@ -32,6 +33,7 @@ declare module '@toast-ui/editor' {
         static factory(options: {
             el: HTMLElement;
             initialValue?: string;
+            plugins?: unknown[];
             viewer?: boolean;
         }): EditorInstance;
 
@@ -42,3 +44,11 @@ declare module '@toast-ui/editor' {
         setMarkdown(markdown: string): void;
     }
 }
+
+declare module '@toast-ui/editor-plugin-color-syntax' {
+    import { PluginInfo } from '@toast-ui/editor';
+    const colorSyntax: (context?: any, options?: any) => PluginInfo | Record<string, unknown>;
+    export default colorSyntax;
+}
+
+declare module 'tui-color-picker';

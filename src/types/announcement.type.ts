@@ -10,6 +10,7 @@ export interface AnnouncementListRow {
     expires_at: string | null;
     created_at: string;
     created_by: string | null;
+    created_by_role?: string | null;
     author_name: string | null;
     section_count: number;
     attachment_count?: number;
@@ -48,6 +49,7 @@ export interface AnnouncementDetail {
     expires_at: string | null;
     created_at: string;
     created_by: string | null;
+    created_by_role?: string | null;
     author_name: string | null;
     section_ids: string[];
     sections: AnnouncementSectionRef[];
@@ -75,6 +77,8 @@ export interface CommunicationFormValues {
     author_name?: string;
     content: string;
     created_at?: string;
+    created_by?: string | null;
+    created_by_role?: string | null;
     description: string;
     end_at: string;
     expires_at: string;
@@ -121,13 +125,15 @@ export interface CommunicationListRow {
     author_name: string | null;
     content: string;
     created_at: string;
+    created_by?: string | null;
+    created_by_role?: string | null;
     date: string;
     end_at?: string;
     id: string;
     is_pinned?: boolean;
     item_type: CommunicationItemType;
     location?: string | null;
-    section_count: number;
+    section_count?: number;
     start_at?: string;
     target_audience: AnnouncementAudience;
     title: string;

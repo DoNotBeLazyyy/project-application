@@ -1,7 +1,7 @@
 import RoleShell from '@components/layout/RoleShell';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import {
-    BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon
+    BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon, MegaphoneIcon
 } from '@phosphor-icons/react';
 import { getMyProfile } from '@services/profile.service';
 import { MyProfile } from '@type/profile.type';
@@ -40,6 +40,12 @@ export default function StudentLayout() {
                     isActive: pathname === '/student',
                     label: 'Dashboard',
                     onClick: () => navigate('/student')
+                },
+                {
+                    icon: <MegaphoneIcon size={18} />,
+                    isActive: pathname.startsWith('/student/announcement') || pathname.startsWith('/student/event'),
+                    label: 'Announcements & Events',
+                    onClick: () => navigate('/student/announcement-management')
                 },
                 {
                     icon: <CalendarBlankIcon size={18} />,

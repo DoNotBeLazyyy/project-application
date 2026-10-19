@@ -92,19 +92,22 @@ interface FormFieldProps<T extends FieldValues> {
     control: Control<T>;
     field: FormFieldConfig<T>;
     hasHelper?: boolean;
+    defaultOpenErrorTooltip?: boolean;
 }
 
 export function FormField<T extends FieldValues>({
     control,
+    defaultOpenErrorTooltip,
     field,
     hasHelper = true
 }: FormFieldProps<T>) {
     if (field.type === 'select') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonSelect
                 {...fieldProps}
                 control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
                 name={field.name}
@@ -116,11 +119,12 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'text-area') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; slotProps?: CommonTextareaProps['slotProps'] };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean; slotProps?: CommonTextareaProps['slotProps'] };
         return (
             <ValidCommonTextarea
                 {...fieldProps}
                 control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
@@ -141,11 +145,12 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'date') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonDatePicker
                 {...fieldProps}
                 control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
@@ -193,11 +198,12 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'number') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonNumberInput
                 {...fieldProps}
                 control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
                 disabled={field.disabled}
                 fullWidth
                 hasHelper={hasHelper}
@@ -211,11 +217,12 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'multi-select') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonMultiSelect
                 {...fieldProps}
                 control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
                 disabled={field.disabled}
                 hasHelper={hasHelper}
                 name={field.name}
@@ -230,12 +237,13 @@ export function FormField<T extends FieldValues>({
     const resolvedRules = isEmail
         ? { ...field.rules, pattern: field.rules?.pattern ?? EMAIL_PATTERN }
         : field.rules;
-    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown };
+    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
 
     return (
         <ValidCommonInput
             {...fieldProps}
             control={control}
+            defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
             disabled={field.disabled}
             fullWidth
             hasHelper={hasHelper}

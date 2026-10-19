@@ -21,6 +21,7 @@ export interface FormLabelProps {
     /** Whether to open the error tooltip by default (for the first invalid field) */
     defaultOpenErrorTooltip?: boolean;
     isFirstError?: boolean;
+    autoOpenErrorTooltip?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export interface FormLabelProps {
  * />
  */
 export default function FormLabel({
+    autoOpenErrorTooltip,
     className,
     defaultOpenErrorTooltip,
     description,
@@ -82,8 +84,9 @@ export default function FormLabel({
             {errorMessage && (
                 <span className="inline-flex align-middle ml-1.5 whitespace-nowrap">
                     <CommonInfoTooltip
+                        autoOpenOnError={autoOpenErrorTooltip ?? (defaultOpenErrorTooltip !== false)}
                         content={errorMessage}
-                        defaultOpen={Boolean(defaultOpenErrorTooltip || isFirstError)}
+                        defaultOpen={defaultOpenErrorTooltip === false ? false : Boolean(defaultOpenErrorTooltip ?? isFirstError)}
                         label="This field has a problem"
                         size={16}
                         variant="error"
