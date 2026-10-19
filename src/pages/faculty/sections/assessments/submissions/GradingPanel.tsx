@@ -26,6 +26,9 @@ export default function GradingPanel({
     onPointsChange,
     onSave
 }: GradingPanelProps) {
+    const isGraded = submission.status === 'Graded';
+    const canSave = !isGraded || isDirty;
+
     return (
         <div className="flex flex-col flex-1 gap-3 min-h-0 min-w-0">
             <div className="flex items-center justify-between">
@@ -38,7 +41,7 @@ export default function GradingPanel({
                     </span>
                 </div>
                 <CommonButton
-                    disabled={isSaving || !isDirty}
+                    disabled={isSaving || !canSave}
                     size="small"
                     startIcon={<CheckCircleIcon size={14} weight="bold" />}
                     variant="contained"

@@ -34,6 +34,7 @@ export default function SubmissionsPage() {
 
     const isGradeDirty = buildGradeDraftKey(draftFeedback, draftAnswers, draftEvaluations)
         !== savedGradeDraft;
+    const canSaveGrade = Boolean(selectedSubmission && (selectedSubmission.status !== 'Graded' || isGradeDirty));
 
     useEffect(function() {
         if (!assessmentId) return;
@@ -185,7 +186,7 @@ export default function SubmissionsPage() {
                                 <RubricGradingPanel
                                     draftEvaluations={draftEvaluations}
                                     draftFeedback={draftFeedback}
-                                    isDirty={isGradeDirty}
+                                    isDirty={canSaveGrade}
                                     isSaving={isSaving}
                                     rubric={rubric}
                                     onEvaluationFeedbackChange={handleRubricFeedbackChange}
@@ -199,7 +200,7 @@ export default function SubmissionsPage() {
                                     <GradingPanel
                                         draftAnswers={draftAnswers}
                                         draftFeedback={draftFeedback}
-                                        isDirty={isGradeDirty}
+                                        isDirty={canSaveGrade}
                                         isSaving={isSaving}
                                         submission={selectedSubmission}
                                         onFeedbackChange={setDraftFeedback}

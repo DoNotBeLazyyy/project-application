@@ -35,6 +35,17 @@ export default function RegistrarLayout() {
             ]
         },
         {
+            sectionLabel: 'GRADE RELEASE',
+            items: [
+                {
+                    icon: <SealCheckIcon size={18} />,
+                    isActive: pathname === '/registrar/grade-release',
+                    label: 'Grade Release',
+                    onClick: () => navigate('/registrar/grade-release')
+                }
+            ]
+        },
+        {
             sectionLabel: 'STUDENT PROFILE VERIFICATION',
             items: [
                 {
@@ -65,17 +76,6 @@ export default function RegistrarLayout() {
                     isActive: isAnnouncementPath,
                     label: 'Announcements & Events',
                     onClick: () => navigate('/registrar/announcement-management')
-                }
-            ]
-        },
-        {
-            sectionLabel: 'COMING SOON',
-            items: [
-                {
-                    icon: <SealCheckIcon size={18} />,
-                    isActive: pathname === '/registrar/grade-release',
-                    label: 'Grade Release (Soon)',
-                    onClick: () => navigate('/registrar/grade-release')
                 }
             ]
         }

@@ -23,7 +23,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
 
     const columnDefs = useMemo<MobileCardColDef[]>(function() {
         function isReleased(item: SubjectGradeItem): boolean {
-            return item.is_visible && item.evaluation_completed;
+            return item.status === 'Released' || (item.is_visible && item.evaluation_completed);
         }
 
         return [
@@ -40,9 +40,16 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 headerName: 'Raw',
                 mobileCard: 'meta',
                 sortable: false,
-                valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
-                    ? formatGrade(params.value)
-                    : '—'
+                valueFormatter: (params) => {
+                    const grade = params.data as SubjectGradeItem;
+                    if (isReleased(grade)) {
+                        return formatGrade(params.value);
+                    }
+                    if (grade.is_visible || grade.status === 'Approved') {
+                        return 'Locked';
+                    }
+                    return '—';
+                }
             },
             {
                 field: 'final_grade',
@@ -50,9 +57,16 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 headerName: 'Final',
                 mobileCard: 'meta',
                 sortable: false,
-                valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
-                    ? formatGrade(params.value)
-                    : '—'
+                valueFormatter: (params) => {
+                    const grade = params.data as SubjectGradeItem;
+                    if (isReleased(grade)) {
+                        return formatGrade(params.value);
+                    }
+                    if (grade.is_visible || grade.status === 'Approved') {
+                        return 'Locked';
+                    }
+                    return '—';
+                }
             },
             {
                 field: 'transmuted_grade',
@@ -60,11 +74,18 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 headerName: 'Transmuted',
                 mobileCard: 'meta',
                 sortable: false,
-                valueFormatter: (params) => isReleased(params.data as SubjectGradeItem)
-                    ? (params.value != null
-                        ? String(params.value)
-                        : params.data?.special_grade ?? '—')
-                    : '—'
+                valueFormatter: (params) => {
+                    const grade = params.data as SubjectGradeItem;
+                    if (isReleased(grade)) {
+                        return params.value != null
+                            ? String(params.value)
+                            : (grade.special_grade ?? '—');
+                    }
+                    if (grade.is_visible || grade.status === 'Approved') {
+                        return 'Locked';
+                    }
+                    return '—';
+                }
             },
             {
                 colId: 'status',
@@ -74,9 +95,10 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                 sortable: false,
                 cellRenderer: (params: { data: SubjectGradeItem }) => {
                     const grade = params.data;
-                    const needsEvaluation = grade.is_visible && !grade.evaluation_completed;
+                    const released = isReleased(grade);
+                    const needsEvaluation = !released && (grade.is_visible || grade.status === 'Approved');
 
-                    if (isReleased(grade)) {
+                    if (released) {
                         return (
                             <div className="flex gap-2 h-full items-center">
                                 <CommonBadgeStatus label="Released" variant="success" />
@@ -97,6 +119,7 @@ export default function SubjectGradeList({ enrollmentId, grades }: SubjectGradeL
                     if (needsEvaluation) {
                         return (
                             <div className="flex gap-2 h-full items-center">
+                                <CommonBadgeStatus label="Evaluation Required" variant="warning" />
                                 <CommonButton
                                     color="primary"
                                     size="small"

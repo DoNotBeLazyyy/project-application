@@ -1,39 +1,20 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
-import EvaluationQuestionField from '@pages/student/evaluation/EvaluationQuestionField';
-import EvaluationRatingMatrix, { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
-import { toTargetKey, toTargetPath, useEvaluationTargets } from '@pages/student/evaluation/useEvaluationTargets';
+import { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
+import Step1FacultyAndGuide from '@pages/student/evaluation/Step1FacultyAndGuide';
+import Step2EvaluationForm, { RenderedSection, ScrolledSection } from '@pages/student/evaluation/Step2EvaluationForm';
+import { toTargetPath, useEvaluationTargets } from '@pages/student/evaluation/useEvaluationTargets';
 import { getEvaluationForm, submitEvaluation } from '@services/evaluation.service';
 import { useToastStore } from '@stores/toast.store';
-import { ChangeEventInputTextarea } from '@type/common.type';
-import { EvaluationAnswerForm, EvaluationAnswersForm, EvaluationForm, EvaluationSection } from '@type/evaluation.type';
+import { EvaluationAnswerForm, EvaluationAnswersForm, EvaluationForm } from '@type/evaluation.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 import { Path, useFieldArray, useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const BASE_PATH = '/student/evaluations';
-
-const RATING_LEGEND = '5 = Strongly Agree, 4 = Agree, 3 = Uncertain, 2 = Disagree, 1 = Strongly Disagree';
-
-const PLACEHOLDER_OPTION: CommonSelectOption = {
-    label: 'Select a faculty to evaluate',
-    value: ''
-};
-
-interface RenderedSection extends EvaluationSection {
-    startIndex: number;
-}
-
-interface ScrolledSection {
-    openRows: EvaluationRatingRow[];
-    ratingRows: EvaluationRatingRow[];
-    section: RenderedSection;
-}
 
 function toAnswerForms(form: EvaluationForm): EvaluationAnswerForm[] {
     const saved = new Map((form.answers ?? []).map(function(answer) {
@@ -99,25 +80,25 @@ function toAnswerFieldName(answer: EvaluationAnswerForm, index: number): Path<Ev
         : `responses.${index}.response_text`;
 }
 
-function hasStandardScale(answers: EvaluationAnswerForm[]): boolean {
-    const ratings = answers.filter(function(answer) {
-        return answer.question_type === 'Rating';
-    });
-
-    return ratings.length > 0 && ratings.every(function(answer) {
-        return (answer.min_rating ?? 1) === 1 && (answer.max_rating ?? 5) === 5;
-    });
-}
-
 export default function StudentEvaluations() {
     const { enrollmentId = '', gradingPeriodId = '' } = useParams<{ enrollmentId: string; gradingPeriodId: string }>();
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const [form, setForm] = useState<EvaluationForm | null>(null);
+    const [isLoadingForm, setIsLoadingForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-    const { pendingCount, targetOptions } = useEvaluationTargets(refreshKey);
+    const { pendingCount, targetOptions, targets } = useEvaluationTargets(refreshKey);
 
     const hasTarget = Boolean(enrollmentId && gradingPeriodId);
+    const isStep2 = searchParams.get('step') === '2' && hasTarget;
+    const currentStep: 1 | 2 = isStep2 ? 2 : 1;
+
+    const selectedTarget = useMemo(function() {
+        return targets.find(function(target) {
+            return target.enrollment_id === enrollmentId && target.grading_period_id === gradingPeriodId;
+        }) ?? null;
+    }, [targets, enrollmentId, gradingPeriodId]);
 
     const methods = useForm<EvaluationAnswersForm>({
         ...DEFAULT_FORM_OPTIONS,
@@ -137,21 +118,28 @@ export default function StudentEvaluations() {
         }
 
         let active = true;
+        setIsLoadingForm(true);
 
         async function fetchForm() {
-            const result = await getEvaluationForm(enrollmentId, gradingPeriodId);
+            try {
+                const result = await getEvaluationForm(enrollmentId, gradingPeriodId);
 
-            if (!active) {
-                return;
+                if (!active) {
+                    return;
+                }
+
+                if (!result.data) {
+                    navigate(BASE_PATH);
+                    return;
+                }
+
+                setForm(result.data);
+                methods.reset({ responses: toAnswerForms(result.data) });
+            } finally {
+                if (active) {
+                    setIsLoadingForm(false);
+                }
             }
-
-            if (!result.data) {
-                navigate(BASE_PATH);
-                return;
-            }
-
-            setForm(result.data);
-            methods.reset({ responses: toAnswerForms(result.data) });
         }
 
         fetchForm();
@@ -175,11 +163,6 @@ export default function StudentEvaluations() {
     }, [enrollmentId, gradingPeriodId]);
 
     const isReadOnly = form?.is_completed === true;
-    const showLegend = hasStandardScale(fields);
-
-    const selectOptions = useMemo<CommonSelectOption[]>(function() {
-        return [PLACEHOLDER_OPTION, ...targetOptions];
-    }, [targetOptions]);
 
     const scrolledSections = useMemo<ScrolledSection[]>(function() {
         return sections
@@ -219,16 +202,34 @@ export default function StudentEvaluations() {
             });
     }, [fields, sections, visibleCount]);
 
-    function handleTargetChange(event: ChangeEventInputTextarea) {
-        const [nextEnrollmentId, nextGradingPeriodId] = String(event.target.value)
-            .split('|');
-
+    function handleSelectTarget(nextEnrollmentId: string, nextGradingPeriodId: string) {
         if (!nextEnrollmentId || !nextGradingPeriodId) {
             navigate(BASE_PATH);
+            setSearchParams({});
             return;
         }
 
         navigate(toTargetPath(nextEnrollmentId, nextGradingPeriodId));
+        setSearchParams({});
+    }
+
+    function handleProceed() {
+        if (!hasTarget) {
+            return;
+        }
+        setSearchParams({ step: '2' });
+    }
+
+    function handleBack() {
+        setSearchParams({});
+    }
+
+    function handleStepClick(stepNumber: number) {
+        if (stepNumber === 1) {
+            setSearchParams({});
+        } else if (stepNumber === 2 && hasTarget) {
+            setSearchParams({ step: '2' });
+        }
     }
 
     function flagMissingAnswers(answers: EvaluationAnswerForm[]): number {
@@ -244,10 +245,10 @@ export default function StudentEvaluations() {
             }
 
             methods.setError(toAnswerFieldName(answer, index), {
-                type: 'required',
                 message: answer.question_type === 'Rating'
                     ? 'Select a rating'
-                    : 'Response is required'
+                    : 'Response is required',
+                type: 'required'
             });
         });
 
@@ -279,6 +280,7 @@ export default function StudentEvaluations() {
                 response_text: answer.response_text
             };
         });
+
         try {
             const result = await submitEvaluation(enrollmentId, gradingPeriodId, responses);
 
@@ -287,131 +289,109 @@ export default function StudentEvaluations() {
                     return previous + 1;
                 });
             }
-        }
-        finally {
+        } finally {
             setIsSubmitting(false);
         }
     }
 
     return (
-        <div className="flex flex-col h-full w-full">
-            <CommonCard className="flex flex-col gap-4 h-full min-h-0 overflow-hidden p-4">
-                <div className="flex flex-wrap gap-4 items-start justify-between">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                            Faculty Evaluation
-                        </h1>
-                        <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {pendingCount > 0
-                                ? `${pendingCount} faculty still awaiting your evaluation.`
-                                : 'You have completed every available evaluation.'}
-                        </p>
-                    </div>
-                    {isReadOnly && (
-                        <CommonBadgeStatus label="Completed" variant="success" />
-                    )}
-                </div>
-                <div className="flex flex-col gap-2 max-w-2xl">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Faculty
-                    </span>
-                    <CommonSelect
-                        fullWidth
-                        options={selectOptions}
-                        size="small"
-                        value={hasTarget && targetOptions.length
-                            ? toTargetKey(enrollmentId, gradingPeriodId)
-                            : ''}
-                        onChange={handleTargetChange}
-                    />
-                    {form && (
-                        <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {`${form.course_code} — ${form.course_title} · ${form.section_code} · ${form.term_label} · ${form.grading_period_name}`}
-                        </p>
-                    )}
-                </div>
-                {form && showLegend && (
-                    <div className="border-(--mui-palette-divider) border rounded-lg flex flex-col gap-1 p-4">
-                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                            Rating Legend
-                        </h2>
-                        <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {RATING_LEGEND}
-                        </p>
-                    </div>
-                )}
-                <div className="flex flex-1 flex-col gap-8 min-h-0 overflow-y-auto">
-                    {!hasTarget && (
-                        <p className="text-(--mui-palette-text-secondary) text-center text-sm">
-                            {targetOptions.length
-                                ? 'Select a faculty above to load the evaluation form.'
-                                : 'No faculty evaluations are available for you right now.'}
-                        </p>
-                    )}
-                    {hasTarget && !form && (
-                        <p className="text-(--mui-palette-text-secondary) text-center text-sm">
-                            Loading evaluation form...
-                        </p>
-                    )}
-                    {form && scrolledSections.map(function({ openRows, ratingRows, section }) {
-                        return (
-                            <section
-                                className="flex flex-col gap-4"
-                                key={section.template_id}
-                            >
-                                <div className="flex flex-col gap-1">
-                                    <h3 className="bg-(--mui-palette-primary-main)/10 font-semibold px-2 py-1 rounded self-start text-(--mui-palette-primary-main) text-sm">
-                                        {section.title}
-                                    </h3>
-                                    {section.description && (
-                                        <p className="text-(--mui-palette-text-secondary) text-sm">
-                                            {section.description}
-                                        </p>
-                                    )}
-                                </div>
-                                <EvaluationRatingMatrix
-                                    control={methods.control}
-                                    disabled={isReadOnly}
-                                    rows={ratingRows}
-                                />
-                                {openRows.map(function({ answer, index }) {
-                                    return (
-                                        <EvaluationQuestionField
-                                            answer={answer}
-                                            control={methods.control}
-                                            disabled={isReadOnly}
-                                            index={index}
-                                            key={answer.question_id}
-                                        />
-                                    );
-                                })}
-                            </section>
-                        );
-                    })}
-                    {form && (
-                        <div
-                            className="flex items-center justify-center text-(--mui-palette-text-secondary) text-sm"
-                            ref={sentinelRef}
-                        >
-                            {hasMore
-                                ? `Loading more questions... (${Math.min(visibleCount, fields.length)} of ${fields.length})`
-                                : ''}
+        <div className="flex flex-col h-full w-full min-h-0">
+            <CommonCard className="flex flex-col gap-3 sm:gap-4 h-full min-h-0 overflow-hidden p-3 sm:p-5">
+                {/* Stepper Navigation Header */}
+                <div className="flex flex-col gap-3 shrink-0 border-b border-(--mui-palette-divider) pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="font-bold text-(--mui-palette-text-primary) text-lg sm:text-xl truncate">
+                                Faculty Evaluation
+                            </h1>
+                            <p className="text-(--mui-palette-text-secondary) text-xs sm:text-sm">
+                                {pendingCount > 0
+                                    ? `${pendingCount} faculty evaluation${pendingCount === 1 ? '' : 's'} awaiting your review`
+                                    : 'You have completed all available faculty evaluations'}
+                            </p>
                         </div>
-                    )}
-                </div>
-                {form && !isReadOnly && (
-                    <div className="border-(--mui-palette-divider) border-t flex gap-2 justify-end pt-4">
-                        <CommonButton
-                            disabled={isSubmitting}
-                            loading={isSubmitting}
-                            variant="contained"
-                            onClick={handleSubmit}
-                        >
-                            {isSubmitting
-                                ? 'Submitting...'
-                                : 'Submit Evaluation'}
-                        </CommonButton>
+                        {selectedTarget?.is_completed && (
+                            <CommonBadgeStatus label="Completed" size="small" variant="success" />
+                        )}
                     </div>
+
+                    {/* 2-Step Interactive Stepper Bar */}
+                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-(--mui-palette-action-hover) rounded-xl select-none">
+                        <button
+                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                                currentStep === 1
+                                    ? 'bg-white dark:bg-zinc-800 text-(--mui-palette-primary-main) shadow-xs'
+                                    : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary)'
+                            }`}
+                            type="button"
+                            onClick={() => handleStepClick(1)}
+                        >
+                            <span
+                                className={`size-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                                    currentStep === 1
+                                        ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                        : 'bg-(--mui-palette-divider) text-(--mui-palette-text-secondary)'
+                                }`}
+                            >
+                                1
+                            </span>
+                            <span className="truncate">1. Select & Guide</span>
+                        </button>
+
+                        <button
+                            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                                !hasTarget
+                                    ? 'opacity-40 cursor-not-allowed text-(--mui-palette-text-secondary)'
+                                    : currentStep === 2
+                                        ? 'bg-white dark:bg-zinc-800 text-(--mui-palette-primary-main) shadow-xs cursor-pointer'
+                                        : 'text-(--mui-palette-text-secondary) hover:text-(--mui-palette-text-primary) cursor-pointer'
+                            }`}
+                            disabled={!hasTarget}
+                            type="button"
+                            onClick={() => handleStepClick(2)}
+                        >
+                            <span
+                                className={`size-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                                    currentStep === 2
+                                        ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                        : 'bg-(--mui-palette-divider) text-(--mui-palette-text-secondary)'
+                                }`}
+                            >
+                                2
+                            </span>
+                            <span className="truncate">2. Evaluation Form</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Step Body */}
+                {currentStep === 1 ? (
+                    <Step1FacultyAndGuide
+                        enrollmentId={enrollmentId}
+                        gradingPeriodId={gradingPeriodId}
+                        isLoadingForm={isLoadingForm}
+                        pendingCount={pendingCount}
+                        selectedTarget={selectedTarget}
+                        targetOptions={targetOptions}
+                        targets={targets}
+                        onProceed={handleProceed}
+                        onSelectTarget={handleSelectTarget}
+                    />
+                ) : (
+                    <Step2EvaluationForm
+                        control={methods.control}
+                        fieldsCount={fields.length}
+                        form={form}
+                        hasMore={hasMore}
+                        isLoading={isLoadingForm}
+                        isReadOnly={isReadOnly}
+                        isSubmitting={isSubmitting}
+                        scrolledSections={scrolledSections}
+                        sentinelRef={sentinelRef}
+                        visibleCount={visibleCount}
+                        onBack={handleBack}
+                        onSubmit={handleSubmit}
+                    />
                 )}
             </CommonCard>
         </div>

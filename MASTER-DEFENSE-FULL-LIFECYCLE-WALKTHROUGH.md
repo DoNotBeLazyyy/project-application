@@ -917,7 +917,7 @@ Navigate to `/dean/calendar` via sidebar **Calendar** (under **CAMPUS COMMUNICAT
    * **5 Registrar Bento Stat Cards:**
      1. **Active Students**
      2. **Enrollments This Term**
-     3. **Pending Grade Releases (Soon)**
+     3. **Pending Grade Releases**
      4. **Incomplete Grades**
      5. **Dropped This Term**
    * **Feeds:** Announcements and Upcoming Campus Events feeds.
@@ -1351,7 +1351,7 @@ Still in the **Gradebook** tab of `COCS101-001`:
 
 ### Phase 7.1: Registrar Section Grade Audit & Evaluation Clearance
 1. Log in as Registrar: `registrar@example.com` / `RegistrarRecords2026!`.
-2. Navigate to `/registrar/grade-release` via sidebar **Grade Release (Soon)** (under **COMING SOON**).
+2. Navigate to `/registrar/grade-release` via sidebar **Grade Release** (under **GRADE RELEASE**).
 3. Locate `COCS101-001` (Instructor: *Julius Tolentino*).
 4. Click **Review & Release Grades** (opens `SectionGradeSheetModal`).
 5. Verify checklist:

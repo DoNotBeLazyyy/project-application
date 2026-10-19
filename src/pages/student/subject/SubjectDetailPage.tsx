@@ -13,20 +13,35 @@ import {
 import { getSubjectAssessments, getSubjectAttendance, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
 import { StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-type SubjectTab = 'assessments' | 'attendance' | 'grades' | 'content' | 'discussion' | 'announcements';
+const SUBJECT_TABS = ['assessments', 'attendance', 'grades', 'content', 'discussion', 'announcements'] as const;
+type SubjectTab = typeof SUBJECT_TABS[number];
 
 export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [subject, setSubject] = useState<SubjectDetail | null>(null);
-    const [activeTab, setActiveTab] = useState<SubjectTab>('assessments');
+
+    const tabParam = searchParams.get('tab') as SubjectTab | null;
+    const activeTab: SubjectTab = tabParam && SUBJECT_TABS.includes(tabParam)
+        ? tabParam
+        : 'assessments';
+
     const [assessments, setAssessments] = useState<SubjectAssessmentItem[] | null>(null);
     const [attendance, setAttendance] = useState<StudentSubjectAttendanceItem[] | null>(null);
     const [grades, setGrades] = useState<SubjectGradeItem[] | null>(null);
 
     const effectiveEnrollmentId = subject?.enrollment_id || enrollmentId;
+
+    useEffect(function() {
+        setSubject(null);
+        setAssessments(null);
+        setAttendance(null);
+        setGrades(null);
+    }, [enrollmentId]);
 
     useEffect(function() {
         if (!enrollmentId) return;
@@ -37,13 +52,13 @@ export default function SubjectDetailPage() {
                 setSubject(result.data);
                 // If the parameter was a sectionId rather than enrollmentId, smoothly sync to canonical enrollment URL
                 if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
-                    navigate(`/student/subjects/${result.data.enrollment_id}`, { replace: true });
+                    navigate(`/student/subjects/${result.data.enrollment_id}${location.search}`, { replace: true });
                 }
             }
         }
 
         fetchSubject();
-    }, [enrollmentId, navigate]);
+    }, [enrollmentId, location.search, navigate]);
 
     useEffect(function() {
         if (!effectiveEnrollmentId) return;
@@ -58,19 +73,22 @@ export default function SubjectDetailPage() {
             if (result.data) setAttendance(result.data);
         }
 
+        async function fetchGrades() {
+            const result = await getSubjectGrades(effectiveEnrollmentId);
+            if (result.data) setGrades(result.data);
+        }
+
         if (activeTab === 'assessments' && assessments === null) fetchAssessments();
         if (activeTab === 'attendance' && attendance === null) fetchAttendance();
-        if (activeTab === 'grades' && grades === null) fetchGrades();
-    }, [activeTab, assessments, attendance, effectiveEnrollmentId, grades]);
-
-    async function fetchGrades() {
-        if (!effectiveEnrollmentId) return;
-        const result = await getSubjectGrades(effectiveEnrollmentId);
-        if (result.data) setGrades(result.data);
-    }
+        if (activeTab === 'grades') fetchGrades();
+    }, [activeTab, assessments, attendance, effectiveEnrollmentId]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
-        setActiveTab(value as SubjectTab);
+        setSearchParams(function(prev) {
+            const next = new URLSearchParams(prev);
+            next.set('tab', value);
+            return next;
+        });
     }
 
     return (

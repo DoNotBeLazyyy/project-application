@@ -89,10 +89,10 @@ export default function EvaluationRatingMatrix({
                                                         <button
                                                             aria-label={`${answer.question_text} — ${rating}`}
                                                             aria-pressed={isSelected}
-                                                            className={`border font-semibold rounded-lg size-11 text-sm ${isSelected
-                                                                ? 'bg-(--mui-palette-primary-main) border-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
-                                                                : 'border-(--mui-palette-divider) text-(--mui-palette-text-primary)'} ${disabled
-                                                                ? 'opacity-60'
+                                                            className={`border font-semibold rounded-lg size-11 text-sm cursor-pointer touch-manipulation active:scale-95 transition-all ${isSelected
+                                                                ? 'bg-(--mui-palette-primary-main) border-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText) shadow-xs'
+                                                                : 'border-(--mui-palette-divider) text-(--mui-palette-text-primary) hover:border-(--mui-palette-primary-main)/50'} ${disabled
+                                                                ? 'opacity-60 cursor-not-allowed'
                                                                 : ''}`}
                                                             disabled={disabled}
                                                             key={rating}
