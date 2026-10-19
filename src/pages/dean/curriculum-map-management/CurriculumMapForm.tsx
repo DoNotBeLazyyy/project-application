@@ -1,14 +1,11 @@
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import { CommonSelectOption } from '@components/select/CommonSelect';
 import { YEAR_LEVEL_OPTIONS } from '@constants/year-level.constant';
-import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import { getAcademicYearCalendarDetails } from '@services/school-year.service';
-import { listTerms } from '@services/term/term.service';
+import { TermTypeOptionWithMeta, useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
 import { ComponentPropsForm } from '@type/common.type';
 import { CurriculumMapEntry, CurriculumMapFormValues } from '@type/curriculum-map.type';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface CurriculumMapFormProps extends ComponentPropsForm {
@@ -19,6 +16,7 @@ interface CurriculumMapFormProps extends ComponentPropsForm {
     existingEntries?: CurriculumMapEntry[];
     currentEntryId?: string | null;
     setValue?: UseFormSetValue<CurriculumMapFormValues>;
+    availableTermOptions?: TermTypeOptionWithMeta[];
 }
 
 export default function CurriculumMapForm({
@@ -29,66 +27,34 @@ export default function CurriculumMapForm({
     existingEntries,
     currentEntryId,
     setValue,
+    availableTermOptions,
     ...formProps
 }: CurriculumMapFormProps) {
-    const { termTypeOptions: allTermTypeOptions } = useTermTypeOptions();
+    const { termOptions: hookTermOptions, allTermTypes } = useActiveTermOptions(selectedSchoolYearId);
     const { courseOptions, courses } = useCourseOptions({ departmentId });
-    const [termTypeOptions, setTermTypeOptions] = useState<CommonSelectOption[]>([]);
+
+    const effectiveTermOptions = availableTermOptions && availableTermOptions.length > 0
+        ? availableTermOptions
+        : hookTermOptions;
 
     const selectedCourseId = useWatch({ control, name: 'course_id' });
     const selectedCourse = courses.find((c) => c.id === selectedCourseId);
+    const selectedTermTypeId = useWatch({ control, name: 'term_type_id' });
 
-    useEffect(() => {
-        async function fetchAvailableTermTypes() {
-            if (!selectedSchoolYearId) {
-                setTermTypeOptions(allTermTypeOptions);
-                return;
+    const displayedTermTypeOptions = useMemo(() => {
+        if (!selectedTermTypeId) return effectiveTermOptions;
+        const exists = effectiveTermOptions.some((opt) => String(opt.value) === String(selectedTermTypeId));
+        if (exists) return effectiveTermOptions;
+        const fallback = allTermTypes.find((opt) => String(opt.value) === String(selectedTermTypeId));
+        return [
+            ...effectiveTermOptions,
+            {
+                label: fallback?.label || 'Selected Term',
+                value: selectedTermTypeId,
+                code: fallback?.code
             }
-
-            const [calendarRes, listRes] = await Promise.all([
-                getAcademicYearCalendarDetails(selectedSchoolYearId),
-                listTerms(1, 100, '', [], { school_year_id: selectedSchoolYearId, status: 'All' })
-            ]);
-
-            const availableIds = new Set<string>();
-
-            if (calendarRes.data?.terms) {
-                for (const t of calendarRes.data.terms) {
-                    if (t.term_type_id) {
-                        availableIds.add(t.term_type_id);
-                    }
-                }
-            }
-
-            if (listRes.data?.content) {
-                for (const t of listRes.data.content) {
-                    if (t.term_type_id) {
-                        availableIds.add(t.term_type_id);
-                    }
-                }
-            }
-
-            if (availableIds.size > 0) {
-                const filtered = allTermTypeOptions.filter((opt) => availableIds.has(String(opt.value)));
-                if (filtered.length > 0) {
-                    setTermTypeOptions(filtered);
-                }
-                else {
-                    const fallback = Array.from(availableIds)
-                        .map((id) => ({
-                            label: allTermTypeOptions.find((opt) => String(opt.value) === String(id))?.label || 'Term Type',
-                            value: id
-                        }));
-                    setTermTypeOptions(fallback);
-                }
-            }
-            else {
-                setTermTypeOptions(allTermTypeOptions);
-            }
-        }
-
-        fetchAvailableTermTypes();
-    }, [selectedSchoolYearId, allTermTypeOptions]);
+        ];
+    }, [effectiveTermOptions, selectedTermTypeId, allTermTypes]);
 
     const isCustomType = selectedCourse?.course_type_code
         && !['LECTURE', 'LEC', 'LABORATORY', 'LAB'].includes(selectedCourse.course_type_code.toUpperCase()
@@ -186,7 +152,7 @@ export default function CurriculumMapForm({
             fieldProps: { helperText: 'Term when this course is offered' },
             label: 'Term Type',
             name: 'term_type_id',
-            options: termTypeOptions,
+            options: displayedTermTypeOptions,
             rules: disabled
                 ? undefined
                 : { required: 'Please select a term' },

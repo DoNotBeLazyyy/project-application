@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react';
 import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useTermTypeOptions } from '@pages/admin/term-management/type/useTermTypeOptions';
+import { useActiveTermOptions } from '@pages/dean/curriculum-map-management/useActiveTermOptions';
 import CurriculumMapForm from '@pages/dean/curriculum-map-management/CurriculumMapForm';
 import CurriculumTermTable from '@pages/dean/curriculum-map-management/CurriculumTermTable';
 import { useCurriculumMapGrouped } from '@pages/dean/curriculum-map-management/useCurriculumMapGrouped';
@@ -156,7 +157,20 @@ export default function CurriculumMapManagement({
 
     const { programOptions, programs } = useProgramOptions();
     const { activeSchoolYearId, schoolYearOptions } = useSchoolYearOptions();
+    const targetSyForTerms = hideProgramSelect
+        ? (schoolYearId || activeSchoolYearId || selectedSchoolYearId)
+        : (selectedSchoolYearId || activeSchoolYearId);
+    const { termOptions: activeTermOptions, allTermTypes } = useActiveTermOptions(targetSyForTerms);
     const { termTypeOptions } = useTermTypeOptions();
+
+    useEffect(() => {
+        if (selectedTermTypeId && activeTermOptions.length > 0) {
+            const exists = activeTermOptions.some((opt) => String(opt.value) === String(selectedTermTypeId));
+            if (!exists) {
+                setSelectedTermTypeId('');
+            }
+        }
+    }, [activeTermOptions, selectedTermTypeId]);
 
     const [programDeptId, setProgramDeptId] = useState<string>('');
 
@@ -420,7 +434,7 @@ export default function CurriculumMapManagement({
                 };
             }
         }
-        const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+        const termTypeObj = activeTermOptions.find((t) => t.value === values.term_type_id) || allTermTypes.find((t) => t.value === values.term_type_id) || termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
             ? Number(values.lecture_units)
@@ -598,7 +612,7 @@ export default function CurriculumMapManagement({
                 };
             }
         }
-        const termTypeObj = termTypeOptions.find((t) => t.value === values.term_type_id);
+        const termTypeObj = activeTermOptions.find((t) => t.value === values.term_type_id) || allTermTypes.find((t) => t.value === values.term_type_id) || termTypeOptions.find((t) => t.value === values.term_type_id);
 
         const lecUnits = values.lecture_units !== undefined && values.lecture_units !== ''
             ? Number(values.lecture_units)
@@ -770,21 +784,27 @@ export default function CurriculumMapManagement({
             }
 
             let termTypeId = selectedTermTypeId;
-            let termTypeObj = termTypeOptions.find((t) => t.value === selectedTermTypeId);
+            let termTypeObj = activeTermOptions.find((t) => t.value === selectedTermTypeId)
+                || allTermTypes.find((t) => t.value === selectedTermTypeId)
+                || termTypeOptions.find((t) => t.value === selectedTermTypeId);
 
             if (row.term_type_code) {
-                const matchedTermType = termTypeOptions.find(
+                const targetCode = row.term_type_code.trim().toLowerCase();
+                const matchedTermType = activeTermOptions.find(
                     (t) =>
-                        t.label.trim()
-                            .toLowerCase() === row.term_type_code?.trim()
-                            .toLowerCase()
-                        || t.code?.trim()
-                            .toLowerCase() === row.term_type_code?.trim()
-                            .toLowerCase()
-                        || String(t.value)
-                            .trim()
-                            .toLowerCase() === row.term_type_code?.trim()
-                            .toLowerCase()
+                        t.label.trim().toLowerCase() === targetCode
+                        || t.code?.trim().toLowerCase() === targetCode
+                        || String(t.value).trim().toLowerCase() === targetCode
+                ) || allTermTypes.find(
+                    (t) =>
+                        t.label.trim().toLowerCase() === targetCode
+                        || t.code?.trim().toLowerCase() === targetCode
+                        || String(t.value).trim().toLowerCase() === targetCode
+                ) || termTypeOptions.find(
+                    (t) =>
+                        t.label.trim().toLowerCase() === targetCode
+                        || (t as { code?: string }).code?.trim().toLowerCase() === targetCode
+                        || String(t.value).trim().toLowerCase() === targetCode
                 );
                 if (matchedTermType) {
                     termTypeId = String(matchedTermType.value);
@@ -792,7 +812,10 @@ export default function CurriculumMapManagement({
                 }
             }
 
-            if (!termTypeId && termTypeOptions.length > 0) {
+            if (!termTypeId && activeTermOptions.length > 0) {
+                termTypeId = String(activeTermOptions[0].value);
+                termTypeObj = activeTermOptions[0];
+            } else if (!termTypeId && termTypeOptions.length > 0) {
                 termTypeId = String(termTypeOptions[0].value);
                 termTypeObj = termTypeOptions[0];
             }
@@ -904,7 +927,7 @@ export default function CurriculumMapManagement({
                         )}
                         <CommonSelect
                             fullWidth={false}
-                            options={[{ label: 'All Terms', value: '' }, ...termTypeOptions]}
+                            options={[{ label: 'All Terms', value: '' }, ...activeTermOptions]}
                             size="large"
                             sx={{ minWidth: 140, maxWidth: 180 }}
                             value={selectedTermTypeId}
@@ -1068,11 +1091,12 @@ export default function CurriculumMapManagement({
             >
                 <div className="flex flex-col gap-4">
                     <CurriculumMapForm
+                        availableTermOptions={activeTermOptions}
                         control={createMethods.control}
                         departmentId={effectiveDepartmentId}
                         existingEntries={entries}
                         id={CREATE_FORM_ID}
-                        selectedSchoolYearId={selectedSchoolYearId}
+                        selectedSchoolYearId={targetSyForTerms || selectedSchoolYearId}
                         setValue={createMethods.setValue}
                         onSubmit={createMethods.handleSubmit(
                             handleCreateSubmit,
@@ -1116,12 +1140,13 @@ export default function CurriculumMapManagement({
             >
                 <div className="flex flex-col gap-4">
                     <CurriculumMapForm
+                        availableTermOptions={activeTermOptions}
                         control={updateMethods.control}
                         currentEntryId={selectedEntry?.id}
                         departmentId={effectiveDepartmentId}
                         existingEntries={entries}
                         id={UPDATE_FORM_ID}
-                        selectedSchoolYearId={selectedSchoolYearId}
+                        selectedSchoolYearId={targetSyForTerms || selectedSchoolYearId}
                         setValue={updateMethods.setValue}
                         onSubmit={updateMethods.handleSubmit(
                             handleUpdateSubmit,
@@ -1187,12 +1212,13 @@ export default function CurriculumMapManagement({
             >
                 <div className="flex flex-col gap-4">
                     <CurriculumMapForm
+                        availableTermOptions={activeTermOptions}
                         control={updateMethods.control}
                         currentEntryId={selectedEntry?.id}
                         departmentId={effectiveDepartmentId}
                         disabled
                         existingEntries={entries}
-                        selectedSchoolYearId={selectedSchoolYearId}
+                        selectedSchoolYearId={targetSyForTerms || selectedSchoolYearId}
                     />
                     <div className="flex gap-2 justify-end">
                         <CommonButton

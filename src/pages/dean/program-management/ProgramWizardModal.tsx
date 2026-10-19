@@ -16,6 +16,7 @@ import {
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
+import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSchoolYearOptions';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
@@ -94,6 +95,7 @@ export default function ProgramWizardModal({
         }
     }, [open, initialStep]);
 
+    const { activeSchoolYearId } = useSchoolYearOptions();
     const { departmentOptions } = useDepartmentOptions();
     const { programLevelOptions } = useProgramLevelOptions();
 
@@ -387,6 +389,7 @@ export default function ProgramWizardModal({
                     <CurriculumMapManagement
                         departmentId={selectedDepartmentId}
                         hideProgramSelect
+                        schoolYearId={activeSchoolYearId}
                         initialEntries={(methods.getValues('curriculum_entries') as unknown as CurriculumMapEntry[]) || []}
                         programId={programId}
                         readOnly={readOnly}
