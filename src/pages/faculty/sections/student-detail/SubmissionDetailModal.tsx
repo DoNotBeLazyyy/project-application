@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonModal from '@components/modal/CommonModal';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
+import LinkifiedText from '@components/text/LinkifiedText';
 import { formatDateTime, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { InfoIcon, ListChecksIcon, XIcon } from '@phosphor-icons/react';
 import { getSubmissionForGrading } from '@services/assessment.service';
@@ -60,8 +61,8 @@ function AnswerRow({ answer }: { answer: SubmissionAnswer }) {
                 </span>
                 {answer.answer_text
                     ? (
-                        <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                            {answer.answer_text}
+                        <p className="bg-(--mui-palette-action-hover) break-words p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                            <LinkifiedText text={answer.answer_text} />
                         </p>
                     )
                     : answer.file_attachments?.length > 0

@@ -189,6 +189,7 @@ export default function SubmissionsPage() {
                                     isDirty={canSaveGrade}
                                     isSaving={isSaving}
                                     rubric={rubric}
+                                    submission={selectedSubmission}
                                     onEvaluationFeedbackChange={handleRubricFeedbackChange}
                                     onFeedbackChange={setDraftFeedback}
                                     onPointsChange={handleRubricPointsChange}

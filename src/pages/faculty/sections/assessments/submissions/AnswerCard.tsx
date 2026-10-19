@@ -1,3 +1,4 @@
+import LinkifiedText from '@components/text/LinkifiedText';
 import { getFileUrl } from '@services/storage.service';
 import { GradeAnswerUpdate, SubmissionAnswer } from '@type/assessment.type';
 import { stripLeadingZeros } from '@utils/input.util';
@@ -11,14 +12,16 @@ async function openSubmissionFile(path: string) {
 
 interface AnswerCardProps {
     answer: SubmissionAnswer;
-    draftAnswer: GradeAnswerUpdate;
-    onNotesChange: (answerId: string, value: string) => void;
-    onPointsChange: (answerId: string, value: number) => void;
+    draftAnswer?: GradeAnswerUpdate;
+    readOnly?: boolean;
+    onNotesChange?: (answerId: string, value: string) => void;
+    onPointsChange?: (answerId: string, value: number) => void;
 }
 
 export default function AnswerCard({
     answer,
     draftAnswer,
+    readOnly = false,
     onNotesChange,
     onPointsChange
 }: AnswerCardProps) {
@@ -26,7 +29,7 @@ export default function AnswerCard({
 
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex gap-2 items-start justify-between">
                 <p className="font-medium text-(--mui-palette-text-primary) text-sm">
                     {answer.sequence}. {answer.question_text}
                 </p>
@@ -43,8 +46,8 @@ export default function AnswerCard({
                 </span>
                 {answer.answer_text
                     ? (
-                        <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-primary) text-sm">
-                            {answer.answer_text}
+                        <p className="bg-(--mui-palette-action-hover) break-words p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                            <LinkifiedText text={answer.answer_text} />
                         </p>
                     )
                     : answer.file_attachments?.length > 0
@@ -72,7 +75,7 @@ export default function AnswerCard({
                 }
             </div>
 
-            {!isManual && (
+            {!readOnly && !isManual && (
                 <div className="flex gap-2 items-center">
                     {answer.is_correct !== null && (
                         <span
@@ -94,7 +97,7 @@ export default function AnswerCard({
                 </div>
             )}
 
-            {isManual && (
+            {!readOnly && isManual && draftAnswer && onNotesChange && onPointsChange && (
                 <div className="flex flex-col gap-2">
                     <div className="flex gap-3 items-center">
                         <label className="font-medium text-(--mui-palette-text-secondary) text-xs whitespace-nowrap">

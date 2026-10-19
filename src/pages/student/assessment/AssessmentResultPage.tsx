@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import LinkifiedText from '@components/text/LinkifiedText';
 import {
     ArrowLeftIcon, ArrowLineDownIcon, CheckCircleIcon, ClockIcon, LockIcon, SparkleIcon, TrophyIcon, XCircleIcon
 } from '@phosphor-icons/react';
@@ -214,8 +215,8 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
                     </span>
                     {answer.answer_text
                         ? (
-                            <p className="bg-(--mui-palette-action-hover) p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                                {answer.answer_text}
+                            <p className="bg-(--mui-palette-action-hover) break-words p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                                <LinkifiedText text={answer.answer_text} />
                             </p>
                         )
                         : answer.file_attachments.length > 0
