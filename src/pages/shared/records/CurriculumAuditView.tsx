@@ -7,6 +7,7 @@ import { GraduationCapIcon, PencilSimpleIcon, PrinterIcon } from '@phosphor-icon
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getPrograms } from '@services/program/program.service';
 import { assignMyProgram, getCurriculumAudit } from '@services/records.service';
+import { registrarAssignStudentProgramAndYear } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
 import { CurriculumAudit, CurriculumCourse, CurriculumCourseStatus, CurriculumYearLevel } from '@type/records.type';
 import { useEffect, useState } from 'react';
@@ -230,10 +231,17 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         if (!selectedProgramId) return;
 
         setIsAssigning(true);
-        const result = await assignMyProgram(selectedProgramId, selectedYearLevel);
+        let error: unknown = null;
+        if (studentId) {
+            const result = await registrarAssignStudentProgramAndYear(studentId, selectedProgramId, selectedYearLevel);
+            error = result.error;
+        } else {
+            const result = await assignMyProgram(selectedProgramId, selectedYearLevel);
+            error = result.error;
+        }
         setIsAssigning(false);
 
-        if (!result.error) {
+        if (!error) {
             useToastStore.getState().showToast('Program assigned successfully.', 'success');
             await fetchAudit();
         }
@@ -262,48 +270,47 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                             Academic Program Not Assigned
                         </h2>
                         <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {audit?.message || (studentId
+                            {studentId
                                 ? 'This student does not have an assigned academic program yet. Assign a program below.'
-                                : 'You do not have an assigned academic program yet. Please contact the Registrar\'s Office to have your degree program and year level assigned.')}
+                                : 'You do not have an assigned academic program yet. Select your degree program and year level below to initialize your curriculum checklist.'}
                         </p>
                     </div>
 
-                    {Boolean(studentId) && (
-                        <div className="flex flex-col gap-3 w-full text-left">
-                            <CommonSelect
-                                disabled={isAssigning || isLoadingPrograms}
-                                fullWidth
-                                label="Academic Program"
-                                options={programOptions}
-                                placeholder="Select program"
-                                size="small"
-                                value={selectedProgramId}
-                                onChange={function(e) {
-                                    setSelectedProgramId(e.target.value as string);
-                                }}
-                            />
-                            <CommonSelect
-                                disabled={isAssigning}
-                                fullWidth
-                                label="Year Level"
-                                options={YEAR_LEVEL_OPTIONS}
-                                size="small"
-                                value={selectedYearLevel}
-                                onChange={function(e) {
-                                    setSelectedYearLevel(Number(e.target.value));
-                                }}
-                            />
-                            <CommonButton
-                                className="w-full mt-2"
-                                disabled={isAssigning || !selectedProgramId}
-                                size="medium"
-                                variant="contained"
-                                onClick={handleAssignProgram}
-                            >
-                                {isAssigning ? 'Assigning Program...' : 'Assign Program'}
-                            </CommonButton>
-                        </div>
-                    )}
+                    <div className="flex flex-col gap-3 w-full text-left">
+                        <CommonSelect
+                            disabled={isAssigning || isLoadingPrograms}
+                            fullWidth
+                            label="Academic Program"
+                            options={programOptions}
+                            placeholder="Select program"
+                            size="small"
+                            value={selectedProgramId}
+                            onChange={function(e) {
+                                setSelectedProgramId(e.target.value as string);
+                            }}
+                        />
+                        <CommonSelect
+                            disabled={isAssigning}
+                            fullWidth
+                            label="Year Level"
+                            options={YEAR_LEVEL_OPTIONS}
+                            size="small"
+                            value={selectedYearLevel}
+                            onChange={function(e) {
+                                setSelectedYearLevel(Number(e.target.value));
+                            }}
+                        />
+                        <CommonButton
+                            className="w-full mt-2"
+                            disabled={isAssigning || !selectedProgramId}
+                            loading={isAssigning}
+                            size="medium"
+                            variant="contained"
+                            onClick={handleAssignProgram}
+                        >
+                            {isAssigning ? 'Assigning Program...' : 'Assign Program'}
+                        </CommonButton>
+                    </div>
                 </div>
             </div>
         );

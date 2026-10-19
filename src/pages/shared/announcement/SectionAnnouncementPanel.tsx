@@ -45,6 +45,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
     const [isPinned, setIsPinned] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const currentDraftValues = useMemo(() => ({
         title,
@@ -141,11 +142,16 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
     async function handleConfirmDelete() {
         if (!pendingDeleteId) return;
 
-        const result = await deleteAnnouncement(pendingDeleteId);
-        setPendingDeleteId(null);
+        setIsDeleting(true);
+        try {
+            const result = await deleteAnnouncement(pendingDeleteId);
+            setPendingDeleteId(null);
 
-        if (!result.error) {
-            await loadAnnouncements();
+            if (!result.error) {
+                await loadAnnouncements();
+            }
+        } finally {
+            setIsDeleting(false);
         }
     }
 
@@ -334,6 +340,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                             startIcon={<PaperPlaneTiltIcon size={16} weight="bold" />}
                             variant="contained"
                             disabled={!title.trim() || !content.trim() || isPosting}
+                            loading={isPosting}
                             onClick={handlePostAnnouncement}
                         >
                             {isPosting ? 'Posting...' : 'Post Announcement'}
@@ -358,9 +365,12 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
             <DeletePromptModal
                 formButtonsProps={{
                     cancelProps: {
+                        disabled: isDeleting,
                         onClick: () => setPendingDeleteId(null)
                     },
                     confirmProps: {
+                        loading: isDeleting,
+                        disabled: isDeleting,
                         onClick: handleConfirmDelete
                     }
                 }}

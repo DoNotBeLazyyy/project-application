@@ -95,6 +95,7 @@ export default function MaterialFormModal({
     }, [open, material]);
 
     function handleRequestClose() {
+        if (isSaving) return;
         if (hasRealChanges) {
             setIsDiscardOpen(true);
             return;
@@ -297,6 +298,7 @@ export default function MaterialFormModal({
                 <div className="flex gap-2 justify-end">
                     <CommonButton
                         color="inherit"
+                        disabled={isSaving}
                         size="small"
                         variant="outlined"
                         onClick={handleRequestClose}
@@ -305,6 +307,7 @@ export default function MaterialFormModal({
                     </CommonButton>
                     <CommonButton
                         disabled={isSaving || !title.trim() || isUnchanged}
+                        loading={isSaving}
                         size="small"
                         variant="contained"
                         onClick={handleSave}

@@ -322,15 +322,18 @@ export default function GradeSheetPanel({
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Cancel',
+                        disabled: isSubmittingGrades,
                         onClick: () => setIsConfirmOpen(false)
                     },
                     confirmProps: {
-                        children: 'Officially Submit Grades',
-                        onClick: function() {
-                            setIsConfirmOpen(false);
+                        children: isSubmittingGrades ? 'Submitting...' : 'Officially Submit Grades',
+                        disabled: isSubmittingGrades,
+                        loading: isSubmittingGrades,
+                        onClick: async function() {
                             if (onSubmitGrades) {
-                                onSubmitGrades();
+                                await onSubmitGrades();
                             }
+                            setIsConfirmOpen(false);
                         }
                     }
                 }}

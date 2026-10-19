@@ -1122,6 +1122,7 @@ export default function AcademicYearHistoryModal({
                         children: isReverting ? 'Reverting...' : `Revert to Version ${revertTargetEntry?.versionNum}`,
                         color: 'primary',
                         disabled: isReverting,
+                        loading: isReverting,
                         onClick: handleExecuteRevert
                     }
                 }}

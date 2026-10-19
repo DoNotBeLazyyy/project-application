@@ -289,6 +289,7 @@ export default function AssignProgramModal({
                         </CommonButton>
                         <CommonButton
                             disabled={isSaving || !selectedProgramId || isUnchanged}
+                            loading={isSaving}
                             size="small"
                             variant="contained"
                             onClick={handleSave}

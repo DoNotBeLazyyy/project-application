@@ -116,6 +116,7 @@ export default function DuplicateToSectionsModal({
             <div className="flex gap-2 justify-end">
                 <CommonButton
                     color="inherit"
+                    disabled={isSaving}
                     size="small"
                     variant="outlined"
                     onClick={onClose}
@@ -124,6 +125,7 @@ export default function DuplicateToSectionsModal({
                 </CommonButton>
                 <CommonButton
                     disabled={isSaving || selectedIds.length === 0}
+                    loading={isSaving}
                     size="small"
                     variant="contained"
                     onClick={handleConfirm}

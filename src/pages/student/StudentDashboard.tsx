@@ -163,10 +163,19 @@ export default function StudentDashboard() {
                                 Academic Program Not Assigned
                             </p>
                             <p className="text-(--mui-palette-text-secondary) text-xs m-0">
-                                You do not have an assigned academic program yet. Please contact the Registrar's Office to have your degree program and year level assigned.
+                                You do not have an assigned academic program yet. Please select your degree program in the Curriculum Checklist to initialize your academic records.
                             </p>
                         </div>
                     </div>
+                    <CommonButton
+                        size="small"
+                        variant="contained"
+                        onClick={function() {
+                            navigate('/student/curriculum');
+                        }}
+                    >
+                        Go to Curriculum Checklist
+                    </CommonButton>
                 </div>
             )}
 

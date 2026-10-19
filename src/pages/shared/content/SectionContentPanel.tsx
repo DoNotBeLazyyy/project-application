@@ -53,9 +53,9 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
     const [pendingDelete, setPendingDelete] = useState<DeleteState | null>(null);
     const [duplicatingModule, setDuplicatingModule] = useState<ContentModule | null>(null);
 
-    // Stepper Modal state for Lessons and Syllabus Module
     const [isModuleWizardOpen, setIsModuleWizardOpen] = useState(false);
     const [editingModule, setEditingModule] = useState<ContentModule | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const canManage = content?.can_manage ?? false;
     const rawModules = content?.modules ?? [];
@@ -128,13 +128,18 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
     async function handleConfirmDelete() {
         if (!pendingDelete) return;
 
-        const result =
-            pendingDelete.kind === 'module'
-                ? await deleteModule(pendingDelete.id)
-                : await deleteMaterial(pendingDelete.id);
+        setIsDeleting(true);
+        try {
+            const result =
+                pendingDelete.kind === 'module'
+                    ? await deleteModule(pendingDelete.id)
+                    : await deleteMaterial(pendingDelete.id);
 
-        setPendingDelete(null);
-        if (!result.error) await loadContent();
+            setPendingDelete(null);
+            if (!result.error) await loadContent();
+        } finally {
+            setIsDeleting(false);
+        }
     }
 
     const PERIOD_TABS = ['All', 'Prelim', 'Midterm', 'Semi-Final', 'Finals'];
@@ -500,8 +505,15 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
             {/* Delete Confirmation Modal */}
             <DeletePromptModal
                 formButtonsProps={{
-                    cancelProps: { onClick: () => setPendingDelete(null) },
-                    confirmProps: { onClick: handleConfirmDelete }
+                    cancelProps: {
+                        disabled: isDeleting,
+                        onClick: () => setPendingDelete(null)
+                    },
+                    confirmProps: {
+                        loading: isDeleting,
+                        disabled: isDeleting,
+                        onClick: handleConfirmDelete
+                    }
                 }}
                 mainContent={{
                     title:

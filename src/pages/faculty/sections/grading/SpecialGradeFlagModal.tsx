@@ -97,6 +97,7 @@ export default function SpecialGradeFlagModal({
                     confirmProps: {
                         children: 'Dismiss flag',
                         disabled: isBusy || trimmed.length === 0,
+                        loading: isBusy,
                         onClick: () => {
                             draftGuard.clearDraft();
                             onConfirm(trimmed);

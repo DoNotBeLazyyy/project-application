@@ -590,6 +590,7 @@ export default function CreditTransfereeCoursesModal({
                         confirmProps: {
                             children: isSaving ? 'Saving Credit...' : (activeCourse.is_credited ? 'Update Credit' : 'Confirm & Credit Course'),
                             disabled: isSaving || (Boolean(activeCourse?.is_credited) && !creditDraftGuard.hasRealChanges),
+                            loading: isSaving,
                             onClick: handleSaveCredit
                         }
                     }}
@@ -724,6 +725,7 @@ export default function CreditTransfereeCoursesModal({
                             children: isRevoking ? 'Revoking...' : 'Yes, Revoke Credit',
                             color: 'error',
                             disabled: isRevoking,
+                            loading: isRevoking,
                             onClick: handleConfirmRevoke
                         }
                     }}
