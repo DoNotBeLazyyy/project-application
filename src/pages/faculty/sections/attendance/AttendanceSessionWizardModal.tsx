@@ -611,6 +611,7 @@ export default function AttendanceSessionWizardModal({
                                 variant="contained"
                                 onClick={handleSaveSession}
                                 disabled={isSaving}
+                                loading={isSaving}
                             >
                                 {isSaving ? 'Recording Session...' : 'Create Session'}
                             </CommonButton>
