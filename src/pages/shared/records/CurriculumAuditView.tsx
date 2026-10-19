@@ -201,7 +201,7 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
     }, [studentId]);
 
     useEffect(function() {
-        if (!isLoaded || (audit && audit.success)) return;
+        if (!isLoaded || (audit && (audit.success ?? Boolean(audit.program?.id)))) return;
 
         async function fetchPrograms() {
             setIsLoadingPrograms(true);
