@@ -117,6 +117,7 @@ export default function ReleaseScheduleForm({
                             ? 'Saving...'
                             : 'Save Schedule',
                         disabled: isSaving || !draftGuard.hasRealChanges,
+                        loading: isSaving,
                         onClick: handleConfirm
                     }
                 }}
