@@ -794,10 +794,13 @@ export default function GradeRelease() {
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Cancel',
+                        disabled: isReleasingPeriod,
                         onClick: () => setReleaseTarget(null)
                     },
                     confirmProps: {
-                        children: 'Release Now',
+                        children: isReleasingPeriod ? 'Releasing...' : 'Release Now',
+                        disabled: isReleasingPeriod,
+                        loading: isReleasingPeriod,
                         onClick: handleConfirmReleaseNow
                     }
                 }}
@@ -816,11 +819,13 @@ export default function GradeRelease() {
                 formButtonsProps={{
                     cancelProps: {
                         children: 'Cancel',
+                        disabled: isReleasingSection,
                         onClick: () => setSectionToRelease(null)
                     },
                     confirmProps: {
                         children: isReleasingSection ? 'Releasing...' : 'Confirm Release',
                         disabled: isReleasingSection,
+                        loading: isReleasingSection,
                         onClick: handleConfirmReleaseSingleSection
                     }
                 }}

@@ -227,6 +227,7 @@ export default function NotifyStudentModal({
                         </CommonButton>
                         <CommonButton
                             disabled={isSubmitting || !title.trim() || !message.trim()}
+                        loading={isSubmitting}
                             size="small"
                             startIcon={<PaperPlaneTiltIcon size={16} />}
                             variant="contained"

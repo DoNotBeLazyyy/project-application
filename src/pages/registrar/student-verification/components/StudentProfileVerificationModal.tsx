@@ -658,6 +658,7 @@ export default function StudentProfileVerificationModal({
                                 <CommonButton
                                     color="error"
                                     disabled={isSubmitting || !rejectReason.trim()}
+                                    loading={isSubmitting}
                                     size="small"
                                     variant="contained"
                                     onClick={handleRejectSubmit}
@@ -696,6 +697,7 @@ export default function StudentProfileVerificationModal({
                             </CommonButton>
                             <CommonButton
                                 disabled={isSubmitting}
+                                loading={isSubmitting}
                                 size="small"
                                 startIcon={<CheckCircleIcon size={16} />}
                                 variant="contained"

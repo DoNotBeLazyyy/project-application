@@ -247,7 +247,10 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
         );
     }
 
-    if (!audit || !audit.success) {
+    const isSuccess = Boolean(audit && (audit.success ?? Boolean(audit.program?.id)));
+    const hasProgram = Boolean(audit?.program?.id);
+
+    if (!isSuccess || !hasProgram || !audit) {
         return (
             <div className="flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto">
                 <div className="border border-(--mui-palette-divider) flex flex-col items-center p-8 rounded-xl shadow-xs w-full bg-(--mui-palette-background-paper) gap-5">
@@ -259,9 +262,9 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                             Academic Program Not Assigned
                         </h2>
                         <p className="text-(--mui-palette-text-secondary) text-sm">
-                            {studentId
+                            {audit?.message || (studentId
                                 ? 'This student does not have an assigned academic program yet. Assign a program below.'
-                                : 'You do not have an assigned academic program yet. Please contact the Registrar\'s Office to have your degree program and year level assigned.'}
+                                : 'You do not have an assigned academic program yet. Please contact the Registrar\'s Office to have your degree program and year level assigned.')}
                         </p>
                     </div>
 
@@ -305,6 +308,21 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
             </div>
         );
     }
+
+    const summary = audit.summary ?? {
+        required_units: audit.progress?.required_units ?? 0,
+        earned_units: audit.progress?.earned_units ?? 0,
+        in_progress_units: audit.progress?.in_progress_units ?? 0,
+        remaining_units: Math.max(0, (audit.progress?.required_units ?? 0) - (audit.progress?.earned_units ?? 0) - (audit.progress?.in_progress_units ?? 0)),
+        completion_pct: audit.progress?.progress_percent ?? 0,
+        total_courses: audit.progress?.total_courses ?? 0,
+        completed_courses: audit.progress?.completed_courses ?? 0,
+        failed_courses: audit.progress?.failed_courses ?? 0,
+        in_progress_courses: audit.progress?.in_progress_courses ?? 0,
+        cumulative_gwa: audit.progress?.cumulative_gwa ?? null
+    };
+
+    const yearLevels = audit.year_levels ?? audit.curriculum ?? [];
 
     return (
         <div className="flex flex-col gap-4">
@@ -357,24 +375,24 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                 <div className="gap-3 grid grid-cols-2 md:grid-cols-5">
                     <SummaryTile
                         label="Units Earned"
-                        value={`${formatUnits(audit.summary.earned_units)} / ${formatUnits(audit.summary.required_units)}`}
+                        value={`${formatUnits(summary.earned_units)} / ${formatUnits(summary.required_units)}`}
                     />
                     <SummaryTile
                         label="In Progress"
-                        value={formatUnits(audit.summary.in_progress_units)}
+                        value={formatUnits(summary.in_progress_units)}
                     />
                     <SummaryTile
                         label="Remaining"
-                        value={formatUnits(audit.summary.remaining_units)}
+                        value={formatUnits(summary.remaining_units)}
                     />
                     <SummaryTile
                         label="Courses Passed"
-                        value={`${audit.summary.completed_courses} / ${audit.summary.total_courses}`}
+                        value={`${summary.completed_courses} / ${summary.total_courses}`}
                     />
                     <SummaryTile
                         label="Cumulative GWA"
-                        value={audit.summary.cumulative_gwa !== null
-                            ? Number(audit.summary.cumulative_gwa)
+                        value={summary.cumulative_gwa !== null
+                            ? Number(summary.cumulative_gwa)
                                 .toFixed(2)
                             : '—'}
                     />
@@ -382,12 +400,12 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
 
                 <CommonProgressBar
                     hasSubtext={false}
-                    label={`Degree Progress · ${Number(audit.summary.completion_pct)}%`}
-                    percentage={Number(audit.summary.completion_pct)}
+                    label={`Degree Progress · ${Number(summary.completion_pct)}%`}
+                    percentage={Number(summary.completion_pct)}
                     type="label"
                 />
 
-                {audit.year_levels.map(function(yearLevel) {
+                {yearLevels.map(function(yearLevel) {
                     return (
                         <YearBlock
                             key={yearLevel.year_level}
