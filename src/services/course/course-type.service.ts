@@ -87,42 +87,18 @@ export async function bulkCreateCourseTypes(
         p_course_types: normalizedCourseTypes
     });
 
-    if (!result.error && result.data) {
-        const structuredErrors = result.data.errors ?? [];
+    if (result.error) {
         return {
-            provisioned_count: result.data.provisioned_count ?? 0,
-            errors: structuredErrors.map((error) =>
-                `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
-            structuredErrors
+            provisioned_count: 0,
+            errors: [result.error.message]
         };
     }
 
-    let provisionedCount = 0;
-    const structuredErrors: BulkImportError[] = [];
-
-    for (let i = 0; i < courseTypes.length; i++) {
-        const row = courseTypes[i];
-        const res = await createCourseType({
-            code: row.code,
-            description: row.description || '',
-            label: row.label
-        });
-
-        if (res.error) {
-            structuredErrors.push({
-                code: row.code,
-                message: res.error.message,
-                row: i + 1
-            });
-        }
-        else {
-            provisionedCount++;
-        }
-    }
-
+    const structuredErrors = result.data?.errors ?? [];
     return {
-        errors: structuredErrors.map((e) => `Row ${e.row} (${e.code || 'unknown'}): ${e.message}`),
-        provisioned_count: provisionedCount,
+        provisioned_count: result.data?.provisioned_count ?? 0,
+        errors: structuredErrors.map((error) =>
+            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
         structuredErrors
     };
 }

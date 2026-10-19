@@ -798,10 +798,12 @@ BEGIN
 
     INSERT INTO public.assessment_timer_sessions (
         submission_id, enrollment_id, assessment_item_id,
-        status, started_at, time_limit_minutes, expires_at, last_activity_at
+        server_started_at, server_expires_at,
+        status, last_activity_at, created_by
     ) VALUES (
         v_submission_id, v_actual_enrollment_id, p_assessment_id,
-        'Active', now(), v_time_limit, v_expires_at, now()
+        now(), v_expires_at,
+        'Active', now(), auth.uid()
     );
 
     RETURN jsonb_build_object(
