@@ -1,14 +1,12 @@
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import { EventDetailModal } from '@components/modal/EventDetailModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
-import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import AnnouncementFilterForm from '@pages/shared/announcement-management/AnnouncementFilterForm';
 import CommunicationGridCard from '@pages/shared/announcement-management/CommunicationGridCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import { useAnnouncementTableConfig } from '@pages/shared/announcement-management/useAnnouncementTableConfig';
-import { EyeIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import {
     bulkDeleteAnnouncements,
     deleteAnnouncement,
@@ -729,28 +727,6 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {isManagementRole && (
-                <div className="flex items-center justify-between">
-                    <CommonTabMenu
-                        menuStyle="outline"
-                        size="small"
-                        tabs={[
-                            {
-                                icon: <EyeIcon size={16} />,
-                                label: 'Viewing',
-                                value: 'viewing'
-                            },
-                            {
-                                icon: <PencilSimpleIcon size={16} />,
-                                label: 'Management',
-                                value: 'management'
-                            }
-                        ]}
-                        value={mode}
-                        onChange={(_, val) => handleModeChange(val as 'viewing' | 'management')}
-                    />
-                </div>
-            )}
             <CommonTableCard<CommunicationListRow>
                 cardHeaderProps={{
                     subheader: isEvent
@@ -778,6 +754,10 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
                     }
                 }}
                 dependencies={[activeFilters, mode]}
+                modeToggle={isManagementRole ? {
+                    mode,
+                    onToggleMode: handleModeChange
+                } : undefined}
                 filterModalProps={{
                     cardProps: {
                         cardHeaderProps: {

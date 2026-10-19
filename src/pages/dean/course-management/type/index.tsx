@@ -27,8 +27,9 @@ const CREATE_FORM_ID = 'create-course-type-form';
 const UPDATE_FORM_ID = 'update-course-type-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'label', label: 'Label', hint: 'e.g. Lecture' },
-    { key: 'description', label: 'Description', hint: 'e.g. Lecture component (optional)' }
+    { key: 'code', label: 'Course Type Code', hint: 'e.g. LECTURE (optional, auto-generated if blank)', required: false },
+    { key: 'label', label: 'Course Type Name', hint: 'e.g. Lecture' },
+    { key: 'description', label: 'Description', hint: 'e.g. Lecture component (optional)', required: false }
 ];
 
 const defaultFormValues: CourseTypeFormValues = {

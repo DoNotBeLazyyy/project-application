@@ -43,21 +43,22 @@ const defaultFormValues: ProgramFormValues = {
 };
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'name', label: 'Name', hint: 'e.g. Bachelor of Science in Computer Science' },
+    { key: 'code', label: 'Program Code', hint: 'e.g. BSCS (optional, auto-generated if blank)', required: false },
+    { key: 'name', label: 'Program Name', hint: 'e.g. Bachelor of Science in Computer Science' },
     { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS' },
     { key: 'program_level_code', label: 'Program Level Code', hint: 'e.g. UNDERGRADUATE' },
     { key: 'years_duration', label: 'Years Duration', hint: 'e.g. 4' },
-    { key: 'total_units', label: 'Total Units', hint: 'e.g. 170 (optional)' },
-    { key: 'description', label: 'Description', hint: 'optional' },
-    { key: 'is_active', label: 'Is Active', hint: 'true or false' },
-    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'true or false (optional)' },
-    { key: 'grading_periods', label: 'Grading Periods', hint: 'e.g. Prelim:30,Midterm:30,Final:40 (optional)' },
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101 (optional)' },
-    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1 (optional)' },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)' },
-    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'e.g. SY2024-2025 (optional, for curriculum entries)' },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)' },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)' }
+    { key: 'total_units', label: 'Total Units', hint: 'e.g. 170 (optional)', required: false },
+    { key: 'description', label: 'Description', hint: 'optional', required: false },
+    { key: 'is_active', label: 'Is Active', hint: 'true or false (optional, defaults true)', required: false },
+    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'true or false (optional)', required: false },
+    { key: 'grading_periods', label: 'Grading Periods', hint: 'e.g. Prelim:30,Midterm:30,Final:40 (optional)', required: false },
+    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101 (optional, for curriculum entries)', required: false },
+    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1 (optional)', required: false },
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', required: false },
+    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'e.g. SY2024-2025 (optional, for curriculum entries)', required: false },
+    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', required: false },
+    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', required: false }
 ];
 
 export default function ProgramManagement() {

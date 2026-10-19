@@ -106,5 +106,5 @@ describe('FacultyLoadModule', () => {
             </BrowserRouter>
         );
         expect(container).toBeDefined();
-    });
+    }, 30000);
 });

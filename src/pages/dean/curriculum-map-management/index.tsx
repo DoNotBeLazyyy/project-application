@@ -41,11 +41,11 @@ const UPDATE_FORM_ID = 'update-curriculum-map-form';
 const CURRICULUM_MAP_CSV_COLUMNS: CsvTemplateColumn[] = [
     { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
     { key: 'year_level', label: 'Year Level', hint: 'e.g. 1' },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_TRIMESTER (optional)' },
-    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 2.0 (optional override)' },
-    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 1.0 (optional override)' },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)' },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)' }
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', required: false },
+    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 2.0 (optional override)', required: false },
+    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 1.0 (optional override)', required: false },
+    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', required: false },
+    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', required: false }
 ];
 
 interface CurriculumMapCsvRow {

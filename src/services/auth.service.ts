@@ -4,6 +4,7 @@ import { useAppStore } from '@stores/app.store';
 import { useToastStore } from '@stores/toast.store';
 import { Session } from '@supabase/supabase-js';
 import { AuthContext, AuthSessionStatus } from '@type/app.type';
+import { VerifyEmailResult } from '@type/auth.type';
 import { ServiceResult } from '@type/service.type';
 import { cookieStorage } from '@utils/cookie.util';
 import { parseServiceError } from '@utils/error.util';
@@ -51,8 +52,68 @@ export async function login(email: string, password: string): Promise<ServiceRes
     return { data: data.session, error: null };
 }
 
+export async function verifyUserEmail(email: string): Promise<ServiceResult<VerifyEmailResult>> {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+        return {
+            data: null,
+            error: {
+                code: 'INVALID_EMAIL',
+                message: 'Please enter an email address.',
+                status: null
+            }
+        };
+    }
+
+    return callRpc<VerifyEmailResult>(
+        'fn_verify_user_email',
+        { p_email: trimmedEmail },
+        { silent: true }
+    );
+}
+
 export async function requestPasswordReset(email: string): Promise<ServiceResult<null>> {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // 1. Verify if email exists in system before requesting password reset
+    const { data: verification, error: verifyError } = await verifyUserEmail(trimmedEmail);
+
+    if (verifyError || !verification?.exists) {
+        const message = verifyError?.message || verification?.message || 'This email address does not exist in our records.';
+        return {
+            data: null,
+            error: {
+                code: 'EMAIL_NOT_FOUND',
+                message,
+                status: null
+            }
+        };
+    }
+
+    if (verification.status === 'Suspended') {
+        return {
+            data: null,
+            error: {
+                code: 'ACCOUNT_SUSPENDED',
+                message: SUSPENDED_ACCOUNT_MESSAGE,
+                status: null
+            }
+        };
+    }
+
+    if (verification.status === 'Inactive') {
+        return {
+            data: null,
+            error: {
+                code: 'ACCOUNT_INACTIVE',
+                message: INACTIVE_ACCOUNT_MESSAGE,
+                status: null
+            }
+        };
+    }
+
+    // 2. Email exists and is active, proceed to request password reset
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
         redirectTo: `${window.location.origin}/set-password`
     });
 

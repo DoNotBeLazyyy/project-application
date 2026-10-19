@@ -1,4 +1,4 @@
-question_text,question_type,points,options,correct_answer,explanation
-"Which logic gate outputs 1 only when both inputs are 1?","Multiple Choice",5,"OR|AND|NOT|XOR",B,"AND gate truth table requires all inputs to be high."
-"The CPU stands for Central Processing Unit.","True or False",5,"True|False",True,"Universal hardware terminology."
-"Define the primary role of an Operating System.","Essay",10,,,
+question_text,question_type,points,is_required,explanation,choices
+"Which logic gate outputs 1 only when both inputs are 1?","Multiple Choice",5,TRUE,"AND gate truth table requires all inputs to be high.","OR|AND*|NOT|XOR"
+"The CPU stands for Central Processing Unit.","True or False",5,TRUE,"Universal hardware terminology.","True*|False"
+"Define the primary role of an Operating System.","Essay",10,TRUE,,

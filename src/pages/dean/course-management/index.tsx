@@ -31,15 +31,16 @@ const CREATE_FORM_ID = 'create-course-form';
 const UPDATE_FORM_ID = 'update-course-form';
 const FILTER_FORM_ID = 'filter-course-form';
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'title', label: 'Title', hint: 'e.g. Introduction to Computing' },
+    { key: 'code', label: 'Course Code', hint: 'e.g. COCS101 (optional, auto-generated if blank)', required: false },
+    { key: 'title', label: 'Course Title', hint: 'e.g. Introduction to Computing' },
     { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS' },
     { key: 'course_type_code', label: 'Course Type Code', hint: 'e.g. LECTURE' },
     { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 3' },
     { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 0' },
-    { key: 'credit_hours', label: 'Credit Hours', hint: 'e.g. 3 (optional)' },
-    { key: 'description', label: 'Description', hint: 'optional' },
-    { key: 'is_active', label: 'Is Active', hint: 'true or false' },
-    { key: 'prerequisites', label: 'Prerequisites', hint: 'e.g. CS100:Required:2.0|MATH101:Co-requisite: (optional)' }
+    { key: 'credit_hours', label: 'Credit Hours', hint: 'e.g. 3 (optional)', required: false },
+    { key: 'description', label: 'Description', hint: 'optional', required: false },
+    { key: 'is_active', label: 'Is Active', hint: 'true or false (optional, defaults true)', required: false },
+    { key: 'prerequisites', label: 'Prerequisites', hint: 'e.g. CS100:Required:2.0|MATH101:Co-requisite: (optional)', required: false }
 ];
 
 const defaultFormValues: CourseFormValues = {

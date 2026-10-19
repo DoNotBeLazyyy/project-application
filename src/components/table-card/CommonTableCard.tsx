@@ -31,6 +31,7 @@ export default function CommonTableCard<T extends FieldValues>({
     enableInfiniteScroll = true,
     filterModalProps,
     infoContent,
+    modeToggle,
     renderGridCard,
     selectionBarProps,
     showSubheader = false,
@@ -533,6 +534,7 @@ export default function CommonTableCard<T extends FieldValues>({
                             )
                             : (
                                 <TableCardControls
+                                    modeToggle={controls?.tableButtonsProps?.modeToggle ?? controls?.modeToggle ?? modeToggle}
                                     showViewToggle={showViewToggle}
                                     tableButtonsProps={{
                                         ...controls?.tableButtonsProps,

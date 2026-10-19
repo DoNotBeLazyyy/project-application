@@ -1,5 +1,6 @@
 import { CommonFormModalProps } from '@components/modal/CommonFormModal';
 import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
+import { TableCardModeToggleProps } from '@components/table-card/TableCardActionMenu';
 import { TableCardControlsProps } from '@components/table-card/TableCardControls';
 import { TableActionConfig } from '@components/table/useTableConfigs';
 import { CardHeaderProps } from '@mui/material';
@@ -69,6 +70,7 @@ export interface CommonTableCardProps<T extends FieldValues> {
      */
     showSubheader?: boolean;
     controls?: TableCardControlsProps;
+    modeToggle?: TableCardModeToggleProps;
     createModalProps?: CommonFormModalProps;
     filterModalProps?: CommonFormModalProps;
     updateModalProps?: CommonFormModalProps;

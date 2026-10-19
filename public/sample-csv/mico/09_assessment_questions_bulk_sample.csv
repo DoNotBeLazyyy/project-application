@@ -1,4 +1,4 @@
-question_text,question_type,points,options,correct_answer,explanation
-"What is the average-case time complexity of QuickSort?","Multiple Choice",5,"O(n)|O(n log n)|O(n^2)|O(1)",B,"QuickSort has an expected runtime of O(n log n)."
-"An abstract class in Java can contain both abstract and concrete methods.","True or False",5,"True|False",True,"Abstract classes permit implemented default helper methods."
-"Discuss the halting problem and why Turing machines cannot decide arbitrary program termination.","Essay",10,,,
+question_text,question_type,points,is_required,explanation,choices
+"What is the average-case time complexity of QuickSort?","Multiple Choice",5,TRUE,"QuickSort has an expected runtime of O(n log n).","O(n)|O(n log n)*|O(n^2)|O(1)"
+"An abstract class in Java can contain both abstract and concrete methods.","True or False",5,TRUE,"Abstract classes permit implemented default helper methods.","True*|False"
+"Discuss the halting problem and why Turing machines cannot decide arbitrary program termination.","Essay",10,TRUE,,

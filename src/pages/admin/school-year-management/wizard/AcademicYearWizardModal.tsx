@@ -439,14 +439,14 @@ export default function AcademicYearWizardModal({
     }
 
     async function handleSave() {
-        if (
-            !(await validateStep1()) ||
-            !validateStep2() ||
-            !validateStep3() ||
-            !validateStep4() ||
-            !validateStep5() ||
-            !validateStep6()
-        ) {
+        const v1 = await validateStep1();
+        const v2 = validateStep2();
+        const v3 = validateStep3();
+        const v4 = validateStep4();
+        const v5 = validateStep5();
+        const v6 = validateStep6();
+
+        if (!v1 || !v2 || !v3 || !v4 || !v5 || !v6) {
             return;
         }
 

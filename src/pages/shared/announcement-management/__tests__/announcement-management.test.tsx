@@ -211,16 +211,23 @@ describe('Announcement & Communication Module Tests', () => {
     });
 
     describe('AnnouncementManagement Page Role Toggles', () => {
-        it('renders toggle tabs for management role (Admin) and allows mode switching', () => {
+        it('renders toggle inside three-dots menu for management role (Admin) and allows mode switching', () => {
             render(
                 <MemoryRouter initialEntries={['/admin/announcement-management?mode=viewing']}>
                     <AnnouncementManagement />
                 </MemoryRouter>
             );
 
-            // Admin has viewing and management tabs
-            expect(screen.getByText('Viewing')).toBeDefined();
-            expect(screen.getByText('Management')).toBeDefined();
+            // Three dots action button is rendered
+            const actionButton = screen.getByRole('button', { name: /table actions/i });
+            expect(actionButton).toBeDefined();
+
+            // Open the action menu
+            fireEvent.click(actionButton);
+
+            // Admin has viewing and management mode toggle options in the menu
+            expect(screen.getByRole('button', { name: /viewing mode/i })).toBeDefined();
+            expect(screen.getByRole('button', { name: /management mode/i })).toBeDefined();
         });
 
         it('does not render management toggle for Student role (always viewing mode)', () => {
@@ -230,7 +237,8 @@ describe('Announcement & Communication Module Tests', () => {
                 </MemoryRouter>
             );
 
-            // Student does not see the Management toggle tab
+            // Student does not see the Management toggle
+            expect(screen.queryByRole('button', { name: /management mode/i })).toBeNull();
             expect(screen.queryByText('Management')).toBeNull();
             // Title shows Campus Announcements & Events
             expect(screen.getByText('Campus Announcements & Events')).toBeDefined();

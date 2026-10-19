@@ -28,8 +28,9 @@ const CREATE_FORM_ID = 'create-program-level-form';
 const UPDATE_FORM_ID = 'update-program-level-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'label', label: 'Label', hint: 'e.g. Undergraduate' },
-    { key: 'description', label: 'Description', hint: 'e.g. Undergraduate programs (optional)' }
+    { key: 'code', label: 'Program Level Code', hint: 'e.g. UNDERGRADUATE (optional, auto-generated if blank)', required: false },
+    { key: 'label', label: 'Program Level Name', hint: 'e.g. Undergraduate' },
+    { key: 'description', label: 'Description', hint: 'e.g. Undergraduate programs (optional)', required: false }
 ];
 
 const defaultFormValues: ProgramLevelFormValues = {

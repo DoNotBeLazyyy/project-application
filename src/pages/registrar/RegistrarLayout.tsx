@@ -4,15 +4,13 @@ import {
 } from '@phosphor-icons/react';
 import { SideBarSection } from '@type/sidebar.types';
 import { useMemo } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function RegistrarLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const [searchParams] = useSearchParams();
 
     const isAnnouncementPath = pathname.startsWith('/registrar/announcement-management') || pathname.startsWith('/registrar/event-management');
-    const isViewingMode = searchParams.get('mode') === 'viewing';
     const navSections = useMemo((): SideBarSection[] => [
         {
             sectionLabel: 'OVERVIEW',
@@ -63,21 +61,10 @@ export default function RegistrarLayout() {
                     onClick: () => navigate('/registrar/calendar')
                 },
                 {
-                    defaultExpanded: isAnnouncementPath,
                     icon: <MegaphoneIcon size={18} />,
-                    items: [
-                        {
-                            isActive: isAnnouncementPath && isViewingMode,
-                            label: 'Viewing',
-                            onClick: () => navigate('/registrar/announcement-management?mode=viewing')
-                        },
-                        {
-                            isActive: isAnnouncementPath && !isViewingMode,
-                            label: 'Management',
-                            onClick: () => navigate('/registrar/announcement-management?mode=management')
-                        }
-                    ],
-                    label: 'Announcements & Events'
+                    isActive: isAnnouncementPath,
+                    label: 'Announcements & Events',
+                    onClick: () => navigate('/registrar/announcement-management')
                 }
             ]
         },
@@ -92,7 +79,7 @@ export default function RegistrarLayout() {
                 }
             ]
         }
-    ], [pathname, navigate, isAnnouncementPath, isViewingMode]);
+    ], [pathname, navigate, isAnnouncementPath]);
 
     return (
         <RoleShell

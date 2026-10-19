@@ -73,12 +73,12 @@ export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
 ];
 
 const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'question_text', label: 'Question', hint: 'e.g. What is the capital of France?' },
-    { key: 'question_type', label: 'Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload' },
+    { key: 'question_text', label: 'Question Text', hint: 'e.g. What is the capital of France?' },
+    { key: 'question_type', label: 'Question Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload' },
     { key: 'points', label: 'Points', hint: 'e.g. 2' },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE' },
-    { key: 'explanation', label: 'Explanation', hint: 'Optional' },
-    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with *' }
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
+    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation', required: false },
+    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with * (for Multiple Choice / True or False / Matching)', required: false }
 ];
 
 const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
@@ -870,14 +870,26 @@ export default function AssessmentWizardModal({
                     setIsImportOpen(false);
                     refreshQuestions();
                 }}
-                onMapRow={(row) => ({
-                    choices: row.choices,
-                    explanation: row.explanation,
-                    is_required: row.is_required,
-                    points: row.points,
-                    question_text: row.question_text,
-                    question_type: row.question_type
-                })}
+                onMapRow={(row) => {
+                    let choices = row.choices?.trim();
+                    if (!choices && row.options) {
+                        const opts = (row.options || '').split('|').map((s) => s.trim());
+                        const ans = (row.correct_answer || '').trim();
+                        choices = opts.map((opt, i) => {
+                            const letter = String.fromCharCode(65 + i);
+                            const isMatch = opt.toLowerCase() === ans.toLowerCase() || letter.toLowerCase() === ans.toLowerCase();
+                            return isMatch ? `${opt}*` : opt;
+                        }).join('|');
+                    }
+                    return {
+                        choices: choices || '',
+                        explanation: row.explanation,
+                        is_required: row.is_required,
+                        points: row.points,
+                        question_text: row.question_text || row.question || '',
+                        question_type: row.question_type || row.type || ''
+                    };
+                }}
                 onSuccess={refreshQuestions}
             />
 

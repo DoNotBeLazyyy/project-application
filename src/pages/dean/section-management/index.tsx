@@ -31,19 +31,20 @@ const SORT_COLUMNS: SortColumn[] = [
 const FILTER_FORM_ID = 'filter-section-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester - Academic Year 2025-2026 (optional, defaults to active term)' },
-    { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS (optional)' },
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS 101LEC' },
-    { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. juliustolentino.diamond@gmail.com (optional)' },
-    { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)' },
-    { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)' },
-    { key: 'status', label: 'Status', hint: 'e.g. Open (optional: Open, Full, Ongoing, Closed, Cancelled)' },
-    { key: 'schedule_days', label: 'Schedule Days', hint: 'e.g. Monday, Wednesday (optional)' },
-    { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)' },
-    { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)' },
-    { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)' },
-    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)' },
-    { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'e.g. Prelim:30(Quizzes:30,Class Standing:30,Major Exam:40); Midterm:30(...); Final:40(...) or Prelim:30,Midterm:30,Final:40 (optional)' }
+    { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester - Academic Year 2025-2026 (optional, defaults to active term)', required: false },
+    { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS (optional)', required: false },
+    { key: 'course_code', label: 'Course Code', hint: 'e.g. COCS101' },
+    { key: 'section_code', label: 'Section Code', hint: 'e.g. COCS101-001 (optional, auto-generated if blank)', required: false },
+    { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. faculty@example.com (optional)', required: false },
+    { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)', required: false },
+    { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)', required: false },
+    { key: 'status', label: 'Status', hint: 'e.g. Open (optional: Open, Full, Ongoing, Closed, Cancelled)', required: false },
+    { key: 'schedule_days', label: 'Schedule Days', hint: 'e.g. Monday, Wednesday (optional)', required: false },
+    { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)', required: false },
+    { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)', required: false },
+    { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)', required: false },
+    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)', required: false },
+    { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'e.g. Prelim:30(Quizzes:30,Class Standing:30,Major Exam:40); Midterm:30(...); Final:40(...) or Prelim:30,Midterm:30,Final:40 (optional)', required: false }
 ];
 
 export default function SectionManagement() {

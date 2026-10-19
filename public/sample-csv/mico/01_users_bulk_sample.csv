@@ -1,4 +1,4 @@
-first_name,last_name,email,role_code,department_code
-MicoFacSample,Mentor,mico.sample.fac@testlms.edu,Faculty,CCS-MICO
-MicoStudSample1,One,mico.sample.stud1@testlms.edu,Student,CCS-MICO
-MicoStudSample2,Two,mico.sample.stud2@testlms.edu,Student,CCS-MICO
+first_name,last_name,email,role_code
+MicoFacSample,Mentor,mico.sample.fac@testlms.edu,Faculty
+MicoStudSample1,One,mico.sample.stud1@testlms.edu,Student
+MicoStudSample2,Two,mico.sample.stud2@testlms.edu,Student

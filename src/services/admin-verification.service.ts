@@ -35,19 +35,28 @@ export async function approveStaffProfileRequest(
     editedChanges?: Partial<ProfileFormValues> | null,
     notes?: string | null
 ): Promise<ServiceResult<{ success: boolean; message?: string }>> {
-    return callRpc<{ success: boolean; message?: string }>('fn_approve_staff_profile_request', {
-        p_edited_changes: editedChanges || null,
-        p_notes: notes || null,
-        p_request_id: requestId
-    });
+    return callRpc<{ success: boolean; message?: string }>(
+        'fn_approve_staff_profile_request',
+        {
+            p_edited_changes: editedChanges || null,
+            p_notes: notes || null,
+            p_request_id: requestId
+        },
+        { silent: true }
+    );
 }
 
 export async function rejectStaffProfileRequest(
     requestId: string,
     reason: string
 ): Promise<ServiceResult<{ success: boolean; message?: string }>> {
-    return callRpc<{ success: boolean; message?: string }>('fn_reject_staff_profile_request', {
-        p_reason: reason,
-        p_request_id: requestId
-    });
+    return callRpc<{ success: boolean; message?: string }>(
+        'fn_reject_staff_profile_request',
+        {
+            p_reason: reason,
+            p_request_id: requestId
+        },
+        { silent: true }
+    );
 }
+

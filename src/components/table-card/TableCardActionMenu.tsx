@@ -3,8 +3,8 @@ import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
-    ArrowLineUpIcon, DotsThreeVerticalIcon, FunnelIcon,
-    IconProps, ListIcon, PlusIcon, SquaresFourIcon, TrashIcon
+    ArrowLineUpIcon, DotsThreeVerticalIcon, EyeIcon, FunnelIcon,
+    IconProps, ListIcon, PencilSimpleIcon, PlusIcon, SquaresFourIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { MouseEventButtonElement } from '@type/common.type';
 import { ReactNode, useState } from 'react';
@@ -20,6 +20,11 @@ export interface TableCardExtraOption extends TableCardActionOption {
     key: string;
 }
 
+export interface TableCardModeToggleProps {
+    mode: 'viewing' | 'management';
+    onToggleMode: (mode: 'viewing' | 'management') => void;
+}
+
 export interface TableCardActionMenuProps {
     createButtonProps?: TableCardActionOption;
     deleteButtonProps?: TableCardActionOption;
@@ -30,6 +35,7 @@ export interface TableCardActionMenuProps {
      * into the kebab menu. Set by the toolbar from how much room it has.
      */
     inlineActionLimit?: number;
+    modeToggle?: TableCardModeToggleProps;
     showViewToggle?: boolean;
     uploadCsvButtonProps?: TableCardActionOption;
     viewMode?: 'table' | 'grid';
@@ -66,6 +72,7 @@ export default function TableCardActionMenu({
     extraOptions,
     filterSortButtonProps,
     inlineActionLimit = 1,
+    modeToggle,
     showViewToggle = false,
     uploadCsvButtonProps,
     viewMode = 'grid',
@@ -113,8 +120,9 @@ export default function TableCardActionMenu({
         ...buildAction('delete', 'Delete Selected', <TrashIcon {...iconProps} />, deleteButtonProps, true)
     ];
 
-    // The toggle occupies its own menu section, so it counts toward the kebab rule
+    // The view and mode toggles occupy their own menu sections, so their presence forces the kebab menu
     const hasViewToggle = showViewToggle && Boolean(onToggleViewMode);
+    const hasModeToggle = Boolean(modeToggle && modeToggle.onToggleMode);
 
     function handleOpenMenu(event: MouseEventButtonElement) {
         setAnchorEl(event.currentTarget);
@@ -138,12 +146,19 @@ export default function TableCardActionMenu({
         };
     }
 
-    if (!actions.length && !hasViewToggle) {
+    function createHandleModeClick(mode: 'viewing' | 'management') {
+        return function() {
+            setAnchorEl(null);
+            modeToggle?.onToggleMode?.(mode);
+        };
+    }
+
+    if (!actions.length && !hasViewToggle && !hasModeToggle) {
         return <>{extraButtons}</>;
     }
 
-    // A small enough set with no view toggle renders directly instead of behind a kebab
-    if (actions.length <= inlineActionLimit && !hasViewToggle) {
+    // A small enough set with no view or mode toggle renders directly instead of behind a kebab
+    if (actions.length <= inlineActionLimit && !hasViewToggle && !hasModeToggle) {
         return (
             <>
                 {extraButtons}
@@ -225,7 +240,7 @@ export default function TableCardActionMenu({
                 slotProps={{
                     paper: {
                         sx: {
-                            minWidth: 'max-content',
+                            minWidth: (hasViewToggle || hasModeToggle) ? '14rem' : 'max-content',
                             width: 'max-content'
                         }
                     }
@@ -236,6 +251,60 @@ export default function TableCardActionMenu({
                 }}
                 onClose={handleCloseMenu}
             >
+                {hasModeToggle && (
+                    <div className="px-2 py-1.5">
+                        <span className="block font-bold px-1.5 text-(--mui-palette-grey-500) text-[10px] tracking-wider uppercase">
+                            Mode
+                        </span>
+                        <div className="bg-(--mui-palette-grey-100) gap-1 grid grid-cols-2 mt-1.5 p-1 rounded-xl">
+                            <CommonButton
+                                aria-label="Viewing Mode"
+                                className="min-w-0 px-2 py-1"
+                                color={modeToggle?.mode === 'viewing'
+                                    ? 'primary'
+                                    : 'inherit'}
+                                size="small"
+                                startIcon={
+                                    <EyeIcon
+                                        size={16}
+                                        weight={modeToggle?.mode === 'viewing'
+                                            ? 'bold'
+                                            : 'regular'}
+                                    />
+                                }
+                                variant={modeToggle?.mode === 'viewing'
+                                    ? 'contained'
+                                    : 'text'}
+                                onClick={createHandleModeClick('viewing')}
+                            >
+                                Viewing
+                            </CommonButton>
+                            <CommonButton
+                                aria-label="Management Mode"
+                                className="min-w-0 px-2 py-1"
+                                color={modeToggle?.mode === 'management'
+                                    ? 'primary'
+                                    : 'inherit'}
+                                size="small"
+                                startIcon={
+                                    <PencilSimpleIcon
+                                        size={16}
+                                        weight={modeToggle?.mode === 'management'
+                                            ? 'bold'
+                                            : 'regular'}
+                                    />
+                                }
+                                variant={modeToggle?.mode === 'management'
+                                    ? 'contained'
+                                    : 'text'}
+                                onClick={createHandleModeClick('management')}
+                            >
+                                Management
+                            </CommonButton>
+                        </div>
+                    </div>
+                )}
+                {hasModeToggle && (hasViewToggle || actions.length > 0) && <Divider key="mode-toggle-divider" />}
                 {hasViewToggle && (
                     <div className="px-2 py-1.5">
                         <span className="block font-bold px-1.5 text-(--mui-palette-grey-500) text-[10px] tracking-wider uppercase">

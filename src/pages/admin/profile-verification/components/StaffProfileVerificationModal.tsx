@@ -70,9 +70,11 @@ const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
 ];
 
 function buildInitialEditableValues(request: StaffProfileRequestRow | null): ProfileFormValues {
+    const current = (request?.current_values || {}) as Record<string, any>;
     const requested = (request?.requested_changes || {}) as Record<string, any>;
     const approved = (request?.approved_changes || {}) as Record<string, any>;
-    const baseValues: Record<string, any> = request?.status === 'Approved with Edits' ? approved : requested;
+    const baseTarget: Record<string, any> = request?.status === 'Approved with Edits' ? approved : requested;
+    const baseValues: Record<string, any> = { ...current, ...baseTarget };
 
     return {
         address_line1: baseValues.address_line1 || '',
@@ -150,9 +152,16 @@ export default function StaffProfileVerificationModal({
 
     const current = (request.current_values || {}) as Record<string, any>;
     const requested = (request.requested_changes || {}) as Record<string, any>;
+    const approved = (request.approved_changes || {}) as Record<string, any>;
+    const targetChanges: Record<string, any> = request.status === 'Approved with Edits' ? approved : requested;
+
+    const baselineValues = DISPLAY_FIELDS.reduce((acc, key) => {
+        acc[key] = (targetChanges[key] !== undefined ? targetChanges[key] : current[key]) || '';
+        return acc;
+    }, {} as Record<keyof ProfileFormValues, string>);
 
     const hasAdminEdits = DISPLAY_FIELDS.some(
-        (key) => (editableValues[key] || '') !== (requested[key] || '')
+        (key) => (editableValues[key] || '') !== (baselineValues[key] || '')
     );
 
     const changedFields = DISPLAY_FIELDS.filter((field) => {
@@ -210,7 +219,10 @@ export default function StaffProfileVerificationModal({
     async function handleApprove() {
         if (!request) return;
 
-        if (!editableValues.first_name?.trim() || !editableValues.last_name?.trim()) {
+        const effectiveFirstName = editableValues.first_name?.trim() || current.first_name?.trim() || '';
+        const effectiveLastName = editableValues.last_name?.trim() || current.last_name?.trim() || '';
+
+        if (!effectiveFirstName || !effectiveLastName) {
             useToastStore.getState().showToast('First name and last name are required.', 'error');
             return;
         }

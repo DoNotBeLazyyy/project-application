@@ -31,11 +31,11 @@ const FILTER_FORM_ID = 'filter-enrollment-students-form';
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'student_number', label: 'Student Number', hint: 'e.g. 2024-00001' },
-    { key: 'term_label', label: 'Term Label', hint: 'Blank uses the active term, e.g. 1st Semester - School Year 2026-2027' },
+    { key: 'term_label', label: 'Term Label', hint: 'Blank uses active term, e.g. 1st Semester - School Year 2026-2027 (optional)', required: false },
     { key: 'section_codes', label: 'Section Codes', hint: 'Pipe-separated, e.g. BSCS3-A|BSIT2-C|GE101-B' },
-    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'true or false' },
-    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'true or false' },
-    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Required when Allow Conflict is true' }
+    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'true or false (optional, defaults false)', required: false },
+    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'true or false (optional, defaults false)', required: false },
+    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Required when Allow Conflict is true (optional)', required: false }
 ];
 
 const defaultFilterValues: EnrollmentStudentFilterValues = {

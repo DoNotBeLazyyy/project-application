@@ -1,8 +1,9 @@
-import TableCardActionMenu, { TableCardActionMenuProps } from '@components/table-card/TableCardActionMenu';
+import TableCardActionMenu, { TableCardActionMenuProps, TableCardModeToggleProps } from '@components/table-card/TableCardActionMenu';
 import TableCardInput, { TableCardInputProps } from '@components/table-card/TableCardInput';
 
 export interface TableCardControlsProps {
     hasInput?: boolean;
+    modeToggle?: TableCardModeToggleProps;
     showViewToggle?: boolean;
     tableButtonsProps?: TableCardActionMenuProps;
     tableInputProps?: TableCardInputProps;
@@ -24,6 +25,7 @@ export interface TableCardControlsProps {
  */
 export default function TableCardControls({
     hasInput = true,
+    modeToggle,
     showViewToggle = false,
     tableButtonsProps,
     tableInputProps,
@@ -42,6 +44,7 @@ export default function TableCardControls({
                     ? 1
                     : 2}
                 {...tableButtonsProps}
+                modeToggle={tableButtonsProps?.modeToggle ?? modeToggle}
                 showViewToggle={showViewToggle}
                 viewMode={viewMode}
                 onToggleViewMode={onToggleViewMode}

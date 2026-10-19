@@ -1,4 +1,4 @@
-question_text,question_type,points,options,correct_answer,explanation
-"Which network topology connects all nodes to a central hub?","Multiple Choice",5,"Bus|Star|Ring|Mesh",B,"Star topology uses a central switch or hub."
-"Python is an interpreted, high-level programming language.","True or False",5,"True|False",True,"Python source code is executed by an interpreter."
-"Explain the significance of relational normalization in database systems.","Essay",10,,,
+question_text,question_type,points,is_required,explanation,choices
+"Which network topology connects all nodes to a central hub?","Multiple Choice",5,TRUE,"Star topology uses a central switch or hub.","Bus|Star*|Ring|Mesh"
+"Python is an interpreted, high-level programming language.","True or False",5,TRUE,"Python source code is executed by an interpreter.","True*|False"
+"Explain the significance of relational normalization in database systems.","Essay",10,TRUE,,

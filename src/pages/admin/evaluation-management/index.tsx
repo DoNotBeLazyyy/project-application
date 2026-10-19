@@ -31,15 +31,17 @@ const SORT_COLUMNS: SortColumn[] = [
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness' },
-    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)' },
-    { key: 'section_description', label: 'Section Description', hint: 'optional' },
-    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
-    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)' },
+    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)', required: false },
+    { key: 'section_description', label: 'Section Description', hint: 'optional', required: false },
+    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL)', required: false },
+    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)', required: false },
+    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
+    { key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', required: false },
     { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly' },
     { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended' },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)' },
-    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only)' },
-    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only)' }
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
+    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only, optional)', required: false },
+    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only, optional)', required: false }
 ];
 
 const DEFAULT_QUESTIONS: EvaluationQuestionForm[] = [
