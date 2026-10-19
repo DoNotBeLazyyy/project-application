@@ -139,10 +139,10 @@ export default function CurriculumMapForm({
     // Auto-populate default units when a course is selected during creation
     useEffect(() => {
         if (!selectedCourseId || !selectedCourse || !setValue || currentEntryId) return;
-        setValue('lecture_units', selectedCourse.lecture_units ?? 0, { shouldDirty: true });
-        setValue('laboratory_units', selectedCourse.laboratory_units ?? 0, { shouldDirty: true });
+        setValue('lecture_units', String(selectedCourse.lecture_units ?? 0), { shouldDirty: true });
+        setValue('laboratory_units', String(selectedCourse.laboratory_units ?? 0), { shouldDirty: true });
         if (selectedCourse.total_units !== undefined) {
-            setValue('units', selectedCourse.total_units, { shouldDirty: true });
+            setValue('units', String(selectedCourse.total_units), { shouldDirty: true });
         }
     }, [selectedCourseId, selectedCourse, setValue, currentEntryId]);
 

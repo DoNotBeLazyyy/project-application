@@ -1,3 +1,3 @@
 code,title,department_code,course_type_code,lecture_units,laboratory_units,credit_hours,description,is_active,prerequisites
-COCS101,Introduction to Computing,CCS,LECTURE,3,0,3,Foundations of computing systems and architecture,true,
-IT101,Computer Programming 1,CCS,LECTURE_LAB,2,1,3,Fundamental programming concepts and syntax,true,
+NET101,Data Communications and Networking,IT,LECTURE,3,0,3,Network protocols OSI model and TCP/IP routing,true,
+DBS101,Database Systems and Design,IT,LECTURE_LAB,2,1,3,Relational database modeling SQL optimization and schema design,true,

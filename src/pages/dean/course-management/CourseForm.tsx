@@ -27,10 +27,11 @@ import {
 } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
+import { checkForMessage, getFieldErrorMessage } from '@utils/form.util';
 
 type PrerequisiteField =
     | 'prerequisite_kind'
@@ -80,9 +81,16 @@ function PrerequisiteKindCell({ control, disabled, rowIndex }: PrerequisiteCellP
 
 interface PrerequisiteTargetCellProps extends PrerequisiteCellProps {
     courseOptions: CommonSelectOption[];
+    defaultOpenErrorTooltip?: boolean;
 }
 
-function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: PrerequisiteTargetCellProps) {
+function PrerequisiteTargetCell({
+    control,
+    courseOptions,
+    defaultOpenErrorTooltip,
+    disabled,
+    rowIndex
+}: PrerequisiteTargetCellProps) {
     const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
     const prerequisites = useWatch({ control, name: 'prerequisites' });
     const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
@@ -96,6 +104,7 @@ function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: 
     if (kind === 'standing') {
         return (
             <CommonSelect
+                defaultOpenErrorTooltip={defaultOpenErrorTooltip}
                 disabled={disabled}
                 error={Boolean(targetError)}
                 fullWidth
@@ -123,6 +132,7 @@ function PrerequisiteTargetCell({ control, courseOptions, disabled, rowIndex }: 
 
     return (
         <CommonSelect
+            defaultOpenErrorTooltip={defaultOpenErrorTooltip}
             disabled={disabled}
             error={Boolean(targetError)}
             fullWidth
@@ -198,9 +208,16 @@ interface CourseTypeCellProps {
     disabled?: boolean;
     rowIndex: number;
     courseTypeOptions: CommonSelectOption[];
+    defaultOpenErrorTooltip?: boolean;
 }
 
-function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOptions }: CourseTypeCellProps) {
+function CourseTypeSelectionCell({
+    control,
+    defaultOpenErrorTooltip,
+    disabled,
+    rowIndex,
+    courseTypeOptions
+}: CourseTypeCellProps) {
     const courseType = useController({
         control,
         name: courseTypeName(rowIndex, 'course_type_id'),
@@ -224,6 +241,7 @@ function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOption
 
     return (
         <CommonSelect
+            defaultOpenErrorTooltip={defaultOpenErrorTooltip}
             disabled={disabled}
             error={Boolean(courseTypeError)}
             fullWidth
@@ -273,9 +291,9 @@ function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCel
             clampOnInput={false}
             disabled={disabled}
             error={Boolean(unitsError)}
-            helperText={unitsError?.message || 'Allowed: 0 to 10 units (in 0.5 step increments)'}
             max={10}
             min={0}
+            name={courseTypeName(rowIndex, 'units')}
             placeholder="Enter units (0 - 10)"
             step={0.5}
             value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : (units.field.value as string | number)}
@@ -317,9 +335,9 @@ function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseT
             clampOnInput={false}
             disabled={disabled}
             error={Boolean(creditHoursError)}
-            helperText={creditHoursError?.message || 'Allowed: 0 to 20 credit hours (in 0.5 step increments)'}
             max={20}
             min={0}
+            name={courseTypeName(rowIndex, 'credit_hours')}
             placeholder="Enter credit hours (0 - 20)"
             step={0.5}
             value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : (creditHours.field.value as string | number)}
@@ -507,9 +525,72 @@ export default function CourseForm({
         }
     }, [errors]);
 
+    // Determine the first error field across the form in visual order
+    const firstErrorKey = useMemo(() => {
+        // Step 1 fields in visual order
+        const step1Keys = ['title', 'code', 'department_id', 'is_active', 'description'];
+        for (const key of step1Keys) {
+            if (getFieldErrorMessage(errors, key)) {
+                return key;
+            }
+        }
+
+        // Step 2 fields in visual order
+        if (errors.course_types) {
+            if (typeof (errors.course_types as any).message === 'string') {
+                return 'course_types';
+            }
+            for (let i = 0; i < courseTypeFields.length; i++) {
+                if (getFieldErrorMessage(errors, `course_types.${i}.course_type_id`)) {
+                    return `course_types.${i}.course_type_id`;
+                }
+                if (getFieldErrorMessage(errors, `course_types.${i}.units`)) {
+                    return `course_types.${i}.units`;
+                }
+                if (getFieldErrorMessage(errors, `course_types.${i}.credit_hours`)) {
+                    return `course_types.${i}.credit_hours`;
+                }
+            }
+        }
+
+        // Step 3 fields in visual order
+        if (errors.prerequisites) {
+            if (typeof (errors.prerequisites as any).message === 'string') {
+                return 'prerequisites';
+            }
+            for (let i = 0; i < prereqFields.length; i++) {
+                const kind = prerequisites?.[i]?.prerequisite_kind ?? 'course';
+                const targetKey = kind === 'standing'
+                    ? `prerequisites.${i}.year_level_required`
+                    : `prerequisites.${i}.course_id`;
+                if (getFieldErrorMessage(errors, targetKey)) {
+                    return targetKey;
+                }
+                if (getFieldErrorMessage(errors, `prerequisites.${i}.course_id`)) {
+                    return `prerequisites.${i}.course_id`;
+                }
+                if (getFieldErrorMessage(errors, `prerequisites.${i}.year_level_required`)) {
+                    return `prerequisites.${i}.year_level_required`;
+                }
+                if (getFieldErrorMessage(errors, `prerequisites.${i}.prerequisite_type`)) {
+                    return `prerequisites.${i}.prerequisite_type`;
+                }
+                if (getFieldErrorMessage(errors, `prerequisites.${i}.minimum_grade`)) {
+                    return `prerequisites.${i}.minimum_grade`;
+                }
+            }
+        }
+
+        return checkForMessage(errors).firstError?.key;
+    }, [errors, courseTypeFields.length, prereqFields.length, prerequisites]);
+
     // Calculate total units dynamically as sum of selected course types' units
     const totalUnits = courseTypes.reduce((acc, curr) => acc + (Number(curr.units) || 0), 0);
     const totalCreditHours = courseTypes.reduce((acc, curr) => acc + (Number(curr.credit_hours) || 0), 0);
+
+    const courseTypesTopError = typeof (errors.course_types as any)?.message === 'string'
+        ? (errors.course_types as any).message
+        : undefined;
 
     const currentStepConfig = STEPS.find((s) => s.step === activeStep);
 
@@ -703,11 +784,19 @@ export default function CourseForm({
             <div className={activeStep === 2 ? 'flex flex-col gap-4' : 'hidden'}>
                 <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-                        <div>
+                        <div className="flex items-center gap-1.5">
                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <BookOpenIcon className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                                 Course Type Breakdown
                             </h4>
+                            {courseTypesTopError && (
+                                <CommonInfoTooltip
+                                    content={courseTypesTopError}
+                                    defaultOpen={firstErrorKey === 'course_types'}
+                                    variant="error"
+                                    size={16}
+                                />
+                            )}
                         </div>
                         <div className="flex items-center gap-3 text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800 self-start sm:self-auto">
                             <span>Total Units: <strong>{totalUnits}</strong></span>
@@ -740,6 +829,9 @@ export default function CourseForm({
                             {courseTypeFields.map((field, index) => {
                                 const currentCt = courseTypes[index];
                                 const typeOption = courseTypeOptions.find((opt) => opt.value === currentCt?.course_type_id);
+                                const isCtFirstError = firstErrorKey === courseTypeName(index, 'course_type_id');
+                                const isUnitsFirstError = firstErrorKey === courseTypeName(index, 'units');
+                                const isCreditHoursFirstError = firstErrorKey === courseTypeName(index, 'credit_hours');
 
                                 return (
                                 <div
@@ -793,16 +885,19 @@ export default function CourseForm({
                                             <CourseTypeSelectionCell
                                                 control={control}
                                                 courseTypeOptions={courseTypeOptions}
+                                                defaultOpenErrorTooltip={isCtFirstError}
                                                 disabled={disabled}
                                                 rowIndex={index}
                                             />
                                         </div>
                                         <div className="w-full">
                                             <FormLabel
+                                                defaultOpenErrorTooltip={isUnitsFirstError}
+                                                description="Allowed: 0 to 10 units (in 0.5 step increments)"
                                                 errorMessage={(errors.course_types as any)?.[index]?.units?.message}
+                                                isFirstError={isUnitsFirstError}
                                                 isRequired
                                                 label="Units"
-                                                description="Allowed: 0 to 10 units (in 0.5 step increments)"
                                             />
                                             <CourseTypeUnitsCell
                                                 control={control}
@@ -812,10 +907,12 @@ export default function CourseForm({
                                         </div>
                                         <div className="w-full">
                                             <FormLabel
+                                                defaultOpenErrorTooltip={isCreditHoursFirstError}
+                                                description="Allowed: 0 to 20 credit hours (in 0.5 step increments)"
                                                 errorMessage={(errors.course_types as any)?.[index]?.credit_hours?.message}
+                                                isFirstError={isCreditHoursFirstError}
                                                 isRequired
                                                 label="Credit Hours"
-                                                description="Allowed: 0 to 20 credit hours (in 0.5 step increments)"
                                             />
                                             <CourseTypeCreditHoursCell
                                                 control={control}
@@ -897,6 +994,9 @@ export default function CourseForm({
                             {prereqFields.map((field, index) => {
                                 const currentKind = prerequisites?.[index]?.prerequisite_kind ?? 'course';
                                 const isCourseKind = currentKind === 'course';
+                                const isPrereqTargetFirstError =
+                                    firstErrorKey === prerequisiteName(index, 'course_id') ||
+                                    firstErrorKey === prerequisiteName(index, 'year_level_required');
 
                                 return (
                                     <div
@@ -959,6 +1059,7 @@ export default function CourseForm({
                                                     <PrerequisiteTargetCell
                                                         control={control}
                                                         courseOptions={allCourseOptions}
+                                                        defaultOpenErrorTooltip={isPrereqTargetFirstError}
                                                         disabled={disabled}
                                                         rowIndex={index}
                                                     />

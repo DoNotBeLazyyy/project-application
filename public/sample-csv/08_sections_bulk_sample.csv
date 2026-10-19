@@ -1,2 +1,2 @@
 term_label,program_code,course_code,section_code,faculty_email,room,max_slots,status,schedule_days,schedule_time_start,schedule_time_end,schedule_room
-,BSIT,COCS101,COCS101-001,faculty@example.com,Lab 304,40,Open,"Monday, Wednesday",08:00,10:00,Lab 304
+,BSIT,IT102,IT102-001,juliustolentino.diamond@gmail.com,Lab 305,40,Open,"Tuesday, Thursday",13:00,15:00,Lab 305

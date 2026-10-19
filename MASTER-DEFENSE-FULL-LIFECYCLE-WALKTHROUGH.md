@@ -28,7 +28,7 @@
    - [Phase 2.1: Dean Authentication & College Metrics](#phase-21-dean-authentication--college-metrics)
    - [Phase 2.2: Program Level Management CRUD](#phase-22-program-level-management-crud)
    - [Phase 2.3: Course Type Management CRUD](#phase-23-course-type-management-crud)
-   - [Phase 2.4: Course Blueprints & Multi-Step Course Creation (COCS101 & IT101)](#phase-24-course-blueprints--multi-step-course-creation-cocs101--it101)
+   - [Phase 2.4: Course Blueprints & Unified Multi-Type Course Creation (IT101 & IT102)](#phase-24-course-blueprints--unified-multi-type-course-creation-it101--it102)
    - [Phase 2.5: Degree Program Catalog & Curriculum Mapping 3-Step Wizard (BSIT)](#phase-25-degree-program-catalog--curriculum-mapping-3-step-wizard-bsit)
    - [Phase 2.6: Section Scheduling 3-Step Wizard](#phase-26-section-scheduling-3-step-wizard)
    - [Phase 2.7: Faculty Loading 3-Step Wizard & Live Timetable Collision Evaluation](#phase-27-faculty-loading-3-step-wizard--live-timetable-collision-evaluation)
@@ -37,7 +37,7 @@
    - [Phase 2.10: Universal Interactive Calendar (Dean View)](#phase-210-universal-interactive-calendar-dean-view)
 6. [ACT III: University Registrar — Verification, Shifting, Batch Enrollment & Audit](#act-iii-university-registrar--verification-shifting-batch-enrollment--audit)
    - [Phase 3.1: Registrar Authentication & Enrollment Operations](#phase-31-registrar-authentication--enrollment-operations)
-   - [Phase 3.2: Academic Program Assignment & Year Level Setting](#phase-32-academic-program-assignment--year-level-setting)
+   - [Phase 3.2: Academic Program Assignment & Year Level Setting (Dual-Path Flexibility)](#phase-32-academic-program-assignment--year-level-setting-dual-path-flexibility)
    - [Phase 3.3: Individual Student Enrollment Workspace](#phase-33-individual-student-enrollment-workspace)
    - [Phase 3.4: Registrar Batch Bulk CSV Enrollment Pipeline](#phase-34-registrar-batch-bulk-csv-enrollment-pipeline)
    - [Phase 3.5: Registrar Forensic Audit Logs](#phase-35-registrar-forensic-audit-logs)
@@ -66,7 +66,7 @@
    - [Phase 5.5: Assessment Results Review & Annotation Feedback](#phase-55-assessment-results-review--annotation-feedback)
    - [Phase 5.6: Threaded Discussion Forum Participation](#phase-56-threaded-discussion-forum-participation)
    - [Phase 5.7: Attendance Rate Verification](#phase-57-attendance-rate-verification)
-   - [Phase 5.8: Mandatory Faculty Evaluation Dual-Key Gating](#phase-58-mandatory-faculty-evaluation-dual-key-gating)
+   - [Phase 5.8: Two-Step Mobile-Friendly Faculty Evaluation Suite & Dual-Key Gating](#phase-58-two-step-mobile-friendly-faculty-evaluation-suite--dual-key-gating)
    - [Phase 5.9: Curriculum Tracker & 4-Year Degree Audit Prospectus](#phase-59-curriculum-tracker--4-year-degree-audit-prospectus)
    - [Phase 5.10: Official Printable Transcript of Records (TOR)](#phase-510-official-printable-transcript-of-records-tor)
    - [Phase 5.11: Academic Analytics, GWA Trend & What-If Grade Simulator](#phase-511-academic-analytics-gwa-trend--what-if-grade-simulator)
@@ -74,7 +74,7 @@
    - [Phase 5.13: Student Profile Change Request Submission & AI Tutor](#phase-513-student-profile-change-request-submission--ai-tutor)
    - [Phase 5.14: Universal Interactive Calendar (Student View, Deadlines & Timetable)](#phase-514-universal-interactive-calendar-student-view-deadlines--timetable)
 9. [ACT VI: Faculty Assessment Grading, Rubrics & Anti-Tamper Submission](#act-vi-faculty-assessment-grading-rubrics--anti-tamper-submission)
-   - [Phase 6.1: Submissions Grading Suite with Rubric Scoresheet](#phase-61-submissions-grading-suite-with-rubric-scoresheet)
+   - [Phase 6.1: Submissions Grading Suite with Rubric Scoresheet (Flexible Feedback Architecture)](#phase-61-submissions-grading-suite-with-rubric-scoresheet-flexible-feedback-architecture)
    - [Phase 6.2: Special Grade Flags Assignment (INC, DRP, FA)](#phase-62-special-grade-flags-assignment-inc-drp-fa)
    - [Phase 6.3: Automated Weighted Grade Calculation & Transmutation](#phase-63-automated-weighted-grade-calculation--transmutation)
    - [Phase 6.4: Submission to Registrar & Anti-Tamper State Lock](#phase-64-submission-to-registrar--anti-tamper-state-lock)
@@ -94,39 +94,41 @@
 
 ## 📥 Ready-to-Use Sample CSV Files Repository
 
-For all entities supporting CSV Bulk Upload, ready-made, pre-validated sample CSV files are available in this repository. Simply click any file link below to view/copy its content or download directly:
+For all entities supporting CSV Bulk Upload, ready-made, pre-validated sample CSV files are available in this repository. All CSV sample files have been updated with the latest template columns and populate non-conflicting records. Simply click any file link below to view/copy its content or download directly:
 
 | Entity / Module | Role | Direct File Link | Included Sample Content |
 | :--- | :--- | :--- | :--- |
-| **User Accounts** | Admin | [01_users_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/01_users_bulk_sample.csv) | Alex Mercer (Faculty), Diana Prince (Student), Arthur Curry (Student) |
-| **Departments** | Admin | [02_departments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/02_departments_bulk_sample.csv) | CCS (Computer Studies), CBA (Business), CAS (Arts & Sciences) |
-| **Program Levels** | Dean | [03_program_levels_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/03_program_levels_bulk_sample.csv) | UNDERGRADUATE, GRADUATE, DOCTORATE |
-| **Course Types** | Dean | [04_course_types_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/04_course_types_bulk_sample.csv) | LECTURE, LABORATORY, LECTURE_LAB |
-| **Degree Programs** | Dean | [05_programs_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/05_programs_bulk_sample.csv) | BSIT (165 Units), BSCS (168 Units) |
-| **Courses & Blueprints** | Dean | [06_courses_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/06_courses_bulk_sample.csv) | COCS101 (Intro to Computing), IT101 (Programming 1) |
-| **Curriculum Maps** | Dean | [07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/07_curriculum_map_bulk_sample.csv) | COCS101 (Year 1, 1st Sem, 3 Units), IT101 (Year 1, 1st Sem, 3 Units) |
-| **Sections & Schedules** | Dean | [08_sections_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/08_sections_bulk_sample.csv) | COCS101-001 (Mon/Wed 8:00-10:00 AM, Room Lab 304, 40 slots) |
-| **Assessment Questions** | Faculty | [09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/09_assessment_questions_bulk_sample.csv) | Multiple Choice, True/False, Essay with points and answer keys |
-| **Student Enrollments** | Registrar | [10_enrollments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/10_enrollments_bulk_sample.csv) | Student 2026-00001 enrolled into Section COCS101-001 |
-| **Evaluation Templates** | Admin | [11_evaluations_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/11_evaluations_bulk_sample.csv) | Teaching Effectiveness, Classroom Management rating questions |
+| **User Accounts** | Admin | [01_users_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/01_users_bulk_sample.csv) | Leonardo Vinci (Faculty), Ada Lovelace (Student), Alan Turing (Student) |
+| **Departments** | Admin | [02_departments_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/02_departments_bulk_sample.csv) | CAEN (Architecture & Civil), CPHM (Pharmacy & Health), CCJE (Criminal Justice) |
+| **Program Levels** | Dean | [03_program_levels_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/03_program_levels_bulk_sample.csv) | DIPLOMA, POST_GRADUATE, ASSOCIATE |
+| **Course Types** | Dean | [04_course_types_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/04_course_types_bulk_sample.csv) | PRACTICUM, SEMINAR, THESIS |
+| **Degree Programs** | Dean | [05_programs_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/05_programs_bulk_sample.csv) | BSIS (160 Units), BSDS (165 Units) |
+| **Courses & Blueprints** | Dean | [06_courses_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/06_courses_bulk_sample.csv) | NET101 (Data Communications), DBS101 (Database Systems) |
+| **Curriculum Maps** | Dean | [07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/07_curriculum_map_bulk_sample.csv) | IT101 (Year 1, 1st Sem, 3 Units), IT102 (Year 1, 1st Sem, 3 Units) |
+| **Sections & Schedules** | Dean | [08_sections_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/08_sections_bulk_sample.csv) | IT102-001 (Tue/Thu 13:00-15:00, Room Lab 305, 40 slots) |
+| **Assessment Questions** | Faculty | [09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/09_assessment_questions_bulk_sample.csv) | Multiple Choice, True/False, Essay with points and answer keys |
+| **Student Enrollments** | Registrar | [10_enrollments_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/10_enrollments_bulk_sample.csv) | Student 2026-00001 (Sam Student) enrolled into Section IT101-001 |
+| **Evaluation Templates** | Admin | [11_evaluations_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/11_evaluations_bulk_sample.csv) | Pedagogical Mastery & Delivery, Laboratory Mentorship & Guidance |
 
 > [!TIP]
 > **Deployment Web Access:** These files are also placed in the public asset directory (`public/sample-csv/`) so you can download them directly from your browser via `https://project-application-two.vercel.app/sample-csv/[filename]` or open them locally on disk.
+> 
+> **Companion Architecture Diagrams:** For comprehensive end-to-end visual flowcharts (Authentication & RBAC, Academic Lifecycle, Dual-Key Grade Clearance, Timetable Collision Detection, and Entity Relationships), see [SYSTEM-ARCHITECTURE-FLOWCHARTS.md](file:///C:/Users/user/Documents/project-application/SYSTEM-ARCHITECTURE-FLOWCHARTS.md).
 
 ---
 
 ## 1. Master System Credentials & Pre-Seeded Accounts
 
-The database is fully configured with distinct, high-entropy credentials for each role. The two accounts requested for live administrative creation are pre-registered in `auth.users` to link immediately upon form submission in Admin User Management.
+The database is pre-configured with distinct, high-entropy credentials for each role under the active operational cycle **Academic Year 2027–2028 (`AY-2027-2028`)**, 1st Semester. The live test accounts link seamlessly with existing identities:
 
 | Role | Display Name | Email Address | Password | Assigned Entity / Context |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Admin** | System Administrator | `admin@example.com` | `AdminMaster2026!` | Institutional IT & Systems Governance |
-| **Academic Dean** | David Dean | `dean@example.com` | `DeanAcademic2026!` | College of Computer Studies (CCS) |
+| **Academic Dean** | David Dean | `dean@example.com` | `DeanAcademic2026!` | Information Technology (IT) |
 | **Registrar** | Rachel Registrar | `registrar@example.com` | `RegistrarRecords2026!` | Office of the University Registrar |
-| **Faculty (Baseline)** | Francis Faculty | `faculty@example.com` | `FacultyProfessor2026!` | College of Computer Studies (CCS) |
-| **Student (Baseline)** | Sam Student | `student@example.com` | `StudentScholar2026!` | BS Information Technology (Year 1) |
-| **Faculty (Custom Live)** | **Julius Tolentino** | `juliustolentino.diamond@gmail.com` | `DiamondFaculty2026!` | **College of Computer Studies (CCS)** |
+| **Faculty (Baseline)** | Francis Faculty | `faculty@example.com` | `FacultyProfessor2026!` | Information Technology (IT) |
+| **Student (Baseline)** | Sam Student | `student@example.com` | `StudentScholar2026!` | BS Information Technology (Year 1, Student #2026-00001) |
+| **Faculty (Custom Live)** | **Julius Tolentino** | `juliustolentino.diamond@gmail.com` | `DiamondFaculty2026!` | **Information Technology (IT)** |
 | **Student (Custom Live)** | **Baki Hanma** | `hbaki386@gmail.com` | `HbakiStudent2026!` | **BS Information Technology (Starts Year 1)** |
 
 ---
@@ -134,17 +136,21 @@ The database is fully configured with distinct, high-entropy credentials for eac
 ## 2. Global Architecture & Oral Defense Highlights
 
 Key architectural strengths to present to the panel:
-1. **Multi-Role Security Perimeter:** Strict role-based workspace protection separating Admin, Dean, Registrar, Faculty, and Student interfaces.
-2. **Dual-Key Grade Release Mechanism:** Faculty computes grades with automated transmutation; grades are submitted with an irreversible anti-tamper lock and released only after Registrar clearance.
-3. **Automated Academic Progression Engine:** Automatically scans completed curriculum courses and promotes passing students from Year 1 to Year 2 upon school year rollover.
-4. **Context-Aware AI Assistant Drawer:** Conversational AI dynamically grounded in the active user's role, permissions, and enrolled courses.
-5. **Universal Multi-Step Wizards & Bulk CSV Pipelines:** Built-in guided step-by-step wizards and CSV batch importers across 10 modules.
-6. **Mobile-First Responsive Layout:** Full parity across Desktop and Mobile devices with dedicated touch navigation, responsive action menus, and zero horizontal scrolling issues.
-7. **Department Stepper & Strict Department Data Scoping:** Department governance via a 3-step wizard (Details, Dean Assignment, Faculty Roster) enforcing strict assignment of deans and instructors.
-8. **Academic Year Version History, Stepper Comparison & Revert:** Full historical snapshots of institutional school year configurations with step-by-step preview, side-by-side visual diffing, and version rollback.
-9. **Semantic Change Detection:** Save buttons and historical snapshots intelligently detect genuine field modifications, preventing unnecessary updates and redundant audit logs.
-10. **Session Draft Auto-Saving & Recovery Suite:** Automatic form caching with interactive recovery prompts across multi-step setup wizards to prevent accidental data loss.
-11. **Strict Section Announcement & Event Isolation:** Section-level announcements and calendar events are strictly isolated exclusively to assigned faculty and enrolled students.
+1. **Multi-Role Security Perimeter & Auth Verification:** Strict role-based workspace protection separating Admin, Dean, Registrar, Faculty, and Student interfaces. Includes automated email verification gate and account status validation on `/forgot-password`.
+2. **Enterprise Anti-Double Submission & Button Loading Architecture:** All interactive submission buttons (`CommonButton`), modals, and multi-step forms enforce real-time loading spinners and mutation locks (`loading={isSubmitting}` / `disabled={isPending}`), preventing accidental double clicks and race conditions.
+3. **Unified Multi-Type Course Blueprint Engine:** Course creation and updating seamlessly support composite course types (e.g. combined Lecture + Laboratory components) in a single unified wizard, complete with auto-summed units/credit hours, stepper inputs protected against auto-clamping, and strict unit ceiling validation.
+4. **Dual-Key Grade Release Mechanism & Duplicate Release Prevention:** Faculty computes grades with automated transmutation; grades are submitted with an irreversible anti-tamper lock and released only after Registrar clearance. Database trigger `prevent_duplicate_grade_release` guarantees immutable grade state transitions.
+5. **Two-Step Mobile-Friendly Student Faculty Evaluation Suite:** Evaluation experience features a dedicated Step 1 (Faculty Selection & 5-point Likert Scale Guide with qualitative criteria descriptors) and Step 2 (Responsive Evaluation Matrix & Constructive Comments), unlocking student subject grades once completed.
+6. **Student Self-Service Degree Program Classification:** Students who do not have an assigned academic program can immediately select and initialize their degree program & year level directly from their dashboard and curriculum checklist (`/student/curriculum`), complementing administrative assignment by the Registrar.
+7. **Automated Academic Progression Engine:** Automatically scans completed curriculum courses and promotes passing students from Year 1 to Year 2 upon school year rollover.
+8. **Context-Aware AI Assistant Drawer:** Conversational AI dynamically grounded in the active user's role, permissions, and enrolled courses.
+9. **Universal Multi-Step Wizards & Bulk CSV Pipelines:** Built-in guided step-by-step wizards and CSV batch importers across 10 modules with automated code derivation.
+10. **Mobile-First Responsive Layout & Unified Table-Card Action Menus:** Full parity across Desktop and Mobile devices with dedicated touch navigation, responsive 3-dots action menus with permission checks, and zero horizontal scrolling issues.
+11. **Department Stepper & Strict Department Data Scoping:** Department governance via a 3-step wizard (Details, Dean Assignment, Faculty Roster) enforcing strict assignment of deans and instructors.
+12. **Academic Year Version History, Stepper Comparison & Revert:** Full historical snapshots of institutional school year configurations with step-by-step preview, side-by-side visual diffing, and version rollback.
+13. **Semantic Change Detection:** Save buttons and historical snapshots intelligently detect genuine field modifications, preventing unnecessary updates and redundant audit logs.
+14. **Session Draft Auto-Saving & Recovery Suite:** Automatic form caching with interactive recovery prompts across multi-step setup wizards to prevent accidental data loss.
+15. **Strict Section Announcement & Event Isolation:** Section-level announcements and calendar events are strictly isolated exclusively to assigned faculty and enrolled students.
 
 ---
 
@@ -156,7 +162,11 @@ Key architectural strengths to present to the panel:
    * **Email:** `admin@example.com`
    * **Password:** `AdminMaster2026!`
 3. Click **Sign In**.
-4. **Inspect Admin Dashboard (`/admin`):**
+4. *(Optional Auth Feature Verification — Forgot Password Gate)*:
+   * Navigate to `/forgot-password`.
+   * Input `unknown@example.com` and click **Send Reset Link** ➔ Real-time pre-verification checks the user table and prevents sending if the account does not exist (`Email Not Found`).
+   * Input `juliustolentino.diamond@gmail.com` ➔ System pre-verifies active account status and dispatches secure password reset link.
+5. **Inspect Admin Dashboard (`/admin`):**
    * **Live Bento Stat Cards:** Review real-time institutional counts:
      - **Active Students**
      - **Active Faculty**
@@ -178,7 +188,7 @@ Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
    * **Email:** `juliustolentino.diamond@gmail.com`
    * **Role:** Select `Faculty`
    *(Architectural Context: Base identity is provisioned here. Department assignment and college faculty roster linking occurs in Phase 1.5).*
-3. Click **Save / Submit**.
+3. Click **Save / Submit** (button displays loading spinner and disables double-submission).
 4. **Search Verification:**
    * Search `diamond` or `Tolentino` in the table search input.
    * Row renders: *Julius Tolentino*, role `Faculty`, status `Active`. Clear search.
@@ -190,8 +200,8 @@ Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
    * **Last Name:** `Hanma`
    * **Email:** `hbaki386@gmail.com`
    * **Role:** Select `Student`
-   *(Architectural Context: Base scholar identity is provisioned here. Degree program assignment, year level standing, and section enrollment are officially managed by the University Registrar in Phase 3.4).*
-3. Click **Save / Submit**.
+   *(Architectural Context: Base scholar identity is provisioned here. Degree program assignment, year level standing, and section enrollment are officially managed by the University Registrar in Phase 3.2-3.4 or student self-service).*
+3. Click **Save / Submit** (loading state protects against rapid duplicate requests).
 4. **Search & Filter Verification:**
    * Search `hbaki` ➔ Row renders: *Baki Hanma*, role `Student`.
    * Test the **Role Filter** dropdown: Select `Student` ➔ Table displays only students. Select `Faculty` ➔ Table displays only faculty. Reset to `All Roles`.
@@ -208,8 +218,8 @@ Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
 ### Phase 1.3: Universal Bulk CSV Import System (Users & Entities)
 1. In `/admin/users`, click the Table Action menu ➔ Click **Bulk Import (CSV)**.
 2. Click **Download CSV Template** ➔ Inspect required columns: First Name, Last Name, Email, Role Code.
-3. Note the CSV validation step, row preview table, and batch upload button.
-4. **Quick Test with Pre-Made CSV:** You can upload [01_users_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/01_users_bulk_sample.csv) directly without typing.
+3. Note the CSV validation step, row preview table, and batch upload button with loading state.
+4. **Quick Test with Pre-Made CSV:** You can upload [01_users_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/01_users_bulk_sample.csv) directly without typing.
 5. Click **Close**.
 
 ---
@@ -218,9 +228,10 @@ Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
 Navigate to `/admin/profile-verifications` via sidebar **Profile Approvals** (under **OVERVIEW**).
 1. Review pending identity update requests submitted by staff members.
 2. Filter by status: `Pending`, `Approved`, `Rejected`.
-3. Click **Review Request** on any row to open the verification modal.
-4. Inspect the side-by-side comparison of current values versus submitted new values.
-5. Click **Approve** or **Reject** with remarks: `"Verified against university HR archives."`.
+3. Click **Review Request** on any row to open the enhanced `StaffProfileVerificationModal`.
+4. Inspect the responsive side-by-side comparison cards (Current Verified Profile vs. Requested Changes) covering avatar, contact details, department, and academic credentials.
+5. Review the decision remarks input and notice the real-time loading spinners on the **Approve** and **Reject** buttons (`loading={isApproving || isRejecting}`), preventing duplicate submission or race conditions.
+6. Click **Approve** or **Reject** with remarks: `"Verified against university HR archives."`.
 
 ---
 
@@ -231,9 +242,9 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
 1. **Create Primary College:** Click **+ Add Department**.
    * *(Draft Persistence)*: Any in-progress inputs persist with automatic recovery prompting and unsaved change protection (`useFormDraft`).
 2. **Step 1: Department Details:**
-   * **Department Name:** Input `College of Computer Studies`
-   * **Department Code:** Auto-generated system code `CCS` (or derived code; read-only to prevent collisions).
-   * **Description:** Input `Center of excellence in computing, algorithms, and software engineering.`
+   * **Department Name:** Input `Information Technology`
+   * **Department Code:** Auto-generated system code `IT` *(Derived automatically by `generateDepartmentCode` — read-only to prevent collisions)*.
+   * **Description:** Input `Center of excellence in computing, software engineering, and applied emerging technologies.`
    * Click **Next →** (bottom right).
 3. **Step 2: Dean Assignment:**
    * Inspect available deans from user directory.
@@ -246,9 +257,9 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
    * **Strict Department Scoping:** Selected faculty are bound exclusively to this department, preventing cross-college instructor leaks.
    * Review Selected Faculty count badge: `1 Faculty Selected`.
 5. **Final Commit:**
-   * Click **Save Department**.
-   * The system validates relationships and registers `College of Computer Studies (CCS)`.
-6. **Read & Search:** Search `Computer` or `CCS` in the department table search input.
+   * Click **Save Department** (button enforces active loading spinner while creating relations).
+   * The system validates relationships and registers `Information Technology (IT)`.
+6. **Read & Search:** Search `Information` or `IT` in the department table search input.
 7. **CRUD Lifecycle Test (Temporary Entity):**
    * Click **+ Add Department** ➔ Name: `Temp Department`, Description: `Test for edit and delete`. Click **Save**.
    * On `Temp Department`, click Action menu (`...`) ➔ **Edit** ➔ Update description ➔ Click **Save**.
@@ -256,8 +267,8 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
 
 #### 2. Department Bulk CSV Import Demonstration
 1. Click the Table Action menu (`...`) in the top-right of the table card ➔ Click **Bulk Import (CSV)** (opens `BulkImportModal`).
-2. Download or drag-and-drop the pre-made sample: **[02_departments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/02_departments_bulk_sample.csv)**.
-3. Observe the live CSV validation table displaying *CCS*, *CBA*, and *CAS*. Note that department codes are auto-generated by the system on import without requiring manual code entry.
+2. Download or drag-and-drop the pre-made sample: **[02_departments_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/02_departments_bulk_sample.csv)**.
+3. Observe the live CSV validation table displaying *CAEN*, *CPHM*, and *CCJE*. Note that department codes are auto-generated by the system on import without requiring manual code entry.
 4. Click **Import Records** (or review and close).
 5. All uploaded colleges populate the department grid!
 
@@ -265,18 +276,18 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
 
 ### Phase 1.6: Enterprise Academic Year Setup Wizard & Version History Revert
 Navigate to `/admin/school-years` via sidebar **Academic Years** (under **ACADEMIC STRUCTURE**).
-1. Inspect the school year registry: Since starting with a fresh database where only users and roles are retained, no school years exist yet.
-2. Click **+ Add School Year** (opens the 6-step Academic Year Wizard `AcademicYearWizardModal`).
+1. Inspect the school year registry: The institutional operational calendar **`AY-2027-2028`** (**`Academic Year 2027-2028`**, 1st Semester: `08/16/2027` – `12/18/2027`, status: **Ongoing**) is already established and active as the primary operational cycle.
+2. Click **Edit** on `AY-2027-2028` (or click **+ Add School Year** to demonstrate the 6-step Academic Year Wizard `AcademicYearWizardModal` architecture).
 
 ---
 
 #### Step 1: Identity & Dates
-Provide the overarching academic calendar dates. The wizard dynamically computes codes and labels:
-* **Start Date**: Select **`08/01/2027`**
-* **End Date**: Select **`05/31/2028`**
+Review or provide the overarching academic calendar dates. The wizard dynamically computes codes and labels:
+* **Start Date**: Select or verify **`08/01/2027`**
+* **End Date**: Select or verify **`05/31/2028`**
 * **Academic Year Code**: Verified auto-populated: **`AY-2027-2028`** *(Read-only, calculated from dates)*
 * **Academic Year Label**: Verified auto-populated: **`Academic Year 2027-2028`** *(Read-only, calculated from dates)*
-* **Active School Year**: Check **`[x] Active`** *(Sets `AY 2027-2028` as the active academic year to establish the system's operational calendar)*
+* **Active School Year**: Checked **`[x] Active`** *(Retains `AY 2027-2028` as the active academic year to anchor the system's operational calendar)*
 * Click **Next →** (bottom right).
 
 ---
@@ -431,7 +442,7 @@ Inspect the official academic achievement cutoffs tracking Latin Honors, Scholar
 2. The **Academic Year Schedule & Timeline Preview** modal opens (`AcademicYearSchedulePreviewModal`):
    * View the unified Gantt timeline displaying the 1st Semester, 2nd Semester, Exam Weeks, Grade Encoding deadlines, and Holiday exception overlays across the entire 10-month span with dynamic row height scaling for dense concurrent schedules.
    * Click **Close (✕)** on the preview window.
-3. In the main wizard footer (on Step 6), click the primary button: **Save Academic Year Calendar**.
+3. In the main wizard footer (on Step 6), click the primary button: **Save Academic Year Calendar** (enforces real-time loading spinner and button disabled state while persisting the multi-step schema).
 4. The system validates all constraints, closes the modal, and shows a green toast: *"Academic year calendar saved successfully."*
 5. In the school year table, verify **Academic Year 2027–2028** appears with status **Active**, establishing the active operational calendar.
 
@@ -448,7 +459,7 @@ Demonstrate institutional governance and version auditing:
    * Select two versions to trigger conditional side-by-side comparison.
    * Review highlighted differential values (green for additions, red for modifications) across term dates, period weights, and grading thresholds.
 5. **One-Click Configuration Rollback:**
-   * Click **Revert to this Version** on a target historical snapshot.
+   * Click **Revert to this Version** on a target historical snapshot (equipped with button loading state to prevent concurrent mutations).
    * Explain to the panel: The system safely reapplies the selected configuration snapshot without creating corrupt duplicate entries, guarded by semantic real change detection.
 6. Click **Close** to return to the active school year registry.
 
@@ -472,12 +483,12 @@ Navigate to `/admin/evaluations` via sidebar **Evaluations** (under **CAMPUS & C
      * Prompt 1: *"The instructor demonstrates mastery of the subject matter."* (Scale 1–5, Required: Yes).
      * Prompt 2: *"The instructor returns assessment feedback in a timely manner."* (Scale 1–5, Required: Yes).
      * Prompt 3: *"The instructor creates an engaging and inclusive classroom environment."* (Scale 1–5, Required: Yes).
-2. Click **Publish Evaluation Period**.
+2. Click **Publish Evaluation Period** (enforces loading spinner).
 3. Status changes to **Active**.
 
 #### 2. Evaluation Template Bulk CSV Import Demonstration
 1. In `/admin/evaluations`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
-2. Drag and drop the pre-made template: **[11_evaluations_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/11_evaluations_bulk_sample.csv)**.
+2. Drag and drop the pre-made template: **[11_evaluations_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/11_evaluations_bulk_sample.csv)**.
 3. The preview table parses the evaluation sections and rating questions (*Teaching Effectiveness*, *Classroom Management*).
 4. Click **Import Records** (or close).
 
@@ -611,7 +622,7 @@ The University Academic Council announces the **First Semester Midterm Examinati
 
 | Examination Block | Time Window | Covered Subjects |
 | :--- | :--- | :--- |
-| **Morning Session** | 08:00 AM – 11:00 AM | General Education & Core Computing (COCS101) |
+| **Morning Session** | 08:00 AM – 11:00 AM | General Education & Core Computing (IT101) |
 | **Midday Break** | 11:00 AM – 01:00 PM | Campus Sanitation & Proctors Shift |
 | **Afternoon Session** | 01:00 PM – 04:00 PM | Specialized Major Courses & Lab Practicums |
 
@@ -717,8 +728,8 @@ Navigate to `/dean/program-level-management` via sidebar **Program Levels** (und
 
 #### 2. Program Levels Bulk CSV Import Demonstration
 1. In `/dean/program-level-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
-2. Drag and drop the ready sample: **[03_program_levels_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/03_program_levels_bulk_sample.csv)**.
-3. Live validation displays *UNDERGRADUATE*, *GRADUATE*, and *DOCTORATE* levels.
+2. Drag and drop the ready sample: **[03_program_levels_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/03_program_levels_bulk_sample.csv)**.
+3. Live validation displays *DIPLOMA*, *POST_GRADUATE*, and *ASSOCIATE* levels.
 4. Click **Import Records** (or close).
 
 ---
@@ -731,46 +742,54 @@ Navigate to `/dean/course-type-management` via sidebar **Course Types** (under *
    * **Course Type Code:** System-generated placeholder (read-only, derived e.g. `LEC`).
    * **Course Type Name:** Input `Specialized AI Laboratory`.
    * **Description:** Input `Advanced laboratory instruction dedicated to artificial intelligence and deep learning.`
-   * Click **Save**.
+   * Click **Save** (enforces button loading state).
 2. **Search:** Search `Specialized AI` in table search input.
 3. **Delete:** Remove test course type to restore clean state.
 
 #### 2. Course Types Bulk CSV Import Demonstration
 1. In `/dean/course-type-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
-2. Drag and drop the ready sample: **[04_course_types_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/04_course_types_bulk_sample.csv)**.
-3. Review parsed entries: *LECTURE*, *LABORATORY*, *LECTURE_LAB*.
+2. Drag and drop the ready sample: **[04_course_types_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/04_course_types_bulk_sample.csv)**.
+3. Review parsed entries: *PRACTICUM*, *SEMINAR*, *THESIS*.
 4. Click **Import Records** (or close).
 
 ---
 
-### Phase 2.4: Course Blueprints & Multi-Step Course Creation (COCS101 & IT101)
+### Phase 2.4: Course Blueprints & Unified Multi-Type Course Creation (IT101 & IT102)
 Navigate to `/dean/course-management` via sidebar **Courses** (under **CURRICULUM & CATALOG**).
 
-#### 1. Interactive 3-Step Course Creation Wizard
+#### 1. Interactive 3-Step Course Creation Wizard (Unified Multi-Type Support)
 1. Click **+ Add Course** (opens `CourseWizardModal`):
    * **Step 1: Overview Data**
      * **Course Title:** Input `Introduction to Computing`
-     * **Course Code:** Auto-generated system code `COCS101` (derived from department & title).
-     * **Department:** Select `College of Computer Studies (CCS)`
+     * **Course Code:** Auto-generated system code `IT101` *(Derived automatically from department `IT` + sequence `101`)*.
+     * **Department:** Select `Information Technology (IT)`
      * **Description:** Input `Foundations of computing systems, hardware architecture, and logic.`
      * **Status:** Toggle `Active`
+     * *(Security/UX Feature)*: Inputs are guarded against browser autofill interference.
      * Click **Next Step →** (bottom right).
-   * **Step 2: Course Type**
+   * **Step 2: Course Types & Unit Allocation (Unified Multi-Type Engine)**
      * Click **+ Add Course Type**
      * **Course Type:** Select `Lecture`
      * **Units:** `3.0`
      * **Credit Hours:** `3.0`
-     * Note that **Total Units: 3.0** and **Total Credit Hours: 3.0** dynamically calculate in the summary header.
+     * *(Input Resilience)*: Stepper input avoids premature auto-clamping while typing, preserving exact decimal values.
+     * Dynamic Header: **Total Units: 3.0** and **Total Credit Hours: 3.0** recalculate in real-time.
+     * *(Validation Guard)*: The wizard strictly validates total units on step progression and submission, preventing courses from exceeding maximum collegiate thresholds.
      * Click **Next Step →** (bottom right).
-   * **Step 3: Prerequisite**
+   * **Step 3: Prerequisites & Co-requisites**
      * Configure any hard prerequisites, co-requisites, or standing requirements (or leave clear for introductory Year 1 courses).
-     * Click **Save Course** (`FloppyDiskIcon`).
-2. Repeat for **`IT101 - Computer Programming 1`** (Course Type: `Lecture` 2.0 Units, `Laboratory` 1.0 Unit, Total 3.0 Units).
+     * Click **Save Course** (`FloppyDiskIcon`, with loading spinner while calling unified RPC).
+2. Repeat for **`IT102 - Computer Programming 1`** showcasing **Composite Course Types**:
+   * Add Type 1: `Lecture` (2.0 Units, 2.0 Credit Hours).
+   * Add Type 2: `Laboratory` (1.0 Unit, 3.0 Credit Hours).
+   * Summary updates dynamically: **Total Units: 3.0 | Total Credit Hours: 5.0**.
+   * Click **Save Course**. Both types are stored concurrently under a single course blueprint.
+3. *(Course Type Editing)*: Click **Edit** on `IT102` ➔ Notice course types and units load seamlessly and sync back to the database upon saving.
 
 #### 2. Course Catalog Bulk CSV Import Demonstration
 1. In `/dean/course-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
-2. Drag and drop the ready sample: **[06_courses_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/06_courses_bulk_sample.csv)**.
-3. Review the course entries (*COCS101 - Intro to Computing* and *IT101 - Programming 1* with lecture/lab hours).
+2. Drag and drop the ready sample: **[06_courses_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/06_courses_bulk_sample.csv)**.
+3. Review the course entries (*NET101 - Data Communications and Networking* and *DBS101 - Database Systems and Design* with lecture/lab hours).
 4. Click **Import Records** (or close).
 
 ---
@@ -783,7 +802,7 @@ Navigate to `/dean/program-management` via sidebar **Programs** (under **CURRICU
    * **Step 1 (Program Details):**
      * **Program Name:** Input `Bachelor of Science in Information Technology`
      * **Program Code:** Notice system auto-generates `BSIT` *(Read-only, derived to prevent duplicate code collisions)*
-     * **Department:** Select **`College of Computer Studies (CCS)`** *(Configured in Phase 1.5)*
+     * **Department:** Select **`Information Technology (IT)`** *(Configured in Phase 1.5)*
      * **Program Level:** Select **`Undergraduate`** *(Configured in Phase 2.2)*
      * **Total Units:** Input `165`
      * **Duration (Years):** Input `4`
@@ -796,15 +815,15 @@ Navigate to `/dean/program-management` via sidebar **Programs** (under **CURRICU
      * Click **+ Add Course to Term**:
        * **Year Level:** `1st Year`
        * **Term:** `1st Semester`
-       * **Course:** Select **`COCS101 - Introduction to Computing`** (3.0 Units)
+       * **Course:** Select **`IT101 - Introduction to Computing`** (3.0 Units)
        * **Sequence:** `1`
        * Click **Save**.
-     * Repeat for **`IT101 - Computer Programming 1`** (Year 1, 1st Semester, 3.0 Units) or use the built-in bulk importer:
+     * Repeat for **`IT102 - Computer Programming 1`** (Year 1, 1st Semester, 3.0 Units) or use the built-in bulk importer:
        * Click Table Actions ➔ Click **Bulk Import (CSV)**.
-       * Drag and drop **[07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/07_curriculum_map_bulk_sample.csv)**.
+       * Drag and drop **[07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/07_curriculum_map_bulk_sample.csv)**.
        * Click **Import Records**.
-     * Review the rendered curriculum sequence: Year 1, 1st Semester displays `COCS101` and `IT101` with credit units and prerequisites.
-2. Click the primary button: **Save Program** (`FloppyDiskIcon`).
+     * Review the rendered curriculum sequence: Year 1, 1st Semester displays `IT101` and `IT102` with credit units and prerequisites.
+2. Click the primary button: **Save Program** (`FloppyDiskIcon`, with loading indicator).
 3. Toast confirms: *"Program and curriculum map saved successfully!"*. Row `BSIT` appears with status **Active**.
 
 #### 2. Curriculum Map Cloning Across Academic Cycles
@@ -821,8 +840,8 @@ Navigate to `/dean/section-management` via sidebar **Sections** (under **ACADEMI
 #### 1. Interactive Section Scheduling Wizard
 1. Click **+ Add Section** (opens `SectionWizardModal`):
    * **Step 1 (Overview):**
-     * **Course:** Select **`COCS101 - Introduction to Computing`**
-     * **Section Code:** Input `COCS101-001`
+     * **Course:** Select **`IT101 - Introduction to Computing`**
+     * **Section Code:** Input `IT101-001`
      * **Term:** Select **`Academic Year 2027-2028 - 1st Semester`**
      * **Instructor:** Select **`Julius Tolentino`** (`juliustolentino.diamond@gmail.com`)
      * **Room:** Input `Lab 304`
@@ -835,12 +854,12 @@ Navigate to `/dean/section-management` via sidebar **Sections** (under **ACADEMI
      * Click **Next →** (bottom right).
    * **Step 3 (Grading Schema Settings):**
      * Retain Default Course Schema (Quizzes 20%, Exam 30%, Activity 25%, Project 25%).
-2. Click **Save Section** (`FloppyDiskIcon`). Section `COCS101-001` is registered.
+2. Click **Save Section** (`FloppyDiskIcon`, with loading indicator). Section `IT101-001` is registered.
 
 #### 2. Section Scheduling Bulk CSV Import Demonstration
 1. In `/dean/section-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
-2. Drag and drop the ready sample: **[08_sections_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/08_sections_bulk_sample.csv)**.
-3. Review the parsed section schedule: *COCS101-001*, Mon/Wed 08:00-10:00 AM, Room Lab 304, 40 slots.
+2. Drag and drop the ready sample: **[08_sections_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/08_sections_bulk_sample.csv)**.
+3. Review the parsed section schedule: *IT102-001*, Tue/Thu 13:00-15:00, Room Lab 305, 40 slots.
 4. Click **Import Records** (or close).
 
 ---
@@ -851,7 +870,7 @@ Navigate to `/dean/faculty-load` via sidebar **Faculty Loading** (under **ACADEM
 1. Locate **Julius Tolentino** in the faculty loading grid.
 2. Click **Manage Load** (opens `FacultyLoadWizardModal`):
    * **Step 1 (Workload Overview):** Teaching Load shows `3.0 / 18.0 Max Units` with assigned section count. Click **Next**.
-   * **Step 2 (Section List):** Displays assigned section **`COCS101-001`** (Mon/Wed 08:00-10:00 AM, Lab 304). Click **Next**.
+   * **Step 2 (Section List):** Displays assigned section **`IT101-001`** (Mon/Wed 08:00-10:00 AM, Lab 304). Click **Next**.
    * **Step 3 (Live Timetable & Collision Evaluation):**
      * The built-in schedule collision detector evaluates instructor timetable, section overlapping, and room collisions.
      * Status displays green badge: **"No Conflicts Detected"** *(0 Faculty Overlaps, 0 Room Collisions, 0 Section Clashes)*.
@@ -865,21 +884,21 @@ Navigate to `/dean/announcement-management` via sidebar **Announcements & Events
 1. Click **Create Post** (`+` button).
 2. Fill in the bulletin details:
    * **Type**: Select **Announcement**
-   * **Title**: Input `CCS Departmental General Assembly & AI Orientation`
+   * **Title**: Input `CITE Departmental General Assembly & AI Orientation`
    * **Audience**: Select **All Faculty** (or **Everyone (Global)**)
    * **Content**: In the rich text editor, paste or format the following rich content to test headers, bullet lists, and blockquotes:
 
 ```markdown
-## CCS General Assembly & AI Copilot Orientation
+## CITE General Assembly & AI Copilot Orientation
 
 Welcome computing faculty and scholars! Join us for the semester kickoff assembly covering curriculum roadmap updates and AI integration.
 
 ### Agenda Highlights:
-- **Curriculum Overview:** Introduction to Computing (`COCS101`) & Programming 1 (`IT101`)
+- **Curriculum Overview:** Introduction to Computing (`IT101`) & Programming 1 (`IT102`)
 - **AU-JAS AI Chatbot:** Utilizing the integrated AI Assistant for student mentorship
 - **Faculty Loading & Office Hours:** Laboratory schedule allocations in Lab 304
 
-> *Venue: CCS Audio-Visual Theater / Online Streaming via LMS*
+> *Venue: CITE Audio-Visual Theater / Online Streaming via LMS*
 ```
 
 3. Click **Publish Post**. Toast confirms dispatch. Verify the announcement appears in the feed.
@@ -900,7 +919,7 @@ Navigate to `/dean/calendar` via sidebar **Calendar** (under **CAMPUS COMMUNICAT
 1. **Dean College Schedule & Milestones:**
    * Review dean-specific subtitle: *"Oversee college milestones, loading periods, and campus-wide events."*
    * Switch to **Week View**: Notice college assemblies and departmental deadlines laid out chronologically with exact hourly time-tracks.
-   * Click on **"CCS Departmental General Assembly & AI Orientation"** ➔ Inspect event details modal.
+   * Click on **"CITE Departmental General Assembly & AI Orientation"** ➔ Inspect event details modal.
 2. Close modal ➔ Click **Log Out** from Dean account.
 
 ---
@@ -924,7 +943,7 @@ Navigate to `/dean/calendar` via sidebar **Calendar** (under **CAMPUS COMMUNICAT
 
 ---
 
-### Phase 3.2: Academic Program Assignment & Year Level Setting
+### Phase 3.2: Academic Program Assignment & Year Level Setting (Dual-Path Flexibility)
 Navigate to `/registrar/enrollment-management` via sidebar **Section Enrollments** (under **COURSE ENROLLMENTS**).
 1. Locate **Baki Hanma** (`hbaki386@gmail.com`) in the student roster table.
 2. Click Table Actions (`...`) on Baki Hanma's row ➔ Click **Assign Program & Year** (opens `AssignProgramModal`).
@@ -932,7 +951,9 @@ Navigate to `/registrar/enrollment-management` via sidebar **Section Enrollments
    * **Degree Program:** Select **`BS Information Technology (BSIT)`** *(Authored by Dean in Phase 2.5)*.
    * **Year Level:** Select **`1` (First Year)**.
    * **Effective School Year:** Verified as **`Academic Year 2027–2028`**.
-4. Click **Assign Program**. Baki Hanma is now officially classified as an active 1st Year BSIT student and cleared for section enrollment.
+4. Click **Assign Program** (button enforces loading state while updating academic records). Baki Hanma is now officially classified as an active 1st Year BSIT student and cleared for section enrollment.
+   > [!NOTE]
+   > **Dual-Path Program Classification Architecture:** In addition to administrative classification by the Registrar, students with unassigned degree programs are immediately prompted on their Student Dashboard to self-select their academic program and year level directly inside the Curriculum Checklist (`/student/curriculum`), enabling seamless self-onboarding.
 
 ---
 
@@ -941,26 +962,26 @@ Still in `/registrar/enrollment-management`:
 1. Locate **Baki Hanma** (`hbaki386@gmail.com`).
 2. Click **Edit** (or click row) to open the **Enrollment Workspace** (`EnrollmentWorkspaceModal`):
    * Inspect `StudentLoadBentoCard`: Current Units: `0 / 24 Max`, Academic Standing: `Regular - 1st Year`.
-   * In the available sections catalog, filter by `COCS101`.
-   * Locate section **`COCS101-001`** (Instructor: *Julius Tolentino*, Schedule: Mon/Wed 08:00-10:00 AM, Room: Lab 304).
+   * In the available sections catalog, filter by `IT101`.
+   * Locate section **`IT101-001`** (Instructor: *Julius Tolentino*, Schedule: Mon/Wed 08:00-10:00 AM, Room: Lab 304).
    * Click **Enroll in Section**.
-   * Selected subjects card updates: `COCS101 - Introduction to Computing (3.0 Units)`.
-3. Click **Confirm & Finalize Enrollment**.
-4. Baki Hanma is officially enrolled in `COCS101-001`. The student table updates: Enrolled Units: `3.0`, Enrollment State: **`Enrolled`**.
+   * Selected subjects card updates: `IT101 - Introduction to Computing (3.0 Units)`.
+3. Click **Confirm & Finalize Enrollment** (button activates loading spinner to prevent concurrent enrollment requests).
+4. Baki Hanma is officially enrolled in `IT101-001`. The student table updates: Enrolled Units: `3.0`, Enrollment State: **`Enrolled`**.
 
 ---
 
 ### Phase 3.4: Registrar Batch Bulk CSV Enrollment Pipeline
 1. In `/registrar/enrollment-management`, click the toolbar button **Upload CSV**.
 2. Inspect template format and required columns: Student Number, Term Label, Section Codes, Allow Conflict, Override Prerequisites.
-3. **Quick Test with Pre-Made CSV:** Drag and drop [10_enrollments_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/10_enrollments_bulk_sample.csv) to test batch student enrollment.
+3. **Quick Test with Pre-Made CSV:** Drag and drop [10_enrollments_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/10_enrollments_bulk_sample.csv) to test batch student enrollment.
 4. Review validated rows in the preview table ➔ Click **Import Records** (or close).
 
 ---
 
 ### Phase 3.5: Registrar Forensic Audit Logs
 Navigate to `/registrar/registrar-logs` via sidebar **Registrar Logs** (under **STUDENT PROFILE VERIFICATION**).
-1. Verify recorded entries: `STUDENT_ENROLLED` (Baki Hanma into COCS101-001) and `PROGRAM_ASSIGNED`.
+1. Verify recorded entries: `STUDENT_ENROLLED` (Baki Hanma into IT101-001) and `PROGRAM_ASSIGNED`.
 2. Filter by Date and Operator (`registrar@example.com`).
 3. Inspect forensic integrity: all registrar operations are logged immutably.
 
@@ -1020,12 +1041,12 @@ Navigate to `/registrar/calendar` via sidebar **Calendar** (under **CAMPUS COMMU
    * **Email:** `juliustolentino.diamond@gmail.com`
    * **Password:** `DiamondFaculty2026!`
 3. Click **Sign In**.
-4. Faculty Dashboard greets **Prof. Julius Tolentino** with assigned section **`COCS101-001`**.
+4. Faculty Dashboard greets **Prof. Julius Tolentino** with assigned section **`IT101-001`**.
 
 ---
 
 ### Phase 4.2: Section Workspace Overview & 7-Tab Navigation
-1. Click **My Sections** in the sidebar (under **INSTRUCTION**) ➔ Open **`COCS101-001`** (`/faculty/sections/:sectionId`).
+1. Click **My Sections** in the sidebar (under **INSTRUCTION**) ➔ Open **`IT101-001`** (`/faculty/sections/:sectionId`).
 2. Review the 7 tab headers:
    * **Lessons & Syllabus** | **Assessments** | **Gradebook** | **Attendance** | **Class Roster** | **Discussions** | **Announcements**
 
@@ -1034,24 +1055,24 @@ Navigate to `/registrar/calendar` via sidebar **Calendar** (under **CAMPUS COMMU
 ### Phase 4.3: Lessons & Syllabus Panel — Interactive Modules & Duplication
 Click the **Lessons & Syllabus** tab:
 1. **Add Syllabus:** Click **+ Add Material / Syllabus** (opens `MaterialFormModal`).
-   * Title: `Official Course Syllabus & Pedagogical Roadmap`, Type: `Syllabus`, Description: `18-week topic roadmap.`. Click **Save & Publish**.
+   * Title: `Official Course Syllabus & Pedagogical Roadmap`, Type: `Syllabus`, Description: `18-week topic roadmap.`. Click **Save & Publish** (displays loading indicator while saving).
 2. **Add Module:** Click **+ Create Module** (opens `LessonModuleWizardModal`).
    * Module Name: `Module 1: Computing Fundamentals & Architecture`, Duration: `Week 1 - 3`. Click **Create Module**.
 3. **Lesson Duplication Across Cohorts:**
    * On `Module 1`, click Action menu (`...`) ➔ Click **Duplicate to Other Sections** (opens `DuplicateToSectionsModal`).
-   * Review target section checkboxes ➔ Click **Close**.
+   * Review target section checkboxes and loading protection on copy action ➔ Click **Close**.
 
 ---
 
 ### Phase 4.4: Rubrics Builder Studio & Multi-Criterion Design
-1. Click the **Assessments** tab in `COCS101-001`.
+1. Click the **Assessments** tab in `IT101-001`.
 2. In the top segmented view toggle, click **Grading Rubrics**.
 3. Click **+ Create Rubric** (opens `RubricBuilderPage`):
    * **Title:** `Standard Assessment Scoring Rubric`
    * **Criterion 1:** *Technical Correctness* (Weight: `40%`, Levels 1–4: 50%, 70%, 85%, 100%).
    * **Criterion 2:** *Problem Solving & Logic* (Weight: `40%`).
    * **Criterion 3:** *Documentation Cleanliness* (Weight: `20%`).
-4. Click **Save Rubric Matrix**. Total weight validates to 100%.
+4. Click **Save Rubric Matrix** (enforces button loading spinner and disabled state). Total weight validates to 100%.
 
 ---
 
@@ -1061,7 +1082,7 @@ Still in the **Assessments** tab, switch the segmented view toggle back to **Ass
 #### 1. Manual 4-Tier Assessment Authoring
 1. **Author Tier 1: Quiz (Weight: 20%)**
    * Click **New Assessment** ➔ Type: `Quiz`, Title: `Quiz 1: Logic Gates`, Total Points: `20`, Weight: `20%`, Duration: `30 Min`.
-   * Add Question 1 (Multiple Choice): *"Which gate outputs 1 only when both inputs are 1?"* (A: OR, B: AND, C: NOT; Correct: B). Click **Publish**.
+   * Add Question 1 (Multiple Choice): *"Which gate outputs 1 only when both inputs are 1?"* (A: OR, B: AND, C: NOT; Correct: B). Click **Publish** (with mutation loading lock).
 2. **Author Tier 2: Midterm Examination (Weight: 30%)**
    * Click **New Assessment** ➔ Type: `Exam`, Title: `Midterm Examination`, Total Points: `50`, Weight: `30%`, Duration: `60 Min`.
    * Add Question 1 (Essay): *"Explain the Program Counter (PC) in a CPU."*. Click **Publish**.
@@ -1074,7 +1095,7 @@ Still in the **Assessments** tab, switch the segmented view toggle back to **Ass
 
 #### 2. Assessment Questions Bulk CSV Import Demonstration
 1. When editing or authoring any assessment in the Assessment Wizard modal, click **Bulk Import Questions (CSV)**.
-2. Drag and drop the ready sample: **[09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/.gemini/antigravity-cli/brain/df93573c-f69d-4220-bfee-2c192a0b162a/sample-csv/09_assessment_questions_bulk_sample.csv)**.
+2. Drag and drop the ready sample: **[09_assessment_questions_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/09_assessment_questions_bulk_sample.csv)**.
 3. Review the parsed questions: Multiple Choice (with choices A-D), True/False, and Essay with point weights and answer keys.
 4. Click **Import Questions** ➔ Questions automatically populate the assessment question list!
 
@@ -1094,7 +1115,7 @@ Click the **Attendance** tab:
 1. Click **+ Create Attendance Session** (opens `AttendanceSessionWizardModal`).
    * Date: Today, Topic: `Lecture 1: Orientation & Binary Arithmetic`, Slot: `08:00 AM - 10:00 AM`.
    * *(Resilience Feature)*: Integrated with `useFormDraft`. If closed unexpectedly, reopening prompts `DraftRecoveryPromptModal` to restore all unmarked and marked student attendance statuses from `sessionStorage`.
-2. Click **Start Session**.
+2. Click **Start Session** (with button loading state).
 3. In student roster: Mark **Baki Hanma** as **Present**, mark **Sam Student** as **Present**.
 4. Click **Save Attendance Record**. Class Attendance Average updates to 100%.
 
@@ -1104,7 +1125,7 @@ Click the **Attendance** tab:
 Click the **Class Roster** tab:
 1. Roster lists enrolled students: *Baki Hanma* and *Sam Student*.
 2. Click on **Baki Hanma** (opens `StudentEvaluationModal`):
-   * **Attendance Tab:** Displays overall attendance rate (100%), present sessions, and session dates. Click **Edit** on a session record (`AttendanceEditModal`) to demonstrate adding remarks: `"Excused due to institutional event participation."`. Click **Save Record**.
+   * **Attendance Tab:** Displays overall attendance rate (100%), present sessions, and session dates. Click **Edit** on a session record (`AttendanceEditModal`) to demonstrate adding remarks: `"Excused due to institutional event participation."`. Click **Save Record** (Cancel button is disabled and a spinner is displayed while saving to prevent concurrent mutations).
    * **Assessments Tab:** Filterable by Assessment Type, Grading Period, and Submission Status.
    * **Grades Tab:** Component accordion breakdown per grading period (opens `GradeBreakdownModal`).
 3. Click **Close**.
@@ -1120,7 +1141,7 @@ Click the **Announcements** tab:
 ```markdown
 ### Reminder: Quiz 1 (Logic Gates) is Now Active
 
-Students enrolled in `COCS101-001`: Please complete **Quiz 1: Logic Gates** before the weekend deadline.
+Students enrolled in `IT101-001`: Please complete **Quiz 1: Logic Gates** before the weekend deadline.
 
 #### Quiz Details:
 - **Duration:** 30 Minutes
@@ -1133,7 +1154,7 @@ Students enrolled in `COCS101-001`: Please complete **Quiz 1: Logic Gates** befo
 2. Click **Publish to Section**.
 3. **Strict Cohort Isolation Verification:**
    * Explain to the panel: Section announcements and section-level calendar events are strictly isolated by section cohort.
-   * Unassigned faculty and students unenrolled from `COCS101-001` cannot view this announcement or its timeline markers, completely preventing cross-cohort information leakage.
+   * Unassigned faculty and students unenrolled from `IT101-001` cannot view this announcement or its timeline markers, completely preventing cross-cohort information leakage.
 
 ---
 
@@ -1164,7 +1185,7 @@ Navigate to `/faculty/evaluations` via sidebar **Student Evaluations** (under **
 Navigate to `/faculty/calendar` via sidebar **Calendar** (under **OVERVIEW**).
 1. **Faculty Instruction Timetable & Deadlines:**
    * Review faculty-specific subtitle: *"Manage your instruction schedule, grading deadlines, and institutional activities."*
-   * Verify **Class Schedule** entries: Observe **COCS101-001** (Mon / Wed 08:00 AM - 10:00 AM, Lab 304) rendered directly on the teaching schedule.
+   * Verify **Class Schedule** entries: Observe **IT101-001** (Mon / Wed 08:00 AM - 10:00 AM, Lab 304) rendered directly on the teaching schedule.
    * Verify **Assessments & Quizzes**: Review Quiz 1, Midterm Exam, Lab Activity 1, and Term Project due dates.
    * Click any assessment item ➔ Opens `CalendarEventDetailModal` with direct deep-link button **Go to Assessment**!
 2. Close modal ➔ Click **Log Out** from Faculty account.
@@ -1179,18 +1200,20 @@ Navigate to `/faculty/calendar` via sidebar **Calendar** (under **OVERVIEW**).
    * **Email:** `hbaki386@gmail.com`
    * **Password:** `HbakiStudent2026!`
 3. Click **Sign In**.
-4. Student Dashboard displays enrolled course **`COCS101-001`** (Prof. Julius Tolentino) and upcoming deadlines.
+4. Student Dashboard displays enrolled course **`IT101-001`** (Prof. Julius Tolentino) and upcoming deadlines.
+   > [!TIP]
+   > **Student Self-Service Program Assignment Notice:** If a new student logs in before the Registrar has assigned their degree program, a conspicuous alert banner displays: *"Academic Program Not Assigned"*, accompanied by a direct button **"Go to Curriculum Checklist"**. Clicking this button directs the student to `/student/curriculum` to self-select their degree program (e.g. BSIT) and year level, immediately initializing their curriculum checklist.
 
 ---
 
 ### Phase 5.2: Timetable & Schedule Matrix
 Navigate to `/student/schedule` via sidebar **Class Schedule** (under **OVERVIEW**).
-1. Review weekly timetable grid: `COCS101-001` is positioned on **Mon / Wed 08:00 AM - 10:00 AM** in **Lab 304**.
+1. Review weekly timetable grid: `IT101-001` is positioned on **Mon / Wed 08:00 AM - 10:00 AM** in **Lab 304**.
 
 ---
 
 ### Phase 5.3: Subject Enrolled Studio & Syllabus Roadmap Completion
-Navigate to `/student/subjects` via sidebar **My Subjects** (under **COURSES & GRADES**) ➔ Open **`COCS101-001`**:
+Navigate to `/student/subjects` via sidebar **My Subjects** (under **COURSES & GRADES**) ➔ Open **`IT101-001`**:
 1. Open the **Lessons & Syllabus** tab.
 2. Open `Official Course Syllabus & Pedagogical Roadmap`.
 3. Click **Mark as Completed** circle icon.
@@ -1199,9 +1222,9 @@ Navigate to `/student/subjects` via sidebar **My Subjects** (under **COURSES & G
 ---
 
 ### Phase 5.4: Taking & Submitting All 4 Assessment Tiers
-Click the **Assessments** tab in `COCS101-001`:
+Click the **Assessments** tab in `IT101-001`:
 
-1. **Take Quiz 1:** Click **Start Assessment** on Quiz 1 ➔ Answer: Select `B) AND` ➔ Click **Submit Assessment** ➔ Confirm dialog. Instant score: `20 / 20 Points (100%)`.
+1. **Take Quiz 1:** Click **Start Assessment** on Quiz 1 ➔ Answer: Select `B) AND` ➔ Click **Submit Assessment** (enforces button loading state to prevent double submission) ➔ Confirm dialog. Instant score: `20 / 20 Points (100%)`.
 2. **Take Midterm Exam:** Click **Start Assessment** on Midterm Exam ➔ Answer: Type `"The Program Counter holds the memory address of the next instruction to be executed."` ➔ Click **Submit**.
 3. **Take Lab Activity 1:** Click **Start Assessment** on Lab Activity 1 ➔ Submit solution link / response ➔ Click **Submit**.
 4. **Take Term Project:** Click **Start Assessment** on Term Project ➔ Submit repository link and architecture overview ➔ Click **Submit**.
@@ -1216,7 +1239,7 @@ Click the **Assessments** tab in `COCS101-001`:
 ---
 
 ### Phase 5.6: Threaded Discussion Forum Participation
-Click the **Discussions** tab in `COCS101-001`:
+Click the **Discussions** tab in `IT101-001`:
 1. Open the thread: *"Week 1 Open Forum: von Neumann Architecture Questions"*.
 2. Post reply: `"Understood the memory bus concept, thank you Prof. Tolentino!"`.
 3. Reply appears immediately under the thread.
@@ -1224,28 +1247,47 @@ Click the **Discussions** tab in `COCS101-001`:
 ---
 
 ### Phase 5.7: Attendance Rate Verification
-Click the **Attendance** tab in `COCS101-001`:
+Click the **Attendance** tab in `IT101-001`:
 1. Review attendance log: Lecture 1 marked **Present** with **100% Attendance Rate**.
 
 ---
 
-### Phase 5.8: Mandatory Faculty Evaluation Dual-Key Gating
+### Phase 5.8: Two-Step Mobile-Friendly Faculty Evaluation Suite & Dual-Key Gating
 Navigate to `/student/evaluations` via sidebar **Faculty Evaluations** (under **PROGRESS & FEEDBACK**):
-1. Open evaluation form for **Prof. Julius Tolentino** for course `COCS101-001`.
-2. Complete rating matrix:
-   * Teaching Mastery: `5 - Strongly Agree`
-   * Classroom Engagement: `5 - Strongly Agree`
-   * Assessment Fairness: `5 - Strongly Agree`
-3. Add qualitative comment: `"Exceptional professor with clear explanations."`.
-4. Click **Submit Faculty Evaluation**. Status changes to **Completed**.
+
+#### Step 1: Faculty Selection & Rating Scale Guide (`Step1FacultyAndGuide.tsx`)
+1. **Target Selection:**
+   * Select evaluation target: **Prof. Julius Tolentino** for course **`IT101-001`**.
+   * Inspect Faculty Target Card: Displays instructor profile, course code, academic period, and status badge **Pending Evaluation**.
+   * Notice top summary counter: `1 Pending Evaluation`.
+2. **Interactive Rating Scale & Evaluation Guide:**
+   * Review the transparent 5-point Likert scale guidelines:
+     - **5 — Strongly Agree:** Always demonstrates outstanding instructional mastery and excellence.
+     - **4 — Agree:** Consistently demonstrates dependable performance and thorough competence.
+     - **3 — Uncertain:** Meets basic expectations with neutral or variable performance.
+     - **2 — Disagree:** Rarely meets expectations; clear and noticeable room for improvement.
+     - **1 — Strongly Disagree:** Consistently fails to meet course and instructional requirements.
+3. Click the primary button: **Proceed to Evaluation Form →** (`ArrowRightIcon`).
+
+#### Step 2: Evaluation Matrix & Feedback Submission (`Step2EvaluationForm.tsx`)
+1. Notice the convenient return navigation button: `← Back to Faculty Selection`.
+2. Complete the mobile-friendly categorized rating matrix:
+   * **Teaching Mastery:** Select `5 - Strongly Agree`
+   * **Classroom Engagement:** Select `5 - Strongly Agree`
+   * **Assessment Fairness:** Select `5 - Strongly Agree`
+3. Add qualitative feedback comment: `"Exceptional professor with clear explanations, structured slides, and engaging hands-on programming labs."`
+4. Click **Submit Faculty Evaluation** (button displays loading spinner `loading={isSubmitting}`, disabling duplicate submissions).
+5. Evaluation status immediately updates to **Completed** with green checkmark badge.
+6. **Dual-Key Grade Visibility Clearance:** In `/student/subjects/:id` (`SubjectGradeList.tsx`), student subject grades are unlocked and cleared for viewing once the Registrar executes official grade release in Act VII.
 
 ---
 
 ### Phase 5.9: Curriculum Tracker & 4-Year Degree Audit Prospectus
 Navigate to `/student/curriculum` via sidebar **Curriculum Audit** (under **ACADEMIC RECORDS**):
 1. In the **Curriculum Checklist** tab (`CurriculumAuditView`), review degree progress:
-   * **1st Year, 1st Semester:** `COCS101` status shows **In Progress / Enrolled**.
-   * Remaining units, credited prerequisites, and curriculum completion percentage are visually tracked.
+   * *(Self-Service Assignment Flow)*: If unassigned, the student selects their Degree Program (`BSIT`) and Year Level (`1`) and clicks **Assign Program** (with button loading state) to generate their personalized prospectus.
+   * **1st Year, 1st Semester:** `IT101` status shows **In Progress / Enrolled**.
+   * Remaining units, credited prerequisites, and curriculum completion percentage are visually tracked with resilient handling of backend audit responses.
 
 ---
 
@@ -1291,7 +1333,7 @@ Navigate to `/student/calendar` via sidebar **Calendar** (under **OVERVIEW**).
 1. **Unified Student Academic & Timetable Hub:**
    * Review student-specific subtitle: *"Track your class timetable, assessment due dates, and campus events in one place."*
    * Switch to **Month View**: Notice how all aspects of student life converge in one place:
-     - 🟢 **Class Timetable:** COCS101-001 lectures on Mon/Wed.
+     - 🟢 **Class Timetable:** IT101-001 lectures on Mon/Wed.
      - 🟠 **Assessment Deadlines:** Quiz 1, Midterm Exam, Lab Activity 1, Term Project.
      - 🔵 **Campus Events & Orientation:** Department and institutional events.
    * Click on **"Quiz 1: Logic Gates"** inside the calendar ➔ Opens `CalendarEventDetailModal`.
@@ -1303,33 +1345,37 @@ Navigate to `/student/calendar` via sidebar **Calendar** (under **OVERVIEW**).
 
 ## ACT VI: Faculty Assessment Grading, Rubrics & Anti-Tamper Submission
 
-### Phase 6.1: Submissions Grading Suite with Rubric Scoresheet
+### Phase 6.1: Submissions Grading Suite with Rubric Scoresheet (Flexible Feedback Architecture)
 1. Log in as Faculty: `juliustolentino.diamond@gmail.com` / `DiamondFaculty2026!`.
-2. Navigate to `/faculty/sections` ➔ Open `COCS101-001` ➔ Click **Assessments** tab.
+2. Navigate to `/faculty/sections` ➔ Open `IT101-001` ➔ Click **Assessments** tab.
 3. On Term Project, click **View Submissions** (opens `SubmissionsPage`).
 4. Locate **Baki Hanma** ➔ Click **Grade Submission** (opens `RubricGradingPanel`):
    * Criterion 1 (Technical Correctness, 40%): Select *Exemplary (100%)*.
    * Criterion 2 (Problem Solving, 40%): Select *Exemplary (100%)*.
    * Criterion 3 (Documentation, 20%): Select *Proficient (85%)*.
-   * Computed Score: `97 / 100`.
+   * Computed Score: `97 / 100` (synced via `fn_get_my_assessment_result_rubric`).
    * Feedback: `"Superb implementation and clean code structure."`.
-5. Click **Save & Return Grade**. Repeat for Midterm Exam and Lab Activity (award 95%+ marks).
+5. Click **Save & Return Grade** (equipped with button loading state).
+   > [!TIP]
+   > **Flexible Grading Architecture:** For Quizzes and standard assessments in `GradingPanel`, qualitative feedback is optional. Faculty can rapidly input scores and save grades immediately without requiring filler feedback text, while retaining the capability to provide detailed annotations when desired.
+6. Repeat grading for Midterm Exam and Lab Activity (award 95%+ marks).
 
 ---
 
 ### Phase 6.2: Special Grade Flags Assignment (INC, DRP, FA)
-1. Return to `COCS101-001` ➔ Click **Gradebook** tab.
+1. Return to `IT101-001` ➔ Click **Gradebook** tab.
 2. Test Special Grade Flag feature:
    * On any student row (e.g. Sam Student), click **Assign Special Flag** (opens `SpecialGradeFlagModal`).
    * Review flag options: `INC` (Incomplete with compliance date), `DRP`, `FA`.
+   * Note loading spinner on save to prevent duplicate flag assignment.
    * Cancel or clear flag after demonstrating to maintain passing status.
 
 ---
 
 ### Phase 6.3: Automated Weighted Grade Calculation & Transmutation
-Still in the **Gradebook** tab of `COCS101-001`:
+Still in the **Gradebook** tab of `IT101-001`:
 1. Review the Gradebook spreadsheet: Columns display Quizzes (20%), Exams (30%), Activities (25%), Projects (25%).
-2. Click the **Calculate Grades** button.
+2. Click the **Calculate Grades** button (with loading indicator).
 3. System computes:
    * **Raw Grade:** `96.50%`
    * **Transmuted Grade:** `1.25`
@@ -1339,7 +1385,7 @@ Still in the **Gradebook** tab of `COCS101-001`:
 
 ### Phase 6.4: Submission to Registrar & Anti-Tamper State Lock
 1. Click **Submit to Registrar** button.
-2. Confirm submission modal.
+2. Confirm submission modal (with button mutation lock).
 3. **Anti-Tamper Verification:**
    * Button changes to disabled with badge **Submitted to Registrar**.
    * Grade inputs are frozen in read-only mode.
@@ -1352,19 +1398,25 @@ Still in the **Gradebook** tab of `COCS101-001`:
 ### Phase 7.1: Registrar Section Grade Audit & Evaluation Clearance
 1. Log in as Registrar: `registrar@example.com` / `RegistrarRecords2026!`.
 2. Navigate to `/registrar/grade-release` via sidebar **Grade Release** (under **GRADE RELEASE**).
-3. Locate `COCS101-001` (Instructor: *Julius Tolentino*).
+3. Locate `IT101-001` (Instructor: *Julius Tolentino*).
 4. Click **Review & Release Grades** (opens `SectionGradeSheetModal`).
-5. Verify checklist:
-   * Students Enrolled: `2`
-   * Faculty Submission: `Complete (Submitted)`
-   * Student Evaluations Completed: `100% (Completed)`
+5. **Intelligent Grade Clearance & Status Inspection:**
+   * The modal dynamically computes the section's `effectiveStatus` and evaluates individual student clearance:
+     - Students Enrolled: `2`
+     - Faculty Submission: `Complete (Submitted)`
+     - Student Evaluations Completed: `100% (Completed)`
+   * Notice that if any student's evaluation was still pending, the action button dynamically changes to **"Awaiting Student Evaluations"** and disables release, strictly safeguarding institutional policy.
 
 ---
 
 ### Phase 7.2: Official Grade Release & Immutable Cryptographic Timestamping
-1. Click **Approve & Release Final Grades**.
-2. Confirm dialog.
-3. Section status transitions to **`Released`** with database release timestamp.
+1. Click **Approve & Release** (or **Release to Students**).
+2. The button engages an active loading spinner (`isReleasing`), protecting against rapid multi-clicking.
+3. Confirm dialog.
+4. **Duplicate Release Prevention:**
+   * Backed by database function `prevent_duplicate_grade_release`, the system guarantees that once grades are released with an official timestamp, accidental duplicate release operations are rejected.
+   * Action button text transitions to **"All Grades Released"** and safely disables.
+   * Section status transitions to **`Released`**.
 
 ---
 
@@ -1373,7 +1425,7 @@ Navigate to `/registrar/student-verification` via sidebar **Profile Verification
 1. Locate **Baki Hanma**'s pending profile change request submitted in Phase 5.13.
 2. Click on the request card/row to open `StudentProfileVerificationModal`.
 3. Inspect side-by-side comparison of current student data versus submitted update values.
-4. Click **Approve** (with remarks: `"Verified with university records"`).
+4. Click **Approve** (with remarks: `"Verified with university records"`, button displays loading spinner).
 5. Toast confirms: *"Student profile update approved successfully."*. Status transitions to **Approved**.
 6. Click **Log Out** from Registrar.
 
@@ -1383,7 +1435,7 @@ Navigate to `/registrar/student-verification` via sidebar **Profile Verification
 1. Log in as Student: `hbaki386@gmail.com` / `HbakiStudent2026!`.
 2. Navigate to `/student/grade` via sidebar **My Grades** (under **COURSES & GRADES**).
 3. **Official Report Card View:**
-   * Subject: `COCS101 - Introduction to Computing`
+   * Subject: `IT101 - Introduction to Computing`
    * Units: `3.0`
    * Final Transmuted Grade: **`1.25`**
    * Remarks: **`Passed`**
@@ -1406,7 +1458,7 @@ Navigate to `/registrar/student-verification` via sidebar **Profile Verification
 
 ### Phase 8.2: Automated Year-Level Promotion Evaluation
 1. Explain the automated academic progression engine:
-   * Completed Curriculum Units for Year 1: Met (`COCS101` passed with grade `1.25`).
+   * Completed Curriculum Units for Year 1: Met (`IT101` passed with grade `1.25`).
    * Academic Standing: Clear / In Good Standing.
    * **Promotion Rule:** The student's academic standing automatically advances from **`1` (First Year)** ➔ **`2` (Second Year)** upon successful grade completion.
 
@@ -1444,14 +1496,15 @@ Use this quick-reference matrix during the live presentation to test every table
 | :--- | :--- | :--- | :--- | :--- |
 | **All Roles** | `/:role/calendar` | View Mode Selector | Toggle Month / Week / Day / Agenda | Dynamically redraws grid into selected time visualization. |
 | **All Roles** | `/:role/calendar` | Category Pill Filter | Uncheck / Check Category Pill | Instantly filters events by type (Class, Event, Deadline, Holiday). |
+| **All Roles** | `/forgot-password` | Email Verification Gate | Input email and click Submit | Pre-verifies user existence and account status (active/inactive) before sending reset email. |
 | **Faculty / Student** | `/:role/calendar` | Deep Link Action | Click on Assessment Event | Modal reveals "Go to Assessment" deep-link to take/grade item. |
 | **Admin** | `/admin/users` | Text Search Bar | Type `diamond` | Instant debounce filter isolates Julius Tolentino. |
 | **Admin** | `/admin/users` | Text Search Bar | Type `hbaki` | Instant debounce filter isolates Baki Hanma. |
 | **Admin** | `/admin/users` | Role Filter Select | Select `Faculty` | Table displays exclusively faculty accounts. |
 | **Admin** | `/admin/users` | Bulk Import Modal | Click `Bulk Import (CSV)` | Displays CSV template downloader and preview table. |
 | **Admin** | `/admin/profile-verifications` | Status Filter | Select `Pending` | Renders only accounts with pending update submissions. |
-| **Admin** | `/admin/profile-verifications` | Action Modal | Click `Review Request` | Displays side-by-side diff of current vs. requested data. |
-| **Admin** | `/admin/departments` | Text Search Bar | Type `Computer` | Isolates College of Computer Studies card. |
+| **Admin** | `/admin/profile-verifications` | Action Modal | Click `Review Request` | Displays side-by-side diff of current vs. requested data with loading buttons. |
+| **Admin** | `/admin/departments` | Text Search Bar | Type `Information` | Isolates College of Information Technology & Engineering card. |
 | **Admin** | `/admin/school-years` | Multi-Step Wizard | Click `+ Add School Year` | Launches 6-step calendar setup wizard. |
 | **Admin** | `/admin/school-years` | Budget Bar | Adjust Weight Stepper | Period allocation bar displays over-budget red hatching. |
 | **Admin** | `/admin/school-years` | Row Action | Click `Duplicate` | Opens wizard cloned from existing academic year for rollover. |
@@ -1464,27 +1517,30 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Admin** | `/admin/system-settings` | Form Fields | Input name, contact, upload size | Updates institution identity and upload restrictions with live validation. |
 | **Admin** | Any Admin Page | AI Assistant Drawer | Prompt: *"How do I close a term?"* | AI returns term closure rules and prerequisite checks. |
 | **Dean** | `/dean/program-level-management` | Text Search Bar | Type `Honors` | Instant table search without page reload. |
+| **Dean** | `/dean/course-management` | Multi-Type Stepper Input | Add Multiple Types (Lec + Lab) | Auto-sums units without premature auto-clamping; validates against max units limit. |
 | **Dean** | `/dean/program-management` | Multi-Step Wizard | Click `+ Add Program` | Launches 3-step Details, Grading Schema, and Curriculum Map wizard. |
 | **Dean** | `/dean/program-management` | Cloning Modal | Click `Clone Curriculum` | Replicates complete degree curriculum into new school year. |
 | **Dean** | `/dean/section-management` | Multi-Step Wizard | Click `+ Add Section` | Launches 3-step overview, schedule, and schema wizard. |
 | **Dean** | `/dean/faculty-load` | Multi-Step Wizard | Click `Manage Load` | Launches 3-step workload, section, and live conflict evaluation. |
 | **Dean** | Any Dean Page | AI Assistant Drawer | Prompt: *"Where do I review faculty loading?"* | AI explains faculty load and timetable collision criteria. |
-| **Registrar** | `/registrar/enrollment-management` | Row Action Menu | Click `Assign Program & Year` | Opens program classification and year-level assignment modal. |
+| **Registrar** | `/registrar/enrollment-management` | Row Action Menu | Click `Assign Program & Year` | Opens program classification and year-level assignment modal with loading state. |
 | **Registrar** | `/registrar/enrollment-management` | Workspace Modal | Click `Edit` on Student | Opens enrollment workspace to enroll student into sections. |
 | **Registrar** | `/registrar/enrollment-management` | Toolbar Button | Click `Upload CSV` | Opens batch student enrollment CSV processor. |
 | **Registrar** | `/registrar/student-verification` | Request Modal | Click on Student Request | Displays side-by-side comparison for profile update approval. |
-| **Registrar** | `/registrar/grade-release` | Action Modal | Click `Review & Release Grades` | Displays evaluation audit and student grade list. |
+| **Registrar** | `/registrar/grade-release` | Dynamic Action Button | Inspect clearance checklist | Button dynamically switches to "Awaiting Student Evaluations" or "Release to Students", protected by `prevent_duplicate_grade_release`. |
 | **Faculty** | `/faculty/sections/:id?tab=content` | Complete Toggle | Click Circle Check | Syllabus progress bar increments to 100%. |
 | **Faculty** | `/faculty/sections/:id?tab=assessments` | Segmented Toggle | Click `Grading Rubrics` | Displays rubric matrices builder studio. |
 | **Faculty** | `/faculty/sections/:id?tab=attendance` | Attendance Wizard | Click `+ Create Session` | Launches daily lecture attendance taking wizard. |
 | **Faculty** | `/faculty/sections/:id?tab=students` | Student Modal | Click on Student Row | Opens 3-tab attendance, assessment, and grade drilldown. |
+| **Faculty** | `/faculty/sections/:id?tab=grading` | Optional Feedback | Save Grade with empty feedback | Allows saving grades without mandatory remarks; displays loading state. |
 | **Faculty** | `/faculty/sections/:id?tab=grading` | Threshold Overrides | Click `Thresholds` | Adjusts section-level policy numbers within admin limits. |
 | **Faculty** | `/faculty/sections/:id?tab=grading` | Button Action | Click `Calculate Grades` | Auto-computes raw grade, transmuted mark, and remarks. |
 | **Faculty** | `/faculty/sections/:id?tab=grading` | Anti-Tamper Button | Click `Submit to Registrar` | Freezes grade sheet; button locks in disabled state. |
 | **Faculty** | Any Faculty Page | AI Assistant Drawer | Prompt: *"Draft quiz questions for binary logic"* | Generates 3 pedagogical questions with answer key. |
 | **Student** | `/student/schedule` | Timetable Grid | Hover Schedule Block | Card reveals room `Lab 304` and instructor details. |
-| **Student** | `/student/curriculum` | Degree Prospectus | Click `Curriculum Checklist` | Visualizes completed vs. pending prerequisite units. |
+| **Student** | `/student/curriculum` | Self-Service Program Selector | Select Program & Year Level | Instantly initializes 4-year degree curriculum checklist and audit view. |
 | **Student** | `/student/curriculum` | Official Transcript | Click `Grade Report` | Renders printable official Transcript of Records (TOR). |
+| **Student** | `/student/evaluations` | Two-Step Wizard Navigation | Click "Proceed to Evaluation Form" | Seamlessly transitions between Faculty & Rating Guide and responsive evaluation matrix. |
 | **Student** | `/student/insight` | Interactive Slider | Drag Target GWA | `WhatIfGradeSimulator` dynamically recalculates exam score. |
 | **Student** | `/student/profile` | Request Modal | Click `Request Changes` | Opens profile pending change request submission dialog. |
 | **Student** | Mobile Viewport (`390x844`) | Hamburger Toggle | Click `button[aria-label="Open navigation menu"]` | Smoothly animates mobile touch navigation drawer. |

@@ -1,4 +1,4 @@
 question_text,question_type,points,is_required,explanation,choices
-"Which logic gate outputs 1 only when both inputs are 1?","Multiple Choice",5,TRUE,"AND gate truth table requires all inputs to be high.","OR|AND*|NOT|XOR"
-"The CPU stands for Central Processing Unit.","True or False",5,TRUE,"Universal hardware terminology.","True*|False"
-"Define the primary role of an Operating System.","Essay",10,TRUE,,
+"Which logic gate produces a HIGH (1) output only when all its inputs are HIGH?","Multiple Choice",5,TRUE,"The truth table of an AND gate requires all inputs to be 1 to yield 1.","OR|AND*|NOT|XOR"
+"In modern computing architecture, the CPU Program Counter holds the memory address of the next instruction to execute.","True or False",5,TRUE,"The program counter automatically increments or jumps to track instruction sequence.","True*|False"
+"Explain the difference between synchronous and asynchronous bus communication in microprocessors.","Essay",10,TRUE,,

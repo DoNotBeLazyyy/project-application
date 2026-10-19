@@ -1,4 +1,4 @@
 code,label,description
-LECTURE,Lecture,Standard lecture instruction
-LABORATORY,Laboratory,Practical hands-on laboratory session
-LECTURE_LAB,Lecture with Laboratory,Combined theory and laboratory session
+PRACTICUM,Practicum / Internship,On-the-job training and supervised industry internship immersion
+SEMINAR,Colloquium & Seminar,Interactive research symposium and scholarly guest lecture series
+THESIS,Capstone & Thesis,Original research thesis and culminating defense project

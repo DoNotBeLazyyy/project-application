@@ -8,7 +8,9 @@ import {
     announceFormError, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formatFieldLabel, getFieldErrorMessage
 } from '@utils/form.util';
 import { useEffect, useMemo } from 'react';
-import { Control, FieldValues, useFormState } from 'react-hook-form';
+import {
+    Control, FieldErrors, FieldValues, useFormState
+} from 'react-hook-form';
 
 const COL_SPAN_CLASSES: Record<number, string> = {
     1: 'col-span-full md:col-span-1',
@@ -52,6 +54,7 @@ interface CommonFormRowProps<T extends FieldValues> {
     helperPlacement: FormHelperPlacement;
     isFirstError?: boolean;
     defaultOpenErrorTooltip?: boolean;
+    formErrors?: FieldErrors<T>;
 }
 
 /**
@@ -62,15 +65,16 @@ function CommonFormRow<T extends FieldValues>({
     control,
     defaultOpenErrorTooltip,
     field,
+    formErrors: formWideErrors,
     hasHelper,
     helperPlacement,
     isFirstError
 }: CommonFormRowProps<T>) {
     const name = field.name as string;
     const isOnLabel = helperPlacement === 'label';
-    const { errors } = useFormState({ control, name: field.name });
+    const { errors: rowErrors } = useFormState({ control, name: field.name });
     const errorMessage = hasHelper && isOnLabel
-        ? getFieldErrorMessage(errors, name)
+        ? (getFieldErrorMessage(formWideErrors ?? ({} as FieldErrors<T>), name) ?? getFieldErrorMessage(rowErrors, name))
         : undefined;
     // `helperText` on a field config is guidance, not a message about state.
     const { helperText: description } = (field.fieldProps ?? {}) as { helperText?: string };
@@ -182,6 +186,7 @@ export default function CommonForm<T extends FieldValues>({
                         control={control}
                         defaultOpenErrorTooltip={resolvedAutoOpenErrorTooltip ? isFirstError : false}
                         field={field}
+                        formErrors={errors}
                         hasHelper={hasHelper}
                         helperPlacement={helperPlacement}
                         isFirstError={resolvedAutoOpenErrorTooltip ? isFirstError : false}

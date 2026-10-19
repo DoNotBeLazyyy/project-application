@@ -1,3 +1,3 @@
 section_title,section_sequence,section_description,target_mode,program_codes,is_active,suggestion_placeholder,question_text,question_type,is_required,min_rating,max_rating
-Teaching Effectiveness,1,Assessment of teaching pedagogy,ALL,,TRUE,"Share any specific suggestions to improve teaching effectiveness...",The instructor demonstrates clear mastery of the topic.,Rating,TRUE,1,5
-Classroom Management,2,Assessment of class environment,ALL,,TRUE,,The instructor maintains an engaging and respectful classroom.,Rating,TRUE,1,5
+Pedagogical Mastery & Delivery,1,Evaluation of clarity and depth of course instruction,ALL,,TRUE,"Share constructive feedback on pedagogical delivery...",The professor explains technical concepts with exceptional clarity and structure.,Rating,TRUE,1,5
+Laboratory Mentorship & Guidance,2,Evaluation of practical hands-on assistance,ALL,,TRUE,"Suggestions for lab sessions...",The instructor provides timely guidance during laboratory programming exercises.,Rating,TRUE,1,5

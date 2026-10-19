@@ -83,14 +83,14 @@ export default function CourseWizardModal({
             if (!ct.course_type_id || !String(ct.course_type_id).trim()) {
                 methods.setError(`course_types.${i}.course_type_id` as any, {
                     type: 'manual',
-                    message: `Course Type #${i + 1}: Please select a course type.`
+                    message: 'Please select a course type.'
                 });
                 hasError = true;
             }
             if ((ct.units as unknown) === '' || ct.units === undefined || ct.units === null) {
                 methods.setError(`course_types.${i}.units` as any, {
                     type: 'manual',
-                    message: `Course Type #${i + 1}: Units is required.`
+                    message: 'Units is required.'
                 });
                 hasError = true;
             } else {
@@ -98,19 +98,19 @@ export default function CourseWizardModal({
                 if (isNaN(u)) {
                     methods.setError(`course_types.${i}.units` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Units must be a valid number.`
+                        message: 'Units must be a valid number.'
                     });
                     hasError = true;
                 } else if (u < 0) {
                     methods.setError(`course_types.${i}.units` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Units cannot be less than 0.`
+                        message: 'Units cannot be less than 0.'
                     });
                     hasError = true;
                 } else if (u > 10) {
                     methods.setError(`course_types.${i}.units` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Units cannot exceed 10.`
+                        message: 'Units cannot exceed 10.'
                     });
                     hasError = true;
                 }
@@ -119,7 +119,7 @@ export default function CourseWizardModal({
             if ((ct.credit_hours as unknown) === '' || ct.credit_hours === undefined || ct.credit_hours === null) {
                 methods.setError(`course_types.${i}.credit_hours` as any, {
                     type: 'manual',
-                    message: `Course Type #${i + 1}: Credit hours is required.`
+                    message: 'Credit hours is required.'
                 });
                 hasError = true;
             } else {
@@ -127,19 +127,19 @@ export default function CourseWizardModal({
                 if (isNaN(ch)) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Credit hours must be a valid number.`
+                        message: 'Credit hours must be a valid number.'
                     });
                     hasError = true;
                 } else if (ch < 0) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Credit hours cannot be less than 0.`
+                        message: 'Credit hours cannot be less than 0.'
                     });
                     hasError = true;
                 } else if (ch > 20) {
                     methods.setError(`course_types.${i}.credit_hours` as any, {
                         type: 'manual',
-                        message: `Course Type #${i + 1}: Credit hours cannot exceed 20.`
+                        message: 'Credit hours cannot exceed 20.'
                     });
                     hasError = true;
                 }
@@ -256,7 +256,7 @@ export default function CourseWizardModal({
                 if (prereq.prerequisite_kind === 'course' && (!prereq.course_id || !prereq.course_id.trim())) {
                     methods.setError(`prerequisites.${i}.course_id` as any, {
                         type: 'manual',
-                        message: `Prerequisite #${i + 1}: Please select a course or remove the row.`
+                        message: 'Please select a prerequisite course or remove the row.'
                     });
                     setCurrentStep(3);
                     formErrors(methods.formState.errors, methods);
@@ -265,7 +265,7 @@ export default function CourseWizardModal({
                 if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required).trim())) {
                     methods.setError(`prerequisites.${i}.year_level_required` as any, {
                         type: 'manual',
-                        message: `Prerequisite #${i + 1}: Please select a year level standing or remove the row.`
+                        message: 'Please select a year level standing or remove the row.'
                     });
                     setCurrentStep(3);
                     formErrors(methods.formState.errors, methods);

@@ -1,4 +1,4 @@
 code,label,description
-UNDERGRADUATE,Undergraduate Degree,Baccalaureate academic programs
-GRADUATE,Graduate Degree,Master level post-graduate programs
-DOCTORATE,Doctorate Degree,Doctor of Philosophy terminal programs
+DIPLOMA,Diploma Program,Two-year pre-baccalaureate technical diploma credentials
+POST_GRADUATE,Post-Graduate Certificate,Advanced post-baccalaureate professional specialization
+ASSOCIATE,Associate Degree,Two-year applied science vocational foundation degree

@@ -10,6 +10,7 @@ export interface CommonStepperInputProps {
     max?: number;
     step?: number;
     disabled?: boolean;
+    name?: string;
     label?: string;
     helperText?: React.ReactNode;
     error?: boolean;
@@ -28,6 +29,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     max = 100,
     step = 1,
     disabled = false,
+    name,
     label,
     helperText,
     error = false,
@@ -102,6 +104,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                         disabled={disabled}
                         error={error}
                         fullWidth
+                        name={name}
                         placeholder={placeholder}
                         size={size}
                         type="number"
@@ -129,8 +132,8 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                     </button>
                 )}
             </div>
-            {helperText && (
-                <span className={`text-[11px] ${error ? 'text-red-500 dark:text-red-400 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
+            {!error && helperText && (
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     {helperText}
                 </span>
             )}
