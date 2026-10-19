@@ -69,11 +69,31 @@ export default function ProfilePage() {
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
 
-    const isStudentUser = Boolean(profile?.student || profile?.role_labels?.includes('Student'));
-    const isStaffUser = Boolean(
-        profile?.role_labels?.some((r) => ['Dean', 'Faculty', 'Registrar'].includes(r)) &&
-        !profile?.role_labels?.includes('Admin')
+    const roleCodes = profile?.role_codes ?? [];
+    const roleLabels = profile?.role_labels ?? [];
+
+    const isAdminUser = Boolean(
+        roleCodes.includes('Admin') ||
+        roleLabels.some((r) => r.toLowerCase().includes('admin'))
     );
+    const isStudentUser = !isAdminUser && Boolean(
+        profile?.student ||
+        roleCodes.includes('Student') ||
+        roleLabels.some((r) => r.toLowerCase().includes('student'))
+    );
+    const isDeanUser = Boolean(
+        roleCodes.includes('Dean') ||
+        roleLabels.some((r) => r.toLowerCase().includes('dean'))
+    );
+    const isFacultyUser = Boolean(
+        roleCodes.includes('Faculty') ||
+        roleLabels.some((r) => r.toLowerCase().includes('faculty'))
+    );
+    const isRegistrarUser = Boolean(
+        roleCodes.includes('Registrar') ||
+        roleLabels.some((r) => r.toLowerCase().includes('registrar'))
+    );
+    const isStaffUser = !isAdminUser && (isDeanUser || isFacultyUser || isRegistrarUser);
     const requiresApproval = isStudentUser || isStaffUser;
     const approverName = profile?.pending_profile_request?.approver_role || (isStudentUser ? 'Registrar' : 'Administrator');
 
@@ -271,7 +291,7 @@ export default function ProfilePage() {
                             control={profileMethods.control}
                             disabled={Boolean(profile?.pending_profile_request && profile.pending_profile_request.status === 'Pending')}
                             id={PROFILE_FORM_ID}
-                            isDeanUser={Boolean(profile?.role_labels?.includes('Dean'))}
+                            isDeanUser={isDeanUser}
                             isStudentUser={isStudentUser}
                             programOptions={programOptions}
                             onSubmit={profileMethods.handleSubmit(handleProfileSubmit, handleProfileError)}
@@ -301,7 +321,7 @@ export default function ProfilePage() {
                             </div>
                             {requiresApproval && (
                                 <p className="text-xs text-(--mui-palette-text-secondary) m-0 italic">
-                                    * Note: Changes made to your profile must be reviewed and approved by the {isStudentUser ? 'Registrar' : 'Administrator'} before taking effect. (Profile picture updates take effect immediately).
+                                    * Note: Changes made to your profile must be reviewed and approved by the {approverName} before taking effect. (Profile picture updates take effect immediately).
                                 </p>
                             )}
                         </div>

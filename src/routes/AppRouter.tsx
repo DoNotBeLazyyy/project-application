@@ -50,6 +50,7 @@ const appRouter = createBrowserRouter([
                         errorElement: <ErrorPage />,
                         children: [
                             { element: <RoleRedirect />, index: true },
+                            { element: <RoleRedirect targetPath="profile" />, path: 'profile' },
                             {
                                 element: <RoleGate allowedRoles={['Admin']} />,
                                 children: adminRoutes

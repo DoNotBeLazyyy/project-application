@@ -2,12 +2,19 @@ import { ROLE_HOME } from '@constants/role.constant';
 import { useAppStore } from '@stores/app.store';
 import { Navigate } from 'react-router-dom';
 
-export default function RoleRedirect() {
+interface RoleRedirectProps {
+    targetPath?: string;
+}
+
+export default function RoleRedirect({ targetPath }: RoleRedirectProps = {}) {
     const activeRole = useAppStore((s) => s.activeRole);
 
     if (!activeRole) {
         return <Navigate replace to="/login" />;
     }
 
-    return <Navigate replace to={ROLE_HOME[activeRole]} />;
+    const base = ROLE_HOME[activeRole];
+    const destination = targetPath ? `${base}/${targetPath}` : base;
+
+    return <Navigate replace to={destination} />;
 }

@@ -17,6 +17,8 @@ const mockRubric: SubmissionRubric = {
         }
     ],
     id: 'rubric-1',
+    rubric_id: 'rubric-1',
+    submission_id: 'sub-1',
     title: 'Final Project Rubric',
     total_points: 50
 };

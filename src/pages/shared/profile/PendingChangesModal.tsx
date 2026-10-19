@@ -45,6 +45,8 @@ export default function PendingChangesModal({
         (key) => (requested[key as keyof typeof requested] || '') !== (current[key as keyof typeof current] || '')
     );
 
+    const approverName = pendingRequest.approver_role || 'Administrator';
+
     return (
         <CommonModal
             fullWidth
@@ -54,7 +56,7 @@ export default function PendingChangesModal({
             cardProps={{
                 cardHeaderProps: {
                     title: 'Submitted Profile Changes',
-                    subheader: `Submitted on ${new Date(pendingRequest.created_at).toLocaleString()} — Pending Registrar Verification`
+                    subheader: `Submitted on ${new Date(pendingRequest.created_at).toLocaleString()} — Pending ${approverName} Verification`
                 }
             }}
         >
@@ -62,9 +64,9 @@ export default function PendingChangesModal({
                 <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-3 rounded-lg flex items-start gap-3 text-xs text-(--mui-palette-text-primary)">
                     <ClockCountdownIcon size={22} className="text-(--mui-palette-warning-main) shrink-0 mt-0.5" />
                     <div>
-                        <p className="font-semibold m-0 text-sm">Under Review by Registrar</p>
+                        <p className="font-semibold m-0 text-sm">Under Review by {approverName}</p>
                         <p className="m-0 mt-0.5 text-(--mui-palette-text-secondary)">
-                            These changes have not yet been applied to your official record. Once a registrar verifies and approves your submission, your profile will be updated.
+                            These changes have not yet been applied to your official record. Once the {approverName.toLowerCase()} verifies and approves your submission, your profile will be updated.
                         </p>
                     </div>
                 </div>

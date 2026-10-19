@@ -42,6 +42,7 @@ export interface MyProfile {
     avatar_url: string | null;
     status: string;
     role_labels: string[];
+    role_codes?: string[];
     student?: MyStudentInfo | null;
     pending_profile_request?: PendingProfileRequest | null;
     department_id?: string | null;

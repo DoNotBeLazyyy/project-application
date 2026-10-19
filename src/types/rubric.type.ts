@@ -71,6 +71,7 @@ export interface SubmissionRubricCriterion {
 }
 
 export interface SubmissionRubric {
+    id?: string;
     submission_id: string;
     rubric_id: string;
     title: string;
