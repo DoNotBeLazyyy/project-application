@@ -201,8 +201,16 @@ interface CourseTypeCellProps {
 }
 
 function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOptions }: CourseTypeCellProps) {
-    const courseType = useController({ control, name: courseTypeName(rowIndex, 'course_type_id') });
+    const courseType = useController({
+        control,
+        name: courseTypeName(rowIndex, 'course_type_id'),
+        rules: {
+            required: 'Please select a course type'
+        }
+    });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
+    const { errors } = useFormState({ control });
+    const courseTypeError = (errors.course_types as any)?.[rowIndex]?.course_type_id;
 
     const selectedInOtherRows = courseTypes
         .filter((_, i) => i !== rowIndex)
@@ -217,7 +225,10 @@ function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOption
     return (
         <CommonSelect
             disabled={disabled}
+            error={Boolean(courseTypeError)}
             fullWidth
+            helperText={courseTypeError?.message || 'Select course type classification'}
+            isRequired
             label="Course Type"
             name={courseTypeName(rowIndex, 'course_type_id')}
             options={availableOptions}
@@ -230,31 +241,89 @@ function CourseTypeSelectionCell({ control, disabled, rowIndex, courseTypeOption
 }
 
 function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
-    const units = useController({ control, name: courseTypeName(rowIndex, 'units') });
+    const units = useController({
+        control,
+        name: courseTypeName(rowIndex, 'units'),
+        rules: {
+            required: 'Units is required',
+            validate: (val) => {
+                if (val === '' || val === undefined || val === null) {
+                    return 'Units is required';
+                }
+                const num = Number(val);
+                if (isNaN(num)) {
+                    return 'Units must be a valid number';
+                }
+                if (num < 0) {
+                    return 'Units cannot be less than 0';
+                }
+                if (num > 10) {
+                    return 'Units cannot exceed 10';
+                }
+                return true;
+            }
+        }
+    });
+    const { errors } = useFormState({ control });
+    const unitsError = (errors.course_types as any)?.[rowIndex]?.units;
 
     return (
         <CommonStepperInput
+            autoComplete="off"
+            clampOnInput={false}
             disabled={disabled}
-            min={0}
+            error={Boolean(unitsError)}
+            helperText={unitsError?.message || 'Allowed: 0 to 10 units (in 0.5 step increments)'}
             max={10}
+            min={0}
+            placeholder="Enter units (0 - 10)"
             step={0.5}
-            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : Number(units.field.value)}
-            onChange={(val) => units.field.onChange(val)}
+            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : units.field.value}
+            onChange={(val) => units.field.onChange(val === undefined ? '' : val)}
         />
     );
 }
 
 function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
-    const creditHours = useController({ control, name: courseTypeName(rowIndex, 'credit_hours') });
+    const creditHours = useController({
+        control,
+        name: courseTypeName(rowIndex, 'credit_hours'),
+        rules: {
+            required: 'Credit hours is required',
+            validate: (val) => {
+                if (val === '' || val === undefined || val === null) {
+                    return 'Credit hours is required';
+                }
+                const num = Number(val);
+                if (isNaN(num)) {
+                    return 'Credit hours must be a valid number';
+                }
+                if (num < 0) {
+                    return 'Credit hours cannot be less than 0';
+                }
+                if (num > 20) {
+                    return 'Credit hours cannot exceed 20';
+                }
+                return true;
+            }
+        }
+    });
+    const { errors } = useFormState({ control });
+    const creditHoursError = (errors.course_types as any)?.[rowIndex]?.credit_hours;
 
     return (
         <CommonStepperInput
+            autoComplete="off"
+            clampOnInput={false}
             disabled={disabled}
-            min={0}
+            error={Boolean(creditHoursError)}
+            helperText={creditHoursError?.message || 'Allowed: 0 to 20 credit hours (in 0.5 step increments)'}
             max={20}
+            min={0}
+            placeholder="Enter credit hours (0 - 20)"
             step={0.5}
-            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : Number(creditHours.field.value)}
-            onChange={(val) => creditHours.field.onChange(val)}
+            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : creditHours.field.value}
+            onChange={(val) => creditHours.field.onChange(val === undefined ? '' : val)}
         />
     );
 }
@@ -332,6 +401,22 @@ export default function CourseForm({
             return changed ? next : prev;
         });
     }, [errors.prerequisites, prerequisites]);
+
+    useEffect(() => {
+        if (!errors.course_types) return;
+        const ctErrors = errors.course_types as any;
+        setCollapsedCourseTypes((prev) => {
+            const next = { ...prev };
+            let changed = false;
+            (courseTypes || []).forEach((_, idx) => {
+                if (ctErrors[idx] && next[idx]) {
+                    next[idx] = false;
+                    changed = true;
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [errors.course_types, courseTypes]);
 
     const { departmentOptions, departments } = useDepartmentOptions();
     const { courseTypeOptions } = useCourseTypeOptions();
@@ -431,7 +516,7 @@ export default function CourseForm({
     const fields_config: FormFieldConfig<CourseFormValues>[] = [
         {
             disabled,
-            fieldProps: { helperText: 'Full course title' },
+            fieldProps: { helperText: 'Full course title', autoComplete: 'off' },
             label: 'Course Title',
             name: 'title',
             rules: disabled
@@ -478,6 +563,7 @@ export default function CourseForm({
         {
             disabled,
             fieldProps: {
+                autoComplete: 'off',
                 helperText: 'Optional course description',
                 placeholder: 'Enter a short description of this course'
             },
@@ -495,8 +581,8 @@ export default function CourseForm({
     function handleAddCourseType() {
         appendCourseType({
             course_type_id: '',
-            units: 0,
-            credit_hours: 0
+            units: '' as any,
+            credit_hours: '' as any
         });
     }
 
@@ -712,7 +798,12 @@ export default function CourseForm({
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <FormLabel label="Units" />
+                                            <FormLabel
+                                                errorMessage={(errors.course_types as any)?.[index]?.units?.message}
+                                                isRequired
+                                                label="Units"
+                                                description="Allowed: 0 to 10 units (in 0.5 step increments)"
+                                            />
                                             <CourseTypeUnitsCell
                                                 control={control}
                                                 disabled={disabled}
@@ -720,7 +811,12 @@ export default function CourseForm({
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <FormLabel label="Credit Hours" />
+                                            <FormLabel
+                                                errorMessage={(errors.course_types as any)?.[index]?.credit_hours?.message}
+                                                isRequired
+                                                label="Credit Hours"
+                                                description="Allowed: 0 to 20 credit hours (in 0.5 step increments)"
+                                            />
                                             <CourseTypeCreditHoursCell
                                                 control={control}
                                                 disabled={disabled}

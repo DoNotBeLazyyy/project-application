@@ -113,7 +113,7 @@ describe('form.util - Error Focus & Autofill Handling', () => {
         });
     });
 
-    describe('CommonStepperInput - Autofill Prevention', () => {
+    describe('CommonStepperInput - Autofill & Clamping Prevention', () => {
         it('preserves empty value and does not autofill with 0 or min when cleared', () => {
             const handleChange = vi.fn();
             render(
@@ -131,6 +131,42 @@ describe('form.util - Error Focus & Autofill Handling', () => {
             // Clear input to empty string
             fireEvent.change(input, { target: { value: '' } });
             expect(handleChange).toHaveBeenCalledWith(undefined);
+        });
+
+        it('does not auto-clamp to max on input so user can type freely without assuming 10', () => {
+            const handleChange = vi.fn();
+            render(
+                <CommonStepperInput
+                    label="Units"
+                    min={0}
+                    max={10}
+                    value={3}
+                    onChange={handleChange}
+                />
+            );
+
+            const input = screen.getByRole('spinbutton');
+            // User types 32 (e.g. typing 2 after 3)
+            fireEvent.change(input, { target: { value: '32' } });
+            // It should NOT automatically coerce to 10
+            expect(handleChange).toHaveBeenCalledWith(32);
+        });
+
+        it('allows user to replace value with a smaller number like 2', () => {
+            const handleChange = vi.fn();
+            render(
+                <CommonStepperInput
+                    label="Units"
+                    min={0}
+                    max={10}
+                    value={3}
+                    onChange={handleChange}
+                />
+            );
+
+            const input = screen.getByRole('spinbutton');
+            fireEvent.change(input, { target: { value: '2' } });
+            expect(handleChange).toHaveBeenCalledWith(2);
         });
     });
 });

@@ -65,6 +65,95 @@ export default function CourseWizardModal({
 
     const currentStepConfig = COURSE_FORM_STEPS.find((s) => s.step === currentStep);
 
+    async function validateStep2(): Promise<boolean> {
+        const values = methods.getValues();
+        const courseTypes = values.course_types || [];
+        if (courseTypes.length === 0) {
+            methods.setError('course_types' as any, {
+                type: 'manual',
+                message: 'Please add at least one course type.'
+            });
+            formErrors(methods.formState.errors, methods);
+            return false;
+        }
+
+        let hasError = false;
+        for (let i = 0; i < courseTypes.length; i++) {
+            const ct = courseTypes[i];
+            if (!ct.course_type_id || !String(ct.course_type_id).trim()) {
+                methods.setError(`course_types.${i}.course_type_id` as any, {
+                    type: 'manual',
+                    message: `Course Type #${i + 1}: Please select a course type.`
+                });
+                hasError = true;
+            }
+            if (ct.units === '' || ct.units === undefined || ct.units === null) {
+                methods.setError(`course_types.${i}.units` as any, {
+                    type: 'manual',
+                    message: `Course Type #${i + 1}: Units is required.`
+                });
+                hasError = true;
+            } else {
+                const u = Number(ct.units);
+                if (isNaN(u)) {
+                    methods.setError(`course_types.${i}.units` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Units must be a valid number.`
+                    });
+                    hasError = true;
+                } else if (u < 0) {
+                    methods.setError(`course_types.${i}.units` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Units cannot be less than 0.`
+                    });
+                    hasError = true;
+                } else if (u > 10) {
+                    methods.setError(`course_types.${i}.units` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Units cannot exceed 10.`
+                    });
+                    hasError = true;
+                }
+            }
+
+            if (ct.credit_hours === '' || ct.credit_hours === undefined || ct.credit_hours === null) {
+                methods.setError(`course_types.${i}.credit_hours` as any, {
+                    type: 'manual',
+                    message: `Course Type #${i + 1}: Credit hours is required.`
+                });
+                hasError = true;
+            } else {
+                const ch = Number(ct.credit_hours);
+                if (isNaN(ch)) {
+                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Credit hours must be a valid number.`
+                    });
+                    hasError = true;
+                } else if (ch < 0) {
+                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Credit hours cannot be less than 0.`
+                    });
+                    hasError = true;
+                } else if (ch > 20) {
+                    methods.setError(`course_types.${i}.credit_hours` as any, {
+                        type: 'manual',
+                        message: `Course Type #${i + 1}: Credit hours cannot exceed 20.`
+                    });
+                    hasError = true;
+                }
+            }
+        }
+
+        if (hasError) {
+            formErrors(methods.formState.errors, methods);
+            return false;
+        }
+
+        return true;
+    }
+
     async function handleNext() {
         if (currentStep === 1) {
             const isValid = await trigger(['title', 'code', 'department_id']);
@@ -74,6 +163,10 @@ export default function CourseWizardModal({
             }
             setCurrentStep(2);
         } else if (currentStep === 2) {
+            const isValid = await validateStep2();
+            if (!isValid) {
+                return;
+            }
             setCurrentStep(3);
         }
     }
@@ -100,6 +193,18 @@ export default function CourseWizardModal({
                 formErrors(methods.formState.errors, methods);
                 return;
             }
+            if (stepNumber === 3) {
+                const isStep2Valid = await validateStep2();
+                if (!isStep2Valid) {
+                    setCurrentStep(2);
+                    return;
+                }
+            }
+        } else if (currentStep === 2) {
+            const isValid = await validateStep2();
+            if (!isValid) {
+                return;
+            }
         }
         setCurrentStep(stepNumber);
     }
@@ -108,10 +213,10 @@ export default function CourseWizardModal({
         const errorKeys = Object.keys(errors);
         if (errorKeys.length > 0) {
             const firstKey = errorKeys[0];
-            const step1Keys = ['title', 'code', 'department_id', 'is_general_education', 'is_major'];
+            const step1Keys = ['title', 'code', 'department_id', 'description', 'is_active'];
             if (step1Keys.includes(firstKey)) {
                 setCurrentStep(1);
-            } else if (firstKey.startsWith('types')) {
+            } else if (firstKey.startsWith('types') || firstKey.startsWith('course_types')) {
                 setCurrentStep(2);
             } else if (firstKey.startsWith('prerequisites')) {
                 setCurrentStep(3);
@@ -138,7 +243,13 @@ export default function CourseWizardModal({
         onClose();
     }
 
-    function handleFormSubmit(values: CourseFormValues) {
+    async function handleFormSubmit(values: CourseFormValues) {
+        const isStep2Valid = await validateStep2();
+        if (!isStep2Valid) {
+            setCurrentStep(2);
+            return;
+        }
+
         if (values.prerequisites && values.prerequisites.length > 0) {
             for (let i = 0; i < values.prerequisites.length; i++) {
                 const prereq = values.prerequisites[i];

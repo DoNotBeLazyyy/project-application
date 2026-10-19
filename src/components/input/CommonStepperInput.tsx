@@ -5,13 +5,17 @@ import React, { forwardRef, useCallback } from 'react';
 
 export interface CommonStepperInputProps {
     value?: number | string;
-    onChange?: (value: number) => void;
+    onChange?: (value: any) => void;
     min?: number;
     max?: number;
     step?: number;
     disabled?: boolean;
     label?: string;
-    helperText?: string;
+    helperText?: React.ReactNode;
+    error?: boolean;
+    placeholder?: string;
+    autoComplete?: string;
+    clampOnInput?: boolean;
     size?: 'small' | 'medium';
     className?: string;
     showButtons?: boolean;
@@ -26,6 +30,10 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     disabled = false,
     label,
     helperText,
+    error = false,
+    placeholder,
+    autoComplete = 'off',
+    clampOnInput = false,
     size = 'small',
     className = '',
     showButtons = false
@@ -37,33 +45,38 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
 
     const handleIncrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const base = hasValue ? numericValue : min;
+        const base = hasValue ? Number(numericValue) : min;
         const next = Math.min(max, Number((base + step).toFixed(2)));
         onChange(next);
     }, [disabled, max, hasValue, numericValue, onChange, step, min]);
 
     const handleDecrement = useCallback(() => {
         if (disabled || !onChange) return;
-        const base = hasValue ? numericValue : min;
+        const base = hasValue ? Number(numericValue) : min;
         const next = Math.max(min, Number((base - step).toFixed(2)));
         onChange(next);
     }, [disabled, min, hasValue, numericValue, onChange, step]);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (!onChange) return;
-        const normalized = stripLeadingZeros(e.target.value);
+        const rawStr = e.target.value;
+        const normalized = stripLeadingZeros(rawStr);
         if (normalized === '') {
-            onChange(undefined as any);
+            onChange(undefined);
             return;
         }
         const raw = parseFloat(normalized);
         if (isNaN(raw)) {
-            onChange(undefined as any);
+            onChange(undefined);
             return;
         }
-        const clamped = Math.max(min, Math.min(max, raw));
-        onChange(clamped);
-    }, [max, min, onChange]);
+        if (clampOnInput) {
+            const clamped = Math.max(min, Math.min(max, raw));
+            onChange(clamped);
+        } else {
+            onChange(rawStr.endsWith('.') ? rawStr : raw);
+        }
+    }, [clampOnInput, max, min, onChange]);
 
     return (
         <div className={`flex flex-col gap-1 w-full ${className}`} ref={ref}>
@@ -85,18 +98,22 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                 )}
                 <div className="w-full flex-1">
                     <CommonInput
+                        autoComplete={autoComplete}
                         disabled={disabled}
+                        error={error}
                         fullWidth
+                        placeholder={placeholder}
                         size={size}
                         type="number"
-                        value={hasValue ? numericValue : ''}
+                        value={hasValue ? value : ''}
                         onChange={handleInputChange}
                         slotProps={{
                             htmlInput: {
                                 min,
                                 max,
                                 step,
-                                className: 'font-semibold'
+                                className: 'font-semibold',
+                                autoComplete
                             }
                         }}
                     />
@@ -113,7 +130,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                 )}
             </div>
             {helperText && (
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className={`text-[11px] ${error ? 'text-red-500 dark:text-red-400 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
                     {helperText}
                 </span>
             )}

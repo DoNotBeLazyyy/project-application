@@ -49,7 +49,7 @@ const defaultFormValues: CourseFormValues = {
     description: '',
     department_id: '',
     course_types: [
-        { course_type_id: '', units: 3, credit_hours: 3 }
+        { course_type_id: '', units: '' as any, credit_hours: '' as any }
     ],
     is_active: true,
     prerequisites: []
@@ -89,10 +89,10 @@ export default function CourseManagement() {
             const fallbackTypes = result.data.course_type_id ? [
                 {
                     course_type_id: result.data.course_type_id,
-                    units: Number(result.data.laboratory_units || result.data.lecture_units || 3),
-                    credit_hours: Number(result.data.credit_hours ?? result.data.lecture_units ?? 3)
+                    units: result.data.laboratory_units ?? result.data.lecture_units ?? ('' as any),
+                    credit_hours: result.data.credit_hours ?? result.data.lecture_units ?? ('' as any)
                 }
-            ] : [{ course_type_id: '', units: 3, credit_hours: 3 }];
+            ] : [{ course_type_id: '', units: '' as any, credit_hours: '' as any }];
 
             updateMethods.reset({
                 code: result.data.code,
