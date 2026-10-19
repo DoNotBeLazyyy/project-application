@@ -136,6 +136,16 @@ export default function CurriculumMapForm({
         }
     }, [selectedCourseId, forbiddenCourseIds, setValue]);
 
+    // Auto-populate default units when a course is selected during creation
+    useEffect(() => {
+        if (!selectedCourseId || !selectedCourse || !setValue || currentEntryId) return;
+        setValue('lecture_units', selectedCourse.lecture_units ?? 0, { shouldDirty: true });
+        setValue('laboratory_units', selectedCourse.laboratory_units ?? 0, { shouldDirty: true });
+        if (selectedCourse.total_units !== undefined) {
+            setValue('units', selectedCourse.total_units, { shouldDirty: true });
+        }
+    }, [selectedCourseId, selectedCourse, setValue, currentEntryId]);
+
     const baseCourseHelperText = !departmentId
         ? 'Please select a program or department first'
         : courseOptions.length === 0
