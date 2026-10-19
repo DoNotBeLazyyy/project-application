@@ -70,6 +70,18 @@ export interface CurriculumSummary {
     cumulative_gwa: number | null;
 }
 
+export interface CurriculumProgress {
+    required_units: number;
+    earned_units: number;
+    in_progress_units: number;
+    progress_percent: number;
+    cumulative_gwa: number | null;
+    completed_courses: number;
+    failed_courses: number;
+    in_progress_courses: number;
+    total_courses: number;
+}
+
 export interface CurriculumAudit {
     success: boolean;
     message?: string;
@@ -77,6 +89,8 @@ export interface CurriculumAudit {
     program: RecordProgram;
     summary: CurriculumSummary;
     year_levels: CurriculumYearLevel[];
+    progress?: CurriculumProgress;
+    curriculum?: CurriculumYearLevel[];
 }
 
 export interface TranscriptCourse {

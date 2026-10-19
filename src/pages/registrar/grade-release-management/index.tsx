@@ -93,6 +93,7 @@ export default function GradeRelease() {
     const [isScheduleOpen, setIsScheduleOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [releaseTarget, setReleaseTarget] = useState<GradeReleaseSchedule | null>(null);
+    const [isReleasingPeriod, setIsReleasingPeriod] = useState(false);
 
     // Section Grade Submissions state
     const [sectionRows, setSectionRows] = useState<SectionGradeSubmissionRow[]>([]);
@@ -266,11 +267,16 @@ export default function GradeRelease() {
     async function handleConfirmReleaseNow() {
         if (!releaseTarget) return;
 
-        const result = await releaseGradingPeriodNow(releaseTarget.grading_period_id);
-        setReleaseTarget(null);
+        setIsReleasingPeriod(true);
+        try {
+            const result = await releaseGradingPeriodNow(releaseTarget.grading_period_id);
+            setReleaseTarget(null);
 
-        if (!result.error) {
-            await refreshCurrentData();
+            if (!result.error) {
+                await refreshCurrentData();
+            }
+        } finally {
+            setIsReleasingPeriod(false);
         }
     }
 

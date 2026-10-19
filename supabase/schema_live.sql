@@ -10505,6 +10505,14 @@ BEGIN
                 ELSE 'Not Taken'
             END AS status,
             CASE
+                WHEN b.enrollment_status = 'Credited' THEN (
+                    SELECT 'Transferred · ' || scc.previous_school
+                    FROM public.student_credited_courses scc
+                    WHERE scc.student_id = v_student_id
+                      AND scc.course_id = cm.course_id
+                      AND scc.deleted_at IS NULL
+                    LIMIT 1
+                )
                 WHEN b.is_released THEN tt2.label || ' - ' || sy.label
                 ELSE NULL
             END AS taken_label
@@ -10601,7 +10609,23 @@ BEGIN
             'in_progress_courses', v_in_progress,
             'cumulative_gwa', v_cumulative_gwa
         ),
-        'year_levels', v_year_levels
+        'progress', jsonb_build_object(
+            'required_units', v_required_units,
+            'earned_units', v_earned_units,
+            'in_progress_units', v_in_progress_units,
+            'progress_percent', CASE
+                WHEN v_required_units > 0
+                    THEN ROUND((v_earned_units / v_required_units) * 100, 1)
+                ELSE 0
+            END,
+            'cumulative_gwa', v_cumulative_gwa,
+            'completed_courses', v_completed,
+            'failed_courses', v_failed,
+            'in_progress_courses', v_in_progress,
+            'total_courses', v_total_courses
+        ),
+        'year_levels', v_year_levels,
+        'curriculum', v_year_levels
     );
 END;
 $function$

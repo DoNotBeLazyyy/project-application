@@ -409,6 +409,7 @@ export default function SectionGradeSheetModal({
                     confirmProps: {
                         children: isReleasing ? 'Releasing...' : 'Confirm Release',
                         disabled: isReleasing,
+                        loading: isReleasing,
                         onClick: handleConfirmApproveAndRelease
                     }
                 }}
