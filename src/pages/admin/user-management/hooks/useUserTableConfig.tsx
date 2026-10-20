@@ -39,13 +39,15 @@ export function useUserTableConfig({
                 field: 'first_name',
                 flex: 2,
                 headerName: 'First Name',
-                sortable: true
+                sortable: true,
+                valueFormatter: (params) => params.value || '—'
             },
             {
                 field: 'last_name',
                 flex: 2,
                 headerName: 'Last Name',
-                sortable: true
+                sortable: true,
+                valueFormatter: (params) => params.value || '—'
             },
             {
                 field: 'email',

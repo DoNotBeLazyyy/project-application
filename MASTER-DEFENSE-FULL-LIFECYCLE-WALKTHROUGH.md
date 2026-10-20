@@ -8,11 +8,11 @@
 ---
 
 ## 📋 Table of Contents
-1. [Master System Credentials & Pre-Seeded Accounts](#1-master-system-credentials--pre-seeded-accounts)
+1. [Master System Credentials & Clean-Slate Baseline Accounts](#1-master-system-credentials--clean-slate-baseline-accounts)
 2. [Ready-to-Use Sample CSV Files Repository](#ready-to-use-sample-csv-files-repository)
 3. [Global Architecture & Oral Defense Highlights](#2-global-architecture--oral-defense-highlights)
 4. [ACT I: System Administrator — Governance, Wizards & Infrastructure](#act-i-system-administrator--governance-wizards--infrastructure)
-   - [Phase 1.1: Admin Authentication & Institutional Overview (Live Bento Metrics & Feeds)](#phase-11-admin-authentication--institutional-overview-live-bento-metrics--feeds)
+   - [Phase 1.1: Admin Authentication, First-Login Profile Onboarding & Institutional Overview](#phase-11-admin-authentication-first-login-profile-onboarding--institutional-overview)
    - [Phase 1.2: User Management Full Lifecycle (Live Faculty & Student Creation)](#phase-12-user-management-full-lifecycle-live-faculty--student-creation)
    - [Phase 1.3: Universal Bulk CSV Import System (Users & Entities)](#phase-13-universal-bulk-csv-import-system-users--entities)
    - [Phase 1.4: Staff Profile Verification Queue & Side-by-Side Diff](#phase-14-staff-profile-verification-queue--side-by-side-diff)
@@ -23,9 +23,9 @@
    - [Phase 1.9: Universal Interactive Calendar (Admin View)](#phase-19-universal-interactive-calendar-admin-view)
    - [Phase 1.10: Forensic Audit Logs & JSON Payload Inspector](#phase-110-forensic-audit-logs--json-payload-inspector)
    - [Phase 1.11: System Settings, Institution Identity & Upload Constraints](#phase-111-system-settings-institution-identity--upload-constraints)
-   - [Phase 1.12: Admin Profile Security & AI Assistant Operational Guidance](#phase-112-admin-profile-security--ai-assistant-operational-guidance)
+   - [Phase 1.12: Admin Direct Profile Editing, Security & AI Assistant Operational Guidance](#phase-112-admin-direct-profile-editing-security--ai-assistant-operational-guidance)
 5. [ACT II: Academic Dean — Curriculum Blueprints, Faculty Load & Conflict Management](#act-ii-academic-dean--curriculum-blueprints-faculty-load--conflict-management)
-   - [Phase 2.1: Dean Authentication & College Metrics](#phase-21-dean-authentication--college-metrics)
+   - [Phase 2.1: Dean Authentication, First-Login Profile Onboarding & College Metrics](#phase-21-dean-authentication-first-login-profile-onboarding--college-metrics)
    - [Phase 2.2: Program Level Management CRUD](#phase-22-program-level-management-crud)
    - [Phase 2.3: Course Type Management CRUD](#phase-23-course-type-management-crud)
    - [Phase 2.4: Course Blueprints & Unified Multi-Type Course Creation (IT101 & IT102)](#phase-24-course-blueprints--unified-multi-type-course-creation-it101--it102)
@@ -33,19 +33,19 @@
    - [Phase 2.6: Section Scheduling 3-Step Wizard](#phase-26-section-scheduling-3-step-wizard)
    - [Phase 2.7: Faculty Loading 3-Step Wizard & Live Timetable Collision Evaluation](#phase-27-faculty-loading-3-step-wizard--live-timetable-collision-evaluation)
    - [Phase 2.8: College Bulletins & Communication Management](#phase-28-college-bulletins--communication-management)
-   - [Phase 2.9: Dean Profile & AI Assistant Copilot](#phase-29-dean-profile--ai-assistant-copilot)
+   - [Phase 2.9: Dean Profile Change Request Submission & AI Assistant Copilot](#phase-29-dean-profile-change-request-submission--ai-assistant-copilot)
    - [Phase 2.10: Universal Interactive Calendar (Dean View)](#phase-210-universal-interactive-calendar-dean-view)
 6. [ACT III: University Registrar — Verification, Shifting, Batch Enrollment & Audit](#act-iii-university-registrar--verification-shifting-batch-enrollment--audit)
-   - [Phase 3.1: Registrar Authentication & Enrollment Operations](#phase-31-registrar-authentication--enrollment-operations)
+   - [Phase 3.1: Registrar Authentication, First-Login Profile Onboarding & Enrollment Operations](#phase-31-registrar-authentication-first-login-profile-onboarding--enrollment-operations)
    - [Phase 3.2: Academic Program Assignment & Year Level Setting (Dual-Path Flexibility)](#phase-32-academic-program-assignment--year-level-setting-dual-path-flexibility)
    - [Phase 3.3: Individual Student Enrollment Workspace](#phase-33-individual-student-enrollment-workspace)
    - [Phase 3.4: Registrar Batch Bulk CSV Enrollment Pipeline](#phase-34-registrar-batch-bulk-csv-enrollment-pipeline)
    - [Phase 3.5: Registrar Forensic Audit Logs](#phase-35-registrar-forensic-audit-logs)
    - [Phase 3.6: Campus Announcements & Registrar Operations](#phase-36-campus-announcements--registrar-operations)
    - [Phase 3.7: Universal Interactive Calendar (Registrar View)](#phase-37-universal-interactive-calendar-registrar-view)
-   - [Phase 3.8: Registrar Profile & AI Assistant Records Guidance](#phase-38-registrar-profile--ai-assistant-records-guidance)
+   - [Phase 3.8: Registrar Profile Change Request & AI Assistant Records Guidance](#phase-38-registrar-profile-change-request--ai-assistant-records-guidance)
 7. [ACT IV: Faculty Member — Pedagogy, Section Studio, Attendance & Grading](#act-iv-faculty-member--pedagogy-section-studio-attendance--grading)
-   - [Phase 4.1: Faculty Authentication (Prof. Julius Tolentino)](#phase-41-faculty-authentication-prof-julius-tolentino)
+   - [Phase 4.1: Faculty Authentication & First-Login Profile Onboarding](#phase-41-faculty-authentication--first-login-profile-onboarding)
    - [Phase 4.2: Section Workspace Overview & 7-Tab Navigation](#phase-42-section-workspace-overview--7-tab-navigation)
    - [Phase 4.3: Lessons & Syllabus Panel — Interactive Modules & Duplication](#phase-43-lessons--syllabus-panel--interactive-modules--duplication)
    - [Phase 4.4: Rubrics Builder Studio & Multi-Criterion Design](#phase-44-rubrics-builder-studio--multi-criterion-design)
@@ -56,10 +56,10 @@
    - [Phase 4.9: Class Section Announcements & Strict Cohort Isolation](#phase-49-class-section-announcements--strict-cohort-isolation)
    - [Phase 4.10: Section-Level Policy Threshold Overrides](#phase-410-section-level-policy-threshold-overrides)
    - [Phase 4.11: Student Evaluation Feedback Analytics Review](#phase-411-student-evaluation-feedback-analytics-review)
-   - [Phase 4.12: Faculty Profile, Password Management & AI Lesson Copilot](#phase-412-faculty-profile-password-management--ai-lesson-copilot)
+   - [Phase 4.12: Faculty Profile Change Request, Password Management & AI Lesson Copilot](#phase-412-faculty-profile-change-request-password-management--ai-lesson-copilot)
    - [Phase 4.13: Universal Interactive Calendar (Faculty View & Teaching Schedule)](#phase-413-universal-interactive-calendar-faculty-view--teaching-schedule)
 8. [ACT V: Student Scholar — Learning Experience, Degree Audit & Mobile UI](#act-v-student-scholar--learning-experience-degree-audit--mobile-ui)
-   - [Phase 5.1: Student Authentication (Baki Hanma) & Student Dashboard](#phase-51-student-authentication-baki-hanma--student-dashboard)
+   - [Phase 5.1: Student Authentication, First-Login Profile Onboarding & Student Dashboard](#phase-51-student-authentication-first-login-profile-onboarding--student-dashboard)
    - [Phase 5.2: Timetable & Schedule Matrix](#phase-52-timetable--schedule-matrix)
    - [Phase 5.3: Subject Enrolled Studio & Syllabus Roadmap Completion](#phase-53-subject-enrolled-studio--syllabus-roadmap-completion)
    - [Phase 5.4: Taking & Submitting All 4 Assessment Tiers](#phase-54-taking--submitting-all-4-assessment-tiers)
@@ -74,7 +74,7 @@
    - [Phase 5.13: Student Profile Change Request Submission & AI Tutor](#phase-513-student-profile-change-request-submission--ai-tutor)
    - [Phase 5.14: Universal Interactive Calendar (Student View, Deadlines & Timetable)](#phase-514-universal-interactive-calendar-student-view-deadlines--timetable)
 9. [ACT VI: Faculty Assessment Grading, Rubrics & Anti-Tamper Submission](#act-vi-faculty-assessment-grading-rubrics--anti-tamper-submission)
-   - [Phase 6.1: Submissions Grading Suite with Rubric Scoresheet (Flexible Feedback Architecture)](#phase-61-submissions-grading-suite-with-rubric-scoresheet-flexible-feedback-architecture)
+   - [Phase 6.1: Submissions Grading Suite with Rubric Scoresheet, Inline Student Work & Clickable Links](#phase-61-submissions-grading-suite-with-rubric-scoresheet-inline-student-work--clickable-links)
    - [Phase 6.2: Special Grade Flags Assignment (INC, DRP, FA)](#phase-62-special-grade-flags-assignment-inc-drp-fa)
    - [Phase 6.3: Automated Weighted Grade Calculation & Transmutation](#phase-63-automated-weighted-grade-calculation--transmutation)
    - [Phase 6.4: Submission to Registrar & Anti-Tamper State Lock](#phase-64-submission-to-registrar--anti-tamper-state-lock)
@@ -82,10 +82,10 @@
     - [Phase 7.1: Registrar Section Grade Audit & Evaluation Clearance](#phase-71-registrar-section-grade-audit--evaluation-clearance)
     - [Phase 7.2: Official Grade Release & Immutable Cryptographic Timestamping](#phase-72-official-grade-release--immutable-cryptographic-timestamping)
     - [Phase 7.3: Student Profile Verification Approval & Record Sync](#phase-73-student-profile-verification-approval--record-sync)
-    - [Phase 7.4: Student Report Card Immediate Visibility](#phase-74-student-report-card-immediate-visibility)
+    - [Phase 7.4: Student Report Card Immediate Visibility & Scrollable Component Breakdown](#phase-74-student-report-card-immediate-visibility--scrollable-component-breakdown)
 11. [ACT VIII: Academic Term Lifecycle & Student Promotion to 2nd Year](#act-viii-academic-term-lifecycle--student-promotion-to-2nd-year)
     - [Phase 8.1: Academic Year Status & Term Governance Review](#phase-81-academic-year-status--term-governance-review)
-    - [Phase 8.2: Automated Year-Level Promotion Evaluation Engine](#phase-82-automated-year-level-promotion-evaluation-engine)
+    - [Phase 8.2: Automated Year-Level Promotion Evaluation](#phase-82-automated-year-level-promotion-evaluation)
     - [Phase 8.3: Registrar Verification of Promoted 2nd Year Standing](#phase-83-registrar-verification-of-promoted-2nd-year-standing)
     - [Phase 8.4: School Year Duplication & Subsequent Cycle Rollover](#phase-84-school-year-duplication--subsequent-cycle-rollover)
 12. [Master AG-Grid Multi-Column Sort, Filter & AI Prompt Verification Matrix](#master-ag-grid-multi-column-sort-filter--ai-prompt-verification-matrix)
@@ -117,57 +117,73 @@ For all entities supporting CSV Bulk Upload, ready-made, pre-validated sample CS
 
 ---
 
-## 1. Master System Credentials & Pre-Seeded Accounts
+## 1. Master System Credentials & Clean-Slate Baseline Accounts
 
-The database is pre-configured with distinct, high-entropy credentials for each role under the active operational cycle **Academic Year 2027–2028 (`AY-2027-2028`)**, 1st Semester. The live test accounts link seamlessly with existing identities:
+The database has been reset to a **100% clean operational slate**, retaining only the **5 baseline role accounts (`{role}@example.com`)** as raw email identities with **no profile information set up yet** (`profile_completed = false`, blank first/last name, and zero pre-seeded academic/operational rows).
 
-| Role | Display Name | Email Address | Password | Assigned Entity / Context |
-| :--- | :--- | :--- | :--- | :--- |
-| **System Admin** | System Administrator | `admin@example.com` | `AdminMaster2026!` | Institutional IT & Systems Governance |
-| **Academic Dean** | David Dean | `dean@example.com` | `DeanAcademic2026!` | Information Technology (IT) |
-| **Registrar** | Rachel Registrar | `registrar@example.com` | `RegistrarRecords2026!` | Office of the University Registrar |
-| **Faculty (Baseline)** | Francis Faculty | `faculty@example.com` | `FacultyProfessor2026!` | Information Technology (IT) |
-| **Student (Baseline)** | Sam Student | `student@example.com` | `StudentScholar2026!` | BS Information Technology (Year 1, Student #2026-00001) |
-| **Faculty (Custom Live)** | **Julius Tolentino** | `juliustolentino.diamond@gmail.com` | `DiamondFaculty2026!` | **Information Technology (IT)** |
-| **Student (Custom Live)** | **Baki Hanma** | `hbaki386@gmail.com` | `HbakiStudent2026!` | **BS Information Technology (Starts Year 1)** |
+> [!IMPORTANT]
+> **First-Login Mandatory Profile Onboarding (`UserProfilePromptModal`):**
+> Because all 5 `{role}@example.com` baseline accounts start with `profile_completed = false`, logging into any baseline account for the first time automatically opens the mandatory **"Complete Your Profile Information"** modal (`UserProfilePromptModal`).
+> - Submitting the modal invokes `fn_complete_user_profile`, saving the user's First Name, Last Name, Middle Name, Phone, and Bio, and setting `profile_completed = true`.
+> - When `student@example.com` completes their profile onboarding, `fn_complete_user_profile` **automatically provisions their `public.students` record** with system-generated Student Number **`2026-0001`** (`year_level = 1`, `program_id = NULL`), and `StudentDashboard` automatically refreshes without modal overlap.
+
+| Role | Account Type | Initial State | Email Address | Password | Profile Setup Name (On First Login) | Assigned Entity / Context |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **System Admin** | Retained Baseline (`{role}@example.com`) | `profile_completed = false` | `admin@example.com` | `AdminMaster2026!` | **System Administrator** | Institutional IT & Systems Governance |
+| **Academic Dean** | Retained Baseline (`{role}@example.com`) | `profile_completed = false` | `dean@example.com` | `DeanAcademic2026!` | **David Dean** | Information Technology (IT) |
+| **Registrar** | Retained Baseline (`{role}@example.com`) | `profile_completed = false` | `registrar@example.com` | `RegistrarRecords2026!` | **Rachel Registrar** | Office of the University Registrar |
+| **Faculty (Baseline)** | Retained Baseline (`{role}@example.com`) | `profile_completed = false` | `faculty@example.com` | `FacultyProfessor2026!` | **Francis Faculty** | Information Technology (IT) |
+| **Student (Baseline)** | Retained Baseline (`{role}@example.com`) | `profile_completed = false` | `student@example.com` | `StudentScholar2026!` | **Sam Student** | Auto-assigned Student **`#2026-0001`** on onboarding |
+| **Faculty (Custom Live)** | Created Live in Phase 1.2 | Provisioned by Admin | `juliustolentino.diamond@gmail.com` | `DiamondFaculty2026!` *(or Set Password)* | **Julius Tolentino** | **Information Technology (IT)** |
+| **Student (Custom Live)** | Created Live in Phase 1.2 | Provisioned by Admin | `hbaki386@gmail.com` | `HbakiStudent2026!` *(or Set Password)* | **Baki Hanma** | **BS Information Technology (Starts Year 1)** |
 
 ---
 
 ## 2. Global Architecture & Oral Defense Highlights
 
 Key architectural strengths to present to the panel:
-1. **Multi-Role Security Perimeter & Auth Verification:** Strict role-based workspace protection separating Admin, Dean, Registrar, Faculty, and Student interfaces. Includes automated email verification gate and account status validation on `/forgot-password`.
+1. **Multi-Role Security Perimeter, First-Login Profile Onboarding & Universal Profile Governance:** Strict role-based workspace protection separating Admin, Dean, Registrar, Faculty, and Student interfaces. Accounts starting without profile details (`profile_completed = false`) are intercepted by `UserProfilePromptModal` (`fn_complete_user_profile`). Subsequent profile edits across all roles follow a dual-tier verification pipeline (`fn_update_my_profile`): Admin updates apply directly, Staff (Dean, Registrar, Faculty) edits route to Admin's **Profile Approvals** queue (`/admin/profile-verifications`), and Student requests route to the Registrar's **Profile Verification** queue (`/registrar/student-verification` via `fn_approve_student_profile_request` / `fn_reject_student_profile_request`).
 2. **Enterprise Anti-Double Submission & Button Loading Architecture:** All interactive submission buttons (`CommonButton`), modals, and multi-step forms enforce real-time loading spinners and mutation locks (`loading={isSubmitting}` / `disabled={isPending}`), preventing accidental double clicks and race conditions.
-3. **Unified Multi-Type Course Blueprint Engine:** Course creation and updating seamlessly support composite course types (e.g. combined Lecture + Laboratory components) in a single unified wizard, complete with auto-summed units/credit hours, stepper inputs protected against auto-clamping, and strict unit ceiling validation.
-4. **Dual-Key Grade Release Mechanism & Duplicate Release Prevention:** Faculty computes grades with automated transmutation; grades are submitted with an irreversible anti-tamper lock and released only after Registrar clearance. Database trigger `prevent_duplicate_grade_release` guarantees immutable grade state transitions.
-5. **Two-Step Mobile-Friendly Student Faculty Evaluation Suite:** Evaluation experience features a dedicated Step 1 (Faculty Selection & 5-point Likert Scale Guide with qualitative criteria descriptors) and Step 2 (Responsive Evaluation Matrix & Constructive Comments), unlocking student subject grades once completed.
-6. **Student Self-Service Degree Program Classification:** Students who do not have an assigned academic program can immediately select and initialize their degree program & year level directly from their dashboard and curriculum checklist (`/student/curriculum`), complementing administrative assignment by the Registrar.
-7. **Automated Academic Progression Engine:** Automatically scans completed curriculum courses and promotes passing students from Year 1 to Year 2 upon school year rollover.
-8. **Context-Aware AI Assistant Drawer:** Conversational AI dynamically grounded in the active user's role, permissions, and enrolled courses.
-9. **Universal Multi-Step Wizards & Bulk CSV Pipelines:** Built-in guided step-by-step wizards and CSV batch importers across 10 modules with automated code derivation.
-10. **Mobile-First Responsive Layout & Unified Table-Card Action Menus:** Full parity across Desktop and Mobile devices with dedicated touch navigation, responsive 3-dots action menus with permission checks, and zero horizontal scrolling issues.
-11. **Department Stepper & Strict Department Data Scoping:** Department governance via a 3-step wizard (Details, Dean Assignment, Faculty Roster) enforcing strict assignment of deans and instructors.
-12. **Academic Year Version History, Stepper Comparison & Revert:** Full historical snapshots of institutional school year configurations with step-by-step preview, side-by-side visual diffing, and version rollback.
-13. **Semantic Change Detection:** Save buttons and historical snapshots intelligently detect genuine field modifications, preventing unnecessary updates and redundant audit logs.
-14. **Session Draft Auto-Saving & Recovery Suite:** Automatic form caching with interactive recovery prompts across multi-step setup wizards to prevent accidental data loss.
-15. **Strict Section Announcement & Event Isolation:** Section-level announcements and calendar events are strictly isolated exclusively to assigned faculty and enrolled students.
+3. **Unified Multi-Type Course Blueprint Engine & Auto-Focused Error Tooltips:** Course creation and updating seamlessly support composite course types (e.g. combined Lecture + Laboratory components) in a single unified wizard, complete with auto-summed units/credit hours, stepper inputs protected against auto-clamping, strict unit ceiling validation, and field-level error tooltips that automatically focus and open the first invalid field.
+4. **Active-Year Curriculum Mapping with Auto-Populated Course Units:** In the Program & Curriculum 3-Step Wizard, Step 3 filters the Term selector exclusively to terms belonging to the **Active Academic Year**, and selecting a catalog course automatically populates its default Lecture and Laboratory unit breakdown.
+5. **Rubric Grading Studio with Inline Student Submission & Clickable Link Preview:** `RubricGradingPanel` displays the student's actual submitted work, text responses, and clickable external URLs (`LinkifiedText`) directly alongside the multi-criterion rubric scoresheet, while quizzes and standard assessments support rapid grading with optional feedback.
+6. **Dual-Key Grade Release Mechanism & Duplicate Release Prevention:** Faculty computes grades with automated transmutation; grades are submitted with an irreversible anti-tamper lock and released only after Registrar clearance. Database trigger `prevent_duplicate_grade_release` guarantees immutable grade state transitions, and the Student Grade Breakdown page accurately formats component scores with full vertical scrolling.
+7. **Two-Step Mobile-Friendly Student Faculty Evaluation Suite:** Evaluation experience features a dedicated Step 1 (Faculty Selection & 5-point Likert Scale Guide with qualitative criteria descriptors) and Step 2 (Responsive Evaluation Matrix & Constructive Comments), unlocking student subject grades once completed.
+8. **Student Self-Service Degree Program Classification:** Students who do not have an assigned academic program can immediately select and initialize their degree program & year level directly from their dashboard and curriculum checklist (`/student/curriculum`), complementing administrative assignment by the Registrar.
+9. **Automated Academic Progression Engine:** Automatically scans completed curriculum courses and promotes passing students from Year 1 to Year 2 upon school year rollover.
+10. **Context-Aware AI Assistant Drawer:** Conversational AI dynamically grounded in the active user's role, permissions, and enrolled courses.
+11. **Universal Multi-Step Wizards & Bulk CSV Pipelines:** Built-in guided step-by-step wizards and CSV batch importers across 10 modules with automated code derivation.
+12. **Mobile-First Responsive Layout & Unified Table-Card Action Menus:** Full parity across Desktop and Mobile devices with dedicated touch navigation, responsive 3-dots action menus with permission checks, and zero horizontal scrolling issues.
+13. **Department Stepper & Strict Department Data Scoping:** Department governance via a 3-step wizard (Details, Dean Assignment, Faculty Roster) enforcing strict assignment of deans and instructors.
+14. **Academic Year Version History, Stepper Comparison & Revert:** Full historical snapshots of institutional school year configurations with step-by-step preview, side-by-side visual diffing, and version rollback.
+15. **Semantic Change Detection & Session Draft Recovery Suite:** Save buttons and historical snapshots intelligently detect genuine field modifications, while `useFormDraft` caches in-progress multi-step wizard inputs with interactive recovery prompts.
+16. **Strict Section Announcement & Event Isolation:** Section-level announcements and calendar events are strictly isolated exclusively to assigned faculty and enrolled students.
 
 ---
 
 ## ACT I: System Administrator — Governance, Wizards & Infrastructure
 
-### Phase 1.1: Admin Authentication & Institutional Overview (Live Bento Metrics & Feeds)
+### Phase 1.1: Admin Authentication, First-Login Profile Onboarding & Institutional Overview
 1. Navigate to `https://project-application-two.vercel.app/login`.
 2. Input credentials:
    * **Email:** `admin@example.com`
    * **Password:** `AdminMaster2026!`
 3. Click **Sign In**.
-4. *(Optional Auth Feature Verification — Forgot Password Gate)*:
+4. **First-Login Mandatory Profile Setup (`UserProfilePromptModal`):**
+   * Because the database was reset with `profile_completed = false` and empty name fields on `admin@example.com`, the **"Complete Your Profile Information"** modal automatically opens upon landing on `/admin` (notice the top-right account menu gracefully falls back to displaying `admin@example.com` until the profile is completed).
+   * Fill in the onboarding fields:
+     - **First Name:** `System`
+     - **Last Name:** `Administrator`
+     - **Middle Name (Optional):** `Master`
+     - **Phone Number (Optional):** `+63 917 000 0001`
+     - **Bio (Optional):** `Institutional IT & Systems Governance Administrator.`
+   * Click **Complete Profile** (invokes `fn_complete_user_profile`, transitions `profile_completed` to `true`, and updates the navbar display name to **System Administrator**).
+5. *(Optional Auth Feature Verification — Forgot Password Gate)*:
    * Navigate to `/forgot-password`.
    * Input `unknown@example.com` and click **Send Reset Link** ➔ Real-time pre-verification checks the user table and prevents sending if the account does not exist (`Email Not Found`).
-   * Input `juliustolentino.diamond@gmail.com` ➔ System pre-verifies active account status and dispatches secure password reset link.
-5. **Inspect Admin Dashboard (`/admin`):**
-   * **Live Bento Stat Cards:** Review real-time institutional counts:
+   * Input `admin@example.com` ➔ System pre-verifies active account status and dispatches secure password reset link.
+6. **Inspect Admin Dashboard (`/admin`):**
+   * **Live Bento Stat Cards:** Review real-time institutional counts (starting from clean baseline: `0` Active Terms until Phase 1.6, `1` Active Student `student@example.com`, `1` Active Faculty `faculty@example.com`):
      - **Active Students**
      - **Active Faculty**
      - **Active Terms**
@@ -179,6 +195,7 @@ Key architectural strengths to present to the panel:
 
 ### Phase 1.2: User Management Full Lifecycle (Live Faculty & Student Creation)
 Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
+* **Clean-Slate Inspection:** Notice the 5 baseline `{role}@example.com` accounts in the table. Accounts that have not yet logged in to complete their profile display **`—`** in the First Name / Last Name columns (`useUserTableConfig`), while `admin@example.com` now displays `System Administrator`.
 
 #### 1. Live Creation of Faculty Member (Julius Tolentino)
 1. Click **+ Add User** (opens `CreateUserForm`).
@@ -226,10 +243,10 @@ Navigate to `/admin/users` via the sidebar (under **OVERVIEW**).
 
 ### Phase 1.4: Staff Profile Verification Queue & Side-by-Side Diff
 Navigate to `/admin/profile-verifications` via sidebar **Profile Approvals** (under **OVERVIEW**).
-1. Review pending identity update requests submitted by staff members.
+1. Review pending identity update requests submitted by staff members (**Dean**, **Registrar**, and **Faculty** accounts when they submit edits from `/:role/profile` via `fn_update_my_profile`).
 2. Filter by status: `Pending`, `Approved`, `Rejected`.
-3. Click **Review Request** on any row to open the enhanced `StaffProfileVerificationModal`.
-4. Inspect the responsive side-by-side comparison cards (Current Verified Profile vs. Requested Changes) covering avatar, contact details, department, and academic credentials.
+3. Click **Review Request** on any pending staff row to open the enhanced `StaffProfileVerificationModal`.
+4. Inspect the responsive side-by-side comparison cards (Current Verified Profile vs. Requested Changes) covering avatar, name, phone, bio, and academic credentials.
 5. Review the decision remarks input and notice the real-time loading spinners on the **Approve** and **Reject** buttons (`loading={isApproving || isRejecting}`), preventing duplicate submission or race conditions.
 6. Click **Approve** or **Reject** with remarks: `"Verified against university HR archives."`.
 
@@ -248,14 +265,14 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
    * Click **Next →** (bottom right).
 3. **Step 2: Dean Assignment:**
    * Inspect available deans from user directory.
-   * Search and select **David Dean** (`dean@example.com`).
-   * Review Dean Profile Card: Avatar, Full Name, Email, and Department Affiliation preview.
+   * Search and select **`dean@example.com`** *(displays as `dean@example.com` before Dean's first login, or **David Dean** after Phase 2.1 onboarding)*.
+   * Review Dean Profile Card: Avatar, Email, and Department Affiliation preview.
    * Click **Next →** (bottom right).
 4. **Step 3: Faculty Roster Assignment:**
    * Review the searchable faculty assignment selector.
-   * Check **Julius Tolentino** (`juliustolentino.diamond@gmail.com`) to assign him to this college.
+   * Check **Julius Tolentino** (`juliustolentino.diamond@gmail.com`) and/or **`faculty@example.com`** to assign them to this college.
    * **Strict Department Scoping:** Selected faculty are bound exclusively to this department, preventing cross-college instructor leaks.
-   * Review Selected Faculty count badge: `1 Faculty Selected`.
+   * Review Selected Faculty count badge.
 5. **Final Commit:**
    * Click **Save Department** (button enforces active loading spinner while creating relations).
    * The system validates relationships and registers `Information Technology (IT)`.
@@ -276,18 +293,18 @@ Navigate to `/admin/departments` via sidebar **Departments** (under **ACADEMIC S
 
 ### Phase 1.6: Enterprise Academic Year Setup Wizard & Version History Revert
 Navigate to `/admin/school-years` via sidebar **Academic Years** (under **ACADEMIC STRUCTURE**).
-1. Inspect the school year registry: The institutional operational calendar **`AY-2027-2028`** (**`Academic Year 2027-2028`**, 1st Semester: `08/16/2027` – `12/18/2027`, status: **Ongoing**) is already established and active as the primary operational cycle.
-2. Click **Edit** on `AY-2027-2028` (or click **+ Add School Year** to demonstrate the 6-step Academic Year Wizard `AcademicYearWizardModal` architecture).
+1. Inspect the clean-slate school year registry and click **+ Add School Year** to launch the 6-step Academic Year Wizard (`AcademicYearWizardModal`) and establish the primary operational cycle **`AY-2027-2028`** (**`Academic Year 2027-2028`**).
+2. Follow the 6 guided steps below to configure the institutional calendar from scratch:
 
 ---
 
 #### Step 1: Identity & Dates
-Review or provide the overarching academic calendar dates. The wizard dynamically computes codes and labels:
-* **Start Date**: Select or verify **`08/01/2027`**
-* **End Date**: Select or verify **`05/31/2028`**
+Provide the overarching academic calendar dates. The wizard dynamically computes codes and labels:
+* **Start Date**: Select **`08/01/2027`**
+* **End Date**: Select **`05/31/2028`**
 * **Academic Year Code**: Verified auto-populated: **`AY-2027-2028`** *(Read-only, calculated from dates)*
 * **Academic Year Label**: Verified auto-populated: **`Academic Year 2027-2028`** *(Read-only, calculated from dates)*
-* **Active School Year**: Checked **`[x] Active`** *(Retains `AY 2027-2028` as the active academic year to anchor the system's operational calendar)*
+* **Active School Year**: Check **`[x] Active`** *(Establishes `AY-2027-2028` as the active academic year to anchor the system's operational calendar and Curriculum Map term filtering)*
 * Click **Next →** (bottom right).
 
 ---
@@ -686,24 +703,36 @@ Navigate to `/admin/system-settings` via sidebar **Settings** (under **SYSTEM & 
 
 ---
 
-### Phase 1.12: Admin Profile Security & AI Assistant Operational Guidance
+### Phase 1.12: Admin Direct Profile Editing, Security & AI Assistant Operational Guidance
 1. Navigate to `/admin/profile` via top-right user menu ➔ Review admin avatar, name, and security tab.
-2. Click the floating top-right **AI Assistant** toggle (`button[aria-label="Toggle AI Assistant"]`).
-3. Click suggested prompt: *"How do I close an academic term safely?"*.
-4. AI Chatbot outlines the multi-step protocol (verifying grade submissions ➔ closing grading window ➔ advancing term status to Closed).
-5. Close drawer ➔ Click **Log Out**.
+2. **Direct Admin Profile Update (`fn_update_my_profile`):**
+   * Click **Edit Profile** ➔ Modify Phone Number or Bio ➔ Click **Save Changes** (with loading spinner).
+   * Because Admin is the institutional authority, profile edits apply immediately without requiring secondary queue approval.
+3. Click the floating top-right **AI Assistant** toggle (`button[aria-label="Toggle AI Assistant"]`).
+4. Click suggested prompt: *"How do I close an academic term safely?"*.
+5. AI Chatbot outlines the multi-step protocol (verifying grade submissions ➔ closing grading window ➔ advancing term status to Closed).
+6. Close drawer ➔ Click **Log Out**.
 
 ---
 
 ## ACT II: Academic Dean — Curriculum Blueprints, Faculty Load & Conflict Management
 
-### Phase 2.1: Dean Authentication & College Metrics
+### Phase 2.1: Dean Authentication, First-Login Profile Onboarding & College Metrics
 1. Navigate to `/login`.
 2. Input credentials:
    * **Email:** `dean@example.com`
    * **Password:** `DeanAcademic2026!`
 3. Click **Sign In**.
-4. **Inspect Dean Dashboard (`/dean`):**
+4. **First-Login Mandatory Profile Setup (`UserProfilePromptModal`):**
+   * Because `dean@example.com` starts with `profile_completed = false`, the **"Complete Your Profile Information"** modal automatically opens upon landing on `/dean`.
+   * Fill in the onboarding fields:
+     - **First Name:** `David`
+     - **Last Name:** `Dean`
+     - **Middle Name (Optional):** `Academic`
+     - **Phone Number (Optional):** `+63 917 000 0002`
+     - **Bio (Optional):** `Dean of the College of Information Technology.`
+   * Click **Complete Profile** (calls `fn_complete_user_profile` and updates the navbar display name to **David Dean**).
+5. **Inspect Dean Dashboard (`/dean`):**
    * **8 College Bento Stat Cards:**
      1. **Programs** (e.g. 1 active degree program)
      2. **Courses** (e.g. 2 catalog blueprints)
@@ -720,11 +749,14 @@ Navigate to `/admin/system-settings` via sidebar **Settings** (under **SYSTEM & 
 ### Phase 2.2: Program Level Management CRUD
 Navigate to `/dean/program-level-management` via sidebar **Program Levels** (under **ACADEMIC LOOKUPS**).
 
-#### 1. Manual Program Level CRUD
-1. **Create:** Click **+ Add Program Level**.
-   * Level Name: `Undergraduate Honors Accelerated` | Code: `UG-HON` | Rank: `1`. Click **Save**.
-2. **Search:** Search `Honors` in table filter.
-3. **Delete:** Click Delete ➔ Confirm modal to restore clean state.
+#### 1. Manual Program Level CRUD (Establishing Baseline Lookup)
+1. **Create Primary Level:** Click **+ Add Program Level**.
+   * **Level Name:** `Undergraduate` | **Code:** Auto-derived `UG` | **Rank:** `1` | **Description:** `Standard 4-year baccalaureate degree level.`
+   * Click **Save** *(Retain `Undergraduate` active so it can be selected in Phase 2.5)*.
+2. **Test Temporary Create, Search & Delete:**
+   * Click **+ Add Program Level** ➔ Level Name: `Undergraduate Honors Accelerated` | Rank: `2`. Click **Save**.
+   * Search `Honors` in table filter.
+   * Click Delete on `Undergraduate Honors Accelerated` ➔ Confirm modal to restore clean state while keeping `Undergraduate`.
 
 #### 2. Program Levels Bulk CSV Import Demonstration
 1. In `/dean/program-level-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
@@ -737,14 +769,15 @@ Navigate to `/dean/program-level-management` via sidebar **Program Levels** (und
 ### Phase 2.3: Course Type Management CRUD
 Navigate to `/dean/course-type-management` via sidebar **Course Types** (under **ACADEMIC LOOKUPS**).
 
-#### 1. Manual Course Type CRUD
-1. **Create:** Click **+ Add Course Type** (opens `CourseTypeFormModal`).
-   * **Course Type Code:** System-generated placeholder (read-only, derived e.g. `LEC`).
-   * **Course Type Name:** Input `Specialized AI Laboratory`.
-   * **Description:** Input `Advanced laboratory instruction dedicated to artificial intelligence and deep learning.`
-   * Click **Save** (enforces button loading state).
-2. **Search:** Search `Specialized AI` in table search input.
-3. **Delete:** Remove test course type to restore clean state.
+#### 1. Manual Course Type CRUD (Establishing Baseline Lecture & Laboratory Types)
+1. **Create Core Course Types:** Click **+ Add Course Type** (opens `CourseTypeFormModal`):
+   * **Type 1:** Course Type Name: `Lecture` | Description: `Standard classroom theoretical instruction.` ➔ Click **Save** (auto-derives code `LEC`).
+   * **Type 2:** Course Type Name: `Laboratory` | Description: `Hands-on computer laboratory practicum.` ➔ Click **Save** (auto-derives code `LAB`).
+   *(Retain both `Lecture` and `Laboratory` so they are available for composite course creation in Phase 2.4).*
+2. **Test Temporary Create, Search & Delete:**
+   * Click **+ Add Course Type** ➔ Course Type Name: `Specialized AI Laboratory` | Description: `Advanced laboratory instruction dedicated to artificial intelligence.` ➔ Click **Save**.
+   * Search `Specialized AI` in table search input.
+   * Click **Delete** on `Specialized AI Laboratory` to restore clean state.
 
 #### 2. Course Types Bulk CSV Import Demonstration
 1. In `/dean/course-type-management`, click Table Actions (`...`) ➔ Click **Bulk Import (CSV)**.
@@ -757,9 +790,10 @@ Navigate to `/dean/course-type-management` via sidebar **Course Types** (under *
 ### Phase 2.4: Course Blueprints & Unified Multi-Type Course Creation (IT101 & IT102)
 Navigate to `/dean/course-management` via sidebar **Courses** (under **CURRICULUM & CATALOG**).
 
-#### 1. Interactive 3-Step Course Creation Wizard (Unified Multi-Type Support)
+#### 1. Interactive 3-Step Course Creation Wizard (Unified Multi-Type Support & Error Tooltips)
 1. Click **+ Add Course** (opens `CourseWizardModal`):
    * **Step 1: Overview Data**
+     * *(Field Error Tooltip Showcase)*: Try clicking **Next Step →** with empty fields first—notice that validation errors are displayed cleanly inside **field-level error tooltips**, and the wizard **automatically opens and focuses the first error tooltip** rather than showing noisy global banners.
      * **Course Title:** Input `Introduction to Computing`
      * **Course Code:** Auto-generated system code `IT101` *(Derived automatically from department `IT` + sequence `101`)*.
      * **Department:** Select `Information Technology (IT)`
@@ -811,14 +845,15 @@ Navigate to `/dean/program-management` via sidebar **Programs** (under **CURRICU
    * **Step 2 (Grading Schema):**
      * Review the default institutional grading schema or retain inherited college defaults.
      * Click **Next Step →** (bottom right).
-   * **Step 3 (Curriculum Map):**
+   * **Step 3 (Curriculum Map — Active Academic Year Term Filtering & Auto-Populated Units):**
      * Click **+ Add Course to Term**:
        * **Year Level:** `1st Year`
-       * **Term:** `1st Semester`
-       * **Course:** Select **`IT101 - Introduction to Computing`** (3.0 Units)
+       * **Term:** Select **`1st Semester`** *(Notice the Term dropdown is strictly filtered to terms belonging to the **Active Academic Year `AY-2027-2028`**, preventing accidental assignment to inactive/historical terms)*.
+       * **Course:** Select **`IT101 - Introduction to Computing`**
+       * **Auto-Populated Lecture & Laboratory Units:** Upon selecting `IT101`, the form **automatically populates its default Lecture Units (`3.0`) and Laboratory Units (`0.0`)** from the course blueprint!
        * **Sequence:** `1`
        * Click **Save**.
-     * Repeat for **`IT102 - Computer Programming 1`** (Year 1, 1st Semester, 3.0 Units) or use the built-in bulk importer:
+     * Repeat for **`IT102 - Computer Programming 1`** (Year 1, 1st Semester — notice selecting `IT102` automatically populates **Lecture Units: `2.0`** and **Laboratory Units: `1.0`**, Total `3.0` Units!) or use the built-in bulk importer:
        * Click Table Actions ➔ Click **Bulk Import (CSV)**.
        * Drag and drop **[07_curriculum_map_bulk_sample.csv](file:///C:/Users/user/Documents/project-application/public/sample-csv/07_curriculum_map_bulk_sample.csv)**.
        * Click **Import Records**.
@@ -905,12 +940,15 @@ Welcome computing faculty and scholars! Join us for the semester kickoff assembl
 
 ---
 
-### Phase 2.9: Dean Profile & AI Assistant Copilot
+### Phase 2.9: Dean Profile Change Request Submission & AI Assistant Copilot
 1. Navigate to `/dean/profile` via top-right user menu.
-2. Click the floating top-right **AI Assistant** toggle.
-3. Ask suggested prompt: *"Where do I review faculty loading and resolve schedule conflicts?"*.
-4. AI Chatbot explains: Faculty load allocations and timetable collision checks are monitored directly through the Faculty Loading module (`/dean/faculty-load`) and Section Scheduling Wizard (`/dean/section-management`).
-5. Close AI Assistant.
+2. **Staff Profile Change Request (`fn_update_my_profile`):**
+   * Click **Edit Profile / Request Changes** ➔ Update Phone Number or Bio ➔ Click **Submit Request**.
+   * Because Staff profile updates are governed by institutional verification, this creates a `Pending` request in the Admin's **Profile Approvals** queue (`/admin/profile-verifications`).
+3. Click the floating top-right **AI Assistant** toggle.
+4. Ask suggested prompt: *"Where do I review faculty loading and resolve schedule conflicts?"*.
+5. AI Chatbot explains: Faculty load allocations and timetable collision checks are monitored directly through the Faculty Loading module (`/dean/faculty-load`) and Section Scheduling Wizard (`/dean/section-management`).
+6. Close AI Assistant.
 
 ---
 
@@ -926,13 +964,22 @@ Navigate to `/dean/calendar` via sidebar **Calendar** (under **CAMPUS COMMUNICAT
 
 ## ACT III: University Registrar — Verification, Shifting, Batch Enrollment & Audit
 
-### Phase 3.1: Registrar Authentication & Enrollment Operations
+### Phase 3.1: Registrar Authentication, First-Login Profile Onboarding & Enrollment Operations
 1. Navigate to `/login`.
 2. Input credentials:
    * **Email:** `registrar@example.com`
    * **Password:** `RegistrarRecords2026!`
 3. Click **Sign In**.
-4. **Inspect Registrar Dashboard (`/registrar`):**
+4. **First-Login Mandatory Profile Setup (`UserProfilePromptModal`):**
+   * Because `registrar@example.com` starts with `profile_completed = false`, the **"Complete Your Profile Information"** modal automatically opens upon landing on `/registrar`.
+   * Fill in the onboarding fields:
+     - **First Name:** `Rachel`
+     - **Last Name:** `Registrar`
+     - **Middle Name (Optional):** `Records`
+     - **Phone Number (Optional):** `+63 917 000 0003`
+     - **Bio (Optional):** `University Registrar overseeing academic records and enrollment clearance.`
+   * Click **Complete Profile** (calls `fn_complete_user_profile` and updates the navbar display name to **Rachel Registrar**).
+5. **Inspect Registrar Dashboard (`/registrar`):**
    * **5 Registrar Bento Stat Cards:**
      1. **Active Students**
      2. **Enrollments This Term**
@@ -1022,26 +1069,28 @@ Navigate to `/registrar/calendar` via sidebar **Calendar** (under **CAMPUS COMMU
 
 ---
 
-### Phase 3.8: Registrar Profile & AI Assistant Records Guidance
+### Phase 3.8: Registrar Profile Change Request & AI Assistant Records Guidance
 1. Navigate to `/registrar/profile` via top-right user menu.
-2. Click the floating top-right **AI Assistant** toggle.
-3. Ask suggested prompt: *"What prerequisites must be fulfilled before releasing final grades?"*.
-4. AI Chatbot explains: Final grade release requires two institutional gates:
+2. **Staff Profile Change Request (`fn_update_my_profile`):**
+   * Click **Edit Profile / Request Changes** to demonstrate submitting a Registrar profile update request to the Admin approval queue (`/admin/profile-verifications`).
+3. Click the floating top-right **AI Assistant** toggle.
+4. Ask suggested prompt: *"What prerequisites must be fulfilled before releasing final grades?"*.
+5. AI Chatbot explains: Final grade release requires two institutional gates:
    - Faculty member has submitted section grades with anti-tamper lock.
    - Enrolled students have completed their mandatory faculty performance evaluations.
-5. Close AI Assistant ➔ Click **Log Out** from Registrar.
+6. Close AI Assistant ➔ Click **Log Out** from Registrar.
 
 ---
 
 ## ACT IV: Faculty Member — Pedagogy, Section Studio, Attendance & Grading
 
-### Phase 4.1: Faculty Authentication (Prof. Julius Tolentino)
+### Phase 4.1: Faculty Authentication & First-Login Profile Onboarding
 1. Navigate to `/login`.
-2. Input credentials:
-   * **Email:** `juliustolentino.diamond@gmail.com`
-   * **Password:** `DiamondFaculty2026!`
+2. Input credentials for **Prof. Julius Tolentino** (`juliustolentino.diamond@gmail.com` / `DiamondFaculty2026!`) or the baseline faculty account (`faculty@example.com` / `FacultyProfessor2026!`).
 3. Click **Sign In**.
-4. Faculty Dashboard greets **Prof. Julius Tolentino** with assigned section **`IT101-001`**.
+4. **First-Login Mandatory Profile Setup (`UserProfilePromptModal`):**
+   * If signing in with an account where `profile_completed = false` (such as `faculty@example.com` on first login), the **"Complete Your Profile Information"** modal automatically opens. Input First Name (`Francis`), Last Name (`Faculty`), Phone, and Bio, then click **Complete Profile** (`fn_complete_user_profile`).
+5. Faculty Dashboard greets **Prof. Julius Tolentino** with assigned section **`IT101-001`**.
 
 ---
 
@@ -1173,11 +1222,14 @@ Navigate to `/faculty/evaluations` via sidebar **Student Evaluations** (under **
 
 ---
 
-### Phase 4.12: Faculty Profile, Password Management & AI Lesson Copilot
+### Phase 4.12: Faculty Profile Change Request, Password Management & AI Lesson Copilot
 1. Navigate to `/faculty/profile` via top-right user menu ➔ Review profile details and security tab.
-2. Open AI Assistant: Ask *"Help me draft 3 multiple choice questions for computer networking."*.
-3. AI generates questions with correct keys and explanations.
-4. Close AI Assistant.
+2. **Faculty Profile Change Request (`fn_update_my_profile`):**
+   * Click **Edit Profile / Request Changes** ➔ Update contact phone or faculty bio ➔ Click **Submit Request**.
+   * This dispatches a pending verification request to the Admin's **Profile Approvals** queue (`/admin/profile-verifications`).
+3. Open AI Assistant: Ask *"Help me draft 3 multiple choice questions for computer networking."*.
+4. AI generates questions with correct keys and explanations.
+5. Close AI Assistant.
 
 ---
 
@@ -1194,13 +1246,15 @@ Navigate to `/faculty/calendar` via sidebar **Calendar** (under **OVERVIEW**).
 
 ## ACT V: Student Scholar — Learning Experience, Degree Audit & Mobile UI
 
-### Phase 5.1: Student Authentication (Baki Hanma) & Student Dashboard
+### Phase 5.1: Student Authentication, First-Login Profile Onboarding & Student Dashboard
 1. Navigate to `/login`.
-2. Input credentials:
-   * **Email:** `hbaki386@gmail.com`
-   * **Password:** `HbakiStudent2026!`
+2. Input credentials for **Baki Hanma** (`hbaki386@gmail.com` / `HbakiStudent2026!`) or the baseline student account (`student@example.com` / `StudentScholar2026!`).
 3. Click **Sign In**.
-4. Student Dashboard displays enrolled course **`IT101-001`** (Prof. Julius Tolentino) and upcoming deadlines.
+4. **First-Login Mandatory Profile Setup & Automated Student Number Provisioning (`UserProfilePromptModal`):**
+   * When signing in with an account where `profile_completed = false` (such as `student@example.com` on first login), `ProtectedLayout` opens the mandatory **"Complete Your Profile Information"** modal (`UserProfilePromptModal`), while `StudentLayout` and `StudentDashboard` suppress overlapping secondary prompts until basic onboarding completes.
+   * Input First Name (`Sam`), Last Name (`Student`), Phone Number, and Bio ➔ Click **Complete Profile**.
+   * `fn_complete_user_profile` atomically sets `profile_completed = true` and **automatically provisions the `public.students` record** with system-generated Student Number **`2026-0001`** (`year_level = 1`, `program_id = NULL`), immediately refreshing the Student Dashboard!
+5. Student Dashboard displays enrolled course **`IT101-001`** (Prof. Julius Tolentino) and upcoming deadlines.
    > [!TIP]
    > **Student Self-Service Program Assignment Notice:** If a new student logs in before the Registrar has assigned their degree program, a conspicuous alert banner displays: *"Academic Program Not Assigned"*, accompanied by a direct button **"Go to Curriculum Checklist"**. Clicking this button directs the student to `/student/curriculum` to self-select their degree program (e.g. BSIT) and year level, immediately initializing their curriculum checklist.
 
@@ -1226,8 +1280,8 @@ Click the **Assessments** tab in `IT101-001`:
 
 1. **Take Quiz 1:** Click **Start Assessment** on Quiz 1 ➔ Answer: Select `B) AND` ➔ Click **Submit Assessment** (enforces button loading state to prevent double submission) ➔ Confirm dialog. Instant score: `20 / 20 Points (100%)`.
 2. **Take Midterm Exam:** Click **Start Assessment** on Midterm Exam ➔ Answer: Type `"The Program Counter holds the memory address of the next instruction to be executed."` ➔ Click **Submit**.
-3. **Take Lab Activity 1:** Click **Start Assessment** on Lab Activity 1 ➔ Submit solution link / response ➔ Click **Submit**.
-4. **Take Term Project:** Click **Start Assessment** on Term Project ➔ Submit repository link and architecture overview ➔ Click **Submit**.
+3. **Take Lab Activity 1:** Click **Start Assessment** on Lab Activity 1 ➔ Submit solution link (e.g. `https://github.com/student/flowchart-solution`) and text explanation ➔ Click **Submit**.
+4. **Take Term Project:** Click **Start Assessment** on Term Project ➔ Submit repository link (e.g. `https://github.com/student/system-prototype`) and architecture overview ➔ Click **Submit**.
 5. All 4 assessments display status badge **Submitted**.
 
 ---
@@ -1320,8 +1374,8 @@ Navigate to `/student/insight` via sidebar **Achievement & Honors Tracker** (und
 ### Phase 5.13: Student Profile Change Request Submission & AI Tutor
 1. Navigate to `/student/profile` via top-right user menu.
 2. Click **Request Changes** (opens `PendingChangesModal`).
-3. Fill in proposed contact update (e.g. update contact number or permanent address) and click **Submit Request**.
-   *(Architectural Context: This generates a live change request in the Registrar's verification queue, testable in Phase 7.3).*
+3. Fill in proposed personal/contact update (e.g. update First/Last Name, contact number, or permanent address) and click **Submit Request**.
+   *(Architectural Context: This generates a live change request in `student_profile_requests` routed to the Registrar's verification queue, testable in Phase 7.3 via `fn_approve_student_profile_request` / `fn_reject_student_profile_request`).*
 4. Open AI Assistant: Ask *"Can you explain binary search in simple terms?"*.
 5. AI returns a tutorial with step-by-step example.
 6. Close AI Assistant.
@@ -1345,16 +1399,20 @@ Navigate to `/student/calendar` via sidebar **Calendar** (under **OVERVIEW**).
 
 ## ACT VI: Faculty Assessment Grading, Rubrics & Anti-Tamper Submission
 
-### Phase 6.1: Submissions Grading Suite with Rubric Scoresheet (Flexible Feedback Architecture)
+### Phase 6.1: Submissions Grading Suite with Rubric Scoresheet, Inline Student Work & Clickable Links
 1. Log in as Faculty: `juliustolentino.diamond@gmail.com` / `DiamondFaculty2026!`.
 2. Navigate to `/faculty/sections` ➔ Open `IT101-001` ➔ Click **Assessments** tab.
 3. On Term Project, click **View Submissions** (opens `SubmissionsPage`).
 4. Locate **Baki Hanma** ➔ Click **Grade Submission** (opens `RubricGradingPanel`):
-   * Criterion 1 (Technical Correctness, 40%): Select *Exemplary (100%)*.
-   * Criterion 2 (Problem Solving, 40%): Select *Exemplary (100%)*.
-   * Criterion 3 (Documentation, 20%): Select *Proficient (85%)*.
-   * Computed Score: `97 / 100` (synced via `fn_get_my_assessment_result_rubric`).
-   * Feedback: `"Superb implementation and clean code structure."`.
+   * **Inline Student Submission Work & Clickable URLs (`LinkifiedText`):**
+     - Directly above/alongside the rubric matrix, inspect the **Submitted Work** section displaying the student's question answers, text responses, and submitted repository/project links (e.g., `https://github.com/student/system-prototype`).
+     - Notice that URLs in the student's submission are automatically converted into safe, clickable hyperlinks (`target="_blank" rel="noopener noreferrer"`) so faculty can open and inspect student deliverables in one click while grading!
+   * **Multi-Criterion Rubric Scoring:**
+     - Criterion 1 (Technical Correctness, 40%): Select *Exemplary (100%)*.
+     - Criterion 2 (Problem Solving, 40%): Select *Exemplary (100%)*.
+     - Criterion 3 (Documentation, 20%): Select *Proficient (85%)*.
+     - Computed Score: `97 / 100` (synced via `fn_get_my_assessment_result_rubric`).
+     - Feedback: `"Superb implementation and clean code structure."`.
 5. Click **Save & Return Grade** (equipped with button loading state).
    > [!TIP]
    > **Flexible Grading Architecture:** For Quizzes and standard assessments in `GradingPanel`, qualitative feedback is optional. Faculty can rapidly input scores and save grades immediately without requiring filler feedback text, while retaining the capability to provide detailed annotations when desired.
@@ -1424,14 +1482,14 @@ Still in the **Gradebook** tab of `IT101-001`:
 Navigate to `/registrar/student-verification` via sidebar **Profile Verification** (under **STUDENT PROFILE VERIFICATION**).
 1. Locate **Baki Hanma**'s pending profile change request submitted in Phase 5.13.
 2. Click on the request card/row to open `StudentProfileVerificationModal`.
-3. Inspect side-by-side comparison of current student data versus submitted update values.
-4. Click **Approve** (with remarks: `"Verified with university records"`, button displays loading spinner).
-5. Toast confirms: *"Student profile update approved successfully."*. Status transitions to **Approved**.
+3. Inspect side-by-side comparison of current student data versus submitted update values (including user identity fields such as First/Last Name alongside student contact/address records).
+4. Click **Approve** (with remarks: `"Verified with university records"`, button displays loading spinner calling `fn_approve_student_profile_request`, or **Reject** via `fn_reject_student_profile_request`).
+5. Toast confirms: *"Student profile update approved successfully."*. Both `public.users` and `public.students` sync atomically, and status transitions to **Approved**.
 6. Click **Log Out** from Registrar.
 
 ---
 
-### Phase 7.4: Student Report Card Immediate Visibility
+### Phase 7.4: Student Report Card Immediate Visibility & Scrollable Component Breakdown
 1. Log in as Student: `hbaki386@gmail.com` / `HbakiStudent2026!`.
 2. Navigate to `/student/grade` via sidebar **My Grades** (under **COURSES & GRADES**).
 3. **Official Report Card View:**
@@ -1439,7 +1497,9 @@ Navigate to `/registrar/student-verification` via sidebar **Profile Verification
    * Units: `3.0`
    * Final Transmuted Grade: **`1.25`**
    * Remarks: **`Passed`**
-4. Click **View Grade Breakdown** (opens `GradeBreakdownPage`) ➔ Review component scores matching the faculty gradebook.
+4. Click **View Grade Breakdown** (opens `GradeBreakdownPage`):
+   * Inspect the detailed period and component score breakdown matching the faculty gradebook.
+   * Notice that component scores cleanly display earned vs. total points (gracefully handling zero-max/ungraded items without showing misleading `0/0` ratios) and the breakdown view supports smooth vertical scrolling across all desktop and mobile viewports.
 5. Click **Log Out** from Student.
 
 ---
@@ -1494,6 +1554,8 @@ Use this quick-reference matrix during the live presentation to test every table
 
 | Role | Module URL | Interactive Control | Test Input / Action | Expected Visual Result |
 | :--- | :--- | :--- | :--- | :--- |
+| **All Roles** | First Login (`/:role`) | Mandatory Profile Setup (`UserProfilePromptModal`) | Input First Name, Last Name, Phone, Bio & Submit | Calls `fn_complete_user_profile`, transitions `profile_completed = true`, and auto-provisions `2026-0001` for Student. |
+| **All Roles** | `/:role/profile` | Profile Update / Request Changes | Edit profile details & click Save / Submit | Admin updates immediately; Staff routes to `/admin/profile-verifications`; Student routes to `/registrar/student-verification`. |
 | **All Roles** | `/:role/calendar` | View Mode Selector | Toggle Month / Week / Day / Agenda | Dynamically redraws grid into selected time visualization. |
 | **All Roles** | `/:role/calendar` | Category Pill Filter | Uncheck / Check Category Pill | Instantly filters events by type (Class, Event, Deadline, Holiday). |
 | **All Roles** | `/forgot-password` | Email Verification Gate | Input email and click Submit | Pre-verifies user existence and account status (active/inactive) before sending reset email. |
@@ -1502,8 +1564,8 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Admin** | `/admin/users` | Text Search Bar | Type `hbaki` | Instant debounce filter isolates Baki Hanma. |
 | **Admin** | `/admin/users` | Role Filter Select | Select `Faculty` | Table displays exclusively faculty accounts. |
 | **Admin** | `/admin/users` | Bulk Import Modal | Click `Bulk Import (CSV)` | Displays CSV template downloader and preview table. |
-| **Admin** | `/admin/profile-verifications` | Status Filter | Select `Pending` | Renders only accounts with pending update submissions. |
-| **Admin** | `/admin/profile-verifications` | Action Modal | Click `Review Request` | Displays side-by-side diff of current vs. requested data with loading buttons. |
+| **Admin** | `/admin/profile-verifications` | Status Filter | Select `Pending` | Renders only staff accounts with pending update submissions. |
+| **Admin** | `/admin/profile-verifications` | Action Modal | Click `Review Request` | Displays side-by-side diff of current vs. requested staff data with loading buttons. |
 | **Admin** | `/admin/departments` | Text Search Bar | Type `Information` | Isolates College of Information Technology & Engineering card. |
 | **Admin** | `/admin/school-years` | Multi-Step Wizard | Click `+ Add School Year` | Launches 6-step calendar setup wizard. |
 | **Admin** | `/admin/school-years` | Budget Bar | Adjust Weight Stepper | Period allocation bar displays over-budget red hatching. |
@@ -1517,8 +1579,9 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Admin** | `/admin/system-settings` | Form Fields | Input name, contact, upload size | Updates institution identity and upload restrictions with live validation. |
 | **Admin** | Any Admin Page | AI Assistant Drawer | Prompt: *"How do I close a term?"* | AI returns term closure rules and prerequisite checks. |
 | **Dean** | `/dean/program-level-management` | Text Search Bar | Type `Honors` | Instant table search without page reload. |
+| **Dean** | `/dean/course-management` | Field Error Tooltips | Submit empty Step 1 in Course Wizard | Displays field-level error tooltips and auto-opens first invalid field tooltip. |
 | **Dean** | `/dean/course-management` | Multi-Type Stepper Input | Add Multiple Types (Lec + Lab) | Auto-sums units without premature auto-clamping; validates against max units limit. |
-| **Dean** | `/dean/program-management` | Multi-Step Wizard | Click `+ Add Program` | Launches 3-step Details, Grading Schema, and Curriculum Map wizard. |
+| **Dean** | `/dean/program-management` | Curriculum Map Step 3 | Select Active Term & Course (`IT102`) | Term dropdown filters to active academic year terms; course selection auto-populates default Lecture & Lab units. |
 | **Dean** | `/dean/program-management` | Cloning Modal | Click `Clone Curriculum` | Replicates complete degree curriculum into new school year. |
 | **Dean** | `/dean/section-management` | Multi-Step Wizard | Click `+ Add Section` | Launches 3-step overview, schedule, and schema wizard. |
 | **Dean** | `/dean/faculty-load` | Multi-Step Wizard | Click `Manage Load` | Launches 3-step workload, section, and live conflict evaluation. |
@@ -1526,10 +1589,11 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Registrar** | `/registrar/enrollment-management` | Row Action Menu | Click `Assign Program & Year` | Opens program classification and year-level assignment modal with loading state. |
 | **Registrar** | `/registrar/enrollment-management` | Workspace Modal | Click `Edit` on Student | Opens enrollment workspace to enroll student into sections. |
 | **Registrar** | `/registrar/enrollment-management` | Toolbar Button | Click `Upload CSV` | Opens batch student enrollment CSV processor. |
-| **Registrar** | `/registrar/student-verification` | Request Modal | Click on Student Request | Displays side-by-side comparison for profile update approval. |
+| **Registrar** | `/registrar/student-verification` | Request Modal | Click on Student Request | Displays side-by-side comparison for student profile update approval (`fn_approve_student_profile_request`). |
 | **Registrar** | `/registrar/grade-release` | Dynamic Action Button | Inspect clearance checklist | Button dynamically switches to "Awaiting Student Evaluations" or "Release to Students", protected by `prevent_duplicate_grade_release`. |
 | **Faculty** | `/faculty/sections/:id?tab=content` | Complete Toggle | Click Circle Check | Syllabus progress bar increments to 100%. |
 | **Faculty** | `/faculty/sections/:id?tab=assessments` | Segmented Toggle | Click `Grading Rubrics` | Displays rubric matrices builder studio. |
+| **Faculty** | `/faculty/sections/:id/assessments/:aid/submissions` | Rubric Grading Panel | Open student submission in `RubricGradingPanel` | Displays student's submitted work and clickable links (`LinkifiedText`) alongside rubric criteria. |
 | **Faculty** | `/faculty/sections/:id?tab=attendance` | Attendance Wizard | Click `+ Create Session` | Launches daily lecture attendance taking wizard. |
 | **Faculty** | `/faculty/sections/:id?tab=students` | Student Modal | Click on Student Row | Opens 3-tab attendance, assessment, and grade drilldown. |
 | **Faculty** | `/faculty/sections/:id?tab=grading` | Optional Feedback | Save Grade with empty feedback | Allows saving grades without mandatory remarks; displays loading state. |
@@ -1541,6 +1605,7 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Student** | `/student/curriculum` | Self-Service Program Selector | Select Program & Year Level | Instantly initializes 4-year degree curriculum checklist and audit view. |
 | **Student** | `/student/curriculum` | Official Transcript | Click `Grade Report` | Renders printable official Transcript of Records (TOR). |
 | **Student** | `/student/evaluations` | Two-Step Wizard Navigation | Click "Proceed to Evaluation Form" | Seamlessly transitions between Faculty & Rating Guide and responsive evaluation matrix. |
+| **Student** | `/student/grade/:id/breakdown` | Grade Breakdown View | Open `GradeBreakdownPage` | Displays component scores cleanly (without `0/0` artifacts) with full vertical scrolling. |
 | **Student** | `/student/insight` | Interactive Slider | Drag Target GWA | `WhatIfGradeSimulator` dynamically recalculates exam score. |
 | **Student** | `/student/profile` | Request Modal | Click `Request Changes` | Opens profile pending change request submission dialog. |
 | **Student** | Mobile Viewport (`390x844`) | Hamburger Toggle | Click `button[aria-label="Open navigation menu"]` | Smoothly animates mobile touch navigation drawer. |

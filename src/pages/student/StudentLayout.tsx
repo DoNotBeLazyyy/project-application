@@ -4,6 +4,7 @@ import {
     BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon, MegaphoneIcon
 } from '@phosphor-icons/react';
 import { getMyProfile } from '@services/profile.service';
+import { useAppStore } from '@stores/app.store';
 import { MyProfile } from '@type/profile.type';
 import { SideBarSection } from '@type/sidebar.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -12,6 +13,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export default function StudentLayout() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const userProfile = useAppStore((s) => s.userProfile);
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [isPromptOpen, setIsPromptOpen] = useState(false);
 
@@ -19,7 +21,7 @@ export default function StudentLayout() {
         const result = await getMyProfile();
         if (result.data) {
             setProfile(result.data);
-            if (!result.data.student) {
+            if (result.data.profile_completed !== false && !result.data.student) {
                 setIsPromptOpen(true);
             } else {
                 setIsPromptOpen(false);
@@ -29,7 +31,7 @@ export default function StudentLayout() {
 
     useEffect(function() {
         loadProfile();
-    }, [loadProfile]);
+    }, [loadProfile, userProfile?.profile_completed]);
 
     const navSections = useMemo((): SideBarSection[] => [
         {

@@ -43,9 +43,10 @@ export default function UserAccountMenu() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const isOpen = Boolean(anchorEl);
 
-    const displayName = userProfile
-        ? `${userProfile.first_name} ${userProfile.last_name}`
-        : 'My Account';
+    const fullName = userProfile
+        ? `${userProfile.first_name} ${userProfile.last_name}`.trim()
+        : '';
+    const displayName = fullName || userProfile?.email || 'My Account';
     const initials = userProfile
         ? resolveInitials(userProfile.first_name, userProfile.last_name)
         : 'U';

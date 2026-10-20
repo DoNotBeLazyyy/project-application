@@ -107,7 +107,14 @@ export async function bulkCreateDepartments(
     if (result.error) {
         return {
             provisioned_count: 0,
-            errors: [result.error.message]
+            errors: [result.error.message],
+            structuredErrors: [
+                {
+                    row: 1,
+                    code: 'DUPLICATE',
+                    message: result.error.message
+                }
+            ]
         };
     }
 

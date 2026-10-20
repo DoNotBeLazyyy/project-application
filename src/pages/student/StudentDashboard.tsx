@@ -13,6 +13,7 @@ import { BookOpenIcon, CalendarCheckIcon, ClockIcon, GraduationCapIcon, UserFocu
 import { getStudentInsight } from '@services/analytics.service';
 import { getMyProfile } from '@services/profile.service';
 import { getStudentDashboard } from '@services/student-portal.service';
+import { useAppStore } from '@stores/app.store';
 import { StudentInsight } from '@type/analytics.type';
 import { AssessmentType } from '@type/assessment.type';
 import { MyProfile } from '@type/profile.type';
@@ -86,6 +87,7 @@ function resolveStudentStatValue(dashboard: StudentDashboardData | null, statKey
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
+    const userProfile = useAppStore((s) => s.userProfile);
     const {
         announcements,
         announcementsError,
@@ -116,7 +118,7 @@ export default function StudentDashboard() {
         fetchDashboard();
         fetchInsight();
         loadProfile();
-    }, []);
+    }, [userProfile?.profile_completed]);
 
     function handleViewInsight() {
         navigate('/student/insight');
@@ -129,7 +131,7 @@ export default function StudentDashboard() {
                 title="Dashboard"
             />
 
-            {!profile?.student && (
+            {profile && profile.profile_completed !== false && !profile.student && (
                 <div className="border border-(--mui-palette-warning-main) bg-(--mui-palette-warning-light) p-4 rounded-lg flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                         <UserFocusIcon size={28} className="text-(--mui-palette-warning-main)" />
