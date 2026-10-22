@@ -191,6 +191,12 @@ export function focusAndOpenFirstErrorField(
         if (scrollTarget instanceof HTMLElement && typeof scrollTarget.scrollIntoView === 'function') {
             scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        announceFormError({
+            count: 1,
+            message: '',
+            firstErrorField: name
+        });
     }, 50);
 }
 
@@ -201,13 +207,17 @@ export function formErrors<T extends FieldValues>(
     const error = checkForMessage<T>(errors);
     if (error.firstError) {
         const { firstError } = error;
-
-        focusAndOpenFirstErrorField(firstError.key, methods);
-        announceFormError({
+        const detail: FormErrorEventDetail = {
             count: error.count,
             message: firstError.message ?? 'Please complete the required fields before saving.',
             firstErrorField: firstError.key
-        });
+        };
+
+        focusAndOpenFirstErrorField(firstError.key, methods);
+        announceFormError(detail);
+        setTimeout(() => {
+            announceFormError(detail);
+        }, 100);
     }
 }
 
