@@ -251,6 +251,7 @@ export default function CourseWizardModal({
         }
 
         if (values.prerequisites && values.prerequisites.length > 0) {
+            let hasPrereqError = false;
             for (let i = 0; i < values.prerequisites.length; i++) {
                 const prereq = values.prerequisites[i];
                 if (prereq.prerequisite_kind === 'course' && (!prereq.course_id || !prereq.course_id.trim())) {
@@ -258,19 +259,20 @@ export default function CourseWizardModal({
                         type: 'manual',
                         message: 'Please select a prerequisite course or remove the row.'
                     });
-                    setCurrentStep(3);
-                    formErrors(methods.formState.errors, methods);
-                    return;
+                    hasPrereqError = true;
                 }
                 if (prereq.prerequisite_kind === 'standing' && (!prereq.year_level_required || !String(prereq.year_level_required).trim())) {
                     methods.setError(`prerequisites.${i}.year_level_required` as any, {
                         type: 'manual',
                         message: 'Please select a year level standing or remove the row.'
                     });
-                    setCurrentStep(3);
-                    formErrors(methods.formState.errors, methods);
-                    return;
+                    hasPrereqError = true;
                 }
+            }
+            if (hasPrereqError) {
+                setCurrentStep(3);
+                formErrors(methods.formState.errors, methods);
+                return;
             }
         }
         draftGuard.clearDraft();

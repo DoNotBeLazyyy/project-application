@@ -175,6 +175,7 @@ export default function SectionWizardModal({
     function validateStep2(): boolean {
         const values = getValues();
         const schedules = values.schedules || [];
+        let hasErrors = false;
         for (let i = 0; i < schedules.length; i++) {
             const slot = schedules[i];
             if (!slot.days || slot.days.length === 0) {
@@ -182,33 +183,33 @@ export default function SectionWizardModal({
                     type: 'manual',
                     message: `Schedule Slot #${i + 1} must have at least one day selected.`
                 });
-                formErrors(methods.formState.errors, methods);
-                return false;
+                hasErrors = true;
             }
             if (!slot.time_start) {
                 methods.setError(`schedules.${i}.time_start` as any, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: Start time is required.`
                 });
-                formErrors(methods.formState.errors, methods);
-                return false;
+                hasErrors = true;
             }
             if (!slot.time_end) {
                 methods.setError(`schedules.${i}.time_end` as any, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: End time is required.`
                 });
-                formErrors(methods.formState.errors, methods);
-                return false;
+                hasErrors = true;
             }
-            if (slot.time_start >= slot.time_end) {
+            if (slot.time_start && slot.time_end && slot.time_start >= slot.time_end) {
                 methods.setError(`schedules.${i}.time_start` as any, {
                     type: 'manual',
                     message: `Schedule Slot #${i + 1}: Start time must be earlier than end time.`
                 });
-                formErrors(methods.formState.errors, methods);
-                return false;
+                hasErrors = true;
             }
+        }
+        if (hasErrors) {
+            formErrors(methods.formState.errors, methods);
+            return false;
         }
         return true;
     }
