@@ -78,7 +78,7 @@ export default function CalendarActionMenu({
                 sx={{
                     backgroundColor: isMenuOpen
                         ? 'var(--mui-tokens-color-brand-100)'
-                        : '#ffffff',
+                        : 'var(--mui-tokens-color-common-white, #ffffff)',
                     borderColor: 'var(--mui-palette-primary-main)',
                     borderWidth: '1px',
                     boxShadow: 'none',

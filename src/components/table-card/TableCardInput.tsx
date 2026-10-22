@@ -49,7 +49,7 @@ export default function TableCardInput({
             size="small"
             sx={{
                 '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'var(--mui-tokens-color-common-white, #ffffff)',
                     height: '2.25rem',
                     maxHeight: '2.25rem',
                     padding: 'var(--mui-tokens-spacing-2) var(--mui-tokens-spacing-3)',

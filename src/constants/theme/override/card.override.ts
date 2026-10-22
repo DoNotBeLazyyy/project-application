@@ -8,9 +8,10 @@ export const cardOverrides: ComponentTheme = {
         },
         styleOverrides: {
             root: ({ theme }) => ({
-                backgroundColor: 'var(--mui-palette-common-white)',
+                backgroundColor: 'var(--mui-palette-background-paper)',
+                color: 'var(--mui-palette-text-primary)',
                 borderRadius: 'var(--mui-tokens-radius-lg)',
-                boxShadow: '0px 0px 20px 0px #00000026',
+                boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.15)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 'var(--mui-tokens-spacing-6)',

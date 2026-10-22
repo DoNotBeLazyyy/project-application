@@ -1,20 +1,25 @@
 import { ROLE_HOME } from '@constants/role.constant';
+import { useThemeMode } from '@hooks/useThemeMode';
 import { Divider, Menu, MenuItem } from '@mui/material';
 import {
     CaretUpDownIcon,
     ChalkboardTeacherIcon,
     CheckIcon,
+    DesktopIcon,
     GraduationCapIcon,
     Icon,
     IdentificationCardIcon,
+    MoonIcon,
     ShieldCheckIcon,
     SignOutIcon,
     StudentIcon,
+    SunIcon,
     UserCircleIcon
 } from '@phosphor-icons/react';
 import { logout } from '@services/auth.service';
 import { useAppStore } from '@stores/app.store';
 import { UserRole } from '@type/app.type';
+import { classMerge } from '@utils/css.util';
 import { MouseEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +45,7 @@ export default function UserAccountMenu() {
     const userProfile = useAppStore((state) => state.userProfile);
     const activeRole = useAppStore((state) => state.activeRole);
     const availableRoles = useAppStore((state) => state.availableRoles);
+    const { mode: themeMode, setMode: setThemeMode } = useThemeMode();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const isOpen = Boolean(anchorEl);
 
@@ -129,7 +135,7 @@ export default function UserAccountMenu() {
                 anchorEl={anchorEl}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 open={isOpen}
-                slotProps={{ paper: { sx: { width: 280 } } }}
+                slotProps={{ paper: { sx: { width: 280, maxHeight: 'min(36rem, 90vh)' } } }}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 onClose={handleClose}
             >
@@ -146,6 +152,49 @@ export default function UserAccountMenu() {
                         </span>
                     )}
                 </div>
+
+                <div className="flex gap-1 px-3 py-1.5 bg-black/5 dark:bg-white/5 mx-3 my-1 rounded-lg">
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
+                            themeMode === 'light'
+                                ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
+                        )}
+                        onClick={() => setThemeMode('light')}
+                    >
+                        <SunIcon size={14} weight={themeMode === 'light' ? 'fill' : 'regular'} />
+                        Light
+                    </button>
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
+                            themeMode === 'dark'
+                                ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
+                        )}
+                        onClick={() => setThemeMode('dark')}
+                    >
+                        <MoonIcon size={14} weight={themeMode === 'dark' ? 'fill' : 'regular'} />
+                        Dark
+                    </button>
+                    <button
+                        type="button"
+                        className={classMerge(
+                            'flex flex-1 items-center justify-center gap-1.5 py-1 px-2 rounded text-xs font-medium transition-colors cursor-pointer',
+                            themeMode === 'system'
+                                ? 'bg-(--mui-palette-primary-main) text-(--mui-palette-primary-contrastText)'
+                                : 'text-(--mui-palette-text-secondary) hover:bg-black/5 dark:hover:bg-white/10'
+                        )}
+                        onClick={() => setThemeMode('system')}
+                    >
+                        <DesktopIcon size={14} weight={themeMode === 'system' ? 'fill' : 'regular'} />
+                        System
+                    </button>
+                </div>
+
                 <Divider />
                 {hasMultipleRoles && (
                     <div className="px-4 pb-1 pt-2">
@@ -201,6 +250,7 @@ export default function UserAccountMenu() {
                         </span>
                     </span>
                 </MenuItem>
+                <Divider />
                 <MenuItem onClick={handleLogout}>
                     <span className="flex gap-3 items-center w-full">
                         <SignOutIcon size={18} />

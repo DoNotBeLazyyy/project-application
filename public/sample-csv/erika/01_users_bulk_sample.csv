@@ -1,0 +1,4 @@
+first_name,last_name,email,role_code,department_code
+ErikaFacSample,Instructor,erika.sample.fac@testlms.edu,Faculty,CCS-ERIKA
+ErikaStudSample1,One,erika.sample.stud1@testlms.edu,Student,CCS-ERIKA
+ErikaStudSample2,Two,erika.sample.stud2@testlms.edu,Student,CCS-ERIKA

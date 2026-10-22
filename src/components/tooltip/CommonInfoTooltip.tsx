@@ -106,6 +106,40 @@ export default function CommonInfoTooltip({
     }, [defaultOpen, content]);
 
     useEffect(() => {
+        if (variant !== 'error' || !content || !autoOpenOnError) {
+            return;
+        }
+
+        const button = buttonRef.current;
+        if (!button) {
+            return;
+        }
+
+        const container = button.closest('.flex-col, .MuiFormControl-root, .common_input_container') || button.parentElement;
+        if (!container) {
+            return;
+        }
+
+        const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+        if (activeEl && (container.contains(activeEl) || container === activeEl)) {
+            pinnedAtRef.current = Date.now();
+            setIsPinned(true);
+        }
+
+        function handleFocusIn(event: FocusEvent) {
+            if (event.target !== button) {
+                pinnedAtRef.current = Date.now();
+                setIsPinned(true);
+            }
+        }
+
+        container.addEventListener('focusin', handleFocusIn);
+        return () => {
+            container.removeEventListener('focusin', handleFocusIn);
+        };
+    }, [variant, content, autoOpenOnError]);
+
+    useEffect(() => {
         function handleFormError(event: Event) {
             if (!autoOpenOnError) {
                 return;
@@ -129,13 +163,21 @@ export default function CommonInfoTooltip({
                         container.id === errorField ||
                         (altField && (container.getAttribute('name') === altField || container.id === altField))
                     );
-                    const matchedInput = isDirectMatch
-                        ? container
-                        : container.querySelector(
-                            `[name="${errorField}"], [id="${errorField}"], [data-field-name~="${errorField}"], [data-field-name="${errorField}"], [name="${escaped}"], #${escaped}` +
-                            (altField ? `, [name="${altField}"], [id="${altField}"], [data-field-name~="${altField}"], [data-field-name="${altField}"]` : '')
-                        );
-                    if (matchedInput) {
+                    let matchedInput: Element | null = null;
+                    if (isDirectMatch) {
+                        matchedInput = container;
+                    } else {
+                        try {
+                            matchedInput = container.querySelector(
+                                `[name="${errorField}"], [id="${errorField}"], [data-field-name~="${errorField}"], [data-field-name="${errorField}"], [name="${escaped}"], #${escaped}` +
+                                (altField ? `, [name="${altField}"], [id="${altField}"], [data-field-name~="${altField}"], [data-field-name="${altField}"]` : '')
+                            );
+                        } catch {
+                            matchedInput = container.querySelector(`[name="${errorField}"]`);
+                        }
+                    }
+                    const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+                    if (matchedInput || (activeEl && container.contains(activeEl))) {
                         pinnedAtRef.current = Date.now();
                         setIsPinned(true);
                     }
@@ -177,7 +219,7 @@ export default function CommonInfoTooltip({
         // For error tooltips, do not close when the user interacts with the input, dropdown menu, or datepicker
         if (variant === 'error' && buttonRef.current) {
             if (event.target instanceof Node) {
-                const fieldContainer = buttonRef.current.closest('.flex-col') || buttonRef.current.closest('div');
+                const fieldContainer = buttonRef.current.closest('.flex-col, .MuiFormControl-root, .common_input_container') || buttonRef.current.parentElement || buttonRef.current.closest('div');
                 if (fieldContainer && fieldContainer.contains(event.target)) {
                     return;
                 }

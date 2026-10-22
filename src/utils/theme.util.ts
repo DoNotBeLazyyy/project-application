@@ -1,6 +1,6 @@
 import { BREAKPOINT_VALUES } from '@constants/breakpoint.constant';
 import { COMPONENTS } from '@constants/theme/components.constant';
-import { PALETTE } from '@constants/theme/palette.constant';
+import { DARK_PALETTE, LIGHT_PALETTE, PALETTE } from '@constants/theme/palette.constant';
 import { SHAPE } from '@constants/theme/shape.constant';
 import { getSpacings } from '@constants/theme/spacing.constant';
 import { TOKENS } from '@constants/theme/tokens.constant';
@@ -13,8 +13,18 @@ export const theme = createTheme({
         values: BREAKPOINT_VALUES
     },
     cssVariables: {
+        colorSchemeSelector: 'class',
         nativeColor: true
     },
+    colorSchemes: {
+        light: {
+            palette: LIGHT_PALETTE
+        },
+        dark: {
+            palette: DARK_PALETTE
+        }
+    },
+    defaultColorScheme: 'light',
     components: COMPONENTS,
     palette: PALETTE,
     shape: SHAPE,

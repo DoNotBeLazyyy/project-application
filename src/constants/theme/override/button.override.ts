@@ -94,14 +94,14 @@ export const buttonOverrides: ComponentTheme = {
                     variant: 'contained'
                 },
                 style: {
-                    backgroundColor: 'var(--mui-tokens-color-brand-900)',
-                    color: 'var(--mui-tokens-color-common-white)',
+                    backgroundColor: 'var(--mui-palette-primary-main)',
+                    color: 'var(--mui-palette-primary-contrastText)',
                     '&:hover': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-950)',
+                        backgroundColor: 'var(--mui-palette-primary-dark)',
                         boxShadow: '0 0 20px 0 #00000040'
                     },
                     '&:active': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-700)',
+                        backgroundColor: 'var(--mui-palette-primary-light)',
                         boxShadow: 'none'
                     },
                     '&.Mui-disabled': {
@@ -109,8 +109,8 @@ export const buttonOverrides: ComponentTheme = {
                         color: 'var(--mui-tokens-color-common-white)'
                     },
                     '&.is_loading.Mui-disabled': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-900)',
-                        color: 'var(--mui-tokens-color-common-white)'
+                        backgroundColor: 'var(--mui-palette-primary-main)',
+                        color: 'var(--mui-palette-primary-contrastText)'
                     }
                 }
             },
@@ -121,7 +121,7 @@ export const buttonOverrides: ComponentTheme = {
                 },
                 style: {
                     backgroundColor: 'var(--mui-tokens-color-neutral-200)',
-                    color: 'var(--mui-tokens-color-brand-600)',
+                    color: 'var(--mui-tokens-color-neutral-900)',
                     '&:hover': {
                         backgroundColor: 'var(--mui-tokens-color-neutral-300)',
                         boxShadow: '0 0 20px 0 #A9CEF740'
@@ -147,15 +147,15 @@ export const buttonOverrides: ComponentTheme = {
                     variant: 'outlined'
                 },
                 style: {
-                    borderColor: 'var(--mui-tokens-color-brand-900)',
-                    color: 'var(--mui-tokens-color-brand-900)',
+                    borderColor: 'var(--mui-palette-primary-main)',
+                    color: 'var(--mui-palette-primary-main)',
                     '&:hover': {
-                        backgroundColor: '#A9CEF733',
-                        borderColor: 'var(--mui-tokens-color-brand-900)'
+                        backgroundColor: 'rgba(81, 150, 246, 0.12)',
+                        borderColor: 'var(--mui-palette-primary-main)'
                     },
                     '&:active': {
-                        backgroundColor: '#81B5F380',
-                        borderColor: 'var(--mui-tokens-color-brand-900)',
+                        backgroundColor: 'rgba(81, 150, 246, 0.24)',
+                        borderColor: 'var(--mui-palette-primary-main)',
                         boxShadow: '0 0 10px 0 #00000040 inset'
                     },
                     '&.Mui-disabled': {
@@ -163,7 +163,7 @@ export const buttonOverrides: ComponentTheme = {
                         color: 'var(--mui-tokens-color-neutral-400)'
                     },
                     '&.is_loading.Mui-disabled': {
-                        borderColor: 'var(--mui-tokens-color-brand-900)'
+                        borderColor: 'var(--mui-palette-primary-main)'
                     }
                 }
             },
@@ -173,18 +173,18 @@ export const buttonOverrides: ComponentTheme = {
                     variant: 'text'
                 },
                 style: {
-                    color: 'var(--mui-tokens-color-brand-900)',
+                    color: 'var(--mui-palette-primary-main)',
                     '&:hover': {
-                        backgroundColor: '#A9CEF733'
+                        backgroundColor: 'rgba(81, 150, 246, 0.12)'
                     },
                     '&:active': {
-                        backgroundColor: '#81B5F380'
+                        backgroundColor: 'rgba(81, 150, 246, 0.24)'
                     },
                     '&.Mui-disabled': {
                         color: 'var(--mui-tokens-color-neutral-400)'
                     },
                     '&.is_loading.Mui-disabled': {
-                        borderColor: 'var(--mui-tokens-color-brand-900)'
+                        borderColor: 'var(--mui-palette-primary-main)'
                     }
                 }
             },
@@ -252,7 +252,7 @@ export const buttonOverrides: ComponentTheme = {
                     },
                     '&:hover': {
                         borderColor: 'var(--mui-palette-grey-400)',
-                        backgroundColor: '#A9CEF733'
+                        backgroundColor: 'rgba(81, 150, 246, 0.12)'
                     }
                 }
             }

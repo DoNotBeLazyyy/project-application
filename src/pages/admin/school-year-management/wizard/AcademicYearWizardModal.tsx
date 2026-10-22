@@ -455,43 +455,79 @@ export default function AcademicYearWizardModal({
 
         // Ensure all typed term types have a corresponding DB term_type_id
         const termTypesRes = await getTermTypes();
-        const existingTermTypes = termTypesRes.data || [];
+        let existingTermTypes = termTypesRes.data || [];
         const termTypeMap = new Map<string, string>();
         existingTermTypes.forEach((tt) => {
             termTypeMap.set(tt.label.trim().toLowerCase(), tt.id);
+            if (tt.code) {
+                termTypeMap.set(tt.code.trim().toLowerCase(), tt.id);
+            }
         });
 
-        const mappedTerms = await Promise.all(
-            (values.terms || []).map(async (t, tIdx) => {
-                const cleanLabel = (t.term_type_label || `Term #${tIdx + 1}`).trim();
-                let typeId = t.term_type_id || termTypeMap.get(cleanLabel.toLowerCase());
+        let nextSequence = existingTermTypes.reduce((max, tt) => Math.max(max, Number(tt.sequence) || 0), 0) + 1;
+        const createdTypeIds: Record<string, string> = {};
+        const mappedTerms: (typeof values.terms[number] & { term_type_id: string; term_type_label: string })[] = [];
 
-                if (!typeId) {
-                    const cleanCode = (t.term_type_code || cleanLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')).trim();
-                    const createRes = await createTermType({
-                        code: cleanCode,
-                        description: '',
-                        label: cleanLabel,
-                        sequence: String(tIdx + 1)
-                    });
-                    if (createRes.data !== null || !createRes.error) {
-                        const refreshed = await getTermTypes();
-                        const matched = (refreshed.data || []).find(
-                            (item) => item.label.trim().toLowerCase() === cleanLabel.toLowerCase()
-                        );
-                        if (matched) {
-                            typeId = matched.id;
-                        }
-                    }
+        for (let tIdx = 0; tIdx < (values.terms || []).length; tIdx++) {
+            const t = values.terms[tIdx];
+            const cleanLabel = (t.term_type_label || `Term #${tIdx + 1}`).trim();
+            const lowerLabel = cleanLabel.toLowerCase();
+            let typeId = (t.term_type_id && t.term_type_id !== '00000000-0000-0000-0000-000000000000')
+                ? t.term_type_id
+                : termTypeMap.get(lowerLabel) || createdTypeIds[lowerLabel];
+
+            if (!typeId) {
+                const cleanCode = (t.term_type_code || cleanLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')).trim();
+                const createRes = await createTermType({
+                    code: cleanCode,
+                    description: '',
+                    label: cleanLabel,
+                    sequence: String(nextSequence++)
+                });
+
+                if (createRes.error) {
+                    setIsSaving(false);
+                    useToastStore.getState().showToast(
+                        `Failed to register Term Type "${cleanLabel}": ${createRes.error.message}`,
+                        'error'
+                    );
+                    return;
                 }
 
-                return {
-                    ...t,
-                    term_type_id: typeId || '00000000-0000-0000-0000-000000000000',
-                    term_type_label: cleanLabel
-                };
-            })
-        );
+                const refreshed = await getTermTypes();
+                existingTermTypes = refreshed.data || [];
+                const matched = existingTermTypes.find(
+                    (item) => item.label.trim().toLowerCase() === lowerLabel
+                );
+                if (matched) {
+                    typeId = matched.id;
+                    createdTypeIds[lowerLabel] = matched.id;
+                    termTypeMap.set(lowerLabel, matched.id);
+                } else {
+                    setIsSaving(false);
+                    useToastStore.getState().showToast(
+                        `Could not resolve Term Type "${cleanLabel}". Please select an existing term type.`,
+                        'error'
+                    );
+                    return;
+                }
+            }
+
+            if (!typeId || typeId === '00000000-0000-0000-0000-000000000000') {
+                setIsSaving(false);
+                useToastStore.getState().showToast(
+                    `Term #${tIdx + 1} (${cleanLabel}) is missing a valid term type. Please select a valid term type.`,
+                    'error'
+                );
+                return;
+            }
+
+            mappedTerms.push({
+                ...t,
+                term_type_id: typeId,
+                term_type_label: cleanLabel
+            });
+        }
 
         const payload: SaveAcademicYearCalendarPayload = {
             p_code: values.code.trim(),

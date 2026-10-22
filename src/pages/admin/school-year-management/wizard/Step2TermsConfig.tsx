@@ -80,8 +80,27 @@ export default function Step2TermsConfig({
         };
     }, []);
 
-    // Helper to add a new blank term
+    // Sync any existing terms with termTypes on load if term_type_id is not yet set
+    useEffect(() => {
+        if (termTypes.length > 0 && watchedTerms.length > 0) {
+            watchedTerms.forEach((term, idx) => {
+                if (!term.term_type_id && term.term_type_label) {
+                    const matched = termTypes.find(
+                        (tt) => tt.label.trim().toLowerCase() === term.term_type_label?.trim().toLowerCase()
+                    );
+                    if (matched) {
+                        setValue(`terms.${idx}.term_type_id`, matched.id, { shouldDirty: false });
+                        setValue(`terms.${idx}.term_type_code`, matched.code, { shouldDirty: false });
+                    }
+                }
+            });
+        }
+    }, [termTypes, setValue]);
+
+    // Helper to add a new term (pre-filling with next available term type if present)
     function handleAddTerm() {
+        const nextIdx = fields.length;
+        const defaultType = termTypes[nextIdx];
         const newTerm: WizardTermItem = {
             end_date: '',
             enrollment_end_date: '',
@@ -90,9 +109,9 @@ export default function Step2TermsConfig({
             grading_periods: [],
             start_date: '',
             status: 'Upcoming',
-            term_type_code: '',
-            term_type_id: '',
-            term_type_label: ''
+            term_type_code: defaultType?.code || '',
+            term_type_id: defaultType?.id || '',
+            term_type_label: defaultType?.label || ''
         };
 
         append(newTerm);
@@ -273,6 +292,7 @@ export default function Step2TermsConfig({
                                         error={Boolean(otherTermsHaveThisType || (errors.terms as any)?.[index]?.term_type_label)}
                                         fullWidth
                                         helperText={otherTermsHaveThisType ? 'Duplicate term name' : (errors.terms as any)?.[index]?.term_type_label?.message}
+                                        inputProps={{ list: 'term-types-datalist' }}
                                         isFirstError={firstErrorKey === `terms.${index}.term_type_label`}
                                         isRequired
                                         label="Term Type / Name"
@@ -293,6 +313,11 @@ export default function Step2TermsConfig({
                                             setValue(`terms.${index}.term_type_id`, matched?.id || '', { shouldDirty: true });
                                         }}
                                     />
+                                    <datalist id="term-types-datalist">
+                                        {termTypes.map((tt) => (
+                                            <option key={tt.id} value={tt.label} />
+                                        ))}
+                                    </datalist>
                                 </div>
 
                                 {/* Term Start Date */}

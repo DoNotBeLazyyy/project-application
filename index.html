@@ -3,6 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('theme-mode') || 'system';
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.setAttribute('data-mui-color-scheme', 'dark');
+            var metaScheme = document.querySelector('meta[name="color-scheme"]');
+            if (metaScheme) metaScheme.content = mode === 'system' ? 'light dark' : 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.setAttribute('data-mui-color-scheme', 'light');
+            var metaScheme = document.querySelector('meta[name="color-scheme"]');
+            if (metaScheme) metaScheme.content = mode === 'system' ? 'light dark' : 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="theme-color" content="#022179" />

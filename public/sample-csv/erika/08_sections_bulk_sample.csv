@@ -1,0 +1,2 @@
+term_label,program_code,course_code,section_code,faculty_email,room,max_slots,status,schedule_days,schedule_time_start,schedule_time_end,schedule_room
+,ERIKA-BSCS,ERIKA-CS101,ERIKA-SEC-101,erika.faculty@example.com,ERIKA-LAB-201,40,Open,"Tuesday, Thursday",09:00,11:00,ERIKA-LAB-201

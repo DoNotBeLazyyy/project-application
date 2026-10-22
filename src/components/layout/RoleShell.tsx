@@ -2,6 +2,7 @@ import CommonBreadcrumbs from '@components/breadcrumb/CommonBreadcrumbs';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import AiAssistantButton from '@components/navbar/AiAssistantButton';
 import CommonNavbar from '@components/navbar/CommonNavbar';
+import ThemeToggleButton from '@components/navbar/ThemeToggleButton';
 import UserAccountMenu from '@components/navbar/UserAccountMenu';
 import NotificationBell from '@components/notification/NotificationBell';
 import CommonSideBar from '@components/sidebar/CommonSideBar';
@@ -102,6 +103,7 @@ export default function RoleShell({
                     }
                     rightContent={
                         <div className="flex gap-3 items-center">
+                            <ThemeToggleButton />
                             <AiAssistantButton />
                             <NotificationBell />
                             <UserAccountMenu />

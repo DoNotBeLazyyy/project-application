@@ -1,0 +1,3 @@
+code,title,department_code,course_type_code,lecture_units,laboratory_units,credit_hours,description,is_active,prerequisites
+ERIKA-CS101,Introduction to Computing,CCS-ERIKA,LECTURE,3,0,3,Erika Foundations of Computer Science and Algorithms,true,
+ERIKA-CS102,Discrete Structures and Logic,CCS-ERIKA,LECTURE_LAB,2,1,3,Erika Discrete Mathematics and Formal Proofs,true,

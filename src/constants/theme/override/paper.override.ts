@@ -4,7 +4,9 @@ export const paperOverrides: ComponentTheme = {
     MuiPaper: {
         styleOverrides: {
             root: {
-                borderRadius: 'var(--mui-tokens-radius-md)'
+                borderRadius: 'var(--mui-tokens-radius-md)',
+                backgroundColor: 'var(--mui-palette-background-paper)',
+                color: 'var(--mui-palette-text-primary)'
             }
         }
     }

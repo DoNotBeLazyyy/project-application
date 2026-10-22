@@ -1,0 +1,4 @@
+question_text,question_type,points,options,correct_answer,explanation
+"Which sorting algorithm has an average time complexity of O(n log n)?","Multiple Choice",5,"Bubble Sort|Merge Sort|Insertion Sort|Selection Sort",B,"Merge Sort guarantees O(n log n) in all cases."
+"In Boolean algebra, A AND NOT(A) always evaluates to True.","True or False",5,"True|False",False,"A AND NOT(A) is a contradiction and always evaluates to False."
+"Discuss the primary trade-offs between array-based and linked-list data structures.","Essay",10,,,

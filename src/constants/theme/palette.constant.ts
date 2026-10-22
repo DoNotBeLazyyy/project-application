@@ -1,7 +1,8 @@
 import { TOKENS } from '@constants/theme/tokens.constant'; // Tokens dependency
 import { PaletteOptions } from '@mui/material'; // Mui dependency
 
-export const PALETTE: PaletteOptions = {
+export const LIGHT_PALETTE: PaletteOptions = {
+    mode: 'light',
     primary: {
         main: TOKENS.color?.brand?.[900] as string,
         light: TOKENS.color?.brand?.[500],
@@ -52,4 +53,61 @@ export const PALETTE: PaletteOptions = {
         paper: TOKENS.color?.common?.white,
         default: TOKENS.color?.brand?.[100]
     }
-}; // Palette configuration
+};
+
+export const DARK_PALETTE: PaletteOptions = {
+    mode: 'dark',
+    primary: {
+        main: '#5196F6',
+        light: '#81B5F3',
+        dark: '#225DB4',
+        contrastText: '#FFFFFF'
+    },
+    secondary: {
+        main: '#81B5F3',
+        light: '#DFEDFE',
+        dark: '#5196F6',
+        contrastText: '#011554'
+    },
+    error: {
+        main: '#F87171',
+        light: '#FCA5A5',
+        dark: '#DC2626',
+        contrastText: '#FFFFFF'
+    },
+    success: {
+        main: '#4ADE80',
+        light: '#86EFAC',
+        dark: '#16A34A',
+        contrastText: '#09090B'
+    },
+    warning: {
+        main: '#FBBF24',
+        light: '#FDE68A',
+        dark: '#D97706',
+        contrastText: '#09090B'
+    },
+    grey: {
+        50: '#0B132B',
+        100: '#172036',
+        200: '#1E293B',
+        300: '#334155',
+        400: '#64748B',
+        500: '#94A3B8',
+        600: '#CBD5E1',
+        700: '#E2E8F0',
+        800: '#F1F5F9',
+        900: '#F8FAFC'
+    },
+    text: {
+        primary: '#F8FAFC',
+        secondary: '#94A3B8'
+    },
+    background: {
+        paper: '#131C31',
+        default: '#0A0F1D'
+    },
+    divider: '#1E293B'
+};
+
+export const PALETTE: PaletteOptions = LIGHT_PALETTE; // Default export for backwards compatibility

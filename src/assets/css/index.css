@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --breakpoint-sm: 40rem;
     --breakpoint-md: 48rem;
@@ -20,6 +22,20 @@
     --color-brand-950: #011554;
 }
 
+:root {
+    color-scheme: light dark;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]),
+html.dark {
+    color-scheme: dark;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]),
+html:not(.dark) {
+    color-scheme: light;
+}
+
 @layer base {
     html,
     body {
@@ -27,6 +43,8 @@
         overflow-x: hidden;
         padding-left: env(safe-area-inset-left);
         padding-right: env(safe-area-inset-right);
+        background-color: var(--mui-palette-background-default);
+        color: var(--mui-palette-text-primary);
     }
 
     /* Hide stepper spin buttons for all number inputs */
@@ -449,7 +467,120 @@
     }
 }
 
-/* Ensure all form inputs default to white background */
+/* Ensure all form inputs default to theme card surface background */
 .MuiInputBase-root {
-    background-color: #ffffff;
-}
+    background-color: var(--mui-tokens-color-common-white, #ffffff);
+    color: var(--mui-palette-text-primary);
+}
+
+/* ==========================================================================
+   Dark Theme Token Overrides & Consistency
+   ========================================================================== */
+html.dark {
+    /* Core surfaces */
+    --mui-tokens-color-common-white: #131C31;
+    --mui-tokens-color-common-black: #F8FAFC;
+
+    /* Neutrals */
+    --mui-tokens-color-neutral-50: #0B132B;
+    --mui-tokens-color-neutral-100: #172036;
+    --mui-tokens-color-neutral-200: #1E293B;
+    --mui-tokens-color-neutral-300: #334155;
+    --mui-tokens-color-neutral-400: #64748B;
+    --mui-tokens-color-neutral-500: #94A3B8;
+    --mui-tokens-color-neutral-600: #CBD5E1;
+    --mui-tokens-color-neutral-700: #E2E8F0;
+    --mui-tokens-color-neutral-800: #F1F5F9;
+    --mui-tokens-color-neutral-900: #F8FAFC;
+
+    /* Brand blues adapted for dark background readability */
+    --mui-tokens-color-brand-50: #0F1D38;
+    --mui-tokens-color-brand-100: #152649;
+    --mui-tokens-color-brand-200: #1B3566;
+    --mui-tokens-color-brand-300: #254B8C;
+    --mui-tokens-color-brand-400: #3467B8;
+    --mui-tokens-color-brand-500: #5196F6;
+    --mui-tokens-color-brand-600: #6BA6F4;
+    --mui-tokens-color-brand-700: #81B5F3;
+    --mui-tokens-color-brand-800: #A9CEF7;
+    --mui-tokens-color-brand-900: #BFDBFE;
+    --mui-tokens-color-brand-950: #080D1A;
+
+    /* Secondary */
+    --mui-tokens-color-secondary-light: #1E3A8A;
+    --mui-tokens-color-secondary-main: #60A5FA;
+
+    /* State indicators */
+    --mui-tokens-color-state-error: #F87171;
+    --mui-tokens-color-state-errorLight: #450A0A;
+    --mui-tokens-color-state-success: #4ADE80;
+    --mui-tokens-color-state-successLight: #052E16;
+    --mui-tokens-color-state-warning: #FBBF24;
+    --mui-tokens-color-state-warningLight: #451A03;
+
+    /* Normalize Tailwind hardcoded white surfaces and sub-surfaces */
+    .bg-white {
+        background-color: var(--mui-tokens-color-common-white, #131C31) !important;
+    }
+
+    [class*="bg-slate-50"],
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-neutral-50,
+    .bg-neutral-100 {
+        background-color: #172036 !important;
+    }
+
+    /* Normalize Tailwind borders */
+    [class*="border-slate-100"],
+    [class*="border-slate-200"],
+    .border-slate-100,
+    .border-slate-200,
+    .border-slate-300,
+    .border-gray-100,
+    .border-gray-200,
+    .border-neutral-200,
+    .border-neutral-300 {
+        border-color: #1E293B !important;
+    }
+
+    /* Normalize Tailwind dark text */
+    .text-black,
+    .text-slate-900,
+    .text-neutral-900,
+    .text-gray-900 {
+        color: #F8FAFC !important;
+    }
+
+    .text-slate-800,
+    .text-slate-700,
+    .text-neutral-800,
+    .text-gray-800,
+    .text-neutral-700,
+    .text-gray-700 {
+        color: #E2E8F0 !important;
+    }
+
+    .text-slate-600,
+    .text-slate-500,
+    .text-slate-400,
+    .text-neutral-600,
+    .text-gray-600,
+    .text-neutral-500,
+    .text-gray-500 {
+        color: #94A3B8 !important;
+    }
+
+    /* AG Grid in dark mode */
+    .ag-theme-quartz {
+        --ag-foreground-color: #F8FAFC;
+        --ag-background-color: transparent;
+        --ag-header-foreground-color: #94A3B8;
+        --ag-header-background-color: #0B132B;
+        --ag-border-color: #1E293B;
+        --ag-row-hover-color: #172036;
+        --ag-odd-row-background-color: transparent;
+    }
+}
