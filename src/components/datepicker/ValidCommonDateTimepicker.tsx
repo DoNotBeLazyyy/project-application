@@ -13,7 +13,7 @@ import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTim
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
 import {
-    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel, getLastWindowFocusTime
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useEffect, useRef, useState } from 'react';
@@ -156,6 +156,9 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         formState
     } = useController({ control, name, rules });
 
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastPointerDownTimeRef = useRef<number>(0);
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
 
@@ -180,6 +183,23 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         ? helperTextProp
         : undefined);
 
+    const blurPickerInput = () => {
+        if (blurTimerRef.current) {
+            clearTimeout(blurTimerRef.current);
+        }
+        blurTimerRef.current = setTimeout(() => {
+            blurActiveElementWithin(containerRef.current);
+        }, 50);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (blurTimerRef.current) {
+                clearTimeout(blurTimerRef.current);
+            }
+        };
+    }, []);
+
     function handleChange(date: DateTime | null) {
         if (fieldState.error) {
             clearFieldError(control, name);
@@ -194,9 +214,20 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         );
     }
 
+    function handleAccept(date: DateTime | null) {
+        blurPickerInput();
+        if (typeof (props as any).onAccept === 'function') {
+            (props as any).onAccept(date);
+        }
+    }
+
     function handleClose() {
         isClosing.current = true;
         setIsOpen(false);
+        blurPickerInput();
+        if (typeof (props as any).onClose === 'function') {
+            (props as any).onClose();
+        }
         setTimeout(function() {
             isClosing.current = false;
         }, 300);
@@ -207,14 +238,24 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
             return;
         }
         setIsOpen(true);
+        if (typeof (props as any).onOpen === 'function') {
+            (props as any).onOpen();
+        }
     }
 
     function handleFocus() {
         if (isNonInteractive) {
             return;
         }
+        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
+        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
+            return;
+        }
         if (!isOpen && !isClosing.current) {
             setIsOpen(true);
+            if (typeof (props as any).onOpen === 'function') {
+                (props as any).onOpen();
+            }
         }
     }
 
@@ -258,6 +299,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
 
     return (
         <div
+            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -318,13 +360,25 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onFocus: () => {
+                            onPointerDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
+                                    (externalTextFieldProps as any).onPointerDown(e);
+                                }
+                            },
+                            onMouseDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
+                                    (externalTextFieldProps as any).onMouseDown(e);
+                                }
+                            },
+                            onFocus: (e: any) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 handleFocus();
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as () => void)();
+                                    (externalOnFocus as (e: any) => void)(e);
                                 }
                             },
                             sx: [
@@ -343,6 +397,7 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                         }
                     }}
                     value={resolvedValue}
+                    onAccept={handleAccept}
                     onChange={handleChange}
                     onClose={handleClose}
                     onOpen={handleOpen}

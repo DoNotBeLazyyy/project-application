@@ -63,7 +63,9 @@ function PrerequisiteKindCell({ control, disabled, rowIndex }: PrerequisiteCellP
     return (
         <CommonSelect
             disabled={disabled}
+            error={Boolean(kind.fieldState.error)}
             fullWidth
+            helperText={kind.fieldState.error?.message}
             label="Kind"
             name={prerequisiteName(rowIndex, 'prerequisite_kind')}
             options={PREREQUISITE_KIND_OPTIONS}
@@ -156,7 +158,9 @@ function PrerequisiteTypeCell({ control, disabled, rowIndex }: PrerequisiteCellP
     return (
         <CommonSelect
             disabled={disabled}
+            error={Boolean(type.fieldState.error)}
             fullWidth
+            helperText={type.fieldState.error?.message}
             label="Type"
             name={prerequisiteName(rowIndex, 'prerequisite_type')}
             options={PREREQUISITE_TYPE_OPTIONS}
@@ -189,7 +193,9 @@ function PrerequisiteMinGradeCell({
     return (
         <CommonSelect
             disabled={disabled || isLocked}
+            error={Boolean(minimumGrade.fieldState.error)}
             fullWidth
+            helperText={minimumGrade.fieldState.error?.message}
             label="Min Grade"
             name={prerequisiteName(rowIndex, 'minimum_grade')}
             options={minimumGradeOptions}

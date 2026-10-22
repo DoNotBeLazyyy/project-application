@@ -178,7 +178,7 @@ export default function CalendarPage() {
                             <CalendarBlankIcon className="sm:hidden" size={18} weight="duotone" />
                             <CalendarBlankIcon className="hidden sm:inline" size={22} weight="duotone" />
                         </div>
-                        <h1 className="text-sm sm:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 inline-flex items-center gap-1.5 flex-wrap min-w-0">
+                        <h1 className="text-xs sm:text-base md:text-xl font-bold text-(--mui-palette-text-primary) tracking-tight m-0 inline-flex items-center gap-1.5 flex-wrap min-w-0">
                             <span>Academic & Campus Calendar</span>
                             <CommonInfoTooltip content={roleSubtitle} />
                         </h1>
@@ -203,9 +203,12 @@ export default function CalendarPage() {
                     />
                 )
             }}
+            sx={{
+                p: { xs: '12px !important', sm: '16px !important', md: '24px !important' }
+            }}
         >
             {/* Navigation & View Toggle Toolbar + Filter Row */}
-            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-3 py-2 sm:p-4 flex flex-col gap-2.5 shrink-0">
+            <div className="border-t border-b border-(--mui-palette-divider) bg-neutral-50/60 dark:bg-neutral-800/30 px-2.5 py-2 sm:p-4 flex flex-col gap-2 shrink-0">
                 {/* Date Navigation & View Mode Switcher */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
                     {/* Date Navigation with DatePicker wrapped by arrows & View Mode Label */}
@@ -359,7 +362,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Main Calendar View Area - Full Width */}
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-2 sm:p-4 md:p-6">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-1 sm:p-3 md:p-4">
                 {isLoading && events.length === 0 ? (
                     <div className="p-16 flex justify-center">
                         <PageLoadingFallback />

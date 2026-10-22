@@ -14,7 +14,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarAction } from '@mui/x-date-pickers/PickersActionBar';
 import { classMerge } from '@utils/css.util';
 import {
-    checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
+    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel, getLastWindowFocusTime
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -171,6 +171,9 @@ export function CommonDatePicker({
     value,
     ...props
 }: StandaloneCommonDatePickerProps) {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastPointerDownTimeRef = useRef<number>(0);
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
     const resolvedValue = useMemo(() => {
@@ -186,6 +189,23 @@ export function CommonDatePicker({
 
     const isNonInteractive = Boolean(disabled || readOnly);
 
+    const blurPickerInput = () => {
+        if (blurTimerRef.current) {
+            clearTimeout(blurTimerRef.current);
+        }
+        blurTimerRef.current = setTimeout(() => {
+            blurActiveElementWithin(containerRef.current);
+        }, 50);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (blurTimerRef.current) {
+                clearTimeout(blurTimerRef.current);
+            }
+        };
+    }, []);
+
     function handleChange(date: DateTime | null) {
         if (isNonInteractive) {
             return;
@@ -197,9 +217,20 @@ export function CommonDatePicker({
         );
     }
 
+    function handleAccept(date: DateTime | null) {
+        blurPickerInput();
+        if (typeof (props as any).onAccept === 'function') {
+            (props as any).onAccept(date);
+        }
+    }
+
     function handleClose() {
         isClosing.current = true;
         setIsOpen(false);
+        blurPickerInput();
+        if (typeof props.onClose === 'function') {
+            (props.onClose as () => void)();
+        }
         setTimeout(() => {
             isClosing.current = false;
         }, 300);
@@ -210,14 +241,24 @@ export function CommonDatePicker({
             return;
         }
         setIsOpen(true);
+        if (typeof props.onOpen === 'function') {
+            (props.onOpen as () => void)();
+        }
     }
 
     function handleFocus() {
         if (isNonInteractive) {
             return;
         }
+        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
+        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
+            return;
+        }
         if (!isOpen && !isClosing.current) {
             setIsOpen(true);
+            if (typeof props.onOpen === 'function') {
+                (props.onOpen as () => void)();
+            }
         }
     }
 
@@ -247,6 +288,7 @@ export function CommonDatePicker({
 
     return (
         <div
+            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -305,13 +347,25 @@ export function CommonDatePicker({
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onFocus: () => {
+                            onPointerDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
+                                    (externalTextFieldProps as any).onPointerDown(e);
+                                }
+                            },
+                            onMouseDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
+                                    (externalTextFieldProps as any).onMouseDown(e);
+                                }
+                            },
+                            onFocus: (e: any) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 handleFocus();
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as () => void)();
+                                    (externalOnFocus as (e: any) => void)(e);
                                 }
                             },
                             sx: [
@@ -330,6 +384,7 @@ export function CommonDatePicker({
                         }
                     }}
                     value={resolvedValue}
+                    onAccept={handleAccept}
                     onChange={handleChange}
                     onClose={handleClose}
                     onOpen={handleOpen}
@@ -367,6 +422,9 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         fieldState,
         formState
     } = useController({ control, name, rules });
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastPointerDownTimeRef = useRef<number>(0);
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
     const resolvedValue = useMemo(() => {
@@ -397,6 +455,23 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         ? helperTextProp
         : undefined);
 
+    const blurPickerInput = () => {
+        if (blurTimerRef.current) {
+            clearTimeout(blurTimerRef.current);
+        }
+        blurTimerRef.current = setTimeout(() => {
+            blurActiveElementWithin(containerRef.current);
+        }, 50);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (blurTimerRef.current) {
+                clearTimeout(blurTimerRef.current);
+            }
+        };
+    }, []);
+
     function handleChange(date: DateTime | null) {
         if (fieldState.error) {
             clearFieldError(control, name);
@@ -411,10 +486,20 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         );
     }
 
+    function handleAccept(date: DateTime | null) {
+        blurPickerInput();
+        if (typeof (props as any).onAccept === 'function') {
+            (props as any).onAccept(date);
+        }
+    }
+
     function handleClose() {
         isClosing.current = true;
-
         setIsOpen(false);
+        blurPickerInput();
+        if (typeof props.onClose === 'function') {
+            (props.onClose as () => void)();
+        }
         setTimeout(() => {
             isClosing.current = false;
         }, 300);
@@ -425,14 +510,24 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
             return;
         }
         setIsOpen(true);
+        if (typeof props.onOpen === 'function') {
+            (props.onOpen as () => void)();
+        }
     }
 
     function handleFocus() {
         if (isNonInteractive) {
             return;
         }
+        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
+        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
+            return;
+        }
         if (!isOpen && !isClosing.current) {
             setIsOpen(true);
+            if (typeof props.onOpen === 'function') {
+                (props.onOpen as () => void)();
+            }
         }
     }
 
@@ -486,6 +581,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
 
     return (
         <div
+            ref={containerRef}
             className={
                 classMerge(
                     'flex flex-col gap-(--mui-tokens-spacing-2) relative',
@@ -547,13 +643,25 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                                 ? 'medium'
                                 : resolvedSize) as 'small' | 'medium' | undefined,
                             variant: 'outlined' as unknown as 'standard',
-                            onFocus: () => {
+                            onPointerDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onPointerDown === 'function') {
+                                    (externalTextFieldProps as any).onPointerDown(e);
+                                }
+                            },
+                            onMouseDown: (e: any) => {
+                                lastPointerDownTimeRef.current = Date.now();
+                                if (typeof (externalTextFieldProps as any)?.onMouseDown === 'function') {
+                                    (externalTextFieldProps as any).onMouseDown(e);
+                                }
+                            },
+                            onFocus: (e: any) => {
                                 if (isNonInteractive) {
                                     return;
                                 }
                                 handleFocus();
                                 if (typeof externalOnFocus === 'function') {
-                                    (externalOnFocus as () => void)();
+                                    (externalOnFocus as (e: any) => void)(e);
                                 }
                             },
                             sx: [
@@ -572,6 +680,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                         }
                     }}
                     value={resolvedValue}
+                    onAccept={handleAccept}
                     onChange={handleChange}
                     onClose={handleClose}
                     onOpen={handleOpen}

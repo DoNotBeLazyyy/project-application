@@ -79,15 +79,21 @@ export function CalendarEventDetailModal({
 
     return (
         <CommonModal
+            cardProps={{
+                className: 'p-0! overflow-hidden rounded-2xl w-full max-w-lg mx-auto',
+                sx: { p: '0 !important', overflow: 'hidden' }
+            }}
             closeOnBackdropClick
             closeOnEscape
+            disableEscapeKeyDown={false}
+            fullScreen={false}
             maxWidth="sm"
             open={open}
             onClose={onClose}
         >
             <div className="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-2xl border border-neutral-200/80 dark:border-neutral-800 flex flex-col">
                 {/* Header Banner */}
-                <div className="p-6 border-b border-neutral-100 dark:border-neutral-800/80 flex items-start justify-between gap-4">
+                <div className="p-4 sm:p-6 border-b border-neutral-100 dark:border-neutral-800/80 flex items-start justify-between gap-3 sm:gap-4">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <span
@@ -107,13 +113,14 @@ export function CalendarEventDetailModal({
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white leading-tight break-words">
+                        <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white leading-tight break-words">
                             {event.title}
                         </h2>
                     </div>
                     <button
                         aria-label="Close modal"
-                        className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 shrink-0 cursor-pointer"
+                        type="button"
                         onClick={onClose}
                     >
                         <XIcon size={20} />
@@ -121,7 +128,7 @@ export function CalendarEventDetailModal({
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-4 text-sm text-neutral-600 dark:text-neutral-300 overflow-y-auto max-h-[60vh]">
+                <div className="p-4 sm:p-6 space-y-4 text-sm text-neutral-600 dark:text-neutral-300 overflow-y-auto max-h-[60vh]">
                     {/* Time & Date */}
                     <div className="flex items-start gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
                         <ClockIcon className="text-neutral-500 shrink-0 mt-0.5" size={20} />
@@ -168,7 +175,7 @@ export function CalendarEventDetailModal({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border-t border-neutral-100 dark:border-neutral-800 flex justify-end gap-3">
+                <div className="p-3.5 sm:p-4 bg-neutral-50 dark:bg-neutral-800/40 border-t border-neutral-100 dark:border-neutral-800 flex justify-end gap-3">
                     <CommonButton
                         size="medium"
                         variant="outlined"

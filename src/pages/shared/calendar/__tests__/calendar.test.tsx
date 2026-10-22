@@ -1,6 +1,7 @@
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from '@pages/shared/calendar/calendar.types';
 import CalendarActionMenu from '@pages/shared/calendar/CalendarActionMenu';
 import { CalendarAgendaView } from '@pages/shared/calendar/CalendarAgendaView';
+import { CalendarDayEventsModal } from '@pages/shared/calendar/CalendarDayEventsModal';
 import { CalendarDayView } from '@pages/shared/calendar/CalendarDayView';
 import { CalendarEventDetailModal } from '@pages/shared/calendar/CalendarEventDetailModal';
 import { CalendarMiniMonth } from '@pages/shared/calendar/CalendarMiniMonth';
@@ -93,7 +94,7 @@ describe('Calendar Component Rendering Tests', () => {
         expect(onChangeMonth).toHaveBeenCalledTimes(1);
     });
 
-    it('renders CalendarMonthView with event chips and handles selection', () => {
+    it('renders CalendarMonthView, opens day events popup on click, and handles selection', () => {
         const onSelectDate = vi.fn();
         const onSelectEvent = vi.fn();
         const onViewDay = vi.fn();
@@ -110,10 +111,77 @@ describe('Calendar Component Rendering Tests', () => {
         );
 
         expect(screen.getByText('Sun')).toBeInTheDocument();
+        // Desktop chip exists
         expect(screen.getByText('CS 101 Midterm Examination')).toBeInTheDocument();
 
+        // Clicking the event chip opens the day events popup
         fireEvent.click(screen.getByText('CS 101 Midterm Examination'));
+        expect(onSelectDate).toHaveBeenCalled();
+
+        // Popup should be open and display the event in the list
+        expect(screen.getByText('1 event scheduled')).toBeInTheDocument();
+        expect(screen.getAllByText('CS 101 Midterm Examination').length).toBeGreaterThanOrEqual(2);
+
+        // Clicking the event in the popup list opens the event modal
+        const popupItems = screen.getAllByText('CS 101 Midterm Examination');
+        fireEvent.click(popupItems[popupItems.length - 1]);
         expect(onSelectEvent).toHaveBeenCalledWith(mockEvent);
+    });
+
+    it('renders mobile event indicators without truncated text and with +count badge', () => {
+        const onSelectDate = vi.fn();
+        const onSelectEvent = vi.fn();
+        const onViewDay = vi.fn();
+
+        const mockEvent2: UnifiedCalendarEvent = {
+            id: 'test-event-2',
+            title: 'Faculty General Assembly',
+            start: new Date(2026, 3, 15, 13, 0),
+            end: new Date(2026, 3, 15, 15, 0),
+            allDay: false,
+            category: 'event'
+        };
+
+        render(
+            <CalendarMonthView
+                currentDate={new Date(2026, 3, 1)}
+                events={[mockEvent, mockEvent2]}
+                selectedDate={new Date(2026, 3, 15)}
+                onSelectDate={onSelectDate}
+                onSelectEvent={onSelectEvent}
+                onViewDay={onViewDay}
+            />
+        );
+
+        // Mobile indicator renders +1 for the additional event
+        expect(screen.getByText('+1')).toBeInTheDocument();
+    });
+
+    it('renders CalendarDayEventsModal and handles close and selection', () => {
+        const onSelectEvent = vi.fn();
+        const onClose = vi.fn();
+        const onViewDay = vi.fn();
+
+        render(
+            <CalendarDayEventsModal
+                date={new Date(2026, 3, 15)}
+                events={[mockEvent]}
+                open={true}
+                onClose={onClose}
+                onSelectEvent={onSelectEvent}
+                onViewDay={onViewDay}
+            />
+        );
+
+        expect(screen.getByText('CS 101 Midterm Examination')).toBeInTheDocument();
+        expect(screen.getByText('Building A, Room 302')).toBeInTheDocument();
+        expect(screen.getByText('1 event scheduled')).toBeInTheDocument();
+
+        // View Day Schedule button
+        const viewDayBtn = screen.getByRole('button', { name: /view day schedule/i });
+        fireEvent.click(viewDayBtn);
+        expect(onViewDay).toHaveBeenCalledWith(new Date(2026, 3, 15));
+        expect(onClose).toHaveBeenCalled();
     });
 
     it('renders CalendarAgendaView with search filtering', () => {

@@ -270,8 +270,19 @@ export default function AcademicYearWizardModal({
     function validateStep2(): boolean {
         const values = getValues();
         const result = validateTerms(values.terms || [], values.start_date, values.end_date);
-        if (!result.isValid && result.error) {
-            if (result.fieldPath) {
+        if (!result.isValid) {
+            if (result.errors && result.errors.length > 0) {
+                result.errors.forEach((err) => {
+                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
+                });
+                const first = result.errors[0];
+                focusAndOpenFirstErrorField(first.fieldPath, methods);
+                announceFormError({
+                    count: result.errors.length,
+                    message: first.message,
+                    firstErrorField: first.fieldPath
+                });
+            } else if (result.fieldPath && result.error) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
                 focusAndOpenFirstErrorField(result.fieldPath, methods);
                 announceFormError({
@@ -290,14 +301,27 @@ export default function AcademicYearWizardModal({
         const values = getValues();
         const terms = values.terms || [];
         const result = validateGradingPeriods(terms);
-        if (!result.isValid && result.error) {
-            if (result.isToastOnly || !result.fieldPath) {
-                useToastStore.getState().showToast(result.error, 'error');
-                announceFormError({
-                    count: 1,
-                    message: result.error
+        if (!result.isValid) {
+            if (result.errors && result.errors.length > 0) {
+                result.errors.forEach((err) => {
+                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
                 });
-            } else {
+                const first = result.errors[0];
+                focusAndOpenFirstErrorField(first.fieldPath, methods);
+                announceFormError({
+                    count: result.errors.length,
+                    message: first.message,
+                    firstErrorField: first.fieldPath
+                });
+            } else if (result.isToastOnly || !result.fieldPath) {
+                if (result.error) {
+                    useToastStore.getState().showToast(result.error, 'error');
+                    announceFormError({
+                        count: 1,
+                        message: result.error
+                    });
+                }
+            } else if (result.fieldPath && result.error) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
                 focusAndOpenFirstErrorField(result.fieldPath, methods);
                 announceFormError({
@@ -316,8 +340,19 @@ export default function AcademicYearWizardModal({
         const values = getValues();
         const holidays = values.holidays || [];
         const result = validateCalendarExceptions(holidays);
-        if (!result.isValid && result.error) {
-            if (result.fieldPath) {
+        if (!result.isValid) {
+            if (result.errors && result.errors.length > 0) {
+                result.errors.forEach((err) => {
+                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
+                });
+                const first = result.errors[0];
+                focusAndOpenFirstErrorField(first.fieldPath, methods);
+                announceFormError({
+                    count: result.errors.length,
+                    message: first.message,
+                    firstErrorField: first.fieldPath
+                });
+            } else if (result.fieldPath && result.error) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
                 focusAndOpenFirstErrorField(result.fieldPath, methods);
                 announceFormError({
@@ -336,8 +371,19 @@ export default function AcademicYearWizardModal({
         const values = getValues();
         const rows = values.transmutation_rows || [];
         const result = validateTransmutationRows(rows);
-        if (!result.isValid && result.error) {
-            if (result.fieldPath) {
+        if (!result.isValid) {
+            if (result.errors && result.errors.length > 0) {
+                result.errors.forEach((err) => {
+                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
+                });
+                const first = result.errors[0];
+                focusAndOpenFirstErrorField(first.fieldPath, methods);
+                announceFormError({
+                    count: result.errors.length,
+                    message: first.message,
+                    firstErrorField: first.fieldPath
+                });
+            } else if (result.fieldPath && result.error) {
                 methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
                 focusAndOpenFirstErrorField(result.fieldPath, methods);
                 announceFormError({
@@ -355,39 +401,39 @@ export default function AcademicYearWizardModal({
     function validateStep6(): boolean {
         const values = getValues();
         const thresholds = values.thresholds || [];
+        const errorsList: Array<{ fieldPath: string; message: string }> = [];
 
         for (let i = 0; i < thresholds.length; i++) {
             const t = thresholds[i];
             if (!t.label || !t.label.trim()) {
                 const fieldPath = `thresholds.${i}.label`;
                 const msg = `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`;
+                errorsList.push({ fieldPath, message: msg });
                 methods.setError(fieldPath as any, {
                     type: 'manual',
                     message: msg
                 });
-                focusAndOpenFirstErrorField(fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: msg,
-                    firstErrorField: fieldPath
-                });
-                return false;
             }
             if (t.max_gwa === '' || t.max_gwa === null || t.max_gwa === undefined) {
                 const fieldPath = `thresholds.${i}.max_gwa`;
-                const msg = `Threshold "${t.label}" must specify a Max GWA cutoff.`;
+                const msg = `Threshold "${t.label || `#${i + 1}`}" must specify a Max GWA cutoff.`;
+                errorsList.push({ fieldPath, message: msg });
                 methods.setError(fieldPath as any, {
                     type: 'manual',
                     message: msg
                 });
-                focusAndOpenFirstErrorField(fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: msg,
-                    firstErrorField: fieldPath
-                });
-                return false;
             }
+        }
+
+        if (errorsList.length > 0) {
+            const first = errorsList[0];
+            focusAndOpenFirstErrorField(first.fieldPath, methods);
+            announceFormError({
+                count: errorsList.length,
+                message: first.message,
+                firstErrorField: first.fieldPath
+            });
+            return false;
         }
         return true;
     }

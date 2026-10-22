@@ -1,7 +1,8 @@
 import { CalendarDay } from '@type/common/calendar.type';
 import { getCalendarDays } from '@utils/calendar.util';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
+import { CalendarDayEventsModal } from './CalendarDayEventsModal';
 
 interface CalendarMonthViewProps {
     currentDate: Date;
@@ -33,6 +34,11 @@ export function CalendarMonthView({
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
+    const [dayEventsPopup, setDayEventsPopup] = useState<{
+        date: Date;
+        events: UnifiedCalendarEvent[];
+    } | null>(null);
+
     const calendarDays = useMemo(() => {
         return getCalendarDays(year, month);
     }, [year, month]);
@@ -40,6 +46,21 @@ export function CalendarMonthView({
     const categoryMap = useMemo(() => {
         return new Map(CALENDAR_CATEGORIES.map((c) => [c.id, c]));
     }, []);
+
+    const handleCellClick = (cellDate: Date, dayEvents: UnifiedCalendarEvent[]) => {
+        onSelectDate(cellDate);
+        if (dayEvents.length > 0) {
+            setDayEventsPopup({
+                date: cellDate,
+                events: dayEvents
+            });
+        }
+    };
+
+    const handleSelectEventFromPopup = (event: UnifiedCalendarEvent) => {
+        setDayEventsPopup(null);
+        onSelectEvent(event);
+    };
 
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden flex flex-col flex-1 min-h-0">
@@ -69,14 +90,17 @@ export function CalendarMonthView({
                     const dayEvents = events.filter((ev) => isDateInRange(cellDate, ev.start, ev.end));
                     const visibleEvents = dayEvents.slice(0, 3);
                     const overflowCount = dayEvents.length - 3;
+                    const firstEvent = dayEvents[0];
+                    const firstCat = firstEvent ? (categoryMap.get(firstEvent.category) || CALENDAR_CATEGORIES[0]) : null;
 
                     return (
                         <div
                             key={`${dayItem.date}-${index}`}
-                            className={`min-h-[64px] sm:min-h-[90px] md:min-h-[125px] p-1 sm:p-2 flex flex-col transition-colors cursor-pointer group bg-white dark:bg-neutral-900 ${
+                            aria-label={`${dayItem.date}, ${dayEvents.length} events`}
+                            className={`min-h-[52px] sm:min-h-[90px] md:min-h-[125px] p-0.5 sm:p-2 flex flex-col transition-colors cursor-pointer group bg-white dark:bg-neutral-900 ${
                                 !dayItem.isCurrentMonth ? 'opacity-40 bg-neutral-50/60 dark:bg-neutral-950/40' : ''
                             } ${isSelected ? 'ring-2 ring-inset ring-brand-500/80 bg-brand-50/20 dark:bg-brand-950/20' : 'hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40'}`}
-                            onClick={() => onSelectDate(cellDate)}
+                            onClick={() => handleCellClick(cellDate, dayEvents)}
                         >
                             {/* Cell Header */}
                             <div className="flex items-center justify-between mb-0.5 sm:mb-1.5">
@@ -99,9 +123,24 @@ export function CalendarMonthView({
                                 )}
                             </div>
 
-                            {/* Event Chips */}
-                            <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                                {visibleEvents.map((ev, evIdx) => {
+                            {/* Mobile Event Indicator (sm:hidden) - Dot & +Count (No truncated text!) */}
+                            {dayEvents.length > 0 && firstCat && (
+                                <div className="flex sm:hidden items-center justify-center gap-1 mt-auto pt-0.5 pb-0.5">
+                                    <span
+                                        className={`w-2 h-2 rounded-full shrink-0 ${firstCat.dotClass}`}
+                                        title={firstEvent.title}
+                                    />
+                                    {dayEvents.length > 1 && (
+                                        <span className="text-[9px] font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 px-1 py-0.2 rounded-full leading-none shrink-0">
+                                            +{dayEvents.length - 1}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Desktop Event Chips (hidden sm:flex) */}
+                            <div className="hidden sm:flex flex-1 flex-col gap-1 overflow-hidden">
+                                {visibleEvents.map((ev) => {
                                     const cat = categoryMap.get(ev.category) || CALENDAR_CATEGORIES[0];
                                     const timeLabel = ev.allDay
                                         ? 'All day'
@@ -111,13 +150,11 @@ export function CalendarMonthView({
                                         <button
                                             key={ev.id}
                                             aria-label={`${ev.title} at ${timeLabel}`}
-                                            className={`w-full text-left truncate px-1 sm:px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-medium border flex items-center gap-1 transition-transform hover:scale-[1.02] shadow-2xs ${cat.bgClass} ${
-                                                evIdx >= 1 ? 'hidden sm:flex' : 'flex'
-                                            }`}
+                                            className={`w-full text-left truncate px-1 sm:px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-medium border flex items-center gap-1 transition-transform hover:scale-[1.02] shadow-2xs cursor-pointer ${cat.bgClass}`}
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                onSelectEvent(ev);
+                                                handleCellClick(cellDate, dayEvents);
                                             }}
                                         >
                                             <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.dotClass}`} />
@@ -131,26 +168,13 @@ export function CalendarMonthView({
                                     );
                                 })}
 
-                                {dayEvents.length > 1 && (
-                                    <button
-                                        className="text-left text-[9px] font-semibold text-blue-600 dark:text-blue-400 hover:underline pt-0.5 sm:hidden"
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onViewDay(cellDate);
-                                        }}
-                                    >
-                                        +{dayEvents.length - 1} more
-                                    </button>
-                                )}
-
                                 {overflowCount > 0 && (
                                     <button
-                                        className="text-left text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline pt-0.5 hidden sm:block"
+                                        className="text-left text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline pt-0.5 cursor-pointer"
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onViewDay(cellDate);
+                                            handleCellClick(cellDate, dayEvents);
                                         }}
                                     >
                                         +{overflowCount} more
@@ -161,6 +185,16 @@ export function CalendarMonthView({
                     );
                 })}
             </div>
+
+            {/* Day Events Popup Modal */}
+            <CalendarDayEventsModal
+                date={dayEventsPopup?.date ?? null}
+                events={dayEventsPopup?.events ?? []}
+                open={Boolean(dayEventsPopup)}
+                onClose={() => setDayEventsPopup(null)}
+                onSelectEvent={handleSelectEventFromPopup}
+                onViewDay={onViewDay}
+            />
         </div>
     );
 }

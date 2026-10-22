@@ -55,9 +55,6 @@ export default function PeriodForm({
             fields={fields}
             formProps={formProps}
             hasHelper
-            // Excluded from the label-icon treatment: this form keeps its
-            // guidance and errors as text beneath each control.
-            helperPlacement="below"
         />
     );
 }

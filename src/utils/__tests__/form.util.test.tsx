@@ -2,9 +2,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
     announceFormError,
+    blurActiveElementWithin,
     checkForMessage,
     focusAndOpenFirstErrorField,
-    FORM_ERROR_EVENT
+    FORM_ERROR_EVENT,
+    getLastWindowFocusTime,
+    setLastWindowFocusTime
 } from '../form.util';
 import CommonStepperInput from '@components/input/CommonStepperInput';
 
@@ -167,6 +170,51 @@ describe('form.util - Error Focus & Autofill Handling', () => {
             const input = screen.getByRole('spinbutton');
             fireEvent.change(input, { target: { value: '2' } });
             expect(handleChange).toHaveBeenCalledWith(2);
+        });
+    });
+
+    describe('Window Focus & Active Element Blur Helpers', () => {
+        it('tracks window focus time correctly', () => {
+            const now = Date.now();
+            setLastWindowFocusTime(now);
+            expect(getLastWindowFocusTime()).toBe(now);
+
+            // Simulating window focus event
+            window.dispatchEvent(new Event('focus'));
+            expect(getLastWindowFocusTime()).toBeGreaterThanOrEqual(now);
+        });
+
+        it('blurs active element within container', () => {
+            const container = document.createElement('div');
+            const input = document.createElement('input');
+            container.appendChild(input);
+            document.body.appendChild(container);
+
+            input.focus();
+            expect(document.activeElement).toBe(input);
+
+            blurActiveElementWithin(container);
+            expect(document.activeElement).not.toBe(input);
+
+            document.body.removeChild(container);
+        });
+
+        it('does not blur active element if outside container', () => {
+            const container = document.createElement('div');
+            const insideInput = document.createElement('input');
+            const outsideInput = document.createElement('input');
+            container.appendChild(insideInput);
+            document.body.appendChild(container);
+            document.body.appendChild(outsideInput);
+
+            outsideInput.focus();
+            expect(document.activeElement).toBe(outsideInput);
+
+            blurActiveElementWithin(container);
+            expect(document.activeElement).toBe(outsideInput);
+
+            document.body.removeChild(container);
+            document.body.removeChild(outsideInput);
         });
     });
 });

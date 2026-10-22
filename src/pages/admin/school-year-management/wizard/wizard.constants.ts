@@ -234,7 +234,7 @@ export function validateTerms(
     terms: WizardTermItem[],
     syStartDate?: string,
     syEndDate?: string
-): { isValid: boolean; error?: string; fieldPath?: string; termIndex?: number } {
+): { isValid: boolean; error?: string; fieldPath?: string; termIndex?: number; errors?: Array<{ fieldPath: string; message: string; termIndex?: number }> } {
     if (!terms || terms.length === 0) {
         return {
             error: 'Please declare at least one Term for this academic year.',
@@ -243,108 +243,110 @@ export function validateTerms(
     }
 
     const seenLabels = new Set<string>();
+    const errorsList: Array<{ fieldPath: string; message: string; termIndex?: number }> = [];
 
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
         const termName = (t.term_type_label || '').trim();
 
         if (!termName) {
-            return {
-                error: `Please specify a Term Type / Name for Term #${i + 1}.`,
+            errorsList.push({
+                message: `Please specify a Term Type / Name for Term #${i + 1}.`,
                 fieldPath: `terms.${i}.term_type_label`,
-                isValid: false,
                 termIndex: i
-            };
-        }
-
-        const cleanKey = termName.toLowerCase();
-        if (seenLabels.has(cleanKey)) {
-            return {
-                error: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique name.`,
-                fieldPath: `terms.${i}.term_type_label`,
-                isValid: false,
-                termIndex: i
-            };
-        }
-        seenLabels.add(cleanKey);
-
-        if (!t.start_date) {
-            return {
-                error: `Please specify a Start Date for ${termName}.`,
-                fieldPath: `terms.${i}.start_date`,
-                isValid: false,
-                termIndex: i
-            };
-        }
-
-        if (!t.end_date) {
-            return {
-                error: `Please specify an End Date for ${termName}.`,
-                fieldPath: `terms.${i}.end_date`,
-                isValid: false,
-                termIndex: i
-            };
-        }
-
-        if (new Date(t.end_date) < new Date(t.start_date)) {
-            return {
-                error: `End Date cannot be before Start Date in ${termName}.`,
-                fieldPath: `terms.${i}.end_date`,
-                isValid: false,
-                termIndex: i
-            };
-        }
-
-        if (new Date(t.end_date).getTime() === new Date(t.start_date).getTime()) {
-            return {
-                error: `End Date must be strictly after Start Date in ${termName}.`,
-                fieldPath: `terms.${i}.end_date`,
-                isValid: false,
-                termIndex: i
-            };
-        }
-
-        if (i > 0) {
-            const prevTerm = terms[i - 1];
-            const prevName = prevTerm.term_type_label || `Term #${i}`;
-            if (new Date(t.start_date) < new Date(prevTerm.end_date)) {
-                return {
-                    error: `Term #${i + 1} (${termName}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
-                    fieldPath: `terms.${i}.start_date`,
-                    isValid: false,
+            });
+        } else {
+            const cleanKey = termName.toLowerCase();
+            if (seenLabels.has(cleanKey)) {
+                errorsList.push({
+                    message: `Duplicate term type: "${termName}" is used multiple times. Each term in an academic year must have a unique name.`,
+                    fieldPath: `terms.${i}.term_type_label`,
                     termIndex: i
-                };
+                });
+            } else {
+                seenLabels.add(cleanKey);
             }
         }
 
-        if (syStartDate && new Date(t.start_date) < new Date(syStartDate)) {
-            return {
-                error: `Term #${i + 1} (${termName}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,
+        if (!t.start_date) {
+            errorsList.push({
+                message: `Please specify a Start Date for ${termName || `Term #${i + 1}`}.`,
                 fieldPath: `terms.${i}.start_date`,
-                isValid: false,
                 termIndex: i
-            };
+            });
         }
 
-        if (syEndDate && new Date(t.end_date) > new Date(syEndDate)) {
-            return {
-                error: `Term #${i + 1} (${termName}) end date (${t.end_date}) cannot be after the school year end date (${syEndDate}).`,
+        if (!t.end_date) {
+            errorsList.push({
+                message: `Please specify an End Date for ${termName || `Term #${i + 1}`}.`,
                 fieldPath: `terms.${i}.end_date`,
-                isValid: false,
                 termIndex: i
-            };
+            });
+        }
+
+        if (t.start_date && t.end_date) {
+            if (new Date(t.end_date) < new Date(t.start_date)) {
+                errorsList.push({
+                    message: `End Date cannot be before Start Date in ${termName || `Term #${i + 1}`}.`,
+                    fieldPath: `terms.${i}.end_date`,
+                    termIndex: i
+                });
+            } else if (new Date(t.end_date).getTime() === new Date(t.start_date).getTime()) {
+                errorsList.push({
+                    message: `End Date must be strictly after Start Date in ${termName || `Term #${i + 1}`}.`,
+                    fieldPath: `terms.${i}.end_date`,
+                    termIndex: i
+                });
+            }
+        }
+
+        if (i > 0 && t.start_date) {
+            const prevTerm = terms[i - 1];
+            const prevName = prevTerm.term_type_label || `Term #${i}`;
+            if (prevTerm.end_date && new Date(t.start_date) < new Date(prevTerm.end_date)) {
+                errorsList.push({
+                    message: `Term #${i + 1} (${termName || `Term #${i + 1}`}) start date (${t.start_date}) conflicts with preceding term #${i} (${prevName}) end date (${prevTerm.end_date}). Terms cannot have overlapping dates.`,
+                    fieldPath: `terms.${i}.start_date`,
+                    termIndex: i
+                });
+            }
+        }
+
+        if (syStartDate && t.start_date && new Date(t.start_date) < new Date(syStartDate)) {
+            errorsList.push({
+                message: `Term #${i + 1} (${termName || `Term #${i + 1}`}) start date (${t.start_date}) cannot be before the school year start date (${syStartDate}).`,
+                fieldPath: `terms.${i}.start_date`,
+                termIndex: i
+            });
+        }
+
+        if (syEndDate && t.end_date && new Date(t.end_date) > new Date(syEndDate)) {
+            errorsList.push({
+                message: `Term #${i + 1} (${termName || `Term #${i + 1}`}) end date (${t.end_date}) cannot be after the school year end date (${syEndDate}).`,
+                fieldPath: `terms.${i}.end_date`,
+                termIndex: i
+            });
         }
 
         if (t.enrollment_start_date && t.enrollment_end_date) {
             if (new Date(t.enrollment_end_date) < new Date(t.enrollment_start_date)) {
-                return {
-                    error: `Enrollment End Date cannot be before Enrollment Start Date in ${termName}.`,
+                errorsList.push({
+                    message: `Enrollment End Date cannot be before Enrollment Start Date in ${termName || `Term #${i + 1}`}.`,
                     fieldPath: `terms.${i}.enrollment_end_date`,
-                    isValid: false,
                     termIndex: i
-                };
+                });
             }
         }
+    }
+
+    if (errorsList.length > 0) {
+        return {
+            isValid: false,
+            error: errorsList[0].message,
+            fieldPath: errorsList[0].fieldPath,
+            termIndex: errorsList[0].termIndex,
+            errors: errorsList
+        };
     }
 
     return { isValid: true };
@@ -357,7 +359,10 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
     termIndex?: number;
     periodIndex?: number;
     isToastOnly?: boolean;
+    errors?: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }>;
 } {
+    const errorsList: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }> = [];
+
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
         const termName = t.term_type_label || `Term #${i + 1}`;
@@ -378,114 +383,105 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
             const periodLabel = p.name ? `"${p.name}"` : `Period #${p.sequence || j + 1}`;
 
             if (!p.name || !p.name.trim()) {
-                return {
-                    error: `All grading periods in ${termName} must have a name.`,
+                errorsList.push({
+                    message: `All grading periods in ${termName} must have a name.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.name`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
+            } else {
+                const cleanName = p.name.trim().toLowerCase();
+                if (seenNames.has(cleanName)) {
+                    errorsList.push({
+                        message: `Duplicate grading period name "${p.name}" in ${termName}. Each grading period in a term must have a unique name.`,
+                        fieldPath: `terms.${i}.grading_periods.${j}.name`,
+                        periodIndex: j,
+                        termIndex: i
+                    });
+                } else {
+                    seenNames.add(cleanName);
+                }
             }
-
-            const cleanName = p.name.trim().toLowerCase();
-            if (seenNames.has(cleanName)) {
-                return {
-                    error: `Duplicate grading period name "${p.name}" in ${termName}. Each grading period in a term must have a unique name.`,
-                    fieldPath: `terms.${i}.grading_periods.${j}.name`,
-                    isValid: false,
-                    periodIndex: j,
-                    termIndex: i
-                };
-            }
-            seenNames.add(cleanName);
 
             if (!p.weight || Number(p.weight) <= 0) {
-                return {
-                    error: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`,
+                errorsList.push({
+                    message: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.weight`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
             if (!p.start_date || !p.start_date.trim()) {
-                return {
-                    error: `Grading period ${periodLabel} in ${termName} must have a Start Date.`,
+                errorsList.push({
+                    message: `Grading period ${periodLabel} in ${termName} must have a Start Date.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.start_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
             if (!p.end_date || !p.end_date.trim()) {
-                return {
-                    error: `Grading period ${periodLabel} in ${termName} must have an End Date.`,
+                errorsList.push({
+                    message: `Grading period ${periodLabel} in ${termName} must have an End Date.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
-            if (new Date(p.end_date) < new Date(p.start_date)) {
-                return {
-                    error: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`,
-                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
-                    isValid: false,
-                    periodIndex: j,
-                    termIndex: i
-                };
+            if (p.start_date && p.end_date) {
+                if (new Date(p.end_date) < new Date(p.start_date)) {
+                    errorsList.push({
+                        message: `End Date cannot be before Start Date for grading period ${periodLabel} in ${termName}.`,
+                        fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                        periodIndex: j,
+                        termIndex: i
+                    });
+                } else if (new Date(p.end_date).getTime() === new Date(p.start_date).getTime()) {
+                    errorsList.push({
+                        message: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
+                        fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
+                        periodIndex: j,
+                        termIndex: i
+                    });
+                }
             }
 
-            if (new Date(p.end_date).getTime() === new Date(p.start_date).getTime()) {
-                return {
-                    error: `End Date must be strictly after Start Date for grading period ${periodLabel} in ${termName}.`,
-                    fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
-                    isValid: false,
-                    periodIndex: j,
-                    termIndex: i
-                };
-            }
-
-            if (t.start_date && new Date(p.start_date) < new Date(t.start_date)) {
-                return {
-                    error: `Grading period ${periodLabel} start date (${p.start_date}) cannot be before the term start date (${t.start_date}).`,
+            if (t.start_date && p.start_date && new Date(p.start_date) < new Date(t.start_date)) {
+                errorsList.push({
+                    message: `Grading period ${periodLabel} start date (${p.start_date}) cannot be before the term start date (${t.start_date}).`,
                     fieldPath: `terms.${i}.grading_periods.${j}.start_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
-            if (t.end_date && new Date(p.end_date) > new Date(t.end_date)) {
-                return {
-                    error: `Grading period ${periodLabel} end date (${p.end_date}) cannot be after the term end date (${t.end_date}).`,
+            if (t.end_date && p.end_date && new Date(p.end_date) > new Date(t.end_date)) {
+                errorsList.push({
+                    message: `Grading period ${periodLabel} end date (${p.end_date}) cannot be after the term end date (${t.end_date}).`,
                     fieldPath: `terms.${i}.grading_periods.${j}.end_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
+
             if (p.major_exam_start_date && p.major_exam_end_date && new Date(p.major_exam_end_date) < new Date(p.major_exam_start_date)) {
-                return {
-                    error: `Major Exam End Date cannot be before Major Exam Start Date for grading period ${periodLabel} in ${termName}.`,
+                errorsList.push({
+                    message: `Major Exam End Date cannot be before Major Exam Start Date for grading period ${periodLabel} in ${termName}.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.major_exam_end_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
             if (p.grade_encoding_start_date && p.grade_encoding_end_date && new Date(p.grade_encoding_end_date) < new Date(p.grade_encoding_start_date)) {
-                return {
-                    error: `Grade Encoding End Date cannot be before Grade Encoding Start Date for grading period ${periodLabel} in ${termName}.`,
+                errorsList.push({
+                    message: `Grade Encoding End Date cannot be before Grade Encoding Start Date for grading period ${periodLabel} in ${termName}.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.grade_encoding_end_date`,
-                    isValid: false,
                     periodIndex: j,
                     termIndex: i
-                };
+                });
             }
 
             // Grading components validation
@@ -524,12 +520,24 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
             };
         }
     }
+
+    if (errorsList.length > 0) {
+        return {
+            isValid: false,
+            error: errorsList[0].message,
+            fieldPath: errorsList[0].fieldPath,
+            periodIndex: errorsList[0].periodIndex,
+            termIndex: errorsList[0].termIndex,
+            errors: errorsList
+        };
+    }
+
     return { isValid: true };
 }
 
 export function validateTransmutationRows(
     rows: WizardTransmutationRow[]
-): { isValid: boolean; error?: string; fieldPath?: string; rowIndex?: number } {
+): { isValid: boolean; error?: string; fieldPath?: string; rowIndex?: number; errors?: Array<{ fieldPath: string; message: string; rowIndex?: number }> } {
     if (!rows || rows.length === 0) {
         return {
             error: 'Please define at least one transmutation row / grade ladder.',
@@ -539,16 +547,16 @@ export function validateTransmutationRows(
 
     let prevRow: WizardTransmutationRow | null = null;
     let prevIndex: number = -1;
+    const errorsList: Array<{ fieldPath: string; message: string; rowIndex?: number }> = [];
 
     for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
         if (!r.label || !r.label.trim()) {
-            return {
-                error: `Row #${i + 1} must have a Grade Mark / Label (e.g. 1.00, 1.25, INC).`,
+            errorsList.push({
+                message: `Row #${i + 1} must have a Grade Mark / Label (e.g. 1.00, 1.25, INC).`,
                 fieldPath: `transmutation_rows.${i}.label`,
-                isValid: false,
                 rowIndex: i
-            };
+            });
         }
 
         // Special status grades like DRP and INC do not require grade percentage ranges
@@ -564,63 +572,69 @@ export function validateTransmutationRows(
             : null;
 
         if (minPct === null || isNaN(minPct)) {
-            return {
-                error: `Row #${i + 1} (${r.label}) must have a Min % specified.`,
+            errorsList.push({
+                message: `Row #${i + 1} (${r.label}) must have a Min % specified.`,
                 fieldPath: `transmutation_rows.${i}.min_percentage`,
-                isValid: false,
                 rowIndex: i
-            };
+            });
         }
 
         if (maxPct === null || isNaN(maxPct)) {
-            return {
-                error: `Row #${i + 1} (${r.label}) must have a Max % specified.`,
+            errorsList.push({
+                message: `Row #${i + 1} (${r.label}) must have a Max % specified.`,
                 fieldPath: `transmutation_rows.${i}.max_percentage`,
-                isValid: false,
                 rowIndex: i
-            };
+            });
         }
 
-        if (minPct < 0 || maxPct > 100) {
-            return {
-                error: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
-                fieldPath: minPct < 0 ? `transmutation_rows.${i}.min_percentage` : `transmutation_rows.${i}.max_percentage`,
-                isValid: false,
-                rowIndex: i
-            };
+        if (minPct !== null && maxPct !== null) {
+            if (minPct < 0 || maxPct > 100) {
+                errorsList.push({
+                    message: `Row #${i + 1} (${r.label}) percentages must be between 0% and 100%.`,
+                    fieldPath: minPct < 0 ? `transmutation_rows.${i}.min_percentage` : `transmutation_rows.${i}.max_percentage`,
+                    rowIndex: i
+                });
+            }
+
+            if (minPct > maxPct) {
+                errorsList.push({
+                    message: `Row #${i + 1} (${r.label}) Min % (${minPct}) cannot be greater than Max % (${maxPct}).`,
+                    fieldPath: `transmutation_rows.${i}.min_percentage`,
+                    rowIndex: i
+                });
+            }
         }
 
-        if (minPct > maxPct) {
-            return {
-                error: `Row #${i + 1} (${r.label}) Min % (${minPct}) cannot be greater than Max % (${maxPct}).`,
-                fieldPath: `transmutation_rows.${i}.min_percentage`,
-                isValid: false,
-                rowIndex: i
-            };
-        }
-
-        if (prevRow !== null) {
+        if (prevRow !== null && minPct !== null && maxPct !== null) {
             const prevMin = Number(prevRow.min_percentage);
             if (minPct >= prevMin) {
-                return {
-                    error: `Row #${i + 1} (${r.label}) Min % (${minPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
+                errorsList.push({
+                    message: `Row #${i + 1} (${r.label}) Min % (${minPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
                     fieldPath: `transmutation_rows.${i}.min_percentage`,
-                    isValid: false,
                     rowIndex: i
-                };
+                });
             }
             if (maxPct >= prevMin) {
-                return {
-                    error: `Row #${i + 1} (${r.label}) Max % (${maxPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
+                errorsList.push({
+                    message: `Row #${i + 1} (${r.label}) Max % (${maxPct}%) cannot be greater than or equal to preceding Row #${prevIndex + 1} (${prevRow.label}) Min % (${prevMin}%).`,
                     fieldPath: `transmutation_rows.${i}.max_percentage`,
-                    isValid: false,
                     rowIndex: i
-                };
+                });
             }
         }
 
         prevRow = r;
         prevIndex = i;
+    }
+
+    if (errorsList.length > 0) {
+        return {
+            isValid: false,
+            error: errorsList[0].message,
+            fieldPath: errorsList[0].fieldPath,
+            rowIndex: errorsList[0].rowIndex,
+            errors: errorsList
+        };
     }
 
     return { isValid: true };
@@ -901,42 +915,48 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
 
 export function validateCalendarExceptions(
     holidays: { title?: string; start_date?: string; end_date?: string }[]
-): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number } {
+): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number; errors?: Array<{ fieldPath: string; message: string; holidayIndex?: number }> } {
     if (!holidays) return { isValid: true };
+    const errorsList: Array<{ fieldPath: string; message: string; holidayIndex: number }> = [];
     for (let i = 0; i < holidays.length; i++) {
         const h = holidays[i];
         if (!h.title || !h.title.trim()) {
-            return {
+            errorsList.push({
                 fieldPath: `holidays.${i}.title`,
                 holidayIndex: i,
-                isValid: false,
-                error: `Holiday/Exception #${i + 1} must have a Title.`
-            };
+                message: `Holiday/Exception #${i + 1} must have a Title.`
+            });
         }
         if (!h.start_date) {
-            return {
+            errorsList.push({
                 fieldPath: `holidays.${i}.start_date`,
                 holidayIndex: i,
-                isValid: false,
-                error: `Holiday/Exception "${h.title}" must specify a Start Date.`
-            };
+                message: `Holiday/Exception "${h.title || `#${i + 1}`}" must specify a Start Date.`
+            });
         }
         if (!h.end_date) {
-            return {
+            errorsList.push({
                 fieldPath: `holidays.${i}.end_date`,
                 holidayIndex: i,
-                isValid: false,
-                error: `Holiday/Exception "${h.title}" must specify an End Date.`
-            };
+                message: `Holiday/Exception "${h.title || `#${i + 1}`}" must specify an End Date.`
+            });
         }
-        if (new Date(h.end_date) < new Date(h.start_date)) {
-            return {
+        if (h.start_date && h.end_date && new Date(h.end_date) < new Date(h.start_date)) {
+            errorsList.push({
                 fieldPath: `holidays.${i}.end_date`,
                 holidayIndex: i,
-                isValid: false,
-                error: `End Date cannot be before Start Date in Holiday/Exception "${h.title}".`
-            };
+                message: `End Date cannot be before Start Date in Holiday/Exception "${h.title || `#${i + 1}`}".`
+            });
         }
+    }
+    if (errorsList.length > 0) {
+        return {
+            isValid: false,
+            error: errorsList[0].message,
+            fieldPath: errorsList[0].fieldPath,
+            holidayIndex: errorsList[0].holidayIndex,
+            errors: errorsList
+        };
     }
     return { isValid: true };
 }

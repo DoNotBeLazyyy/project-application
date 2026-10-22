@@ -392,4 +392,44 @@ export function useAppForm<
     }) as typeof origHandleSubmit;
 
     return methods;
+}
+
+let lastWindowFocusTime = 0;
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('focus', () => {
+        lastWindowFocusTime = Date.now();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            lastWindowFocusTime = Date.now();
+        }
+    });
+}
+
+/**
+ * Returns the timestamp (in ms) when the window/document last regained focus.
+ * Useful for guarding input focus events from mistakenly firing actions (like opening dropdowns/pickers)
+ * when a user merely switches back to this browser tab.
+ */
+export function getLastWindowFocusTime(): number {
+    return lastWindowFocusTime;
+}
+
+/**
+ * Sets the last window focus time. Primarily exported for testing.
+ */
+export function setLastWindowFocusTime(time: number): void {
+    lastWindowFocusTime = time;
+}
+
+/**
+ * Blurs whichever HTMLElement currently has focus if it is inside the specified container.
+ */
+export function blurActiveElementWithin(container: HTMLElement | null): void {
+    if (typeof document === 'undefined') return;
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement && container?.contains(activeElement)) {
+        activeElement.blur();
+    }
 }

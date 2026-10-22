@@ -126,7 +126,7 @@ export default function CommonInfoTooltip({
             setIsPinned(true);
         }
 
-        function handleFocusIn(event: FocusEvent) {
+        function handleFocusIn(event: Event) {
             if (event.target !== button) {
                 pinnedAtRef.current = Date.now();
                 setIsPinned(true);
