@@ -57,8 +57,9 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         // Normal interaction (no recent window refocus)
         setLastWindowFocusTime(0);
 
-        fireEvent.pointerDown(sectionsContainer);
-        fireEvent.focusIn(sectionsContainer);
+        const inputEl = container.querySelector('input') || sectionsContainer;
+        fireEvent.pointerDown(inputEl);
+        fireEvent.focus(inputEl);
 
         expect(handleOpen).toHaveBeenCalled();
     });
