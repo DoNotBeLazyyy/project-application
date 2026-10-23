@@ -8,12 +8,12 @@ export const INPUT_PADDING_SMALL = 'var(--mui-tokens-spacing-3)';
 export const INPUT_PADDING_MEDIUM = 'var(--mui-tokens-spacing-3) var(--mui-tokens-spacing-4)';
 export const INPUT_PADDING_LARGE = 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)';
 
-const SURFACE_DEFAULT = 'var(--mui-tokens-color-common-white, #ffffff)';
+const SURFACE_DEFAULT = 'var(--mui-palette-background-paper, #ffffff)';
 const SURFACE_HOVER = 'var(--mui-tokens-color-brand-50, #F2F7FE)';
-const SURFACE_FOCUSED = 'var(--mui-tokens-color-common-white, #ffffff)';
+const SURFACE_FOCUSED = 'var(--mui-palette-background-paper, #ffffff)';
 export const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-50, #FAFAFA)';
-const SURFACE_ERROR = 'var(--mui-tokens-color-red-100, #FFF0F0)';
-export const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-600)';
+const SURFACE_ERROR = 'var(--mui-tokens-color-state-errorLight, #FFF0F0)';
+export const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-400)';
 export const BORDER_NEUTRAL = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-neutral-300, #D4D4D8)';
 export const BORDER_BLUE = BORDER_NEUTRAL;
 export const BORDER_BLUE_HOVER = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-brand-600, #387BE0)';

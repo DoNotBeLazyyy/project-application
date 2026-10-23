@@ -67,7 +67,7 @@ export default function CommonBreadcrumbs() {
     return (
         <nav
             aria-label="Breadcrumb"
-            className="bg-(--mui-tokens-color-common-white) border-(--mui-tokens-color-neutral-200) border-b flex flex-shrink-0 items-center justify-between md:px-6 min-h-[38px] px-4 py-2 relative shadow-2xs z-20"
+            className="bg-(--mui-palette-background-paper) border-(--mui-tokens-color-neutral-200) border-b flex flex-shrink-0 items-center justify-between md:px-6 min-h-[38px] px-4 py-2 relative shadow-2xs z-20"
         >
             <ol className="flex flex-wrap gap-1.5 items-center min-w-0 text-xs">
                 {isCollapsedMobile

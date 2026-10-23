@@ -40,13 +40,13 @@ const CREATE_FORM_ID = 'create-curriculum-map-form';
 const UPDATE_FORM_ID = 'update-curriculum-map-form';
 
 const CURRICULUM_MAP_CSV_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101' },
-    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1' },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', required: false },
-    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 2.0 (optional override)', required: false },
-    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 1.0 (optional override)', required: false },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', required: false },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', required: false }
+    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101', sample: 'CS101', aliases: ['course', 'code'] },
+    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1', sample: '1', aliases: ['year', 'level'] },
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', sample: '1ST_SEM', required: false, aliases: ['term_type', 'semester_type'] },
+    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 2.0 (optional override)', sample: '2.0', required: false, aliases: ['lec_units', 'lecture'] },
+    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 1.0 (optional override)', sample: '1.0', required: false, aliases: ['lab_units', 'lab'] },
+    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', sample: '1', required: false, aliases: ['order', 'seq'] },
+    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', sample: 'false', required: false, aliases: ['elective'] }
 ];
 
 interface CurriculumMapCsvRow {
@@ -1246,6 +1246,7 @@ export default function CurriculumMapManagement({
             <BulkImportModal<CurriculumMapCsvRow>
                 open={isBulkImportOpen}
                 templateColumns={CURRICULUM_MAP_CSV_COLUMNS}
+                templateDownloadFilename="curriculum_map_template.csv"
                 title="Bulk Import Curriculum Map"
                 onBulkImport={handleBulkImportCurriculum}
                 onClose={() => setIsBulkImportOpen(false)}

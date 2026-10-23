@@ -25,7 +25,7 @@ interface EventMetaTileProps {
     value?: string;
 }
 
-function formatEventDisplayRange(startAt: string, endAt: string): string {
+function formatEventDisplayRange(startAt: string, endAt?: string | null, allDay?: boolean): string {
     if (!startAt) {
         return '—';
     }
@@ -36,11 +36,40 @@ function formatEventDisplayRange(startAt: string, endAt: string): string {
         return startAt;
     }
 
-    const startLabel = start.toLocaleDateString(undefined, {
+    if (allDay) {
+        const startLabel = start.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        if (!endAt) {
+            return `${startLabel} (All Day)`;
+        }
+
+        const end = new Date(endAt);
+        if (Number.isNaN(end.getTime()) || start.toDateString() === end.toDateString()) {
+            return `${startLabel} (All Day)`;
+        }
+
+        const endLabel = end.toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return `${startLabel} — ${endLabel} (All Day)`;
+    }
+
+    const startLabel = start.toLocaleString(undefined, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
     });
 
     if (!endAt) {
@@ -48,23 +77,24 @@ function formatEventDisplayRange(startAt: string, endAt: string): string {
     }
 
     const end = new Date(endAt);
-
     if (Number.isNaN(end.getTime())) {
         return startLabel;
     }
 
     const isSameDay = start.toDateString() === end.toDateString();
-
-    if (isSameDay) {
-        return startLabel;
-    }
-
-    const endLabel = end.toLocaleDateString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-    });
+    const endLabel = isSameDay
+        ? end.toLocaleTimeString(undefined, {
+            hour: 'numeric',
+            minute: '2-digit'
+        })
+        : end.toLocaleString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        });
 
     return `${startLabel} — ${endLabel}`;
 }
@@ -109,7 +139,7 @@ export default function EventViewerCard({ values }: EventViewerCardProps) {
     const isSection = audience === 'Section';
     const hasAttachments = Boolean(values.attachments && values.attachments.length > 0);
     const hasSections = isSection && values.sections && values.sections.length > 0;
-    const whenLabel = formatEventDisplayRange(values.start_at, values.end_at);
+    const whenLabel = formatEventDisplayRange(values.start_at, values.end_at, values.all_day);
 
     return (
         <article className="flex flex-col gap-6 max-w-4xl mx-auto py-2 w-full">

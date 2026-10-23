@@ -83,7 +83,7 @@ export default function Calendar({
     }
 
     return (
-        <div className="bg-(--mui-tokens-color-common-white) flex flex-col gap-(--mui-tokens-spacing-5) h-full min-w-0 mx-auto p-(--mui-tokens-spacing-4) rounded-(--mui-tokens-radius-lg) shadow md:p-(--mui-tokens-spacing-6) w-full">
+        <div className="bg-(--mui-palette-background-paper) flex flex-col gap-(--mui-tokens-spacing-5) h-full min-w-0 mx-auto p-(--mui-tokens-spacing-4) rounded-(--mui-tokens-radius-lg) shadow md:p-(--mui-tokens-spacing-6) w-full">
             <div className="gap-(--mui-tokens-spacing-4) grid grid-cols-1 items-center md:grid-cols-6 md:mx-(--mui-tokens-spacing-6) md:my-(--mui-tokens-spacing-5)">
                 <div className="md:col-span-2">
                     <CalendarTitle

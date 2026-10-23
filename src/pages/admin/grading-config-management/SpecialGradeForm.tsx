@@ -8,7 +8,7 @@ import RulePreviewPanel from '@pages/admin/grading-config-management/RulePreview
 import { ComponentPropsForm } from '@type/common.type';
 import { SpecialGradeConditionGroup, SpecialGradeFormValues } from '@type/grading-config.type';
 import { generateSpecialGradeCode } from '@utils/entity-code.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Control, Controller, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface SpecialGradeFormProps extends ComponentPropsForm {
@@ -76,15 +76,43 @@ export default function SpecialGradeForm({
     const requiresCompletion = useWatch({ control, name: 'requires_completion' });
     const watchedLabel = useWatch({ control, name: 'label' });
 
+    const initialLabelRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
+
     useEffect(() => {
-        if (!setValue || disabled || !isCreate) return;
-        const generated = generateSpecialGradeCode(watchedLabel || '');
-        if (generated) {
-            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-        } else if (!watchedLabel?.trim()) {
-            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+        initialLabelRef.current = null;
+        initialCodeRef.current = null;
+    }, [isCreate]);
+
+    useEffect(() => {
+        if (!setValue || disabled) return;
+
+        if (initialLabelRef.current === null) {
+            initialLabelRef.current = watchedLabel || '';
+            initialCodeRef.current = code || '';
+            return;
         }
-    }, [watchedLabel, disabled, isCreate, setValue]);
+
+        if (isCreate) {
+            const generated = generateSpecialGradeCode(watchedLabel || '');
+            if (generated) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            } else if (!watchedLabel?.trim()) {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
+            }
+        } else {
+            if (watchedLabel !== initialLabelRef.current) {
+                const generated = generateSpecialGradeCode(watchedLabel || '');
+                if (generated) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                } else if (!watchedLabel?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && code !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
+        }
+    }, [watchedLabel, disabled, isCreate, setValue, code]);
 
     const identityFields: FormFieldConfig<SpecialGradeFormValues>[] = [
         {

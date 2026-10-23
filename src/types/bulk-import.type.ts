@@ -41,5 +41,7 @@ export interface CsvTemplateColumn {
     key: string;
     label: string;
     hint?: string;
+    sample?: string;
+    aliases?: string[];
     required?: boolean;
 }

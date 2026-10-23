@@ -31,14 +31,14 @@ export const inputOverrides: ComponentTheme = {
                     color: 'var(--mui-tokens-color-neutral-600) !important'
                 },
                 '&.Mui-disabled .MuiChip-root, &.MuiInputBase-readOnly .MuiChip-root': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white) !important',
-                    borderColor: 'var(--mui-tokens-color-brand-500) !important',
-                    color: 'var(--mui-tokens-color-brand-950) !important',
+                    backgroundColor: 'var(--mui-palette-background-paper) !important',
+                    borderColor: 'var(--mui-palette-primary-main) !important',
+                    color: 'var(--mui-palette-text-primary) !important',
                     opacity: '1 !important',
                     '& .MuiChip-label': {
-                        color: 'var(--mui-tokens-color-brand-950) !important',
+                        color: 'var(--mui-palette-text-primary) !important',
                         opacity: '1 !important',
-                        WebkitTextFillColor: 'var(--mui-tokens-color-brand-950) !important'
+                        WebkitTextFillColor: 'var(--mui-palette-text-primary) !important'
                     },
                     '& .MuiChip-deleteIcon': {
                         color: 'var(--mui-tokens-color-brand-600) !important',

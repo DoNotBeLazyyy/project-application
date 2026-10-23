@@ -1,0 +1,2 @@
+term_label,program_code,course_code,section_code,faculty_email,room,max_slots,status,schedule_days,schedule_time_start,schedule_time_end,schedule_room
+,HUBILLA-BSIT,HUBILLA-IT101,HUBILLA-SEC-101,hubilla.faculty@example.com,HUBILLA-LAB-101,40,Open,"Monday, Wednesday",08:00,10:00,HUBILLA-LAB-101

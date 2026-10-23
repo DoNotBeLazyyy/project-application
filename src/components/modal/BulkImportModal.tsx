@@ -6,6 +6,15 @@ import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
 import { BulkImportError, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
+import {
+    CsvParseResult,
+    escapeCsvValue,
+    generateTemplateCsv,
+    isHintRecord,
+    matchColumnHeader,
+    splitCsvRecords
+} from '@utils/csv.util';
+import { exportCsvFile } from '@utils/file.util';
 import { classMerge } from '@utils/css.util';
 import { ColDef } from 'ag-grid-community';
 import { useMemo, useRef, useState } from 'react';
@@ -14,91 +23,7 @@ type BulkImportStep = 'upload' | 'preview' | 'results';
 
 type ParsedRow = Record<string, string>;
 
-interface CsvParseResult {
-    rows: ParsedRow[];
-    missingHeaders: string[];
-    unknownHeaders: string[];
-}
 
-function splitCsvRecords(text: string): string[][] {
-    const records: string[][] = [];
-    let currentRecord: string[] = [];
-    let currentValue = '';
-    let isQuoted = false;
-    let index = 0;
-
-    function pushValue() {
-        currentRecord.push(currentValue);
-        currentValue = '';
-    }
-
-    function pushRecord() {
-        pushValue();
-        records.push(currentRecord);
-        currentRecord = [];
-    }
-
-    while (index < text.length) {
-        const char = text[index];
-
-        if (isQuoted) {
-            if (char === '"') {
-                if (text[index + 1] === '"') {
-                    currentValue += '"';
-                    index += 2;
-                    continue;
-                }
-                isQuoted = false;
-                index += 1;
-                continue;
-            }
-            currentValue += char;
-            index += 1;
-            continue;
-        }
-
-        if (char === '"' && currentValue.trim() === '') {
-            currentValue = '';
-            isQuoted = true;
-            index += 1;
-            continue;
-        }
-
-        if (char === ',') {
-            pushValue();
-            index += 1;
-            continue;
-        }
-
-        if (char === '\n') {
-            pushRecord();
-            index += 1;
-            continue;
-        }
-
-        if (char === '\r') {
-            index += 1;
-            continue;
-        }
-
-        currentValue += char;
-        index += 1;
-    }
-
-    if (currentValue !== '' || currentRecord.length) {
-        pushRecord();
-    }
-
-    return records.map((record) => record.map((value) => value.trim()))
-        .filter((record) => record.some((value) => value !== ''));
-}
-
-function escapeCsvValue(value: string): string {
-    if (/[",\r\n]/.test(value)) {
-        return `"${value.replace(/"/g, '""')}"`;
-    }
-    return value;
-}
 
 export function getTargetEntityName(title?: string, entityName?: string): string {
     if (entityName?.trim()) return entityName.trim();
@@ -210,6 +135,7 @@ interface BulkImportModalProps<TPayload> {
     columns?: CsvTemplateColumn[];
     title?: string;
     entityName?: string;
+    templateDownloadFilename?: string;
     onClose: () => void;
     onBulkImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
     onImport?: (rows: TPayload[]) => Promise<DetailedBulkImportResult | { provisioned_count: number; errors: string[] }>;
@@ -225,6 +151,7 @@ export default function BulkImportModal<TPayload>({
     columns,
     title,
     entityName,
+    templateDownloadFilename,
     onClose,
     onBulkImport,
     onImport,
@@ -300,17 +227,20 @@ export default function BulkImportModal<TPayload>({
         onClose();
     }
 
+    const resolvedDownloadFilename = useMemo(() => {
+        if (templateDownloadFilename) {
+            return templateDownloadFilename.endsWith('.csv') ? templateDownloadFilename : `${templateDownloadFilename}.csv`;
+        }
+        const cleanEntity = targetEntityName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+        return `${cleanEntity || 'import'}_template.csv`;
+    }, [templateDownloadFilename, targetEntityName]);
+
     function downloadTemplate() {
-        const headers = (activeColumns || []).map((col) => escapeCsvValue(col.label || ''));
-        const hints = (activeColumns || []).map((col) => escapeCsvValue(col.hint ?? ''));
-        const csvContent = [headers.join(','), hints.join(',')].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'import_template.csv';
-        a.click();
-        URL.revokeObjectURL(url);
+        const csvContent = generateTemplateCsv(activeColumns);
+        exportCsvFile(resolvedDownloadFilename, csvContent);
     }
 
     function parseCsv(text: string): CsvParseResult {
@@ -320,10 +250,9 @@ export default function BulkImportModal<TPayload>({
         }
 
         const headers = records[0];
-        const matchedColumns = headers.map((header) => (activeColumns || []).find(
-            (col) => col.label.trim().toLowerCase() === header.trim().toLowerCase()
-                || col.key.trim().toLowerCase() === header.trim().toLowerCase()
-        ) ?? null);
+        const matchedColumns = headers.map((header) => {
+            return (activeColumns || []).find((col) => matchColumnHeader(header, col)) ?? null;
+        });
 
         const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
         const missingHeaders = (activeColumns || []).filter(
@@ -345,16 +274,6 @@ export default function BulkImportModal<TPayload>({
         });
 
         return { missingHeaders, rows, unknownHeaders };
-    }
-
-    function isHintRecord(values: string[], matchedColumns: (CsvTemplateColumn | null)[]): boolean {
-        const comparableHints = matchedColumns.filter((col, index) => col?.hint && values[index] !== undefined);
-        if (!comparableHints.length) return false;
-
-        return matchedColumns.every((col, index) => {
-            if (!col?.hint) return true;
-            return (values[index] ?? '') === col.hint.trim();
-        });
     }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {

@@ -237,6 +237,7 @@ export default function ProgramLevelManagement() {
                         <ProgramLevelForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
+                            setValue={updateMethods.setValue}
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError
@@ -286,6 +287,7 @@ export default function ProgramLevelManagement() {
             <BulkImportModal<ProgramLevelBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="program_levels_template.csv"
                 title="Bulk Import Program Levels"
                 onBulkImport={bulkCreateProgramLevels}
                 onClose={function() {

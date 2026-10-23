@@ -13,7 +13,7 @@ export default function PaginationSelect({
         <Select<number>
             IconComponent={CaretDownIcon}
             sx={{
-                backgroundColor: 'var(--mui-tokens-color-common-white)',
+                backgroundColor: 'var(--mui-palette-background-paper)',
                 borderRadius: 'var(--mui-tokens-radius-sm)',
                 fontSize: 'var(--mui-tokens-fontSize-sm)',
                 height: '1.75rem',

@@ -7,7 +7,7 @@ export const dropdownOverrides: ComponentTheme = {
                 width: '21.375rem',
                 maxWidth: 'calc(100vw - var(--mui-tokens-spacing-8))',
                 maxHeight: 'min(18.75rem, calc(100dvh - var(--mui-tokens-spacing-8)))',
-                backgroundColor: 'var(--mui-tokens-color-common-white)',
+                backgroundColor: 'var(--mui-palette-background-paper)',
                 border: 'var(--mui-tokens-stroke-1) solid var(--mui-tokens-color-neutral-300)',
                 borderRadius: 'var(--mui-tokens-radius-md)',
                 boxShadow: 'none'
@@ -20,8 +20,8 @@ export const dropdownOverrides: ComponentTheme = {
     MuiMenuItem: {
         styleOverrides: {
             root: ({ theme }) => ({
-                backgroundColor: 'var(--mui-tokens-color-common-white)',
-                color: 'var(--mui-tokens-color-neutral-900)',
+                backgroundColor: 'var(--mui-palette-background-paper)',
+                color: 'var(--mui-palette-text-primary)',
                 height: '3.438rem',
                 minHeight: 'unset',
                 padding: 'var(--mui-tokens-spacing-5) var(--mui-tokens-spacing-6)',
@@ -30,8 +30,8 @@ export const dropdownOverrides: ComponentTheme = {
                     backgroundColor: 'var(--mui-tokens-color-neutral-200)'
                 },
                 ['&.Mui-selected, &.Mui-selected:hover']: {
-                    backgroundColor: 'var(--mui-tokens-color-brand-900)',
-                    color: 'var(--mui-tokens-color-common-white)'
+                    backgroundColor: 'var(--mui-palette-primary-main)',
+                    color: 'var(--mui-palette-primary-contrastText)'
                 }
             })
         }

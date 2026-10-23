@@ -213,6 +213,7 @@ export default function RoleManagement() {
                         <RoleForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
+                            setValue={updateMethods.setValue}
                             onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateFormError)}
                         />
                     ),

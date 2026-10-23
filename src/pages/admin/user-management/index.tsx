@@ -26,10 +26,34 @@ import { useSearchParams } from 'react-router-dom';
 
 const UPDATE_FORM_ID = 'update-user-form';
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'first_name', label: 'First Name', hint: 'e.g. Juan' },
-    { key: 'last_name', label: 'Last Name', hint: 'e.g. Dela Cruz' },
-    { key: 'email', label: 'Email', hint: 'e.g. juan@school.edu' },
-    { key: 'role_code', label: 'Role', hint: 'Admin, Faculty, Student, Registrar, Dean' }
+    {
+        key: 'first_name',
+        label: 'First Name',
+        hint: 'e.g. Juan',
+        sample: 'Juan',
+        aliases: ['firstname', 'first', 'given_name', 'given name', 'fname']
+    },
+    {
+        key: 'last_name',
+        label: 'Last Name',
+        hint: 'e.g. Dela Cruz',
+        sample: 'Dela Cruz',
+        aliases: ['lastname', 'last', 'surname', 'family_name', 'family name', 'lname']
+    },
+    {
+        key: 'email',
+        label: 'Email',
+        hint: 'e.g. juan@school.edu',
+        sample: 'juan.delacruz@aulms.edu',
+        aliases: ['email_address', 'email address', 'user_email', 'user email', 'e-mail', 'mail']
+    },
+    {
+        key: 'role_code',
+        label: 'Role',
+        hint: 'Admin, Faculty, Student, Registrar, Dean',
+        sample: 'Faculty',
+        aliases: ['role', 'roles', 'role_code', 'role code', 'user_role', 'user role', 'role_name', 'role name', 'user_type', 'user type']
+    }
 ];
 
 export default function UserManagement() {
@@ -459,17 +483,23 @@ export default function UserManagement() {
             <BulkImportModal<InviteUserParams>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="users_template.csv"
                 title="Bulk Import Users"
                 onBulkImport={bulkProvisionUsers}
                 onClose={function() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={function(row) {
+                    const rawRole = (row.role_code || row.role || row.roles || '').trim();
+                    const normalizedRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase();
+                    const validRole = (['Admin', 'Faculty', 'Student', 'Registrar', 'Dean'].includes(normalizedRole)
+                        ? normalizedRole
+                        : rawRole) as UserRole;
                     return {
-                        email: row.email,
-                        first_name: row.first_name,
-                        last_name: row.last_name,
-                        role_code: row.role_code as UserRole
+                        email: (row.email || '').trim(),
+                        first_name: (row.first_name || '').trim(),
+                        last_name: (row.last_name || '').trim(),
+                        role_code: validRole
                     };
                 }}
                 onSuccess={function() {

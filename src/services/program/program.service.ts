@@ -129,8 +129,9 @@ export async function updateProgram(
     programId: string,
     params: ProgramFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateProgramCode(params.name || '');
     const result = await callRpc<null>('fn_update_program', {
-        p_code: params.code,
+        p_code: code,
         p_department_id: nullIfBlank(params.department_id),
         p_description: params.description || null,
         p_is_active: params.is_active,

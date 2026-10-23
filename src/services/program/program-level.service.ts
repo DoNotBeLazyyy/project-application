@@ -47,8 +47,9 @@ export async function updateProgramLevel(
     programLevelId: string,
     params: ProgramLevelFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateProgramLevelCode(params.label || '');
     return callRpc<null>('fn_update_program_level', {
-        p_code: params.code,
+        p_code: code,
         p_description: params.description || null,
         p_label: params.label,
         p_program_level_id: programLevelId

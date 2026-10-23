@@ -187,3 +187,104 @@ describe('BulkImportModal Results Display', () => {
         expect(screen.queryByText(/No new sections were created/i)).toBeNull();
     });
 });
+
+describe('BulkImportModal Flexible Header Matching & Delimiters', () => {
+    const USER_COLUMNS = [
+        {
+            key: 'first_name',
+            label: 'First Name',
+            hint: 'e.g. Juan',
+            sample: 'Juan',
+            aliases: ['firstname', 'first', 'given_name', 'given name', 'fname']
+        },
+        {
+            key: 'last_name',
+            label: 'Last Name',
+            hint: 'e.g. Dela Cruz',
+            sample: 'Dela Cruz',
+            aliases: ['lastname', 'last', 'surname', 'family_name', 'family name', 'lname']
+        },
+        {
+            key: 'email',
+            label: 'Email',
+            hint: 'e.g. juan@school.edu',
+            sample: 'juan.delacruz@aulms.edu',
+            aliases: ['email_address', 'email address', 'user_email', 'user email', 'e-mail', 'mail']
+        },
+        {
+            key: 'role_code',
+            label: 'Role',
+            hint: 'Admin, Faculty, Student, Registrar, Dean',
+            sample: 'Faculty',
+            aliases: ['role', 'roles', 'role_code', 'role code', 'user_role', 'user role', 'role_name', 'role name', 'user_type', 'user type']
+        }
+    ];
+
+    it('accepts headers with "Email Address" and "Role Code" without failing', async () => {
+        render(
+            <BulkImportModal
+                open={true}
+                templateColumns={USER_COLUMNS}
+                title="Bulk Import Users"
+                onBulkImport={vi.fn().mockResolvedValue({ provisioned_count: 1, errors: [] })}
+                onClose={vi.fn()}
+            />
+        );
+
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const csv = 'First Name,Last Name,Email Address,Role Code\nJohn,Doe,john.doe@test.edu,Student';
+        const file = new File([csv], 'users.csv', { type: 'text/csv' });
+
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        await waitFor(() => {
+            expect(screen.getByText(/1 row detected/i)).toBeInTheDocument();
+            expect(screen.getByText(/Confirm Import \(1 rows?\)/i)).toBeInTheDocument();
+        });
+    });
+
+    it('accepts headers with "Roles" and lowercase "first_name,last_name,email,role"', async () => {
+        render(
+            <BulkImportModal
+                open={true}
+                templateColumns={USER_COLUMNS}
+                title="Bulk Import Users"
+                onBulkImport={vi.fn().mockResolvedValue({ provisioned_count: 1, errors: [] })}
+                onClose={vi.fn()}
+            />
+        );
+
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const csv = 'First Name,Last Name,Email,Roles\nJane,Smith,jane.smith@test.edu,Faculty';
+        const file = new File([csv], 'users.csv', { type: 'text/csv' });
+
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        await waitFor(() => {
+            expect(screen.getByText(/1 row detected/i)).toBeInTheDocument();
+        });
+    });
+
+    it('accepts semicolon-delimited CSV and strips UTF-8 BOM', async () => {
+        render(
+            <BulkImportModal
+                open={true}
+                templateColumns={USER_COLUMNS}
+                title="Bulk Import Users"
+                onBulkImport={vi.fn().mockResolvedValue({ provisioned_count: 1, errors: [] })}
+                onClose={vi.fn()}
+            />
+        );
+
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        // Semicolon delimited with UTF-8 BOM \uFEFF
+        const csv = '\uFEFFFirst Name;Last Name;Email;Role\nAlex;Mercer;alex@test.edu;Admin';
+        const file = new File([csv], 'users.csv', { type: 'text/csv' });
+
+        fireEvent.change(fileInput, { target: { files: [file] } });
+
+        await waitFor(() => {
+            expect(screen.getByText(/1 row detected/i)).toBeInTheDocument();
+        });
+    });
+});

@@ -78,29 +78,29 @@ export interface CommonBentoCardProps {
 
 const FACT_TONE_CLASS: Record<BentoCardFactTone, { container: string; label: string; value: string }> = {
     danger: {
-        container: 'bg-rose-50/70 border-rose-100',
-        label: 'text-rose-500',
-        value: 'text-rose-700'
+        container: 'bg-rose-50/70 border-rose-100 dark:bg-rose-950/40 dark:border-rose-900/50',
+        label: 'text-rose-500 dark:text-rose-300',
+        value: 'text-rose-700 dark:text-rose-200'
     },
     info: {
-        container: 'bg-blue-50/70 border-blue-100',
-        label: 'text-blue-600',
-        value: 'text-blue-700'
+        container: 'bg-blue-50/70 border-blue-100 dark:bg-blue-950/40 dark:border-blue-900/50',
+        label: 'text-blue-600 dark:text-blue-300',
+        value: 'text-blue-700 dark:text-blue-200'
     },
     neutral: {
-        container: 'bg-slate-50/90 border-slate-100',
-        label: 'text-slate-400',
-        value: 'text-slate-800'
+        container: 'bg-slate-50/90 border-slate-100 dark:bg-slate-800/60 dark:border-slate-700/60',
+        label: 'text-slate-400 dark:text-slate-300',
+        value: 'text-slate-800 dark:text-slate-100'
     },
     positive: {
-        container: 'bg-emerald-50/70 border-emerald-100',
-        label: 'text-emerald-600',
-        value: 'text-emerald-700'
+        container: 'bg-emerald-50/70 border-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-900/50',
+        label: 'text-emerald-600 dark:text-emerald-300',
+        value: 'text-emerald-700 dark:text-emerald-200'
     },
     warning: {
-        container: 'bg-amber-50/70 border-amber-100',
-        label: 'text-amber-600',
-        value: 'text-amber-700'
+        container: 'bg-amber-50/70 border-amber-100 dark:bg-amber-950/40 dark:border-amber-900/50',
+        label: 'text-amber-600 dark:text-amber-300',
+        value: 'text-amber-700 dark:text-amber-200'
     }
 };
 
@@ -193,7 +193,7 @@ export default function CommonBentoCard({
                         )}
 
                         {code && (
-                            <span className="bg-blue-50/90 border border-blue-200/70 font-bold font-mono px-2.5 py-0.5 rounded-full shrink-0 text-blue-700 text-xs tracking-tight">
+                            <span className="bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 font-bold font-mono px-2.5 py-0.5 rounded-full shrink-0 text-blue-700 dark:text-blue-300 text-xs tracking-tight">
                                 {code}
                             </span>
                         )}
@@ -203,10 +203,10 @@ export default function CommonBentoCard({
                                 className={classMerge(
                                     'px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 border',
                                     status.toLowerCase() === 'active' || status.toLowerCase() === 'open'
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70'
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-800/60'
                                         : status.toLowerCase() === 'ongoing' || status.toLowerCase() === 'full'
-                                            ? 'bg-amber-50 text-amber-700 border-amber-200/70'
-                                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/60'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
                                 )}>
                                 {status}
                             </span>

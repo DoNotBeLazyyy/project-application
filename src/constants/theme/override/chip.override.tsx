@@ -42,22 +42,22 @@ export const chipOverrides: ComponentTheme = {
                 },
                 '&.MuiChip-colorLight': {
                     backgroundColor: 'var(--mui-tokens-color-brand-100)',
-                    color: 'var(--mui-tokens-color-brand-800)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '&.MuiChip-colorDark': {
-                    backgroundColor: 'var(--mui-tokens-color-brand-900)',
-                    color: 'var(--mui-tokens-color-common-white)'
+                    backgroundColor: 'var(--mui-palette-primary-main)',
+                    color: 'var(--mui-palette-primary-contrastText)'
                 },
                 '&.MuiChip-colorGhost': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white)',
-                    color: 'var(--mui-tokens-color-brand-800)'
+                    backgroundColor: 'transparent',
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '&.MuiChip-colorOutline': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white)',
-                    borderColor: 'var(--mui-tokens-color-brand-600)',
+                    backgroundColor: 'transparent',
+                    borderColor: 'var(--mui-palette-primary-main)',
                     borderStyle: 'solid',
                     borderWidth: 'var(--mui-tokens-stroke-0)',
-                    color: 'var(--mui-tokens-color-brand-900)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '& .MuiChip-deleteIcon': {
                     color: 'var(--mui-tokens-color-brand-700)',
@@ -72,9 +72,9 @@ export const chipOverrides: ComponentTheme = {
                 '&.Mui-disabled': {
                     opacity: 1,
                     '& .MuiChip-label': {
-                        color: 'var(--mui-tokens-color-brand-950)',
+                        color: 'var(--mui-palette-text-disabled)',
                         opacity: 1,
-                        WebkitTextFillColor: 'var(--mui-tokens-color-brand-950)'
+                        WebkitTextFillColor: 'var(--mui-palette-text-disabled)'
                     }
                 },
                 '&.MuiChip-sizeSmall': {

@@ -9,7 +9,7 @@ interface CalendarWeekViewProps {
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
 }
 
-const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7 AM to 8 PM
+const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7 AM to 9 PM
 
 function isSameDay(d1: Date, d2: Date): boolean {
     return (

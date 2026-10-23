@@ -47,8 +47,9 @@ export async function updateCourseType(
     courseTypeId: string,
     params: CourseTypeFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateCourseTypeCode(params.label || '');
     return callRpc<null>('fn_update_course_type', {
-        p_code: params.code,
+        p_code: code,
         p_description: params.description || null,
         p_label: params.label,
         p_course_type_id: courseTypeId

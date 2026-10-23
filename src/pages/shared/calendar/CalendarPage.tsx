@@ -1,3 +1,4 @@
+import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
@@ -9,7 +10,8 @@ import {
     ClockIcon,
     FunnelIcon,
     GridFourIcon,
-    ListBulletsIcon
+    ListBulletsIcon,
+    PlusIcon
 } from '@phosphor-icons/react';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { changeMonthUtil } from '@utils/calendar.util';
@@ -168,6 +170,13 @@ export default function CalendarPage() {
 
     const canCreateEvents = currentRole === 'Admin' || currentRole === 'Dean' || currentRole === 'Registrar' || currentRole === 'Faculty';
 
+    const handleCreateEvent = (defaultDate?: Date) => {
+        const rolePath = currentRole.toLowerCase();
+        navigate(`/${rolePath}/announcement-management/new?type=Event`, {
+            state: { from: pathname, defaultDate }
+        });
+    };
+
     return (
         <CommonCard
             className="flex flex-col h-full w-full overflow-hidden"
@@ -185,22 +194,33 @@ export default function CalendarPage() {
                     </div>
                 ),
                 action: (
-                    <CalendarActionMenu
-                        activeCategories={activeCategories}
-                        canCreateEvents={canCreateEvents}
-                        isLoading={isLoading}
-                        viewMode={viewMode}
-                        onCreateEvent={() => {
-                            const rolePath = currentRole.toLowerCase();
-                            navigate(`/${rolePath}/announcement-management/new?type=Event`, {
-                                state: { from: pathname }
-                            });
-                        }}
-                        onReload={reload}
-                        onSelectAllCategories={handleSelectAllCategories}
-                        onSelectViewMode={setViewMode}
-                        onToggleCategory={toggleCategory}
-                    />
+                    <div className="flex items-center gap-2">
+                        {canCreateEvents && (
+                            <CommonButton
+                                aria-label="Create Event"
+                                className="h-9 px-3 text-xs font-semibold shadow-xs"
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusIcon size={16} weight="bold" />}
+                                variant="contained"
+                                onClick={() => handleCreateEvent()}
+                            >
+                                <span className="hidden sm:inline">Create Event</span>
+                                <span className="sm:hidden">Create</span>
+                            </CommonButton>
+                        )}
+                        <CalendarActionMenu
+                            activeCategories={activeCategories}
+                            canCreateEvents={canCreateEvents}
+                            isLoading={isLoading}
+                            viewMode={viewMode}
+                            onCreateEvent={() => handleCreateEvent()}
+                            onReload={reload}
+                            onSelectAllCategories={handleSelectAllCategories}
+                            onSelectViewMode={setViewMode}
+                            onToggleCategory={toggleCategory}
+                        />
+                    </div>
                 )
             }}
             sx={{
@@ -371,9 +391,11 @@ export default function CalendarPage() {
                     <>
                         {viewMode === 'month' && (
                             <CalendarMonthView
+                                canCreateEvent={canCreateEvents}
                                 currentDate={currentDate}
                                 events={filteredEvents}
                                 selectedDate={selectedDate}
+                                onCreateEvent={handleCreateEvent}
                                 onSelectDate={setSelectedDate}
                                 onSelectEvent={handleOpenEventModal}
                                 onViewDay={handleDayViewJump}

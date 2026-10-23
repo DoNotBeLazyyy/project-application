@@ -6,6 +6,14 @@ import {
     ArrowLineDownIcon, ArrowLineUpIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon
 } from '@phosphor-icons/react';
 import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
+import {
+    CsvParseResult,
+    generateTemplateCsv,
+    isHintRecord,
+    matchColumnHeader,
+    splitCsvRecords
+} from '@utils/csv.util';
+import { exportCsvFile } from '@utils/file.util';
 import { UploadCsvModalProps } from '@type/table-card.type';
 import { classMerge } from '@utils/css.util';
 import { ColDef } from 'ag-grid-community';
@@ -14,91 +22,7 @@ import { useMemo, useRef, useState } from 'react';
 type UploadStep = 'upload' | 'preview' | 'results';
 type ParsedRow = Record<string, string>;
 
-interface CsvParseResult {
-    missingHeaders: string[];
-    rows: ParsedRow[];
-    unknownHeaders: string[];
-}
 
-function splitCsvRecords(text: string): string[][] {
-    const records: string[][] = [];
-    let currentRecord: string[] = [];
-    let currentValue = '';
-    let isQuoted = false;
-    let index = 0;
-
-    function pushValue() {
-        currentRecord.push(currentValue);
-        currentValue = '';
-    }
-
-    function pushRecord() {
-        pushValue();
-        records.push(currentRecord);
-        currentRecord = [];
-    }
-
-    while (index < text.length) {
-        const char = text[index];
-
-        if (isQuoted) {
-            if (char === '"') {
-                if (text[index + 1] === '"') {
-                    currentValue += '"';
-                    index += 2;
-                    continue;
-                }
-                isQuoted = false;
-                index += 1;
-                continue;
-            }
-            currentValue += char;
-            index += 1;
-            continue;
-        }
-
-        if (char === '"' && currentValue.trim() === '') {
-            currentValue = '';
-            isQuoted = true;
-            index += 1;
-            continue;
-        }
-
-        if (char === ',') {
-            pushValue();
-            index += 1;
-            continue;
-        }
-
-        if (char === '\n') {
-            pushRecord();
-            index += 1;
-            continue;
-        }
-
-        if (char === '\r') {
-            index += 1;
-            continue;
-        }
-
-        currentValue += char;
-        index += 1;
-    }
-
-    if (currentValue !== '' || currentRecord.length) {
-        pushRecord();
-    }
-
-    return records.map((record) => record.map((value) => value.trim()))
-        .filter((record) => record.some((value) => value !== ''));
-}
-
-function escapeCsvValue(value: string): string {
-    if (/[",\r\n]/.test(value)) {
-        return `"${value.replace(/"/g, '""')}"`;
-    }
-    return value;
-}
 
 export default function UploadCsvModal({
     onBulkImport,
@@ -169,16 +93,8 @@ export default function UploadCsvModal({
     }
 
     function downloadTemplate() {
-        const headers = templateColumns.map((col) => escapeCsvValue(col.label));
-        const hints = templateColumns.map((col) => escapeCsvValue(col.hint ?? ''));
-        const csvContent = [headers.join(','), hints.join(',')].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = templateDownloadFilename;
-        a.click();
-        URL.revokeObjectURL(url);
+        const csvContent = generateTemplateCsv(templateColumns);
+        exportCsvFile(templateDownloadFilename, csvContent);
     }
 
     function parseCsv(text: string): CsvParseResult {
@@ -188,18 +104,18 @@ export default function UploadCsvModal({
         }
 
         const headers = records[0];
-        const matchedColumns = headers.map((header) => templateColumns.find(
-            (col) => col.label.trim()
-                .toLowerCase() === header.toLowerCase()
-        ) ?? null);
+        const matchedColumns = headers.map((header) => {
+            return templateColumns.find((col) => matchColumnHeader(header, col)) ?? null;
+        });
 
         const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
         const missingHeaders = templateColumns.filter(
-            (col) => !matchedColumns.some((matched) => matched?.key === col.key)
+            (col) => col.required !== false && !matchedColumns.some((matched) => matched?.key === col.key)
         )
             .map((col) => col.label);
 
-        const dataRecords = records.slice(1);
+        const dataRecords = records.slice(1)
+            .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
 
         const rows = dataRecords.map((values) => {
             const row: ParsedRow = {};

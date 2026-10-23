@@ -28,9 +28,28 @@ const SORT_COLUMNS: SortColumn[] = [
 ];
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Code', hint: 'e.g. CCS (optional)', required: false },
-    { key: 'name', label: 'Name', hint: 'e.g. College of Computer Studies' },
-    { key: 'description', label: 'Description', hint: 'e.g. Department of Computer Studies (optional)', required: false }
+    {
+        key: 'code',
+        label: 'Code',
+        hint: 'e.g. CCS (optional)',
+        sample: 'CCS',
+        required: false,
+        aliases: ['dept_code', 'dept code', 'department_code', 'department code']
+    },
+    {
+        key: 'name',
+        label: 'Name',
+        hint: 'e.g. College of Computer Studies',
+        sample: 'College of Computer Studies',
+        aliases: ['department_name', 'department name', 'dept_name', 'dept name', 'title']
+    },
+    {
+        key: 'description',
+        label: 'Description',
+        hint: 'e.g. Department of Computer Studies (optional)',
+        sample: 'Department of Computer Studies',
+        required: false
+    }
 ];
 
 const DEFAULT_FORM_VALUES: DepartmentFormValues = {
@@ -275,6 +294,7 @@ export default function DepartmentManagement() {
             <BulkImportModal<DepartmentBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="departments_template.csv"
                 title="Bulk Import Departments"
                 onBulkImport={bulkCreateDepartments}
                 onClose={function() {

@@ -1120,25 +1120,28 @@ BEGIN
         );
     END IF;
 
-    SELECT t.id, t.is_active, t.enrollment_start_date, t.enrollment_end_date
+    SELECT t.id, sy.is_active, t.status, t.enrollment_start_date, t.enrollment_end_date
     INTO v_term
     FROM public.terms t
+    INNER JOIN public.school_years sy ON sy.id = t.school_year_id AND sy.deleted_at IS NULL
     WHERE t.id = v_section.term_id AND t.deleted_at IS NULL;
 
     IF NOT FOUND THEN
         RETURN jsonb_build_object('success', false, 'code', 'TERM_NOT_FOUND', 'message', 'Term not found.');
     END IF;
 
-    IF NOT v_term.is_active THEN
+    IF NOT v_term.is_active OR v_term.status = 'Closed' THEN
         RETURN jsonb_build_object('success', false, 'code', 'TERM_INACTIVE', 'message', 'Term is not active for enrollment.');
     END IF;
 
-    IF v_term.enrollment_start_date IS NOT NULL AND CURRENT_DATE < v_term.enrollment_start_date THEN
-        RETURN jsonb_build_object('success', false, 'code', 'ENROLLMENT_NOT_STARTED', 'message', 'Enrollment has not started yet.');
-    END IF;
+    IF NOT p_override_prerequisites AND v_term.status NOT IN ('Enrollment Open', 'Ongoing') THEN
+        IF v_term.enrollment_start_date IS NOT NULL AND CURRENT_DATE < v_term.enrollment_start_date THEN
+            RETURN jsonb_build_object('success', false, 'code', 'ENROLLMENT_NOT_STARTED', 'message', 'Enrollment has not started yet.');
+        END IF;
 
-    IF v_term.enrollment_end_date IS NOT NULL AND CURRENT_DATE > v_term.enrollment_end_date THEN
-        RETURN jsonb_build_object('success', false, 'code', 'ENROLLMENT_CLOSED', 'message', 'Enrollment is already closed.');
+        IF v_term.enrollment_end_date IS NOT NULL AND CURRENT_DATE > v_term.enrollment_end_date THEN
+            RETURN jsonb_build_object('success', false, 'code', 'ENROLLMENT_CLOSED', 'message', 'Enrollment is already closed.');
+        END IF;
     END IF;
 
     -- Strict curriculum check

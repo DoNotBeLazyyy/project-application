@@ -37,6 +37,16 @@ function toDateInput(value: string | null | undefined): string {
     return value.slice(0, 10);
 }
 
+function toEventDateInput(value: string | null | undefined, allDay = false): string {
+    if (!value) {
+        return '';
+    }
+    if (allDay) {
+        return value.slice(0, 10);
+    }
+    return value;
+}
+
 export default function AnnouncementDetailPage() {
     const announcementBasePath = useAnnouncementBasePath();
     const location = useLocation();
@@ -57,6 +67,16 @@ export default function AnnouncementDetailPage() {
     const isFacultyOnly = currentRole === 'Faculty';
 
     const defaultValues: CommunicationFormValues = useMemo(function() {
+        const stateDate = (location.state as { defaultDate?: string | Date } | null)?.defaultDate;
+        let defaultStartAt = '';
+        if (stateDate && initialType === 'Event') {
+            const dt = stateDate instanceof Date ? new Date(stateDate.getTime()) : new Date(stateDate);
+            if (!Number.isNaN(dt.getTime())) {
+                dt.setHours(9, 0, 0, 0);
+                defaultStartAt = dt.toISOString();
+            }
+        }
+
         return {
             all_day: false,
             attachments: [],
@@ -71,11 +91,11 @@ export default function AnnouncementDetailPage() {
             location: '',
             posted_on: '',
             section_ids: [],
-            start_at: '',
+            start_at: defaultStartAt,
             target_audience: isFacultyOnly ? 'Section' : 'Global',
             title: ''
         };
-    }, [initialType, isFacultyOnly]);
+    }, [initialType, isFacultyOnly, location.state]);
 
     const fetchCommunicationItem = useCallback(async function(
         id: string
@@ -101,7 +121,7 @@ export default function AnnouncementDetailPage() {
                         created_by: d.created_by,
                         created_by_role: d.created_by_role,
                         description: d.description ?? '',
-                        end_at: toDateInput(d.end_at),
+                        end_at: toEventDateInput(d.end_at, d.all_day),
                         expires_at: '',
                         id: d.id,
                         is_pinned: false,
@@ -110,7 +130,7 @@ export default function AnnouncementDetailPage() {
                         posted_on: formatTimestamp(d.created_at),
                         section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
                         sections: d.sections ?? [],
-                        start_at: toDateInput(d.start_at),
+                        start_at: toEventDateInput(d.start_at, d.all_day),
                         target_audience: d.target_audience || 'Global',
                         title: d.title
                     },
@@ -208,7 +228,7 @@ export default function AnnouncementDetailPage() {
                         created_by: d.created_by,
                         created_by_role: d.created_by_role,
                         description: d.description ?? '',
-                        end_at: toDateInput(d.end_at),
+                        end_at: toEventDateInput(d.end_at, d.all_day),
                         expires_at: '',
                         id: d.id,
                         is_pinned: false,
@@ -217,7 +237,7 @@ export default function AnnouncementDetailPage() {
                         posted_on: formatTimestamp(d.created_at),
                         section_ids: d.target_audience === 'Section' ? (d.section_ids ?? []) : [],
                         sections: d.sections ?? [],
-                        start_at: toDateInput(d.start_at),
+                        start_at: toEventDateInput(d.start_at, d.all_day),
                         target_audience: d.target_audience || 'Global',
                         title: d.title
                     },
@@ -244,14 +264,17 @@ export default function AnnouncementDetailPage() {
 
         if (values.item_type === 'Event') {
             const body = (values.description || values.content || '').trim();
+            const isAllDay = Boolean(values.all_day);
+            const startAt = values.start_at ? values.start_at.trim() : '';
+            const endAt = values.end_at ? values.end_at.trim() : '';
             const eventPayload: EventFormValues = {
-                all_day: values.all_day ?? false,
+                all_day: isAllDay,
                 attachments: values.attachments,
                 description: body,
-                end_at: values.end_at || '',
+                end_at: endAt,
                 location: values.location ? values.location.trim() : '',
                 section_ids: sectionIds,
-                start_at: values.start_at || '',
+                start_at: startAt,
                 target_audience: audience,
                 title: values.title.trim()
             };
@@ -288,14 +311,17 @@ export default function AnnouncementDetailPage() {
 
         if (values.item_type === 'Event') {
             const body = (values.description || values.content || '').trim();
+            const isAllDay = Boolean(values.all_day);
+            const startAt = values.start_at ? values.start_at.trim() : '';
+            const endAt = values.end_at ? values.end_at.trim() : '';
             const eventPayload: EventFormValues = {
-                all_day: values.all_day ?? false,
+                all_day: isAllDay,
                 attachments: values.attachments,
                 description: body,
-                end_at: values.end_at || '',
+                end_at: endAt,
                 location: values.location ? values.location.trim() : '',
                 section_ids: sectionIds,
-                start_at: values.start_at || '',
+                start_at: startAt,
                 target_audience: audience,
                 title: values.title.trim()
             };

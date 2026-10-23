@@ -249,6 +249,7 @@ export default function TermTypeManagement() {
                     <TermTypeForm
                         control={updateMethods.control}
                         id={UPDATE_FORM_ID}
+                        setValue={updateMethods.setValue}
                         onSubmit={updateMethods.handleSubmit(handleUpdateSubmit, handleUpdateError)}
                     />
                 )}

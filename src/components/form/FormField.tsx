@@ -1,4 +1,5 @@
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import ValidCommonDateTimePicker, { CommonDateTimePickerProps } from '@components/datepicker/ValidCommonDateTimepicker';
 import ValidCommonDatePicker, { CommonDatePickerProps } from '@components/datepicker/ValidCommonDatepicker';
 import { CommonInputProps } from '@components/input/CommonInput';
 import { CommonNumberInputProps } from '@components/input/CommonNumberInput';
@@ -44,6 +45,11 @@ type DateFieldConfig<T extends FieldValues> = {
     fieldProps?: Omit<CommonDatePickerProps, 'defaultValue'>;
 } & BaseFieldConfig<T>;
 
+type DateTimeFieldConfig<T extends FieldValues> = {
+    type: 'datetime';
+    fieldProps?: Omit<CommonDateTimePickerProps, 'defaultValue'>;
+} & BaseFieldConfig<T>;
+
 type CheckboxFieldConfig<T extends FieldValues> = {
     type: 'checkbox';
     fieldProps?: Omit<CheckboxProps, 'defaultValue'> & { label?: string };
@@ -85,6 +91,7 @@ export type FormFieldConfig<T extends FieldValues> =
     | MultiSelectFieldConfig<T>
     | TextAreaFieldConfig<T>
     | DateFieldConfig<T>
+    | DateTimeFieldConfig<T>
     | CheckboxFieldConfig<T>
     | CheckboxGroupFieldConfig<T>;
 
@@ -148,6 +155,23 @@ export function FormField<T extends FieldValues>({
         const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonDatePicker
+                {...fieldProps}
+                control={control}
+                defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}
+                disabled={field.disabled}
+                fullWidth
+                hasHelper={hasHelper}
+                name={field.name}
+                readOnly={field.readOnly}
+                rules={field.rules}
+            />
+        );
+    }
+
+    if (field.type === 'datetime') {
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        return (
+            <ValidCommonDateTimePicker
                 {...fieldProps}
                 control={control}
                 defaultOpenErrorTooltip={fieldProps.defaultOpenErrorTooltip ?? defaultOpenErrorTooltip}

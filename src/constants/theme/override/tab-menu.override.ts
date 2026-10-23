@@ -16,9 +16,9 @@ export const tabMenuOverrides: ComponentTheme = {
                 },
                 flexShrink: 0,
                 '&[data-menu-style="outline"]': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white)',
+                    backgroundColor: 'var(--mui-palette-background-paper)',
                     '& .MuiTabs-indicator': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-900)',
+                        backgroundColor: 'var(--mui-palette-primary-main)',
                         borderRadius: 'var(--mui-tokens-radius-full)',
                         display: 'block',
                         height: 'var(--mui-tokens-stroke-1)'
@@ -29,7 +29,7 @@ export const tabMenuOverrides: ComponentTheme = {
                     borderRadius: 'var(--mui-tokens-radius-lg)'
                 },
                 '&[data-menu-style="vertical"]': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white)',
+                    backgroundColor: 'var(--mui-palette-background-paper)',
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     padding: 'var(--mui-tokens-spacing-3)'
                 }
@@ -43,7 +43,7 @@ export const tabMenuOverrides: ComponentTheme = {
         styleOverrides: {
             root: {
                 alignItems: 'center',
-                color: 'var(--mui-tokens-color-neutral-400)',
+                color: 'var(--mui-palette-text-secondary)',
                 display: 'flex',
                 flexDirection: 'row',
                 flexShrink: 0,
@@ -61,13 +61,13 @@ export const tabMenuOverrides: ComponentTheme = {
                 paddingTop: 'var(--mui-tokens-spacing-3)',
                 textTransform: 'none',
                 '&:hover': {
-                    color: 'var(--mui-tokens-color-neutral-700)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '&.Mui-selected': {
-                    color: 'var(--mui-tokens-color-neutral-700)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '&.Mui-selected .tab-icon': {
-                    color: 'var(--mui-tokens-color-brand-900)'
+                    color: 'var(--mui-palette-primary-main)'
                 },
                 '& > .MuiTab-iconWrapper': {
                     marginRight: 0
@@ -75,13 +75,13 @@ export const tabMenuOverrides: ComponentTheme = {
                 '&[data-menu-style="pill"]': {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&:hover': {
-                        backgroundColor: 'var(--mui-tokens-color-common-white)'
+                        backgroundColor: 'var(--mui-palette-action-hover, rgba(0, 0, 0, 0.04))'
                     },
                     '&.Mui-selected': {
-                        backgroundColor: 'var(--mui-tokens-color-brand-900)',
-                        color: 'var(--mui-tokens-color-common-white)',
+                        backgroundColor: 'var(--mui-palette-primary-main)',
+                        color: 'var(--mui-palette-primary-contrastText)',
                         '&:hover': {
-                            backgroundColor: 'var(--mui-tokens-color-brand-900)'
+                            backgroundColor: 'var(--mui-palette-primary-dark)'
                         }
                     },
                     '&.Mui-selected .tab-icon': {
@@ -92,7 +92,7 @@ export const tabMenuOverrides: ComponentTheme = {
                     borderRadius: 'var(--mui-tokens-radius-md)',
                     '&.Mui-selected': {
                         backgroundColor: 'var(--mui-tokens-color-neutral-100)',
-                        color: 'var(--mui-tokens-color-neutral-700)'
+                        color: 'var(--mui-palette-primary-main)'
                     }
                 },
                 '&[data-size="small"]': {

@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { CreateRoleFormValues, RoleListRow, RoleOption, UpdateRoleFormValues } from '@type/role.type';
 import { ServiceResult } from '@type/service.type';
+import { generateRoleCode } from '@utils/entity-code.util';
 
 export async function listRoles(
     page: number,
@@ -41,8 +42,9 @@ export async function updateRole(
     roleId: string,
     params: UpdateRoleFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateRoleCode(params.label || '');
     return callRpc<null>('fn_update_role', {
-        p_code: params.code,
+        p_code: code,
         p_description: params.description || null,
         p_label: params.label,
         p_role_id: roleId

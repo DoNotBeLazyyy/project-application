@@ -67,7 +67,18 @@ export function CalendarEventDetailModal({
             minute: '2-digit'
         });
 
-        return `${startStr} • ${startTime} – ${endTime}`;
+        const isSameDay = event.start.toDateString() === event.end.toDateString();
+        if (isSameDay) {
+            return `${startStr} • ${startTime} – ${endTime}`;
+        }
+
+        const endStr = event.end.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        return `${startStr} at ${startTime} – ${endStr} at ${endTime}`;
     })();
 
     const handleActionClick = () => {

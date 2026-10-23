@@ -16,7 +16,7 @@ import { ComponentPropsForm } from '@type/common.type';
 import { DepartmentAssignedUser, DepartmentFormValues } from '@type/department.type';
 import { UserOption } from '@type/user.type';
 import { generateDepartmentCode } from '@utils/entity-code.util';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 export const DEPARTMENT_FORM_STEPS = [
@@ -119,15 +119,43 @@ export default function DepartmentForm({
     const [availableFacultySearch, setAvailableFacultySearch] = useState('');
     const [onlyUnassignedFaculty, setOnlyUnassignedFaculty] = useState(false);
 
+    const initialNameRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
+
     useEffect(() => {
-        if (!setValue || disabled || !isCreate) return;
-        const generated = generateDepartmentCode(watchedName || '');
-        if (generated) {
-            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-        } else if (!watchedName?.trim()) {
-            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+        initialNameRef.current = null;
+        initialCodeRef.current = null;
+    }, [departmentId]);
+
+    useEffect(() => {
+        if (!setValue || disabled) return;
+
+        if (initialNameRef.current === null) {
+            initialNameRef.current = watchedName || '';
+            initialCodeRef.current = watchedCode || '';
+            return;
         }
-    }, [watchedName, disabled, isCreate, setValue]);
+
+        if (isCreate) {
+            const generated = generateDepartmentCode(watchedName || '');
+            if (generated) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            } else if (!watchedName?.trim()) {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
+            }
+        } else {
+            if (watchedName !== initialNameRef.current) {
+                const generated = generateDepartmentCode(watchedName || '');
+                if (generated) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                } else if (!watchedName?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
+        }
+    }, [watchedName, disabled, isCreate, setValue, watchedCode]);
 
     useEffect(() => {
         let isMounted = true;

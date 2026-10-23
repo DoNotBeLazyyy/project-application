@@ -3,7 +3,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { ProgramLevelFormValues } from '@type/program/program-level.type';
 import { generateProgramLevelCode } from '@utils/entity-code.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface ProgramLevelFormProps extends ComponentPropsForm {
@@ -58,16 +58,45 @@ export default function ProgramLevelForm({
 }: ProgramLevelFormProps) {
     const fields = getProgramLevelFormFields(disabled, isCodeDisabled);
     const watchedLabel = useWatch({ control, name: 'label' });
+    const watchedCode = useWatch({ control, name: 'code' });
+
+    const initialLabelRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!setValue || disabled || !isCreate) return;
-        const generated = generateProgramLevelCode(watchedLabel || '');
-        if (generated) {
-            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-        } else if (!watchedLabel?.trim()) {
-            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+        initialLabelRef.current = null;
+        initialCodeRef.current = null;
+    }, [isCreate]);
+
+    useEffect(() => {
+        if (!setValue || disabled) return;
+
+        if (initialLabelRef.current === null) {
+            initialLabelRef.current = watchedLabel || '';
+            initialCodeRef.current = watchedCode || '';
+            return;
         }
-    }, [watchedLabel, disabled, isCreate, setValue]);
+
+        if (isCreate) {
+            const generated = generateProgramLevelCode(watchedLabel || '');
+            if (generated) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            } else if (!watchedLabel?.trim()) {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
+            }
+        } else {
+            if (watchedLabel !== initialLabelRef.current) {
+                const generated = generateProgramLevelCode(watchedLabel || '');
+                if (generated) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                } else if (!watchedLabel?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
+        }
+    }, [watchedLabel, disabled, isCreate, setValue, watchedCode]);
 
     return (
         <CommonForm

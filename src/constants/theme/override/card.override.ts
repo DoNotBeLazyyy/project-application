@@ -90,11 +90,11 @@ export const cardOverrides: ComponentTheme = {
                 minWidth: 0
             },
             title: ({ theme }) => ({
-                color: 'var(--mui-tokens-color-neutral-900)',
+                color: 'var(--mui-palette-text-primary)',
                 ...theme.typography.h6
             }),
             subheader: ({ theme }) => ({
-                color: 'var(--mui-tokens-color-neutral-500)',
+                color: 'var(--mui-palette-text-secondary)',
                 ...theme.typography.bodyExtraSmall
             })
         }

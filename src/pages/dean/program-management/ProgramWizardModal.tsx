@@ -25,7 +25,7 @@ import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useToastStore } from '@stores/toast.store';
 import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
 
@@ -73,8 +73,25 @@ export default function ProgramWizardModal({
     });
     const selectedDepartmentId = useWatch({ control, name: 'department_id' });
     const selectedName = useWatch({ control, name: 'name' });
+    const watchedCode = useWatch({ control, name: 'code' });
+
+    const initialNameRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
 
     useEffect(() => {
+        initialNameRef.current = null;
+        initialCodeRef.current = null;
+    }, [programId, open]);
+
+    useEffect(() => {
+        if (readOnly) return;
+
+        if (initialNameRef.current === null) {
+            initialNameRef.current = selectedName || '';
+            initialCodeRef.current = watchedCode || '';
+            return;
+        }
+
         if (!isEditing) {
             if (selectedName) {
                 const currentCode = methods.getValues('code');
@@ -85,8 +102,19 @@ export default function ProgramWizardModal({
             } else {
                 setValue('code', '', { shouldValidate: false, shouldDirty: false });
             }
+        } else {
+            if (selectedName !== initialNameRef.current) {
+                const generated = generateProgramCode(selectedName || '');
+                if (generated) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                } else if (!selectedName?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
         }
-    }, [isEditing, selectedName, setValue, methods]);
+    }, [isEditing, selectedName, setValue, methods, readOnly, watchedCode]);
 
     useEffect(() => {
         if (open) {

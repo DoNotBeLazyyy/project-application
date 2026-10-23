@@ -16,7 +16,7 @@ import {
     blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel, getLastWindowFocusTime
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { FieldValues, useController, UseControllerProps } from 'react-hook-form';
 
 export interface CommonDateTimePickerProps extends Omit<DateTimePickerProps, 'value' | 'onChange'> {
@@ -162,9 +162,20 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
     const [isOpen, setIsOpen] = useState(false);
     const isClosing = useRef(false);
 
-    const resolvedValue = value
-        ? DateTime.fromISO(value)
-        : null;
+    const resolvedValue = useMemo(() => {
+        if (!value) return null;
+        if (DateTime.isDateTime(value)) return value;
+        if ((value as unknown) instanceof Date) return DateTime.fromJSDate(value as Date);
+        if (typeof value === 'string') {
+            const iso = DateTime.fromISO(value);
+            if (iso.isValid) return iso;
+            const sql = DateTime.fromSQL(value);
+            if (sql.isValid) return sql;
+            const jsDate = new Date(value);
+            if (!Number.isNaN(jsDate.getTime())) return DateTime.fromJSDate(jsDate);
+        }
+        return null;
+    }, [value]);
 
     const firstErrorKey = checkForMessage(formState.errors).firstError?.key;
     const resolvedIsFirstError = isFirstError ?? Boolean(fieldState.error && firstErrorKey === name);

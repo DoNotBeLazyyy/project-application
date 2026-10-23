@@ -3,7 +3,7 @@ import { FormFieldConfig } from '@components/form/FormField';
 import { ComponentPropsForm } from '@type/common.type';
 import { TermTypeFormValues } from '@type/term/term-type.type';
 import { generateTermTypeCode } from '@utils/entity-code.util';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface TermTypeFormProps extends ComponentPropsForm {
@@ -62,16 +62,45 @@ export default function TermTypeForm({
 }: TermTypeFormProps) {
     const fields = getTermTypeFormFields(disabled, isCodeDisabled);
     const watchedLabel = useWatch({ control, name: 'label' });
+    const watchedCode = useWatch({ control, name: 'code' });
+
+    const initialLabelRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!setValue || disabled || !isCreate) return;
-        const generated = generateTermTypeCode(watchedLabel || '');
-        if (generated) {
-            setValue('code', generated, { shouldValidate: true, shouldDirty: true });
-        } else if (!watchedLabel?.trim()) {
-            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+        initialLabelRef.current = null;
+        initialCodeRef.current = null;
+    }, [isCreate]);
+
+    useEffect(() => {
+        if (!setValue || disabled) return;
+
+        if (initialLabelRef.current === null) {
+            initialLabelRef.current = watchedLabel || '';
+            initialCodeRef.current = watchedCode || '';
+            return;
         }
-    }, [watchedLabel, disabled, isCreate, setValue]);
+
+        if (isCreate) {
+            const generated = generateTermTypeCode(watchedLabel || '');
+            if (generated) {
+                setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+            } else if (!watchedLabel?.trim()) {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
+            }
+        } else {
+            if (watchedLabel !== initialLabelRef.current) {
+                const generated = generateTermTypeCode(watchedLabel || '');
+                if (generated) {
+                    setValue('code', generated, { shouldValidate: true, shouldDirty: true });
+                } else if (!watchedLabel?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
+        }
+    }, [watchedLabel, disabled, isCreate, setValue, watchedCode]);
 
     return (
         <CommonForm

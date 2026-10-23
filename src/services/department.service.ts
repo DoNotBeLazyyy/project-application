@@ -53,8 +53,9 @@ export async function updateDepartment(
     departmentId: string,
     params: DepartmentFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateDepartmentCode(params.name || '');
     return callRpc<null>('fn_update_department', {
-        p_code: params.code,
+        p_code: code,
         p_department_id: departmentId,
         p_description: params.description || null,
         p_faculty_ids: params.faculty_ids ?? [],

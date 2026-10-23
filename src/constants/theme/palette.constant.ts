@@ -92,16 +92,17 @@ export const DARK_PALETTE: PaletteOptions = {
         100: '#172036',
         200: '#1E293B',
         300: '#334155',
-        400: '#64748B',
-        500: '#94A3B8',
-        600: '#CBD5E1',
-        700: '#E2E8F0',
-        800: '#F1F5F9',
-        900: '#F8FAFC'
+        400: '#94A3B8',
+        500: '#CBD5E1',
+        600: '#E2E8F0',
+        700: '#F1F5F9',
+        800: '#F8FAFC',
+        900: '#FFFFFF'
     },
     text: {
         primary: '#F8FAFC',
-        secondary: '#94A3B8'
+        secondary: '#CBD5E1',
+        disabled: '#94A3B8'
     },
     background: {
         paper: '#131C31',

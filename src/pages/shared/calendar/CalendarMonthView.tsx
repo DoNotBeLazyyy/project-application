@@ -5,9 +5,11 @@ import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 import { CalendarDayEventsModal } from './CalendarDayEventsModal';
 
 interface CalendarMonthViewProps {
+    canCreateEvent?: boolean;
     currentDate: Date;
     events: UnifiedCalendarEvent[];
     selectedDate: Date;
+    onCreateEvent?: (date: Date) => void;
     onSelectDate: (date: Date) => void;
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
     onViewDay: (date: Date) => void;
@@ -24,9 +26,11 @@ function isDateInRange(target: Date, start: Date, end: Date): boolean {
 }
 
 export function CalendarMonthView({
+    canCreateEvent,
     currentDate,
     events,
     selectedDate,
+    onCreateEvent,
     onSelectDate,
     onSelectEvent,
     onViewDay
@@ -160,7 +164,7 @@ export function CalendarMonthView({
                                             <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.dotClass}`} />
                                             <span className="truncate font-semibold">{ev.title}</span>
                                             {!ev.allDay && (
-                                                <span className="text-[9px] opacity-75 shrink-0 ml-auto hidden md:inline">
+                                                <span className="text-[9px] opacity-75 shrink-0 ml-auto hidden sm:inline">
                                                     {timeLabel}
                                                 </span>
                                             )}
@@ -188,10 +192,12 @@ export function CalendarMonthView({
 
             {/* Day Events Popup Modal */}
             <CalendarDayEventsModal
+                canCreateEvent={canCreateEvent}
                 date={dayEventsPopup?.date ?? null}
                 events={dayEventsPopup?.events ?? []}
                 open={Boolean(dayEventsPopup)}
                 onClose={() => setDayEventsPopup(null)}
+                onCreateEvent={onCreateEvent}
                 onSelectEvent={handleSelectEventFromPopup}
                 onViewDay={onViewDay}
             />

@@ -1,4 +1,5 @@
 import { callRpc, CallRpcOptions } from '@services/supabase.wrapper';
+import { generateSpecialGradeCode } from '@utils/entity-code.util';
 import {
     GradingPeriodTemplate,
     SpecialGradeConditionGroup,
@@ -77,7 +78,7 @@ export async function saveSpecialGradeConfigs(
     return callRpc<null>('fn_save_special_grade_configs', {
         p_configs: configs.map((config) => ({
             id: config.id || null,
-            code: config.code,
+            code: config.code?.trim() || generateSpecialGradeCode(config.label || ''),
             label: config.label,
             description: config.description,
             min_absence_percentage: config.min_absence_percentage

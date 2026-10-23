@@ -5,16 +5,19 @@ import {
     CaretRightIcon,
     ClockIcon,
     MapPinIcon,
+    PlusIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { CALENDAR_CATEGORIES, UnifiedCalendarEvent } from './calendar.types';
 
 export interface CalendarDayEventsModalProps {
+    canCreateEvent?: boolean;
     date: Date | null;
     events: UnifiedCalendarEvent[];
     open: boolean;
     onClose: () => void;
+    onCreateEvent?: (date: Date) => void;
     onSelectEvent: (event: UnifiedCalendarEvent) => void;
     onViewDay?: (date: Date) => void;
 }
@@ -27,10 +30,12 @@ export interface CalendarDayEventsModalProps {
  * Optimized for mobile viewports down to 360px with touch-friendly cards.
  */
 export function CalendarDayEventsModal({
+    canCreateEvent = false,
     date,
     events,
     open,
     onClose,
+    onCreateEvent,
     onSelectEvent,
     onViewDay
 }: CalendarDayEventsModalProps) {
@@ -161,19 +166,35 @@ export function CalendarDayEventsModal({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-4 py-2.5 sm:px-5 sm:py-3 bg-neutral-50/80 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
-                    {onViewDay && (
-                        <button
-                            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                            type="button"
-                            onClick={() => {
-                                onClose();
-                                onViewDay(date);
-                            }}
-                        >
-                            View Day Schedule →
-                        </button>
-                    )}
+                <div className="px-4 py-2.5 sm:px-5 sm:py-3 bg-neutral-50/80 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        {onViewDay && (
+                            <button
+                                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    onViewDay(date);
+                                }}
+                            >
+                                View Day Schedule →
+                            </button>
+                        )}
+                        {canCreateEvent && onCreateEvent && (
+                            <CommonButton
+                                color="primary"
+                                size="small"
+                                startIcon={<PlusIcon size={14} weight="bold" />}
+                                variant="contained"
+                                onClick={() => {
+                                    onClose();
+                                    onCreateEvent(date);
+                                }}
+                            >
+                                Add Event
+                            </CommonButton>
+                        )}
+                    </div>
                     <CommonButton
                         className="ml-auto"
                         size="small"

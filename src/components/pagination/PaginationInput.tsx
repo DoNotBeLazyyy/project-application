@@ -29,7 +29,7 @@ export default function PaginationInput({
                 },
                 '& .MuiOutlinedInput-root': {
                     fontSize: 'var(--mui-tokens-fontSize-sm)',
-                    backgroundColor: 'var(--mui-tokens-color-common-white)',
+                    backgroundColor: 'var(--mui-palette-background-paper)',
                     borderRadius: 'var(--mui-tokens-radius-sm)',
                     padding: 0,
                     [`

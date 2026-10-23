@@ -469,7 +469,7 @@ html:not(.dark) {
 
 /* Ensure all form inputs default to theme card surface background */
 .MuiInputBase-root {
-    background-color: var(--mui-tokens-color-common-white, #ffffff);
+    background-color: var(--mui-palette-background-paper, #ffffff);
     color: var(--mui-palette-text-primary);
 }
 
@@ -478,20 +478,20 @@ html:not(.dark) {
    ========================================================================== */
 html.dark {
     /* Core surfaces */
-    --mui-tokens-color-common-white: #131C31;
-    --mui-tokens-color-common-black: #F8FAFC;
+    --mui-tokens-color-common-white: #FFFFFF;
+    --mui-tokens-color-common-black: #09090B;
 
     /* Neutrals */
     --mui-tokens-color-neutral-50: #0B132B;
     --mui-tokens-color-neutral-100: #172036;
     --mui-tokens-color-neutral-200: #1E293B;
     --mui-tokens-color-neutral-300: #334155;
-    --mui-tokens-color-neutral-400: #64748B;
-    --mui-tokens-color-neutral-500: #94A3B8;
-    --mui-tokens-color-neutral-600: #CBD5E1;
-    --mui-tokens-color-neutral-700: #E2E8F0;
-    --mui-tokens-color-neutral-800: #F1F5F9;
-    --mui-tokens-color-neutral-900: #F8FAFC;
+    --mui-tokens-color-neutral-400: #94A3B8;
+    --mui-tokens-color-neutral-500: #CBD5E1;
+    --mui-tokens-color-neutral-600: #E2E8F0;
+    --mui-tokens-color-neutral-700: #F1F5F9;
+    --mui-tokens-color-neutral-800: #F8FAFC;
+    --mui-tokens-color-neutral-900: #FFFFFF;
 
     /* Brand blues adapted for dark background readability */
     --mui-tokens-color-brand-50: #0F1D38;
@@ -520,7 +520,7 @@ html.dark {
 
     /* Normalize Tailwind hardcoded white surfaces and sub-surfaces */
     .bg-white {
-        background-color: var(--mui-tokens-color-common-white, #131C31) !important;
+        background-color: var(--mui-palette-background-paper, #131C31) !important;
     }
 
     [class*="bg-slate-50"],
@@ -531,6 +531,47 @@ html.dark {
     .bg-neutral-50,
     .bg-neutral-100 {
         background-color: #172036 !important;
+    }
+
+    /* Colored badge and pill backgrounds in dark mode */
+    .bg-blue-50,
+    .bg-blue-100,
+    .bg-brand-50,
+    .bg-brand-100 {
+        background-color: rgba(30, 58, 138, 0.45) !important;
+        border-color: rgba(96, 165, 250, 0.3) !important;
+    }
+
+    .bg-emerald-50,
+    .bg-emerald-100,
+    .bg-green-50,
+    .bg-green-100 {
+        background-color: rgba(5, 46, 22, 0.5) !important;
+        border-color: rgba(74, 222, 128, 0.3) !important;
+    }
+
+    .bg-amber-50,
+    .bg-amber-100,
+    .bg-yellow-50,
+    .bg-yellow-100 {
+        background-color: rgba(69, 26, 3, 0.5) !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+
+    .bg-rose-50,
+    .bg-rose-100,
+    .bg-red-50,
+    .bg-red-100 {
+        background-color: rgba(69, 10, 10, 0.5) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+
+    .bg-purple-50,
+    .bg-purple-100,
+    .bg-indigo-50,
+    .bg-indigo-100 {
+        background-color: rgba(59, 7, 100, 0.5) !important;
+        border-color: rgba(196, 181, 253, 0.3) !important;
     }
 
     /* Normalize Tailwind borders */
@@ -546,38 +587,166 @@ html.dark {
         border-color: #1E293B !important;
     }
 
-    /* Normalize Tailwind dark text */
-    .text-black,
-    .text-slate-900,
-    .text-neutral-900,
-    .text-gray-900 {
+    /* Primary text in dark mode (Slate 50 / White) */
+    .text-black:not([class*="dark:text-"]),
+    .text-slate-900:not([class*="dark:text-"]),
+    .text-neutral-900:not([class*="dark:text-"]),
+    .text-gray-900:not([class*="dark:text-"]),
+    .text-zinc-900:not([class*="dark:text-"]) {
         color: #F8FAFC !important;
     }
 
-    .text-slate-800,
-    .text-slate-700,
-    .text-neutral-800,
-    .text-gray-800,
-    .text-neutral-700,
-    .text-gray-700 {
+    /* Strong secondary text / body bold (Slate 200) */
+    .text-slate-800:not([class*="dark:text-"]),
+    .text-slate-700:not([class*="dark:text-"]),
+    .text-neutral-800:not([class*="dark:text-"]),
+    .text-neutral-700:not([class*="dark:text-"]),
+    .text-gray-800:not([class*="dark:text-"]),
+    .text-gray-700:not([class*="dark:text-"]),
+    .text-zinc-800:not([class*="dark:text-"]),
+    .text-zinc-700:not([class*="dark:text-"]) {
         color: #E2E8F0 !important;
     }
 
-    .text-slate-600,
-    .text-slate-500,
-    .text-slate-400,
-    .text-neutral-600,
-    .text-gray-600,
-    .text-neutral-500,
-    .text-gray-500 {
+    /* Regular secondary text / readable muted body (Slate 300, 10.4:1 contrast) */
+    .text-slate-600:not([class*="dark:text-"]),
+    .text-slate-500:not([class*="dark:text-"]),
+    .text-neutral-600:not([class*="dark:text-"]),
+    .text-neutral-500:not([class*="dark:text-"]),
+    .text-gray-600:not([class*="dark:text-"]),
+    .text-gray-500:not([class*="dark:text-"]),
+    .text-zinc-600:not([class*="dark:text-"]),
+    .text-zinc-500:not([class*="dark:text-"]) {
+        color: #CBD5E1 !important;
+    }
+
+    /* Caption / subtle placeholder text (Slate 400, 5.8:1 contrast) */
+    .text-slate-400:not([class*="dark:text-"]),
+    .text-neutral-400:not([class*="dark:text-"]),
+    .text-gray-400:not([class*="dark:text-"]),
+    .text-zinc-400:not([class*="dark:text-"]) {
         color: #94A3B8 !important;
     }
 
+    /* Brand & Blue readable text */
+    .text-brand-950:not([class*="dark:text-"]),
+    .text-brand-900:not([class*="dark:text-"]),
+    .text-brand-800:not([class*="dark:text-"]),
+    .text-brand-700:not([class*="dark:text-"]),
+    .text-blue-950:not([class*="dark:text-"]),
+    .text-blue-900:not([class*="dark:text-"]),
+    .text-blue-800:not([class*="dark:text-"]),
+    .text-blue-700:not([class*="dark:text-"]) {
+        color: #93C5FD !important;
+    }
+
+    .text-brand-600:not([class*="dark:text-"]),
+    .text-brand-500:not([class*="dark:text-"]),
+    .text-blue-600:not([class*="dark:text-"]),
+    .text-blue-500:not([class*="dark:text-"]) {
+        color: #60A5FA !important;
+    }
+
+    /* Emerald & Green readable text */
+    .text-emerald-950:not([class*="dark:text-"]),
+    .text-emerald-900:not([class*="dark:text-"]),
+    .text-emerald-800:not([class*="dark:text-"]),
+    .text-emerald-700:not([class*="dark:text-"]),
+    .text-green-950:not([class*="dark:text-"]),
+    .text-green-900:not([class*="dark:text-"]),
+    .text-green-800:not([class*="dark:text-"]),
+    .text-green-700:not([class*="dark:text-"]) {
+        color: #86EFAC !important;
+    }
+
+    .text-emerald-600:not([class*="dark:text-"]),
+    .text-emerald-500:not([class*="dark:text-"]),
+    .text-green-600:not([class*="dark:text-"]),
+    .text-green-500:not([class*="dark:text-"]) {
+        color: #4ADE80 !important;
+    }
+
+    /* Amber & Yellow readable text */
+    .text-amber-950:not([class*="dark:text-"]),
+    .text-amber-900:not([class*="dark:text-"]),
+    .text-amber-800:not([class*="dark:text-"]),
+    .text-amber-700:not([class*="dark:text-"]),
+    .text-yellow-950:not([class*="dark:text-"]),
+    .text-yellow-900:not([class*="dark:text-"]),
+    .text-yellow-800:not([class*="dark:text-"]),
+    .text-yellow-700:not([class*="dark:text-"]) {
+        color: #FDE68A !important;
+    }
+
+    .text-amber-600:not([class*="dark:text-"]),
+    .text-amber-500:not([class*="dark:text-"]),
+    .text-yellow-600:not([class*="dark:text-"]),
+    .text-yellow-500:not([class*="dark:text-"]) {
+        color: #FBBF24 !important;
+    }
+
+    /* Red & Rose readable text */
+    .text-red-950:not([class*="dark:text-"]),
+    .text-red-900:not([class*="dark:text-"]),
+    .text-red-800:not([class*="dark:text-"]),
+    .text-red-700:not([class*="dark:text-"]),
+    .text-rose-950:not([class*="dark:text-"]),
+    .text-rose-900:not([class*="dark:text-"]),
+    .text-rose-800:not([class*="dark:text-"]),
+    .text-rose-700:not([class*="dark:text-"]) {
+        color: #FCA5A5 !important;
+    }
+
+    .text-red-600:not([class*="dark:text-"]),
+    .text-red-500:not([class*="dark:text-"]),
+    .text-rose-600:not([class*="dark:text-"]),
+    .text-rose-500:not([class*="dark:text-"]) {
+        color: #F87171 !important;
+    }
+
+    /* Purple & Indigo readable text */
+    .text-purple-950:not([class*="dark:text-"]),
+    .text-purple-900:not([class*="dark:text-"]),
+    .text-purple-800:not([class*="dark:text-"]),
+    .text-purple-700:not([class*="dark:text-"]),
+    .text-indigo-950:not([class*="dark:text-"]),
+    .text-indigo-900:not([class*="dark:text-"]),
+    .text-indigo-800:not([class*="dark:text-"]),
+    .text-indigo-700:not([class*="dark:text-"]) {
+        color: #C4B5FD !important;
+    }
+
+    .text-purple-600:not([class*="dark:text-"]),
+    .text-purple-500:not([class*="dark:text-"]),
+    .text-indigo-600:not([class*="dark:text-"]),
+    .text-indigo-500:not([class*="dark:text-"]) {
+        color: #A78BFA !important;
+    }
+
+    /* Specific dark text utility overrides */
+    [class*="dark:text-white"] { color: #FFFFFF !important; }
+    [class*="dark:text-slate-100"], [class*="dark:text-neutral-100"], [class*="dark:text-zinc-100"] { color: #F1F5F9 !important; }
+    [class*="dark:text-slate-200"], [class*="dark:text-neutral-200"], [class*="dark:text-zinc-200"] { color: #E2E8F0 !important; }
+    [class*="dark:text-slate-300"], [class*="dark:text-neutral-300"], [class*="dark:text-zinc-300"] { color: #CBD5E1 !important; }
+    [class*="dark:text-slate-400"], [class*="dark:text-neutral-400"], [class*="dark:text-zinc-400"] { color: #94A3B8 !important; }
+    [class*="dark:text-brand-300"], [class*="dark:text-blue-300"] { color: #93C5FD !important; }
+    [class*="dark:text-brand-400"], [class*="dark:text-blue-400"] { color: #60A5FA !important; }
+    [class*="dark:text-emerald-300"], [class*="dark:text-green-300"] { color: #86EFAC !important; }
+    [class*="dark:text-emerald-400"], [class*="dark:text-green-400"] { color: #4ADE80 !important; }
+    [class*="dark:text-amber-300"], [class*="dark:text-yellow-300"] { color: #FDE68A !important; }
+    [class*="dark:text-amber-400"], [class*="dark:text-yellow-400"] { color: #FBBF24 !important; }
+    [class*="dark:text-red-300"], [class*="dark:text-rose-300"] { color: #FCA5A5 !important; }
+    [class*="dark:text-red-400"], [class*="dark:text-rose-400"] { color: #F87171 !important; }
+
     /* AG Grid in dark mode */
+    .ag-header-cell {
+        color: #CBD5E1 !important;
+    }
+
     .ag-theme-quartz {
         --ag-foreground-color: #F8FAFC;
         --ag-background-color: transparent;
-        --ag-header-foreground-color: #94A3B8;
+        --ag-header-foreground-color: #CBD5E1;
         --ag-header-background-color: #0B132B;
         --ag-border-color: #1E293B;
         --ag-row-hover-color: #172036;

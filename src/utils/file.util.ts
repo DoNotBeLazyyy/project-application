@@ -63,7 +63,7 @@ export function exportCsvFile(filename: string, csvContent: string): void {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /**
@@ -97,4 +97,4 @@ export async function triggerFileDownload(url: string, filename: string): Promis
         link.click();
         document.body.removeChild(link);
     }
-}
+}

@@ -73,12 +73,12 @@ export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
 ];
 
 const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'question_text', label: 'Question Text', hint: 'e.g. What is the capital of France?' },
-    { key: 'question_type', label: 'Question Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload' },
-    { key: 'points', label: 'Points', hint: 'e.g. 2' },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
-    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation', required: false },
-    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with * (for Multiple Choice / True or False / Matching)', required: false }
+    { key: 'question_text', label: 'Question Text', hint: 'e.g. What is the capital of France?', sample: 'What is the primary role of an operating system kernel?', aliases: ['question', 'prompt', 'item'] },
+    { key: 'question_type', label: 'Question Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload', sample: 'Multiple Choice', aliases: ['type', 'item_type'] },
+    { key: 'points', label: 'Points', hint: 'e.g. 2', sample: '2', aliases: ['point', 'score', 'weight'] },
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
+    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation', sample: 'The kernel manages core hardware and resource allocation.', required: false },
+    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with * (for Multiple Choice / True or False / Matching)', sample: 'Resource Management*|Web Browsing|Word Processing|Photo Editing', required: false, aliases: ['options', 'answers'] }
 ];
 
 const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
@@ -862,6 +862,7 @@ export default function AssessmentWizardModal({
             <BulkImportModal<QuestionBulkRow>
                 open={isImportOpen}
                 templateColumns={QUESTION_TEMPLATE_COLUMNS}
+                templateDownloadFilename="questions_template.csv"
                 title="Import Questions"
                 onBulkImport={(rows: QuestionBulkRow[]) => {
                     return bulkImportQuestions(activeAssessmentId, rows);

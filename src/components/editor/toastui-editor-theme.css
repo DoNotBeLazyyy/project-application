@@ -13,7 +13,7 @@
 }
 
 .toastui-editor-defaultUI-toolbar {
-    background-color: #f8fafc !important;
+    background-color: var(--mui-palette-grey-50, #f8fafc) !important;
     border-bottom: 1px solid var(--mui-palette-divider, #e4e4e7) !important;
     padding: 6px 10px !important;
 }
@@ -105,9 +105,22 @@
 }
 
 .toastui-editor-contents blockquote {
-    border-left: 4px solid var(--mui-tokens-color-brand-900, #022179) !important;
+    border-left: 4px solid var(--mui-palette-primary-main, #022179) !important;
     padding-left: 12px !important;
     color: var(--mui-palette-text-secondary, #64748b) !important;
     margin: 0.5em 0 !important;
     word-break: break-word !important;
+}
+
+html.dark .toastui-editor-toolbar-icons {
+    filter: invert(1) hue-rotate(180deg) brightness(1.2);
+}
+
+html.dark .toastui-editor-defaultUI {
+    background-color: var(--mui-palette-background-paper) !important;
+}
+
+html.dark .toastui-editor-defaultUI-toolbar {
+    background-color: #0b132b !important;
+    border-bottom-color: #1e293b !important;
 }

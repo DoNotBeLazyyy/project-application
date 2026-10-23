@@ -283,6 +283,7 @@ export default function ProgramManagement() {
             <BulkImportModal<ProgramBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="programs_template.csv"
                 title="Bulk Import Programs"
                 onBulkImport={bulkCreatePrograms}
                 onClose={function() {

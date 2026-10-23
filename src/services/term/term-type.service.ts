@@ -2,6 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import { TermTypeFormValues, TermTypeListRow, TermTypeOption } from '@type/term/term-type.type';
+import { generateTermTypeCode } from '@utils/entity-code.util';
 
 export async function listTermTypes(
     page: number,
@@ -46,8 +47,9 @@ export async function updateTermType(
     termTypeId: string,
     params: TermTypeFormValues
 ): Promise<ServiceResult<null>> {
+    const code = params.code?.trim() || generateTermTypeCode(params.label || '');
     return callRpc<null>('fn_update_term_type', {
-        p_code: params.code,
+        p_code: code,
         p_description: params.description || null,
         p_label: params.label,
         p_sequence: Number(params.sequence),

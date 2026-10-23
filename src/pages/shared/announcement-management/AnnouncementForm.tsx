@@ -70,6 +70,11 @@ export default function AnnouncementForm({
         name: 'posted_on'
     });
 
+    const isAllDay = useWatch({
+        control,
+        name: 'all_day'
+    });
+
     const {
         field: { value: audienceValue, onChange: setTargetAudience }
     } = useController({
@@ -271,30 +276,65 @@ export default function AnnouncementForm({
                 },
                 {
                     disabled,
-                    fieldProps: { helperText: 'When the event starts' },
-                    label: 'Start Date',
-                    name: 'start_at' as const,
-                    rules: disabled
-                        ? undefined
-                        : { required: 'Start date is required' },
-                    type: 'date' as const
+                    fieldProps: { label: 'All-Day Event (no specific start and end time)' },
+                    label: 'All-Day Event',
+                    name: 'all_day' as const,
+                    type: 'checkbox' as const
                 },
-                {
-                    disabled,
-                    fieldProps: { helperText: 'When the event ends (optional)' },
-                    label: 'End Date',
-                    name: 'end_at' as const,
-                    rules: disabled
-                        ? undefined
-                        : {
-                            validate: (val: unknown, formVals: CommunicationFormValues) => {
-                                if (!val || !formVals.start_at) return true;
-                                return new Date(val as string) >= new Date(formVals.start_at)
-                                    || 'End date cannot be earlier than start date';
-                            }
-                        },
-                    type: 'date' as const
-                }
+                isAllDay
+                    ? {
+                        disabled,
+                        fieldProps: { helperText: 'When the event starts' },
+                        label: 'Start Date',
+                        name: 'start_at' as const,
+                        rules: disabled
+                            ? undefined
+                            : { required: 'Start date is required' },
+                        type: 'date' as const
+                    }
+                    : {
+                        disabled,
+                        fieldProps: { helperText: 'When the event starts (date and time)' },
+                        label: 'Start Date & Time',
+                        name: 'start_at' as const,
+                        rules: disabled
+                            ? undefined
+                            : { required: 'Start date and time are required' },
+                        type: 'datetime' as const
+                    },
+                isAllDay
+                    ? {
+                        disabled,
+                        fieldProps: { helperText: 'When the event ends (optional)' },
+                        label: 'End Date',
+                        name: 'end_at' as const,
+                        rules: disabled
+                            ? undefined
+                            : {
+                                validate: (val: unknown, formVals: CommunicationFormValues) => {
+                                    if (!val || !formVals.start_at) return true;
+                                    return new Date(val as string) >= new Date(formVals.start_at)
+                                        || 'End date cannot be earlier than start date';
+                                }
+                            },
+                        type: 'date' as const
+                    }
+                    : {
+                        disabled,
+                        fieldProps: { helperText: 'When the event ends (optional date and time)' },
+                        label: 'End Date & Time',
+                        name: 'end_at' as const,
+                        rules: disabled
+                            ? undefined
+                            : {
+                                validate: (val: unknown, formVals: CommunicationFormValues) => {
+                                    if (!val || !formVals.start_at) return true;
+                                    return new Date(val as string) >= new Date(formVals.start_at)
+                                        || 'End date and time cannot be earlier than start date and time';
+                                }
+                            },
+                        type: 'datetime' as const
+                    }
             ]
             : [])
     ];

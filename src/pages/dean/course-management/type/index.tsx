@@ -222,6 +222,7 @@ export default function CourseTypeManagement() {
                         <CourseTypeForm
                             control={updateMethods.control}
                             id={UPDATE_FORM_ID}
+                            setValue={updateMethods.setValue}
                             onSubmit={updateMethods.handleSubmit(
                                 handleUpdateSubmit,
                                 handleUpdateFormError
@@ -271,6 +272,7 @@ export default function CourseTypeManagement() {
             <BulkImportModal<CourseTypeBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="course_types_template.csv"
                 title="Bulk Import Course Types"
                 onBulkImport={bulkCreateCourseTypes}
                 onClose={function() {

@@ -87,20 +87,12 @@ export default function AnnouncementManagement({ defaultTab }: AnnouncementManag
         const item = rowMapRef.current.get(id);
         const itemType = item?.item_type;
 
-        if (isViewingOnly) {
-            if (itemType === 'Event') {
-                setSelectedEventId(id);
-            } else {
-                setSelectedAnnouncementId(id);
-            }
-            return;
+        if (itemType === 'Event') {
+            setSelectedEventId(id);
+        } else {
+            setSelectedAnnouncementId(id);
         }
-
-        const typeQuery = itemType === 'Event' ? '?type=Event' : '';
-        navigate(`${basePath}/${id}${typeQuery}`, {
-            state: { from: pathname }
-        });
-    }, [basePath, isViewingOnly, navigate, pathname]);
+    }, []);
 
     const handleOpenEdit = useCallback(function(id: string) {
         const item = rowMapRef.current.get(id);

@@ -468,6 +468,7 @@ export default function SpecialGradesPage() {
                         control={updateMethods.control}
                         id={UPDATE_FORM_ID}
                         isCodeDisabled
+                        setValue={updateMethods.setValue}
                         onSubmit={updateMethods.handleSubmit(
                             handleUpdateSubmit,
                             (errs: FieldErrors<SpecialGradeFormValues>) => formErrors(errs, updateMethods)

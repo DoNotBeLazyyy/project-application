@@ -200,7 +200,7 @@ export default function TableCardActionMenu({
                 sx={{
                     backgroundColor: isMenuOpen
                         ? 'var(--mui-tokens-color-brand-100)'
-                        : 'var(--mui-tokens-color-common-white, #ffffff)',
+                        : 'var(--mui-palette-background-paper, #ffffff)',
                     borderColor: 'var(--mui-palette-primary-main)',
                     borderWidth: '1px',
                     boxShadow: 'none',

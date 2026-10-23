@@ -27,7 +27,7 @@ import {
 } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
 import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
@@ -475,28 +475,74 @@ export default function CourseForm({
         };
     }, [watchedDepartmentId]);
 
-    // System generate course code for new course creation
+    const initialTitleRef = useRef<string | null>(null);
+    const initialCodeRef = useRef<string | null>(null);
+    const watchedCode = useWatch({ control, name: 'code' });
+
     useEffect(() => {
-        if (excludeCourseId || !setValue) return;
-        if (!watchedTitle?.trim()) {
-            setValue('code', '', { shouldValidate: false, shouldDirty: false });
+        initialTitleRef.current = null;
+        initialCodeRef.current = null;
+    }, [excludeCourseId]);
+
+    // System generate course code based on department and title (updates when title changes)
+    useEffect(() => {
+        if (!setValue || disabled) return;
+
+        if (initialTitleRef.current === null) {
+            initialTitleRef.current = watchedTitle || '';
+            initialCodeRef.current = watchedCode || '';
             return;
         }
-        if (!watchedDepartmentId) return;
 
-        const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
-        const generatedCode = generateCourseCode({
-            departmentCode: selectedDept?.code,
-            departmentName: selectedDept?.label,
-            title: watchedTitle || '',
-            courseCount: deptCoursesInfo.count,
-            existingCodes: deptCoursesInfo.codes
-        });
+        const isCreate = !excludeCourseId;
 
-        if (generatedCode) {
-            setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+        if (isCreate) {
+            if (!watchedTitle?.trim()) {
+                setValue('code', '', { shouldValidate: false, shouldDirty: false });
+                return;
+            }
+            if (!watchedDepartmentId) return;
+
+            const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
+            const generatedCode = generateCourseCode({
+                departmentCode: selectedDept?.code,
+                departmentName: selectedDept?.label,
+                title: watchedTitle || '',
+                courseCount: deptCoursesInfo.count,
+                existingCodes: deptCoursesInfo.codes
+            });
+
+            if (generatedCode) {
+                setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+            }
+        } else {
+            if (watchedTitle !== initialTitleRef.current) {
+                if (!watchedTitle?.trim()) {
+                    setValue('code', '', { shouldValidate: false, shouldDirty: true });
+                    return;
+                }
+                if (!watchedDepartmentId) return;
+
+                const selectedDept = departments.find((d) => d.id === watchedDepartmentId);
+                const otherCodes = (deptCoursesInfo.codes || []).filter(
+                    (c) => c.toUpperCase() !== (initialCodeRef.current || '').toUpperCase()
+                );
+                const generatedCode = generateCourseCode({
+                    departmentCode: selectedDept?.code,
+                    departmentName: selectedDept?.label,
+                    title: watchedTitle || '',
+                    courseCount: Math.max(0, deptCoursesInfo.count - 1),
+                    existingCodes: otherCodes
+                });
+
+                if (generatedCode) {
+                    setValue('code', generatedCode, { shouldValidate: true, shouldDirty: true });
+                }
+            } else if (initialCodeRef.current !== null && watchedCode !== initialCodeRef.current) {
+                setValue('code', initialCodeRef.current, { shouldValidate: true, shouldDirty: false });
+            }
         }
-    }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, setValue]);
+    }, [watchedTitle, watchedDepartmentId, deptCoursesInfo, departments, excludeCourseId, setValue, disabled, watchedCode]);
 
     const {
         fields: courseTypeFields,

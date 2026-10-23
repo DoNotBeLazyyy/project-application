@@ -30,18 +30,18 @@ const SORT_COLUMNS: SortColumn[] = [
 ];
 
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness' },
-    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)', required: false },
-    { key: 'section_description', label: 'Section Description', hint: 'optional', required: false },
-    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL)', required: false },
-    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)', required: false },
-    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
-    { key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', required: false },
-    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly' },
-    { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended' },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', required: false },
-    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only, optional)', required: false },
-    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only, optional)', required: false }
+    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title'] },
+    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)', sample: '1', required: false, aliases: ['sequence', 'order'] },
+    { key: 'section_description', label: 'Section Description', hint: 'optional', sample: 'Evaluates pedagogical delivery and class management', required: false, aliases: ['description'] },
+    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL)', sample: 'ALL', required: false, aliases: ['mode'] },
+    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)', sample: 'BSCS|BSIT', required: false, aliases: ['programs', 'program_code'] },
+    { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['active', 'status'] },
+    { key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', sample: 'Provide constructive feedback for your instructor', required: false },
+    { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', aliases: ['question', 'prompt'] },
+    { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type'] },
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
+    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only, optional)', sample: '1', required: false },
+    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only, optional)', sample: '5', required: false }
 ];
 
 const DEFAULT_QUESTIONS: EvaluationQuestionForm[] = [
@@ -373,6 +373,7 @@ export default function EvaluationManagement() {
             <BulkImportModal<EvaluationTemplateBulkRow>
                 open={isBulkImportOpen}
                 templateColumns={BULK_IMPORT_TEMPLATE_COLUMNS}
+                templateDownloadFilename="evaluations_template.csv"
                 title="Bulk Import Evaluation Sections"
                 onBulkImport={bulkCreateEvaluationTemplates}
                 onClose={function() {
