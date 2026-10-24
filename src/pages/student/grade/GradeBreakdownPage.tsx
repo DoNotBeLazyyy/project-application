@@ -3,30 +3,50 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import { formatScore } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import GradeBreakdownComponentPanel from '@pages/student/grade/GradeBreakdownComponentPanel';
-import { ArrowLeftIcon, InfoIcon } from '@phosphor-icons/react';
+import {
+    ArrowLeftIcon,
+    CalculatorIcon,
+    CalendarDotsIcon,
+    ChalkboardTeacherIcon,
+    CheckCircleIcon,
+    GraduationCapIcon,
+    InfoIcon,
+    TrendUpIcon,
+    WarningCircleIcon
+} from '@phosphor-icons/react';
 import { getMyGradeBreakdown } from '@services/student-portal.service';
 import { MyGradeBreakdown } from '@type/student-portal.type';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-interface SummaryTileProps {
+interface GradeMetricCardProps {
     hint: string;
+    icon: ReactNode;
+    iconBg: string;
+    iconColor: string;
     label: string;
     value: string;
 }
 
-function SummaryTile({ hint, label, value }: SummaryTileProps) {
+function GradeMetricCard({ hint, icon, iconBg, iconColor, label, value }: GradeMetricCardProps) {
     return (
-        <div className="bg-(--mui-palette-action-hover) flex flex-col gap-1 p-3 rounded-lg">
-            <span className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                {value}
-            </span>
-            <span className="text-(--mui-palette-text-secondary) text-xs">
-                {label}
-            </span>
-            <span className="text-(--mui-palette-text-disabled) text-xs">
-                {hint}
-            </span>
+        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl shadow-2xs transition-all min-w-0">
+            <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+                <span className={`flex items-center justify-center ${iconColor}`}>
+                    {icon}
+                </span>
+            </div>
+            <div className="flex flex-col gap-0.5 min-w-0 text-left">
+                <span className="font-bold text-xl sm:text-2xl text-slate-900 dark:text-slate-100 truncate tracking-tight">
+                    {value}
+                </span>
+                <span className="font-medium text-xs sm:text-sm text-slate-700 dark:text-slate-300 truncate">
+                    {label}
+                </span>
+                <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {hint}
+                </span>
+            </div>
         </div>
     );
 }
@@ -86,65 +106,67 @@ export default function GradeBreakdownPage() {
 
     return (
         <CommonCard
-            className="flex flex-col gap-4 min-h-full p-4 w-full"
+            className="flex flex-col gap-5 min-h-full p-4 sm:p-6 w-full"
             style={{ overflow: 'visible' }}
         >
-            <div className="flex gap-3 items-center">
-                <CommonButton
-                    color="inherit"
-                    size="small"
-                    startIcon={<ArrowLeftIcon size={16} weight="bold" />}
-                    variant="outlined"
-                    onClick={handleBack}
-                >
-                    Back
-                </CommonButton>
-                <div className="flex flex-col min-w-0">
-                    <div className="flex flex-wrap gap-2 items-center">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                            {breakdown?.course_code ?? '—'}
-                        </h1>
-                        <span className="text-(--mui-palette-text-secondary) text-sm truncate">
-                            {breakdown?.course_title}
-                        </span>
+            {/* Header with Navigation and Course Identity */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-zinc-800">
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        variant="outlined"
+                        onClick={handleBack}
+                    >
+                        Back
+                    </CommonButton>
+                    <div className="flex flex-col min-w-0">
+                        <div className="flex flex-wrap gap-2 items-center">
+                            <span className="font-mono font-bold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                                {breakdown?.course_code ?? '—'}
+                            </span>
+                            <h1 className="font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl truncate tracking-tight">
+                                {breakdown?.course_title ?? 'Grade Breakdown'}
+                            </h1>
+                            {breakdown && (
+                                <CommonBadgeStatus label={breakdown.grading_period_name} variant="info" />
+                            )}
+                        </div>
                         {breakdown && (
-                            <CommonBadgeStatus label={breakdown.grading_period_name} variant="info" />
+                            <div className="flex flex-wrap gap-2.5 items-center mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                    Section {breakdown.section_code}
+                                </span>
+                                <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                    <CalendarDotsIcon size={14} />
+                                    {breakdown.term_label}
+                                </span>
+                                {breakdown.faculty_name && (
+                                    <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                        <ChalkboardTeacherIcon size={14} />
+                                        {breakdown.faculty_name}
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
-                    {breakdown && (
-                        <div className="flex flex-wrap gap-2 items-center">
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                {breakdown.section_code}
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                ·
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                {breakdown.term_label}
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                ·
-                            </span>
-                            <span className="text-(--mui-palette-text-secondary) text-sm">
-                                {breakdown.faculty_name}
-                            </span>
-                        </div>
-                    )}
                 </div>
             </div>
 
             {!breakdown && !errorMessage && (
-                <p className="py-10 text-(--mui-palette-text-secondary) text-center text-sm">
+                <div className="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">
                     Loading grade breakdown…
-                </p>
+                </div>
             )}
 
             {errorMessage && (
-                <div className="flex flex-col gap-2 items-center py-10 text-center">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                <div className="flex flex-col gap-2 items-center py-16 text-center">
+                    <WarningCircleIcon size={36} className="text-amber-500" />
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-base">
                         Breakdown unavailable
                     </span>
-                    <span className="max-w-md text-(--mui-palette-text-secondary) text-xs">
+                    <span className="max-w-md text-slate-500 text-xs">
                         {errorMessage}
                     </span>
                 </div>
@@ -153,97 +175,105 @@ export default function GradeBreakdownPage() {
             {breakdown && (
                 <>
                     {breakdown.is_published === false && (
-                        <div className="border border-(--mui-palette-info-main) bg-(--mui-palette-info-light) p-3 rounded-lg flex items-center gap-3 text-xs text-(--mui-palette-text-primary)">
-                            <InfoIcon size={22} className="text-(--mui-palette-info-main) shrink-0" />
+                        <div className="border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-4 rounded-xl flex items-center gap-3 text-xs text-slate-800 dark:text-slate-200">
+                            <InfoIcon size={24} className="text-blue-600 dark:text-blue-400 shrink-0" />
                             <div>
-                                <span className="font-semibold block text-sm">Grade Pending Official Release</span>
-                                <span className="text-(--mui-palette-text-secondary)">Official grades for this period have not yet been published by the Registrar. Computed marks below are indicative drafts.</span>
+                                <span className="font-semibold block text-sm text-blue-900 dark:text-blue-200">Grade Pending Official Release</span>
+                                <span className="text-blue-700/80 dark:text-blue-300/80">Official grades for this period have not yet been published by the Registrar. Computed marks below are indicative drafts.</span>
                             </div>
                         </div>
                     )}
-                    <div className="gap-3 grid grid-cols-2 lg:grid-cols-4">
-                        <SummaryTile
+
+                    {/* Metric Cards Grid */}
+                    <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        <GradeMetricCard
                             hint="Weighted average of all components"
+                            icon={<CalculatorIcon size={24} />}
+                            iconBg="bg-blue-50 dark:bg-blue-950/60"
+                            iconColor="text-blue-600 dark:text-blue-400"
                             label="Raw Grade"
                             value={formatScore(breakdown.raw_grade)}
                         />
-                        <SummaryTile
-                            hint="After any faculty adjustment"
+                        <GradeMetricCard
+                            hint="After faculty adjustments"
+                            icon={<CheckCircleIcon size={24} />}
+                            iconBg="bg-emerald-50 dark:bg-emerald-950/60"
+                            iconColor="text-emerald-600 dark:text-emerald-400"
                             label="Final Grade"
                             value={formatScore(breakdown.final_grade)}
                         />
-                        <SummaryTile
+                        <GradeMetricCard
                             hint={breakdown.passing_grade !== null
                                 ? `Passing is ${breakdown.passing_grade} or lower`
-                                : 'Converted to the grading scale'}
+                                : 'Converted to grading scale'}
+                            icon={<GraduationCapIcon size={24} />}
+                            iconBg="bg-purple-50 dark:bg-purple-950/60"
+                            iconColor="text-purple-600 dark:text-purple-400"
                             label="Transmuted"
                             value={transmutedDisplay}
                         />
-                        <SummaryTile
-                            hint="Share of your term grade"
+                        <GradeMetricCard
+                            hint="Share of term grade"
+                            icon={<TrendUpIcon size={24} />}
+                            iconBg="bg-amber-50 dark:bg-amber-950/60"
+                            iconColor="text-amber-600 dark:text-amber-400"
                             label="Period Weight"
                             value={`${breakdown.weight}%`}
                         />
                     </div>
 
                     {breakdown.transmuted_grade !== null && breakdown.passing_grade !== null && (
-                        <div className="flex gap-2 items-center">
+                        <div className="flex flex-wrap gap-2 items-center px-1">
                             <CommonBadgeStatus
-                                label={isPassing
-                                    ? 'Passing'
-                                    : 'Below passing'}
-                                variant={isPassing
-                                    ? 'success'
-                                    : 'error'}
+                                label={isPassing ? 'Passing Standing' : 'Below Passing Threshold'}
+                                variant={isPassing ? 'success' : 'error'}
                             />
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                Based on the institution passing grade of
-                                {' '}
-                                {breakdown.passing_grade}
+                            <span className="text-slate-500 dark:text-slate-400 text-xs">
+                                Institution passing grade benchmark: <strong>{breakdown.passing_grade}</strong>
                             </span>
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap gap-1 items-baseline justify-between">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                Components
+                    {/* Components Accordion List */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-1 items-baseline justify-between px-0.5">
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                                Component Itemization
                             </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
-                                Tap a component to see every assessment behind it
+                            <span className="text-slate-500 dark:text-slate-400 text-xs">
+                                Tap any component to expand the assessments behind it
                             </span>
                         </div>
 
-                        {breakdown.components.length === 0
-                            ? (
-                                <p className="italic py-6 text-(--mui-palette-text-secondary) text-sm">
-                                    No grading components were configured for this period.
-                                </p>
-                            )
-                            : (
-                                <div className="flex flex-col gap-2">
-                                    {breakdown.components.map(function(component) {
-                                        return (
-                                            <GradeBreakdownComponentPanel
-                                                component={component}
-                                                defaultExpanded={breakdown.components.length === 1}
-                                                key={component.id}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            )}
+                        {breakdown.components.length === 0 ? (
+                            <p className="italic py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                                No grading components were configured for this period.
+                            </p>
+                        ) : (
+                            <div className="flex flex-col gap-2.5">
+                                {breakdown.components.map(function(component) {
+                                    return (
+                                        <GradeBreakdownComponentPanel
+                                            component={component}
+                                            defaultExpanded={breakdown.components.length === 1}
+                                            key={component.id}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
+                    {/* Grade Computation Information Card */}
                     {breakdown.components.length > 0 && (
-                        <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-3 rounded-lg">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        <div className="bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-800 flex flex-col gap-1.5 p-4 rounded-xl text-xs">
+                            <span className="font-semibold text-slate-900 dark:text-slate-200 text-sm">
                                 How this grade was computed
                             </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                            <span className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 {`Each component score is calculated from your earned assessment points against total component points, scaled by the component weight (summing to ${formatScore(Number(weightedTotal.toFixed(2)))} of ${breakdown.total_component_weight} total component points) to yield your Raw Grade.`}
                             </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                            <span className="text-slate-500 dark:text-slate-500 leading-relaxed">
                                 Your raw grade percentage is then converted into the official transmuted grade based on the institutional grading table. Assessments without submissions or scores receive 0 points toward the released component grade.
                             </span>
                         </div>

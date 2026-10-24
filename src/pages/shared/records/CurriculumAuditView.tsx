@@ -3,14 +3,23 @@ import CommonButton from '@components/button/CommonButton';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
 import Tooltip from '@mui/material/Tooltip';
-import { GraduationCapIcon, PencilSimpleIcon, PrinterIcon } from '@phosphor-icons/react';
+import {
+    CheckCircleIcon,
+    ClockIcon,
+    GraduationCapIcon,
+    HourglassIcon,
+    ListChecksIcon,
+    PencilSimpleIcon,
+    PrinterIcon,
+    UserIcon
+} from '@phosphor-icons/react';
 import AssignProgramModal from '@pages/shared/records/AssignProgramModal';
 import { getPrograms } from '@services/program/program.service';
 import { assignMyProgram, getCurriculumAudit } from '@services/records.service';
 import { registrarAssignStudentProgramAndYear } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
 import { CurriculumAudit, CurriculumCourse, CurriculumCourseStatus, CurriculumYearLevel } from '@type/records.type';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 const STATUS_VARIANT_MAP: Record<CurriculumCourseStatus, 'success' | 'error' | 'warning' | 'info'> = {
     Completed: 'success',
@@ -62,20 +71,36 @@ function yearLabel(level: number): string {
     return YEAR_LABELS[level - 1] ?? `Year ${level}`;
 }
 
-interface SummaryTileProps {
+interface AuditMetricCardProps {
+    hint?: string;
+    icon: ReactNode;
+    iconBg: string;
+    iconColor: string;
     label: string;
     value: string;
 }
 
-function SummaryTile({ label, value }: SummaryTileProps) {
+function AuditMetricCard({ hint, icon, iconBg, iconColor, label, value }: AuditMetricCardProps) {
     return (
-        <div className="border border-(--mui-palette-divider) flex flex-col gap-0.5 p-3 rounded-lg">
-            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                {label}
-            </span>
-            <span className="font-semibold text-(--mui-palette-text-primary) text-lg">
-                {value}
-            </span>
+        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl shadow-2xs min-w-0 transition-all">
+            <div className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+                <span className={`flex items-center justify-center ${iconColor}`}>
+                    {icon}
+                </span>
+            </div>
+            <div className="flex flex-col gap-0.5 min-w-0 text-left">
+                <span className="font-bold text-lg sm:text-xl text-slate-900 dark:text-slate-100 truncate tracking-tight">
+                    {value}
+                </span>
+                <span className="font-medium text-xs text-slate-600 dark:text-slate-400 truncate">
+                    {label}
+                </span>
+                {hint && (
+                    <span className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
+                        {hint}
+                    </span>
+                )}
+            </div>
         </div>
     );
 }
@@ -87,18 +112,27 @@ interface YearBlockProps {
 function YearBlock({ yearLevel }: YearBlockProps) {
     return (
         <div className="flex flex-col gap-3">
-            <h2 className="font-semibold text-(--mui-palette-text-primary) text-base">
-                {yearLabel(yearLevel.year_level)}
-            </h2>
+            <div className="flex items-center gap-2 px-1">
+                <span className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg">
+                    {yearLabel(yearLevel.year_level)}
+                </span>
+            </div>
             {yearLevel.terms.map(function(term) {
+                const termUnits = term.courses.reduce(function(acc, c) {
+                    return acc + (Number(c.units) || 0);
+                }, 0);
+
                 return (
                     <div
-                        className="border border-(--mui-palette-divider) flex flex-col rounded-lg"
+                        className="border border-slate-200/90 dark:border-zinc-800 flex flex-col rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xs mb-2"
                         key={`${yearLevel.year_level}-${term.term_type_id ?? 'none'}`}
                     >
-                        <div className="bg-(--mui-palette-action-hover) px-3 py-2 rounded-t-lg">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        <div className="bg-slate-50 dark:bg-zinc-800/60 px-4 py-3 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between">
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                                 {term.term_type_label}
+                            </span>
+                            <span className="font-medium text-xs px-2.5 py-0.5 rounded-full bg-slate-200/60 dark:bg-zinc-700 text-slate-700 dark:text-slate-300">
+                                {termUnits} Units
                             </span>
                         </div>
                         <div className="overflow-x-auto w-full">
@@ -106,58 +140,58 @@ function YearBlock({ yearLevel }: YearBlockProps) {
                                 <colgroup>
                                     <col className="w-28" />
                                     <col />
-                                    <col className="w-20" />
-                                    <col className="w-40" />
                                     <col className="w-24" />
                                     <col className="w-36" />
+                                    <col className="w-20" />
+                                    <col className="w-32" />
                                 </colgroup>
                                 <thead>
-                                    <tr className="border-b border-(--mui-palette-divider) text-(--mui-palette-text-secondary) text-xs uppercase">
-                                        <th className="font-medium px-3 py-2 text-left">Code</th>
-                                        <th className="font-medium px-3 py-2 text-left">Course Title</th>
-                                        <th className="font-medium px-3 py-2 text-right">Units</th>
-                                        <th className="font-medium px-3 py-2 text-left">Term Taken</th>
-                                        <th className="font-medium px-3 py-2 text-right">Grade</th>
-                                        <th className="font-medium px-3 py-2 text-left">Status</th>
+                                    <tr className="border-b border-slate-200/70 dark:border-zinc-800 text-slate-500 dark:text-slate-400 text-xs uppercase bg-slate-50/40 dark:bg-zinc-900/40">
+                                        <th className="font-semibold px-4 py-2.5 text-left">Code</th>
+                                        <th className="font-semibold px-4 py-2.5 text-left">Course Title</th>
+                                        <th className="font-semibold px-4 py-2.5 text-right">Units</th>
+                                        <th className="font-semibold px-4 py-2.5 text-left">Term Taken</th>
+                                        <th className="font-semibold px-4 py-2.5 text-right">Grade</th>
+                                        <th className="font-semibold px-4 py-2.5 text-left">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {term.courses.map(function(course) {
                                         return (
                                             <tr
-                                                className="border-b border-(--mui-palette-divider) last:border-b-0"
+                                                className="border-b border-slate-100 dark:border-zinc-800/60 last:border-b-0 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors"
                                                 key={course.curriculum_map_id}
                                             >
-                                                <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-primary) text-ellipsis whitespace-nowrap">
+                                                <td className="font-mono font-medium px-4 py-3 text-blue-700 dark:text-blue-400 text-xs sm:text-sm whitespace-nowrap">
                                                     {course.course_code}
                                                 </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary)">
+                                                <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
                                                     <div className="flex gap-2 items-center min-w-0">
                                                         <Tooltip
                                                             arrow
                                                             title={course.course_title}
                                                         >
-                                                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                                                            <span className="font-medium truncate">
                                                                 {course.course_title}
                                                             </span>
                                                         </Tooltip>
                                                         {course.is_elective && (
-                                                            <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                                            <span className="shrink-0 text-slate-500 dark:text-slate-400 text-[11px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
                                                                 Elective
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                <td className="px-4 py-3 text-slate-700 dark:text-slate-300 text-right text-xs sm:text-sm">
                                                     {formatUnits(course)}
                                                 </td>
-                                                <td className="overflow-hidden px-3 py-2 text-(--mui-palette-text-secondary) text-ellipsis whitespace-nowrap">
+                                                <td className="overflow-hidden px-4 py-3 text-slate-500 dark:text-slate-400 text-xs truncate whitespace-nowrap">
                                                     {course.taken_label ?? '—'}
                                                 </td>
-                                                <td className="px-3 py-2 text-(--mui-palette-text-primary) text-right">
+                                                <td className="font-mono font-semibold px-4 py-3 text-slate-900 dark:text-slate-100 text-right text-xs sm:text-sm">
                                                     {formatGrade(course)}
                                                 </td>
-                                                <td className="px-3 py-2">
+                                                <td className="px-4 py-3">
                                                     <CommonBadgeStatus
                                                         label={course.status}
                                                         variant={STATUS_VARIANT_MAP[course.status]}
@@ -249,9 +283,9 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
 
     if (!isLoaded) {
         return (
-            <p className="text-(--mui-palette-text-secondary) text-sm">
-                Loading...
-            </p>
+            <div className="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">
+                Loading curriculum audit…
+            </div>
         );
     }
 
@@ -261,15 +295,15 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
     if (!isSuccess || !hasProgram || !audit) {
         return (
             <div className="flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto">
-                <div className="border border-(--mui-palette-divider) flex flex-col items-center p-8 rounded-xl shadow-xs w-full bg-(--mui-palette-background-paper) gap-5">
-                    <div className="p-4 bg-(--mui-palette-primary-light) text-(--mui-palette-primary-main) rounded-full">
+                <div className="border border-slate-200 dark:border-zinc-800 flex flex-col items-center p-8 rounded-2xl shadow-xs w-full bg-white dark:bg-zinc-900 gap-5">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-full">
                         <GraduationCapIcon size={40} />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <h2 className="font-semibold text-(--mui-palette-text-primary) text-lg">
+                        <h2 className="font-bold text-slate-900 dark:text-slate-100 text-lg">
                             Academic Program Not Assigned
                         </h2>
-                        <p className="text-(--mui-palette-text-secondary) text-sm">
+                        <p className="text-slate-500 text-sm">
                             {studentId
                                 ? 'This student does not have an assigned academic program yet. Assign a program below.'
                                 : 'You do not have an assigned academic program yet. Select your degree program and year level below to initialize your curriculum checklist.'}
@@ -332,17 +366,18 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
     const yearLevels = audit.year_levels ?? audit.curriculum ?? [];
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-3 items-start justify-between no-print">
+        <div className="flex flex-col gap-5">
+            {/* Header with Title and Actions */}
+            <div className="flex flex-wrap gap-3 items-center justify-between no-print pb-3 border-b border-slate-200/80 dark:border-zinc-800">
                 <div className="flex flex-col">
-                    <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
+                    <h1 className="font-bold text-slate-900 dark:text-slate-100 text-xl tracking-tight">
                         Curriculum Checklist
                     </h1>
-                    <span className="text-(--mui-palette-text-secondary) text-sm">
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">
                         {audit.program.code} · {audit.program.name}
                     </span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2.5">
                     {Boolean(studentId) && (
                         <CommonButton
                             size="small"
@@ -366,37 +401,70 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                 </div>
             </div>
 
-            <div className="flex flex-col gap-4 print-area">
-                <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-3 rounded-lg">
-                    <span className="font-semibold text-(--mui-palette-text-primary) text-base">
-                        {audit.student.full_name}
-                    </span>
-                    <span className="text-(--mui-palette-text-secondary) text-sm">
-                        {audit.student.student_number} · {audit.program.code} · {yearLabel(audit.student.year_level)}
-                    </span>
-                    <span className="italic text-(--mui-palette-text-secondary) text-xs">
-                        Unofficial checklist. Not valid as an official academic record.
+            <div className="flex flex-col gap-5 print-area">
+                {/* Student Record Identity Card */}
+                <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl gap-3 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0">
+                            <UserIcon size={22} weight="bold" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                                {audit.student.full_name}
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                <span className="font-mono">{audit.student.student_number}</span>
+                                <span>·</span>
+                                <span className="font-semibold text-blue-600 dark:text-blue-400">{audit.program.code}</span>
+                                <span>·</span>
+                                <span>{yearLabel(audit.student.year_level)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span className="text-[11px] italic text-slate-400 dark:text-zinc-500 self-start sm:self-center">
+                        Unofficial checklist. Not valid as an official transcript.
                     </span>
                 </div>
 
-                <div className="gap-3 grid grid-cols-2 md:grid-cols-5">
-                    <SummaryTile
+                {/* Metric Summary Cards Grid */}
+                <div className="gap-3 sm:gap-4 grid grid-cols-2 md:grid-cols-5">
+                    <AuditMetricCard
+                        hint="Credited of required"
+                        icon={<CheckCircleIcon size={22} />}
+                        iconBg="bg-emerald-50 dark:bg-emerald-950/60"
+                        iconColor="text-emerald-600 dark:text-emerald-400"
                         label="Units Earned"
                         value={`${formatUnits(summary.earned_units)} / ${formatUnits(summary.required_units)}`}
                     />
-                    <SummaryTile
+                    <AuditMetricCard
+                        hint="Current term"
+                        icon={<ClockIcon size={22} />}
+                        iconBg="bg-amber-50 dark:bg-amber-950/60"
+                        iconColor="text-amber-600 dark:text-amber-400"
                         label="In Progress"
                         value={formatUnits(summary.in_progress_units)}
                     />
-                    <SummaryTile
+                    <AuditMetricCard
+                        hint="To graduate"
+                        icon={<HourglassIcon size={22} />}
+                        iconBg="bg-slate-100 dark:bg-zinc-800"
+                        iconColor="text-slate-600 dark:text-slate-300"
                         label="Remaining"
                         value={formatUnits(summary.remaining_units)}
                     />
-                    <SummaryTile
+                    <AuditMetricCard
+                        hint="Completed courses"
+                        icon={<ListChecksIcon size={22} />}
+                        iconBg="bg-blue-50 dark:bg-blue-950/60"
+                        iconColor="text-blue-600 dark:text-blue-400"
                         label="Courses Passed"
                         value={`${summary.completed_courses} / ${summary.total_courses}`}
                     />
-                    <SummaryTile
+                    <AuditMetricCard
+                        hint="Weighted grade"
+                        icon={<GraduationCapIcon size={22} />}
+                        iconBg="bg-purple-50 dark:bg-purple-950/60"
+                        iconColor="text-purple-600 dark:text-purple-400"
                         label="Cumulative GWA"
                         value={summary.cumulative_gwa !== null
                             ? Number(summary.cumulative_gwa)
@@ -405,21 +473,27 @@ export default function CurriculumAuditView({ studentId }: CurriculumAuditViewPr
                     />
                 </div>
 
-                <CommonProgressBar
-                    hasSubtext={false}
-                    label={`Degree Progress · ${Number(summary.completion_pct)}%`}
-                    percentage={Number(summary.completion_pct)}
-                    type="label"
-                />
+                {/* Degree Completion Progress */}
+                <div className="bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-800 p-4 rounded-xl">
+                    <CommonProgressBar
+                        hasSubtext={false}
+                        label={`Degree Completion Progress · ${Number(summary.completion_pct)}%`}
+                        percentage={Number(summary.completion_pct)}
+                        type="label"
+                    />
+                </div>
 
-                {yearLevels.map(function(yearLevel) {
-                    return (
-                        <YearBlock
-                            key={yearLevel.year_level}
-                            yearLevel={yearLevel}
-                        />
-                    );
-                })}
+                {/* Year Level Blocks */}
+                <div className="flex flex-col gap-6">
+                    {yearLevels.map(function(yearLevel) {
+                        return (
+                            <YearBlock
+                                key={yearLevel.year_level}
+                                yearLevel={yearLevel}
+                            />
+                        );
+                    })}
+                </div>
             </div>
 
             <AssignProgramModal

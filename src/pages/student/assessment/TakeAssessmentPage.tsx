@@ -1,10 +1,27 @@
+import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import AssessmentQuestionCard from '@pages/student/assessment/AssessmentQuestionCard';
 import AssessmentTimer from '@pages/student/assessment/AssessmentTimer';
-import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import {
-    getAssessmentForStudent, getAssessmentQuestionsForStudent, recordFocusEvent, recordHeartbeat, saveStudentAnswer, startAssessmentTimer, submitAssessment
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CalendarDotsIcon,
+    ClockIcon,
+    ExamIcon,
+    EyeIcon,
+    PlayIcon,
+    ShieldCheckIcon,
+    TrophyIcon
+} from '@phosphor-icons/react';
+import {
+    getAssessmentForStudent,
+    getAssessmentQuestionsForStudent,
+    recordFocusEvent,
+    recordHeartbeat,
+    saveStudentAnswer,
+    startAssessmentTimer,
+    submitAssessment
 } from '@services/student-portal.service';
 import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
@@ -100,53 +117,48 @@ export default function TakeAssessmentPage() {
             const subId = result.data.submission_id;
             setSubmissionId(subId);
             setExpiresAt(result.data.expires_at ?? null);
+            setIsStarted(true);
 
-            const questionsResult = await getAssessmentQuestionsForStudent(
+            heartbeatRef.current = setInterval(function() {
+                recordHeartbeat(subId);
+            }, 30000);
+
+            const qResult = await getAssessmentQuestionsForStudent(
                 assessmentId,
                 enrollmentId,
                 subId
             );
-
-            if (questionsResult.data) {
-                setQuestions(questionsResult.data);
-
-                const defaults: Record<string, string> = {};
-                questionsResult.data.forEach((q) => {
-                    defaults[`answer_${q.id}`] = q.saved_answer?.choice_id
-                        ?? q.saved_answer?.answer_text
-                        ?? '';
+            if (qResult.data) {
+                setQuestions(qResult.data);
+                const initialValues: Record<string, string> = {};
+                qResult.data.forEach((q) => {
+                    const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(q.question_type);
+                    initialValues[`answer_${q.id}`] = isChoice
+                        ? (q.saved_answer?.choice_id ?? '')
+                        : (q.saved_answer?.answer_text ?? '');
                 });
-                methods.reset(defaults);
+                methods.reset(initialValues);
             }
-
-            setIsStarted(true);
-
-            heartbeatRef.current = setInterval(async function() {
-                await recordHeartbeat(subId);
-            }, 30000);
         }
     }
 
-    const handleSaveAnswer = useCallback(async function(questionId: string, value: string) {
-        if (!submissionId) return;
+    const handleSaveAnswer = useCallback(
+        async function(questionId: string, value: string) {
+            if (!submissionId) return;
 
-        const question = questions.find((q) => q.id === questionId);
-        if (!question) return;
+            const question = questions.find((q) => q.id === questionId);
+            if (!question || question.question_type === 'File Upload') return;
 
-        if (question.question_type === 'File Upload') return;
+            const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
 
-        const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
-
-        await saveStudentAnswer(submissionId, {
-            question_id: questionId,
-            answer_text: isChoice
-                ? ''
-                : value,
-            choice_id: isChoice
-                ? value
-                : ''
-        });
-    }, [submissionId, questions]);
+            await saveStudentAnswer(submissionId, {
+                question_id: questionId,
+                answer_text: isChoice ? '' : value,
+                choice_id: isChoice ? value : ''
+            });
+        },
+        [submissionId, questions]
+    );
 
     async function handleSubmit() {
         if (!submissionId) return;
@@ -185,132 +197,160 @@ export default function TakeAssessmentPage() {
 
     if (!assessment) {
         return (
-            <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-                <p className="text-(--mui-palette-text-secondary) text-sm">Loading...</p>
+            <CommonCard className="flex flex-col gap-4 h-full p-6 w-full items-center justify-center">
+                <div className="py-16 text-center text-slate-500 dark:text-slate-400 text-sm">Loading assessment…</div>
             </CommonCard>
         );
     }
 
+    // Assessment Preparation Lobby
     if (!isStarted) {
+        const attemptsUsed = assessment.attempts_used ?? 0;
+        const maxAttempts = assessment.max_attempts ?? 1;
+        const isMaxedOut = attemptsUsed >= maxAttempts && !assessment.has_active_submission;
+
         return (
-            <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-                <CommonButton
-                    color="inherit"
-                    size="small"
-                    startIcon={<ArrowLeftIcon size={16} weight="bold" />}
-                    variant="outlined"
-                    onClick={function() {
-                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}`);
-                    }}
-                >
-                    Back
-                </CommonButton>
-                <div className="flex flex-1 flex-col gap-4 items-center justify-center">
-                    <div className="flex flex-col gap-2 items-center max-w-md text-center">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl md:text-2xl">
+            <CommonCard className="flex flex-col gap-6 h-full p-4 sm:p-8 w-full max-w-4xl mx-auto shadow-sm">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800">
+                    <CommonButton
+                        color="inherit"
+                        size="small"
+                        startIcon={<ArrowLeftIcon size={16} weight="bold" />}
+                        variant="outlined"
+                        onClick={function() {
+                            navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}`);
+                        }}
+                    >
+                        Back to Subject
+                    </CommonButton>
+                    <CommonBadgeStatus
+                        label={assessment.has_active_submission ? 'In Progress' : 'Ready to Take'}
+                        variant={assessment.has_active_submission ? 'warning' : 'info'}
+                    />
+                </div>
+
+                <div className="flex flex-col items-center text-center gap-6 py-4">
+                    <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-3xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shadow-xs">
+                        <ExamIcon size={36} weight="duotone" />
+                    </div>
+
+                    <div className="flex flex-col gap-2 max-w-xl">
+                        <h1 className="font-bold text-slate-900 dark:text-slate-100 text-2xl sm:text-3xl tracking-tight">
                             {assessment.title}
                         </h1>
-                        {assessment.description && (
-                            <p className="text-(--mui-palette-text-secondary) text-sm">
+                        {assessment.description ? (
+                            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
                                 {assessment.description}
                             </p>
+                        ) : (
+                            <p className="text-slate-400 text-xs italic">
+                                Please review the assessment guidelines below before starting.
+                            </p>
                         )}
-                        <div className="flex flex-wrap gap-4 justify-center mt-2">
-                            <div className="flex flex-col items-center">
-                                <span className="font-semibold text-(--mui-palette-text-primary)">
-                                    {assessment.total_points}
-                                </span>
-                                <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    Total Points
-                                </span>
-                            </div>
-                            {assessment.time_limit_minutes && (
-                                <div className="flex flex-col items-center">
-                                    <span className="font-semibold text-(--mui-palette-text-primary)">
-                                        {assessment.time_limit_minutes} min
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        Time Limit
-                                    </span>
-                                </div>
-                            )}
-                            <div className="flex flex-col items-center">
-                                <span className="font-semibold text-(--mui-palette-text-primary)">
-                                    {assessment.max_attempts}
-                                </span>
-                                <span className="text-(--mui-palette-text-secondary) text-xs">
-                                    Max Attempts
-                                </span>
-                            </div>
-                            {assessment.due_at && (
-                                <div className="flex flex-col items-center">
-                                    <span className="font-semibold text-(--mui-palette-text-primary)">
-                                        {new Date(assessment.due_at)
-                                            .toLocaleString()}
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        Due
-                                    </span>
-                                </div>
-                            )}
+                    </div>
+
+                    {/* Metric Badges Grid */}
+                    <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-4 w-full">
+                        <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
+                            <TrophyIcon size={20} className="text-amber-500" />
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
+                                {assessment.total_points} pts
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Total Points</span>
+                        </div>
+
+                        <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
+                            <ClockIcon size={20} className="text-blue-500" />
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
+                                {assessment.time_limit_minutes ? `${assessment.time_limit_minutes} min` : 'Untimed'}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Time Limit</span>
+                        </div>
+
+                        <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
+                            <ShieldCheckIcon size={20} className="text-purple-500" />
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
+                                {attemptsUsed} / {maxAttempts}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Attempts Used</span>
+                        </div>
+
+                        <div className="bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 p-3.5 rounded-2xl flex flex-col items-center gap-1 shadow-2xs">
+                            <CalendarDotsIcon size={20} className="text-emerald-500" />
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm mt-0.5 truncate">
+                                {assessment.due_at ? new Date(assessment.due_at).toLocaleDateString() : 'No Deadline'}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Due Date</span>
                         </div>
                     </div>
-                    <p className="max-w-md text-(--mui-palette-text-secondary) text-center text-xs">
-                        While this assessment is open, the time you spend away from this tab
-                        is recorded and visible to your instructor.
-                    </p>
-                    {(assessment.attempts_used ?? 0) >= assessment.max_attempts && !assessment.has_active_submission
-                        ? (
-                            <div className="flex flex-col items-center gap-2">
-                                <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                                You have completed all attempts for this assessment ({assessment.attempts_used ?? 1} of {assessment.max_attempts}).
-                                </span>
-                                <CommonButton
-                                    size="small"
-                                    variant="contained"
-                                    onClick={function() {
-                                        navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
-                                    }}
-                                >
-                                View Results
-                                </CommonButton>
-                            </div>
-                        )
-                        : (
+
+                    {/* Proctoring Integrity Notice */}
+                    <div className="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 p-4 rounded-xl flex items-start gap-3 text-left w-full max-w-xl">
+                        <EyeIcon size={22} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div className="flex flex-col gap-0.5 text-xs text-amber-900 dark:text-amber-200">
+                            <span className="font-bold">Focus Tracking Enabled</span>
+                            <span>
+                                While taking this assessment, switching browser tabs or leaving the screen is recorded and made visible in your submission logs.
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Action CTA */}
+                    {isMaxedOut ? (
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
+                                You have used all available attempts ({attemptsUsed} of {maxAttempts}).
+                            </span>
                             <CommonButton
-                                size="small"
+                                size="medium"
                                 variant="contained"
-                                onClick={handleStart}
+                                onClick={function() {
+                                    navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}/assessments/${assessmentId}/result`);
+                                }}
                             >
-                                {assessment.has_active_submission
-                                    ? 'Resume Assessment'
-                                    : 'Start Assessment'}
+                                View Assessment Results
                             </CommonButton>
-                        )}
+                        </div>
+                    ) : (
+                        <CommonButton
+                            className="px-8 py-2.5 text-base font-semibold shadow-md"
+                            color="primary"
+                            size="medium"
+                            startIcon={<PlayIcon size={18} weight="bold" />}
+                            variant="contained"
+                            onClick={handleStart}
+                        >
+                            {assessment.has_active_submission ? 'Resume Assessment' : 'Start Assessment Now'}
+                        </CommonButton>
+                    )}
                 </div>
             </CommonCard>
         );
     }
 
+    // Active Assessment Session
     return (
-        <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-            <div className="flex flex-wrap gap-2 items-center justify-between shrink-0">
-                <h1 className="font-semibold min-w-0 text-(--mui-palette-text-primary) text-lg">
-                    {assessment.title}
-                </h1>
-                <div className="flex gap-3 items-center shrink-0">
-                    {!assessment.show_all_questions && (
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            Page {currentPage + 1} of {totalPages}
-                        </span>
-                    )}
+        <CommonCard className="flex flex-col gap-5 h-full p-4 sm:p-6 w-full">
+            {/* Active Test Sticky Header */}
+            <div className="flex flex-wrap gap-3 items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800">
+                <div className="flex flex-col min-w-0">
+                    <h1 className="font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl truncate tracking-tight">
+                        {assessment.title}
+                    </h1>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                        Total {questions.length} Questions {!assessment.show_all_questions && `· Page ${currentPage + 1} of ${totalPages}`}
+                    </span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
                     <AssessmentTimer
                         expiresAt={expiresAt}
                         onExpire={handleSubmit}
                     />
                 </div>
             </div>
-            <div className="flex flex-1 flex-col gap-3 min-h-0 overflow-y-auto">
+
+            {/* Questions Container */}
+            <div className="flex flex-1 flex-col gap-4 min-h-0 overflow-y-auto pr-1">
                 {visibleQuestions.map((question, index) => (
                     <AssessmentQuestionCard
                         control={methods.control}
@@ -323,7 +363,9 @@ export default function TakeAssessmentPage() {
                     />
                 ))}
             </div>
-            <div className="flex flex-col gap-2 justify-between shrink-0 sm:flex-row">
+
+            {/* Bottom Controls Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
                 {!assessment.show_all_questions && (
                     <CommonButton
                         color="inherit"
@@ -340,10 +382,10 @@ export default function TakeAssessmentPage() {
                             setCurrentPage((prev) => prev - 1);
                         }}
                     >
-                        Previous
+                        Previous Page
                     </CommonButton>
                 )}
-                <div className="flex flex-col gap-2 sm:flex-row sm:ml-auto">
+                <div className="flex items-center gap-2.5 sm:ml-auto w-full sm:w-auto justify-end">
                     {!assessment.show_all_questions && !isLastPage && (
                         <CommonButton
                             disabled={isSubmitting}
@@ -359,20 +401,19 @@ export default function TakeAssessmentPage() {
                                 setCurrentPage((prev) => prev + 1);
                             }}
                         >
-                            Next
+                            Next Page
                         </CommonButton>
                     )}
                     {(assessment.show_all_questions || isLastPage) && (
                         <CommonButton
+                            color="primary"
                             disabled={isSubmitting}
                             loading={isSubmitting}
-                            size="small"
+                            size="medium"
                             variant="contained"
                             onClick={handleSubmit}
                         >
-                            {isSubmitting
-                                ? 'Submitting...'
-                                : 'Submit'}
+                            {isSubmitting ? 'Submitting Responses...' : 'Finish & Submit Assessment'}
                         </CommonButton>
                     )}
                 </div>

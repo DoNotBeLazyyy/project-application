@@ -151,15 +151,15 @@ export default function DeanDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.unassigned_sections.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-slate-500 text-sm italic">
                                 Every section in this term has a faculty assigned.
                             </p>
                         )}
                         {dashboard?.unassigned_sections.map((section) => (
                             <button
-                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 cursor-pointer flex gap-3 items-center justify-between p-3.5 rounded-xl text-left shadow-2xs hover:border-blue-400 dark:hover:border-blue-600 transition-all"
                                 key={section.section_id}
                                 type="button"
                                 onClick={function() {
@@ -167,14 +167,14 @@ export default function DeanDashboard() {
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                         {section.course_code} · {section.section_code}
                                     </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                         {section.course_title}
                                     </span>
                                 </div>
-                                <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                                <span className="font-medium shrink-0 text-xs px-2.5 py-1 rounded-md bg-white dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-slate-700 dark:text-slate-300">
                                     {section.enrolled_count} enrolled
                                 </span>
                             </button>
@@ -189,29 +189,29 @@ export default function DeanDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.at_risk_sections.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-slate-500 text-sm italic">
                                 No at-risk students detected this term.
                             </p>
                         )}
                         {dashboard?.at_risk_sections.map((section) => (
                             <div
-                                className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg"
+                                className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 flex gap-3 items-center justify-between p-3.5 rounded-xl shadow-2xs"
                                 key={section.section_id}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                         {section.course_code} · {section.section_code}
                                     </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                         {section.faculty_name ?? 'Unassigned'}
                                         {section.avg_score_pct !== null && (
                                             ` · Avg ${section.avg_score_pct}%`
                                         )}
                                     </span>
                                 </div>
-                                <span className="font-semibold shrink-0 text-(--mui-palette-error-main) text-sm">
+                                <span className="font-semibold shrink-0 text-xs px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/60">
                                     {section.at_risk_count}/{section.enrolled_count} at risk
                                 </span>
                             </div>

@@ -140,15 +140,15 @@ export default function FacultyDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.todays_classes.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-slate-500 text-sm italic">
                                 No classes scheduled today.
                             </p>
                         )}
                         {dashboard?.todays_classes.map((session) => (
                             <button
-                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 cursor-pointer flex gap-3 items-center justify-between p-3.5 rounded-xl text-left shadow-2xs hover:border-blue-400 dark:hover:border-blue-600 transition-all"
                                 key={`${session.section_id}-${session.time_start}`}
                                 type="button"
                                 onClick={function() {
@@ -156,16 +156,16 @@ export default function FacultyDashboard() {
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                         {session.course_code} · {session.section_code}
                                     </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                         {session.course_title}
-                                        {session.room && ` · ${session.room}`}
+                                        {session.room && ` · Room ${session.room}`}
                                     </span>
                                 </div>
-                                <span className="flex gap-1 items-center shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                                    <ClockIcon size={14} />
+                                <span className="flex gap-1.5 items-center shrink-0 font-medium text-xs px-2.5 py-1 rounded-md bg-white dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-slate-700 dark:text-slate-300">
+                                    <ClockIcon size={14} className="text-blue-500" />
                                     {formatTime(session.time_start)} - {formatTime(session.time_end)}
                                 </span>
                             </button>
@@ -180,15 +180,15 @@ export default function FacultyDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.pending_grading.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-slate-500 text-sm italic">
                                 Nothing is waiting to be graded.
                             </p>
                         )}
                         {dashboard?.pending_grading.map((assessment) => (
                             <button
-                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 cursor-pointer flex gap-3 items-center justify-between p-3.5 rounded-xl text-left shadow-2xs hover:border-blue-400 dark:hover:border-blue-600 transition-all"
                                 key={assessment.assessment_id}
                                 type="button"
                                 onClick={function() {
@@ -196,14 +196,14 @@ export default function FacultyDashboard() {
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                         {assessment.title}
                                     </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                         {assessment.course_code} · {assessment.section_code} · {assessment.assessment_type}
                                     </span>
                                 </div>
-                                <span className="font-semibold shrink-0 text-(--mui-palette-warning-main) text-sm">
+                                <span className="font-semibold shrink-0 text-xs px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60">
                                     {assessment.ungraded_count} ungraded
                                 </span>
                             </button>
@@ -220,15 +220,15 @@ export default function FacultyDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.sections.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-slate-500 text-sm italic">
                                 You have no sections this term.
                             </p>
                         )}
                         {dashboard?.sections.map((section) => (
                             <button
-                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 cursor-pointer flex gap-3 items-center justify-between p-3.5 rounded-xl text-left shadow-2xs hover:border-blue-400 dark:hover:border-blue-600 transition-all"
                                 key={section.section_id}
                                 type="button"
                                 onClick={function() {
@@ -236,16 +236,16 @@ export default function FacultyDashboard() {
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                         {section.course_code} · {section.section_code}
                                     </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                         {section.enrolled_count} students
                                         {section.avg_score_pct !== null && ` · Avg ${section.avg_score_pct}%`}
                                     </span>
                                 </div>
                                 {section.at_risk_count > 0 && (
-                                    <span className="font-semibold shrink-0 text-(--mui-palette-error-main) text-sm">
+                                    <span className="font-semibold shrink-0 text-xs px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/60">
                                         {section.at_risk_count} at risk
                                     </span>
                                 )}
@@ -261,37 +261,36 @@ export default function FacultyDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-3 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.at_risk_students.length === 0 && (
-                            <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-4 rounded-lg bg-(--mui-palette-success-main)/5 text-center">
-                                <span className="font-semibold text-(--mui-palette-success-main) text-sm">
+                            <div className="border border-emerald-200 dark:border-emerald-800/80 flex flex-col gap-1 p-5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 text-center">
+                                <span className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">
                                     All Students On Track
                                 </span>
-                                <span className="text-(--mui-palette-text-secondary) text-xs">
+                                <span className="text-slate-500 dark:text-slate-400 text-xs">
                                     No students currently fall below academic safety thresholds.
                                 </span>
                             </div>
                         )}
                         {dashboard?.at_risk_students.map((student) => {
-                            const isHighRisk = student.risk_level === 'High';
                             const missingAlert = student.missing_count >= 2;
 
                             return (
                                 <div
-                                    className="border border-(--mui-palette-divider) flex gap-3 items-center justify-between p-3 rounded-lg hover:border-(--mui-palette-primary-main) transition-colors cursor-pointer"
+                                    className="bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800 flex gap-3 items-center justify-between p-3.5 rounded-xl hover:border-blue-400 dark:hover:border-blue-600 transition-all cursor-pointer shadow-2xs"
                                     key={student.enrollment_id}
                                     onClick={() => navigate(`/faculty/sections/${student.section_id}?tab=students`)}
                                 >
                                     <div className="flex flex-col gap-0.5 min-w-0">
                                         <div className="flex gap-2 items-center">
-                                            <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
+                                            <span className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                                                 {student.full_name}
                                             </span>
-                                            <span className="text-(--mui-palette-text-disabled) text-xs">
+                                            <span className="font-mono text-slate-400 text-xs">
                                                 ({student.student_number})
                                             </span>
                                         </div>
-                                        <span className="text-(--mui-palette-text-secondary) text-xs truncate">
+                                        <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
                                             {student.course_code} · {student.section_code}
                                             {student.avg_score_pct !== null && ` · Avg ${student.avg_score_pct}%`}
                                             {missingAlert && ` · ${student.missing_count} Missing Assessments`}

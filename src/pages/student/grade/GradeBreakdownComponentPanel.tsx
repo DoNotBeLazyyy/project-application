@@ -1,7 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import { formatDate, formatPercent, formatScore, submissionStatusVariant } from '@pages/faculty/sections/student-detail/studentDetailFormat';
-import { CaretRightIcon } from '@phosphor-icons/react';
+import { CaretRightIcon, FileTextIcon } from '@phosphor-icons/react';
 import { MyGradeBreakdownComponent, MyGradeBreakdownItem } from '@type/student-portal.type';
 import { useState } from 'react';
 
@@ -25,45 +25,57 @@ function ItemRow({ item }: ItemRowProps) {
         : (isUnsubmitted ? '0%' : '—');
 
     return (
-        <div className="border-t border-(--mui-palette-divider) gap-2 grid grid-cols-12 items-center px-3 py-2">
-            <div className="col-span-12 flex flex-col gap-0.5 sm:col-span-5">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    {item.title}
-                </span>
-                <span className="text-(--mui-palette-text-secondary) text-xs">
-                    {item.assessment_type}
-                    {' · Due '}
-                    {formatDate(item.due_at)}
-                </span>
-            </div>
-            <div className="col-span-5 sm:col-span-3">
-                <CommonBadgeStatus
-                    label={item.submission_status ?? 'Not Started'}
-                    variant={submissionStatusVariant(item.submission_status)}
-                />
-                {item.is_late && (
-                    <span className="block mt-0.5 text-(--mui-palette-warning-main) text-xs">
-                        Late
+        <div className="border-t border-slate-200/70 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-white/60 dark:bg-zinc-900/60 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 mt-0.5">
+                    <FileTextIcon size={18} />
+                </div>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                        {item.title}
                     </span>
-                )}
-                {isPendingReview && (
-                    <span className="block mt-0.5 text-(--mui-palette-text-secondary) text-xs">
-                        Pending review
+                    <span className="text-slate-500 dark:text-slate-400 text-xs">
+                        {item.assessment_type}
+                        {' · Due '}
+                        {formatDate(item.due_at)}
                     </span>
-                )}
-                {isUnsubmitted && !item.is_counted && (
-                    <span className="block mt-0.5 text-(--mui-palette-text-secondary) text-xs">
-                        No submission (0 pts)
-                    </span>
-                )}
+                </div>
             </div>
-            <div className="col-span-4 sm:col-span-2 text-(--mui-palette-text-primary) text-right text-sm">
-                {earnedDisplay}
-                {' / '}
-                {item.max_points}
-            </div>
-            <div className="col-span-3 sm:col-span-2 text-(--mui-palette-text-secondary) text-right text-sm">
-                {percentDisplay}
+
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 sm:gap-6 shrink-0">
+                <div className="flex flex-col items-start sm:items-end">
+                    <CommonBadgeStatus
+                        label={item.submission_status ?? 'Not Started'}
+                        variant={submissionStatusVariant(item.submission_status)}
+                    />
+                    {item.is_late && (
+                        <span className="mt-0.5 font-medium text-amber-600 dark:text-amber-400 text-[11px]">
+                            Late Submission
+                        </span>
+                    )}
+                    {isPendingReview && (
+                        <span className="mt-0.5 text-slate-500 dark:text-slate-400 text-[11px]">
+                            Pending faculty review
+                        </span>
+                    )}
+                    {isUnsubmitted && !item.is_counted && (
+                        <span className="mt-0.5 text-slate-400 text-[11px]">
+                            No submission (0 pts)
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                            {earnedDisplay}
+                            <span className="font-normal text-slate-400 text-xs"> / {item.max_points}</span>
+                        </span>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                            {percentDisplay}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -86,8 +98,8 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
         ? 'rotate-90'
         : '';
     const caretColorClass = hasItems
-        ? 'text-(--mui-palette-text-secondary)'
-        : 'text-(--mui-palette-text-disabled)';
+        ? 'text-slate-600 dark:text-slate-300'
+        : 'text-slate-400 dark:text-zinc-600';
 
     const effectiveGradedCount = component.items.filter(
         (item) => item.is_counted || item.earned_points !== null
@@ -106,10 +118,10 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
         : '';
 
     return (
-        <div className="border border-(--mui-palette-divider) overflow-hidden rounded-lg">
+        <div className="border border-slate-200/90 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs bg-white dark:bg-zinc-900 transition-all">
             <button
                 aria-expanded={isExpanded}
-                className="flex gap-3 hover:bg-(--mui-palette-action-hover) items-center px-3 py-3 text-left transition-colors w-full"
+                className="flex items-center gap-3.5 hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 p-3.5 sm:p-4 text-left transition-colors w-full cursor-pointer disabled:cursor-default"
                 disabled={!hasItems}
                 type="button"
                 onClick={function() {
@@ -118,46 +130,55 @@ export default function GradeBreakdownComponentPanel({ component, defaultExpande
                     });
                 }}
             >
-                <CaretRightIcon
-                    className={`shrink-0 transition-transform ${rotationClass} ${caretColorClass}`}
-                    size={16}
-                    weight="bold"
-                />
-                <div className="flex flex-col gap-1 min-w-0">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
-                        {component.name}
-                    </span>
-                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                        {`${component.weight}% of the period · ${itemSummary}${pendingSummary}`}
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-800 shrink-0">
+                    <CaretRightIcon
+                        className={`transition-transform duration-200 ${rotationClass} ${caretColorClass}`}
+                        size={14}
+                        weight="bold"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base truncate">
+                            {component.name}
+                        </span>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0">
+                            {component.weight}% Weight
+                        </span>
+                    </div>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs">
+                        {itemSummary}{pendingSummary}
                     </span>
                 </div>
-                <div className="flex flex-1 gap-4 items-center justify-end">
+
+                <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                     <div className="hidden sm:block w-28">
                         <CommonProgressBar
                             percentage={percentage}
                             type="bar"
                         />
                     </div>
-                    <div className="flex flex-col gap-0.5 text-right min-w-[7rem]">
-                        <span className="font-semibold text-(--mui-palette-text-primary) text-sm">
+                    <div className="flex flex-col text-right min-w-[5.5rem] sm:min-w-[7rem]">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                             {effectiveMaxPoints > 0 ? (
                                 <>
                                     {formatScore(component.earned_points)}
-                                    {' / '}
-                                    {effectiveMaxPoints}
+                                    <span className="font-normal text-slate-400 text-xs"> / {effectiveMaxPoints}</span>
                                 </>
                             ) : (
                                 '—'
                             )}
                         </span>
-                        <span className="text-(--mui-palette-text-secondary) text-xs">
-                            {`${formatScore(component.weighted_score)} of ${component.weight} pts`}
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {`${formatScore(component.weighted_score)} / ${component.weight} pts`}
                         </span>
                     </div>
                 </div>
             </button>
+
             {isExpanded && hasItems && (
-                <div className="bg-(--mui-palette-action-hover) flex flex-col">
+                <div className="border-t border-slate-200 dark:border-zinc-800 flex flex-col">
                     {component.items.map(function(item) {
                         return (
                             <ItemRow

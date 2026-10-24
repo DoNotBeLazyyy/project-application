@@ -3,21 +3,38 @@ import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import LinkifiedText from '@components/text/LinkifiedText';
 import {
-    ArrowLeftIcon, ArrowLineDownIcon, CheckCircleIcon, ClockIcon, LockIcon, SparkleIcon, TrophyIcon, XCircleIcon
+    ArrowLeftIcon,
+    ArrowLineDownIcon,
+    CalendarDotsIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    FileTextIcon,
+    LockIcon,
+    QuestionIcon,
+    ShieldCheckIcon,
+    SparkleIcon,
+    TargetIcon,
+    TrophyIcon,
+    XCircleIcon
 } from '@phosphor-icons/react';
 import { getAttachmentSignedUrl } from '@services/assessment.service';
 import { getMyAssessmentResult } from '@services/student-portal.service';
 import { getFileUrl } from '@services/storage.service';
 import { StudentAssessmentResult, StudentResultAnswer, StudentResultRubric } from '@type/student-portal.type';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const CHOICE_TYPES = ['Multiple Choice', 'True or False', 'Matching'];
 
 function formatDateTime(value: string | null): string {
     return value
-        ? new Date(value)
-            .toLocaleString()
+        ? new Date(value).toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        })
         : '—';
 }
 
@@ -42,20 +59,30 @@ async function downloadAttachment(fileUrl: string, fileName: string) {
     anchor.click();
 }
 
-interface DetailFieldProps {
+interface ResultDetailTileProps {
+    icon: ReactNode;
+    iconBg: string;
+    iconColor: string;
     label: string;
     value: string;
 }
 
-function DetailField({ label, value }: DetailFieldProps) {
+function ResultDetailTile({ icon, iconBg, iconColor, label, value }: ResultDetailTileProps) {
     return (
-        <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                {label}
-            </span>
-            <span className="font-medium text-(--mui-palette-text-primary) text-sm wrap-break-word">
-                {value}
-            </span>
+        <div className="bg-slate-50/70 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-3 p-3 rounded-2xl shadow-2xs min-w-0">
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+                <span className={`flex items-center justify-center ${iconColor}`}>
+                    {icon}
+                </span>
+            </div>
+            <div className="flex flex-col gap-0.5 min-w-0 text-left">
+                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 truncate">
+                    {value}
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {label}
+                </span>
+            </div>
         </div>
     );
 }
@@ -67,23 +94,21 @@ interface NoticeBannerProps {
 
 function NoticeBanner({ icon, message }: NoticeBannerProps) {
     return (
-        <div className="border border-(--mui-palette-divider) flex gap-2 items-center p-3 rounded-lg">
-            {icon === 'lock'
-                ? (
-                    <LockIcon
-                        className="text-(--mui-palette-text-secondary) shrink-0"
-                        size={18}
-                        weight="fill"
-                    />
-                )
-                : (
-                    <ClockIcon
-                        className="text-(--mui-palette-warning-main) shrink-0"
-                        size={18}
-                        weight="fill"
-                    />
-                )}
-            <p className="text-(--mui-palette-text-secondary) text-sm">
+        <div className="border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex gap-3 items-center p-3.5 rounded-xl">
+            {icon === 'lock' ? (
+                <LockIcon
+                    className="text-slate-500 dark:text-slate-400 shrink-0"
+                    size={20}
+                    weight="fill"
+                />
+            ) : (
+                <ClockIcon
+                    className="text-amber-500 shrink-0"
+                    size={20}
+                    weight="fill"
+                />
+            )}
+            <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm m-0">
                 {message}
             </p>
         </div>
@@ -98,40 +123,45 @@ interface RubricBreakdownProps {
 function RubricBreakdown({ resultsAvailable, rubric }: RubricBreakdownProps) {
     return (
         <div className="flex flex-col gap-3">
-            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                Rubric — {rubric.title}
-            </span>
-            {rubric.criteria.map(function(criterion) {
-                return (
-                    <div
-                        className="border border-(--mui-palette-divider) flex flex-col gap-2 p-4 rounded-lg"
-                        key={criterion.id}
-                    >
-                        <div className="flex gap-2 items-start justify-between">
-                            <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                    {criterion.title}
-                                </span>
-                                {criterion.description && (
-                                    <span className="text-(--mui-palette-text-secondary) text-xs">
-                                        {criterion.description}
+            <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                    Rubric Evaluation — {rubric.title}
+                </span>
+            </div>
+            <div className="grid grid-cols-1 gap-2.5">
+                {rubric.criteria.map(function(criterion) {
+                    return (
+                        <div
+                            className="border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col gap-2 p-4 rounded-xl shadow-2xs"
+                            key={criterion.id}
+                        >
+                            <div className="flex gap-2 items-start justify-between">
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                        {criterion.title}
                                     </span>
-                                )}
+                                    {criterion.description && (
+                                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                                            {criterion.description}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="font-bold text-xs sm:text-sm px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0">
+                                    {resultsAvailable
+                                        ? `${formatScore(criterion.points_earned)} / ${criterion.max_points} pts`
+                                        : `${criterion.max_points} pts`}
+                                </span>
                             </div>
-                            <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                                {resultsAvailable
-                                    ? `${formatScore(criterion.points_earned)} / ${criterion.max_points}`
-                                    : criterion.max_points} pts
-                            </span>
+                            {resultsAvailable && criterion.feedback && (
+                                <div className="bg-slate-50 dark:bg-zinc-800/60 p-2.5 rounded-lg text-xs text-slate-600 dark:text-slate-300">
+                                    <span className="font-semibold">Instructor Feedback: </span>
+                                    {criterion.feedback}
+                                </div>
+                            )}
                         </div>
-                        {resultsAvailable && criterion.feedback && (
-                            <p className="text-(--mui-palette-text-secondary) text-xs">
-                                Note: {criterion.feedback}
-                            </p>
-                        )}
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -147,20 +177,21 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
     const isChoiceBased = CHOICE_TYPES.includes(answer.question_type);
 
     return (
-        <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
-            <div className="flex gap-2 items-start justify-between">
-                <p className="font-medium min-w-0 text-(--mui-palette-text-primary) text-sm wrap-break-word">
-                    {index + 1}. {answer.question_text}
+        <div className="border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col gap-3.5 p-4 rounded-xl shadow-2xs">
+            <div className="flex gap-3 items-start justify-between">
+                <p className="font-semibold min-w-0 text-slate-900 dark:text-slate-100 text-sm sm:text-base wrap-break-word m-0">
+                    <span className="text-slate-400 font-mono mr-1.5">{index + 1}.</span>
+                    {answer.question_text}
                 </p>
-                <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
+                <span className="font-bold text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 shrink-0">
                     {resultsAvailable && hasSubmission
-                        ? `${formatScore(answer.points_earned)} / ${answer.points}`
-                        : answer.points} pts
+                        ? `${formatScore(answer.points_earned)} / ${answer.points} pts`
+                        : `${answer.points} pts`}
                 </span>
             </div>
 
             {isChoiceBased && (
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                     {answer.choices.map(function(choice) {
                         const isSelected = choice.id === answer.choice_id;
                         const showCorrect = resultsAvailable && choice.is_correct === true;
@@ -168,38 +199,37 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
 
                         return (
                             <div
-                                className="border flex flex-wrap gap-2 items-center px-3 py-2 rounded text-sm"
-                                key={choice.id}
-                                style={{
-                                    borderColor: showCorrect
-                                        ? 'var(--mui-palette-success-main)'
+                                className={`border flex flex-wrap gap-2.5 items-center px-3.5 py-2.5 rounded-xl text-sm transition-all ${
+                                    showCorrect
+                                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200'
                                         : showWrongSelected
-                                            ? 'var(--mui-palette-error-main)'
+                                            ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200'
                                             : isSelected
-                                                ? 'var(--mui-palette-primary-main)'
-                                                : 'var(--mui-palette-divider)'
-                                }}
+                                                ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200'
+                                                : 'border-slate-200/80 dark:border-zinc-800 text-slate-800 dark:text-slate-200'
+                                }`}
+                                key={choice.id}
                             >
                                 {showCorrect && (
                                     <CheckCircleIcon
-                                        className="text-(--mui-palette-success-main) shrink-0"
-                                        size={16}
+                                        className="text-emerald-600 dark:text-emerald-400 shrink-0"
+                                        size={18}
                                         weight="fill"
                                     />
                                 )}
                                 {showWrongSelected && (
                                     <XCircleIcon
-                                        className="text-(--mui-palette-error-main) shrink-0"
-                                        size={16}
+                                        className="text-rose-600 dark:text-rose-400 shrink-0"
+                                        size={18}
                                         weight="fill"
                                     />
                                 )}
-                                <span className="min-w-0 text-(--mui-palette-text-primary) wrap-break-word">
+                                <span className="min-w-0 wrap-break-word font-medium flex-1">
                                     {choice.choice_text}
                                 </span>
                                 {isSelected && (
-                                    <span className="ml-auto shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                                        Your answer
+                                    <span className="font-semibold text-xs px-2 py-0.5 rounded-md bg-white/80 dark:bg-zinc-800 shrink-0">
+                                        Your Choice
                                     </span>
                                 )}
                             </div>
@@ -209,70 +239,33 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
             )}
 
             {!isChoiceBased && hasSubmission && (
-                <div className="flex flex-col gap-1">
-                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs">
-                        Your Answer
+                <div className="flex flex-col gap-1.5">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                        Submitted Response
                     </span>
-                    {answer.answer_text
-                        ? (
-                            <p className="bg-(--mui-palette-action-hover) break-words p-2 rounded text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                                <LinkifiedText text={answer.answer_text} />
-                            </p>
-                        )
-                        : answer.file_attachments.length > 0
-                            ? (
-                                <div className="flex flex-col gap-1 items-start">
-                                    {answer.file_attachments.map(function(file) {
-                                        return (
-                                            <button
-                                                className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word"
-                                                key={file.path}
-                                                type="button"
-                                                onClick={function() {
-                                                    openSubmissionFile(file.path);
-                                                }}
-                                            >
-                                                {file.name}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )
-                            : (
-                                <p className="italic text-(--mui-palette-text-disabled) text-sm">
-                                    No answer provided
-                                </p>
-                            )}
-                </div>
-            )}
-
-            {resultsAvailable && hasSubmission && answer.is_correct !== null && (
-                <span
-                    className="font-medium text-xs"
-                    style={{
-                        color: answer.is_correct
-                            ? 'var(--mui-palette-success-main)'
-                            : 'var(--mui-palette-error-main)'
-                    }}
-                >
-                    {answer.is_correct
-                        ? '✓ Correct'
-                        : '✗ Incorrect'}
-                </span>
-            )}
-            {resultsAvailable && hasSubmission && answer.grader_notes && (
-                <p className="text-(--mui-palette-text-secondary) text-xs">
-                    Note: {answer.grader_notes}
-                </p>
-            )}
-            {resultsAvailable && answer.explanation && (
-                <div className="bg-(--mui-palette-action-hover) flex flex-col gap-0.5 p-2 rounded">
-                    <span className="font-medium text-(--mui-palette-text-secondary) text-xs uppercase">
-                        Explanation
-                    </span>
-                    <p className="text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
-                        {answer.explanation}
-                    </p>
+                    {answer.answer_text ? (
+                        <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/70 dark:border-zinc-800/80 break-words p-3.5 rounded-xl text-slate-900 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed">
+                            <LinkifiedText text={answer.answer_text} />
+                        </div>
+                    ) : answer.file_attachments.length > 0 ? (
+                        <div className="flex flex-col gap-1 items-start">
+                            {answer.file_attachments.map(function(file) {
+                                return (
+                                    <button
+                                        className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word cursor-pointer"
+                                        key={file.path}
+                                        type="button"
+                                        onClick={() => downloadAttachment(file.path, file.name)}
+                                    >
+                                        <FileTextIcon className="inline mr-1.5 shrink-0" size={16} />
+                                        {file.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <span className="text-slate-400 italic text-xs">No response provided.</span>
+                    )}
                 </div>
             )}
         </div>
@@ -326,8 +319,8 @@ export default function AssessmentResultPage() {
         : null;
 
     return (
-        <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-            <div className="flex gap-3 items-center">
+        <CommonCard className="flex flex-col gap-5 h-full p-4 sm:p-6 w-full">
+            <div className="flex gap-3 items-center pb-3 border-b border-slate-200/80 dark:border-zinc-800">
                 <CommonButton
                     color="inherit"
                     size="small"
@@ -337,53 +330,47 @@ export default function AssessmentResultPage() {
                         navigate(`/student/subjects/${result?.enrollment_id || enrollmentId}`);
                     }}
                 >
-                    Back
+                    Back to Subject
                 </CommonButton>
             </div>
 
             {!result && isLoaded && (
-                <div className="flex flex-1 items-center justify-center">
-                    <p className="text-(--mui-palette-text-secondary) text-sm">
-                        Assessment not available.
+                <div className="flex flex-1 items-center justify-center py-16">
+                    <p className="text-slate-500 text-sm">
+                        Assessment result not available.
                     </p>
                 </div>
             )}
 
             {!result && !isLoaded && (
-                <p className="text-(--mui-palette-text-secondary) text-sm">Loading...</p>
+                <div className="py-16 text-center text-slate-500 text-sm">Loading results…</div>
             )}
 
             {result && (
-                <div className="flex flex-1 flex-col gap-4 min-h-0 overflow-y-auto">
+                <div className="flex flex-1 flex-col gap-5 min-h-0 overflow-y-auto pr-1">
+                    {/* Real-time Result Banner */}
                     {(isJustSubmitted || result.has_submission) && (
-                        <div className="bg-(--mui-tokens-color-brand-50) border border-(--mui-tokens-color-brand-100) flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-xl">
-                            <div className="flex gap-3 items-center">
-                                <div className="bg-(--mui-tokens-color-brand-900) p-2.5 rounded-lg text-white">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200/80 dark:border-blue-800/80 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between p-4 rounded-2xl shadow-2xs">
+                            <div className="flex gap-3.5 items-center">
+                                <div className="bg-blue-600 dark:bg-blue-500 p-2.5 rounded-xl text-white shrink-0">
                                     <SparkleIcon size={24} weight="fill" />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
-                                    <span className="font-semibold text-(--mui-tokens-color-brand-950) text-base">
-                                        Assessment Submitted &amp; Transmuted
+                                    <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                                        Assessment Submitted &amp; Recorded
                                     </span>
-                                    <p className="m-0 text-(--mui-tokens-color-neutral-600) text-xs md:text-sm">
-                                        Transmuted Grade Scale:{' '}
-                                        <strong>{computeTransmutedGrade(result.final_score ?? result.raw_score, result.total_points)}</strong>.{' '}
-                                        Your GWA &amp; Latin Honors Trajectory have been recalculated in real time.
+                                    <p className="m-0 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
+                                        Computed Grade Scale:{' '}
+                                        <strong className="text-blue-700 dark:text-blue-300">
+                                            {computeTransmutedGrade(result.final_score ?? result.raw_score, result.total_points)}
+                                        </strong>
                                     </p>
                                 </div>
                             </div>
-                            <CommonButton
-                                size="small"
-                                startIcon={<TrophyIcon size={16} weight="fill" />}
-                                variant="contained"
-                                onClick={function() {
-                                    navigate('/student/insight');
-                                }}
-                            >
-                                View Achievement Tracker
-                            </CommonButton>
                         </div>
                     )}
+
+                    {/* Assessment Meta Header */}
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap gap-2 items-center">
                             <CommonBadgeStatus label={result.assessment_type} variant="info" />
@@ -396,73 +383,92 @@ export default function AssessmentResultPage() {
                             />
                             {passed !== null && (
                                 <CommonBadgeStatus
-                                    label={passed
-                                        ? 'Passed'
-                                        : 'Failed'}
-                                    variant={passed
-                                        ? 'success'
-                                        : 'error'}
+                                    label={passed ? 'Passing' : 'Below Passing'}
+                                    variant={passed ? 'success' : 'error'}
                                 />
                             )}
                             {result.is_late && (
-                                <CommonBadgeStatus label="Late" variant="warning" />
+                                <CommonBadgeStatus label="Late Submission" variant="warning" />
                             )}
                         </div>
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-lg md:text-xl">
+                        <h1 className="font-bold text-slate-900 dark:text-slate-100 text-xl sm:text-2xl tracking-tight">
                             {result.title}
                         </h1>
                         {result.description && (
-                            <p className="text-(--mui-palette-text-secondary) text-sm whitespace-pre-wrap">
+                            <p className="text-slate-600 dark:text-slate-400 text-sm whitespace-pre-wrap leading-relaxed">
                                 {result.description}
                             </p>
                         )}
                     </div>
 
-                    <div className="gap-4 grid grid-cols-2 md:grid-cols-4">
-                        <DetailField
-                            label="Score"
+                    {/* Metric Cards Grid */}
+                    <div className="gap-3 sm:gap-4 grid grid-cols-2 md:grid-cols-4">
+                        <ResultDetailTile
+                            icon={<TrophyIcon size={20} />}
+                            iconBg="bg-blue-50 dark:bg-blue-950/60"
+                            iconColor="text-blue-600 dark:text-blue-400"
+                            label="Final Score"
                             value={!result.has_submission
                                 ? 'Not attempted'
                                 : result.results_available
                                     ? `${formatScore(result.final_score)} / ${result.total_points}`
-                                    : 'Pending'}
+                                    : 'Pending Grading'}
                         />
-                        <DetailField
-                            label="Passing"
-                            value={result.passing_points !== null
-                                ? `${result.passing_points} pts`
-                                : '—'}
+                        <ResultDetailTile
+                            icon={<TargetIcon size={20} />}
+                            iconBg="bg-emerald-50 dark:bg-emerald-950/60"
+                            iconColor="text-emerald-600 dark:text-emerald-400"
+                            label="Passing Mark"
+                            value={result.passing_points !== null ? `${result.passing_points} pts` : '—'}
                         />
-                        <DetailField
+                        <ResultDetailTile
+                            icon={<ShieldCheckIcon size={20} />}
+                            iconBg="bg-purple-50 dark:bg-purple-950/60"
+                            iconColor="text-purple-600 dark:text-purple-400"
                             label="Attempt"
-                            value={`${result.attempt_number ?? 0} / ${result.max_attempts}`}
+                            value={`${result.attempt_number ?? 0} of ${result.max_attempts}`}
                         />
-                        <DetailField
-                            label="Questions"
+                        <ResultDetailTile
+                            icon={<QuestionIcon size={20} />}
+                            iconBg="bg-amber-50 dark:bg-amber-950/60"
+                            iconColor="text-amber-600 dark:text-amber-400"
+                            label="Total Items"
                             value={String(result.question_count)}
                         />
-                        <DetailField
-                            label="Opens"
+                        <ResultDetailTile
+                            icon={<ClockIcon size={20} />}
+                            iconBg="bg-slate-100 dark:bg-zinc-800"
+                            iconColor="text-slate-600 dark:text-slate-300"
+                            label="Opened"
                             value={formatDateTime(result.opens_at)}
                         />
-                        <DetailField
-                            label="Due"
+                        <ResultDetailTile
+                            icon={<CalendarDotsIcon size={20} />}
+                            iconBg="bg-slate-100 dark:bg-zinc-800"
+                            iconColor="text-slate-600 dark:text-slate-300"
+                            label="Due Date"
                             value={formatDateTime(result.due_at)}
                         />
-                        <DetailField
-                            label="Closes"
+                        <ResultDetailTile
+                            icon={<ClockIcon size={20} />}
+                            iconBg="bg-slate-100 dark:bg-zinc-800"
+                            iconColor="text-slate-600 dark:text-slate-300"
+                            label="Cutoff"
                             value={formatDateTime(result.closes_at)}
                         />
-                        <DetailField
-                            label="Submitted"
+                        <ResultDetailTile
+                            icon={<CheckCircleIcon size={20} />}
+                            iconBg="bg-indigo-50 dark:bg-indigo-950/60"
+                            iconColor="text-indigo-600 dark:text-indigo-400"
+                            label="Submitted At"
                             value={formatDateTime(result.submitted_at)}
                         />
                     </div>
 
                     {result.attachments.length > 0 && (
                         <div className="flex flex-col gap-2">
-                            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                                Attachments
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
+                                Reference Materials &amp; Attachments
                             </span>
                             <div className="flex flex-wrap gap-2">
                                 {result.attachments.map(function(file) {
@@ -485,11 +491,11 @@ export default function AssessmentResultPage() {
                     )}
 
                     {result.has_submission && result.results_available && result.feedback && (
-                        <div className="border border-(--mui-palette-divider) flex flex-col gap-1 p-3 rounded-lg">
-                            <span className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                                Instructor Feedback
+                        <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col gap-1.5 p-4 rounded-xl text-xs">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                Instructor Evaluation Feedback
                             </span>
-                            <p className="text-(--mui-palette-text-primary) text-sm whitespace-pre-wrap">
+                            <p className="text-slate-700 dark:text-slate-300 text-sm m-0 whitespace-pre-wrap leading-relaxed">
                                 {result.feedback}
                             </p>
                         </div>
@@ -526,10 +532,8 @@ export default function AssessmentResultPage() {
 
                     {result.answers.length > 0 && (
                         <div className="flex flex-col gap-3">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                {result.has_submission
-                                    ? 'Your Answers'
-                                    : 'Questions'}
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                                {result.has_submission ? 'Your Submitted Responses' : 'Assessment Questions'}
                             </span>
                             {result.answers.map(function(answer, index) {
                                 return (
