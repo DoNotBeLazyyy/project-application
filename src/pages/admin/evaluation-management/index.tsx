@@ -25,7 +25,7 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
-    { field: 'sequence', label: 'Order' },
+    { field: 'sequence', label: 'Section Sequence' },
     { field: 'title', label: 'Section' }
 ];
 
@@ -242,7 +242,7 @@ export default function EvaluationManagement() {
             {
                 field: 'sequence',
                 flex: 1,
-                headerName: 'Order',
+                headerName: 'Section Sequence',
                 maxWidth: 100,
                 mobileCard: 'meta',
                 sortable: true

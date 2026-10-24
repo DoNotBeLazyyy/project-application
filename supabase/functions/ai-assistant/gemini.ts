@@ -116,7 +116,8 @@ export async function generateReply(
                     'Content-Type': 'application/json',
                     'x-goog-api-key': apiKey
                 },
-                body: requestBody
+                body: requestBody,
+                signal: AbortSignal.timeout(12000)
             });
         }
         catch (error) {

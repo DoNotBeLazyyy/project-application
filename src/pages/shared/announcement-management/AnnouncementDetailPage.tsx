@@ -3,8 +3,8 @@ import AnnouncementForm from '@pages/shared/announcement-management/Announcement
 import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
 import EventViewerCard from '@pages/shared/announcement-management/EventViewerCard';
-import { createAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
-import { createEvent, getEventById, updateEvent } from '@services/event.service';
+import { createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
+import { createEvent, deleteEvent, getEventById, updateEvent } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
 import { AnnouncementAudience, CommunicationFormValues, CommunicationItemType } from '@type/announcement.type';
 import { EventFormValues } from '@type/event.type';
@@ -13,7 +13,7 @@ import { canManageCommunication } from '@utils/communication.util';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 const FORM_ID = 'communication-form';
 
@@ -60,7 +60,9 @@ export default function AnnouncementDetailPage() {
         created_by_role?: string | null;
         target_audience?: AnnouncementAudience;
     } | null>(null);
+    const [loadedItemType, setLoadedItemType] = useState<CommunicationItemType | null>(null);
 
+    const navigate = useNavigate();
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
     const basePath = (location.state as { from?: string } | null)?.from || announcementBasePath;
     const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
@@ -111,6 +113,7 @@ export default function AnnouncementDetailPage() {
                     created_by_role: d.created_by_role,
                     target_audience: d.target_audience
                 });
+                setLoadedItemType('Event');
                 return {
                     data: {
                         all_day: d.all_day,
@@ -146,6 +149,7 @@ export default function AnnouncementDetailPage() {
                     created_by_role: d.created_by_role,
                     target_audience: d.target_audience
                 });
+                setLoadedItemType('Announcement');
                 return {
                     data: {
                         all_day: false,
@@ -183,6 +187,7 @@ export default function AnnouncementDetailPage() {
                     created_by_role: d.created_by_role,
                     target_audience: d.target_audience
                 });
+                setLoadedItemType('Announcement');
                 return {
                     data: {
                         all_day: false,
@@ -218,6 +223,7 @@ export default function AnnouncementDetailPage() {
                     created_by_role: d.created_by_role,
                     target_audience: d.target_audience
                 });
+                setLoadedItemType('Event');
                 return {
                     data: {
                         all_day: d.all_day,
@@ -325,11 +331,22 @@ export default function AnnouncementDetailPage() {
                 target_audience: audience,
                 title: values.title.trim()
             };
+
+            if (loadedItemType === 'Announcement') {
+                const createRes = await createEvent(eventPayload);
+                if (createRes.data) {
+                    await deleteAnnouncement(id);
+                    navigate(basePath, { replace: true });
+                    return { data: createRes.data as unknown as CommunicationFormValues, error: null };
+                }
+                return { data: null, error: createRes.error };
+            }
+
             return updateEvent(id, eventPayload);
         }
 
         const body = (values.content || values.description || '').trim();
-        return updateAnnouncement(id, {
+        const annPayload = {
             attachments: values.attachments,
             content: body,
             expires_at: values.expires_at || '',
@@ -337,7 +354,19 @@ export default function AnnouncementDetailPage() {
             section_ids: sectionIds,
             target_audience: audience,
             title: values.title.trim()
-        });
+        };
+
+        if (loadedItemType === 'Event') {
+            const createRes = await createAnnouncement(annPayload);
+            if (createRes.data) {
+                await deleteEvent(id);
+                navigate(basePath, { replace: true });
+                return { data: createRes.data as unknown as CommunicationFormValues, error: null };
+            }
+            return { data: null, error: createRes.error };
+        }
+
+        return updateAnnouncement(id, annPayload);
     }
 
     const isStudent = currentRole === 'Student';

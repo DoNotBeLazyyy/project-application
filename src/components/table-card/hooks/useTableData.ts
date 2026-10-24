@@ -19,6 +19,8 @@ export function useTableData<T extends FieldValues>({
     const activeSearchRef = useRef('');
     const gridApiRef = useRef<GridApi | null>(null);
     const sortSourceRef = useRef<'modal' | 'grid' | null>(null);
+    const internalSortRef = useRef<SortStringDto[]>([]);
+    const fetchSequenceRef = useRef(0);
     const [internalRowData, setInternalRowData] = useState<T[]>([]);
     const [internalSort, setInternalSort] = useState<SortStringDto[]>([]);
     const [pagination, setPagination] = useState<PaginationData>(DEFAULT_PAGINATION);
@@ -39,7 +41,11 @@ export function useTableData<T extends FieldValues>({
             setIsLoading(true);
         }
         try {
+            const seq = ++fetchSequenceRef.current;
             const result = await onFetchRef.current?.(page, size, search, sort);
+            if (seq !== fetchSequenceRef.current) {
+                return;
+            }
             if (result?.data) {
                 const incomingRows = (result.data.content ?? []) as T[];
                 if (isAppending) {
@@ -65,7 +71,7 @@ export function useTableData<T extends FieldValues>({
     }
 
     useEffect(() => {
-        loadData(1, pagination.rowsPerPage, activeSearchRef.current, internalSort);
+        loadData(1, pagination.rowsPerPage, activeSearchRef.current, internalSortRef.current);
     }, [...dependencies]);
 
     function setGridApi(api: GridApi | null) {
@@ -83,7 +89,7 @@ export function useTableData<T extends FieldValues>({
                 pagination.currentPage + 1,
                 pagination.rowsPerPage,
                 activeSearchRef.current,
-                internalSort,
+                internalSortRef.current,
                 true
             );
         }
@@ -97,12 +103,12 @@ export function useTableData<T extends FieldValues>({
             ? updater(pagination)
             : updater;
         setPagination(next);
-        loadData(next.currentPage, next.rowsPerPage, activeSearchRef.current, internalSort);
+        loadData(next.currentPage, next.rowsPerPage, activeSearchRef.current, internalSortRef.current);
     }
 
     function handleSearchSubmit() {
         activeSearchRef.current = searchQuery;
-        loadData(1, pagination.rowsPerPage, searchQuery, internalSort);
+        loadData(1, pagination.rowsPerPage, searchQuery, internalSortRef.current);
     }
 
     function handleSearchClear() {
@@ -112,11 +118,12 @@ export function useTableData<T extends FieldValues>({
         setSearchQuery('');
 
         if (hadActiveSearch) {
-            loadData(1, pagination.rowsPerPage, '', internalSort);
+            loadData(1, pagination.rowsPerPage, '', internalSortRef.current);
         }
     }
 
     function handleApplySort(sort: SortStringDto[], source: 'modal' | 'grid' = 'modal') {
+        internalSortRef.current = sort;
         setInternalSort(sort);
         sortSourceRef.current = source;
 

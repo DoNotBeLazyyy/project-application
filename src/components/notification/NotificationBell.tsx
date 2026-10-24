@@ -266,13 +266,13 @@ export default function NotificationBell() {
                                     <span
                                         className={
                                             item.is_read
-                                                ? 'line-clamp-2 text-(--mui-palette-text-disabled) text-xs'
+                                                ? 'line-clamp-2 text-(--mui-palette-text-secondary) opacity-80 text-xs'
                                                 : 'line-clamp-2 text-(--mui-palette-text-secondary) text-xs'
                                         }
                                     >
                                         {item.message}
                                     </span>
-                                    <span className="text-(--mui-palette-text-disabled) text-xs">
+                                    <span className="text-(--mui-palette-text-secondary) opacity-70 text-xs">
                                         {formatDate(new Date(item.created_at))}
                                     </span>
                                 </span>

@@ -36,7 +36,7 @@ export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
     {
         step: 1,
         title: 'Section Details & Scope',
-        subtitle: 'Define section title, order, program target mode, and description.'
+        subtitle: 'Define section title, section sequence, program target mode, and section description.'
     },
     {
         step: 2,
@@ -319,7 +319,7 @@ export default function EvaluationWizardModal({
         },
         {
             name: 'sequence',
-            label: 'Order',
+            label: 'Section Sequence',
             disabled: readOnly,
             rules: readOnly
                 ? undefined
@@ -381,7 +381,7 @@ export default function EvaluationWizardModal({
             }
         },
         {
-            label: 'Description',
+            label: 'Section Description',
             name: 'description',
             disabled: readOnly,
             fullWidth: true,

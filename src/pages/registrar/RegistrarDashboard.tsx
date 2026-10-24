@@ -39,7 +39,7 @@ const STAT_CARDS: RegistrarStatCard[] = [
         icon: <ClipboardTextIcon size={24} />,
         iconBg: 'bg-[var(--mui-palette-info-50)]',
         iconColor: 'text-[var(--mui-palette-info-main)]',
-        label: 'Enrollments This Term',
+        label: 'Course Enrollments This Term',
         statKey: 'enrollments_this_term',
         to: '/registrar/enrollment-management'
     },

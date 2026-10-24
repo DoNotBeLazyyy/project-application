@@ -33,8 +33,8 @@ const FILTER_FORM_ID = 'filter-course-form';
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
     { key: 'code', label: 'Course Code', hint: 'e.g. COCS101 (optional, auto-generated if blank)', sample: 'COCS101', required: false, aliases: ['course', 'subject_code', 'code'] },
     { key: 'title', label: 'Course Title', hint: 'e.g. Introduction to Computing', sample: 'Introduction to Computing', aliases: ['course_title', 'name', 'title'] },
-    { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS', sample: 'CCS', aliases: ['department', 'dept_code', 'dept'] },
-    { key: 'course_type_code', label: 'Course Type Code', hint: 'e.g. LECTURE', sample: 'LECTURE', aliases: ['course_type', 'type_code', 'type'] },
+    { key: 'department_code', label: 'Department Code', hint: 'e.g. CITE', sample: 'CITE', aliases: ['department', 'dept_code', 'dept'] },
+    { key: 'course_type_code', label: 'Course Type Code', hint: 'e.g. Lecture', sample: 'Lecture', aliases: ['course_type', 'type_code', 'type'] },
     { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 3', sample: '3', aliases: ['lec_units', 'lecture'] },
     { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 0', sample: '0', aliases: ['lab_units', 'lab', 'laboratory'] },
     { key: 'credit_hours', label: 'Credit Hours', hint: 'e.g. 3 (optional)', sample: '3', required: false, aliases: ['hours'] },

@@ -1,3 +1,4 @@
+import { callRpc } from '@services/supabase.wrapper';
 import { listMyEventsFeed } from '@services/event.service';
 import { getAcademicYearCalendarDetails, listSchoolYears } from '@services/school-year.service';
 import { getStudentDashboard, getStudentSchedule } from '@services/student-portal.service';
@@ -267,6 +268,67 @@ export function useCalendarData(currentDate: Date) {
                                     targetUrl: `/student/subjects/${a.enrollment_id}/assessments/${a.id}`
                                 }
                             });
+                        }
+                    }
+                }
+            }
+
+            if (role === 'Dean' || role === 'Faculty' || role === 'Admin') {
+                const schedRes = await callRpc<{
+                    section_id: string;
+                    section_code: string;
+                    course_code: string;
+                    course_title: string;
+                    faculty_name: string;
+                    room: string | null;
+                    day_of_week: DayOfWeek;
+                    time_start: string;
+                    time_end: string;
+                }[]>('fn_get_calendar_section_schedules');
+
+                if (schedRes.data && Array.isArray(schedRes.data)) {
+                    for (const slot of schedRes.data) {
+                        const startTime = parseTimeToHoursAndMinutes(slot.time_start);
+                        const endTime = parseTimeToHoursAndMinutes(slot.time_end);
+
+                        const cursor = new Date(rangeStart);
+                        while (cursor <= rangeEnd) {
+                            const dayName = DAY_NAME_MAP[cursor.getDay()];
+                            if (dayName === slot.day_of_week) {
+                                const classStart = new Date(
+                                    cursor.getFullYear(),
+                                    cursor.getMonth(),
+                                    cursor.getDate(),
+                                    startTime.hours,
+                                    startTime.minutes
+                                );
+                                const classEnd = new Date(
+                                    cursor.getFullYear(),
+                                    cursor.getMonth(),
+                                    cursor.getDate(),
+                                    endTime.hours,
+                                    endTime.minutes
+                                );
+
+                                loadedEvents.push({
+                                    id: `class-${slot.section_id}-${slot.day_of_week}-${slot.time_start}-${cursor.toISOString().slice(0, 10)}`,
+                                    title: `${slot.course_code}: ${slot.section_code}`,
+                                    description: `${slot.course_title} • Instructor: ${slot.faculty_name || 'TBA'}`,
+                                    location: slot.room ? `Room ${slot.room}` : 'Assigned Classroom',
+                                    start: classStart,
+                                    end: classEnd,
+                                    allDay: false,
+                                    category: 'class',
+                                    metadata: {
+                                        courseCode: slot.course_code,
+                                        sectionCode: slot.section_code,
+                                        sectionId: slot.section_id,
+                                        room: slot.room,
+                                        authorName: slot.faculty_name
+                                    }
+                                });
+                            }
+                            cursor.setDate(cursor.getDate() + 1);
                         }
                     }
                 }

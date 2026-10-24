@@ -252,10 +252,11 @@ export const inputOverrides: ComponentTheme = {
                     backgroundColor: 'var(--mui-tokens-color-red-100)'
                 },
                 '&.common_textarea_input.MuiInputBase-multiline': {
-                    backgroundColor: 'var(--mui-tokens-color-common-white)'
+                    backgroundColor: 'var(--mui-palette-background-paper)',
+                    color: 'var(--mui-palette-text-primary)'
                 },
                 '&.common_textarea_input.MuiInputBase-multiline:hover:not(.Mui-disabled):not(.MuiInputBase-readOnly):not([readonly])': {
-                    backgroundColor: 'var(--mui-tokens-color-brand-50, #F2F7FE)'
+                    backgroundColor: 'var(--mui-palette-action-hover)'
                 },
                 '&.Mui-disabled.common_textarea_input.MuiInputBase-multiline, &.MuiInputBase-readOnly.common_textarea_input.MuiInputBase-multiline, &[readonly].common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: SURFACE_DISABLED

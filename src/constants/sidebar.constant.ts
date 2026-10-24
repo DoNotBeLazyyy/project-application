@@ -14,7 +14,7 @@ export const VARIANT_STYLES = {
         itemActive: '!bg-(--mui-tokens-color-brand-900) !text-(--mui-tokens-color-common-white)',
         groupText: 'text-(--mui-tokens-color-common-white)',
         groupIcon: 'text-(--mui-tokens-color-common-white)',
-        expandIcon: 'text-(--mui-tokens-color-brand-600)',
+        expandIcon: 'text-(--mui-tokens-color-brand-300)',
         subItemText: '!text-(--mui-tokens-color-common-white)',
         subItemHover: 'hover:bg-(--mui-tokens-color-brand-900)',
         subItemActive: '!bg-(--mui-tokens-color-brand-900) !text-(--mui-tokens-color-common-white)',

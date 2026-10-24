@@ -10,7 +10,7 @@ import { useFormDraft } from '@hooks/useFormDraft';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
-import { FieldErrors, useFieldArray, useForm } from 'react-hook-form';
+import { FieldErrors, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const EMPTY_CRITERION = { id: null, title: '', description: '', max_points: '' };
@@ -39,11 +39,14 @@ export default function RubricBuilderPage() {
 
     const { fields, append, remove } = useFieldArray({ control, name: 'criteria' });
 
-    const watchedCriteria = watch('criteria');
+    const watchedCriteria = useWatch({
+        control,
+        name: 'criteria'
+    }) ?? [];
 
     const totalPoints = useMemo(function() {
         return watchedCriteria.reduce(function(sum, criterion) {
-            const value = Number(criterion.max_points);
+            const value = Number(criterion?.max_points);
             return sum + (Number.isFinite(value)
                 ? value
                 : 0);
@@ -246,7 +249,14 @@ export default function RubricBuilderPage() {
                                                 hasHelper
                                                 label="Max Points"
                                                 name={`criteria.${index}.max_points`}
-                                                rules={{ required: 'Required.' }}
+                                                rules={{
+                                                    required: 'Points are required.',
+                                                    validate: (val: any) => {
+                                                        const num = Number(val);
+                                                        if (!Number.isFinite(num) || num <= 0) return 'Points must be greater than 0.';
+                                                        return true;
+                                                    }
+                                                }}
                                                 type="number"
                                             />
                                             <CommonButton

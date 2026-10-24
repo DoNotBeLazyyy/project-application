@@ -94,6 +94,26 @@ export default function StudentGradeBreakdownModal({
                     />
                 </div>
 
+                {data && data.components && data.components.length > 0 && (
+                    <div className="bg-(--mui-palette-background-default) border border-(--mui-palette-divider) flex flex-col gap-2 p-3.5 rounded-lg text-xs">
+                        <span className="font-semibold text-(--mui-palette-text-primary)">
+                            Raw Grade Calculation Formula:
+                        </span>
+                        <div className="font-mono text-(--mui-palette-text-secondary) flex flex-wrap gap-1 items-center">
+                            <span>Raw Grade = </span>
+                            {data.components.map((c, idx) => (
+                                <span key={c.id}>
+                                    {idx > 0 && ' + '}
+                                    ({c.name}: {(c.percentage ?? 0).toFixed(1)}% × {c.weight}%)
+                                </span>
+                            ))}
+                            <span className="font-semibold text-(--mui-palette-primary-main)">
+                                {' = '}{(data.raw_grade ?? 0).toFixed(2)}%
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex flex-col gap-4">
                     <h3 className="font-semibold text-(--mui-palette-text-primary) text-base m-0">
                         Grading Component Audit Breakdown

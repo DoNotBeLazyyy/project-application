@@ -242,7 +242,7 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
 
             await updateDepartment('dept-1', {
                 code: '',
-                dean_id: null,
+                dean_id: '',
                 deans: [],
                 description: '',
                 faculties: [],
@@ -263,8 +263,8 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
                 name: 'Bachelor of Science in Civil Engineering',
                 pending_deleted_curriculum_ids: [],
                 program_level_id: '',
-                total_units: 140,
-                years_duration: 4
+                total_units: '140',
+                years_duration: '4'
             });
 
             expect(callRpcSpy).toHaveBeenCalledWith('fn_update_program', expect.objectContaining({
@@ -295,7 +295,7 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
                 code: '',
                 description: '',
                 label: 'Summer',
-                sequence: 3
+                sequence: '3'
             });
 
             expect(callRpcSpy).toHaveBeenCalledWith('fn_update_term_type', expect.objectContaining({
