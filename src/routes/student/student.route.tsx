@@ -70,6 +70,16 @@ export const studentRoutes: RouteObject[] = [
             },
             {
                 element: lazyElement(function() {
+                    return import('@pages/student/grade-report');
+                }),
+                path: 'grade-report'
+            },
+            {
+                element: <Navigate replace to="/student/grade-report" />,
+                path: 'transcript'
+            },
+            {
+                element: lazyElement(function() {
                     return import('@pages/student/insight');
                 }),
                 path: 'insight'

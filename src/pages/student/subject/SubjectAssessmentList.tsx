@@ -123,12 +123,14 @@ export default function SubjectAssessmentList({
                 field: 'title',
                 flex: 3,
                 headerName: 'Title',
+                mobileCard: 'title',
                 sortable: false
             },
             {
                 field: 'assessment_type',
                 flex: 1,
                 headerName: 'Type',
+                mobileCard: 'subtitle',
                 sortable: false,
                 cellRenderer: (params: { data: SubjectAssessmentItem }) => (
                     <div className="flex h-full items-center">
@@ -143,6 +145,7 @@ export default function SubjectAssessmentList({
                 field: 'grading_period_name',
                 flex: 1,
                 headerName: 'Period',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => params.value ?? '—'
             },
@@ -150,6 +153,7 @@ export default function SubjectAssessmentList({
                 field: 'total_points',
                 flex: 1,
                 headerName: 'Points',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => `${params.value} pts`
             },
@@ -165,6 +169,7 @@ export default function SubjectAssessmentList({
                 field: 'due_at',
                 flex: 2,
                 headerName: 'Due',
+                mobileCard: 'meta',
                 sortable: false,
                 valueFormatter: (params) => formatDateTime(params.value)
             },
@@ -180,6 +185,7 @@ export default function SubjectAssessmentList({
                 headerName: '',
                 maxWidth: 140,
                 minWidth: 140,
+                mobileCard: 'meta',
                 sortable: false,
                 cellRenderer: (params: { data: SubjectAssessmentItem }) => {
                     const { canTake, label } = getAssessmentState(params.data);
@@ -224,13 +230,13 @@ export default function SubjectAssessmentList({
 
     return (
         <div className="flex flex-1 flex-col gap-3 min-h-0">
-            <div className="flex flex-wrap gap-3 items-center justify-between">
-                <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                    Assessments
+            <div className="flex flex-wrap gap-2.5 items-center justify-between">
+                <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                    Assessments ({filteredAssessments.length})
                 </span>
-                <div className="flex flex-wrap gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
                     <CommonSelect
-                        className="min-w-40"
+                        className="flex-1 sm:w-40 sm:flex-none"
                         options={typeOptions}
                         size="small"
                         value={typeFilter}
@@ -239,7 +245,7 @@ export default function SubjectAssessmentList({
                         }}
                     />
                     <CommonSelect
-                        className="min-w-40"
+                        className="flex-1 sm:w-40 sm:flex-none"
                         options={periodOptions}
                         size="small"
                         value={periodFilter}

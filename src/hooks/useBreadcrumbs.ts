@@ -17,6 +17,9 @@ function formatFallbackSegment(segment: string, prevSegment?: string): string {
         if (prevSegment === 'sections') {
             return 'Section Detail';
         }
+        if (prevSegment === 'subjects') {
+            return 'Subject Detail';
+        }
         if (prevSegment === 'assessments') {
             return 'Assessment Detail';
         }

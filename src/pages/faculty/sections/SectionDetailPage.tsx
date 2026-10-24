@@ -8,12 +8,12 @@ import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnounce
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
+    ArrowLeftIcon,
     BookOpenIcon,
     CalendarCheckIcon,
     ChatCircleTextIcon,
     ChalkboardTeacherIcon,
     DoorIcon,
-    GraduationCapIcon,
     MegaphoneIcon,
     NotepadIcon,
     StudentIcon
@@ -22,7 +22,7 @@ import { getSectionDetail } from '@services/faculty.service';
 import { useBreadcrumbStore } from '@stores/breadcrumb.store';
 import { SectionDetail } from '@type/faculty.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 type SectionTab = 'content' | 'assessments' | 'grading' | 'attendance' | 'students' | 'discussion' | 'announcements' | 'rubrics';
 
@@ -33,6 +33,7 @@ const SECTION_TABS: SectionTab[] = [
 export default function SectionDetailPage() {
     const { sectionId = '' } = useParams<{ sectionId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [section, setSection] = useState<SectionDetail | null>(null);
 
     const tabParam = searchParams.get('tab') as SectionTab | null;
@@ -73,6 +74,14 @@ export default function SectionDetailPage() {
                 {/* Mobile-First Section Detail Header */}
                 <div className="flex flex-col gap-2 pb-2 border-b border-slate-200/80 dark:border-zinc-800">
                     <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/faculty/sections')}
+                            aria-label="Back to My Sections"
+                            className="p-1 -ml-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                        >
+                            <ArrowLeftIcon size={18} weight="bold" />
+                        </button>
                         <span className="font-mono font-bold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
                             {section?.section_code ?? '—'}
                         </span>

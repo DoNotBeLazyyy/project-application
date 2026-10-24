@@ -1,4 +1,3 @@
-import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
 import SubjectAssessmentList from '@pages/student/subject/SubjectAssessmentList';
@@ -8,15 +7,41 @@ import SectionAnnouncementPanel from '@pages/shared/announcement/SectionAnnounce
 import SectionContentPanel from '@pages/shared/content/SectionContentPanel';
 import SectionDiscussionPanel from '@pages/shared/discussion/SectionDiscussionPanel';
 import {
-    ArrowLeftIcon, BookOpenIcon, CalendarCheckIcon, ChatCircleTextIcon, ClipboardTextIcon, GraduationCapIcon, MegaphoneIcon
+    ArrowLeftIcon,
+    BookOpenIcon,
+    CalendarCheckIcon,
+    ChatCircleTextIcon,
+    ChalkboardTeacherIcon,
+    GraduationCapIcon,
+    MegaphoneIcon,
+    NotepadIcon
 } from '@phosphor-icons/react';
-import { getSubjectAssessments, getSubjectAttendance, getSubjectDetail, getSubjectGrades } from '@services/student-portal.service';
-import { StudentSubjectAttendanceItem, SubjectAssessmentItem, SubjectDetail, SubjectGradeItem } from '@type/student-portal.type';
+import {
+    getSubjectAssessments,
+    getSubjectAttendance,
+    getSubjectDetail,
+    getSubjectGrades
+} from '@services/student-portal.service';
+import { useBreadcrumbStore } from '@stores/breadcrumb.store';
+import {
+    StudentSubjectAttendanceItem,
+    SubjectAssessmentItem,
+    SubjectDetail,
+    SubjectGradeItem
+} from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-const SUBJECT_TABS = ['assessments', 'attendance', 'grades', 'content', 'discussion', 'announcements'] as const;
-type SubjectTab = typeof SUBJECT_TABS[number];
+type SubjectTab = 'content' | 'assessments' | 'grades' | 'attendance' | 'discussion' | 'announcements';
+
+const SUBJECT_TABS: SubjectTab[] = [
+    'content',
+    'assessments',
+    'grades',
+    'attendance',
+    'discussion',
+    'announcements'
+];
 
 export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
@@ -25,10 +50,11 @@ export default function SubjectDetailPage() {
     const location = useLocation();
     const [subject, setSubject] = useState<SubjectDetail | null>(null);
 
-    const tabParam = searchParams.get('tab') as SubjectTab | null;
-    const activeTab: SubjectTab = tabParam && SUBJECT_TABS.includes(tabParam)
-        ? tabParam
-        : 'assessments';
+    const tabParam = searchParams.get('tab');
+    const normalizedTab = tabParam === 'grading' ? 'grades' : tabParam;
+    const activeTab: SubjectTab = normalizedTab && SUBJECT_TABS.includes(normalizedTab as SubjectTab)
+        ? (normalizedTab as SubjectTab)
+        : 'content';
 
     const [assessments, setAssessments] = useState<SubjectAssessmentItem[] | null>(null);
     const [attendance, setAttendance] = useState<StudentSubjectAttendanceItem[] | null>(null);
@@ -50,6 +76,17 @@ export default function SubjectDetailPage() {
             const result = await getSubjectDetail(enrollmentId);
             if (result.data) {
                 setSubject(result.data);
+                const title = result.data.course_code
+                    ? `${result.data.section_code} (${result.data.course_code})`
+                    : result.data.section_code;
+                useBreadcrumbStore
+                    .getState()
+                    .setCustomLabel(enrollmentId, title);
+                if (result.data.enrollment_id) {
+                    useBreadcrumbStore
+                        .getState()
+                        .setCustomLabel(result.data.enrollment_id, title);
+                }
                 // If the parameter was a sectionId rather than enrollmentId, smoothly sync to canonical enrollment URL
                 if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
                     navigate(`/student/subjects/${result.data.enrollment_id}${location.search}`, { replace: true });
@@ -84,124 +121,126 @@ export default function SubjectDetailPage() {
     }, [activeTab, assessments, attendance, effectiveEnrollmentId]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
-        setSearchParams(function(prev) {
-            const next = new URLSearchParams(prev);
-            next.set('tab', value);
-            return next;
-        });
+        setSearchParams({ tab: value }, { replace: true });
     }
 
+    if (!enrollmentId) return null;
+
     return (
-        <CommonCard className="flex flex-col gap-4 h-full p-4 w-full">
-            <div className="flex gap-3 items-center">
-                <CommonButton
-                    color="inherit"
-                    size="small"
-                    startIcon={<ArrowLeftIcon size={16} weight="bold" />}
-                    variant="outlined"
-                    onClick={function() {
-                        navigate('/student/subjects');
-                    }}
-                >
-                    Back
-                </CommonButton>
-                <div className="flex flex-col">
-                    <div className="flex gap-2 items-center">
-                        <h1 className="font-semibold text-(--mui-palette-text-primary) text-xl">
-                            {subject?.course_code ?? '—'}
-                        </h1>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
+        <CommonCard className="h-full w-full p-3 sm:p-5 flex flex-col">
+            <div className="flex flex-col gap-3.5 h-full min-h-0">
+                {/* Mobile-First Subject Detail Header */}
+                <div className="flex flex-col gap-2 pb-2 border-b border-slate-200/80 dark:border-zinc-800">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/student/subjects')}
+                            aria-label="Back to My Subjects"
+                            className="p-1 -ml-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                        >
+                            <ArrowLeftIcon size={18} weight="bold" />
+                        </button>
+                        <span className="font-mono font-bold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+                            {subject?.section_code ?? '—'}
+                        </span>
+                        <span className="text-slate-400 text-sm hidden sm:inline">
                             /
                         </span>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            {subject?.course_title}
-                        </span>
+                        <h1 className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg tracking-tight leading-snug">
+                            {subject?.course_code ? `${subject.course_code} — ` : ''}{subject?.course_title ?? 'Loading Subject...'}
+                        </h1>
                     </div>
-                    <div className="flex gap-3 items-center">
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            {subject?.section_code}
-                        </span>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            ·
-                        </span>
-                        <span className="text-(--mui-palette-text-secondary) text-sm">
-                            {subject?.term_label}
-                        </span>
+
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+                        {subject?.term_label && (
+                            <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                {subject.term_label}
+                            </span>
+                        )}
                         {subject?.faculty_name && (
-                            <>
-                                <span className="text-(--mui-palette-text-secondary) text-sm">
-                                    ·
-                                </span>
-                                <span className="text-(--mui-palette-text-secondary) text-sm">
-                                    {subject.faculty_name}
-                                </span>
-                            </>
+                            <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
+                                <ChalkboardTeacherIcon size={14} className="text-slate-400" />
+                                {subject.faculty_name}
+                            </span>
+                        )}
+                        {subject?.enrollment_status && (
+                            <span className="flex items-center gap-1 font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-md">
+                                {subject.enrollment_status}
+                            </span>
                         )}
                     </div>
                 </div>
-            </div>
-            <CommonTabMenu
-                menuStyle="outline"
-                tabs={[
-                    {
-                        icon: <ClipboardTextIcon />,
-                        label: 'Assessments',
-                        value: 'assessments'
-                    },
-                    {
-                        icon: <CalendarCheckIcon />,
-                        label: 'Attendance',
-                        value: 'attendance'
-                    },
-                    {
-                        icon: <GraduationCapIcon />,
-                        label: 'Grades',
-                        value: 'grades'
-                    },
-                    {
-                        icon: <BookOpenIcon />,
-                        label: 'Content',
-                        value: 'content'
-                    },
-                    {
-                        icon: <ChatCircleTextIcon />,
-                        label: 'Discussion',
-                        value: 'discussion'
-                    },
-                    {
-                        icon: <MegaphoneIcon />,
-                        label: 'Announcements',
-                        value: 'announcements'
-                    }
-                ]}
-                value={activeTab}
-                onChange={handleTabChange}
-            />
-            <div className="flex flex-1 flex-col min-h-0">
-                {activeTab === 'assessments' && (
-                    <SubjectAssessmentList
-                        assessments={assessments ?? []}
-                        enrollmentId={effectiveEnrollmentId}
-                    />
-                )}
-                {activeTab === 'attendance' && (
-                    <SubjectAttendanceList attendance={attendance ?? []} />
-                )}
-                {activeTab === 'grades' && (
-                    <SubjectGradeList
-                        enrollmentId={effectiveEnrollmentId}
-                        grades={grades ?? []}
-                    />
-                )}
-                {activeTab === 'content' && subject?.section_id && (
-                    <SectionContentPanel sectionId={subject.section_id} />
-                )}
-                {activeTab === 'discussion' && subject?.section_id && (
-                    <SectionDiscussionPanel sectionId={subject.section_id} />
-                )}
-                {activeTab === 'announcements' && subject?.section_id && (
-                    <SectionAnnouncementPanel canManage={false} sectionId={subject.section_id} />
-                )}
+
+                {/* Horizontal Scrollable Tabs on Mobile */}
+                <div className="overflow-x-auto no-scrollbar pb-1 shrink-0 -mx-1 px-1">
+                    <div className="min-w-max">
+                        <CommonTabMenu
+                            menuStyle="outline"
+                            tabs={[
+                                {
+                                    icon: <BookOpenIcon size={16} />,
+                                    label: 'Lessons & Syllabus',
+                                    value: 'content'
+                                },
+                                {
+                                    icon: <NotepadIcon size={16} />,
+                                    label: 'Assessments',
+                                    value: 'assessments'
+                                },
+                                {
+                                    icon: <GraduationCapIcon size={16} />,
+                                    label: 'Grades',
+                                    value: 'grades'
+                                },
+                                {
+                                    icon: <CalendarCheckIcon size={16} />,
+                                    label: 'Attendance',
+                                    value: 'attendance'
+                                },
+                                {
+                                    icon: <ChatCircleTextIcon size={16} />,
+                                    label: 'Discussions',
+                                    value: 'discussion'
+                                },
+                                {
+                                    icon: <MegaphoneIcon size={16} />,
+                                    label: 'Announcements',
+                                    value: 'announcements'
+                                }
+                            ]}
+                            value={activeTab}
+                            onChange={handleTabChange}
+                        />
+                    </div>
+                </div>
+
+                {/* Tab Content Panes */}
+                <div className="flex-1 min-h-0">
+                    {activeTab === 'content' && subject?.section_id && (
+                        <SectionContentPanel sectionId={subject.section_id} />
+                    )}
+                    {activeTab === 'assessments' && (
+                        <SubjectAssessmentList
+                            assessments={assessments ?? []}
+                            enrollmentId={effectiveEnrollmentId}
+                        />
+                    )}
+                    {activeTab === 'grades' && (
+                        <SubjectGradeList
+                            enrollmentId={effectiveEnrollmentId}
+                            grades={grades ?? []}
+                        />
+                    )}
+                    {activeTab === 'attendance' && (
+                        <SubjectAttendanceList attendance={attendance ?? []} />
+                    )}
+                    {activeTab === 'discussion' && subject?.section_id && (
+                        <SectionDiscussionPanel sectionId={subject.section_id} />
+                    )}
+                    {activeTab === 'announcements' && subject?.section_id && (
+                        <SectionAnnouncementPanel canManage={false} sectionId={subject.section_id} />
+                    )}
+                </div>
             </div>
         </CommonCard>
     );

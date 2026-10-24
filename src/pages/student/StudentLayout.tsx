@@ -1,7 +1,7 @@
 import RoleShell from '@components/layout/RoleShell';
 import StudentProfilePromptModal from '@components/modal/StudentProfilePromptModal';
 import {
-    BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, HouseIcon, ListChecksIcon, MegaphoneIcon
+    BooksIcon, CalendarBlankIcon, CalendarDotsIcon, ChartLineUpIcon, ClipboardTextIcon, ExamIcon, GraduationCapIcon, HouseIcon, ListChecksIcon, MegaphoneIcon
 } from '@phosphor-icons/react';
 import { getMyProfile } from '@services/profile.service';
 import { useAppStore } from '@stores/app.store';
@@ -74,7 +74,7 @@ export default function StudentLayout() {
                 },
                 {
                     icon: <ExamIcon size={18} />,
-                    isActive: pathname.startsWith('/student/grade'),
+                    isActive: pathname === '/student/grade' || pathname.startsWith('/student/grade/'),
                     label: 'My Grades',
                     onClick: () => navigate('/student/grade')
                 }
@@ -105,6 +105,12 @@ export default function StudentLayout() {
                     isActive: pathname === '/student/curriculum',
                     label: 'Curriculum Audit',
                     onClick: () => navigate('/student/curriculum')
+                },
+                {
+                    icon: <GraduationCapIcon size={18} />,
+                    isActive: pathname === '/student/grade-report',
+                    label: 'Grade Report',
+                    onClick: () => navigate('/student/grade-report')
                 }
             ]
         }

@@ -23,8 +23,13 @@ export default function ThemeToggleButton() {
         <Tooltip title={title}>
             <IconButton
                 aria-label={`Current theme is ${mode}. Click to change theme.`}
-                className="hover:bg-white/10 rounded-full text-white/80 transition-colors"
                 size="small"
+                sx={{
+                    color: 'var(--mui-tokens-color-common-white)',
+                    '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }}
                 onClick={handleToggle}
             >
                 {mode === 'system'

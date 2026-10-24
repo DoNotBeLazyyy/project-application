@@ -1338,7 +1338,7 @@ Navigate to `/student/evaluations` via sidebar **Faculty Evaluations** (under **
 
 ### Phase 5.9: Curriculum Tracker & 4-Year Degree Audit Prospectus
 Navigate to `/student/curriculum` via sidebar **Curriculum Audit** (under **ACADEMIC RECORDS**):
-1. In the **Curriculum Checklist** tab (`CurriculumAuditView`), review degree progress:
+1. In the **Curriculum Checklist** (`CurriculumAuditView`), review degree progress:
    * *(Self-Service Assignment Flow)*: If unassigned, the student selects their Degree Program (`BSIT`) and Year Level (`1`) and clicks **Assign Program** (with button loading state) to generate their personalized prospectus.
    * **1st Year, 1st Semester:** `IT101` status shows **In Progress / Enrolled**.
    * Remaining units, credited prerequisites, and curriculum completion percentage are visually tracked with resilient handling of backend audit responses.
@@ -1346,8 +1346,8 @@ Navigate to `/student/curriculum` via sidebar **Curriculum Audit** (under **ACAD
 ---
 
 ### Phase 5.10: Official Printable Transcript of Records (TOR)
-Switch to the **Grade Report** tab inside `/student/curriculum` (`TranscriptView`):
-1. Review the accredited collegiate transcript view.
+Navigate to `/student/grade-report` via sidebar **Grade Report** (under **ACADEMIC RECORDS**):
+1. Review the accredited collegiate transcript view (`TranscriptView`).
 2. Note term-by-term course history, unit weights, special grade flags, and cumulative GWA calculation.
 3. Click **Print Transcript** to demonstrate the printer-friendly stylesheet.
 
@@ -1603,7 +1603,7 @@ Use this quick-reference matrix during the live presentation to test every table
 | **Faculty** | Any Faculty Page | AI Assistant Drawer | Prompt: *"Draft quiz questions for binary logic"* | Generates 3 pedagogical questions with answer key. |
 | **Student** | `/student/schedule` | Timetable Grid | Hover Schedule Block | Card reveals room `Lab 304` and instructor details. |
 | **Student** | `/student/curriculum` | Self-Service Program Selector | Select Program & Year Level | Instantly initializes 4-year degree curriculum checklist and audit view. |
-| **Student** | `/student/curriculum` | Official Transcript | Click `Grade Report` | Renders printable official Transcript of Records (TOR). |
+| **Student** | `/student/grade-report` | Official Transcript | Click `Grade Report` in sidebar | Renders printable official Transcript of Records (TOR). |
 | **Student** | `/student/evaluations` | Two-Step Wizard Navigation | Click "Proceed to Evaluation Form" | Seamlessly transitions between Faculty & Rating Guide and responsive evaluation matrix. |
 | **Student** | `/student/grade/:id/breakdown` | Grade Breakdown View | Open `GradeBreakdownPage` | Displays component scores cleanly (without `0/0` artifacts) with full vertical scrolling. |
 | **Student** | `/student/insight` | Interactive Slider | Drag Target GWA | `WhatIfGradeSimulator` dynamically recalculates exam score. |

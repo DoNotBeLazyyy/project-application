@@ -55,6 +55,7 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
     subjects: 'My Subjects',
     grade: 'Grades & Transcripts',
     curriculum: 'Curriculum Audit',
+    'grade-report': 'Grade Report',
     insight: 'Academic Insights',
     result: 'Results Breakdown',
 

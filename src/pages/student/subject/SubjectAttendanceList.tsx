@@ -25,15 +25,15 @@ interface StatTileProps {
 
 function StatTile({ accent, label, value }: StatTileProps) {
     return (
-        <div className="bg-(--mui-palette-action-hover) flex flex-col gap-1 p-3 rounded-lg">
+        <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 flex flex-col gap-1 p-2.5 sm:p-3 rounded-xl shadow-2xs">
             <span
                 className={accent
-                    ? 'font-semibold text-(--mui-palette-primary-main) text-xl'
-                    : 'font-semibold text-(--mui-palette-text-primary) text-xl'}
+                    ? 'font-bold text-blue-600 dark:text-blue-400 text-lg sm:text-xl'
+                    : 'font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl'}
             >
                 {value}
             </span>
-            <span className="text-(--mui-palette-text-secondary) text-xs">
+            <span className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs">
                 {label}
             </span>
         </div>
@@ -100,7 +100,7 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
 
     return (
         <div className="flex flex-1 flex-col gap-4 min-h-0">
-            <div className="gap-3 grid grid-cols-2 sm:grid-cols-6">
+            <div className="gap-2.5 sm:gap-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
                 <StatTile
                     accent
                     label="Attendance Rate"
@@ -131,11 +131,11 @@ export default function SubjectAttendanceList({ attendance }: SubjectAttendanceL
             <div className="flex-1 min-h-0">
                 {attendance.length === 0
                     ? (
-                        <div className="border border-(--mui-palette-divider) flex flex-col gap-2 items-center justify-center p-8 rounded-lg text-center">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
+                        <div className="border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 items-center justify-center p-8 rounded-2xl text-center bg-slate-50/50 dark:bg-zinc-900/50">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
                                 No attendance records yet
                             </span>
-                            <span className="text-(--mui-palette-text-secondary) text-xs">
+                            <span className="text-slate-500 text-xs max-w-sm">
                                 Attendance records will appear here as your instructor logs classroom sessions.
                             </span>
                         </div>
