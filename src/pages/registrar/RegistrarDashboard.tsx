@@ -5,7 +5,9 @@ import DashboardHeader from '@components/dashboard/DashboardHeader';
 import EventsFeedCard from '@components/dashboard/EventsFeedCard';
 import useDashboardFeeds from '@hooks/useDashboardFeeds';
 import {
+    CaretRightIcon,
     ClipboardTextIcon,
+    GraduationCapIcon,
     HourglassIcon,
     SealCheckIcon,
     SignOutIcon,
@@ -123,32 +125,40 @@ export default function RegistrarDashboard() {
                     }}
                     className="flex flex-col"
                 >
-                    <div className="flex flex-col gap-2 p-4 pt-0">
+                    <div className="flex flex-col gap-2.5 p-4 pt-0">
                         {dashboard?.pending_releases.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-(--mui-palette-text-secondary) text-sm">
                                 No grades are waiting for release.
                             </p>
                         )}
                         {dashboard?.pending_releases.map((release) => (
                             <button
-                                className="border border-(--mui-palette-divider) cursor-pointer flex gap-3 items-center justify-between p-3 rounded-lg text-left"
+                                className="group w-full rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-800/40 hover:bg-white dark:hover:bg-zinc-800/80 p-3.5 transition-all shadow-2xs hover:shadow-xs hover:border-amber-400/70 dark:hover:border-amber-600/70 flex items-center justify-between gap-3 text-left cursor-pointer"
                                 key={`${release.section_id}-${release.grading_period}`}
                                 type="button"
                                 onClick={function() {
                                     navigate('/registrar/grade-release');
                                 }}
                             >
-                                <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
-                                        {release.course_code} · {release.section_code}
-                                    </span>
-                                    <span className="text-(--mui-palette-text-secondary) text-xs truncate">
-                                        {release.grading_period} · {release.faculty_name ?? 'Unassigned'}
-                                    </span>
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/50">
+                                        <SealCheckIcon size={20} weight="duotone" />
+                                    </div>
+                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                        <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                            {release.course_code} · {release.section_code}
+                                        </span>
+                                        <span className="text-slate-500 dark:text-slate-400 text-xs truncate">
+                                            {release.grading_period} · {release.faculty_name ?? 'Unassigned'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className="font-semibold shrink-0 text-(--mui-palette-warning-main) text-sm">
-                                    {release.pending_count} pending
-                                </span>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60">
+                                        {release.pending_count} pending
+                                    </span>
+                                    <CaretRightIcon size={16} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 group-hover:translate-x-0.5 transition-all" />
+                                </div>
                             </button>
                         ))}
                     </div>
@@ -163,35 +173,48 @@ export default function RegistrarDashboard() {
                 >
                     <div className="flex flex-col gap-3 p-4 pt-0">
                         {dashboard?.program_distribution.length === 0 && (
-                            <p className="m-0 py-4 text-(--mui-palette-text-secondary) text-sm">
+                            <p className="m-0 py-6 text-center text-(--mui-palette-text-secondary) text-sm">
                                 No enrollments recorded this term.
                             </p>
                         )}
-                        {dashboard?.program_distribution.map((program) => (
-                            <div
-                                className="flex flex-col gap-1"
-                                key={program.program_code}
-                            >
-                                <div className="flex gap-3 items-center justify-between">
-                                    <span className="font-medium text-(--mui-palette-text-primary) text-sm truncate">
-                                        {program.program_code}
-                                    </span>
-                                    <span className="shrink-0 text-(--mui-palette-text-secondary) text-xs">
-                                        {program.student_count}
-                                    </span>
+                        {dashboard?.program_distribution.map((program) => {
+                            const percent = totalEnrolled > 0
+                                ? Math.round((program.student_count / totalEnrolled) * 100)
+                                : 0;
+                            return (
+                                <div
+                                    className="p-3 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30 flex flex-col gap-2"
+                                    key={program.program_code}
+                                >
+                                    <div className="flex gap-3 items-center justify-between">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
+                                                <GraduationCapIcon size={16} weight="duotone" />
+                                            </div>
+                                            <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">
+                                                {program.program_code}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                {program.student_count} <span className="font-normal text-slate-400 text-[11px]">students</span>
+                                            </span>
+                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200/80 dark:bg-zinc-700 text-slate-600 dark:text-slate-300">
+                                                {percent}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-200/70 dark:bg-zinc-700/60 h-2 overflow-hidden rounded-full w-full">
+                                        <div
+                                            className="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-500"
+                                            style={{
+                                                width: `${percent}%`
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="bg-(--mui-palette-divider) h-2 overflow-hidden rounded-full w-full">
-                                    <div
-                                        className="bg-(--mui-palette-primary-main) h-full rounded-full"
-                                        style={{
-                                            width: totalEnrolled > 0
-                                                ? `${(program.student_count / totalEnrolled) * 100}%`
-                                                : '0%'
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </CommonCard>
             </div>
