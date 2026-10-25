@@ -18,6 +18,7 @@ import {
     listGradingPeriodsBySection,
     listSpecialGradeFlags,
     reseedSectionGrading,
+    setEnrollmentSpecialGrade,
     submitSectionGrades,
     updateGradingComponent
 } from '@services/faculty.service';
@@ -249,6 +250,20 @@ export default function GradingTab({
         await fetchPeriodData();
     }
 
+    async function handleUpdateSpecialGrade(enrollmentId: string, specialGrade: string | null) {
+        setIsFlagBusy(true);
+        const result = await setEnrollmentSpecialGrade(enrollmentId, activePeriodId, specialGrade);
+        setIsFlagBusy(false);
+
+        if (result.error) {
+            useToastStore.getState().showToast(result.error.message || 'Failed to update special grade.', 'warning');
+            return;
+        }
+
+        useToastStore.getState().showToast(result.data?.message || 'Special grade updated.', 'success');
+        await fetchPeriodData();
+    }
+
     async function handleReseed() {
         const result = await reseedSectionGrading(sectionId);
         if (!result.error) await fetchPeriodData();
@@ -417,6 +432,7 @@ export default function GradingTab({
                         onDismissFailures={handleDismissFailures}
                         onDismissFlag={handleRequestDismissFlag}
                         onSubmitGrades={handleSubmitGrades}
+                        onUpdateSpecialGrade={handleUpdateSpecialGrade}
                     />
                 </div>
             </div>

@@ -33,6 +33,7 @@ import { useEffect, useState } from 'react';
 
 interface SectionContentPanelProps {
     sectionId: string;
+    canManage?: boolean;
 }
 
 interface MaterialModalState {
@@ -46,7 +47,7 @@ interface DeleteState {
     label: string;
 }
 
-export default function SectionContentPanel({ sectionId }: SectionContentPanelProps) {
+export default function SectionContentPanel({ sectionId, canManage: canManageProp }: SectionContentPanelProps) {
     const [content, setContent] = useState<SectionContent | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('All');
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
@@ -57,7 +58,9 @@ export default function SectionContentPanel({ sectionId }: SectionContentPanelPr
     const [editingModule, setEditingModule] = useState<ContentModule | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const canManage = content?.can_manage ?? false;
+    const canManage = canManageProp !== undefined
+        ? canManageProp
+        : (content?.can_manage ?? false);
     const rawModules = content?.modules ?? [];
     const modules = rawModules.filter((mod) => {
         if (selectedPeriod === 'All') return true;

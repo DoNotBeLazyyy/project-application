@@ -134,7 +134,8 @@ export default function CurriculumMapForm({
             rules: disabled
                 ? undefined
                 : { required: 'Please select a course' },
-            type: 'select'
+            type: 'select',
+            gridCols: 2
         },
         {
             disabled,
@@ -145,7 +146,8 @@ export default function CurriculumMapForm({
             rules: disabled
                 ? undefined
                 : { required: 'Please select a year level' },
-            type: 'select'
+            type: 'select',
+            gridCols: 1
         },
         {
             disabled,
@@ -156,21 +158,24 @@ export default function CurriculumMapForm({
             rules: disabled
                 ? undefined
                 : { required: 'Please select a term' },
-            type: 'select'
+            type: 'select',
+            gridCols: 1
         },
         {
             disabled,
             fieldProps: { helperText: 'Lecture units for this program (override default if needed)' },
             label: 'Lecture Units',
             name: 'lecture_units',
-            type: 'number'
+            type: 'number',
+            gridCols: 1
         },
         {
             disabled,
             fieldProps: { helperText: 'Laboratory units for this program (override default if needed)' },
             label: 'Laboratory Units',
             name: 'laboratory_units',
-            type: 'number'
+            type: 'number',
+            gridCols: 1
         },
         ...(isCustomType
             ? [
@@ -179,7 +184,8 @@ export default function CurriculumMapForm({
                     fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
                     label: `${customTypeLabel} Units`,
                     name: 'units' as const,
-                    type: 'number' as const
+                    type: 'number' as const,
+                    gridCols: 1
                 }
             ]
             : []),
@@ -194,18 +200,21 @@ export default function CurriculumMapForm({
                     required: 'Sequence is required',
                     min: { value: 1, message: 'Must be at least 1' }
                 },
-            type: 'number'
+            type: 'number',
+            gridCols: 1
         },
         {
             disabled,
             name: 'is_elective',
             fieldProps: { label: 'Elective' },
-            type: 'checkbox'
+            type: 'checkbox',
+            gridCols: 1
         }
     ];
 
     return (
         <CommonForm
+            containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
             control={control}
             fields={fields}
             formProps={formProps}

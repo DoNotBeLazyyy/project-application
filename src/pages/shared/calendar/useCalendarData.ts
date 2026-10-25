@@ -332,6 +332,44 @@ export function useCalendarData(currentDate: Date) {
                         }
                     }
                 }
+
+                // Fetch due activities / assessments for Faculty, Dean, Admin
+                const dueRes = await callRpc<{
+                    id: string;
+                    title: string;
+                    assessment_type: string;
+                    due_at: string;
+                    section_id: string;
+                    section_code: string;
+                    course_code: string;
+                    course_title: string;
+                }[]>('fn_get_calendar_due_activities');
+
+                if (dueRes.data && Array.isArray(dueRes.data)) {
+                    for (const a of dueRes.data) {
+                        if (a.due_at) {
+                            const due = new Date(a.due_at);
+                            loadedEvents.push({
+                                id: `due-activity-${a.id}`,
+                                title: `Due: ${a.title} (${a.assessment_type})`,
+                                description: `${a.course_code} - ${a.section_code} • ${a.course_title}`,
+                                start: due,
+                                end: new Date(due.getTime() + 45 * 60 * 1000),
+                                allDay: false,
+                                category: 'assessment',
+                                metadata: {
+                                    assessmentType: a.assessment_type,
+                                    courseCode: a.course_code,
+                                    sectionCode: a.section_code,
+                                    sectionId: a.section_id,
+                                    targetUrl: role === 'Faculty'
+                                        ? `/faculty/sections/${a.section_id}/assessments/${a.id}/submissions`
+                                        : undefined
+                                }
+                            });
+                        }
+                    }
+                }
             }
 
             setEvents(loadedEvents);

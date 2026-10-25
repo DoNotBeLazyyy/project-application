@@ -9,10 +9,10 @@ export const INPUT_PADDING_MEDIUM = 'var(--mui-tokens-spacing-3) var(--mui-token
 export const INPUT_PADDING_LARGE = 'var(--mui-tokens-spacing-4) var(--mui-tokens-spacing-5)';
 
 const SURFACE_DEFAULT = 'var(--mui-palette-background-paper, #ffffff)';
-const SURFACE_HOVER = 'var(--mui-tokens-color-brand-50, #F2F7FE)';
+const SURFACE_HOVER = 'var(--mui-palette-action-hover, #F2F7FE)';
 const SURFACE_FOCUSED = 'var(--mui-palette-background-paper, #ffffff)';
-export const SURFACE_DISABLED = 'var(--mui-tokens-color-neutral-50, #FAFAFA)';
-const SURFACE_ERROR = 'var(--mui-tokens-color-state-errorLight, #FFF0F0)';
+export const SURFACE_DISABLED = 'var(--mui-palette-action-disabledBackground, #FAFAFA)';
+const SURFACE_ERROR = 'var(--mui-tokens-color-state-errorLight, rgba(235, 87, 87, 0.08))';
 export const TEXT_DISABLED = 'var(--mui-tokens-color-neutral-400)';
 export const BORDER_NEUTRAL = 'var(--mui-tokens-stroke-0, 1px) solid var(--mui-tokens-color-neutral-300, #D4D4D8)';
 export const BORDER_BLUE = BORDER_NEUTRAL;

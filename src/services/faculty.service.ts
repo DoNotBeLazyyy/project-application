@@ -246,6 +246,19 @@ export async function dismissSpecialGradeFlag(
     });
 }
 
+export async function setEnrollmentSpecialGrade(
+    enrollmentId: string,
+    gradingPeriodId: string,
+    specialGrade: string | null
+): Promise<ServiceResult<{ special_grade: string | null }>> {
+    return callRpc<{ special_grade: string | null }>('fn_set_enrollment_special_grade', {
+        p_enrollment_id: enrollmentId,
+        p_grading_period_id: gradingPeriodId,
+        p_special_grade: specialGrade
+    });
+}
+
+
 /**
  * The rules the admin has opened up for section-level thresholds, together with
  * whatever this section has already overridden.

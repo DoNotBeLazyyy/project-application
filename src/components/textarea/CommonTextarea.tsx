@@ -310,12 +310,14 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
             marginRight: 0
         },
         '& .MuiInputBase-root': {
+            color: 'var(--mui-palette-text-primary)',
             height: '100%',
             minHeight: `${resolvedMinSize.minHeight}px`,
             minWidth: resolvedMinWidth,
             width: '100%'
         },
         '& .common_textarea_html_input': {
+            color: 'var(--mui-palette-text-primary)',
             height: '100%',
             minHeight: `${resolvedMinSize.minHeight}px`
         }

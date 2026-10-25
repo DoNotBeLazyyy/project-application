@@ -89,6 +89,7 @@ html:not(.dark) {
         scrollbar-gutter: stable;
         scrollbar-width: thin;
         scrollbar-color: var(--mui-palette-grey-300) transparent;
+        color: var(--mui-palette-text-primary);
     }
 
     [class*="overflow-auto"]::-webkit-scrollbar,

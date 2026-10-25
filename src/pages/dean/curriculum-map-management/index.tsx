@@ -1085,6 +1085,7 @@ export default function CurriculumMapManagement({
                         title: 'Add Curriculum Entry'
                     }
                 }}
+                fullWidth
                 maxWidth="md"
                 open={isCreateOpen}
                 onClose={handleRequestCloseCreate}
@@ -1134,6 +1135,7 @@ export default function CurriculumMapManagement({
                         title: 'Edit Curriculum Entry'
                     }
                 }}
+                fullWidth
                 maxWidth="md"
                 open={isUpdateOpen}
                 onClose={handleRequestCloseUpdate}
@@ -1206,6 +1208,7 @@ export default function CurriculumMapManagement({
                         title: 'View Curriculum Entry'
                     }
                 }}
+                fullWidth
                 maxWidth="md"
                 open={isViewOpen}
                 onClose={handleCloseView}

@@ -39,10 +39,7 @@ export default function RubricBuilderPage() {
 
     const { fields, append, remove } = useFieldArray({ control, name: 'criteria' });
 
-    const watchedCriteria = useWatch({
-        control,
-        name: 'criteria'
-    }) ?? [];
+    const watchedCriteria = watch('criteria') ?? [];
 
     const totalPoints = useMemo(function() {
         return watchedCriteria.reduce(function(sum, criterion) {

@@ -21,7 +21,7 @@ const CATEGORY_LABEL_CLASS = 'font-semibold text-[11px] tracking-wide truncate u
 const STATE_PILL_CLASS = 'font-semibold h-fit mt-1 px-2 py-0.5 rounded-full self-start shrink-0 text-[10px] tracking-wide transition-colors uppercase';
 
 const UNREAD_ROW_CLASS = 'bg-(--mui-palette-primary-main)/10 border-(--mui-palette-primary-main) hover:bg-(--mui-palette-primary-main)/20';
-const READ_ROW_CLASS = 'bg-transparent border-transparent hover:bg-black/8';
+const READ_ROW_CLASS = 'bg-transparent border-transparent hover:bg-black/8 dark:hover:bg-white/10';
 
 function resolveRowStateClass(isRead: boolean): string {
     return isRead
@@ -238,7 +238,7 @@ export default function NotificationBell() {
                                     aria-hidden="true"
                                     className={
                                         item.is_read
-                                            ? `${ICON_BASE_CLASS} bg-black/5 text-(--mui-palette-text-disabled)`
+                                            ? `${ICON_BASE_CLASS} bg-black/5 dark:bg-white/10 text-(--mui-palette-text-disabled)`
                                             : `${ICON_BASE_CLASS} ${visual.backgroundClass} ${visual.colorClass}`
                                     }
                                 >
@@ -285,7 +285,7 @@ export default function NotificationBell() {
                                 }
                                 className={
                                     item.is_read
-                                        ? `${STATE_PILL_CLASS} bg-black/8 text-(--mui-palette-text-secondary) hover:bg-black/16`
+                                        ? `${STATE_PILL_CLASS} bg-black/8 dark:bg-white/10 text-(--mui-palette-text-secondary) hover:bg-black/16 dark:hover:bg-white/20`
                                         : `${STATE_PILL_CLASS} bg-(--mui-palette-primary-main) text-white hover:bg-(--mui-palette-primary-dark)`
                                 }
                                 title={

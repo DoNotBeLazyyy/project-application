@@ -5,6 +5,7 @@ import {
     CalculatorIcon,
     ChartLineUpIcon,
     DownloadSimpleIcon,
+    FlagIcon,
     LockKeyIcon,
     MagnifyingGlassIcon,
     PaperPlaneTiltIcon,
@@ -37,6 +38,7 @@ interface GradeSheetPanelProps {
     onDismissFailures?: () => void;
     onDismissFlag?: (flag: SpecialGradeFlag) => void;
     onSubmitGrades?: () => Promise<void>;
+    onUpdateSpecialGrade?: (enrollmentId: string, specialGrade: string | null) => Promise<void>;
 }
 
 export default function GradeSheetPanel({
@@ -56,7 +58,8 @@ export default function GradeSheetPanel({
     onCalculate,
     onDismissFailures,
     onDismissFlag,
-    onSubmitGrades
+    onSubmitGrades,
+    onUpdateSpecialGrade
 }: GradeSheetPanelProps) {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [auditEnrollmentId, setAuditEnrollmentId] = useState<string | null>(null);
@@ -289,19 +292,39 @@ export default function GradeSheetPanel({
                                             </span>
                                         </div>
 
-                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center">
-                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight">
-                                                Special
+                                        <div className="bg-slate-50/90 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 p-2 rounded-xl text-center flex flex-col justify-between">
+                                            <span className="block font-medium text-[10px] text-slate-400 uppercase tracking-tight flex items-center justify-center gap-1">
+                                                <FlagIcon size={10} className="text-amber-500" weight="fill" />
+                                                Flag Selector
                                             </span>
-                                            <span className="font-bold text-xs text-slate-700 dark:text-slate-300 block mt-0.5">
-                                                {row.special_grade || '—'}
-                                            </span>
+                                            <select
+                                                aria-label={`Special grade flag for ${row.full_name || 'student'}`}
+                                                className="w-full text-xs font-bold text-center bg-transparent border-0 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded cursor-pointer mt-0.5 truncate"
+                                                disabled={isSubmitted || !isEncodingOpen || isFlagBusy}
+                                                title="Select special grade flag (INC, DRP, FA, UW)"
+                                                value={row.special_grade || ''}
+                                                onChange={(e) => onUpdateSpecialGrade?.(row.enrollment_id, e.target.value || null)}
+                                            >
+                                                <option className="text-slate-700 dark:text-slate-200 bg-white dark:bg-zinc-900" value="">— None —</option>
+                                                <option className="text-amber-700 dark:text-amber-300 bg-white dark:bg-zinc-900" value="INC">INC (Incomplete)</option>
+                                                <option className="text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900" value="DRP">DRP (Dropped)</option>
+                                                <option className="text-purple-700 dark:text-purple-300 bg-white dark:bg-zinc-900" value="FA">FA (Absences)</option>
+                                                <option className="text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900" value="UW">UW (Unauthorized)</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Audit Math Button */}
-                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-end">
+                                {/* Audit Math Button & Special Grade Indicator */}
+                                <div className="border-t border-slate-100 dark:border-zinc-800 pt-2 flex items-center justify-between">
+                                    {row.special_grade ? (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                            <FlagIcon size={11} weight="fill" />
+                                            Flag: {row.special_grade}
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] text-slate-400 font-medium">Regular Grading</span>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => setAuditEnrollmentId(row.enrollment_id)}

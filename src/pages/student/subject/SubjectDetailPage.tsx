@@ -217,7 +217,7 @@ export default function SubjectDetailPage() {
                 {/* Tab Content Panes */}
                 <div className="flex-1 min-h-0">
                     {activeTab === 'content' && subject?.section_id && (
-                        <SectionContentPanel sectionId={subject.section_id} />
+                        <SectionContentPanel canManage={false} sectionId={subject.section_id} />
                     )}
                     {activeTab === 'assessments' && (
                         <SubjectAssessmentList

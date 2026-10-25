@@ -277,7 +277,7 @@ export function checkForMessage<T extends FieldValues>(
 }
 
 export const DEFAULT_FORM_MODE = 'onSubmit' as const;
-export const DEFAULT_FORM_REVALIDATE_MODE = 'onSubmit' as const;
+export const DEFAULT_FORM_REVALIDATE_MODE = 'onChange' as const;
 
 export const DEFAULT_FORM_OPTIONS = {
     mode: DEFAULT_FORM_MODE,
