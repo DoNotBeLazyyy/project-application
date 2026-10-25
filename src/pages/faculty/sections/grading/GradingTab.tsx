@@ -260,7 +260,7 @@ export default function GradingTab({
             return;
         }
 
-        useToastStore.getState().showToast(result.data?.message || 'Special grade updated.', 'success');
+        useToastStore.getState().showToast('Special grade updated.', 'success');
         await fetchPeriodData();
     }
 

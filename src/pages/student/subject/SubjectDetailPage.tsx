@@ -102,17 +102,29 @@ export default function SubjectDetailPage() {
 
         async function fetchAssessments() {
             const result = await getSubjectAssessments(effectiveEnrollmentId);
-            if (result.data) setAssessments(result.data);
+            if (result.data) {
+                setAssessments(result.data);
+            } else {
+                setAssessments([]);
+            }
         }
 
         async function fetchAttendance() {
             const result = await getSubjectAttendance(effectiveEnrollmentId);
-            if (result.data) setAttendance(result.data);
+            if (result.data) {
+                setAttendance(result.data);
+            } else {
+                setAttendance([]);
+            }
         }
 
         async function fetchGrades() {
             const result = await getSubjectGrades(effectiveEnrollmentId);
-            if (result.data) setGrades(result.data);
+            if (result.data) {
+                setGrades(result.data);
+            } else {
+                setGrades([]);
+            }
         }
 
         if (activeTab === 'assessments' && assessments === null) fetchAssessments();

@@ -142,10 +142,7 @@ export default function AiAssistant() {
         ? unusedSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT)
         : allRoleSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT);
     const lastMessage = messages[messages.length - 1];
-    const canShowFollowUps = !isSending
-        && suggestions.length > 0
-        && lastMessage?.role === 'assistant'
-        && !lastMessage.isFailed;
+    const canShowFollowUps = !isSending && suggestions.length > 0 && messages.length > 0;
 
     useEffect(function() {
         if (scrollRef.current) {
@@ -281,7 +278,7 @@ export default function AiAssistant() {
                 {canShowFollowUps && (
                     <div className="flex flex-col gap-2 pt-1">
                         <span className="text-(--mui-palette-text-secondary) text-xs">
-                            You can also ask
+                            Suggested questions
                         </span>
                         <SuggestionList
                             items={suggestions}

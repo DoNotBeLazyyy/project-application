@@ -546,31 +546,31 @@ BEGIN
                 'is_published', m.is_published,
                 'material_count', (
                     SELECT count(*)
-                    FROM public.section_materials sm
-                    WHERE sm.module_id = m.id
-                      AND sm.deleted_at IS NULL
-                      AND (v_can_manage OR sm.is_published)
+                    FROM public.course_materials cm
+                    WHERE cm.module_id = m.id
+                      AND cm.deleted_at IS NULL
+                      AND (v_can_manage OR cm.is_published)
                 ),
                 'materials', COALESCE((
                     SELECT jsonb_agg(jsonb_build_object(
-                        'id', sm.id,
-                        'title', sm.title,
-                        'description', sm.description,
-                        'material_type', sm.material_type,
-                        'file_url', sm.file_url,
-                        'file_name', sm.file_name,
-                        'file_size_bytes', sm.file_size_bytes,
-                        'sequence', sm.sequence,
-                        'is_published', sm.is_published,
-                        'created_at', sm.created_at
-                    ) ORDER BY sm.sequence ASC, sm.created_at ASC)
-                    FROM public.section_materials sm
-                    WHERE sm.module_id = m.id
-                      AND sm.deleted_at IS NULL
-                      AND (v_can_manage OR sm.is_published)
+                        'id', cm.id,
+                        'title', cm.title,
+                        'description', cm.description,
+                        'material_type', cm.material_type,
+                        'file_url', cm.file_url,
+                        'file_name', cm.file_name,
+                        'file_size_bytes', cm.file_size_bytes,
+                        'sequence', cm.sequence,
+                        'is_published', cm.is_published,
+                        'created_at', cm.created_at
+                    ) ORDER BY cm.sequence ASC, cm.created_at ASC)
+                    FROM public.course_materials cm
+                    WHERE cm.module_id = m.id
+                      AND cm.deleted_at IS NULL
+                      AND (v_can_manage OR cm.is_published)
                 ), '[]'::jsonb)
             ) AS mod_row
-        FROM public.section_modules m
+        FROM public.modules m
         WHERE m.section_id = p_section_id
           AND m.deleted_at IS NULL
           AND (v_can_manage OR m.is_published)

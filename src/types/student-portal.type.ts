@@ -91,6 +91,7 @@ export interface SubjectAssessmentItem {
     due_at: string | null;
     closes_at: string | null;
     scheduled_publish_at: string | null;
+    is_published?: boolean | null;
     submission_status: string | null;
     submission_id: string | null;
     attempts_used: number;

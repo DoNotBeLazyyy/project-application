@@ -1,8 +1,8 @@
 import { AssistantTurn, GeminiContent, GeminiResponse } from './types.ts';
 
 const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DEFAULT_MODEL = 'gemini-flash-latest';
-const FALLBACK_MODEL = 'gemini-flash-lite-latest';
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+const FALLBACK_MODEL = 'gemini-3.5-flash-lite';
 const MAX_HISTORY_TURNS = 10;
 const RETRY_DELAYS_MS = [700, 2000];
 const BUSY_MESSAGE = 'The assistant is busy right now. Please try again in a moment.';
@@ -110,7 +110,7 @@ export async function generateReply(
         let response: Response;
 
         try {
-            response = await fetch(`${GEMINI_ENDPOINT}/${model}:generateContent`, {
+            response = await fetch(`${GEMINI_ENDPOINT}/${model}:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,6 +130,9 @@ export async function generateReply(
             lastDetail = `${model} responded ${response.status}: ${await readUpstreamError(response)}`;
             console.error(lastDetail);
 
+            if (response.status === 429 && lastDetail.includes('Quota exceeded')) {
+                return { reply: null, message: 'The assistant quota has been reached for this period. Please try again shortly.', detail: lastDetail };
+            }
             if (!isRetryableStatus(response.status)) {
                 return { reply: null, message: UNAVAILABLE_MESSAGE, detail: lastDetail };
             }

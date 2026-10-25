@@ -49,7 +49,7 @@ function getAssessmentState(item: SubjectAssessmentItem): {
     if (isSubmitted) return { canTake: false, label: 'Submitted' };
     if (isMaxed) return { canTake: false, label: 'Max attempts reached' };
     if (isClosed) return { canTake: false, label: 'Closed' };
-    if (isScheduled) return { canTake: false, label: 'Not yet published' };
+    if (isScheduled || item.is_published === false) return { canTake: false, label: 'Not yet published' };
     if (isNotYetOpen) {
         const opensAt = new Date(item.opens_at ?? '');
         return {
