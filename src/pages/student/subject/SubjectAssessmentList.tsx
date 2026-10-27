@@ -46,16 +46,21 @@ function getAssessmentState(item: SubjectAssessmentItem): {
         ? new Date(item.scheduled_publish_at) > now
         : false;
 
+    const isPublishedEffective = item.is_published === true || (Boolean(item.scheduled_publish_at) && new Date(item.scheduled_publish_at!) <= now);
+
     if (isSubmitted) return { canTake: false, label: 'Submitted' };
     if (isMaxed) return { canTake: false, label: 'Max attempts reached' };
     if (isClosed) return { canTake: false, label: 'Closed' };
-    if (isScheduled || item.is_published === false) return { canTake: false, label: 'Not yet published' };
+    if (isScheduled || !isPublishedEffective) return { canTake: false, label: 'Not yet published' };
     if (isNotYetOpen) {
         const opensAt = new Date(item.opens_at ?? '');
         return {
             canTake: false,
             label: `Opens ${opensAt.toLocaleString()}`
         };
+    }
+    if (item.submission_status === 'In Progress') {
+        return { canTake: true, label: 'Resume' };
     }
 
     return { canTake: true, label: 'Take' };

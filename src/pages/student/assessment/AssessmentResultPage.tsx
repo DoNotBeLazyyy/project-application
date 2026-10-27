@@ -327,7 +327,7 @@ export default function AssessmentResultPage() {
                     startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                     variant="outlined"
                     onClick={function() {
-                        navigate(`/student/subjects/${result?.enrollment_id || enrollmentId}`);
+                        navigate(`/student/subjects/${result?.enrollment_id || enrollmentId}?tab=assessments`);
                     }}
                 >
                     Back to Subject

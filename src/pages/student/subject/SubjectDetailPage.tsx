@@ -127,10 +127,10 @@ export default function SubjectDetailPage() {
             }
         }
 
-        if (activeTab === 'assessments' && assessments === null) fetchAssessments();
+        if (activeTab === 'assessments') fetchAssessments();
         if (activeTab === 'attendance' && attendance === null) fetchAttendance();
         if (activeTab === 'grades') fetchGrades();
-    }, [activeTab, assessments, attendance, effectiveEnrollmentId]);
+    }, [activeTab, attendance, effectiveEnrollmentId]);
 
     function handleTabChange(_: SyntheticEvent, value: string) {
         setSearchParams({ tab: value }, { replace: true });

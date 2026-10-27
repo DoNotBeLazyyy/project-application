@@ -218,7 +218,7 @@ export default function TakeAssessmentPage() {
                         startIcon={<ArrowLeftIcon size={16} weight="bold" />}
                         variant="outlined"
                         onClick={function() {
-                            navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}`);
+                            navigate(`/student/subjects/${assessment?.enrollment_id || enrollmentId}?tab=assessments`);
                         }}
                     >
                         Back to Subject
