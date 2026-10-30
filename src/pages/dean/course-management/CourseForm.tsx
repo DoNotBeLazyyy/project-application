@@ -1,15 +1,15 @@
 import CommonButton from '@components/button/CommonButton';
-import FormLabel from '@components/form/FormLabel';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import CommonStepperInput from '@components/input/CommonStepperInput';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
+import { CommonSelectOption } from '@components/select/CommonSelect';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { PREREQUISITE_KIND_OPTIONS, PREREQUISITE_TYPE_OPTIONS, YEAR_LEVEL_STANDING_OPTIONS } from '@constants/course.constant';
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import { useCourseTypeOptions } from '@pages/dean/course-management/type/useCourseTypeOptions';
 import { useCourseOptions } from '@pages/dean/course-management/useCourseOptions';
-import { normalizeMinimumGrade, useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
+import { useMinimumGradeOptions } from '@pages/dean/course-management/useMinimumGradeOptions';
 import { getDepartmentCourseCodes } from '@services/course/course.service';
 import { generateCourseCode } from '@utils/course.util';
 import {
@@ -26,7 +26,7 @@ import {
     TrashIcon
 } from '@phosphor-icons/react';
 import { ComponentPropsForm } from '@type/common.type';
-import { CourseFormValues, CourseTypeRow, PrerequisiteRow } from '@type/course/course.type';
+import { CourseFormValues, CourseTypeRow } from '@type/course/course.type';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Control, FieldPath, useController, useFieldArray, useFormState, UseFormSetValue, useWatch
@@ -55,24 +55,20 @@ interface PrerequisiteCellProps {
 }
 
 function PrerequisiteKindCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
-    const kind = useController({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
     const courseId = useController({ control, name: prerequisiteName(rowIndex, 'course_id') });
     const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
     const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
 
     return (
-        <CommonSelect
+        <ValidCommonSelect
+            control={control}
             disabled={disabled}
-            error={Boolean(kind.fieldState.error)}
             fullWidth
-            helperText={kind.fieldState.error?.message}
             label="Kind"
             name={prerequisiteName(rowIndex, 'prerequisite_kind')}
             options={PREREQUISITE_KIND_OPTIONS}
-            size="small"
-            value={String(kind.field.value ?? '')}
-            onChange={(e) => {
-                kind.field.onChange(e.target.value);
+            rules={{ required: 'Please select a prerequisite kind' }}
+            onChange={function() {
                 courseId.field.onChange('');
                 yearLevel.field.onChange('');
                 minimumGrade.field.onChange('');
@@ -95,30 +91,27 @@ function PrerequisiteTargetCell({
 }: PrerequisiteTargetCellProps) {
     const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
     const prerequisites = useWatch({ control, name: 'prerequisites' });
-    const yearLevel = useController({ control, name: prerequisiteName(rowIndex, 'year_level_required') });
-    const courseId = useController({ control, name: prerequisiteName(rowIndex, 'course_id') });
-    const { errors } = useFormState({ control });
 
-    const targetError = kind === 'standing'
-        ? (errors.prerequisites as any)?.[rowIndex]?.year_level_required
-        : (errors.prerequisites as any)?.[rowIndex]?.course_id;
-
+    // The rules read the row's kind at validation time, so the hidden target never blocks
     if (kind === 'standing') {
         return (
-            <CommonSelect
+            <ValidCommonSelect
+                control={control}
                 defaultOpenErrorTooltip={defaultOpenErrorTooltip}
                 disabled={disabled}
-                error={Boolean(targetError)}
                 fullWidth
-                helperText={targetError?.message}
                 isRequired
                 label="Course / Year Level"
                 name={prerequisiteName(rowIndex, 'year_level_required')}
                 options={YEAR_LEVEL_STANDING_OPTIONS}
                 placeholder="Select Year Level"
-                size="small"
-                value={String(yearLevel.field.value ?? '')}
-                onChange={(e) => yearLevel.field.onChange(e.target.value)}
+                rules={{
+                    validate: function(value, formValues) {
+                        return formValues.prerequisites?.[rowIndex]?.prerequisite_kind !== 'standing'
+                            || Boolean(value && String(value).trim())
+                            || 'Please select a year level standing or remove the row.';
+                    }
+                }}
             />
         );
     }
@@ -133,42 +126,41 @@ function PrerequisiteTargetCell({
     );
 
     return (
-        <CommonSelect
+        <ValidCommonSelect
+            control={control}
             defaultOpenErrorTooltip={defaultOpenErrorTooltip}
             disabled={disabled}
-            error={Boolean(targetError)}
             fullWidth
-            helperText={targetError?.message}
             isRequired
             label="Course / Year Level"
             name={prerequisiteName(rowIndex, 'course_id')}
             options={availableOptions}
             placeholder="Select Prerequisite Course"
-            size="small"
-            value={String(courseId.field.value ?? '')}
-            onChange={(e) => courseId.field.onChange(e.target.value)}
+            rules={{
+                validate: function(value, formValues) {
+                    return formValues.prerequisites?.[rowIndex]?.prerequisite_kind !== 'course'
+                        || Boolean(value && String(value).trim())
+                        || 'Please select a prerequisite course or remove the row.';
+                }
+            }}
         />
     );
 }
 
 function PrerequisiteTypeCell({ control, disabled, rowIndex }: PrerequisiteCellProps) {
-    const type = useController({ control, name: prerequisiteName(rowIndex, 'prerequisite_type') });
     const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
 
     return (
-        <CommonSelect
+        <ValidCommonSelect
+            control={control}
             disabled={disabled}
-            error={Boolean(type.fieldState.error)}
             fullWidth
-            helperText={type.fieldState.error?.message}
             label="Type"
             name={prerequisiteName(rowIndex, 'prerequisite_type')}
             options={PREREQUISITE_TYPE_OPTIONS}
-            size="small"
-            value={String(type.field.value ?? '')}
-            onChange={(e) => {
-                type.field.onChange(e.target.value);
-                if (e.target.value === 'Co-requisite') minimumGrade.field.onChange('');
+            rules={{ required: 'Please select a prerequisite type' }}
+            onChange={function(event) {
+                if (event.target.value === 'Co-requisite') minimumGrade.field.onChange('');
             }}
         />
     );
@@ -186,24 +178,18 @@ function PrerequisiteMinGradeCell({
 }: PrerequisiteMinGradeCellProps) {
     const kind = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_kind') });
     const type = useWatch({ control, name: prerequisiteName(rowIndex, 'prerequisite_type') });
-    const minimumGrade = useController({ control, name: prerequisiteName(rowIndex, 'minimum_grade') });
 
+    // Co-requisites and standing rows never carry a grade - the cell clears it on switch
     const isLocked = type === 'Co-requisite' || kind === 'standing';
 
     return (
-        <CommonSelect
+        <ValidCommonSelect
+            control={control}
             disabled={disabled || isLocked}
-            error={Boolean(minimumGrade.fieldState.error)}
             fullWidth
-            helperText={minimumGrade.fieldState.error?.message}
             label="Min Grade"
             name={prerequisiteName(rowIndex, 'minimum_grade')}
             options={minimumGradeOptions}
-            size="small"
-            value={isLocked
-                ? ''
-                : normalizeMinimumGrade(minimumGrade.field.value)}
-            onChange={(e) => minimumGrade.field.onChange(e.target.value)}
         />
     );
 }
@@ -224,16 +210,7 @@ function CourseTypeSelectionCell({
     rowIndex,
     courseTypeOptions
 }: CourseTypeCellProps) {
-    const courseType = useController({
-        control,
-        name: courseTypeName(rowIndex, 'course_type_id'),
-        rules: {
-            required: 'Please select a course type'
-        }
-    });
     const courseTypes = useWatch({ control, name: 'course_types' }) || [];
-    const { errors } = useFormState({ control });
-    const courseTypeError = (errors.course_types as any)?.[rowIndex]?.course_type_id;
 
     const selectedInOtherRows = courseTypes
         .filter((_, i) => i !== rowIndex)
@@ -246,108 +223,73 @@ function CourseTypeSelectionCell({
     );
 
     return (
-        <CommonSelect
+        <ValidCommonSelect
+            control={control}
             defaultOpenErrorTooltip={defaultOpenErrorTooltip}
             disabled={disabled}
-            error={Boolean(courseTypeError)}
             fullWidth
-            helperText={courseTypeError?.message || 'Select course type classification'}
-            isRequired
+            helperText="Select course type classification"
             label="Course Type"
             name={courseTypeName(rowIndex, 'course_type_id')}
             options={availableOptions}
             placeholder="Select Course Type"
-            size="small"
-            value={String(courseType.field.value ?? '')}
-            onChange={(e) => courseType.field.onChange(e.target.value)}
+            rules={{ required: 'Please select a course type' }}
         />
     );
 }
 
-function CourseTypeUnitsCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
-    const units = useController({
-        control,
-        name: courseTypeName(rowIndex, 'units'),
-        rules: {
-            required: 'Units is required',
-            validate: (val) => {
-                if (val === '' || val === undefined || val === null) {
-                    return 'Units is required';
-                }
-                const num = Number(val);
-                if (isNaN(num)) {
-                    return 'Units must be a valid number';
-                }
-                if (num < 0) {
-                    return 'Units cannot be less than 0';
-                }
-                if (num > 10) {
-                    return 'Units cannot exceed 10';
-                }
-                return true;
-            }
-        }
-    });
-    const { errors } = useFormState({ control });
-    const unitsError = (errors.course_types as any)?.[rowIndex]?.units;
+// Units and credit hours share one ruleset: required, numeric, 0 to max in 0.5 steps
+const COURSE_TYPE_NUMBER_LIMITS = {
+    credit_hours: { label: 'Credit Hours', max: 20 },
+    units: { label: 'Units', max: 10 }
+};
 
-    return (
-        <CommonStepperInput
-            autoComplete="off"
-            clampOnInput={false}
-            disabled={disabled}
-            error={Boolean(unitsError)}
-            max={10}
-            min={0}
-            name={courseTypeName(rowIndex, 'units')}
-            placeholder="Enter units (0 - 10)"
-            step={0.5}
-            value={units.field.value === '' || units.field.value === undefined || units.field.value === null ? '' : (units.field.value as string | number)}
-            onChange={(val) => units.field.onChange(val === undefined ? '' : val)}
-        />
-    );
+interface CourseTypeNumberCellProps extends Omit<CourseTypeCellProps, 'courseTypeOptions'> {
+    field: keyof typeof COURSE_TYPE_NUMBER_LIMITS;
 }
 
-function CourseTypeCreditHoursCell({ control, disabled, rowIndex }: Omit<CourseTypeCellProps, 'courseTypeOptions'>) {
-    const creditHours = useController({
-        control,
-        name: courseTypeName(rowIndex, 'credit_hours'),
-        rules: {
-            required: 'Credit hours is required',
-            validate: (val) => {
-                if (val === '' || val === undefined || val === null) {
-                    return 'Credit hours is required';
-                }
-                const num = Number(val);
-                if (isNaN(num)) {
-                    return 'Credit hours must be a valid number';
-                }
-                if (num < 0) {
-                    return 'Credit hours cannot be less than 0';
-                }
-                if (num > 20) {
-                    return 'Credit hours cannot exceed 20';
-                }
-                return true;
-            }
-        }
-    });
-    const { errors } = useFormState({ control });
-    const creditHoursError = (errors.course_types as any)?.[rowIndex]?.credit_hours;
+function CourseTypeNumberCell({
+    control,
+    defaultOpenErrorTooltip,
+    disabled,
+    field,
+    rowIndex
+}: CourseTypeNumberCellProps) {
+    const { label, max } = COURSE_TYPE_NUMBER_LIMITS[field];
 
     return (
-        <CommonStepperInput
+        <ValidCommonNumberInput
             autoComplete="off"
-            clampOnInput={false}
+            control={control}
+            defaultOpenErrorTooltip={defaultOpenErrorTooltip}
+            description={`Allowed: 0 to ${max} ${label.toLowerCase()} (in 0.5 step increments)`}
             disabled={disabled}
-            error={Boolean(creditHoursError)}
-            max={20}
+            fullWidth
+            isRequired
+            label={label}
+            max={max}
             min={0}
-            name={courseTypeName(rowIndex, 'credit_hours')}
-            placeholder="Enter credit hours (0 - 20)"
+            name={courseTypeName(rowIndex, field)}
+            placeholder={`Enter ${label.toLowerCase()} (0 - ${max})`}
+            rules={{
+                validate: function(val) {
+                    if (val === '' || val === undefined || val === null) {
+                        return `${label} is required`;
+                    }
+                    const num = Number(val);
+                    if (isNaN(num)) {
+                        return `${label} must be a valid number`;
+                    }
+                    if (num < 0) {
+                        return `${label} cannot be less than 0`;
+                    }
+                    if (num > max) {
+                        return `${label} cannot exceed ${max}`;
+                    }
+                    return true;
+                }
+            }}
             step={0.5}
-            value={creditHours.field.value === '' || creditHours.field.value === undefined || creditHours.field.value === null ? '' : (creditHours.field.value as string | number)}
-            onChange={(val) => creditHours.field.onChange(val === undefined ? '' : val)}
         />
     );
 }
@@ -547,8 +489,7 @@ export default function CourseForm({
     const {
         fields: courseTypeFields,
         append: appendCourseType,
-        remove: removeCourseType,
-        update: updateCourseType
+        remove: removeCourseType
     } = useFieldArray({
         control,
         name: 'course_types'
@@ -557,8 +498,7 @@ export default function CourseForm({
     const {
         fields: prereqFields,
         append: appendPrereq,
-        remove: removePrereq,
-        update: updatePrereq
+        remove: removePrereq
     } = useFieldArray({
         control,
         name: 'prerequisites'
@@ -943,32 +883,20 @@ export default function CourseForm({
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <FormLabel
-                                                defaultOpenErrorTooltip={isUnitsFirstError}
-                                                description="Allowed: 0 to 10 units (in 0.5 step increments)"
-                                                errorMessage={(errors.course_types as any)?.[index]?.units?.message}
-                                                isFirstError={isUnitsFirstError}
-                                                isRequired
-                                                label="Units"
-                                            />
-                                            <CourseTypeUnitsCell
+                                            <CourseTypeNumberCell
                                                 control={control}
+                                                defaultOpenErrorTooltip={isUnitsFirstError}
                                                 disabled={disabled}
+                                                field="units"
                                                 rowIndex={index}
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <FormLabel
-                                                defaultOpenErrorTooltip={isCreditHoursFirstError}
-                                                description="Allowed: 0 to 20 credit hours (in 0.5 step increments)"
-                                                errorMessage={(errors.course_types as any)?.[index]?.credit_hours?.message}
-                                                isFirstError={isCreditHoursFirstError}
-                                                isRequired
-                                                label="Credit Hours"
-                                            />
-                                            <CourseTypeCreditHoursCell
+                                            <CourseTypeNumberCell
                                                 control={control}
+                                                defaultOpenErrorTooltip={isCreditHoursFirstError}
                                                 disabled={disabled}
+                                                field="credit_hours"
                                                 rowIndex={index}
                                             />
                                         </div>

@@ -4,6 +4,8 @@ import FileUploadAnswer from '@pages/student/assessment/FileUploadAnswer';
 import { StudentQuestion } from '@type/student-portal.type';
 import { Control } from 'react-hook-form';
 
+const REQUIRED_ANSWER_MESSAGE = 'This question is required.';
+
 interface AssessmentQuestionCardProps {
     control: Control<Record<string, string>>;
     index: number;
@@ -24,6 +26,9 @@ export default function AssessmentQuestionCard({
 
     const isChoiceBased = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
     const isTextBased = ['Short Answer', 'Essay', 'Fill in the Blank'].includes(question.question_type);
+    const requiredRules = question.is_required
+        ? { required: REQUIRED_ANSWER_MESSAGE }
+        : undefined;
 
     return (
         <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-4 rounded-lg">
@@ -47,7 +52,7 @@ export default function AssessmentQuestionCard({
                     label="Your answer"
                     name={`answer_${question.id}`}
                     options={choiceOptions}
-                    size="small"
+                    rules={requiredRules}
                 />
             )}
             {isTextBased && (
@@ -60,7 +65,7 @@ export default function AssessmentQuestionCard({
                     rows={question.question_type === 'Essay'
                         ? 4
                         : 1}
-                    size="small"
+                    rules={requiredRules}
                 />
             )}
             {question.question_type === 'File Upload' && (

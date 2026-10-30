@@ -1,5 +1,7 @@
+import FormLabel from '@components/form/FormLabel';
 import CommonInput from '@components/input/CommonInput';
 import { MinusIcon, PlusIcon } from '@phosphor-icons/react';
+import { classMerge } from '@utils/css.util';
 import { stripLeadingZeros } from '@utils/input.util';
 import React, { forwardRef, useCallback } from 'react';
 
@@ -14,13 +16,23 @@ export interface CommonStepperInputProps {
     label?: string;
     helperText?: React.ReactNode;
     error?: boolean;
+    isRequired?: boolean;
     placeholder?: string;
     autoComplete?: string;
     clampOnInput?: boolean;
-    size?: 'small' | 'medium';
+    size?: 'small' | 'medium' | 'large';
     className?: string;
     showButtons?: boolean;
 }
+
+// Step buttons are square and match the input height of each size.
+const STEP_BUTTON_SIZE_CLASSES = {
+    small: 'h-9 w-9',
+    medium: 'h-11 w-11',
+    large: 'h-12 w-12'
+} as const;
+
+const STEP_BUTTON_CLASS = 'flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer';
 
 const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>(({
     value,
@@ -33,10 +45,11 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     label,
     helperText,
     error = false,
+    isRequired,
     placeholder,
     autoComplete = 'off',
     clampOnInput = false,
-    size = 'small',
+    size = 'large',
     className = '',
     showButtons = false
 }, ref) => {
@@ -81,16 +94,24 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
     }, [clampOnInput, max, min, onChange]);
 
     return (
-        <div className={`flex flex-col gap-1 w-full ${className}`} ref={ref}>
+        <div className={classMerge('flex flex-col gap-(--mui-tokens-spacing-2) w-full', className)} ref={ref}>
+            {/*
+              * Same label row as every other field: guidance and the validation
+              * message hang off the label as icons. Unlabelled steppers keep the
+              * message under the input instead.
+              */}
             {label && (
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                    {label}
-                </label>
+                <FormLabel
+                    description={error ? undefined : helperText}
+                    errorMessage={error ? helperText : undefined}
+                    isRequired={isRequired}
+                    label={label}
+                />
             )}
-            <div className="flex items-center gap-1 w-full">
+            <div className="flex items-start gap-1 w-full">
                 {showButtons && (
                     <button
-                        className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer"
+                        className={classMerge(STEP_BUTTON_CLASS, STEP_BUTTON_SIZE_CLASSES[size])}
                         disabled={disabled || numericValue <= min}
                         type="button"
                         onClick={handleDecrement}
@@ -104,6 +125,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                         disabled={disabled}
                         error={error}
                         fullWidth
+                        helperText={label ? undefined : helperText}
                         name={name}
                         placeholder={placeholder}
                         size={size}
@@ -123,7 +145,7 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                 </div>
                 {showButtons && (
                     <button
-                        className="flex items-center justify-center h-9 w-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer"
+                        className={classMerge(STEP_BUTTON_CLASS, STEP_BUTTON_SIZE_CLASSES[size])}
                         disabled={disabled || numericValue >= max}
                         type="button"
                         onClick={handleIncrement}
@@ -132,11 +154,6 @@ const CommonStepperInput = forwardRef<HTMLDivElement, CommonStepperInputProps>((
                     </button>
                 )}
             </div>
-            {!error && helperText && (
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {helperText}
-                </span>
-            )}
         </div>
     );
 });

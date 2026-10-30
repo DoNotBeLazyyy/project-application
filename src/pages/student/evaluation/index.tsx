@@ -133,6 +133,13 @@ export default function StudentEvaluations() {
                     return;
                 }
 
+                // Term-scoped evaluations resolve to an anchor period; links from the grade
+                // views pass the raw period, so canonicalize the URL to the resolved one.
+                if (result.data.grading_period_id && result.data.grading_period_id !== gradingPeriodId) {
+                    navigate(`${toTargetPath(enrollmentId, result.data.grading_period_id)}${window.location.search}`, { replace: true });
+                    return;
+                }
+
                 setForm(result.data);
                 methods.reset({ responses: toAnswerForms(result.data) });
             } finally {
@@ -282,7 +289,7 @@ export default function StudentEvaluations() {
         });
 
         try {
-            const result = await submitEvaluation(enrollmentId, gradingPeriodId, responses);
+            const result = await submitEvaluation(enrollmentId, form.grading_period_id || gradingPeriodId, responses);
 
             if (!result.error) {
                 setRefreshKey(function(previous) {

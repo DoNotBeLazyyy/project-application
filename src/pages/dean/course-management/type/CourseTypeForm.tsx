@@ -9,14 +9,12 @@ import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 interface CourseTypeFormProps extends ComponentPropsForm {
     control: Control<CourseTypeFormValues>;
     disabled?: boolean;
-    isCodeDisabled?: boolean;
     isCreate?: boolean;
     setValue?: UseFormSetValue<CourseTypeFormValues>;
 }
 
 export function getCourseTypeFormFields(
-    disabled?: boolean,
-    _isCodeDisabled?: boolean
+    disabled?: boolean
 ): FormFieldConfig<CourseTypeFormValues>[] {
     return [
         {
@@ -51,12 +49,11 @@ export function getCourseTypeFormFields(
 export default function CourseTypeForm({
     control,
     disabled,
-    isCodeDisabled,
     isCreate = false,
     setValue,
     ...formProps
 }: CourseTypeFormProps) {
-    const fields = getCourseTypeFormFields(disabled, isCodeDisabled);
+    const fields = getCourseTypeFormFields(disabled);
     const watchedLabel = useWatch({ control, name: 'label' });
     const watchedCode = useWatch({ control, name: 'code' });
 

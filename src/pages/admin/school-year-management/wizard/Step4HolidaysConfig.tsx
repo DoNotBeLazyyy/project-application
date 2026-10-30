@@ -1,9 +1,10 @@
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import FormLabel from '@components/form/FormLabel';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import CommonSelect from '@components/select/CommonSelect';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import {
     CaretDownIcon,
     GearIcon,
@@ -17,10 +18,10 @@ import {
     ExceptionTypeOptionItem,
     WizardCalendarExceptionItem
 } from '@type/school-year.type';
-import { checkForMessage, clearFieldError } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import ManageExceptionTypesModal from './ManageExceptionTypesModal';
+import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from './wizard.constants';
 
 interface Step4HolidaysConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -28,18 +29,21 @@ interface Step4HolidaysConfigProps {
     setValue: UseFormSetValue<AcademicYearWizardFormValues>;
 }
 
-const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = [
-    { is_active: true, is_default: true, label: 'Holiday' },
-    { is_active: true, is_default: true, label: 'Break' },
-    { is_active: true, is_default: true, label: 'Suspension' },
-    { is_active: true, is_default: true, label: 'Special Class' },
-    { is_active: true, is_default: true, label: 'Exam Day' }
-];
+// Option values must be calendar_exception_type enum values; the DB coerces anything else to 'Holiday'
+const INITIAL_EXCEPTION_TYPE_ITEMS: ExceptionTypeOptionItem[] = CALENDAR_EXCEPTION_TYPES.map((type) => ({
+    is_active: true,
+    is_default: true,
+    label: type
+}));
+
+function getExceptionTypeLabel(value: string): string {
+    const type = toCalendarExceptionType(value);
+    return type ? CALENDAR_EXCEPTION_TYPE_LABELS[type] : value;
+}
 
 export default function Step4HolidaysConfig({
     control,
-    disabled = false,
-    setValue
+    disabled = false
 }: Step4HolidaysConfigProps) {
     const [isManageTypesOpen, setIsManageTypesOpen] = useState(false);
     const [exceptionTypeOptions, setExceptionTypeOptions] = useState<ExceptionTypeOptionItem[]>(INITIAL_EXCEPTION_TYPE_ITEMS);
@@ -47,7 +51,6 @@ export default function Step4HolidaysConfig({
     const [collapsedExceptions, setCollapsedExceptions] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
-    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.holidays && Array.isArray(errors.holidays)) {
@@ -63,14 +66,12 @@ export default function Step4HolidaysConfig({
         setCollapsedExceptions((prev) => ({ ...prev, [index]: !prev[index] }));
     }
 
-    const { fields, append, remove, replace } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: 'holidays'
     });
 
     const holidays = useWatch({ control, name: 'holidays' }) || [];
-    const syStartDate = useWatch({ control, name: 'start_date' });
-    const syEndDate = useWatch({ control, name: 'end_date' });
 
     function handleAddHoliday() {
         const activeDefault = exceptionTypeOptions.find((t) => t.is_active)?.label || 'Holiday';
@@ -154,7 +155,7 @@ export default function Step4HolidaysConfig({
                                         </span>
                                         {current.exception_type && (
                                             <span className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 shrink-0">
-                                                {current.exception_type}
+                                                {getExceptionTypeLabel(current.exception_type)}
                                             </span>
                                         )}
                                         {current.start_date && (
@@ -199,48 +200,40 @@ export default function Step4HolidaysConfig({
                                 </div>
 
                                 <div className={collapsedExceptions[idx] ? 'hidden' : 'space-y-4'}>
+                                    {/* school_year_calendar_exceptions.title text NOT NULL */}
                                     <div>
-                                        <CommonInput
-                                            defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.title`}
+                                        <ValidCommonInput
+                                            control={control}
                                             disabled={disabled}
-                                            error={Boolean((errors.holidays as any)?.[idx]?.title)}
                                             fullWidth
-                                            helperText={(errors.holidays as any)?.[idx]?.title?.message}
-                                            isFirstError={firstErrorKey === `holidays.${idx}.title`}
                                             isRequired
                                             label="Holiday / Exception Title"
                                             name={`holidays.${idx}.title`}
                                             placeholder="Holiday / Exception Title (e.g. Independence Day)"
-                                            size="small"
-                                            value={current.title || ''}
-                                            onChange={(e) => {
-                                                clearFieldError(control, `holidays.${idx}.title`);
-                                                clearFieldError(control, 'holidays');
-                                                setValue(`holidays.${idx}.title`, e.target.value, { shouldDirty: true, shouldValidate: true });
+                                            rules={{
+                                                required: 'Title is required',
+                                                validate: (val) => Boolean(String(val || '').trim()) || 'Title is required'
                                             }}
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                        {/* exception_type calendar_exception_type NOT NULL */}
                                         <div>
-                                            <CommonSelect
+                                            <ValidCommonSelect
+                                                control={control}
                                                 disabled={disabled}
                                                 fullWidth
+                                                isRequired
                                                 label="Exception Type"
+                                                name={`holidays.${idx}.exception_type`}
                                                 options={optionsToRender.map((opt) => ({
-                                                    label: `${opt.label}${!opt.is_active ? ' (Deprecated)' : ''}`,
+                                                    label: `${getExceptionTypeLabel(opt.label)}${!opt.is_active ? ' (Deprecated)' : ''}`,
                                                     value: opt.label
                                                 }))}
-                                                size="small"
-                                                value={current.exception_type || activeOptions[0]?.label || 'Holiday'}
-                                                onChange={(e) => {
-                                                    clearFieldError(control, `holidays.${idx}.exception_type`);
-                                                    clearFieldError(control, 'holidays');
-                                                    setValue(
-                                                        `holidays.${idx}.exception_type`,
-                                                        e.target.value as CalendarExceptionType,
-                                                        { shouldDirty: true }
-                                                    );
+                                                rules={{
+                                                    required: 'Exception type is required',
+                                                    validate: (val) => Boolean(toCalendarExceptionType(val as string)) || 'Unsupported exception type'
                                                 }}
                                             />
                                         </div>
@@ -250,73 +243,56 @@ export default function Step4HolidaysConfig({
                                                 className="tw_body_small_bold"
                                                 label="Class Impact"
                                             />
-                                            <label className={`flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-slate-700 dark:text-slate-300 select-none ${disabled ? 'cursor-default' : 'cursor-pointer'}`}>
-                                                <input
-                                                    checked={Boolean(current.affects_attendance)}
-                                                    className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-100"
-                                                    disabled={disabled}
-                                                    type="checkbox"
-                                                    onChange={(e) => {
-                                                        setValue(`holidays.${idx}.affects_attendance`, e.target.checked, { shouldDirty: true });
-                                                    }}
-                                                />
-                                                <span className="font-medium">Class Suspended</span>
-                                            </label>
+                                            <ValidCommonCheckbox
+                                                control={control}
+                                                disabled={disabled}
+                                                label="Class Suspended"
+                                                name={`holidays.${idx}.affects_attendance`}
+                                            />
                                         </div>
 
+                                        {/* start_date / end_date date NOT NULL */}
                                         <div>
-                                            <CommonDatePicker
-                                                defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.start_date`}
+                                            <ValidCommonDatePicker
+                                                control={control}
                                                 disabled={disabled}
-                                                error={Boolean((errors.holidays as any)?.[idx]?.start_date)}
-                                                helperText={(errors.holidays as any)?.[idx]?.start_date?.message}
-                                                isFirstError={firstErrorKey === `holidays.${idx}.start_date`}
                                                 isRequired
                                                 label="Start Date"
-                                                size="small"
-                                                slotProps={{ textField: { name: `holidays.${idx}.start_date` } }}
-                                                value={current.start_date || ''}
-                                                onChange={(val) => {
-                                                    clearFieldError(control, `holidays.${idx}.start_date`);
-                                                    clearFieldError(control, 'holidays');
-                                                    setValue(`holidays.${idx}.start_date`, val, { shouldDirty: true, shouldValidate: true });
+                                                name={`holidays.${idx}.start_date`}
+                                                rules={{
+                                                    required: 'Start date is required'
                                                 }}
                                             />
                                         </div>
 
                                         <div>
-                                            <CommonDatePicker
-                                                defaultOpenErrorTooltip={firstErrorKey === `holidays.${idx}.end_date`}
+                                            <ValidCommonDatePicker
+                                                control={control}
                                                 disabled={disabled}
-                                                error={Boolean((errors.holidays as any)?.[idx]?.end_date)}
-                                                helperText={(errors.holidays as any)?.[idx]?.end_date?.message}
-                                                isFirstError={firstErrorKey === `holidays.${idx}.end_date`}
                                                 isRequired
                                                 label="End Date"
-                                                size="small"
-                                                slotProps={{ textField: { name: `holidays.${idx}.end_date` } }}
-                                                value={current.end_date || ''}
-                                                onChange={(val) => {
-                                                    clearFieldError(control, `holidays.${idx}.end_date`);
-                                                    clearFieldError(control, 'holidays');
-                                                    setValue(`holidays.${idx}.end_date`, val, { shouldDirty: true, shouldValidate: true });
+                                                name={`holidays.${idx}.end_date`}
+                                                rules={{
+                                                    required: 'End date is required',
+                                                    validate: (val) => {
+                                                        if (val && current.start_date && new Date(val as string) < new Date(current.start_date)) {
+                                                            return 'End date cannot be before start date';
+                                                        }
+                                                        return true;
+                                                    }
                                                 }}
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <CommonInput
+                                        <ValidCommonInput
+                                            control={control}
                                             disabled={disabled}
                                             fullWidth
                                             label="Description / Note (Optional)"
+                                            name={`holidays.${idx}.description`}
                                             placeholder="e.g. Regular National Non-Working Holiday"
-                                            size="small"
-                                            value={current.description || ''}
-                                            onChange={(e) => {
-                                                clearFieldError(control, `holidays.${idx}.description`);
-                                                setValue(`holidays.${idx}.description`, e.target.value, { shouldDirty: true });
-                                            }}
                                         />
                                     </div>
                                 </div>

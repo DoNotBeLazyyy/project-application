@@ -1,8 +1,8 @@
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import { GraduationCapIcon, IdentificationCardIcon } from '@phosphor-icons/react';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import { initAuthSession } from '@services/auth.service';
@@ -10,7 +10,9 @@ import { createMyStudentProfile } from '@services/profile.service';
 import { getPrograms } from '@services/program/program.service';
 import { useToastStore } from '@stores/toast.store';
 import { MyProfile } from '@type/profile.type';
+import { formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
     { label: '1st Year', value: 1 },
@@ -29,6 +31,54 @@ export interface StudentProfilePromptModalProps {
     isMandatory?: boolean;
 }
 
+interface StudentProfileFormValues {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    suffix: string;
+    program_id: string;
+    year_level: number;
+    mobile_number: string;
+    date_of_birth: string;
+    gender: string;
+    civil_status: string;
+    nationality: string;
+    address_line1: string;
+    city: string;
+    province: string;
+    postal_code: string;
+}
+
+function toFormValues(profile?: MyProfile | null): StudentProfileFormValues {
+    return {
+        first_name: profile?.first_name ?? '',
+        middle_name: profile?.middle_name ?? '',
+        last_name: profile?.last_name ?? '',
+        suffix: profile?.suffix ?? '',
+        program_id: '',
+        year_level: 1,
+        mobile_number: profile?.mobile_number ?? '',
+        date_of_birth: profile?.date_of_birth ?? '',
+        gender: profile?.gender ?? '',
+        civil_status: profile?.civil_status ?? '',
+        nationality: profile?.nationality ?? '',
+        address_line1: profile?.address_line1 ?? '',
+        city: profile?.city ?? '',
+        province: profile?.province ?? '',
+        postal_code: profile?.postal_code ?? ''
+    };
+}
+
+function notBlank(label: string) {
+    return function(value: string | number) {
+        return String(value ?? '').trim() !== '' || `${label} is required`;
+    };
+}
+
+function trimmedOrUndefined(value: string): string | undefined {
+    return value.trim() || undefined;
+}
+
 export default function StudentProfilePromptModal({
     open,
     onClose,
@@ -36,32 +86,17 @@ export default function StudentProfilePromptModal({
     currentProfile,
     isMandatory = false
 }: StudentProfilePromptModalProps) {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
-    const [selectedProgramId, setSelectedProgramId] = useState('');
-    const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
-    const [mobileNumber, setMobileNumber] = useState('');
-    const [dateOfBirth, setDateOfBirth] = useState('');
-    const [gender, setGender] = useState('');
-    const [civilStatus, setCivilStatus] = useState('');
-    const [nationality, setNationality] = useState('');
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
+
+    const methods = useForm<StudentProfileFormValues>({ defaultValues: toFormValues(currentProfile) });
+    const { control, handleSubmit, reset } = methods;
 
     useEffect(function() {
         if (!open) return;
 
-        if (currentProfile) {
-            setFirstName(currentProfile.first_name || '');
-            setLastName(currentProfile.last_name || '');
-            setMobileNumber(currentProfile.mobile_number || '');
-            setDateOfBirth(currentProfile.date_of_birth || '');
-            setGender(currentProfile.gender || '');
-            setCivilStatus(currentProfile.civil_status || '');
-            setNationality(currentProfile.nationality || '');
-        }
+        reset(toFormValues(currentProfile));
 
         async function fetchPrograms() {
             setIsLoadingPrograms(true);
@@ -80,25 +115,137 @@ export default function StudentProfilePromptModal({
         }
 
         fetchPrograms();
-    }, [open, currentProfile]);
+    }, [open, currentProfile, reset]);
 
-    async function handleSubmit() {
-        if (!firstName.trim() || !lastName.trim()) {
-            useToastStore.getState().showToast('First name and last name are required.', 'error');
-            return;
+    const today = new Date().toISOString()
+        .slice(0, 10);
+
+    const fields: FormFieldConfig<StudentProfileFormValues>[] = [
+        {
+            disabled: isSubmitting,
+            label: 'First Name',
+            name: 'first_name',
+            rules: { required: 'First name is required', validate: notBlank('First name') },
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Middle Name',
+            name: 'middle_name',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Last Name',
+            name: 'last_name',
+            rules: { required: 'Last name is required', validate: notBlank('Last name') },
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Suffix',
+            name: 'suffix',
+            placeholder: 'e.g. Jr., III',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting || isLoadingPrograms,
+            label: 'Academic Program',
+            name: 'program_id',
+            options: programOptions,
+            type: 'select'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Year Level',
+            name: 'year_level',
+            options: YEAR_LEVEL_OPTIONS,
+            rules: { required: 'Year level is required' },
+            type: 'select'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Mobile Number',
+            name: 'mobile_number',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Date of Birth',
+            name: 'date_of_birth',
+            rules: {
+                validate: function(value: string | number) {
+                    return !value || String(value) <= today || 'Date of birth cannot be in the future';
+                }
+            },
+            type: 'date'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Gender',
+            name: 'gender',
+            options: GENDER_OPTIONS,
+            type: 'select'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Civil Status',
+            name: 'civil_status',
+            options: CIVIL_STATUS_OPTIONS,
+            type: 'select'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Nationality',
+            name: 'nationality',
+            placeholder: 'e.g. Filipino',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Address',
+            name: 'address_line1',
+            placeholder: 'House no., street, barangay',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'City / Municipality',
+            name: 'city',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Province',
+            name: 'province',
+            type: 'text'
+        },
+        {
+            disabled: isSubmitting,
+            label: 'Postal Code',
+            name: 'postal_code',
+            type: 'text'
         }
+    ];
 
+    async function saveProfile(values: StudentProfileFormValues) {
         setIsSubmitting(true);
         const result = await createMyStudentProfile({
-            civil_status: civilStatus || undefined,
-            date_of_birth: dateOfBirth || undefined,
-            first_name: firstName.trim(),
-            gender: gender || undefined,
-            last_name: lastName.trim(),
-            mobile_number: mobileNumber.trim() || undefined,
-            nationality: nationality.trim() || undefined,
-            program_id: selectedProgramId || undefined,
-            year_level: selectedYearLevel
+            address_line1: trimmedOrUndefined(values.address_line1),
+            city: trimmedOrUndefined(values.city),
+            civil_status: values.civil_status || undefined,
+            date_of_birth: values.date_of_birth || undefined,
+            first_name: values.first_name.trim(),
+            gender: values.gender || undefined,
+            last_name: values.last_name.trim(),
+            middle_name: trimmedOrUndefined(values.middle_name),
+            mobile_number: trimmedOrUndefined(values.mobile_number),
+            nationality: trimmedOrUndefined(values.nationality),
+            postal_code: trimmedOrUndefined(values.postal_code),
+            program_id: values.program_id || undefined,
+            province: trimmedOrUndefined(values.province),
+            suffix: trimmedOrUndefined(values.suffix),
+            year_level: Number(values.year_level)
         });
         setIsSubmitting(false);
 
@@ -149,87 +296,14 @@ export default function StudentProfilePromptModal({
                     </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <CommonInput
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="First Name"
-                        required
-                        size="small"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                    />
-
-                    <CommonInput
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Last Name"
-                        required
-                        size="small"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                    />
-
-                    <CommonSelect
-                        disabled={isSubmitting || isLoadingPrograms}
-                        fullWidth
-                        label="Academic Program"
-                        options={programOptions}
-                        size="small"
-                        value={selectedProgramId}
-                        onChange={(e) => setSelectedProgramId(e.target.value as string)}
-                    />
-
-                    <CommonSelect
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Year Level"
-                        options={YEAR_LEVEL_OPTIONS}
-                        size="small"
-                        value={selectedYearLevel}
-                        onChange={(e) => setSelectedYearLevel(Number(e.target.value))}
-                    />
-
-                    <CommonInput
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Mobile Number (Optional)"
-                        size="small"
-                        value={mobileNumber}
-                        onChange={(e) => setMobileNumber(e.target.value)}
-                    />
-
-                    <div>
-                        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            <span>Date of Birth (Optional)</span>
-                        </label>
-                        <CommonDatePicker
-                            disabled={isSubmitting}
-                            value={dateOfBirth}
-                            onChange={(val) => setDateOfBirth(val)}
-                        />
-                    </div>
-
-                    <CommonSelect
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Gender (Optional)"
-                        options={GENDER_OPTIONS}
-                        size="small"
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value as string)}
-                    />
-
-                    <CommonSelect
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Civil Status (Optional)"
-                        options={CIVIL_STATUS_OPTIONS}
-                        size="small"
-                        value={civilStatus}
-                        onChange={(e) => setCivilStatus(e.target.value as string)}
-                    />
-                </div>
+                <CommonForm
+                    component="div"
+                    containerClassName="gap-4 grid grid-cols-1 md:grid-cols-2"
+                    control={control}
+                    enableDraftRecovery={false}
+                    fields={fields}
+                    hasHelper
+                />
 
                 <div className="flex gap-2 justify-end mt-2">
                     {!isMandatory && onClose && (
@@ -244,11 +318,13 @@ export default function StudentProfilePromptModal({
                         </CommonButton>
                     )}
                     <CommonButton
-                        disabled={isSubmitting || !firstName.trim() || !lastName.trim()}
+                        disabled={isSubmitting}
                         loading={isSubmitting}
                         size="small"
                         variant="contained"
-                        onClick={handleSubmit}
+                        onClick={handleSubmit(saveProfile, function(errors) {
+                            formErrors(errors, methods);
+                        })}
                     >
                         {isSubmitting ? 'Saving Profile...' : 'Save & Create Profile'}
                     </CommonButton>

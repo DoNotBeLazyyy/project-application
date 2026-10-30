@@ -21,6 +21,7 @@ import {
     getSectionById,
     getSections,
     groupScheduleSlotsToBlocks,
+    saveSectionGradingOverride,
     saveSectionSchedules,
     updateSection
 } from '@services/section.service';
@@ -57,7 +58,7 @@ const defaultFormValues: SectionFormValues = {
     max_slots: '40',
     status: 'Open',
     override_grading_schema: false,
-    grading_override_mode: 'copy_section',
+    grading_override_mode: 'custom',
     source_section_id: '',
     grading_periods: [],
     schedules: [
@@ -138,7 +139,7 @@ export default function SectionWizardModal({
                             status: data.status || 'Open',
                             is_active_academic_year: data.is_active_academic_year,
                             override_grading_schema: false,
-                            grading_override_mode: 'copy_section',
+                            grading_override_mode: 'custom',
                             source_section_id: '',
                             grading_periods: [],
                             schedules: scheduleBlocks.length > 0
@@ -205,6 +206,23 @@ export default function SectionWizardModal({
                     message: `Schedule Slot #${i + 1}: Start time must be earlier than end time.`
                 });
                 hasErrors = true;
+                continue;
+            }
+
+            // section_schedules is unique per (day, start time); overlapping slots on a shared
+            // day would also double-book the class, so block both here.
+            const overlapIndex = schedules.findIndex((other, j) =>
+                j < i
+                && Boolean(other.time_start && other.time_end && slot.time_start && slot.time_end)
+                && (other.days || []).some((day) => (slot.days || []).includes(day))
+                && slot.time_start < other.time_end
+                && other.time_start < slot.time_end);
+            if (overlapIndex >= 0) {
+                methods.setError(`schedules.${i}.time_start` as any, {
+                    type: 'manual',
+                    message: `Schedule Slot #${i + 1} overlaps Slot #${overlapIndex + 1} on a shared day.`
+                });
+                hasErrors = true;
             }
         }
         if (hasErrors) {
@@ -214,19 +232,48 @@ export default function SectionWizardModal({
         return true;
     }
 
+    // Mirrors grading_components (name NOT NULL, weight CHECK > 0 and <= 100) and the
+    // per-period rule that component weights total exactly 100%.
     function validateStep3(): boolean {
         const values = getValues();
-        if (values.override_grading_schema) {
-            if (values.grading_override_mode === 'copy_section' && !values.source_section_id) {
-                methods.setError('source_section_id', {
-                    type: 'manual',
-                    message: 'Please select a source section to copy grading schema from.'
-                });
-                formErrors(methods.formState.errors, methods);
-                return false;
-            }
+        if (!values.override_grading_schema) {
+            return true;
         }
-        return true;
+
+        let hasErrors = false;
+        (values.grading_periods || []).forEach(function(period, pIdx) {
+            const components = period.components || [];
+            components.forEach(function(component, cIdx) {
+                if (!component.name || !component.name.trim()) {
+                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.name` as any, {
+                        type: 'manual',
+                        message: 'Component name is required.'
+                    });
+                    hasErrors = true;
+                }
+                const weight = Number(component.weight);
+                if (!(weight > 0 && weight <= 100)) {
+                    methods.setError(`grading_periods.${pIdx}.components.${cIdx}.weight` as any, {
+                        type: 'manual',
+                        message: 'Weight must be greater than 0 and at most 100.'
+                    });
+                    hasErrors = true;
+                }
+            });
+            const total = components.reduce((sum, component) => sum + (Number(component.weight) || 0), 0);
+            if (components.length === 0 || Math.abs(total - 100) > 0.001) {
+                methods.setError(`grading_periods.${pIdx}.weight` as any, {
+                    type: 'manual',
+                    message: `${period.name} component weights must total 100% (currently ${total}%).`
+                });
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
+            formErrors(methods.formState.errors, methods);
+        }
+        return !hasErrors;
     }
 
     async function handleNext() {
@@ -325,6 +372,12 @@ export default function SectionWizardModal({
             if (targetSectionId) {
                 const schedRes = await saveSectionSchedules(targetSectionId, flatSlots);
                 if (schedRes.error) return;
+
+                // The grading step is only collected in the form - persist the override explicitly
+                if (values.override_grading_schema && values.grading_periods?.length) {
+                    const gradingRes = await saveSectionGradingOverride(targetSectionId, values.grading_periods);
+                    if (gradingRes.error) return;
+                }
             }
 
             useToastStore.getState()

@@ -1,9 +1,11 @@
+import { getDepartments } from '@services/department.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { generateCourseCode } from '@utils/course.util';
 import { BulkImportResult } from '@type/bulk-import.type';
 import {
     CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, CourseOption
 } from '@type/course/course.type';
+import { DepartmentOption } from '@type/department.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 import { nullIfBlank } from '@utils/uuid.util';
@@ -179,7 +181,9 @@ export async function updateCourse(
                 year_level_required: prereq.prerequisite_kind === 'standing' && prereq.year_level_required
                     ? Number(prereq.year_level_required)
                     : null,
-                minimum_grade: prereq.minimum_grade || null
+                minimum_grade: prereq.prerequisite_type === 'Co-requisite'
+                    ? null
+                    : prereq.minimum_grade || null
             }))
             : null
     });
@@ -204,10 +208,28 @@ export async function bulkDeleteCourses(
 export async function bulkCreateCourses(
     courses: CourseBulkRow[]
 ): Promise<BulkImportResult> {
+    // fn_bulk_create_courses upserts by code, so a blank code must be generated against
+    // the codes already in the database - otherwise it would overwrite an existing course.
     const existingCodes: string[] = [];
+    let departments: DepartmentOption[] = [];
+    if (courses.some((course) => !course.code?.trim())) {
+        const [coursesResult, departmentsResult] = await Promise.all([
+            listCourses(1, 10000, '', [], null),
+            getDepartments()
+        ]);
+        existingCodes.push(...(coursesResult.data?.content ?? []).map((course) => course.code));
+        departments = departmentsResult.data ?? [];
+    }
+
     const normalizedCourses = courses.map((course) => {
+        const departmentKey = (course.department_code || '').trim()
+            .toLowerCase();
+        const department = departments.find((dept) =>
+            dept.code.trim()
+                .toLowerCase() === departmentKey || dept.label.trim()
+                .toLowerCase() === departmentKey);
         const code = course.code?.trim() || generateCourseCode({
-            departmentCode: course.department_code,
+            departmentCode: department?.code ?? course.department_code,
             title: course.title || '',
             existingCodes
         });

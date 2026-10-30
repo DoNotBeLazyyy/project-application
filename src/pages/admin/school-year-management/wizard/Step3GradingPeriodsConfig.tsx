@@ -1,7 +1,7 @@
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
-import CommonNumberInput from '@components/input/CommonNumberInput';
+import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
+import ValidCommonInput from '@components/input/ValidCommonInput';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
@@ -9,14 +9,12 @@ import {
     CheckCircleIcon,
     ListPlusIcon,
     PlusIcon,
-    ScalesIcon,
     TrashIcon,
     WarningCircleIcon
 } from '@phosphor-icons/react';
-import { useToastStore } from '@stores/toast.store';
 import { AcademicYearWizardFormValues, WizardGradingPeriodComponentItem, WizardGradingPeriodItem } from '@type/school-year.type';
-import { checkForMessage, clearFieldError } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { DateTime } from 'luxon';
+import { useEffect, useState } from 'react';
 import { Control, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 
 interface Step3GradingPeriodsConfigProps {
@@ -29,17 +27,25 @@ interface Step3GradingPeriodsConfigProps {
 export default function Step3GradingPeriodsConfig({
     control,
     disabled = false,
-    setValue,
     onChangeTerms
 }: Step3GradingPeriodsConfigProps) {
     const terms = useWatch({ control, name: 'terms' }) || [];
     const [deletePeriodTarget, setDeletePeriodTarget] = useState<{ termIndex: number; periodIndex: number; name: string } | null>(null);
-    const [focusTarget, setFocusTarget] = useState<{ type: 'period' | 'component'; key: string } | null>(null);
+    const [focusFieldName, setFocusFieldName] = useState<string | null>(null);
     const [collapsedPeriods, setCollapsedPeriods] = useState<Record<string, boolean>>({});
     const [collapsedTerms, setCollapsedTerms] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
-    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
+
+    // Focus the name input of a newly added period / component once it is rendered
+    useEffect(() => {
+        if (!focusFieldName) return;
+        const element = document.querySelector<HTMLInputElement>(`[name="${focusFieldName}"]`);
+        if (element) {
+            element.focus();
+            setFocusFieldName(null);
+        }
+    }, [focusFieldName, terms]);
 
     useEffect(() => {
         if (errors.terms && Array.isArray(errors.terms)) {
@@ -95,7 +101,7 @@ export default function Step3GradingPeriodsConfig({
         };
 
         onChangeTerms(updatedTerms);
-        setFocusTarget({ type: 'period', key: `term_${termIndex}_period_${currentPeriods.length}` });
+        setFocusFieldName(`terms.${termIndex}.grading_periods.${currentPeriods.length}.name`);
     }
 
     // Remove a period from a term
@@ -121,32 +127,19 @@ export default function Step3GradingPeriodsConfig({
         onChangeTerms(updatedTerms);
     }
 
-    // Update single period
-    function handleUpdatePeriod(
+    // Replace the component list of a period (field values themselves are owned by the form inputs)
+    function handleSetComponents(
         termIndex: number,
         periodIndex: number,
-        partial: Partial<WizardGradingPeriodItem>
+        components: WizardGradingPeriodComponentItem[]
     ) {
-        Object.keys(partial).forEach((field) => {
-            clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.${field}`);
-        });
-
-        if (setValue) {
-            Object.entries(partial).forEach(([field, val]) => {
-                setValue(`terms.${termIndex}.grading_periods.${periodIndex}.${field}` as any, val, {
-                    shouldDirty: true,
-                    shouldValidate: true
-                });
-            });
-        }
-
         const targetTerm = terms[termIndex];
         if (!targetTerm) return;
 
         const currentPeriods = [...(targetTerm.grading_periods || [])];
         currentPeriods[periodIndex] = {
             ...currentPeriods[periodIndex],
-            ...partial
+            components
         };
 
         const updatedTerms = [...terms];
@@ -158,42 +151,23 @@ export default function Step3GradingPeriodsConfig({
         onChangeTerms(updatedTerms);
     }
 
-    // Update period date with auto-adjustment of succeeding periods
-    function handleUpdatePeriodDate(
-        termIndex: number,
-        periodIndex: number,
-        field: 'start_date' | 'end_date',
-        value: string
-    ) {
-        clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.${field}`);
-
-        if (setValue) {
-            setValue(`terms.${termIndex}.grading_periods.${periodIndex}.${field}` as any, value, {
-                shouldDirty: true,
-                shouldValidate: true
-            });
-        }
-
+    // When a period end date is picked, push the succeeding period start date forward if it now overlaps
+    function handleAdjustNextPeriodStart(termIndex: number, periodIndex: number, value: string) {
         const targetTerm = terms[termIndex];
-        if (!targetTerm) return;
+        if (!targetTerm || !value) return;
 
         const currentPeriods = [...(targetTerm.grading_periods || [])];
-        const current = { ...currentPeriods[periodIndex], [field]: value };
-        currentPeriods[periodIndex] = current;
+        const nextPeriod = currentPeriods[periodIndex + 1];
+        if (!nextPeriod || !nextPeriod.start_date || new Date(nextPeriod.start_date) >= new Date(value)) return;
 
-        // If end_date is updated, ensure succeeding period start_date does not conflict
-        if (field === 'end_date') {
-            const nextPeriod = currentPeriods[periodIndex + 1];
-            if (nextPeriod && nextPeriod.start_date && value && new Date(nextPeriod.start_date) < new Date(value)) {
-                currentPeriods[periodIndex + 1] = {
-                    ...nextPeriod,
-                    end_date: nextPeriod.end_date && new Date(nextPeriod.end_date) <= new Date(value)
-                        ? (targetTerm.end_date || value)
-                        : nextPeriod.end_date,
-                    start_date: value
-                };
-            }
-        }
+        currentPeriods[periodIndex] = { ...currentPeriods[periodIndex], end_date: value };
+        currentPeriods[periodIndex + 1] = {
+            ...nextPeriod,
+            end_date: nextPeriod.end_date && new Date(nextPeriod.end_date) <= new Date(value)
+                ? (targetTerm.end_date || value)
+                : nextPeriod.end_date,
+            start_date: value
+        };
 
         const updatedTerms = [...terms];
         updatedTerms[termIndex] = {
@@ -215,10 +189,8 @@ export default function Step3GradingPeriodsConfig({
             weight: 0
         };
 
-        handleUpdatePeriod(termIndex, periodIndex, {
-            components: [...currentComponents, newComponent]
-        });
-        setFocusTarget({ type: 'component', key: `comp_${termIndex}_${periodIndex}_${currentComponents.length}` });
+        handleSetComponents(termIndex, periodIndex, [...currentComponents, newComponent]);
+        setFocusFieldName(`terms.${termIndex}.grading_periods.${periodIndex}.components.${currentComponents.length}.name`);
     }
 
     // Remove component item from period
@@ -227,45 +199,7 @@ export default function Step3GradingPeriodsConfig({
         if (!targetPeriod) return;
 
         const currentComponents = targetPeriod.components || [];
-        const updated = currentComponents.filter((_, idx) => idx !== compIndex);
-
-        handleUpdatePeriod(termIndex, periodIndex, {
-            components: updated
-        });
-    }
-
-    // Update single component item in a period
-    function handleUpdateComponentItem(
-        termIndex: number,
-        periodIndex: number,
-        compIndex: number,
-        partial: Partial<WizardGradingPeriodComponentItem>
-    ) {
-        Object.keys(partial).forEach((field) => {
-            clearFieldError(control, `terms.${termIndex}.grading_periods.${periodIndex}.components.${compIndex}.${field}`);
-        });
-
-        if (setValue) {
-            Object.entries(partial).forEach(([field, val]) => {
-                setValue(`terms.${termIndex}.grading_periods.${periodIndex}.components.${compIndex}.${field}` as any, val, {
-                    shouldDirty: true,
-                    shouldValidate: true
-                });
-            });
-        }
-
-        const targetPeriod = terms[termIndex]?.grading_periods?.[periodIndex];
-        if (!targetPeriod) return;
-
-        const currentComponents = [...(targetPeriod.components || [])];
-        currentComponents[compIndex] = {
-            ...currentComponents[compIndex],
-            ...partial
-        };
-
-        handleUpdatePeriod(termIndex, periodIndex, {
-            components: currentComponents
-        });
+        handleSetComponents(termIndex, periodIndex, currentComponents.filter((_, idx) => idx !== compIndex));
     }
 
     if (terms.length === 0) {
@@ -397,12 +331,10 @@ export default function Step3GradingPeriodsConfig({
                                         ? periods[pIdx - 1]
                                         : null;
 
-                                    const periodErrors = (errors.terms as any)?.[tIdx]?.grading_periods?.[pIdx];
-
                                     // Duplicate name check
                                     const isDuplicateName = periods.some(
                                         (p, idx) => idx !== pIdx && p.name && p.name.trim()
-                                            .toLowerCase() === period.name.trim()
+                                            .toLowerCase() === (period.name || '').trim()
                                             .toLowerCase()
                                     );
 
@@ -499,95 +431,97 @@ export default function Step3GradingPeriodsConfig({
 
                                             <div className={collapsedPeriods[`${tIdx}_${pIdx}`] ? 'hidden' : 'flex flex-col gap-3'}>
 
-                                            {/* Row 2: Period name and weight */}
+                                            {/* Row 2: Period name (NOT NULL, unique per term) and weight (CHECK > 0 AND <= 100) */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
-                                                    <CommonInput
-                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.name`}
+                                                    <ValidCommonInput
+                                                        control={control}
                                                         description="Descriptive name of the grading period (e.g. Prelim, Midterm, Finals)."
                                                         disabled={disabled}
-                                                        error={Boolean(isDuplicateName || periodErrors?.name)}
                                                         fullWidth
-                                                        helperText={isDuplicateName
-                                                            ? 'Duplicate name in this term'
-                                                            : periodErrors?.name?.message}
-                                                        inputRef={(el) => {
-                                                            const itemKey = period.id || `term_${tIdx}_period_${pIdx}`;
-                                                            if (focusTarget?.type === 'period' && focusTarget.key === itemKey && el) {
-                                                                el.focus();
-                                                                setFocusTarget(null);
-                                                            }
-                                                        }}
-                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.name`}
                                                         isRequired
                                                         label="Period Name"
                                                         name={`terms.${tIdx}.grading_periods.${pIdx}.name`}
                                                         placeholder="e.g. Prelim, Midterm, Finals"
-                                                        size="small"
-                                                        value={period.name}
-                                                        onChange={(e) => handleUpdatePeriod(tIdx, pIdx, { name: e.target.value })}
+                                                        rules={{
+                                                            required: 'Period name is required',
+                                                            validate: (val) => {
+                                                                const clean = String(val || '').trim().toLowerCase();
+                                                                if (!clean) return 'Period name is required';
+                                                                const isDuplicate = periods.some(
+                                                                    (p, idx) => idx !== pIdx && (p.name || '').trim().toLowerCase() === clean
+                                                                );
+                                                                return !isDuplicate || 'Duplicate name in this term';
+                                                            }
+                                                        }}
                                                     />
                                                 </div>
 
                                                 <div>
-                                                    <CommonNumberInput
-                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.weight`}
+                                                    <ValidCommonNumberInput
+                                                        control={control}
                                                         description="Percentage contribution toward the final term grade. Sum of all periods in a term must equal 100%."
                                                         disabled={disabled}
-                                                        error={Boolean(periodErrors?.weight)}
                                                         fullWidth
-                                                        helperText={periodErrors?.weight?.message}
-                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.weight`}
                                                         isRequired
                                                         label="Weight (%)"
                                                         max={100}
+                                                        maxDecimals={2}
                                                         min={0}
                                                         name={`terms.${tIdx}.grading_periods.${pIdx}.weight`}
-                                                        size="small"
+                                                        rules={{
+                                                            max: { message: 'Weight cannot exceed 100%', value: 100 },
+                                                            required: 'Weight is required',
+                                                            validate: (val) => Number(val) > 0 || 'Weight must be greater than 0%'
+                                                        }}
                                                         suffixText="%"
-                                                        value={period.weight ?? ''}
-                                                        onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { weight: val as any })}
                                                     />
                                                 </div>
                                             </div>
 
-                                            {/* Row 3: Start and End Date */}
+                                            {/* Row 3: Start and End Date (CHECK end_date > start_date) */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <div>
-                                                    <CommonDatePicker
-                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.start_date`}
+                                                    <ValidCommonDatePicker
+                                                        control={control}
                                                         description="Opening date for coursework and assessment recording in this grading period."
                                                         disabled={disabled}
-                                                        error={Boolean(hasPrecedingConflict || periodErrors?.start_date)}
-                                                        helperText={hasPrecedingConflict
-                                                            ? `Overlaps with #${pIdx} end date`
-                                                            : periodErrors?.start_date?.message}
-                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.start_date`}
                                                         isRequired
                                                         label="Period Start Date"
-                                                        size="small"
-                                                        slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.start_date` } }}
-                                                        value={period.start_date || ''}
-                                                        onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'start_date', val)}
+                                                        name={`terms.${tIdx}.grading_periods.${pIdx}.start_date`}
+                                                        rules={{
+                                                            required: 'Period start date is required',
+                                                            validate: (val) => {
+                                                                if (val && term.start_date && new Date(val as string) < new Date(term.start_date)) {
+                                                                    return 'Cannot be before the term start date';
+                                                                }
+                                                                return true;
+                                                            }
+                                                        }}
                                                     />
                                                 </div>
 
                                                 <div>
-                                                    <CommonDatePicker
-                                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.end_date`}
+                                                    <ValidCommonDatePicker
+                                                        control={control}
                                                         description="Cut-off date for exams and grade input for this period."
                                                         disabled={disabled}
-                                                        error={Boolean(hasDateOrderError || periodErrors?.end_date)}
-                                                        helperText={hasDateOrderError
-                                                            ? 'Must be after start date'
-                                                            : periodErrors?.end_date?.message}
-                                                        isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.end_date`}
                                                         isRequired
                                                         label="Period End Date"
-                                                        size="small"
-                                                        slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.end_date` } }}
-                                                        value={period.end_date || ''}
-                                                        onChange={(val) => handleUpdatePeriodDate(tIdx, pIdx, 'end_date', val)}
+                                                        name={`terms.${tIdx}.grading_periods.${pIdx}.end_date`}
+                                                        rules={{
+                                                            required: 'Period end date is required',
+                                                            validate: (val) => {
+                                                                if (val && period.start_date && new Date(val as string) <= new Date(period.start_date)) {
+                                                                    return 'Must be after start date';
+                                                                }
+                                                                if (val && term.end_date && new Date(val as string) > new Date(term.end_date)) {
+                                                                    return 'Cannot be after the term end date';
+                                                                }
+                                                                return true;
+                                                            }
+                                                        }}
+                                                        onAccept={(date: DateTime | null) => handleAdjustNextPeriodStart(tIdx, pIdx, date?.toISODate() || '')}
                                                     />
                                                 </div>
                                             </div>
@@ -604,27 +538,27 @@ export default function Step3GradingPeriodsConfig({
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
-                                                            <CommonDatePicker
+                                                            <ValidCommonDatePicker
+                                                                control={control}
                                                                 disabled={disabled}
                                                                 label="Exam Start"
-                                                                size="small"
-                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.major_exam_start_date` } }}
-                                                                value={period.major_exam_start_date || ''}
-                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_start_date: val })}
+                                                                name={`terms.${tIdx}.grading_periods.${pIdx}.major_exam_start_date`}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <CommonDatePicker
-                                                                defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date`}
+                                                            <ValidCommonDatePicker
+                                                                control={control}
                                                                 disabled={disabled}
-                                                                error={Boolean(periodErrors?.major_exam_end_date)}
-                                                                helperText={periodErrors?.major_exam_end_date?.message}
-                                                                isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date`}
                                                                 label="Exam End"
-                                                                size="small"
-                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date` } }}
-                                                                value={period.major_exam_end_date || ''}
-                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { major_exam_end_date: val })}
+                                                                name={`terms.${tIdx}.grading_periods.${pIdx}.major_exam_end_date`}
+                                                                rules={{
+                                                                    validate: (val) => {
+                                                                        if (val && period.major_exam_start_date && new Date(val as string) < new Date(period.major_exam_start_date)) {
+                                                                            return 'Cannot be before exam start';
+                                                                        }
+                                                                        return true;
+                                                                    }
+                                                                }}
                                                             />
                                                         </div>
                                                     </div>
@@ -640,27 +574,27 @@ export default function Step3GradingPeriodsConfig({
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         <div>
-                                                            <CommonDatePicker
+                                                            <ValidCommonDatePicker
+                                                                control={control}
                                                                 disabled={disabled}
                                                                 label="Encoding Start"
-                                                                size="small"
-                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_start_date` } }}
-                                                                value={period.grade_encoding_start_date || ''}
-                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_start_date: val })}
+                                                                name={`terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_start_date`}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <CommonDatePicker
-                                                                defaultOpenErrorTooltip={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date`}
+                                                            <ValidCommonDatePicker
+                                                                control={control}
                                                                 disabled={disabled}
-                                                                error={Boolean(periodErrors?.grade_encoding_end_date)}
-                                                                helperText={periodErrors?.grade_encoding_end_date?.message}
-                                                                isFirstError={firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date`}
                                                                 label="Encoding End"
-                                                                size="small"
-                                                                slotProps={{ textField: { name: `terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date` } }}
-                                                                value={period.grade_encoding_end_date || ''}
-                                                                onChange={(val) => handleUpdatePeriod(tIdx, pIdx, { grade_encoding_end_date: val })}
+                                                                name={`terms.${tIdx}.grading_periods.${pIdx}.grade_encoding_end_date`}
+                                                                rules={{
+                                                                    validate: (val) => {
+                                                                        if (val && period.grade_encoding_start_date && new Date(val as string) < new Date(period.grade_encoding_start_date)) {
+                                                                            return 'Cannot be before encoding start';
+                                                                        }
+                                                                        return true;
+                                                                    }
+                                                                }}
                                                             />
                                                         </div>
                                                     </div>
@@ -740,10 +674,6 @@ export default function Step3GradingPeriodsConfig({
                                                     ) : (
                                                         <div className="space-y-2">
                                                             {components.map((comp, cIdx) => {
-                                                                const compErrors = (periodErrors as any)?.components?.[cIdx];
-                                                                const isNameFirstError = firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.name`;
-                                                                const isWeightFirstError = firstErrorKey === `terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.weight`;
-
                                                                 return (
                                                                 <div
                                                                     className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 bg-white dark:bg-zinc-800 p-2.5 sm:p-2 rounded-lg border border-slate-200 dark:border-zinc-700"
@@ -776,31 +706,22 @@ export default function Step3GradingPeriodsConfig({
                                                                         c{cIdx + 1}
                                                                     </span>
 
-                                                                    {/* Field 1: Component Name */}
+                                                                    {/* Field 1: Component Name (dense row: every control stays small) */}
                                                                     <div className="w-full sm:flex-1">
                                                                         <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                                             Component Name
                                                                         </span>
-                                                                        <CommonInput
+                                                                        <ValidCommonInput
                                                                             containerClassName="w-full"
-                                                                            defaultOpenErrorTooltip={isNameFirstError}
+                                                                            control={control}
                                                                             disabled={disabled}
-                                                                            error={Boolean(compErrors?.name)}
                                                                             fullWidth
-                                                                            helperText={compErrors?.name?.message}
-                                                                            inputRef={(el) => {
-                                                                                const itemKey = comp.id || `comp_${tIdx}_${pIdx}_${cIdx}`;
-                                                                                if (focusTarget?.type === 'component' && focusTarget.key === itemKey && el) {
-                                                                                    el.focus();
-                                                                                    setFocusTarget(null);
-                                                                                }
-                                                                            }}
-                                                                            isFirstError={isNameFirstError}
                                                                             name={`terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.name`}
                                                                             placeholder="e.g. Quizzes, Midterm Exam, Recitation"
+                                                                            rules={{
+                                                                                validate: (val) => Boolean(String(val || '').trim()) || 'Component name is required'
+                                                                            }}
                                                                             size="small"
-                                                                            value={comp.name}
-                                                                            onChange={(e) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { name: e.target.value })}
                                                                         />
                                                                     </div>
 
@@ -809,22 +730,23 @@ export default function Step3GradingPeriodsConfig({
                                                                         <span className="block sm:hidden text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
                                                                             Weight (%)
                                                                         </span>
-                                                                        <CommonNumberInput
+                                                                        <ValidCommonNumberInput
                                                                             containerClassName="w-full"
-                                                                            defaultOpenErrorTooltip={isWeightFirstError}
+                                                                            control={control}
                                                                             disabled={disabled}
-                                                                            error={Boolean(compErrors?.weight)}
                                                                             fullWidth
-                                                                            helperText={compErrors?.weight?.message}
-                                                                            isFirstError={isWeightFirstError}
                                                                             max={100}
+                                                                            maxDecimals={2}
                                                                             min={0}
                                                                             name={`terms.${tIdx}.grading_periods.${pIdx}.components.${cIdx}.weight`}
                                                                             placeholder="Weight"
+                                                                            rules={{
+                                                                                max: { message: 'Weight cannot exceed 100%', value: 100 },
+                                                                                required: 'Weight is required',
+                                                                                validate: (val) => Number(val) > 0 || 'Weight must be greater than 0%'
+                                                                            }}
                                                                             size="small"
                                                                             suffixText="%"
-                                                                            value={comp.weight ?? ''}
-                                                                            onChange={(val) => handleUpdateComponentItem(tIdx, pIdx, cIdx, { weight: val as any })}
                                                                         />
                                                                     </div>
 

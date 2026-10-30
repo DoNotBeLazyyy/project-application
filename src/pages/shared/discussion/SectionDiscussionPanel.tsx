@@ -1,9 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonTextarea from '@components/textarea/CommonTextarea';
 import { useObjectDraft } from '@hooks/useFormDraft';
 import DiscussionAttachmentPicker from '@pages/shared/discussion/DiscussionAttachmentPicker';
 import DiscussionThreadView from '@pages/shared/discussion/DiscussionThreadView';
@@ -23,7 +23,8 @@ import { useToastStore } from '@stores/toast.store';
 import { DiscussionAttachmentPayload, DiscussionThreadRow } from '@type/discussion.type';
 import { formatDate } from '@utils/date.util';
 import { extractClipboardFiles } from '@utils/file.util';
-import { ChangeEvent, ClipboardEvent, useEffect, useMemo, useState } from 'react';
+import { ClipboardEvent, useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const COMPOSE_TEXTAREA_SX = {
@@ -35,10 +36,19 @@ const COMPOSE_TEXTAREA_SX = {
     }
 };
 
-const DEFAULT_DISCUSSION_DRAFT = {
+interface DiscussionComposerValues {
+    title: string;
+    body: string;
+}
+
+const DEFAULT_DISCUSSION_DRAFT: DiscussionComposerValues = {
     title: '',
     body: ''
 };
+
+function isBlank(value: unknown): boolean {
+    return !String(value ?? '').trim();
+}
 
 interface SectionDiscussionPanelProps {
     sectionId: string;
@@ -50,8 +60,12 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
     const [filterMode, setFilterMode] = useState<'All' | 'Pinned' | 'Unanswered' | 'Resolved'>('All');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
-    const [title, setTitle] = useState('');
-    const [body, setBody] = useState('');
+    const { control, handleSubmit, reset, setValue } = useForm<DiscussionComposerValues>({
+        defaultValues: DEFAULT_DISCUSSION_DRAFT
+    });
+    const composerValues = useWatch({ control });
+    const title = composerValues.title ?? '';
+    const body = composerValues.body ?? '';
     const [files, setFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const showToast = useToastStore((s) => s.showToast);
@@ -66,8 +80,8 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         values: currentDraftValues,
         defaultValues: DEFAULT_DISCUSSION_DRAFT,
         onRestore: (restored) => {
-            setTitle(restored.title ?? '');
-            setBody(restored.body ?? '');
+            setValue('title', restored.title ?? '');
+            setValue('body', restored.body ?? '');
         },
         enabled: isCreateOpen
     });
@@ -96,8 +110,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         draftGuard.clearDraft();
         setIsDiscardOpen(false);
         setIsCreateOpen(false);
-        setTitle('');
-        setBody('');
+        reset(DEFAULT_DISCUSSION_DRAFT);
         setFiles([]);
         setIsUploading(false);
     }
@@ -135,8 +148,40 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
         handleAddFiles(pasted);
     }
 
-    async function handleCreate() {
-        if (!title.trim() || !body.trim() || isUploading) return;
+    const composerFields: FormFieldConfig<DiscussionComposerValues>[] = [
+        {
+            label: 'Discussion Title',
+            name: 'title',
+            placeholder: 'e.g. Question regarding Week 3 Database Normalization',
+            rules: {
+                required: 'Title is required',
+                validate: (value: unknown) => !isBlank(value) || 'Title cannot be empty or whitespace only'
+            },
+            type: 'text'
+        },
+        {
+            fieldProps: {
+                maxLength: 2000,
+                sx: COMPOSE_TEXTAREA_SX,
+                onPaste: handlePaste
+            },
+            label: 'Message / Details',
+            name: 'body',
+            placeholder: 'What would you like to discuss with the class? You can also paste screenshots directly.',
+            rules: {
+                required: 'Message is required',
+                validate: (value: unknown) => !isBlank(value) || 'Message cannot be empty or whitespace only'
+            },
+            type: 'text-area'
+        }
+    ];
+
+    function handleCreate() {
+        handleSubmit(createDiscussion)();
+    }
+
+    async function createDiscussion(values: DiscussionComposerValues) {
+        if (isUploading) return;
 
         setIsUploading(true);
         const uploaded: DiscussionAttachmentPayload[] = [];
@@ -151,7 +196,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
             uploaded.push(upload.data);
         }
 
-        const result = await createThread(sectionId, title.trim(), body.trim(), uploaded);
+        const result = await createThread(sectionId, values.title.trim(), values.body.trim(), uploaded);
         setIsUploading(false);
 
         if (!result.error) {
@@ -326,32 +371,13 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Discussion Title <span className="text-rose-500">*</span>
-                            </label>
-                            <CommonInput
-                                fullWidth
-                                placeholder="e.g. Question regarding Week 3 Database Normalization"
-                                size="small"
-                                value={title}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Message / Details <span className="text-rose-500">*</span>
-                            </label>
-                            <CommonTextarea
-                                maxLength={2000}
-                                placeholder="What would you like to discuss with the class? You can also paste screenshots directly."
-                                sx={COMPOSE_TEXTAREA_SX}
-                                value={body}
-                                onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setBody(e.target.value)}
-                                onPaste={handlePaste}
-                            />
-                        </div>
+                        <CommonForm
+                            component="div"
+                            containerClassName="flex flex-col gap-3"
+                            control={control}
+                            enableDraftRecovery={false}
+                            fields={composerFields}
+                        />
 
                         <div className="flex flex-col gap-1 pt-1">
                             <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -379,7 +405,7 @@ export default function SectionDiscussionPanel({ sectionId }: SectionDiscussionP
                             size="small"
                             startIcon={<PaperPlaneTiltIcon size={16} weight="bold" />}
                             variant="contained"
-                            disabled={!title.trim() || !body.trim() || isUploading}
+                            disabled={isUploading}
                             onClick={handleCreate}
                         >
                             {isUploading ? 'Posting...' : 'Post Discussion'}

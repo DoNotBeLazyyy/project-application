@@ -69,6 +69,7 @@ export interface CourseOption {
     total_units?: number;
     credit_hours?: number;
     department_id?: string;
+    department_code?: string;
 }
 
 export interface CourseBulkRow {

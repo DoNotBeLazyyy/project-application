@@ -2,12 +2,14 @@ import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import { CommonChip } from '@components/badge/CommonChip';
 import CommonButton from '@components/button/CommonButton';
 import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
+import FormLabel from '@components/form/FormLabel';
 import ModalCloseIcon from '@components/icons/ModalCloseIcon';
 import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import CommonSelect from '@components/select/CommonSelect';
+import CommonTextarea from '@components/textarea/CommonTextarea';
 import { useObjectDraft } from '@hooks/useFormDraft';
 import { CIVIL_STATUS_OPTIONS, GENDER_OPTIONS } from '@pages/shared/profile/constants/profile.constant';
 import {
@@ -15,8 +17,6 @@ import {
     CheckCircleIcon,
     PencilSimpleIcon,
     ShieldCheckIcon,
-    UserCircleIcon,
-    WarningCircleIcon,
     XCircleIcon
 } from '@phosphor-icons/react';
 import { approveStaffProfileRequest, rejectStaffProfileRequest } from '@services/admin-verification.service';
@@ -475,6 +475,7 @@ export default function StaffProfileVerificationModal({
                                                             />
                                                         ) : field === 'date_of_birth' ? (
                                                             <CommonDatePicker
+                                                                size="small"
                                                                 value={String(editVal || '')}
                                                                 onChange={(val) => handleFieldChange('date_of_birth', val)}
                                                             />
@@ -566,6 +567,7 @@ export default function StaffProfileVerificationModal({
                                                         />
                                                     ) : field === 'date_of_birth' ? (
                                                         <CommonDatePicker
+                                                            size="small"
                                                             value={String(editVal || '')}
                                                             onChange={(val) => handleFieldChange('date_of_birth', val)}
                                                         />
@@ -594,21 +596,21 @@ export default function StaffProfileVerificationModal({
 
                     {/* Admin Notes */}
                     <div className="flex flex-col gap-1 mt-1 shrink-0">
-                        <label className="text-xs font-semibold text-(--mui-palette-text-primary)">
-                            Administrator Notes & Remarks {isPending && '(Optional)'}
-                        </label>
                         {isPending ? (
                             <CommonInput
                                 fullWidth
+                                label="Administrator Notes & Remarks (Optional)"
                                 placeholder="e.g., Verified credentials and approved modifications..."
-                                size="small"
                                 value={adminNotes}
                                 onChange={(e) => setAdminNotes(e.target.value)}
                             />
                         ) : (
-                            <p className="text-xs text-(--mui-palette-text-secondary) m-0">
-                                {request.admin_notes || 'No administrative notes recorded.'}
-                            </p>
+                            <>
+                                <FormLabel label="Administrator Notes & Remarks" />
+                                <p className="text-xs text-(--mui-palette-text-secondary) m-0">
+                                    {request.admin_notes || 'No administrative notes recorded.'}
+                                </p>
+                            </>
                         )}
                     </div>
                 </div>
@@ -659,19 +661,14 @@ export default function StaffProfileVerificationModal({
                 }}
             >
                 <div className="p-4 flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-(--mui-palette-text-primary)">
-                            Rejection Reason <span className="text-(--mui-palette-error-main)">*</span>
-                        </label>
-                        <CommonInput
-                            fullWidth
-                            multiline
-                            minRows={3}
-                            placeholder="State the reason clearly (e.g., Discrepancy in legal name; please upload proof of name change)..."
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                        />
-                    </div>
+                    <CommonTextarea
+                        fullWidth
+                        isRequired
+                        label="Rejection Reason"
+                        placeholder="State the reason clearly (e.g., Discrepancy in legal name; please upload proof of name change)..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                    />
 
                     <div className="flex items-center justify-end gap-2 mt-2">
                         <CommonButton

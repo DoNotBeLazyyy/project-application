@@ -67,8 +67,6 @@ export interface MySubjectListRow {
     term_label: string;
     faculty_name: string | null;
     enrollment_status: EnrollmentStatus;
-    final_grade: number | null;
-    is_grade_visible: boolean;
     total_count: number;
 }
 
@@ -324,8 +322,6 @@ export interface MyGradeBreakdown {
     status: string | null;
     total_component_weight: number;
     passing_grade: number | null;
-    is_published?: boolean;
-    released_at?: string | null;
     components: MyGradeBreakdownComponent[];
 }
 

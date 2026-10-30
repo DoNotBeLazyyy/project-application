@@ -3,10 +3,7 @@ import {
     INPUT_HEIGHT_LARGE,
     INPUT_HEIGHT_MEDIUM,
     INPUT_HEIGHT_SMALL,
-    INPUT_HEIGHT_TOUCH,
-    INPUT_PADDING_LARGE,
-    INPUT_PADDING_MEDIUM,
-    INPUT_PADDING_SMALL
+    INPUT_HEIGHT_TOUCH
 } from '@constants/theme/input-state.constant';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
@@ -109,8 +106,8 @@ function getDatepickerSizeSx(size?: 'small' | 'medium' | 'large' | string) {
             '& .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root, & .MuiInputBase-root': {
                 height: `${INPUT_HEIGHT_LARGE} !important`,
                 maxHeight: `${INPUT_HEIGHT_LARGE} !important`,
-                paddingLeft: 'var(--mui-tokens-spacing-4) !important',
-                paddingRight: 'var(--mui-tokens-spacing-3) !important',
+                paddingLeft: 'var(--mui-tokens-spacing-5) !important',
+                paddingRight: 'var(--mui-tokens-spacing-4) !important',
                 paddingTop: '0 !important',
                 paddingBottom: '0 !important',
                 boxSizing: 'border-box' as const,
@@ -299,7 +296,7 @@ export function CommonDatePicker({
         >
             {label && (
                 <FormLabel
-                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    className={labelClassName}
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
@@ -592,7 +589,7 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         >
             {label && (
                 <FormLabel
-                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    className={labelClassName}
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? resolvedIsFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}

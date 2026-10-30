@@ -12,13 +12,11 @@ import { useNavigate } from 'react-router-dom';
 
 interface Step3FacultyLoadConflictsProps {
     conflicts: FacultyScheduleConflict[];
-    facultyName: string;
     onNavigateToSectionManagement?: () => void;
 }
 
 export default function Step3FacultyLoadConflicts({
     conflicts,
-    facultyName,
     onNavigateToSectionManagement
 }: Step3FacultyLoadConflictsProps) {
     const navigate = useNavigate();

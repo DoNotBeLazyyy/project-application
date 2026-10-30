@@ -30,8 +30,7 @@ export default function SystemSettings() {
             institution_mobile: '',
             institution_website: '',
             institution_logo_url: '',
-            max_upload_size_mb: '25',
-            allowed_upload_types: 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
+            academic_year_start_month: '6'
         }
     });
     const hasRealChanges = useHasRealChanges(methods.control);
@@ -51,8 +50,8 @@ export default function SystemSettings() {
                     institution_mobile: result.data.institution_mobile ?? '',
                     institution_website: result.data.institution_website,
                     institution_logo_url: result.data.institution_logo_url,
-                    max_upload_size_mb: String(result.data.max_upload_size_mb ?? 25),
-                    allowed_upload_types: result.data.allowed_upload_types ?? 'pdf,docx,xlsx,pptx,png,jpg,jpeg,zip'
+                    // Not edited here, but carried through so saving keeps the stored month
+                    academic_year_start_month: String(result.data.academic_year_start_month ?? 6)
                 });
 
                 if (result.data.institution_logo_url) {
@@ -190,28 +189,6 @@ export default function SystemSettings() {
                 }
             },
             type: 'text'
-        },
-        {
-            label: 'Max Upload Size (MB)',
-            name: 'max_upload_size_mb',
-            rules: {
-                required: 'Max upload size is required',
-                min: { value: 1, message: 'Must be at least 1 MB' },
-                max: { value: 500, message: 'Cannot exceed 500 MB' }
-            },
-            type: 'number',
-            fieldProps: {
-                helperText: 'Applies to materials, submissions, discussion attachments, and event images.'
-            }
-        },
-        {
-            label: 'Allowed File Types',
-            name: 'allowed_upload_types',
-            rules: { required: 'At least one file type is required' },
-            type: 'text',
-            fieldProps: {
-                helperText: 'Comma-separated extensions without dots, e.g. pdf,docx,png,zip'
-            }
         }
     ];
 

@@ -102,7 +102,7 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
         >
             {label && (
                 <FormLabel
-                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    className={labelClassName}
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}
@@ -125,6 +125,10 @@ const CommonMultiSelect = forwardRef<HTMLDivElement, CommonMultiSelectProps>(({
                 popupIcon={<CaretDownIcon size={16} weight="bold" />}
                 readOnly={readOnly}
                 ref={ref}
+                // Line the placeholder up with the 1rem text inset of the other standard-size fields
+                sx={isSmall
+                    ? undefined
+                    : { '& .MuiOutlinedInput-root': { paddingLeft: 'var(--mui-tokens-spacing-4)' } }}
                 renderInput={(params) => (
                     <TextField
                         {...params}

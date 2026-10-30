@@ -9,14 +9,12 @@ import { Control, UseFormSetValue, useWatch } from 'react-hook-form';
 interface ProgramLevelFormProps extends ComponentPropsForm {
     control: Control<ProgramLevelFormValues>;
     disabled?: boolean;
-    isCodeDisabled?: boolean;
     isCreate?: boolean;
     setValue?: UseFormSetValue<ProgramLevelFormValues>;
 }
 
 export function getProgramLevelFormFields(
-    disabled?: boolean,
-    _isCodeDisabled?: boolean
+    disabled?: boolean
 ): FormFieldConfig<ProgramLevelFormValues>[] {
     return [
         {
@@ -51,12 +49,11 @@ export function getProgramLevelFormFields(
 export default function ProgramLevelForm({
     control,
     disabled,
-    isCodeDisabled,
     isCreate = false,
     setValue,
     ...formProps
 }: ProgramLevelFormProps) {
-    const fields = getProgramLevelFormFields(disabled, isCodeDisabled);
+    const fields = getProgramLevelFormFields(disabled);
     const watchedLabel = useWatch({ control, name: 'label' });
     const watchedCode = useWatch({ control, name: 'code' });
 

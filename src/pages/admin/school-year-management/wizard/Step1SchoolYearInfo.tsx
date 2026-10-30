@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ValidCommonInput from '@components/input/ValidCommonInput';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { CopySimpleIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, SchoolYearOption } from '@type/school-year.type';
@@ -14,6 +15,8 @@ import {
     ExistingSchoolYearComparison,
     generateAcademicYearCode,
     generateAcademicYearLabel,
+    MAX_UNITS_PER_TERM_MAX,
+    MAX_UNITS_PER_TERM_MIN,
     SourceSchoolYearInfo
 } from './wizard.constants';
 
@@ -49,7 +52,7 @@ export default function Step1SchoolYearInfo({
 
     const { errors } = useFormState({ control });
     const firstErrorField = useMemo(() => {
-        const step1Fields: (keyof AcademicYearWizardFormValues)[] = ['start_date', 'end_date', 'code', 'label'];
+        const step1Fields: (keyof AcademicYearWizardFormValues)[] = ['start_date', 'end_date', 'code', 'label', 'max_units_per_term'];
         return step1Fields.find((f) => Boolean(errors[f]));
     }, [errors]);
 
@@ -290,6 +293,29 @@ export default function Step1SchoolYearInfo({
                             Auto-updated from duplicated year: &quot;{sourceSchoolYear.label}&quot;
                         </p>
                     )}
+                </div>
+
+                {/* school_years.max_units_per_term smallint NOT NULL CHECK (1..60) */}
+                <div>
+                    <ValidCommonNumberInput
+                        control={control}
+                        description={`Maximum credit units a student can register for in each term of this academic year (${MAX_UNITS_PER_TERM_MIN} - ${MAX_UNITS_PER_TERM_MAX}).`}
+                        disabled={disabled}
+                        fullWidth
+                        isRequired
+                        label="Max Units per Term"
+                        max={MAX_UNITS_PER_TERM_MAX}
+                        maxDecimals={0}
+                        min={MAX_UNITS_PER_TERM_MIN}
+                        name="max_units_per_term"
+                        placeholder="24"
+                        rules={{
+                            max: { message: `Max units per term cannot exceed ${MAX_UNITS_PER_TERM_MAX}`, value: MAX_UNITS_PER_TERM_MAX },
+                            min: { message: `Max units per term must be at least ${MAX_UNITS_PER_TERM_MIN}`, value: MAX_UNITS_PER_TERM_MIN },
+                            required: 'Max units per term is required',
+                            validate: (val) => Number.isInteger(Number(val)) || 'Max units per term must be a whole number'
+                        }}
+                    />
                 </div>
             </div>
 

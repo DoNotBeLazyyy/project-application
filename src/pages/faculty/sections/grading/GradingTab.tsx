@@ -1,6 +1,6 @@
 import CommonButton from '@components/button/CommonButton';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
-import { CalendarCheckIcon, CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { CheckCircleIcon, SlidersHorizontalIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import SectionThresholdModal from '@pages/faculty/sections/grading/SectionThresholdModal';
 import GradeSheetPanel from '@pages/faculty/sections/grading/GradeSheetPanel';
 import GradingComponentPanel from '@pages/faculty/sections/grading/GradingComponentPanel';
@@ -32,6 +32,7 @@ import {
     GradingPeriod
 } from '@type/faculty.type';
 import { SectionOverridableRule, SpecialGradeFlag } from '@type/grading-config.type';
+import { formatDate } from '@utils/date.util';
 import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 interface GradingTabProps {
@@ -290,7 +291,8 @@ export default function GradingTab({
 
     const isEncodingOpen = useMemo(() => {
         if (!currentPeriod?.grade_encoding_start_date || !currentPeriod?.grade_encoding_end_date) return true;
-        const todayStr = new Date().toISOString().split('T')[0];
+        // Local calendar date - the encoding window is stored as a plain DATE
+        const todayStr = formatDate(new Date());
         return todayStr >= currentPeriod.grade_encoding_start_date && todayStr <= currentPeriod.grade_encoding_end_date;
     }, [currentPeriod]);
 

@@ -37,7 +37,7 @@ export default function ProfileDetailsForm({
             name: 'first_name',
             rules: {
                 required: 'First name is required',
-                validate: (v: any) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
             },
             type: 'text',
             fieldProps: { helperText: 'Your legal given name.' }
@@ -53,7 +53,7 @@ export default function ProfileDetailsForm({
             name: 'last_name',
             rules: {
                 required: 'Last name is required',
-                validate: (v: any) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
             },
             type: 'text',
             fieldProps: { helperText: 'Your legal family name.' }

@@ -10,8 +10,6 @@ import {
     CheckCircleIcon,
     CircleIcon,
     CopySimpleIcon,
-    FileDocIcon,
-    FilePlusIcon,
     FileTextIcon,
     LinkSimpleIcon,
     PencilSimpleIcon,

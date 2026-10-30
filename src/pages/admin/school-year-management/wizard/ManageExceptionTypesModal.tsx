@@ -1,12 +1,15 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import { CheckCircleIcon, GearIcon, PlusIcon, ProhibitIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useToastStore } from '@stores/toast.store';
 import { ExceptionTypeOptionItem } from '@type/school-year.type';
+import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { CALENDAR_EXCEPTION_TYPE_LABELS, CALENDAR_EXCEPTION_TYPES, toCalendarExceptionType } from './wizard.constants';
 
 interface ManageExceptionTypesModalProps {
     open: boolean;
@@ -16,7 +19,11 @@ interface ManageExceptionTypesModalProps {
     onSave: (updatedTypes: ExceptionTypeOptionItem[]) => void;
 }
 
-const DEFAULT_TYPE_NAMES = ['Holiday', 'Break', 'Suspension', 'Special Class', 'Exam Day'];
+const DEFAULT_TYPE_NAMES: string[] = CALENDAR_EXCEPTION_TYPES;
+
+interface AddExceptionTypeFormValues {
+    new_type: string;
+}
 
 export default function ManageExceptionTypesModal({
     open,
@@ -26,7 +33,11 @@ export default function ManageExceptionTypesModal({
     onSave
 }: ManageExceptionTypesModalProps) {
     const [typeItems, setTypeItems] = useState<ExceptionTypeOptionItem[]>([]);
-    const [newTypeInput, setNewTypeInput] = useState('');
+    const { control, handleSubmit, reset } = useForm<AddExceptionTypeFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
+        defaultValues: { new_type: '' }
+    });
+    const newTypeInput = useWatch({ control, name: 'new_type' }) || '';
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const [deleteTypeTarget, setDeleteTypeTarget] = useState<string | null>(null);
 
@@ -60,28 +71,35 @@ export default function ManageExceptionTypesModal({
                     is_default: item.is_default ?? DEFAULT_TYPE_NAMES.includes(item.label)
                 }))
             );
-            setNewTypeInput('');
+            reset({ new_type: '' });
         }
     }, [open, exceptionTypes]);
 
-    function handleAddType() {
-        const trimmed = newTypeInput.trim();
-        if (!trimmed) return;
-
-        if (typeItems.some((t) => t.label.toLowerCase() === trimmed.toLowerCase())) {
-            useToastStore.getState().showToast(`Exception type "${trimmed}" already exists.`, 'error');
-            return;
+    // Only calendar_exception_type enum values can be persisted; anything else would be saved as 'Holiday'
+    function validateNewType(value: string): true | string {
+        const type = toCalendarExceptionType(value);
+        if (!type) {
+            return `Unsupported type. Supported types: ${CALENDAR_EXCEPTION_TYPES.map((t) => CALENDAR_EXCEPTION_TYPE_LABELS[t]).join(', ')}`;
         }
+        if (typeItems.some((t) => toCalendarExceptionType(t.label) === type)) {
+            return `Exception type "${CALENDAR_EXCEPTION_TYPE_LABELS[type]}" already exists.`;
+        }
+        return true;
+    }
+
+    function handleAddType(values: AddExceptionTypeFormValues) {
+        const type = toCalendarExceptionType(values.new_type);
+        if (!type) return;
 
         const newItem: ExceptionTypeOptionItem = {
-            label: trimmed,
+            label: type,
             is_active: true,
-            is_default: false
+            is_default: true
         };
 
         setTypeItems([...typeItems, newItem]);
-        setNewTypeInput('');
-        useToastStore.getState().showToast(`Added new exception type "${trimmed}".`, 'success');
+        reset({ new_type: '' });
+        useToastStore.getState().showToast(`Added exception type "${CALENDAR_EXCEPTION_TYPE_LABELS[type]}".`, 'success');
     }
 
     function handleToggleActive(targetLabel: string) {
@@ -176,16 +194,20 @@ export default function ManageExceptionTypesModal({
             <div className="p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-900/40 text-xs">
                 {/* Add New Type Field */}
                 <div className="flex items-center gap-2">
-                    <CommonInput
+                    <ValidCommonInput
                         containerClassName="flex-1"
-                        placeholder="Add custom exception type (e.g. University Week)"
+                        control={control}
+                        name="new_type"
+                        placeholder="Restore a removed type (e.g. Exam Day, Other)"
+                        rules={{
+                            required: 'Exception type is required',
+                            validate: validateNewType
+                        }}
                         size="small"
-                        value={newTypeInput}
-                        onChange={(e) => setNewTypeInput(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
-                                handleAddType();
+                                handleSubmit(handleAddType)();
                             }
                         }}
                     />
@@ -194,7 +216,7 @@ export default function ManageExceptionTypesModal({
                         size="small"
                         startIcon={<PlusIcon className="w-3.5 h-3.5" />}
                         variant="contained"
-                        onClick={handleAddType}
+                        onClick={handleSubmit(handleAddType)}
                     >
                         Add Type
                     </CommonButton>
@@ -218,7 +240,7 @@ export default function ManageExceptionTypesModal({
                             >
                                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                                     <span className={`font-semibold text-xs ${!item.is_active ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
-                                        {item.label}
+                                        {CALENDAR_EXCEPTION_TYPE_LABELS[toCalendarExceptionType(item.label) || 'Holiday'] || item.label}
                                     </span>
 
                                     {/* Active / Inactive Badge */}

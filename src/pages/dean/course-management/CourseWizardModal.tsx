@@ -3,20 +3,17 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { useFormDraft } from '@hooks/useFormDraft';
 import CourseForm, { COURSE_FORM_STEPS } from '@pages/dean/course-management/CourseForm';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
     BookOpenIcon,
-    CheckCircleIcon,
     FloppyDiskIcon,
     PencilSimpleIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { CourseFormValues } from '@type/course/course.type';
-import { useToastStore } from '@stores/toast.store';
 import { useEffect, useState } from 'react';
 import { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { formErrors } from '@utils/form.util';

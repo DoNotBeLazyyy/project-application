@@ -114,7 +114,7 @@ export async function saveStudentAnswer(
         p_question_id:   answer.question_id,
         p_answer_text:   answer.answer_text || null,
         p_choice_id:     answer.choice_id || null
-    });
+    }, { silent: true });
 }
 
 export async function uploadSubmissionFile(

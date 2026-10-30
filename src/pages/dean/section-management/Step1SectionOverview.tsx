@@ -240,7 +240,6 @@ export default function Step1SectionOverview({
         },
         {
             disabled,
-            fieldProps: { helperText: 'Maximum number of enrollees (1-999)' },
             label: 'Max Slots',
             name: 'max_slots',
             rules: disabled
@@ -248,8 +247,10 @@ export default function Step1SectionOverview({
                 : {
                     required: 'Maximum slots is required',
                     min: { value: 1, message: 'Must be at least 1' },
-                    max: { value: 999, message: 'Cannot exceed 999' }
+                    max: { value: 999, message: 'Cannot exceed 999' },
+                    validate: (val: any) => Number.isInteger(Number(val)) || 'Max slots must be a whole number'
                 },
+            fieldProps: { helperText: 'Maximum number of enrollees (1-999)', maxDecimals: 0, min: 1, max: 999 },
             type: 'number',
             gridCols: 2
         },

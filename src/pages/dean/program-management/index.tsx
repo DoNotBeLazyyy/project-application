@@ -12,12 +12,10 @@ import {
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
 import { ProgramBulkRow, ProgramFilterValues, ProgramFormValues, ProgramListRow } from '@type/program/program.type';
-import { formErrors } from '@utils/form.util';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { useToastStore } from '@stores/toast.store';
 import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -26,8 +24,6 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'program_level_label', label: 'Program Level' }
 ];
 
-const CREATE_FORM_ID = 'create-program-form';
-const UPDATE_FORM_ID = 'update-program-form';
 const FILTER_FORM_ID = 'filter-program-form';
 
 const defaultFormValues: ProgramFormValues = {
@@ -42,27 +38,27 @@ const defaultFormValues: ProgramFormValues = {
     is_active: true
 };
 
+// Mirrors fn_bulk_create_programs (one program per code, years 1-8; bulkCreatePrograms resolves
+// department / program level by code or name) plus fn_bulk_create_curriculum_map for the optional curriculum
+// columns - repeat the program columns on extra rows to map more courses to one program.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Program Code', hint: 'e.g. BSCS (optional, auto-generated if blank)', required: false },
-    { key: 'name', label: 'Program Name', hint: 'e.g. Bachelor of Science in Computer Science' },
-    { key: 'department_code', label: 'Department Code', hint: 'e.g. CCS' },
-    { key: 'program_level_code', label: 'Program Level Code', hint: 'e.g. UNDERGRADUATE' },
-    { key: 'years_duration', label: 'Years Duration', hint: 'e.g. 4' },
-    { key: 'total_units', label: 'Total Units', hint: 'e.g. 170 (optional)', required: false },
-    { key: 'description', label: 'Description', hint: 'optional', required: false },
-    { key: 'is_active', label: 'Is Active', hint: 'true or false (optional, defaults true)', required: false },
-    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'true or false (optional)', required: false },
-    { key: 'grading_periods', label: 'Grading Periods', hint: 'e.g. Prelim:30,Midterm:30,Final:40 (optional)', required: false },
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101 (optional, for curriculum entries)', required: false },
-    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1 (optional)', required: false },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', required: false },
-    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'e.g. SY2024-2025 (optional, for curriculum entries)', required: false },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', required: false },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', required: false }
+    { key: 'code', label: 'Program Code', hint: 'Optional - new unique code, auto-generated from the name if blank, e.g. BSIT', sample: 'BSIT', required: false },
+    { key: 'name', label: 'Program Name', hint: 'e.g. Bachelor of Science in Information Technology', sample: 'Bachelor of Science in Information Technology' },
+    { key: 'department_code', label: 'Department Code', hint: 'Department code or name, e.g. COCS', sample: 'COCS' },
+    { key: 'program_level_code', label: 'Program Level Code', hint: 'Program level code or name, e.g. UG or GRAD', sample: 'UG' },
+    { key: 'years_duration', label: 'Years Duration', hint: 'Whole number from 1 to 8, e.g. 4', sample: '4' },
+    { key: 'total_units', label: 'Total Units', hint: 'Optional number, e.g. 160', sample: '160', required: false },
+    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Four-year information technology degree program', required: false },
+    { key: 'is_active', label: 'Is Active', hint: 'Optional - true or false, defaults to true', sample: 'true', required: false },
+    { key: 'course_code', label: 'Course Code', hint: 'Optional curriculum entry - existing course of the same department, e.g. COCS101', sample: 'COCS101', required: false },
+    { key: 'year_level', label: 'Year Level', hint: 'Curriculum year from 1 to 6, defaults to 1', sample: '1', required: false },
+    { key: 'term_type_code', label: 'Term Type Code', hint: '1ST_SEM, 2ND_SEM or SUMMER (or the term type name), defaults to 1ST_SEM', sample: '1ST_SEM', required: false },
+    { key: 'school_year_code', label: 'Curriculum Revision Year Code', hint: 'Optional existing school year code, e.g. AY-2026-2027', sample: '', required: false },
+    { key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false },
+    { key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false }
 ];
 
 export default function ProgramManagement() {
-    const navigate = useNavigate();
     const [activeFilters, setActiveFilters] = useState<ProgramFilterValues | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -102,7 +98,6 @@ export default function ProgramManagement() {
                 years_duration: result.data.years_duration ?? '',
                 is_active: result.data.is_active ?? false,
                 description: result.data.description ?? '',
-                override_grading_schema: (result.data as any).override_grading_schema ?? false,
                 grading_periods: (result.data as any).grading_periods ?? []
             });
         }
@@ -170,10 +165,6 @@ export default function ProgramManagement() {
         }
     }
 
-    function handleCreateFormError(errors: FieldErrors<ProgramFormValues>) {
-        formErrors(errors, createMethods);
-    }
-
     function handleFilterSubmit(values: ProgramFilterValues) {
         setActiveFilters(values);
     }
@@ -202,10 +193,6 @@ export default function ProgramManagement() {
         } else {
             showToast(result.error.message || 'Failed to update program', 'error');
         }
-    }
-
-    function handleUpdateFormError(errors: FieldErrors<ProgramFormValues>) {
-        formErrors(errors, updateMethods);
     }
 
     return (
@@ -298,8 +285,6 @@ export default function ProgramManagement() {
                     total_units: row.total_units,
                     description: row.description,
                     is_active: row.is_active,
-                    override_grading_schema: row.override_grading_schema,
-                    grading_periods: row.grading_periods,
                     course_code: row.course_code,
                     year_level: row.year_level,
                     term_type_code: row.term_type_code,

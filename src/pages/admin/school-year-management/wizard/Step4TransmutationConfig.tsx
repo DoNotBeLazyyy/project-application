@@ -1,10 +1,9 @@
 import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
-import CommonInput from '@components/input/CommonInput';
-import CommonNumberInput from '@components/input/CommonNumberInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import CommonSelect from '@components/select/CommonSelect';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CaretDownIcon,
     PlusIcon,
@@ -12,12 +11,14 @@ import {
     WarningCircleIcon
 } from '@phosphor-icons/react';
 import { AcademicYearWizardFormValues, WizardTransmutationRow } from '@type/school-year.type';
-import { checkForMessage, clearFieldError } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { clearFieldError } from '@utils/form.util';
+import { useEffect, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
 import {
-    isSpecialGradeRow
+    isSpecialGradeRow,
+    NUMERIC_5_2_MAX
 } from './wizard.constants';
+import SpecialGradeRuleFields from './SpecialGradeRuleFields';
 
 interface Step4TransmutationConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -34,7 +35,6 @@ export default function Step4TransmutationConfig({
     const [collapsedRungs, setCollapsedRungs] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
-    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.transmutation_rows && Array.isArray(errors.transmutation_rows)) {
@@ -50,7 +50,7 @@ export default function Step4TransmutationConfig({
         setCollapsedRungs((prev) => ({ ...prev, [index]: !prev[index] }));
     }
 
-    const { fields, append, remove, replace } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: 'transmutation_rows'
     });
@@ -189,7 +189,7 @@ export default function Step4TransmutationConfig({
 
                             {/* Row 2: Type, Description, and Status */}
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                                {/* Type Selector */}
+                                {/* Type Selector: UI-only, derives special_code / percentage columns (is_conditional is not persisted) */}
                                 <div className="sm:col-span-4 md:col-span-3">
                                     <CommonSelect
                                         description="Choose whether this mark is a Fixed score range or a Conditional status grade (INC, DRP)."
@@ -200,7 +200,6 @@ export default function Step4TransmutationConfig({
                                             { label: 'Fixed Range', value: 'fixed' },
                                             { label: 'Conditional', value: 'conditional' }
                                         ]}
-                                        size="small"
                                         value={isCond ? 'conditional' : 'fixed'}
                                         onChange={(e) => {
                                             const nextCond = e.target.value === 'conditional';
@@ -214,20 +213,16 @@ export default function Step4TransmutationConfig({
                                     />
                                 </div>
 
-                                {/* Description */}
+                                {/* Description (grade_transmutation_tables.description text, nullable) */}
                                 <div className="sm:col-span-5 md:col-span-6">
-                                    <CommonInput
+                                    <ValidCommonInput
+                                        control={control}
                                         description="Human-readable descriptor appearing on report cards and evaluation transcripts."
                                         disabled={disabled}
                                         fullWidth
                                         label="Description"
+                                        name={`transmutation_rows.${index}.description`}
                                         placeholder="e.g. Excellent, Incomplete, Dropped"
-                                        size="small"
-                                        value={row.description || ''}
-                                        onChange={(e) => {
-                                            clearFieldError(control, `transmutation_rows.${index}.description`);
-                                            setValue(`transmutation_rows.${index}.description`, e.target.value, { shouldDirty: true });
-                                        }}
                                     />
                                 </div>
 
@@ -253,134 +248,111 @@ export default function Step4TransmutationConfig({
                                 </div>
                             </div>
 
-                            {/* Row 3: Mark, Min and Max (when Fixed Range) vs Mark only (when Conditional) */}
-                            {(() => {
-                                const isLabelFirstError = firstErrorKey === `transmutation_rows.${index}.label`;
-                                const isMinFirstError = firstErrorKey === `transmutation_rows.${index}.min_percentage`;
-                                const isMaxFirstError = firstErrorKey === `transmutation_rows.${index}.max_percentage`;
-
-                                return isCond ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div>
-                                        <CommonInput
-                                            defaultOpenErrorTooltip={isLabelFirstError}
-                                            description="Status grade code (e.g. INC, DRP, W, NFE)."
-                                            disabled={disabled}
-                                            error={Boolean((errors.transmutation_rows as any)?.[index]?.label)}
-                                            fullWidth
-                                            helperText={(errors.transmutation_rows as any)?.[index]?.label?.message}
-                                            isFirstError={isLabelFirstError}
-                                            isRequired
-                                            label="Mark / Grade"
-                                            name={`transmutation_rows.${index}.label`}
-                                            placeholder="e.g. INC, DRP"
-                                            size="small"
-                                            value={row.label}
-                                            onChange={(e) => {
-                                                clearFieldError(control, `transmutation_rows.${index}.label`);
-                                                clearFieldError(control, 'transmutation_rows');
-                                                const val = e.target.value;
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
-                                                setValue(`transmutation_rows.${index}.transmuted_grade`, null, { shouldDirty: true });
-                                                setValue(`transmutation_rows.${index}.special_code`, val.trim().toUpperCase(), { shouldDirty: true });
-                                            }}
-                                        />
-                                    </div>
+                            {/* Row 3: Mark (label text NOT NULL), Min and Max (numeric(5,2) NOT NULL, CHECK 0..100, max >= min) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <ValidCommonInput
+                                        control={control}
+                                        description={isCond
+                                            ? 'Status grade code (e.g. INC, DRP, W, NFE).'
+                                            : 'Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00).'}
+                                        disabled={disabled}
+                                        fullWidth
+                                        isRequired
+                                        label="Mark / Grade"
+                                        name={`transmutation_rows.${index}.label`}
+                                        placeholder={isCond ? 'e.g. INC, DRP' : 'e.g. 1.25, 3.00'}
+                                        rules={{
+                                            required: 'Mark / grade is required',
+                                            validate: (val) => {
+                                                const clean = String(val || '').trim();
+                                                if (!clean) return 'Mark / grade is required';
+                                                const numeric = parseFloat(clean);
+                                                if (!isCond && !isNaN(numeric) && (numeric < 0 || numeric > NUMERIC_5_2_MAX)) {
+                                                    return `Numeric mark must be between 0 and ${NUMERIC_5_2_MAX}`;
+                                                }
+                                                return true;
+                                            }
+                                        }}
+                                        onChange={(e) => {
+                                            clearFieldError(control, 'transmutation_rows');
+                                            const val = e.target.value;
+                                            const numeric = parseFloat(val);
+                                            setValue(
+                                                `transmutation_rows.${index}.transmuted_grade`,
+                                                isCond || isNaN(numeric) ? null : numeric,
+                                                { shouldDirty: true }
+                                            );
+                                            setValue(`transmutation_rows.${index}.special_code`, isCond ? val.trim().toUpperCase() : null, { shouldDirty: true });
+                                        }}
+                                    />
                                 </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    {/* Mark / Grade */}
-                                    <div>
-                                        <CommonInput
-                                            defaultOpenErrorTooltip={isLabelFirstError}
-                                            description="Transmuted numeric mark (e.g. 1.00, 1.25, 3.00, 5.00)."
-                                            disabled={disabled}
-                                            error={Boolean((errors.transmutation_rows as any)?.[index]?.label)}
-                                            fullWidth
-                                            helperText={(errors.transmutation_rows as any)?.[index]?.label?.message}
-                                            isFirstError={isLabelFirstError}
-                                            isRequired
-                                            label="Mark / Grade"
-                                            name={`transmutation_rows.${index}.label`}
-                                            placeholder="e.g. 1.25, 3.00"
-                                            size="small"
-                                            value={row.label}
-                                            onChange={(e) => {
-                                                clearFieldError(control, `transmutation_rows.${index}.label`);
-                                                clearFieldError(control, 'transmutation_rows');
-                                                const val = e.target.value;
-                                                const numeric = parseFloat(val);
-                                                setValue(`transmutation_rows.${index}.label`, val, { shouldDirty: true, shouldValidate: true });
-                                                setValue(`transmutation_rows.${index}.transmuted_grade`, isNaN(numeric) ? null : numeric, { shouldDirty: true });
-                                                setValue(`transmutation_rows.${index}.special_code`, null, { shouldDirty: true });
-                                            }}
-                                        />
-                                    </div>
 
-                                    {/* Min % */}
-                                    <div>
-                                        <CommonNumberInput
-                                            defaultOpenErrorTooltip={isMinFirstError}
-                                            description="Minimum raw percentage required for this fixed grade mark."
-                                            disabled={disabled}
-                                            error={Boolean((errors.transmutation_rows as any)?.[index]?.min_percentage)}
-                                            fullWidth
-                                            helperText={(errors.transmutation_rows as any)?.[index]?.min_percentage?.message}
-                                            isFirstError={isMinFirstError}
-                                            isRequired
-                                            label="Min %"
-                                            max={100}
-                                            min={0}
-                                            name={`transmutation_rows.${index}.min_percentage`}
-                                            size="small"
-                                            step={0.5}
-                                            suffixText="%"
-                                            value={row.min_percentage ?? ''}
-                                            onChange={(val) => {
-                                                clearFieldError(control, `transmutation_rows.${index}.min_percentage`);
-                                                clearFieldError(control, 'transmutation_rows');
-                                                setValue(
-                                                    `transmutation_rows.${index}.min_percentage`,
-                                                    val === undefined ? null : val,
-                                                    { shouldDirty: true, shouldValidate: true }
-                                                );
-                                            }}
-                                        />
-                                    </div>
+                                {!isCond && (
+                                    <>
+                                        {/* Min % */}
+                                        <div>
+                                            <ValidCommonNumberInput
+                                                control={control}
+                                                description="Minimum raw percentage required for this fixed grade mark."
+                                                disabled={disabled}
+                                                fullWidth
+                                                isRequired
+                                                label="Min %"
+                                                max={100}
+                                                maxDecimals={2}
+                                                min={0}
+                                                name={`transmutation_rows.${index}.min_percentage`}
+                                                rules={{
+                                                    max: { message: 'Min % cannot exceed 100%', value: 100 },
+                                                    min: { message: 'Min % cannot be below 0%', value: 0 },
+                                                    required: 'Min % is required'
+                                                }}
+                                                step={0.5}
+                                                suffixText="%"
+                                            />
+                                        </div>
 
-                                    {/* Max % */}
-                                    <div>
-                                        <CommonNumberInput
-                                            defaultOpenErrorTooltip={isMaxFirstError}
-                                            description="Maximum raw percentage allocated to this fixed grade mark."
-                                            disabled={disabled}
-                                            error={Boolean((errors.transmutation_rows as any)?.[index]?.max_percentage)}
-                                            fullWidth
-                                            helperText={(errors.transmutation_rows as any)?.[index]?.max_percentage?.message}
-                                            isFirstError={isMaxFirstError}
-                                            isRequired
-                                            label="Max %"
-                                            max={100}
-                                            min={0}
-                                            name={`transmutation_rows.${index}.max_percentage`}
-                                            size="small"
-                                            step={0.5}
-                                            suffixText="%"
-                                            value={row.max_percentage ?? ''}
-                                            onChange={(val) => {
-                                                clearFieldError(control, `transmutation_rows.${index}.max_percentage`);
-                                                clearFieldError(control, 'transmutation_rows');
-                                                setValue(
-                                                    `transmutation_rows.${index}.max_percentage`,
-                                                    val === undefined ? null : val,
-                                                    { shouldDirty: true, shouldValidate: true }
-                                                );
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                            })()}
+                                        {/* Max % */}
+                                        <div>
+                                            <ValidCommonNumberInput
+                                                control={control}
+                                                description="Maximum raw percentage allocated to this fixed grade mark."
+                                                disabled={disabled}
+                                                fullWidth
+                                                isRequired
+                                                label="Max %"
+                                                max={100}
+                                                maxDecimals={2}
+                                                min={0}
+                                                name={`transmutation_rows.${index}.max_percentage`}
+                                                rules={{
+                                                    max: { message: 'Max % cannot exceed 100%', value: 100 },
+                                                    min: { message: 'Max % cannot be below 0%', value: 0 },
+                                                    required: 'Max % is required',
+                                                    validate: (val) => {
+                                                        const minPct = row.min_percentage;
+                                                        if (minPct !== null && minPct !== undefined && minPct !== '' && Number(val) < Number(minPct)) {
+                                                            return 'Max % cannot be less than Min %';
+                                                        }
+                                                        return true;
+                                                    }
+                                                }}
+                                                step={0.5}
+                                                suffixText="%"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {isCond && (
+                                    <SpecialGradeRuleFields
+                                        control={control}
+                                        disabled={disabled}
+                                        index={index}
+                                    />
+                                )}
+                            </div>
                             </div>
                         </div>
                     );

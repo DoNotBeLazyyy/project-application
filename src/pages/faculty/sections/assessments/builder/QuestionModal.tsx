@@ -26,7 +26,6 @@ const QUESTION_TYPE_OPTIONS: { label: string; value: QuestionType }[] = [
 
 interface QuestionModalProps {
     editingQuestion: AssessmentQuestion | null;
-    isDirty: boolean;
     isOpen: boolean;
     methods: UseFormReturn<QuestionFormValues>;
     watchedChoices: QuestionFormValues['choices'];
@@ -37,7 +36,6 @@ interface QuestionModalProps {
 
 export default function QuestionModal({
     editingQuestion,
-    isDirty: _isDirty,
     isOpen,
     methods,
     watchedChoices,
@@ -75,7 +73,21 @@ export default function QuestionModal({
         onClose();
     }
 
+    // fn_upsert_question stores choices as given, so a choice-based question must carry
+    // at least one correct choice or it can never be auto-graded.
+    function validateChoices(values: QuestionFormValues): string | null {
+        if (!CHOICE_BASED_TYPES.includes(values.question_type)) return null;
+        if (values.choices.length < 2) return 'Add at least two choices.';
+        if (!values.choices.some((c) => c.is_correct)) return 'Mark at least one choice as correct.';
+        return null;
+    }
+
     async function handleFormSubmit(values: QuestionFormValues) {
+        const choiceError = validateChoices(values);
+        if (choiceError) {
+            methods.setError('choices', { message: choiceError, type: 'validate' });
+            return;
+        }
         draftGuard.clearDraft();
         await onSubmit(values);
     }
@@ -95,6 +107,7 @@ export default function QuestionModal({
     }
 
     function toggleCorrect(index: number) {
+        methods.clearErrors('choices');
         const current = methods.getValues('choices');
         const isMultiple = watchedQuestionType === 'Multiple Choice';
         const updated = current.map((c, i) => ({
@@ -108,12 +121,14 @@ export default function QuestionModal({
         methods.setValue('choices', updated, { shouldDirty: true });
     }
 
-    function handleTextChange(index: number, text: string) {
-        const current = methods.getValues('choices');
-        const updated = current.map((c, i) => i === index
-            ? { ...c, choice_text: text }
-            : c);
-        methods.setValue('choices', updated, { shouldDirty: true });
+    // assessment_questions CHECKs: max_file_size_mb > 0 (integer), max_file_count > 0 (smallint)
+    function validatePositiveWhole(label: string, max: number) {
+        return function(value: unknown) {
+            if (value === '' || value === null || value === undefined) return true;
+            const parsed = Number(value);
+            if (!Number.isInteger(parsed) || parsed < 1) return `${label} must be a whole number of at least 1.`;
+            return parsed <= max || `${label} must be ${max} or less.`;
+        };
     }
 
     const baseFields: FormFieldConfig<QuestionFormValues>[] = [
@@ -151,9 +166,25 @@ export default function QuestionModal({
         },
         ...(watchedQuestionType === 'File Upload'
             ? [
-                { label: 'Allowed File Types', name: 'allowed_file_types' as const, type: 'text' as const },
-                { label: 'Max File Size (MB)', name: 'max_file_size_mb' as const, type: 'number' as const },
-                { label: 'Max File Count', name: 'max_file_count' as const, type: 'number' as const }
+                {
+                    fieldProps: { helperText: 'Comma-separated extensions, e.g. pdf, docx, png. Leave blank to allow any type.' },
+                    label: 'Allowed File Types',
+                    name: 'allowed_file_types' as const,
+                    placeholder: 'pdf, docx',
+                    type: 'text' as const
+                },
+                {
+                    label: 'Max File Size (MB)',
+                    name: 'max_file_size_mb' as const,
+                    rules: { validate: validatePositiveWhole('Max file size', 2147483647) },
+                    type: 'number' as const
+                },
+                {
+                    label: 'Max File Count',
+                    name: 'max_file_count' as const,
+                    rules: { validate: validatePositiveWhole('Max file count', 32767) },
+                    type: 'number' as const
+                }
             ]
             : [])
     ];
@@ -190,10 +221,11 @@ export default function QuestionModal({
                 {CHOICE_BASED_TYPES.includes(watchedQuestionType) && (
                     <ChoiceBuilder
                         choices={watchedChoices}
+                        control={methods.control}
+                        errorMessage={(methods.formState.errors.choices as { message?: string } | undefined)?.message}
                         questionType={watchedQuestionType}
                         onAddChoice={addChoice}
                         onRemoveChoice={removeChoice}
-                        onTextChange={handleTextChange}
                         onToggleCorrect={toggleCorrect}
                     />
                 )}

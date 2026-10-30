@@ -2,14 +2,9 @@ import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import {
     ArrowSquareOutIcon,
-    BuildingsIcon,
-    CalendarBlankIcon,
-    ChalkboardTeacherIcon,
     ClockIcon,
     GraduationCapIcon,
     MapPinIcon,
-    MegaphoneIcon,
-    SparkleIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { useMemo } from 'react';

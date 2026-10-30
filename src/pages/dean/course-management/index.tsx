@@ -3,10 +3,10 @@ import { SortColumn } from '@components/modal/sort-modal/SortColumnItem';
 import CommonTableCard from '@components/table-card/CommonTableCard';
 import { SEARCH_HINTS } from '@constants/search-hint.constant';
 import CourseFilterForm from '@pages/dean/course-management/CourseFilterForm';
-import CourseForm from '@pages/dean/course-management/CourseForm';
 import CourseGridCard from '@pages/dean/course-management/CourseGridCard';
 import CourseWizardModal from '@pages/dean/course-management/CourseWizardModal';
 import { useCourseTableConfig } from '@pages/dean/course-management/useCourseTableConfig';
+import { normalizeMinimumGrade } from '@pages/dean/course-management/useMinimumGradeOptions';
 import {
     bulkCreateCourses, bulkDeleteCourses, createCourse, deleteCourse, getCourseById, listCourses, updateCourse
 } from '@services/course/course.service';
@@ -15,10 +15,8 @@ import {
     CourseBulkRow, CourseFilterValues, CourseFormValues, CourseListRow, PrerequisiteRow
 } from '@type/course/course.type';
 import { SortStringDto } from '@type/http.type';
-import { formErrors } from '@utils/form.util';
-import { generateCourseCode } from '@utils/course.util';
 import { useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 const SORT_COLUMNS: SortColumn[] = [
     { field: 'code', label: 'Code' },
@@ -27,20 +25,20 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'course_type_label', label: 'Course Type' }
 ];
 
-const CREATE_FORM_ID = 'create-course-form';
-const UPDATE_FORM_ID = 'update-course-form';
 const FILTER_FORM_ID = 'filter-course-form';
+// Mirrors fn_bulk_create_courses: rows are upserted by code, department and course type
+// resolve by code or name, and at least one of lecture/laboratory units must be above 0.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Course Code', hint: 'e.g. COCS101 (optional, auto-generated if blank)', sample: 'COCS101', required: false, aliases: ['course', 'subject_code', 'code'] },
+    { key: 'code', label: 'Course Code', hint: 'Optional - leave blank to auto-generate; an existing code updates that course', sample: '', required: false, aliases: ['course', 'subject_code', 'code'] },
     { key: 'title', label: 'Course Title', hint: 'e.g. Introduction to Computing', sample: 'Introduction to Computing', aliases: ['course_title', 'name', 'title'] },
-    { key: 'department_code', label: 'Department Code', hint: 'e.g. CITE', sample: 'CITE', aliases: ['department', 'dept_code', 'dept'] },
-    { key: 'course_type_code', label: 'Course Type Code', hint: 'e.g. Lecture', sample: 'Lecture', aliases: ['course_type', 'type_code', 'type'] },
-    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 3', sample: '3', aliases: ['lec_units', 'lecture'] },
-    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 0', sample: '0', aliases: ['lab_units', 'lab', 'laboratory'] },
-    { key: 'credit_hours', label: 'Credit Hours', hint: 'e.g. 3 (optional)', sample: '3', required: false, aliases: ['hours'] },
-    { key: 'description', label: 'Description', hint: 'optional', sample: 'Foundational computing concepts and programming paradigms', required: false },
-    { key: 'is_active', label: 'Is Active', hint: 'true or false (optional, defaults true)', sample: 'true', required: false, aliases: ['active', 'status'] },
-    { key: 'prerequisites', label: 'Prerequisites', hint: 'e.g. CS100:Required:2.0|MATH101:Co-requisite: (optional)', sample: '', required: false, aliases: ['prereq', 'prereqs'] }
+    { key: 'department_code', label: 'Department Code', hint: 'Department code or name, e.g. COCS', sample: 'COCS', aliases: ['department', 'dept_code', 'dept'] },
+    { key: 'course_type_code', label: 'Course Type Code', hint: 'Course type code or name, e.g. LEC (Lecture) or LAB (Laboratory)', sample: 'LEC', aliases: ['course_type', 'type_code', 'type'] },
+    { key: 'lecture_units', label: 'Lecture Units', hint: '0 to 10 (blank = 0); lecture or laboratory units must be above 0', sample: '3', required: false, aliases: ['lec_units', 'lecture'] },
+    { key: 'laboratory_units', label: 'Laboratory Units', hint: '0 to 10 (blank = 0); lecture or laboratory units must be above 0', sample: '0', required: false, aliases: ['lab_units', 'lab', 'laboratory'] },
+    { key: 'credit_hours', label: 'Credit Hours', hint: 'Optional number, e.g. 3', sample: '3', required: false, aliases: ['hours'] },
+    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Foundational computing concepts and programming paradigms', required: false },
+    { key: 'is_active', label: 'Is Active', hint: 'Optional - false, no, 0 or inactive marks it inactive; defaults to true', sample: 'true', required: false, aliases: ['active', 'status'] },
+    { key: 'prerequisites', label: 'Prerequisites', hint: 'Optional - CODE:Type:MinGrade separated by |, Type is Required, Co-requisite or Recommended, e.g. COCS101:Required:3.00|COCS102:Co-requisite', sample: 'COCS101:Required:3.00', required: false, aliases: ['prereq', 'prereqs'] }
 ];
 
 const defaultFormValues: CourseFormValues = {
@@ -108,7 +106,7 @@ export default function CourseManagement() {
                     year_level_required: prereq.year_level_required
                         ? String(prereq.year_level_required)
                         : '',
-                    minimum_grade: prereq.minimum_grade ?? ''
+                    minimum_grade: normalizeMinimumGrade(prereq.minimum_grade)
                 })) ?? []
             });
         }
@@ -162,17 +160,17 @@ export default function CourseManagement() {
     }
 
     async function handleCreateSubmit(values: CourseFormValues) {
-        const result = await createCourse(values);
+        const result = await createCourse({
+            ...values,
+            title: values.title.trim(),
+            description: values.description ? values.description.trim() : ''
+        });
 
         if (!result.error) {
             createMethods.reset(defaultFormValues);
             setIsCreateOpen(false);
             setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
         }
-    }
-
-    function handleCreateFormError(errors: FieldErrors<CourseFormValues>) {
-        formErrors(errors, createMethods);
     }
 
     function handleFilterSubmit(values: CourseFilterValues) {
@@ -197,10 +195,6 @@ export default function CourseManagement() {
             handleCloseUpdate();
             setActiveFilters((prev) => ({ ...prev } as CourseFilterValues));
         }
-    }
-
-    function handleUpdateFormError(errors: FieldErrors<CourseFormValues>) {
-        formErrors(errors, updateMethods);
     }
 
     return (
@@ -286,7 +280,8 @@ export default function CourseManagement() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={(row) => ({
-                    code: row.code?.trim() || generateCourseCode({ departmentCode: row.department_code, title: row.title || '' }),
+                    // A blank code is generated by bulkCreateCourses against the live course codes
+                    code: row.code?.trim() ?? '',
                     title: row.title,
                     department_code: row.department_code,
                     course_type_code: row.course_type_code,

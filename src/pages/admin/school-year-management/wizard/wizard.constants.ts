@@ -1,12 +1,58 @@
+import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import {
     AcademicYearCalendarDetails,
     AcademicYearWizardFormValues,
+    CalendarExceptionType,
     WizardGradingPeriodItem,
     WizardTermItem,
     WizardThresholdItem,
     WizardTransmutationRow
 } from '@type/school-year.type';
 import { formatDate } from '@utils/date.util';
+
+/**
+ * Limits mirrored from the live DB schema written by fn_save_academic_year_calendar:
+ * - school_years.max_units_per_term smallint CHECK (1..60)
+ * - grading_periods.weight numeric(5,2) CHECK (> 0 AND <= 100)
+ * - grade_transmutation_tables.min/max_percentage numeric(5,2) CHECK (0..100), transmuted_grade numeric(5,2)
+ * - academic_thresholds.min_gwa / max_gwa / min_subject_grade numeric(4,2)
+ */
+export const MAX_UNITS_PER_TERM_MIN = 1;
+export const MAX_UNITS_PER_TERM_MAX = 60;
+export const NUMERIC_4_2_MAX = 99.99;
+export const NUMERIC_5_2_MAX = 999.99;
+
+export const CALENDAR_EXCEPTION_TYPES: CalendarExceptionType[] = ['Holiday', 'Break', 'Suspension', 'Exam', 'Event', 'Other'];
+
+export const CALENDAR_EXCEPTION_TYPE_LABELS: Record<CalendarExceptionType, string> = {
+    Break: 'Break',
+    Event: 'Special Class / Event',
+    Exam: 'Exam Day',
+    Holiday: 'Holiday',
+    Other: 'Other',
+    Suspension: 'Suspension'
+};
+
+export const ACADEMIC_THRESHOLD_CATEGORIES: AcademicThresholdCategory[] = ['Honor', 'Scholarship', 'Standing'];
+
+const LEGACY_EXCEPTION_TYPE_ALIASES: Record<string, CalendarExceptionType> = {
+    'exam day': 'Exam',
+    'special class': 'Event'
+};
+
+/** Maps a stored or legacy exception type label to the DB enum value, or null when unsupported. */
+export function toCalendarExceptionType(value?: string | null): CalendarExceptionType | null {
+    const clean = (value || '').trim().toLowerCase();
+    if (!clean) return null;
+    const match = CALENDAR_EXCEPTION_TYPES.find((t) => t.toLowerCase() === clean);
+    return match ?? LEGACY_EXCEPTION_TYPE_ALIASES[clean] ?? null;
+}
+
+function toNumberOrNull(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const num = Number(value);
+    return isNaN(num) ? null : num;
+}
 
 export const DEFAULT_GRADING_COMPONENTS: { name: string; weight: number }[] = [
     { name: 'Quizzes & Short Tasks', weight: 30 },
@@ -28,12 +74,10 @@ export function isSpecialGradeRow(row?: {
     if (!row) return false;
     if (row.is_conditional) return true;
     const code = (row.special_code || '').trim().toUpperCase();
+    // is_conditional is not persisted; the DB only keeps special_code (set solely for conditional rows)
+    if (code) return true;
     const label = (row.label || '').trim().toUpperCase();
     return (
-        code === 'DRP' ||
-        code === 'INC' ||
-        code === 'W' ||
-        code === 'NFE' ||
         label === 'DRP' ||
         label === 'INC' ||
         label === 'W' ||
@@ -362,6 +406,7 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
     errors?: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }>;
 } {
     const errorsList: Array<{ fieldPath: string; message: string; termIndex?: number; periodIndex?: number }> = [];
+    let toastError: { error: string; termIndex: number; periodIndex: number } | null = null;
 
     for (let i = 0; i < terms.length; i++) {
         const t = terms[i];
@@ -403,9 +448,17 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                 }
             }
 
+            // grading_periods.weight CHECK (weight > 0 AND weight <= 100)
             if (!p.weight || Number(p.weight) <= 0) {
                 errorsList.push({
                     message: `Grading period ${periodLabel} in ${termName} must have a weight greater than 0%.`,
+                    fieldPath: `terms.${i}.grading_periods.${j}.weight`,
+                    periodIndex: j,
+                    termIndex: i
+                });
+            } else if (Number(p.weight) > 100) {
+                errorsList.push({
+                    message: `Grading period ${periodLabel} in ${termName} cannot have a weight greater than 100%.`,
                     fieldPath: `terms.${i}.grading_periods.${j}.weight`,
                     periodIndex: j,
                     termIndex: i
@@ -484,24 +537,38 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
                 });
             }
 
-            // Grading components validation
+            // Grading components validation (stored as grading_periods.components jsonb [{ name, weight }])
             const components = p.components || [];
-            if (components.length > 0) {
+            components.forEach((c, k) => {
+                if (!c.name || !c.name.trim()) {
+                    errorsList.push({
+                        message: `Component #${k + 1} of grading period ${periodLabel} in ${termName} must have a name.`,
+                        fieldPath: `terms.${i}.grading_periods.${j}.components.${k}.name`,
+                        periodIndex: j,
+                        termIndex: i
+                    });
+                }
+                const compWeight = toNumberOrNull(c.weight);
+                if (compWeight === null || compWeight <= 0 || compWeight > 100) {
+                    errorsList.push({
+                        message: `Component #${k + 1} of grading period ${periodLabel} in ${termName} must have a weight between 0% (exclusive) and 100%.`,
+                        fieldPath: `terms.${i}.grading_periods.${j}.components.${k}.weight`,
+                        periodIndex: j,
+                        termIndex: i
+                    });
+                }
+            });
+            if (components.length > 0 && !toastError) {
                 const compTotalWeight = components.reduce((sum, c) => sum + (Number(c.weight) || 0), 0);
                 if (compTotalWeight > 100) {
-                    return {
+                    toastError = {
                         error: `Grading component weights for ${periodLabel} in ${termName} equal ${compTotalWeight}%. Grading components are not allowed to exceed 100%.`,
-                        isToastOnly: true,
-                        isValid: false,
                         periodIndex: j,
                         termIndex: i
                     };
-                }
-                if (compTotalWeight !== 100) {
-                    return {
+                } else if (compTotalWeight !== 100) {
+                    toastError = {
                         error: `Grading component weights for ${periodLabel} in ${termName} equal ${compTotalWeight}%. The total component weight must sum to 100%.`,
-                        isToastOnly: true,
-                        isValid: false,
                         periodIndex: j,
                         termIndex: i
                     };
@@ -510,15 +577,22 @@ export function validateGradingPeriods(terms: WizardTermItem[]): {
         }
 
         const totalWeight = periods.reduce((sum, p) => sum + (Number(p.weight) || 0), 0);
-        if (totalWeight !== 100) {
-            return {
+        if (totalWeight !== 100 && !toastError) {
+            toastError = {
                 error: `Grading period weights for ${termName} equal ${totalWeight}%. The total weight must strictly sum to 100%.`,
-                isToastOnly: true,
-                isValid: false,
                 periodIndex: periods.length - 1,
                 termIndex: i
             };
         }
+    }
+
+    // Field-level errors take precedence so the first invalid input can be focused
+    if (errorsList.length === 0 && toastError) {
+        return {
+            ...toastError,
+            isToastOnly: true,
+            isValid: false
+        };
     }
 
     if (errorsList.length > 0) {
@@ -562,6 +636,16 @@ export function validateTransmutationRows(
         // Special status grades like DRP and INC do not require grade percentage ranges
         if (isSpecialGradeRow(r)) {
             continue;
+        }
+
+        // A numeric mark is saved as transmuted_grade numeric(5,2); larger values overflow on save
+        const numericMark = parseFloat(r.label || '');
+        if (!isNaN(numericMark) && (numericMark < 0 || numericMark > NUMERIC_5_2_MAX)) {
+            errorsList.push({
+                message: `Row #${i + 1} (${r.label}) numeric mark must be between 0 and ${NUMERIC_5_2_MAX}.`,
+                fieldPath: `transmutation_rows.${i}.label`,
+                rowIndex: i
+            });
         }
 
         const minPct = r.min_percentage !== null && r.min_percentage !== undefined && r.min_percentage !== ''
@@ -663,7 +747,6 @@ export function cloneSchoolYearForDuplication(
         grading_deadline: t.grading_deadline || '',
         status: 'Upcoming',
         evaluation_scope: t.evaluation_scope || details.evaluation_scope || 'Period',
-        max_units: t.max_units ?? details.max_units_per_term ?? 24,
         grading_periods: (t.grading_periods || []).map((gp, gIdx) => ({
             id: undefined,
             name: gp.name,
@@ -838,7 +921,7 @@ export function validateStep1SchoolYear(
     sourceSchoolYear?: SourceSchoolYearInfo | null,
     existingSchoolYears?: ExistingSchoolYearComparison[] | null,
     currentId?: string | null
-): { isValid: boolean; error?: string; field?: 'start_date' | 'end_date' | 'code' | 'label' } {
+): { isValid: boolean; error?: string; field?: 'start_date' | 'end_date' | 'code' | 'label' | 'max_units_per_term' } {
     if (!values.start_date) {
         return { field: 'start_date', isValid: false, error: 'Please select a Start Date for the school year.' };
     }
@@ -853,6 +936,21 @@ export function validateStep1SchoolYear(
     }
     if (!values.label || !values.label.trim()) {
         return { field: 'label', isValid: false, error: 'Academic Year Label is required.' };
+    }
+
+    // school_years.max_units_per_term smallint NOT NULL CHECK (1..60)
+    const maxUnits = toNumberOrNull(values.max_units_per_term);
+    if (
+        maxUnits === null ||
+        !Number.isInteger(maxUnits) ||
+        maxUnits < MAX_UNITS_PER_TERM_MIN ||
+        maxUnits > MAX_UNITS_PER_TERM_MAX
+    ) {
+        return {
+            field: 'max_units_per_term',
+            isValid: false,
+            error: `Max Units per Term must be a whole number from ${MAX_UNITS_PER_TERM_MIN} to ${MAX_UNITS_PER_TERM_MAX}.`
+        };
     }
 
     const codeConflict = checkSchoolYearCodeConflict(
@@ -914,7 +1012,7 @@ export function generateAcademicYearLabel(startDate: string, endDate: string): s
 }
 
 export function validateCalendarExceptions(
-    holidays: { title?: string; start_date?: string; end_date?: string }[]
+    holidays: { title?: string; exception_type?: string; start_date?: string; end_date?: string }[]
 ): { isValid: boolean; error?: string; fieldPath?: string; holidayIndex?: number; errors?: Array<{ fieldPath: string; message: string; holidayIndex?: number }> } {
     if (!holidays) return { isValid: true };
     const errorsList: Array<{ fieldPath: string; message: string; holidayIndex: number }> = [];
@@ -925,6 +1023,14 @@ export function validateCalendarExceptions(
                 fieldPath: `holidays.${i}.title`,
                 holidayIndex: i,
                 message: `Holiday/Exception #${i + 1} must have a Title.`
+            });
+        }
+        // school_year_calendar_exceptions.exception_type is a NOT NULL calendar_exception_type enum
+        if (!toCalendarExceptionType(h.exception_type)) {
+            errorsList.push({
+                fieldPath: `holidays.${i}.exception_type`,
+                holidayIndex: i,
+                message: `Holiday/Exception "${h.title || `#${i + 1}`}" must use a supported Exception Type (${CALENDAR_EXCEPTION_TYPES.join(', ')}).`
             });
         }
         if (!h.start_date) {
@@ -961,4 +1067,68 @@ export function validateCalendarExceptions(
     return { isValid: true };
 }
 
+export function validateThresholds(
+    thresholds: WizardThresholdItem[]
+): { isValid: boolean; error?: string; fieldPath?: string; errors?: Array<{ fieldPath: string; message: string }> } {
+    const errorsList: Array<{ fieldPath: string; message: string }> = [];
+
+    function checkGwaRange(value: number | null, fieldPath: string, name: string, fieldLabel: string) {
+        // academic_thresholds GWA columns are numeric(4,2)
+        if (value !== null && (value < 0 || value > NUMERIC_4_2_MAX)) {
+            errorsList.push({
+                fieldPath,
+                message: `${fieldLabel} of threshold "${name}" must be between 0.00 and ${NUMERIC_4_2_MAX}.`
+            });
+        }
+    }
+
+    for (let i = 0; i < (thresholds || []).length; i++) {
+        const t = thresholds[i];
+        const name = t.label || `#${i + 1}`;
+
+        if (!ACADEMIC_THRESHOLD_CATEGORIES.includes(t.category)) {
+            errorsList.push({
+                fieldPath: `thresholds.${i}.category`,
+                message: `Threshold "${name}" must have a Category (Honor, Scholarship, or Standing).`
+            });
+        }
+        if (!t.label || !t.label.trim()) {
+            errorsList.push({
+                fieldPath: `thresholds.${i}.label`,
+                message: `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`
+            });
+        }
+
+        const minGwa = toNumberOrNull(t.min_gwa);
+        const maxGwa = toNumberOrNull(t.max_gwa);
+        const minSubjectGrade = toNumberOrNull(t.min_subject_grade);
+
+        checkGwaRange(minGwa, `thresholds.${i}.min_gwa`, name, 'Min GWA');
+        if (maxGwa === null) {
+            errorsList.push({
+                fieldPath: `thresholds.${i}.max_gwa`,
+                message: `Threshold "${name}" must specify a Max GWA cutoff.`
+            });
+        } else {
+            checkGwaRange(maxGwa, `thresholds.${i}.max_gwa`, name, 'Max GWA');
+        }
+        if (minGwa !== null && maxGwa !== null && minGwa > maxGwa) {
+            errorsList.push({
+                fieldPath: `thresholds.${i}.min_gwa`,
+                message: `Min GWA (${minGwa}) of threshold "${name}" cannot be greater than its Max GWA (${maxGwa}).`
+            });
+        }
+        checkGwaRange(minSubjectGrade, `thresholds.${i}.min_subject_grade`, name, 'Subject Floor Grade');
+    }
+
+    if (errorsList.length > 0) {
+        return {
+            isValid: false,
+            error: errorsList[0].message,
+            fieldPath: errorsList[0].fieldPath,
+            errors: errorsList
+        };
+    }
+    return { isValid: true };
+}
 

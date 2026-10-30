@@ -71,9 +71,7 @@ export interface ProgramBulkRow {
     years_duration: string;
     total_units: string;
     description: string;
-    is_active: string;
-    override_grading_schema?: string;
-    grading_periods?: string;
+    is_active?: string;
     course_code?: string;
     year_level?: string;
     term_type_code?: string;

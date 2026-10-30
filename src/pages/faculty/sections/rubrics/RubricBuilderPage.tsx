@@ -34,7 +34,7 @@ export default function RubricBuilderPage() {
     });
 
     const {
-        control, formState, handleSubmit, reset
+        control, handleSubmit, reset
     } = methods;
 
     const { fields, append, remove } = useFieldArray({ control, name: 'criteria' });

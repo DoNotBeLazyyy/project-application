@@ -1,14 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
-import CommonInput from '@components/input/CommonInput';
-import CommonNumberInput from '@components/input/CommonNumberInput';
+import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import CommonSelect from '@components/select/CommonSelect';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import {
     CaretDownIcon,
     ClockIcon,
-    InfoIcon,
     PlusIcon,
     TrashIcon,
     WarningCircleIcon
@@ -16,9 +13,13 @@ import {
 import { getTermTypes } from '@services/term/term-type.service';
 import { AcademicYearWizardFormValues, WizardTermItem } from '@type/school-year.type';
 import { TermTypeOption } from '@type/term/term-type.type';
-import { checkForMessage, clearFieldError } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Control, useFieldArray, useFormState, UseFormSetValue, useWatch } from 'react-hook-form';
+
+const EVALUATION_SCOPE_OPTIONS = [
+    { label: 'Per Grading Period', value: 'Period' },
+    { label: 'Per Term', value: 'Term' }
+];
 
 interface Step2TermsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -41,7 +42,6 @@ export default function Step2TermsConfig({
     }
 
     const { errors } = useFormState({ control });
-    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.terms && Array.isArray(errors.terms)) {
@@ -105,6 +105,7 @@ export default function Step2TermsConfig({
             end_date: '',
             enrollment_end_date: '',
             enrollment_start_date: '',
+            evaluation_scope: syEvaluationScope,
             grading_deadline: '',
             grading_periods: [],
             start_date: '',
@@ -115,10 +116,6 @@ export default function Step2TermsConfig({
         };
 
         append(newTerm);
-    }
-
-    function handleUpdateTermDate(index: number, field: 'start_date' | 'end_date', value: string) {
-        setValue(`terms.${index}.${field}`, value, { shouldDirty: true });
     }
 
     return (
@@ -283,28 +280,32 @@ export default function Step2TermsConfig({
 
                             {/* Term Inputs Responsive Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {/* Term Type Input */}
+                                {/* Term Type Input: resolved to terms.term_type_id (NOT NULL, unique per school year) on save */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <CommonInput
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.term_type_label`}
+                                    <ValidCommonInput
+                                        control={control}
                                         description="Declare the term name for this academic year (e.g. 1st Semester, 2nd Semester, Summer)."
                                         disabled={disabled}
-                                        error={Boolean(otherTermsHaveThisType || (errors.terms as any)?.[index]?.term_type_label)}
                                         fullWidth
-                                        helperText={otherTermsHaveThisType ? 'Duplicate term name' : (errors.terms as any)?.[index]?.term_type_label?.message}
                                         inputProps={{ list: 'term-types-datalist' }}
-                                        isFirstError={firstErrorKey === `terms.${index}.term_type_label`}
                                         isRequired
                                         label="Term Type / Name"
                                         name={`terms.${index}.term_type_label`}
                                         placeholder="e.g. 1st Semester"
-                                        size="small"
-                                        value={currentTerm.term_type_label || ''}
+                                        rules={{
+                                            required: 'Term type / name is required',
+                                            validate: (val) => {
+                                                const clean = String(val || '').trim().toLowerCase();
+                                                if (!clean) return 'Term type / name is required';
+                                                const isDuplicate = watchedTerms.some(
+                                                    (t, idx) => idx !== index && (t.term_type_label || '').trim().toLowerCase() === clean
+                                                );
+                                                return !isDuplicate || 'Duplicate term name';
+                                            }
+                                        }}
                                         onChange={(e) => {
-                                            clearFieldError(control, `terms.${index}.term_type_label`);
                                             const newLabel = e.target.value;
                                             const matched = termTypes.find((t) => t.label.toLowerCase() === newLabel.trim().toLowerCase());
-                                            setValue(`terms.${index}.term_type_label`, newLabel, { shouldDirty: true, shouldValidate: true });
                                             setValue(
                                                 `terms.${index}.term_type_code`,
                                                 matched?.code || newLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_'),
@@ -320,148 +321,98 @@ export default function Step2TermsConfig({
                                     </datalist>
                                 </div>
 
-                                {/* Term Start Date */}
+                                {/* Term Start Date (terms.start_date NOT NULL) */}
                                 <div>
-                                    <CommonDatePicker
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.start_date`}
+                                    <ValidCommonDatePicker
+                                        control={control}
                                         description="Official date when classes begin for this term."
                                         disabled={disabled}
-                                        error={Boolean(hasPrecedingConflict || (errors.terms as any)?.[index]?.start_date)}
-                                        helperText={hasPrecedingConflict ? 'Start date conflicts with preceding term' : (errors.terms as any)?.[index]?.start_date?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.start_date`}
                                         isRequired
                                         label="Term Start Date"
-                                        size="small"
-                                        slotProps={{ textField: { name: `terms.${index}.start_date` } }}
-                                        value={currentTerm.start_date || ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.start_date`);
-                                            handleUpdateTermDate(index, 'start_date', val);
+                                        name={`terms.${index}.start_date`}
+                                        rules={{
+                                            required: 'Term start date is required'
                                         }}
                                     />
                                 </div>
 
-                                {/* Term End Date */}
+                                {/* Term End Date (terms.end_date NOT NULL, CHECK end_date > start_date) */}
                                 <div>
-                                    <CommonDatePicker
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.end_date`}
+                                    <ValidCommonDatePicker
+                                        control={control}
                                         description="Official date when classes conclude for this term."
                                         disabled={disabled}
-                                        error={Boolean(hasDateOrderError || (errors.terms as any)?.[index]?.end_date)}
-                                        helperText={hasDateOrderError ? 'End date must be after start date' : (errors.terms as any)?.[index]?.end_date?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.end_date`}
                                         isRequired
                                         label="Term End Date"
-                                        size="small"
-                                        slotProps={{ textField: { name: `terms.${index}.end_date` } }}
-                                        value={currentTerm.end_date || ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.end_date`);
-                                            handleUpdateTermDate(index, 'end_date', val);
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Max Credit Units for this term */}
-                                <div>
-                                    <CommonNumberInput
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.max_units`}
-                                        description="Maximum credit units a student can register for in this term (1 - 60)."
-                                        disabled={disabled}
-                                        error={Boolean((errors.terms as any)?.[index]?.max_units)}
-                                        fullWidth
-                                        helperText={(errors.terms as any)?.[index]?.max_units?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.max_units`}
-                                        isRequired
-                                        label="Max Units"
-                                        max={60}
-                                        min={1}
-                                        name={`terms.${index}.max_units`}
-                                        placeholder="24"
-                                        size="small"
-                                        value={currentTerm.max_units ?? ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.max_units`);
-                                            setValue(`terms.${index}.max_units`, val as any, { shouldDirty: true, shouldValidate: true });
+                                        name={`terms.${index}.end_date`}
+                                        rules={{
+                                            required: 'Term end date is required',
+                                            validate: (val) => {
+                                                const start = watchedTerms[index]?.start_date;
+                                                if (val && start && new Date(val as string) <= new Date(start)) {
+                                                    return 'End date must be after start date';
+                                                }
+                                                return true;
+                                            }
                                         }}
                                     />
                                 </div>
 
                                 {/* Enrollment Start Date */}
                                 <div>
-                                    <CommonDatePicker
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.enrollment_start_date`}
+                                    <ValidCommonDatePicker
+                                        control={control}
                                         description="Date when student course registration and online enrollment opens."
                                         disabled={disabled}
-                                        error={Boolean((errors.terms as any)?.[index]?.enrollment_start_date)}
-                                        helperText={(errors.terms as any)?.[index]?.enrollment_start_date?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.enrollment_start_date`}
                                         label="Enrollment Opens"
-                                        size="small"
-                                        slotProps={{ textField: { name: `terms.${index}.enrollment_start_date` } }}
-                                        value={currentTerm.enrollment_start_date || ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.enrollment_start_date`);
-                                            setValue(`terms.${index}.enrollment_start_date`, val, { shouldDirty: true, shouldValidate: true });
-                                        }}
+                                        name={`terms.${index}.enrollment_start_date`}
                                     />
                                 </div>
 
                                 {/* Enrollment End Date */}
                                 <div>
-                                    <CommonDatePicker
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.enrollment_end_date`}
+                                    <ValidCommonDatePicker
+                                        control={control}
                                         description="Final date for student course registration, late enrollment, and add-drop requests."
                                         disabled={disabled}
-                                        error={Boolean((errors.terms as any)?.[index]?.enrollment_end_date)}
-                                        helperText={(errors.terms as any)?.[index]?.enrollment_end_date?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.enrollment_end_date`}
                                         label="Enrollment Closes"
-                                        size="small"
-                                        slotProps={{ textField: { name: `terms.${index}.enrollment_end_date` } }}
-                                        value={currentTerm.enrollment_end_date || ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.enrollment_end_date`);
-                                            setValue(`terms.${index}.enrollment_end_date`, val, { shouldDirty: true, shouldValidate: true });
+                                        name={`terms.${index}.enrollment_end_date`}
+                                        rules={{
+                                            validate: (val) => {
+                                                const start = watchedTerms[index]?.enrollment_start_date;
+                                                if (val && start && new Date(val as string) < new Date(start)) {
+                                                    return 'Enrollment end date cannot be before enrollment start date';
+                                                }
+                                                return true;
+                                            }
                                         }}
                                     />
                                 </div>
 
                                 {/* Grading Submission Deadline */}
                                 <div>
-                                    <CommonDatePicker
-                                        defaultOpenErrorTooltip={firstErrorKey === `terms.${index}.grading_deadline`}
+                                    <ValidCommonDatePicker
+                                        control={control}
                                         description="Final deadline for faculty to encode and submit final grades."
                                         disabled={disabled}
-                                        error={Boolean((errors.terms as any)?.[index]?.grading_deadline)}
-                                        helperText={(errors.terms as any)?.[index]?.grading_deadline?.message}
-                                        isFirstError={firstErrorKey === `terms.${index}.grading_deadline`}
                                         label="Grading Deadline"
-                                        size="small"
-                                        slotProps={{ textField: { name: `terms.${index}.grading_deadline` } }}
-                                        value={currentTerm.grading_deadline || ''}
-                                        onChange={(val) => {
-                                            clearFieldError(control, `terms.${index}.grading_deadline`);
-                                            setValue(`terms.${index}.grading_deadline`, val, { shouldDirty: true, shouldValidate: true });
-                                        }}
+                                        name={`terms.${index}.grading_deadline`}
                                     />
                                 </div>
 
-                                {/* Evaluation Scope for this term */}
+                                {/* Evaluation Scope for this term (terms.evaluation_scope evaluation_scope_type) */}
                                 <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-                                    <CommonSelect
+                                    <ValidCommonSelect
+                                        control={control}
                                         description="Determines whether student evaluation of faculty is conducted per period or per term for this specific term."
                                         disabled={disabled}
                                         fullWidth
+                                        isRequired
                                         label="Faculty Evaluation Scope"
-                                        options={[
-                                            { label: 'Per Grading Period', value: 'Period' },
-                                            { label: 'Per Term', value: 'Term' }
-                                        ]}
-                                        size="small"
-                                        value={currentTerm.evaluation_scope || 'Period'}
-                                        onChange={(e) => {
-                                            setValue(`terms.${index}.evaluation_scope`, (e.target.value as any) || 'Period', { shouldDirty: true });
+                                        name={`terms.${index}.evaluation_scope`}
+                                        options={EVALUATION_SCOPE_OPTIONS}
+                                        rules={{
+                                            required: 'Faculty evaluation scope is required'
                                         }}
                                     />
                                 </div>

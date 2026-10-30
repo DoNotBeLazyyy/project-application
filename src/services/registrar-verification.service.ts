@@ -24,14 +24,6 @@ export async function listStudentProfileRequests(
     });
 }
 
-export async function getStudentProfileRequestById(
-    requestId: string
-): Promise<ServiceResult<StudentProfileRequestRow>> {
-    return callRpc<StudentProfileRequestRow>('fn_get_student_profile_request_by_id', {
-        p_request_id: requestId
-    });
-}
-
 export async function approveStudentProfileRequest(
     requestId: string,
     editedChanges?: Partial<ProfileFormValues> | null,
@@ -83,20 +75,6 @@ export async function listRegistrarLogs(
         p_search: search || null,
         p_size: size,
         p_sort: sort.length > 0 ? sort : null
-    });
-}
-
-export async function registrarUpdateStudentProfile(
-    studentId: string,
-    profileValues: Partial<ProfileFormValues>,
-    reason?: string,
-    notifyStudent = true
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_registrar_update_student_profile', {
-        p_notify_student: notifyStudent,
-        p_profile_values: profileValues,
-        p_reason: reason || null,
-        p_student_id: studentId
     });
 }
 

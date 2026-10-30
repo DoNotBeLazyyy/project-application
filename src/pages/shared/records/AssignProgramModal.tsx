@@ -1,18 +1,19 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
+import { CommonSelectOption } from '@components/select/CommonSelect';
 import { useObjectDraft } from '@hooks/useFormDraft';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { getPrograms } from '@services/program/program.service';
 import { registrarAssignStudentProgramAndYear, syncStudentYearLevel } from '@services/registrar-verification.service';
 import { shiftStudentProgram } from '@services/records.service';
 import { useToastStore } from '@stores/toast.store';
 import { useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 const YEAR_LEVEL_OPTIONS: CommonSelectOption[] = [
     { label: '1st Year', value: 1 },
@@ -35,6 +36,13 @@ export interface AssignProgramModalProps {
     title?: string;
 }
 
+interface AssignProgramFormValues {
+    selectedProgramId: string;
+    selectedYearLevel: number;
+    isOverride: boolean;
+    reason: string;
+}
+
 export default function AssignProgramModal({
     open,
     onClose,
@@ -47,10 +55,6 @@ export default function AssignProgramModal({
     title
 }: AssignProgramModalProps) {
     const [programOptions, setProgramOptions] = useState<CommonSelectOption[]>([]);
-    const [selectedProgramId, setSelectedProgramId] = useState<string>('');
-    const [selectedYearLevel, setSelectedYearLevel] = useState<number>(1);
-    const [isOverride, setIsOverride] = useState<boolean>(false);
-    const [reason, setReason] = useState<string>('');
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
@@ -60,12 +64,21 @@ export default function AssignProgramModal({
         ? currentYearLevel
         : 1;
 
-    const defaultDraftValues = useMemo(() => ({
+    const defaultDraftValues = useMemo<AssignProgramFormValues>(() => ({
         selectedProgramId: currentProgramId ?? '',
         selectedYearLevel: initialYearLevel,
         isOverride: currentYearLevelOverridden,
         reason: ''
     }), [currentProgramId, initialYearLevel, currentYearLevelOverridden]);
+
+    const { control, handleSubmit, reset, setValue } = useForm<AssignProgramFormValues>({
+        defaultValues: defaultDraftValues
+    });
+    const watchedValues = useWatch({ control });
+    const selectedProgramId = watchedValues.selectedProgramId ?? '';
+    const selectedYearLevel = Number(watchedValues.selectedYearLevel ?? 1);
+    const isOverride = Boolean(watchedValues.isOverride);
+    const reason = watchedValues.reason ?? '';
 
     const currentDraftValues = useMemo(() => ({
         selectedProgramId,
@@ -79,10 +92,10 @@ export default function AssignProgramModal({
         values: currentDraftValues,
         defaultValues: defaultDraftValues,
         onRestore: (restored) => {
-            setSelectedProgramId(restored.selectedProgramId ?? '');
-            setSelectedYearLevel(restored.selectedYearLevel ?? 1);
-            setIsOverride(Boolean(restored.isOverride));
-            setReason(restored.reason ?? '');
+            setValue('selectedProgramId', restored.selectedProgramId ?? '');
+            setValue('selectedYearLevel', restored.selectedYearLevel ?? 1);
+            setValue('isOverride', Boolean(restored.isOverride));
+            setValue('reason', restored.reason ?? '');
         },
         enabled: open
     });
@@ -93,10 +106,7 @@ export default function AssignProgramModal({
             return;
         }
 
-        setSelectedProgramId(currentProgramId ?? '');
-        setSelectedYearLevel(initialYearLevel);
-        setIsOverride(currentYearLevelOverridden);
-        setReason('');
+        reset(defaultDraftValues);
 
         async function fetchPrograms() {
             setIsLoadingPrograms(true);
@@ -115,7 +125,39 @@ export default function AssignProgramModal({
         }
 
         fetchPrograms();
-    }, [open, currentProgramId, initialYearLevel, currentYearLevelOverridden]);
+    }, [open, defaultDraftValues, reset]);
+
+    const fields: FormFieldConfig<AssignProgramFormValues>[] = [
+        {
+            disabled: isSaving || isLoadingPrograms,
+            gridCols: 2,
+            label: 'Academic Program',
+            name: 'selectedProgramId',
+            options: programOptions,
+            rules: { required: 'Academic program is required' },
+            type: 'select'
+        },
+        {
+            disabled: isSaving,
+            gridCols: 2,
+            label: 'Year Level',
+            name: 'selectedYearLevel',
+            options: YEAR_LEVEL_OPTIONS,
+            rules: { required: 'Year level is required' },
+            type: 'select'
+        }
+    ];
+
+    const reasonFields: FormFieldConfig<AssignProgramFormValues>[] = [
+        {
+            disabled: isSaving,
+            gridCols: 2,
+            label: 'Reason / Notes (Optional)',
+            name: 'reason',
+            placeholder: 'e.g. Initial assignment, curriculum transfer, or manual override',
+            type: 'text'
+        }
+    ];
 
     function handleRequestClose() {
         if (draftGuard.hasRealChanges) {
@@ -138,8 +180,8 @@ export default function AssignProgramModal({
         const res = await syncStudentYearLevel(studentId);
         setIsSyncing(false);
         if (res.data) {
-            setSelectedYearLevel(res.data.calculated_year_level);
-            setIsOverride(false);
+            setValue('selectedYearLevel', res.data.calculated_year_level);
+            setValue('isOverride', false);
             useToastStore.getState().showToast(
                 `Calculated Year Level from Curriculum: Year ${res.data.calculated_year_level}`,
                 'info'
@@ -147,8 +189,9 @@ export default function AssignProgramModal({
         }
     }
 
-    async function handleSave() {
-        if (!selectedProgramId) return;
+    async function saveAssignment(values: AssignProgramFormValues) {
+        const yearLevel = Number(values.selectedYearLevel);
+        const trimmedReason = values.reason.trim() || undefined;
 
         setIsSaving(true);
         let error: unknown = null;
@@ -156,18 +199,18 @@ export default function AssignProgramModal({
         if (studentId) {
             const res = await registrarAssignStudentProgramAndYear(
                 studentId,
-                selectedProgramId,
-                selectedYearLevel,
-                isOverride,
-                reason.trim() || undefined
+                values.selectedProgramId,
+                yearLevel,
+                values.isOverride,
+                trimmedReason
             );
             error = res.error;
         } else {
             const res = await shiftStudentProgram(null, {
                 effective_date: new Date().toISOString().slice(0, 10),
-                program_id: selectedProgramId,
-                reason: reason.trim() || undefined,
-                year_level: selectedYearLevel
+                program_id: values.selectedProgramId,
+                reason: trimmedReason,
+                year_level: yearLevel
             });
             error = res.error;
         }
@@ -183,6 +226,10 @@ export default function AssignProgramModal({
             onSuccess?.();
             onClose();
         }
+    }
+
+    function handleSave() {
+        handleSubmit(saveAssignment)();
     }
 
     const isUnchanged = selectedProgramId === (currentProgramId ?? '')
@@ -204,33 +251,16 @@ export default function AssignProgramModal({
                 }}
             >
                 <div className="flex flex-col gap-4 p-4 pt-0">
-                    <CommonSelect
-                        disabled={isSaving || isLoadingPrograms}
-                        fullWidth
-                        label="Academic Program"
-                        options={programOptions}
-                        size="small"
-                        value={selectedProgramId}
-                        onChange={function(e) {
-                            setSelectedProgramId(e.target.value as string);
-                        }}
+                    <CommonForm
+                        component="div"
+                        containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        control={control}
+                        enableDraftRecovery={false}
+                        fields={fields}
                     />
 
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                            <CommonSelect
-                                disabled={isSaving}
-                                fullWidth
-                                label="Year Level"
-                                options={YEAR_LEVEL_OPTIONS}
-                                size="small"
-                                value={selectedYearLevel}
-                                onChange={function(e) {
-                                    setSelectedYearLevel(Number(e.target.value));
-                                }}
-                            />
-                        </div>
-                        {Boolean(studentId) && (
+                    {Boolean(studentId) && (
+                        <div className="flex justify-end">
                             <CommonButton
                                 disabled={isSaving || isSyncing}
                                 loading={isSyncing}
@@ -241,40 +271,27 @@ export default function AssignProgramModal({
                             >
                                 Sync Curriculum
                             </CommonButton>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div className="bg-(--mui-palette-action-hover) p-3 rounded-lg flex flex-col gap-1">
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={isOverride}
-                                    disabled={isSaving}
-                                    size="small"
-                                    onChange={(e) => setIsOverride(e.target.checked)}
-                                />
-                            }
-                            label={
-                                <span className="text-sm font-medium text-(--mui-palette-text-primary)">
-                                    Manual Year Level Override
-                                </span>
-                            }
+                        <ValidCommonCheckbox
+                            control={control}
+                            disabled={isSaving}
+                            label="Manual Year Level Override"
+                            name="isOverride"
                         />
                         <p className="text-xs text-(--mui-palette-text-secondary) m-0 ml-7">
                             When unchecked, the student's year level will automatically update when they complete all required curriculum subjects. Check this if the Registrar needs to manually override or hold the year level.
                         </p>
                     </div>
 
-                    <CommonInput
-                        disabled={isSaving}
-                        fullWidth
-                        label="Reason / Notes (Optional)"
-                        placeholder="e.g. Initial assignment, curriculum transfer, or manual override"
-                        size="small"
-                        value={reason}
-                        onChange={function(e) {
-                            setReason(e.target.value);
-                        }}
+                    <CommonForm
+                        component="div"
+                        containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        control={control}
+                        enableDraftRecovery={false}
+                        fields={reasonFields}
                     />
 
                     <div className="flex gap-2 justify-end mt-2">
@@ -288,7 +305,7 @@ export default function AssignProgramModal({
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={isSaving || !selectedProgramId || isUnchanged}
+                            disabled={isSaving || isUnchanged}
                             loading={isSaving}
                             size="small"
                             variant="contained"

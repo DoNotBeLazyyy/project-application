@@ -4,10 +4,8 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import {
     ArrowCounterClockwiseIcon,
     CalculatorIcon,
-    CheckCircleIcon,
     SparkleIcon,
-    TrophyIcon,
-    WarningCircleIcon
+    TrophyIcon
 } from '@phosphor-icons/react';
 import { InsightAcademic, InsightCourse, InsightTrajectory } from '@type/analytics.type';
 import { useMemo, useState } from 'react';

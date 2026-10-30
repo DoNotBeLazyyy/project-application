@@ -1,5 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonInput from '@components/input/CommonInput';
 import CommonActionModal from '@components/modal/CommonActionModal';
 import ConfirmPromptModal from '@components/modal/ConfirmPromptModal';
@@ -13,7 +15,6 @@ import {
     ArrowsClockwiseIcon,
     BuildingsIcon,
     CertificateIcon,
-    CheckCircleIcon,
     GraduationCapIcon,
     IdentificationCardIcon,
     MagnifyingGlassIcon,
@@ -25,6 +26,93 @@ import { creditStudentCourse, getStudentCurriculumForCrediting, removeCreditedCo
 import { useToastStore } from '@stores/toast.store';
 import { CreditedCourseRow, StudentCurriculumCreditingResponse } from '@type/records.type';
 import { useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+
+interface CreditFormValues {
+    previousSchool: string;
+    previousCourseCode: string;
+    previousCourseTitle: string;
+    gradeDisplay: string;
+    gradeNumeric: number | null;
+    unitsCredited: number | null;
+    remarks: string;
+}
+
+function isBlank(value: unknown): boolean {
+    return !String(value ?? '').trim();
+}
+
+function isEmptyNumber(value: unknown): boolean {
+    return value === null || value === undefined || value === '';
+}
+
+const CREDIT_FORM_FIELDS: FormFieldConfig<CreditFormValues>[] = [
+    {
+        gridCols: 6,
+        label: 'Previous School / University Name',
+        name: 'previousSchool',
+        placeholder: 'e.g. Polytechnic University of the Philippines',
+        rules: {
+            required: 'Previous school is required',
+            validate: (value: unknown) => !isBlank(value) || 'Previous school cannot be empty or whitespace only'
+        },
+        type: 'text'
+    },
+    {
+        gridCols: 3,
+        label: 'Previous Course Code',
+        name: 'previousCourseCode',
+        placeholder: 'e.g. COMP 20013',
+        type: 'text'
+    },
+    {
+        gridCols: 3,
+        label: 'Previous Course Title',
+        name: 'previousCourseTitle',
+        placeholder: 'e.g. Intro to Computing',
+        type: 'text'
+    },
+    {
+        gridCols: 2,
+        label: 'Grade Obtained',
+        name: 'gradeDisplay',
+        placeholder: 'e.g. 1.75 or Passed',
+        rules: {
+            required: 'Grade obtained is required',
+            validate: (value: unknown) => !isBlank(value) || 'Grade obtained cannot be empty or whitespace only'
+        },
+        type: 'text'
+    },
+    {
+        fieldProps: { maxDecimals: 2 },
+        gridCols: 2,
+        label: 'Numeric Equivalent',
+        name: 'gradeNumeric',
+        placeholder: 'e.g. 1.75',
+        rules: {
+            validate: (value: unknown) => isEmptyNumber(value) || Number(value) >= 0 || 'Numeric equivalent cannot be negative'
+        },
+        type: 'number'
+    },
+    {
+        fieldProps: { maxDecimals: 1 },
+        gridCols: 2,
+        label: 'Units to Credit',
+        name: 'unitsCredited',
+        placeholder: 'e.g. 3.0',
+        rules: {
+            validate: (value: unknown) => isEmptyNumber(value) || Number(value) > 0 || 'Units to credit must be greater than 0'
+        },
+        type: 'number'
+    },
+    {
+        gridCols: 6,
+        label: 'Registrar Audit Remarks',
+        name: 'remarks',
+        placeholder: 'e.g. Credited based on Official Transcript of Records (TOR) evaluation',
+        type: 'text'
+    }
+];
 
 export interface CreditTransfereeCoursesModalProps {
     open: boolean;
@@ -77,45 +165,35 @@ export default function CreditTransfereeCoursesModal({
     const [isDiscardFormOpen, setIsDiscardFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Form fields
-    const [previousSchool, setPreviousSchool] = useState('');
-    const [previousCourseCode, setPreviousCourseCode] = useState('');
-    const [previousCourseTitle, setPreviousCourseTitle] = useState('');
-    const [gradeDisplay, setGradeDisplay] = useState('1.75');
-    const [gradeNumeric, setGradeNumeric] = useState<string>('1.75');
-    const [unitsCredited, setUnitsCredited] = useState<string>('3.0');
-    const [remarks, setRemarks] = useState('');
-
     // Remember last used school name for rapid sequential entry
     const [rememberedSchool, setRememberedSchool] = useState('');
 
-    const defaultCreditFormValues = useMemo(() => ({
-        previousSchool: activeCourse?.previous_school || rememberedSchool || '',
-        previousCourseCode: activeCourse?.previous_course_code || '',
-        previousCourseTitle: activeCourse?.previous_course_title || '',
-        gradeDisplay: activeCourse?.grade_display || 'Passed',
-        gradeNumeric: activeCourse?.grade_numeric ? String(activeCourse.grade_numeric) : '',
-        unitsCredited: String(activeCourse?.units_credited ?? activeCourse?.units ?? 3.0),
-        remarks: activeCourse?.remarks || 'Credited per TOR evaluation'
-    }), [activeCourse, rememberedSchool]);
+    function toCreditFormValues(course: CreditedCourseRow | null): CreditFormValues {
+        return {
+            previousSchool: course?.previous_school || rememberedSchool || '',
+            previousCourseCode: course?.previous_course_code || '',
+            previousCourseTitle: course?.previous_course_title || '',
+            gradeDisplay: course?.grade_display || 'Passed',
+            gradeNumeric: course?.grade_numeric ?? null,
+            unitsCredited: course?.units_credited ?? course?.units ?? 3.0,
+            remarks: course?.remarks || 'Credited per TOR evaluation'
+        };
+    }
 
-    const currentCreditFormValues = useMemo(() => ({
-        previousSchool,
-        previousCourseCode,
-        previousCourseTitle,
-        gradeDisplay,
-        gradeNumeric,
-        unitsCredited,
-        remarks
-    }), [
-        previousSchool,
-        previousCourseCode,
-        previousCourseTitle,
-        gradeDisplay,
-        gradeNumeric,
-        unitsCredited,
-        remarks
-    ]);
+    const defaultCreditFormValues = useMemo(() => toCreditFormValues(activeCourse), [activeCourse, rememberedSchool]);
+
+    const creditForm = useForm<CreditFormValues>({ defaultValues: defaultCreditFormValues });
+    const watchedCreditValues = useWatch({ control: creditForm.control });
+
+    const currentCreditFormValues = useMemo<CreditFormValues>(() => ({
+        previousSchool: watchedCreditValues.previousSchool ?? '',
+        previousCourseCode: watchedCreditValues.previousCourseCode ?? '',
+        previousCourseTitle: watchedCreditValues.previousCourseTitle ?? '',
+        gradeDisplay: watchedCreditValues.gradeDisplay ?? '',
+        gradeNumeric: watchedCreditValues.gradeNumeric ?? null,
+        unitsCredited: watchedCreditValues.unitsCredited ?? null,
+        remarks: watchedCreditValues.remarks ?? ''
+    }), [watchedCreditValues]);
 
     const creditDraftGuard = useObjectDraft({
         formId: activeCourse?.course_id
@@ -124,13 +202,15 @@ export default function CreditTransfereeCoursesModal({
         values: currentCreditFormValues,
         defaultValues: defaultCreditFormValues,
         onRestore: (restored) => {
-            setPreviousSchool(restored.previousSchool ?? '');
-            setPreviousCourseCode(restored.previousCourseCode ?? '');
-            setPreviousCourseTitle(restored.previousCourseTitle ?? '');
-            setGradeDisplay(restored.gradeDisplay ?? 'Passed');
-            setGradeNumeric(restored.gradeNumeric ?? '');
-            setUnitsCredited(restored.unitsCredited ?? '3.0');
-            setRemarks(restored.remarks ?? '');
+            creditForm.reset({
+                previousSchool: restored.previousSchool ?? '',
+                previousCourseCode: restored.previousCourseCode ?? '',
+                previousCourseTitle: restored.previousCourseTitle ?? '',
+                gradeDisplay: restored.gradeDisplay ?? 'Passed',
+                gradeNumeric: restored.gradeNumeric ?? null,
+                unitsCredited: restored.unitsCredited ?? 3.0,
+                remarks: restored.remarks ?? ''
+            }, { keepDefaultValues: true });
         },
         enabled: isFormOpen && Boolean(activeCourse)
     });
@@ -167,13 +247,7 @@ export default function CreditTransfereeCoursesModal({
 
     function handleOpenCreditForm(course: CreditedCourseRow) {
         setActiveCourse(course);
-        setPreviousSchool(course.previous_school || rememberedSchool || '');
-        setPreviousCourseCode(course.previous_course_code || '');
-        setPreviousCourseTitle(course.previous_course_title || '');
-        setGradeDisplay(course.grade_display || 'Passed');
-        setGradeNumeric(course.grade_numeric ? String(course.grade_numeric) : '');
-        setUnitsCredited(String(course.units_credited ?? course.units ?? 3.0));
-        setRemarks(course.remarks || 'Credited per TOR evaluation');
+        creditForm.reset(toCreditFormValues(course));
         setIsFormOpen(true);
     }
 
@@ -192,35 +266,34 @@ export default function CreditTransfereeCoursesModal({
         handleCloseCreditForm();
     }
 
-    async function handleSaveCredit() {
+    function handleSaveCredit() {
+        creditForm.handleSubmit(saveCredit)();
+    }
+
+    async function saveCredit(values: CreditFormValues) {
         if (!studentId || !activeCourse) return;
 
-        if (!previousSchool.trim()) {
-            useToastStore.getState().showToast('Please enter the previous institution / school name.', 'error');
-            return;
-        }
-
         setIsSaving(true);
-        const parsedNumeric = gradeNumeric.trim() ? parseFloat(gradeNumeric) : null;
-        const parsedUnits = unitsCredited.trim() ? parseFloat(unitsCredited) : activeCourse.units;
+        const parsedNumeric = isEmptyNumber(values.gradeNumeric) ? null : Number(values.gradeNumeric);
+        const parsedUnits = isEmptyNumber(values.unitsCredited) ? activeCourse.units : Number(values.unitsCredited);
 
         const res = await creditStudentCourse({
             student_id: studentId,
             course_id: activeCourse.course_id,
-            previous_school: previousSchool.trim(),
-            previous_course_code: previousCourseCode.trim() || undefined,
-            previous_course_title: previousCourseTitle.trim() || undefined,
-            grade_display: gradeDisplay.trim() || 'Passed',
-            grade_numeric: parsedNumeric && !isNaN(parsedNumeric) ? parsedNumeric : null,
+            previous_school: values.previousSchool.trim(),
+            previous_course_code: values.previousCourseCode.trim() || undefined,
+            previous_course_title: values.previousCourseTitle.trim() || undefined,
+            grade_display: values.gradeDisplay.trim() || 'Passed',
+            grade_numeric: parsedNumeric !== null && !isNaN(parsedNumeric) ? parsedNumeric : null,
             units_credited: parsedUnits && !isNaN(parsedUnits) ? parsedUnits : activeCourse.units,
-            remarks: remarks.trim() || undefined
+            remarks: values.remarks.trim() || undefined
         });
 
         setIsSaving(false);
 
         if (res.data?.success) {
             useToastStore.getState().showToast(res.data.message || 'Course credited successfully!', 'success');
-            setRememberedSchool(previousSchool.trim());
+            setRememberedSchool(values.previousSchool.trim());
             handleCloseCreditForm();
             loadCurriculum();
             onSuccess?.();
@@ -609,106 +682,13 @@ export default function CreditTransfereeCoursesModal({
                             </div>
                         </div>
 
-                        {/* Previous School Input */}
-                        <div>
-                            <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                Previous School / University Name *
-                            </span>
-                            <CommonInput
-                                fullWidth
-                                placeholder="e.g. Polytechnic University of the Philippines"
-                                size="small"
-                                value={previousSchool}
-                                onChange={(e) => setPreviousSchool(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Equated Course Codes */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                    Previous Course Code
-                                </span>
-                                <CommonInput
-                                    fullWidth
-                                    placeholder="e.g. COMP 20013"
-                                    size="small"
-                                    value={previousCourseCode}
-                                    onChange={(e) => setPreviousCourseCode(e.target.value)}
-                                />
-                            </div>
-
-                            <div>
-                                <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                    Previous Course Title
-                                </span>
-                                <CommonInput
-                                    fullWidth
-                                    placeholder="e.g. Intro to Computing"
-                                    size="small"
-                                    value={previousCourseTitle}
-                                    onChange={(e) => setPreviousCourseTitle(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Grades and Units */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                                <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                    Grade Obtained *
-                                </span>
-                                <CommonInput
-                                    fullWidth
-                                    placeholder="e.g. 1.75 or Passed"
-                                    size="small"
-                                    value={gradeDisplay}
-                                    onChange={(e) => setGradeDisplay(e.target.value)}
-                                />
-                            </div>
-
-                            <div>
-                                <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                    Numeric Equivalent
-                                </span>
-                                <CommonInput
-                                    fullWidth
-                                    placeholder="e.g. 1.75"
-                                    size="small"
-                                    type="number"
-                                    value={gradeNumeric}
-                                    onChange={(e) => setGradeNumeric(e.target.value)}
-                                />
-                            </div>
-
-                            <div>
-                                <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                    Units to Credit
-                                </span>
-                                <CommonInput
-                                    fullWidth
-                                    placeholder="e.g. 3.0"
-                                    size="small"
-                                    type="number"
-                                    value={unitsCredited}
-                                    onChange={(e) => setUnitsCredited(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Remarks */}
-                        <div>
-                            <span className="text-xs font-semibold text-(--mui-palette-text-primary) mb-1 block">
-                                Registrar Audit Remarks
-                            </span>
-                            <CommonInput
-                                fullWidth
-                                placeholder="e.g. Credited based on Official Transcript of Records (TOR) evaluation"
-                                size="small"
-                                value={remarks}
-                                onChange={(e) => setRemarks(e.target.value)}
-                            />
-                        </div>
+                        <CommonForm
+                            component="div"
+                            containerClassName="grid grid-cols-1 md:grid-cols-6 gap-3"
+                            control={creditForm.control}
+                            enableDraftRecovery={false}
+                            fields={CREDIT_FORM_FIELDS}
+                        />
                     </div>
                 </CommonActionModal>
             )}

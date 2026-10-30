@@ -255,7 +255,7 @@ function ResultAnswerCard({ answer, hasSubmission, index, resultsAvailable }: Re
                                         className="flex items-center min-h-11 text-(--mui-palette-primary-main) text-left text-sm underline wrap-break-word cursor-pointer"
                                         key={file.path}
                                         type="button"
-                                        onClick={() => downloadAttachment(file.path, file.name)}
+                                        onClick={() => openSubmissionFile(file.path)}
                                     >
                                         <FileTextIcon className="inline mr-1.5 shrink-0" size={16} />
                                         {file.name}

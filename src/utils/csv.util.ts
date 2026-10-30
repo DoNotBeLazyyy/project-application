@@ -4,6 +4,9 @@ export interface CsvParseResult {
     rows: Record<string, string>[];
     missingHeaders: string[];
     unknownHeaders: string[];
+
+    // Blank cells in columns marked `required: true`, as "Row 2: Email"
+    missingValues: string[];
 }
 
 const COMMON_SYNONYMS: Record<string, string[]> = {
@@ -302,6 +305,97 @@ export function matchColumnHeader(header: string, col: CsvTemplateColumn): boole
     return false;
 }
 
+/**
+ * Maps each header cell to at most one template column.
+ *
+ * Exact key/label matches are resolved first, so a loose synonym on one header
+ * (`Title` is a synonym of both `name` and `label`) cannot steal a column that
+ * another header names outright. Each column is claimed by one header only;
+ * a later duplicate is reported as unrecognized instead of overwriting it.
+ *
+ * @param headers - The file's header row.
+ * @param columns - The template columns.
+ * @returns The matched column for each header, or null.
+ */
+export function matchHeadersToColumns(headers: string[], columns: CsvTemplateColumn[]): (CsvTemplateColumn | null)[] {
+    const matched: (CsvTemplateColumn | null)[] = headers.map(() => null);
+    const claimed = new Set<string>();
+
+    function isExactMatch(header: string, col: CsvTemplateColumn) {
+        const hNorm = normalizeHeader(header);
+        return Boolean(hNorm) && (hNorm === normalizeHeader(col.key) || hNorm === normalizeHeader(col.label));
+    }
+
+    [isExactMatch, matchColumnHeader].forEach(function(matcher) {
+        headers.forEach(function(header, index) {
+            if (matched[index]) {
+                return;
+            }
+
+            const col = columns.find(function(candidate) {
+                return !claimed.has(candidate.key) && matcher(header, candidate);
+            });
+
+            if (col) {
+                matched[index] = col;
+                claimed.add(col.key);
+            }
+        });
+    });
+
+    return matched;
+}
+
+/**
+ * Parses CSV text against template columns: matches headers, drops the
+ * template's example row, and reports missing required headers and blank
+ * required cells. Columns are header-required unless `required: false`;
+ * cell values are required only when `required: true`.
+ *
+ * @param text - The raw file contents.
+ * @param columns - The template columns.
+ * @returns The parsed rows and any problems found.
+ */
+export function parseCsvWithColumns(text: string, columns: CsvTemplateColumn[]): CsvParseResult {
+    const records = splitCsvRecords(text);
+    if (!records.length) {
+        return { missingHeaders: [], missingValues: [], rows: [], unknownHeaders: [] };
+    }
+
+    const headers = records[0];
+    const matchedColumns = matchHeadersToColumns(headers, columns);
+    const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
+    const missingHeaders = columns.filter(
+        (col) => col.required !== false && !matchedColumns.some((matched) => matched?.key === col.key)
+    )
+        .map((col) => col.label);
+
+    const dataRecords = records.slice(1)
+        .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
+
+    const rows = dataRecords.map((values) => {
+        const row: Record<string, string> = {};
+        matchedColumns.forEach((matchedCol, index) => {
+            if (matchedCol) {
+                row[matchedCol.key] = values[index] ?? '';
+            }
+        });
+        return row;
+    });
+
+    const requiredColumns = columns.filter((col) => col.required === true);
+    const missingValues: string[] = [];
+    rows.forEach((row, rowIndex) => {
+        requiredColumns.forEach((col) => {
+            if (col.key in row && (row[col.key] ?? '').trim() === '') {
+                missingValues.push(`Row ${rowIndex + 1}: ${col.label}`);
+            }
+        });
+    });
+
+    return { missingHeaders, missingValues, rows, unknownHeaders };
+}
+
 export function isHintRecord(values: string[], matchedColumns: (CsvTemplateColumn | null)[]): boolean {
     const nonEmpty = values.filter((v) => v !== undefined && v !== '');
     if (!nonEmpty.length) return false;
@@ -312,14 +406,22 @@ export function isHintRecord(values: string[], matchedColumns: (CsvTemplateColum
         return true;
     }
 
-    const comparableHints = matchedColumns.filter((col, index) => col?.hint && values[index] !== undefined);
+    const comparableHints = matchedColumns.filter((col, index) => (col?.hint || col?.sample !== undefined) && values[index] !== undefined);
     if (!comparableHints.length) return false;
 
+    // The downloaded template's example row is each column's sample (or cleaned hint) verbatim
     return matchedColumns.every((col, index) => {
-        if (!col?.hint) return true;
+        if (!col?.hint && col?.sample === undefined) return true;
         const val = (values[index] ?? '').trim().toLowerCase();
-        const hintVal = col.hint.trim().toLowerCase();
-        return val === hintVal || val === hintVal.replace(/^e\.g\.?\s*/i, '');
+        const candidates = [col.sample, col.hint, cleanSampleFromHint(col.hint)]
+            .filter((candidate): candidate is string => candidate !== undefined)
+            .map((candidate) => candidate.trim().toLowerCase());
+
+        if (col.hint) {
+            candidates.push(col.hint.trim().toLowerCase().replace(/^e\.g\.?\s*/i, ''));
+        }
+
+        return candidates.includes(val);
     });
 }
 

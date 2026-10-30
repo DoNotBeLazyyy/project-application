@@ -1,14 +1,17 @@
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import { CommonChip } from '@components/badge/CommonChip';
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
+import ValidCommonDatePicker from '@components/datepicker/ValidCommonDatepicker';
 import ModalCloseIcon from '@components/icons/ModalCloseIcon';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
+import { useFormDraft } from '@hooks/useFormDraft';
+import { useMediaQuery } from '@mui/material';
 import {
     BellIcon,
     CheckCircleIcon,
@@ -24,7 +27,9 @@ import { approveStudentProfileRequest, rejectStudentProfileRequest } from '@serv
 import { useToastStore } from '@stores/toast.store';
 import { ProfileFormValues } from '@type/profile.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
-import { useEffect, useMemo, useState } from 'react';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 interface StudentProfileVerificationModalProps {
     open: boolean;
@@ -75,6 +80,34 @@ const DISPLAY_FIELDS: (keyof ProfileFormValues)[] = [
     'year_level'
 ];
 
+interface VerificationFormValues extends ProfileFormValues {
+    registrar_notes: string;
+    reject_reason: string;
+    is_false_info: boolean;
+}
+
+// fn_approve_student_profile_request keeps the current name when first/last name is blank,
+// casts date_of_birth to DATE and year_level to SMALLINT (students CHECK 1-6). program_name is
+// display-only: the function reads program_id, so typing a program name would be silently dropped.
+const READ_ONLY_FIELDS: (keyof ProfileFormValues)[] = ['program_name'];
+
+function buildInitialFormValues(request: StudentProfileRequestRow | null): VerificationFormValues {
+    return {
+        ...buildInitialStudentEditableValues(request),
+        is_false_info: false,
+        registrar_notes: request?.registrar_notes || '',
+        reject_reason: ''
+    };
+}
+
+const NON_PROFILE_KEYS = new Set(['is_false_info', 'registrar_notes', 'reject_reason']);
+
+function pickProfileValues(values: VerificationFormValues): ProfileFormValues {
+    return Object.fromEntries(
+        Object.entries(values).filter(([key]) => !NON_PROFILE_KEYS.has(key))
+    ) as unknown as ProfileFormValues;
+}
+
 function buildInitialStudentEditableValues(request: StudentProfileRequestRow | null): ProfileFormValues {
     const requested = (request?.requested_changes || {}) as Record<string, any>;
     const approved = (request?.approved_changes || {}) as Record<string, any>;
@@ -109,55 +142,36 @@ export default function StudentProfileVerificationModal({
     request,
     onSuccess
 }: StudentProfileVerificationModalProps) {
-    const [editableValues, setEditableValues] = useState<ProfileFormValues>(() => buildInitialStudentEditableValues(request));
-    const [registrarNotes, setRegistrarNotes] = useState('');
     const [isRejectOpen, setIsRejectOpen] = useState(false);
-    const [rejectReason, setRejectReason] = useState('');
-    const [isFalseInfoFlag, setIsFalseInfoFlag] = useState(false);
     const [isNotifyOpen, setIsNotifyOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showOnlyChanged, setShowOnlyChanged] = useState(true);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
-    const initialDraftValues = useMemo(() => ({
-        editableValues: buildInitialStudentEditableValues(request),
-        isFalseInfoFlag: false,
-        registrarNotes: request?.registrar_notes || '',
-        rejectReason: ''
-    }), [request]);
-
-    const currentDraftValues = useMemo(() => ({
-        editableValues,
-        isFalseInfoFlag,
-        registrarNotes,
-        rejectReason
-    }), [editableValues, isFalseInfoFlag, registrarNotes, rejectReason]);
+    const isDesktop = useMediaQuery('(min-width:768px)');
+    const methods = useForm<VerificationFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: buildInitialFormValues(request) });
+    const { control } = methods;
+    const watchedValues = useWatch({ control });
+    const editableValues = watchedValues as Partial<VerificationFormValues>;
+    const registrarNotes = watchedValues.registrar_notes ?? '';
+    const rejectReason = watchedValues.reject_reason ?? '';
+    const isFalseInfoFlag = Boolean(watchedValues.is_false_info);
 
     const isPending = request?.status === 'Pending';
 
-    const draftGuard = useObjectDraft({
-        defaultValues: initialDraftValues,
+    const draftGuard = useFormDraft({
+        control,
         enabled: open && Boolean(isPending && request?.id),
         formId: request?.id ? `student-profile-verification-${request.id}` : 'student-profile-verification',
         onRestore: (restored) => {
-            if (restored.editableValues) setEditableValues(restored.editableValues);
-            if (restored.registrarNotes !== undefined) setRegistrarNotes(restored.registrarNotes);
-            if (restored.isFalseInfoFlag !== undefined) setIsFalseInfoFlag(restored.isFalseInfoFlag);
-            if (restored.rejectReason !== undefined) {
-                setRejectReason(restored.rejectReason);
-                if (restored.rejectReason.trim() || restored.isFalseInfoFlag) setIsRejectOpen(true);
-            }
-        },
-        values: currentDraftValues
+            if (String(restored.reject_reason ?? '').trim() || restored.is_false_info) setIsRejectOpen(true);
+        }
     });
 
     useEffect(() => {
         if (!request) return;
-        setEditableValues(buildInitialStudentEditableValues(request));
-        setRegistrarNotes(request.registrar_notes || '');
+        methods.reset(buildInitialFormValues(request));
         setIsRejectOpen(false);
-        setRejectReason('');
-        setIsFalseInfoFlag(false);
         setShowOnlyChanged(true);
     }, [request, open]);
 
@@ -168,7 +182,7 @@ export default function StudentProfileVerificationModal({
 
     // Detect if registrar made edits to the student's requested values
     const hasRegistrarEdits = DISPLAY_FIELDS.some(
-        (key) => (editableValues[key] || '') !== (requested[key] || '')
+        (key) => String(editableValues[key] ?? '') !== String(requested[key] ?? '')
     );
 
     const changedFields = DISPLAY_FIELDS.filter((field) => {
@@ -193,34 +207,103 @@ export default function StudentProfileVerificationModal({
     function handleDiscardChanges() {
         setIsConfirmCloseOpen(false);
         draftGuard.clearDraft();
-        setEditableValues(buildInitialStudentEditableValues(request));
-        setRegistrarNotes(request?.registrar_notes || '');
-        setRejectReason('');
-        setIsFalseInfoFlag(false);
+        methods.reset(buildInitialFormValues(request));
         setIsRejectOpen(false);
         onClose();
     }
 
-    function handleFieldChange(field: keyof ProfileFormValues, value: string) {
-        setEditableValues((prev) => ({
-            ...prev,
-            [field]: value
-        }));
+    function getFieldRules(field: keyof ProfileFormValues) {
+        if (field === 'first_name' || field === 'last_name') {
+            return {
+                validate: (value: unknown) => String(value ?? '').trim() !== '' || `${FIELD_LABELS[field]} is required.`
+            };
+        }
+        if (field === 'year_level') {
+            return {
+                validate: function(value: unknown) {
+                    if (value === '' || value === null || value === undefined) return true;
+                    const level = Number(value);
+                    return (Number.isInteger(level) && level >= 1 && level <= 6) || 'Year level must be a whole number from 1 to 6.';
+                }
+            };
+        }
+        return undefined;
+    }
+
+    function renderEditableField(field: keyof ProfileFormValues) {
+        if (READ_ONLY_FIELDS.includes(field)) {
+            return (
+                <span className="font-medium text-(--mui-palette-text-primary) break-words">
+                    {String(editableValues[field] || '—')}
+                </span>
+            );
+        }
+
+        if (field === 'gender' || field === 'civil_status') {
+            return (
+                <ValidCommonSelect
+                    control={control}
+                    fullWidth
+                    name={field}
+                    options={field === 'gender'
+                        ? GENDER_OPTIONS
+                        : CIVIL_STATUS_OPTIONS}
+                    size="small"
+                />
+            );
+        }
+
+        if (field === 'date_of_birth') {
+            return (
+                <ValidCommonDatePicker
+                    control={control}
+                    disableFuture
+                    name="date_of_birth"
+                />
+            );
+        }
+
+        if (field === 'year_level') {
+            return (
+                <ValidCommonNumberInput
+                    control={control}
+                    fullWidth
+                    maxDecimals={0}
+                    name="year_level"
+                    rules={getFieldRules(field)}
+                    size="small"
+                />
+            );
+        }
+
+        return (
+            <ValidCommonInput
+                control={control}
+                fullWidth
+                name={field}
+                rules={getFieldRules(field)}
+                size="small"
+            />
+        );
     }
 
     async function handleApprove() {
         if (!request) return;
 
-        if (!editableValues.first_name.trim() || !editableValues.last_name.trim()) {
-            useToastStore.getState().showToast('First name and last name are required.', 'error');
+        const isValid = await methods.trigger(DISPLAY_FIELDS);
+        if (!isValid) {
+            setShowOnlyChanged(false);
+            formErrors(methods.formState.errors, methods);
             return;
         }
+
+        const values = methods.getValues();
 
         setIsSubmitting(true);
         const result = await approveStudentProfileRequest(
             request.id,
-            hasRegistrarEdits ? editableValues : null,
-            registrarNotes.trim() || null
+            hasRegistrarEdits ? pickProfileValues(values) : null,
+            values.registrar_notes.trim() || null
         );
         setIsSubmitting(false);
 
@@ -239,8 +322,9 @@ export default function StudentProfileVerificationModal({
 
     async function handleRejectSubmit() {
         if (!request) return;
-        if (!rejectReason.trim()) {
-            useToastStore.getState().showToast('Please provide a reason for rejection.', 'error');
+        const isValid = await methods.trigger('reject_reason');
+        if (!isValid) {
+            formErrors(methods.formState.errors, methods);
             return;
         }
 
@@ -416,7 +500,8 @@ export default function StudentProfileVerificationModal({
                     ) : (
                         <>
                             {/* Desktop Side-by-side verification table */}
-                            <div className="hidden md:block border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
+                            {isDesktop && (
+                            <div className="border border-(--mui-palette-divider) rounded-lg overflow-hidden shrink-0">
                                 <div className="grid grid-cols-12 bg-(--mui-palette-background-default) px-3 py-2 text-xs font-semibold text-(--mui-palette-text-secondary) border-b border-(--mui-palette-divider)">
                                     <div className="col-span-3">Profile Field</div>
                                     <div className="col-span-4">Current Value</div>
@@ -429,9 +514,8 @@ export default function StudentProfileVerificationModal({
                                     {fieldsToDisplay.map((field) => {
                                         const currVal = current[field] || '—';
                                         const reqVal = requested[field] || '—';
-                                        const editVal = editableValues[field] || '';
                                         const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
-                                        const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
+                                        const isEditedByRegistrar = String(editableValues[field] ?? '') !== String(requested[field] ?? '');
 
                                         return (
                                             <div
@@ -460,35 +544,7 @@ export default function StudentProfileVerificationModal({
 
                                                 <div className="col-span-5 pr-2">
                                                     {isPending ? (
-                                                        field === 'gender' ? (
-                                                            <CommonSelect
-                                                                fullWidth
-                                                                options={GENDER_OPTIONS}
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                            />
-                                                        ) : field === 'civil_status' ? (
-                                                            <CommonSelect
-                                                                fullWidth
-                                                                options={CIVIL_STATUS_OPTIONS}
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                            />
-                                                        ) : field === 'date_of_birth' ? (
-                                                            <CommonDatePicker
-                                                                value={String(editVal || '')}
-                                                                onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                            />
-                                                        ) : (
-                                                            <CommonInput
-                                                                fullWidth
-                                                                size="small"
-                                                                value={String(editVal)}
-                                                                onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                            />
-                                                        )
+                                                        renderEditableField(field)
                                                     ) : (
                                                         <span className="font-medium text-(--mui-palette-text-primary) break-words">
                                                             {request.status === 'Approved with Edits'
@@ -502,15 +558,16 @@ export default function StudentProfileVerificationModal({
                                     })}
                                 </div>
                             </div>
+                            )}
 
                             {/* Mobile Responsive Field Cards */}
-                            <div className="flex flex-col gap-2.5 md:hidden">
+                            {!isDesktop && (
+                            <div className="flex flex-col gap-2.5">
                                 {fieldsToDisplay.map((field) => {
                                     const currVal = current[field] || '—';
                                     const reqVal = requested[field] || '—';
-                                    const editVal = editableValues[field] || '';
                                     const isModifiedByStudent = (requested[field] || '') !== (current[field] || '');
-                                    const isEditedByRegistrar = (editableValues[field] || '') !== (requested[field] || '');
+                                    const isEditedByRegistrar = String(editableValues[field] ?? '') !== String(requested[field] ?? '');
 
                                     return (
                                         <div
@@ -551,35 +608,7 @@ export default function StudentProfileVerificationModal({
                                                     {isPending ? 'Verified Value (Editable):' : 'Final Approved Value:'}
                                                 </span>
                                                 {isPending ? (
-                                                    field === 'gender' ? (
-                                                        <CommonSelect
-                                                            fullWidth
-                                                            options={GENDER_OPTIONS}
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange('gender', e.target.value as string)}
-                                                        />
-                                                    ) : field === 'civil_status' ? (
-                                                        <CommonSelect
-                                                            fullWidth
-                                                            options={CIVIL_STATUS_OPTIONS}
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange('civil_status', e.target.value as string)}
-                                                        />
-                                                    ) : field === 'date_of_birth' ? (
-                                                        <CommonDatePicker
-                                                            value={String(editVal || '')}
-                                                            onChange={(val) => handleFieldChange('date_of_birth', val)}
-                                                        />
-                                                    ) : (
-                                                        <CommonInput
-                                                            fullWidth
-                                                            size="small"
-                                                            value={String(editVal)}
-                                                            onChange={(e) => handleFieldChange(field, e.target.value)}
-                                                        />
-                                                    )
+                                                    renderEditableField(field)
                                                 ) : (
                                                     <div className="bg-(--mui-palette-background-paper) border border-(--mui-palette-divider) rounded p-2 text-xs font-medium text-(--mui-palette-text-primary) break-words">
                                                         {request.status === 'Approved with Edits'
@@ -592,21 +621,20 @@ export default function StudentProfileVerificationModal({
                                     );
                                 })}
                             </div>
+                            )}
                         </>
                     )}
 
                     {/* Registrar Notes */}
                     <div className="flex flex-col gap-1 mt-1 shrink-0">
-                        <label className="text-xs font-semibold text-(--mui-palette-text-primary)">
-                            Registrar Notes & Remarks {isPending && '(Optional — recorded in registrar audit log)'}
-                        </label>
                         {isPending ? (
-                            <CommonInput
+                            <ValidCommonInput
+                                control={control}
                                 fullWidth
+                                helperText="Optional — recorded in the registrar audit log."
+                                label="Registrar Notes & Remarks"
+                                name="registrar_notes"
                                 placeholder="e.g., Verified against PSA copy, adjusted spelling of province..."
-                                size="small"
-                                value={registrarNotes}
-                                onChange={(e) => setRegistrarNotes(e.target.value)}
                             />
                         ) : (
                             <p className="text-xs text-(--mui-palette-text-secondary) m-0 p-2 bg-(--mui-palette-background-default) rounded border border-(--mui-palette-divider)">
@@ -625,27 +653,22 @@ export default function StudentProfileVerificationModal({
                             <p className="text-xs text-(--mui-palette-text-secondary) m-0">
                                 Please specify the reason for rejection. This reason will be recorded in the Registrar Log and sent to the student as an official notification.
                             </p>
-                            <CommonInput
+                            <ValidCommonInput
+                                control={control}
                                 fullWidth
+                                isRequired
                                 label="Rejection Reason"
+                                name="reject_reason"
                                 placeholder="e.g. Inconsistent date of birth; invalid legal document; incorrect civil status..."
-                                required
-                                size="small"
-                                value={rejectReason}
-                                onChange={(e) => setRejectReason(e.target.value)}
+                                rules={{
+                                    validate: (value) => String(value ?? '').trim() !== '' || 'Please provide a reason for rejection.'
+                                }}
                             />
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="false-info-check"
-                                    checked={isFalseInfoFlag}
-                                    onChange={(e) => setIsFalseInfoFlag(e.target.checked)}
-                                    className="cursor-pointer"
-                                />
-                                <label htmlFor="false-info-check" className="text-xs text-(--mui-palette-text-primary) cursor-pointer select-none">
-                                    Flag as <strong>False or Inaccurate Information</strong> (sends high-priority warning alert to student)
-                                </label>
-                            </div>
+                            <ValidCommonCheckbox
+                                control={control}
+                                label="Flag as False or Inaccurate Information (sends high-priority warning alert to student)"
+                                name="is_false_info"
+                            />
                             <div className="flex gap-2 justify-end">
                                 <CommonButton
                                     color="inherit"
@@ -657,7 +680,7 @@ export default function StudentProfileVerificationModal({
                                 </CommonButton>
                                 <CommonButton
                                     color="error"
-                                    disabled={isSubmitting || !rejectReason.trim()}
+                                    disabled={isSubmitting}
                                     loading={isSubmitting}
                                     size="small"
                                     variant="contained"

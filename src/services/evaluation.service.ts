@@ -1,5 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { BulkImportResult } from '@type/bulk-import.type';
+import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.type';
 import {
     EvaluationForm, EvaluationResponseInput, EvaluationStatusFilter, EvaluationTemplateBulkRow, EvaluationTemplateForm,
     EvaluationTemplateListRow, EvaluationTemplateRow, MyEvaluationRow
@@ -83,20 +83,24 @@ export async function deleteEvaluationTemplate(id: string): Promise<ServiceResul
 
 export async function bulkCreateEvaluationTemplates(
     rows: EvaluationTemplateBulkRow[]
-): Promise<BulkImportResult> {
+): Promise<DetailedBulkImportResult> {
     const result = await callRpc<{
         provisioned_count: number;
-        errors: { row: number; code: string; message: string }[];
+        errors: BulkImportError[];
     }>('fn_bulk_create_evaluation_templates', { p_rows: rows });
 
     if (result.error) {
         return { provisioned_count: 0, errors: [result.error.message] };
     }
 
+    // Pass the per-row errors through so the import modal shows the real CSV row
+    // instead of renumbering the flattened messages.
+    const structuredErrors = result.data?.errors ?? [];
     return {
         provisioned_count: result.data?.provisioned_count ?? 0,
-        errors: (result.data?.errors ?? []).map((error) =>
-            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`)
+        errors: structuredErrors.map((error) =>
+            `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`),
+        structuredErrors
     };
 }
 

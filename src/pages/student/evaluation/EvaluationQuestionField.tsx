@@ -54,7 +54,6 @@ export default function EvaluationQuestionField({
                 name={responseName}
                 placeholder="Type your response"
                 rules={buildRules(answer.is_required, 'Response is required')}
-                size="small"
             />
         </div>
     );

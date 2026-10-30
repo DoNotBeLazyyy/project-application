@@ -212,7 +212,6 @@ export default function TranscriptView({ studentId }: TranscriptViewProps) {
                                         <tbody>
                                             {term.courses.map(function(course) {
                                                 const isPassed = course.is_passing === true;
-                                                const isFailed = course.is_passing === false;
 
                                                 return (
                                                     <tr

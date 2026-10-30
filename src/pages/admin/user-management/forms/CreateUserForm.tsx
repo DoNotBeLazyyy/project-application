@@ -23,21 +23,27 @@ export default function CreateUserForm({
             label: 'First Name',
             name: 'first_name',
             type: 'text',
-            rules: { required: 'Required' }
+            rules: {
+                required: 'First name is required',
+                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'First name cannot be empty or whitespace only'
+            }
         },
         {
             disabled,
             label: 'Last Name',
             name: 'last_name',
             type: 'text',
-            rules: { required: 'Required' }
+            rules: {
+                required: 'Last name is required',
+                validate: (v: unknown) => Boolean(v && String(v).trim()) || 'Last name cannot be empty or whitespace only'
+            }
         },
         {
             disabled,
             label: 'Email',
             name: 'email',
             type: 'email',
-            rules: { required: 'Required' }
+            rules: { required: 'Email is required' }
         },
         {
             disabled,
@@ -45,7 +51,7 @@ export default function CreateUserForm({
             name: 'role_code',
             type: 'select',
             options: roleOptions,
-            rules: { required: 'Required' }
+            rules: { required: 'Role is required' }
         }
     ];
 

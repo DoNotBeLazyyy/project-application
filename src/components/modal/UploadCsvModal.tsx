@@ -9,9 +9,7 @@ import { BulkImportError, DetailedBulkImportResult } from '@type/bulk-import.typ
 import {
     CsvParseResult,
     generateTemplateCsv,
-    isHintRecord,
-    matchColumnHeader,
-    splitCsvRecords
+    parseCsvWithColumns
 } from '@utils/csv.util';
 import { exportCsvFile } from '@utils/file.util';
 import { UploadCsvModalProps } from '@type/table-card.type';
@@ -98,36 +96,7 @@ export default function UploadCsvModal({
     }
 
     function parseCsv(text: string): CsvParseResult {
-        const records = splitCsvRecords(text);
-        if (!records.length) {
-            return { missingHeaders: [], rows: [], unknownHeaders: [] };
-        }
-
-        const headers = records[0];
-        const matchedColumns = headers.map((header) => {
-            return templateColumns.find((col) => matchColumnHeader(header, col)) ?? null;
-        });
-
-        const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
-        const missingHeaders = templateColumns.filter(
-            (col) => col.required !== false && !matchedColumns.some((matched) => matched?.key === col.key)
-        )
-            .map((col) => col.label);
-
-        const dataRecords = records.slice(1)
-            .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
-
-        const rows = dataRecords.map((values) => {
-            const row: ParsedRow = {};
-            matchedColumns.forEach((matchedCol, index) => {
-                if (matchedCol) {
-                    row[matchedCol.key] = values[index] ?? '';
-                }
-            });
-            return row;
-        });
-
-        return { missingHeaders, rows, unknownHeaders };
+        return parseCsvWithColumns(text, templateColumns || []);
     }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -151,10 +120,19 @@ export default function UploadCsvModal({
             const text = typeof event.target?.result === 'string'
                 ? event.target.result
                 : '';
-            const { missingHeaders, rows, unknownHeaders } = parseCsv(text);
+            const { missingHeaders, missingValues, rows, unknownHeaders } = parseCsv(text);
 
             if (missingHeaders.length) {
                 setParseError(`These required columns are missing: ${missingHeaders.join(', ')}. Download the template to ensure valid format.`);
+                return;
+            }
+
+            if (missingValues.length) {
+                const shown = missingValues.slice(0, 5).join('; ');
+                const more = missingValues.length > 5
+                    ? ` and ${missingValues.length - 5} more`
+                    : '';
+                setParseError(`These required cells are blank: ${shown}${more}. Fill them in and upload the file again.`);
                 return;
             }
 

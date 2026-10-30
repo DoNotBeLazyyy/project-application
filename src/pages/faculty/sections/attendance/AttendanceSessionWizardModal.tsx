@@ -1,23 +1,20 @@
-import { CommonDatePicker } from '@components/datepicker/ValidCommonDatepicker';
 import CommonButton from '@components/button/CommonButton';
-import FormLabel from '@components/form/FormLabel';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
+import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
     CalendarCheckIcon,
     CalendarDotsIcon,
     CheckCircleIcon,
-    ClockIcon,
     MagnifyingGlassIcon,
-    NotepadIcon,
-    UserCircleIcon,
     UsersIcon,
-    XCircleIcon,
     XIcon
 } from '@phosphor-icons/react';
 import {
@@ -29,7 +26,10 @@ import {
 } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
 import { AttendanceRecordUpdate, AttendanceSession, AttendanceStatus, SectionStudent } from '@type/faculty.type';
+import { formatDate } from '@utils/date.util';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export const ATTENDANCE_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -51,6 +51,26 @@ interface AttendanceSessionWizardModalProps {
     onSuccess: (newSession?: AttendanceSession) => void;
 }
 
+type SessionFormat = 'Lecture' | 'Laboratory' | 'Online' | 'Activity';
+
+const SESSION_FORMAT_OPTIONS: { label: string; value: SessionFormat }[] = [
+    { label: 'Lecture', value: 'Lecture' },
+    { label: 'Laboratory', value: 'Laboratory' },
+    { label: 'Online', value: 'Online' },
+    { label: 'Activity', value: 'Activity' }
+];
+
+interface AttendanceSessionWizardValues {
+    session_date: string;
+    session_type: SessionFormat;
+    notes: string;
+}
+
+function getDefaultValues(): AttendanceSessionWizardValues {
+    // Local calendar date - toISOString() would roll back a day before 8 AM in UTC+8
+    return { notes: '', session_date: formatDate(new Date()), session_type: 'Lecture' };
+}
+
 interface StudentAttendanceDraft {
     studentId: string;
     studentNumber: string;
@@ -65,14 +85,10 @@ export default function AttendanceSessionWizardModal({
     onClose,
     onSuccess
 }: AttendanceSessionWizardModalProps) {
-    const defaultSessionDate = useMemo(() => new Date().toISOString().split('T')[0], [open]);
     const [currentStep, setCurrentStep] = useState(1);
-    const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);
-    const [sessionDateError, setSessionDateError] = useState<string | null>(null);
-    const [notes, setNotes] = useState('');
     const [defaultStatus, setDefaultStatus] = useState<AttendanceStatus>('Present');
-    const [sessionType, setSessionType] = useState<'Lecture' | 'Laboratory' | 'Online' | 'Activity'>('Lecture');
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+    const [existingSessionDates, setExistingSessionDates] = useState<string[]>([]);
 
     const [students, setStudents] = useState<SectionStudent[]>([]);
     const [isLoadingStudents, setIsLoadingStudents] = useState(false);
@@ -82,17 +98,12 @@ export default function AttendanceSessionWizardModal({
 
     const showToast = useToastStore((s) => s.showToast);
 
-    const draftGuard = useObjectDraft({
-        defaultValues: { notes: '', sessionType: 'Lecture', defaultStatus: 'Present', sessionDate: defaultSessionDate },
+    const methods = useForm<AttendanceSessionWizardValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: getDefaultValues() });
+
+    const draftGuard = useFormDraft({
+        control: methods.control,
         enabled: open && !isSaving,
-        formId: `attendance-wizard-${sectionId}`,
-        values: { defaultStatus, notes, sessionDate, sessionType },
-        onRestore: (restored) => {
-            if (restored.notes !== undefined) setNotes(restored.notes);
-            if (restored.sessionType !== undefined) setSessionType(restored.sessionType as any);
-            if (restored.sessionDate !== undefined) setSessionDate(restored.sessionDate);
-            if (restored.defaultStatus !== undefined) setDefaultStatus(restored.defaultStatus as any);
-        }
+        formId: `attendance-wizard-${sectionId}`
     });
 
     const hasStudentDraftChanges = useMemo(
@@ -107,13 +118,15 @@ export default function AttendanceSessionWizardModal({
 
         // Reset wizard state
         setCurrentStep(1);
-        setSessionDate(defaultSessionDate);
-        setSessionDateError(null);
-        setNotes('');
+        methods.reset(getDefaultValues());
         setDefaultStatus('Present');
-        setSessionType('Lecture');
         setSearchQuery('');
         setIsConfirmCloseOpen(false);
+
+        // fn_create_attendance_session rejects a second session on the same date
+        listAttendanceSessions(sectionId).then((res) => {
+            setExistingSessionDates((res.data ?? []).map((session) => session.session_date));
+        });
 
         async function fetchRoster() {
             setIsLoadingStudents(true);
@@ -161,16 +174,6 @@ export default function AttendanceSessionWizardModal({
         }));
     }
 
-    function handleStudentRemarksChange(enrollmentId: string, remarks: string) {
-        setStudentDrafts((prev) => ({
-            ...prev,
-            [enrollmentId]: {
-                ...prev[enrollmentId],
-                remarks
-            }
-        }));
-    }
-
     function handleBulkSet(status: AttendanceStatus) {
         setStudentDrafts((prev) => {
             const next = { ...prev };
@@ -208,20 +211,54 @@ export default function AttendanceSessionWizardModal({
         );
     }, [students, searchQuery]);
 
-    function validateStep1(): boolean {
-        if (!sessionDate) {
-            setSessionDateError('Please select a valid session date.');
-            setCurrentStep(1);
-            return false;
+    const step1Fields: FormFieldConfig<AttendanceSessionWizardValues>[] = [
+        {
+            gridCols: 1,
+            label: 'Session Date',
+            name: 'session_date',
+            rules: {
+                required: 'Please select a valid session date.',
+                validate: (value) => !existingSessionDates.includes(String(value)) || 'An attendance session already exists for this date.'
+            },
+            type: 'date'
+        },
+        {
+            gridCols: 1,
+            label: 'Session Format',
+            name: 'session_type',
+            options: SESSION_FORMAT_OPTIONS,
+            rules: { required: 'Required' },
+            type: 'select'
+        },
+        {
+            gridCols: 2,
+            label: 'Agenda / Topic / Session Notes',
+            name: 'notes',
+            placeholder: 'e.g. Chapter 4: Neural Architectures & Lab Practical Activity #2',
+            type: 'text-area'
         }
-        setSessionDateError(null);
-        return true;
+    ];
+
+    async function validateStep1(): Promise<boolean> {
+        const isValid = await methods.trigger(['session_date', 'session_type', 'notes']);
+        if (!isValid) {
+            setCurrentStep(1);
+            formErrors(methods.formState.errors, methods);
+        }
+        return isValid;
+    }
+
+    async function handleNextStep() {
+        if (currentStep === 1 && !(await validateStep1())) return;
+        setCurrentStep((prev) => prev + 1);
     }
 
     async function handleSaveSession() {
-        if (!validateStep1()) {
+        if (!(await validateStep1())) {
             return;
         }
+
+        const { notes, session_date: sessionDate, session_type: sessionType } = methods.getValues();
 
         setIsSaving(true);
         try {
@@ -250,8 +287,8 @@ export default function AttendanceSessionWizardModal({
                 // Fetch default generated records to get record IDs
                 const recordsRes = await getAttendanceRecords(createdSession.id);
                 if (recordsRes.data && recordsRes.data.length > 0) {
-                    const updates: AttendanceRecordUpdate[] = recordsRes.data.map((r: any) => {
-                        const customDraft = studentDrafts[r.student_id || r.enrollment_id];
+                    const updates: AttendanceRecordUpdate[] = recordsRes.data.map((r) => {
+                        const customDraft = studentDrafts[r.enrollment_id];
                         return {
                             id: r.id,
                             remarks: customDraft?.remarks || '',
@@ -267,7 +304,7 @@ export default function AttendanceSessionWizardModal({
             showToast('Attendance session recorded successfully.', 'success');
             onSuccess(createdSession);
             onClose();
-        } catch (err) {
+        } catch {
             setIsSaving(false);
             showToast('An unexpected error occurred while saving the attendance session.', 'error');
         }
@@ -322,8 +359,8 @@ export default function AttendanceSessionWizardModal({
                     <ModalStepperHeader
                         currentStep={currentStep}
                         steps={ATTENDANCE_WIZARD_STEPS}
-                        onStepClick={(step) => {
-                            if (step > currentStep && currentStep === 1 && !validateStep1()) return;
+                        onStepClick={async (step) => {
+                            if (step > currentStep && currentStep === 1 && !(await validateStep1())) return;
                             setCurrentStep(step);
                         }}
                     />
@@ -340,59 +377,13 @@ export default function AttendanceSessionWizardModal({
                                     <span>Date & Session Classification</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="flex flex-col gap-1.5">
-                                        <CommonDatePicker
-                                            error={Boolean(sessionDateError)}
-                                            helperText={sessionDateError ?? undefined}
-                                            isRequired
-                                            label="Session Date"
-                                            slotProps={{
-                                                textField: {
-                                                    error: Boolean(sessionDateError),
-                                                    helperText: sessionDateError ?? undefined,
-                                                    name: 'session_date'
-                                                }
-                                            }}
-                                            value={sessionDate}
-                                            onChange={(val) => {
-                                                setSessionDate(val);
-                                                if (sessionDateError) setSessionDateError(null);
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col gap-1.5">
-                                        <FormLabel label="Session Format" />
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {(['Lecture', 'Laboratory', 'Online', 'Activity'] as const).map((type) => (
-                                                <button
-                                                    key={type}
-                                                    type="button"
-                                                    onClick={() => setSessionType(type)}
-                                                    className={`py-1.5 px-2 text-xs rounded-xl font-semibold border transition-all cursor-pointer ${
-                                                        sessionType === type
-                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                                            : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-zinc-700 hover:border-slate-300'
-                                                    }`}
-                                                >
-                                                    {type}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-1.5">
-                                    <FormLabel label="Agenda / Topic / Session Notes" />
-                                    <textarea
-                                        rows={3}
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="e.g. Chapter 4: Neural Architectures & Lab Practical Activity #2"
-                                        className="w-full p-3 text-sm rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 resize-none"
-                                    />
-                                </div>
+                                <CommonForm
+                                    component="div"
+                                    containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                    control={methods.control}
+                                    enableDraftRecovery={false}
+                                    fields={step1Fields}
+                                />
                             </div>
 
                             {/* Card: Default Student Mark */}
@@ -472,19 +463,18 @@ export default function AttendanceSessionWizardModal({
                             </div>
 
                             {/* Search Filter */}
-                            <div className="relative">
-                                <MagnifyingGlassIcon
-                                    size={16}
-                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Search student by name or ID number..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                                />
-                            </div>
+                            <CommonInput
+                                fullWidth
+                                placeholder="Search student by name or ID number..."
+                                size="small"
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <MagnifyingGlassIcon className="mr-2 text-slate-400" size={16} />
+                                    }
+                                }}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
 
                             {/* Student Cards List */}
                             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2.5 pr-1">
@@ -597,10 +587,7 @@ export default function AttendanceSessionWizardModal({
                                 size="small"
                                 endIcon={<ArrowRightIcon size={14} weight="bold" />}
                                 variant="contained"
-                                onClick={() => {
-                                    if (currentStep === 1 && !validateStep1()) return;
-                                    setCurrentStep((prev) => prev + 1);
-                                }}
+                                onClick={handleNextStep}
                             >
                                 Continue to Student List
                             </CommonButton>

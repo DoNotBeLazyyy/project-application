@@ -5,11 +5,8 @@ import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { useFormDraft } from '@hooks/useFormDraft';
 import BulkImportModal from '@components/modal/BulkImportModal';
-import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
-import ValidCommonDateTimePicker from '@components/datepicker/ValidCommonDateTimepicker';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
-import FormLabel from '@components/form/FormLabel';
 import { CommonSelectOption } from '@components/select/CommonSelect';
 import { DEFAULT_ASSSESSMENT_VALUES, DEFAULT_QUESTION_VALUES } from '@constants/faculty.constant';
 import AssessmentAttachmentPanel from '@pages/faculty/sections/assessments/builder/AssessmentAttachmentPanel';
@@ -47,7 +44,7 @@ import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { isPastDateTime } from '@utils/date.util';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -72,13 +69,16 @@ export const ASSESSMENT_WIZARD_STEPS: ModalStepItem[] = [
     }
 ];
 
+// Mirrors what fn_bulk_import_questions reads: question_text and question_type are required per row,
+// points defaults to 1, is_required is FALSE only for FALSE/NO/0/N, and choices are only stored for
+// Multiple Choice / True or False / Matching (each needs at least one choice marked with *).
 const QUESTION_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'question_text', label: 'Question Text', hint: 'e.g. What is the capital of France?', sample: 'What is the primary role of an operating system kernel?', aliases: ['question', 'prompt', 'item'] },
-    { key: 'question_type', label: 'Question Type', hint: 'Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload', sample: 'Multiple Choice', aliases: ['type', 'item_type'] },
-    { key: 'points', label: 'Points', hint: 'e.g. 2', sample: '2', aliases: ['point', 'score', 'weight'] },
-    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
-    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation', sample: 'The kernel manages core hardware and resource allocation.', required: false },
-    { key: 'choices', label: 'Choices', hint: 'Paris*|London|Rome — separate with | and mark correct with * (for Multiple Choice / True or False / Matching)', sample: 'Resource Management*|Web Browsing|Word Processing|Photo Editing', required: false, aliases: ['options', 'answers'] }
+    { key: 'question_text', label: 'Question Text', hint: 'Required. The question as students will see it', sample: 'What is the primary role of an operating system kernel?', aliases: ['question', 'prompt', 'item'] },
+    { key: 'question_type', label: 'Question Type', hint: 'Required. One of: Multiple Choice | True or False | Short Answer | Essay | Fill in the Blank | Matching | File Upload (exact spelling)', sample: 'Multiple Choice', aliases: ['type', 'item_type'] },
+    { key: 'points', label: 'Points', hint: 'Number greater than 0 (blank defaults to 1)', sample: '2', required: false, aliases: ['point', 'score', 'weight'] },
+    { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (blank defaults to TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
+    { key: 'explanation', label: 'Explanation', hint: 'Optional explanation shown after grading', sample: 'The kernel manages core hardware and resource allocation.', required: false },
+    { key: 'choices', label: 'Choices', hint: 'Required for Multiple Choice, True or False and Matching: separate with | and mark each correct choice with * (e.g. True*|False). Leave blank for Short Answer, Essay, Fill in the Blank and File Upload', sample: 'Resource Management*|Web Browsing|Word Processing|Photo Editing', required: false, aliases: ['options', 'answers'] }
 ];
 
 const ASSESSMENT_TYPE_OPTIONS: { label: string; value: AssessmentType }[] = [
@@ -196,7 +196,9 @@ export default function AssessmentWizardModal({
                             assessment_type: d.assessment_type ?? 'Quiz',
                             grading_component_id: d.grading_component_id ?? '',
                             total_points: String(d.total_points ?? 100),
-                            passing_points: d.passing_points ? String(d.passing_points) : '',
+                            passing_points: d.passing_points !== null && d.passing_points !== undefined && String(d.passing_points) !== ''
+                                ? String(d.passing_points)
+                                : '',
                             time_limit_minutes: d.time_limit_minutes ? String(d.time_limit_minutes) : '',
                             max_attempts: String(d.max_attempts ?? 1),
                             opens_at: d.opens_at ?? '',
@@ -259,22 +261,54 @@ export default function AssessmentWizardModal({
         };
     }
 
-    async function validateStep1(): Promise<boolean> {
-        const isValid = await settingsMethods.trigger(['title', 'assessment_type', 'total_points']);
-        if (!isValid) {
-            formErrors(settingsMethods.formState.errors, settingsMethods);
-            return false;
-        }
-        return true;
+    // Mirrors the window checks in fn_create_assessment / fn_update_assessment and chk_assessment_window
+    function validateBefore(otherName: 'opens_at' | 'due_at' | 'closes_at', message: string, allowEqual = false) {
+        return function(value: string | boolean) {
+            const other = settingsMethods.getValues(otherName);
+            if (typeof value !== 'string' || !value || !other) return true;
+            const current = new Date(value).getTime();
+            const target = new Date(other).getTime();
+            if (Number.isNaN(current) || Number.isNaN(target)) return true;
+            return (allowEqual ? current <= target : current < target) || message;
+        };
     }
 
-    async function validateStep2(): Promise<boolean> {
-        const isValid = await settingsMethods.trigger(['due_at', 'closes_at', 'show_results_at']);
+    function validateWholeNumber(label: string, isOptional = true) {
+        return function(value: string | boolean) {
+            if (typeof value !== 'string' || (isOptional && value === '')) return true;
+            const parsed = Number(value);
+            if (!Number.isInteger(parsed) || parsed < 1) return `${label} must be a whole number of at least 1.`;
+            return parsed <= 32767 || `${label} must be 32767 or less.`;
+        };
+    }
+
+    async function validateFields(names: (keyof AssessmentFormValues)[]): Promise<boolean> {
+        const isValid = await settingsMethods.trigger(names);
         if (!isValid) {
             formErrors(settingsMethods.formState.errors, settingsMethods);
-            return false;
         }
         return isValid;
+    }
+
+    function validateStep1(): Promise<boolean> {
+        return validateFields(['title', 'assessment_type', 'grading_component_id', 'total_points', 'passing_points', 'description']);
+    }
+
+    function validateStep2(): Promise<boolean> {
+        return validateFields([
+            'time_limit_minutes',
+            'max_attempts',
+            'scheduled_publish_at',
+            'opens_at',
+            'due_at',
+            'closes_at',
+            'show_results_at'
+        ]);
+    }
+
+    async function validateStep4(): Promise<boolean> {
+        if (settingsMethods.getValues('show_all_questions')) return true;
+        return validateFields(['questions_per_page']);
     }
 
     async function persistAssessmentIfNew(): Promise<string | null> {
@@ -357,6 +391,11 @@ export default function AssessmentWizardModal({
         const valid2 = await validateStep2();
         if (!valid2) {
             setCurrentStep(2);
+            return;
+        }
+        const valid4 = await validateStep4();
+        if (!valid4) {
+            setCurrentStep(4);
             return;
         }
 
@@ -486,13 +525,24 @@ export default function AssessmentWizardModal({
         {
             label: 'Total Points',
             name: 'total_points',
-            rules: { required: 'Required', min: { value: 1, message: 'Must be at least 1' } },
+            rules: {
+                required: 'Required',
+                validate: (value) => Number(value) > 0 || 'Total points must be greater than 0.'
+            },
             type: 'number',
             gridCols: 1
         },
         {
             label: 'Passing Points',
             name: 'passing_points',
+            rules: {
+                validate: function(value) {
+                    if (value === '' || value === null || value === undefined) return true;
+                    const passing = Number(value);
+                    if (Number.isNaN(passing) || passing < 0) return 'Passing points cannot be negative.';
+                    return passing <= Number(settingsMethods.getValues('total_points') || 0) || 'Passing points cannot exceed total points.';
+                }
+            },
             type: 'number',
             gridCols: 1
         },
@@ -502,6 +552,122 @@ export default function AssessmentWizardModal({
             type: 'text-area',
             gridCols: 2
         }
+    ];
+
+    const step2TimingFields: FormFieldConfig<AssessmentFormValues>[] = [
+        {
+            fieldProps: { helperText: 'Timer starts as soon as the student opens the assessment. Leave blank for unlimited.' },
+            label: 'Time Limit (Minutes)',
+            name: 'time_limit_minutes',
+            placeholder: 'e.g. 60',
+            rules: { validate: validateWholeNumber('Time limit') },
+            type: 'number'
+        },
+        {
+            fieldProps: { helperText: 'How many attempts each student is granted.' },
+            label: 'Maximum Attempts',
+            name: 'max_attempts',
+            placeholder: 'e.g. 1',
+            rules: { required: 'Required', validate: validateWholeNumber('Maximum attempts', false) },
+            type: 'number'
+        }
+    ];
+
+    const step2ScheduleFields: FormFieldConfig<AssessmentFormValues>[] = [
+        {
+            fieldProps: { helperText: 'When the assessment auto-publishes to students.' },
+            label: 'Scheduled Publish',
+            name: 'scheduled_publish_at',
+            rules: { validate: validateBefore('opens_at', 'Scheduled publish must be on or before the opening date.', true) },
+            type: 'datetime'
+        },
+        {
+            fieldProps: { helperText: 'When students can begin taking the assessment.' },
+            label: 'Opens At',
+            name: 'opens_at',
+            rules: {
+                validate: {
+                    beforeDue: validateBefore('due_at', 'Opening date must be before the due date.'),
+                    beforeClose: validateBefore('closes_at', 'Opening date must be before the closing date.')
+                }
+            },
+            type: 'datetime'
+        },
+        {
+            fieldProps: { disablePast: !allowPastDates, helperText: 'Submission deadline; attempts after this are marked late.' },
+            label: 'Due At',
+            name: 'due_at',
+            rules: { validate: validateNotPast('Due date') },
+            type: 'datetime'
+        },
+        {
+            fieldProps: { disablePast: !allowPastDates, helperText: 'Hard cutoff; no submissions accepted after this.' },
+            label: 'Closes At',
+            name: 'closes_at',
+            rules: {
+                validate: {
+                    notPast: validateNotPast('Closing date'),
+                    afterDue: function(value) {
+                        const due = settingsMethods.getValues('due_at');
+                        if (typeof value !== 'string' || !value || !due) return true;
+                        return new Date(value).getTime() >= new Date(due).getTime() || 'Closing date must be on or after the due date.';
+                    }
+                }
+            },
+            type: 'datetime'
+        },
+        {
+            fieldProps: { disablePast: !allowPastDates, helperText: 'When students can review scores and answers.' },
+            label: 'Show Results At',
+            name: 'show_results_at',
+            rules: { validate: validateNotPast('Results release date') },
+            type: 'datetime'
+        }
+    ];
+
+    const step2OptionFields: FormFieldConfig<AssessmentFormValues>[] = [
+        {
+            fieldProps: { label: 'Let students review questions after closing' },
+            name: 'allow_student_review',
+            type: 'checkbox'
+        },
+        {
+            fieldProps: { label: 'Allow past dates for due, closing and results (backdating)' },
+            name: 'allow_past_dates',
+            type: 'checkbox'
+        }
+    ];
+
+    const step4DisplayFields: FormFieldConfig<AssessmentFormValues>[] = [
+        {
+            fieldProps: { label: 'Shuffle questions per student attempt' },
+            name: 'shuffle_questions',
+            type: 'checkbox'
+        },
+        {
+            fieldProps: { label: 'Shuffle answer choices per question' },
+            name: 'shuffle_choices',
+            type: 'checkbox'
+        },
+        {
+            fieldProps: { label: 'Display all questions at once (single page)' },
+            name: 'show_all_questions',
+            type: 'checkbox'
+        },
+        ...(showAllQuestions
+            ? []
+            : [
+                {
+                    label: 'Questions Per Page',
+                    name: 'questions_per_page' as const,
+                    placeholder: 'e.g. 5',
+                    rules: {
+                        required: 'Required when questions are paginated',
+                        validate: validateWholeNumber('Questions per page', false)
+                    },
+                    type: 'number' as const
+                }
+            ])
     ];
 
     function handleCloseModal() {
@@ -608,93 +774,33 @@ export default function AssessmentWizardModal({
                                     <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                                         Time Limits & Attempt Controls
                                     </span>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <FormLabel label="Time Limit (Minutes)" />
-                                            <input
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                                                min={1}
-                                                placeholder="e.g. 60 (blank for unlimited)"
-                                                type="number"
-                                                {...settingsMethods.register('time_limit_minutes')}
-                                            />
-                                            <p className="text-[11px] text-slate-400 mt-1">
-                                                Timer starts as soon as student opens the assessment.
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <FormLabel label="Maximum Attempts" />
-                                            <input
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                                                min={1}
-                                                placeholder="e.g. 1"
-                                                type="number"
-                                                {...settingsMethods.register('max_attempts')}
-                                            />
-                                            <p className="text-[11px] text-slate-400 mt-1">
-                                                How many attempts each student is granted.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <CommonForm
+                                        component="div"
+                                        containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                        control={settingsMethods.control}
+                                        enableDraftRecovery={false}
+                                        fields={step2TimingFields}
+                                    />
 
                                     <div className="border-t border-slate-100 dark:border-zinc-800 pt-4 flex flex-col gap-4">
                                         <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                                             Availability & Deadlines
                                         </span>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <ValidCommonDateTimePicker
-                                                control={settingsMethods.control}
-                                                hasHelper
-                                                helperText="When the assessment auto-publishes to students."
-                                                label="Scheduled Publish"
-                                                name="scheduled_publish_at"
-                                            />
-                                            <ValidCommonDateTimePicker
-                                                control={settingsMethods.control}
-                                                hasHelper
-                                                helperText="When students can begin taking the assessment."
-                                                label="Opens At"
-                                                name="opens_at"
-                                            />
-                                            <ValidCommonDateTimePicker
-                                                control={settingsMethods.control}
-                                                disablePast={!allowPastDates}
-                                                hasHelper
-                                                helperText="Submission deadline; attempts after this are marked late."
-                                                label="Due At"
-                                                name="due_at"
-                                                rules={{ validate: validateNotPast('Due date') }}
-                                            />
-                                            <ValidCommonDateTimePicker
-                                                control={settingsMethods.control}
-                                                disablePast={!allowPastDates}
-                                                hasHelper
-                                                helperText="Hard cutoff; no submissions accepted after this."
-                                                label="Closes At"
-                                                name="closes_at"
-                                                rules={{ validate: validateNotPast('Closing date') }}
-                                            />
-                                            <ValidCommonDateTimePicker
-                                                control={settingsMethods.control}
-                                                disablePast={!allowPastDates}
-                                                hasHelper
-                                                helperText="When students can review scores and answers."
-                                                label="Show Results At"
-                                                name="show_results_at"
-                                                rules={{ validate: validateNotPast('Results release date') }}
-                                            />
-                                        </div>
+                                        <CommonForm
+                                            component="div"
+                                            containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                            control={settingsMethods.control}
+                                            enableDraftRecovery={false}
+                                            fields={step2ScheduleFields}
+                                        />
 
-                                        <div className="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-slate-100 dark:border-zinc-800 flex flex-col gap-2">
-                                            <ValidCommonCheckbox
+                                        <div className="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-slate-100 dark:border-zinc-800">
+                                            <CommonForm
+                                                component="div"
+                                                containerClassName="flex flex-col gap-2"
                                                 control={settingsMethods.control}
-                                                label="Let students review questions after closing"
-                                                name="allow_student_review"
-                                            />
-                                            <ValidCommonCheckbox
-                                                control={settingsMethods.control}
-                                                label="Allow past dates for due, closing and results (backdating)"
-                                                name="allow_past_dates"
+                                                enableDraftRecovery={false}
+                                                fields={step2OptionFields}
                                             />
                                         </div>
                                     </div>
@@ -750,37 +856,13 @@ export default function AssessmentWizardModal({
                                     <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                                         Question Presentation & Display Rules
                                     </span>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <ValidCommonCheckbox
-                                            control={settingsMethods.control}
-                                            label="Shuffle questions per student attempt"
-                                            name="shuffle_questions"
-                                        />
-                                        <ValidCommonCheckbox
-                                            control={settingsMethods.control}
-                                            label="Shuffle answer choices per question"
-                                            name="shuffle_choices"
-                                        />
-                                        <ValidCommonCheckbox
-                                            control={settingsMethods.control}
-                                            label="Display all questions at once (single page)"
-                                            name="show_all_questions"
-                                        />
-                                        {!showAllQuestions && (
-                                            <div>
-                                                <FormLabel label="Questions Per Page" />
-                                                <input
-                                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                                                    min={1}
-                                                    type="number"
-                                                    {...settingsMethods.register('questions_per_page', {
-                                                        required: 'Required when pagination enabled',
-                                                        min: 1
-                                                    })}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
+                                    <CommonForm
+                                        component="div"
+                                        containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                                        control={settingsMethods.control}
+                                        enableDraftRecovery={false}
+                                        fields={step4DisplayFields}
+                                    />
                                 </div>
 
                                 {/* Summary Card */}
@@ -871,32 +953,20 @@ export default function AssessmentWizardModal({
                     setIsImportOpen(false);
                     refreshQuestions();
                 }}
-                onMapRow={(row) => {
-                    let choices = row.choices?.trim();
-                    if (!choices && row.options) {
-                        const opts = (row.options || '').split('|').map((s) => s.trim());
-                        const ans = (row.correct_answer || '').trim();
-                        choices = opts.map((opt, i) => {
-                            const letter = String.fromCharCode(65 + i);
-                            const isMatch = opt.toLowerCase() === ans.toLowerCase() || letter.toLowerCase() === ans.toLowerCase();
-                            return isMatch ? `${opt}*` : opt;
-                        }).join('|');
-                    }
-                    return {
-                        choices: choices || '',
-                        explanation: row.explanation,
-                        is_required: row.is_required,
-                        points: row.points,
-                        question_text: row.question_text || row.question || '',
-                        question_type: row.question_type || row.type || ''
-                    };
-                }}
+                onMapRow={(row) => ({
+                    // Header aliases are already folded into the template keys by the parser
+                    choices: (row.choices ?? '').trim(),
+                    explanation: row.explanation ?? '',
+                    is_required: row.is_required ?? '',
+                    points: row.points ?? '',
+                    question_text: row.question_text ?? '',
+                    question_type: row.question_type ?? ''
+                })}
                 onSuccess={refreshQuestions}
             />
 
             <QuestionModal
                 editingQuestion={editingQuestion}
-                isDirty={questionMethods.formState.isDirty}
                 isOpen={isQuestionModalOpen}
                 methods={questionMethods}
                 watchedChoices={watchedChoices}

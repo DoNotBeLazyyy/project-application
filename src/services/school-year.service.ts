@@ -1,4 +1,3 @@
-import { supabase } from '@services/supabase.client';
 import { callRpc } from '@services/supabase.wrapper';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import {
@@ -6,7 +5,6 @@ import {
     AcademicYearHistoryItem,
     SaveAcademicYearCalendarPayload,
     SchoolYearFilterValues,
-    SchoolYearFormValues,
     SchoolYearListRow,
     SchoolYearOption
 } from '@type/school-year.type';
@@ -34,14 +32,6 @@ export async function listSchoolYears(
         p_year: filters?.year
             ? parseInt(filters.year)
             : null
-    });
-}
-
-export async function getSchoolYearById(
-    schoolYearId: string
-): Promise<ServiceResult<SchoolYearFormValues>> {
-    return callRpc<SchoolYearFormValues>('fn_get_school_year_by_id', {
-        p_school_year_id: schoolYearId
     });
 }
 
@@ -94,32 +84,6 @@ export async function getAcademicYearHistory(
         return { data: null, error: res.error };
     }
     return { data: res.data?.data ?? [], error: null };
-}
-
-export async function createSchoolYear(
-    params: SchoolYearFormValues
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_create_school_year', {
-        p_code: params.code,
-        p_end_date: params.end_date,
-        p_is_active: params.is_active,
-        p_label: params.label,
-        p_start_date: params.start_date
-    });
-}
-
-export async function updateSchoolYear(
-    schoolYearId: string,
-    params: SchoolYearFormValues
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_update_school_year', {
-        p_code: params.code,
-        p_end_date: params.end_date,
-        p_is_active: params.is_active,
-        p_label: params.label,
-        p_school_year_id: schoolYearId,
-        p_start_date: params.start_date
-    });
 }
 
 export async function deleteSchoolYear(

@@ -2,6 +2,7 @@ import CommonButton from '@components/button/CommonButton';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import Step1FacultyLoadOverview from '@pages/dean/faculty-load/Step1FacultyLoadOverview';
 import Step2FacultyLoadSectionList from '@pages/dean/faculty-load/Step2FacultyLoadSectionList';
 import Step3FacultyLoadConflicts from '@pages/dean/faculty-load/Step3FacultyLoadConflicts';
@@ -25,6 +26,7 @@ import {
 } from '@type/faculty-load.type';
 import { evaluateSectionConflicts } from '@utils/faculty-load-conflicts.util';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 const FACULTY_LOAD_STEPS = [
@@ -90,7 +92,7 @@ export default function FacultyLoadWizardModal({
     // Assigning sections dialog state
     const [isAssignPickerOpen, setIsAssignPickerOpen] = useState(false);
     const [availableOfferings, setAvailableOfferings] = useState<{ id: string; label: string }[]>([]);
-    const [selectedAssignSectionId, setSelectedAssignSectionId] = useState('');
+    const assignMethods = useForm<{ section_id: string }>({ defaultValues: { section_id: '' } });
 
     // Fetch faculty options for dropdown
     useEffect(() => {
@@ -244,14 +246,13 @@ export default function FacultyLoadWizardModal({
                     label: s.label || s.section_code
                 }));
             setAvailableOfferings(available);
-            setSelectedAssignSectionId(available[0]?.id || '');
+            assignMethods.reset({ section_id: available[0]?.id || '' });
             setIsAssignPickerOpen(true);
         }
     }
 
     // Handler: add chosen section to staged sections
-    async function handleAddSectionToLoad() {
-        if (!selectedAssignSectionId) return;
+    async function handleAddSectionToLoad({ section_id: selectedAssignSectionId }: { section_id: string }) {
 
         setIsLoading(true);
         try {
@@ -501,7 +502,6 @@ export default function FacultyLoadWizardModal({
                                     {currentStep === 3 && (
                                         <Step3FacultyLoadConflicts
                                             conflicts={activeConflicts}
-                                            facultyName={detail.faculty.faculty_name}
                                             onNavigateToSectionManagement={onClose}
                                         />
                                     )}
@@ -619,9 +619,6 @@ export default function FacultyLoadWizardModal({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Select Section Offering to Assign:
-                        </label>
                         {availableOfferings.length === 0
                             ? (
                                 <span className="text-xs text-slate-500 italic py-2">
@@ -629,17 +626,15 @@ export default function FacultyLoadWizardModal({
                                 </span>
                             )
                             : (
-                                <select
-                                    className="w-full text-xs font-medium bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                                    value={selectedAssignSectionId}
-                                    onChange={(e) => setSelectedAssignSectionId(e.target.value)}
-                                >
-                                    {availableOfferings.map((off) => (
-                                        <option key={off.id} value={off.id}>
-                                            {off.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <ValidCommonSelect
+                                    control={assignMethods.control}
+                                    fullWidth
+                                    label="Section Offering to Assign"
+                                    name="section_id"
+                                    options={availableOfferings.map((off) => ({ label: off.label, value: off.id }))}
+                                    placeholder="Select a section offering"
+                                    rules={{ required: 'Please select a section offering' }}
+                                />
                             )}
                     </div>
 
@@ -654,10 +649,10 @@ export default function FacultyLoadWizardModal({
                         </CommonButton>
                         <CommonButton
                             color="primary"
-                            disabled={!selectedAssignSectionId}
+                            disabled={availableOfferings.length === 0}
                             size="small"
                             variant="contained"
-                            onClick={handleAddSectionToLoad}
+                            onClick={assignMethods.handleSubmit(handleAddSectionToLoad)}
                         >
                             Add to Load
                         </CommonButton>

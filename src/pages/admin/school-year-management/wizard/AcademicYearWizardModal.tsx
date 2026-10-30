@@ -28,7 +28,7 @@ import {
     SaveAcademicYearCalendarPayload,
     SchoolYearOption
 } from '@type/school-year.type';
-import { announceFormError, DEFAULT_FORM_OPTIONS, ensureSubmitValidationMode, focusAndOpenFirstErrorField, formErrors } from '@utils/form.util';
+import { announceFormError, DEFAULT_FORM_OPTIONS, ensureSubmitValidationMode, focusAndOpenFirstErrorField, validateStepFields } from '@utils/form.util';
 import { ensureUniqueCode, generateAcademicThresholdCode } from '@utils/entity-code.util';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -50,10 +50,12 @@ import {
     generateAcademicYearLabel,
     isSpecialGradeRow,
     SourceSchoolYearInfo,
+    toCalendarExceptionType,
     validateCalendarExceptions,
     validateGradingPeriods,
     validateStep1SchoolYear,
     validateTerms,
+    validateThresholds,
     validateTransmutationRows,
     WIZARD_STEPS
 } from './wizard.constants';
@@ -121,8 +123,7 @@ export default function AcademicYearWizardModal({
         getValues,
         reset,
         setValue,
-        watch,
-        trigger
+        watch
     } = methods;
 
     const draftGuard = useFormDraft({
@@ -202,7 +203,10 @@ export default function AcademicYearWizardModal({
                             code: data.code || '',
                             end_date: data.end_date || '',
                             evaluation_scope: data.evaluation_scope || 'Period',
-                            holidays: data.holidays || [],
+                            holidays: (data.holidays || []).map((h) => ({
+                                ...h,
+                                exception_type: toCalendarExceptionType(h.exception_type) || 'Holiday'
+                            })),
                             id: data.id,
                             is_active: Boolean(data.is_active),
                             label: data.label || '',
@@ -210,7 +214,6 @@ export default function AcademicYearWizardModal({
                             start_date: data.start_date || '',
                             terms: (data.terms && data.terms.length > 0 ? data.terms : []).map((t) => ({
                                 ...t,
-                                max_units: t.max_units ?? 24,
                                 evaluation_scope: t.evaluation_scope || data.evaluation_scope || 'Period'
                             })),
                             thresholds: data.thresholds || [],
@@ -237,223 +240,107 @@ export default function AcademicYearWizardModal({
         }
     }, [open, schoolYearId, duplicateSchoolYearId, initialReadOnly]);
 
-    // Validation for Step 1
+    // Applies a pure step validator result: marks every invalid field, then focuses the first one
+    function applyValidationResult(result: {
+        isValid: boolean;
+        error?: string;
+        fieldPath?: string;
+        isToastOnly?: boolean;
+        errors?: Array<{ fieldPath: string; message: string }>;
+    }): boolean {
+        if (result.isValid) return true;
+
+        const errorsList = result.errors && result.errors.length > 0
+            ? result.errors
+            : (result.fieldPath && result.error && !result.isToastOnly
+                ? [{ fieldPath: result.fieldPath, message: result.error }]
+                : []);
+
+        if (errorsList.length === 0) {
+            if (result.error) {
+                useToastStore.getState().showToast(result.error, 'error');
+                announceFormError({
+                    count: 1,
+                    message: result.error
+                });
+            }
+            return false;
+        }
+
+        errorsList.forEach((err) => {
+            methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
+        });
+        const first = errorsList[0];
+        focusAndOpenFirstErrorField(first.fieldPath, methods);
+        announceFormError({
+            count: errorsList.length,
+            message: first.message,
+            firstErrorField: first.fieldPath
+        });
+        return false;
+    }
+
+    // Validation for Step 1 (Identity & Dates)
     async function validateStep1(): Promise<boolean> {
-        const isValid = await trigger(['start_date', 'end_date', 'code', 'label']);
-        const values = getValues();
+        const isValid = await validateStepFields(methods, ['start_date', 'end_date', 'code', 'label', 'max_units_per_term', 'is_active']);
+        if (!isValid) return false;
         const result = validateStep1SchoolYear(
-            values,
+            getValues(),
             sourceSchoolYear,
             existingSchoolYears,
             schoolYearId
         );
-        if (!isValid) {
-            formErrors(methods.formState.errors, methods);
-            return false;
-        }
-        if (!result.isValid && result.error) {
-            if (result.field) {
-                methods.setError(result.field, { type: 'manual', message: result.error });
-                focusAndOpenFirstErrorField(result.field, methods);
-                announceFormError({
-                    count: 1,
-                    message: result.error,
-                    firstErrorField: result.field
-                });
-            }
-            return false;
-        }
-        return true;
+        return applyValidationResult({ ...result, fieldPath: result.field });
     }
 
-    // Validation for Step 2
-    function validateStep2(): boolean {
+    // Validation for Step 2 (Terms & Windows)
+    async function validateStep2(): Promise<boolean> {
+        const isValid = await validateStepFields(methods, ['terms']);
+        if (!isValid) return false;
         const values = getValues();
-        const result = validateTerms(values.terms || [], values.start_date, values.end_date);
-        if (!result.isValid) {
-            if (result.errors && result.errors.length > 0) {
-                result.errors.forEach((err) => {
-                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
-                });
-                const first = result.errors[0];
-                focusAndOpenFirstErrorField(first.fieldPath, methods);
-                announceFormError({
-                    count: result.errors.length,
-                    message: first.message,
-                    firstErrorField: first.fieldPath
-                });
-            } else if (result.fieldPath && result.error) {
-                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
-                focusAndOpenFirstErrorField(result.fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: result.error,
-                    firstErrorField: result.fieldPath
-                });
-            }
-            return false;
-        }
-        return true;
+        return applyValidationResult(validateTerms(values.terms || [], values.start_date, values.end_date));
     }
 
-    // Validation for Step 3
-    function validateStep3(): boolean {
-        const values = getValues();
-        const terms = values.terms || [];
-        const result = validateGradingPeriods(terms);
-        if (!result.isValid) {
-            if (result.errors && result.errors.length > 0) {
-                result.errors.forEach((err) => {
-                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
-                });
-                const first = result.errors[0];
-                focusAndOpenFirstErrorField(first.fieldPath, methods);
-                announceFormError({
-                    count: result.errors.length,
-                    message: first.message,
-                    firstErrorField: first.fieldPath
-                });
-            } else if (result.isToastOnly || !result.fieldPath) {
-                if (result.error) {
-                    useToastStore.getState().showToast(result.error, 'error');
-                    announceFormError({
-                        count: 1,
-                        message: result.error
-                    });
-                }
-            } else if (result.fieldPath && result.error) {
-                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
-                focusAndOpenFirstErrorField(result.fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: result.error,
-                    firstErrorField: result.fieldPath
-                });
-            }
-            return false;
-        }
-        return true;
+    // Validation for Step 3 (Grading Periods)
+    async function validateStep3(): Promise<boolean> {
+        const isValid = await validateStepFields(methods, ['terms']);
+        if (!isValid) return false;
+        return applyValidationResult(validateGradingPeriods(getValues().terms || []));
     }
 
     // Validation for Step 4 (Holidays & Exceptions)
-    function validateStep4(): boolean {
-        const values = getValues();
-        const holidays = values.holidays || [];
-        const result = validateCalendarExceptions(holidays);
-        if (!result.isValid) {
-            if (result.errors && result.errors.length > 0) {
-                result.errors.forEach((err) => {
-                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
-                });
-                const first = result.errors[0];
-                focusAndOpenFirstErrorField(first.fieldPath, methods);
-                announceFormError({
-                    count: result.errors.length,
-                    message: first.message,
-                    firstErrorField: first.fieldPath
-                });
-            } else if (result.fieldPath && result.error) {
-                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
-                focusAndOpenFirstErrorField(result.fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: result.error,
-                    firstErrorField: result.fieldPath
-                });
-            }
-            return false;
-        }
-        return true;
+    async function validateStep4(): Promise<boolean> {
+        const isValid = await validateStepFields(methods, ['holidays']);
+        if (!isValid) return false;
+        return applyValidationResult(validateCalendarExceptions(getValues().holidays || []));
     }
 
     // Validation for Step 5 (Grade Schema)
-    function validateStep5(): boolean {
-        const values = getValues();
-        const rows = values.transmutation_rows || [];
-        const result = validateTransmutationRows(rows);
-        if (!result.isValid) {
-            if (result.errors && result.errors.length > 0) {
-                result.errors.forEach((err) => {
-                    methods.setError(err.fieldPath as any, { type: 'manual', message: err.message });
-                });
-                const first = result.errors[0];
-                focusAndOpenFirstErrorField(first.fieldPath, methods);
-                announceFormError({
-                    count: result.errors.length,
-                    message: first.message,
-                    firstErrorField: first.fieldPath
-                });
-            } else if (result.fieldPath && result.error) {
-                methods.setError(result.fieldPath as any, { type: 'manual', message: result.error });
-                focusAndOpenFirstErrorField(result.fieldPath, methods);
-                announceFormError({
-                    count: 1,
-                    message: result.error,
-                    firstErrorField: result.fieldPath
-                });
-            }
-            return false;
-        }
-        return true;
+    async function validateStep5(): Promise<boolean> {
+        const isValid = await validateStepFields(methods, ['transmutation_rows']);
+        if (!isValid) return false;
+        return applyValidationResult(validateTransmutationRows(getValues().transmutation_rows || []));
     }
 
     // Validation for Step 6 (Academic Thresholds)
-    function validateStep6(): boolean {
-        const values = getValues();
-        const thresholds = values.thresholds || [];
-        const errorsList: Array<{ fieldPath: string; message: string }> = [];
-
-        for (let i = 0; i < thresholds.length; i++) {
-            const t = thresholds[i];
-            if (!t.label || !t.label.trim()) {
-                const fieldPath = `thresholds.${i}.label`;
-                const msg = `Threshold #${i + 1} must have a Name / Label (e.g. Summa Cum Laude).`;
-                errorsList.push({ fieldPath, message: msg });
-                methods.setError(fieldPath as any, {
-                    type: 'manual',
-                    message: msg
-                });
-            }
-            if (t.max_gwa === '' || t.max_gwa === null || t.max_gwa === undefined) {
-                const fieldPath = `thresholds.${i}.max_gwa`;
-                const msg = `Threshold "${t.label || `#${i + 1}`}" must specify a Max GWA cutoff.`;
-                errorsList.push({ fieldPath, message: msg });
-                methods.setError(fieldPath as any, {
-                    type: 'manual',
-                    message: msg
-                });
-            }
-        }
-
-        if (errorsList.length > 0) {
-            const first = errorsList[0];
-            focusAndOpenFirstErrorField(first.fieldPath, methods);
-            announceFormError({
-                count: errorsList.length,
-                message: first.message,
-                firstErrorField: first.fieldPath
-            });
-            return false;
-        }
-        return true;
+    async function validateStep6(): Promise<boolean> {
+        const isValid = await validateStepFields(methods, ['thresholds']);
+        if (!isValid) return false;
+        return applyValidationResult(validateThresholds(getValues().thresholds || []));
     }
 
+    const STEP_VALIDATORS: Record<number, () => Promise<boolean>> = {
+        1: validateStep1,
+        2: validateStep2,
+        3: validateStep3,
+        4: validateStep4,
+        5: validateStep5,
+        6: validateStep6
+    };
+
     async function handleNext() {
-        if (currentStep === 1) {
-            if (!(await validateStep1())) return;
-            setCurrentStep(2);
-        } else if (currentStep === 2) {
-            if (!validateStep2()) return;
-            setCurrentStep(3);
-        } else if (currentStep === 3) {
-            if (!validateStep3()) return;
-            setCurrentStep(4);
-        } else if (currentStep === 4) {
-            if (!validateStep4()) return;
-            setCurrentStep(5);
-        } else if (currentStep === 5) {
-            if (!validateStep5()) return;
-            setCurrentStep(6);
+        if (currentStep < WIZARD_STEPS.length && await STEP_VALIDATORS[currentStep]()) {
+            setCurrentStep(currentStep + 1);
         }
     }
 
@@ -475,25 +362,19 @@ export default function AcademicYearWizardModal({
         }
 
         // Validate sequentially
-        if (currentStep === 1 && !(await validateStep1())) return;
-        if (currentStep === 2 && !validateStep2()) return;
-        if (currentStep === 3 && !validateStep3()) return;
-        if (currentStep === 4 && !validateStep4()) return;
-        if (currentStep === 5 && !validateStep5()) return;
+        if (!(await STEP_VALIDATORS[currentStep]())) return;
 
         setCurrentStep(stepNumber);
     }
 
     async function handleSave() {
-        const v1 = await validateStep1();
-        const v2 = validateStep2();
-        const v3 = validateStep3();
-        const v4 = validateStep4();
-        const v5 = validateStep5();
-        const v6 = validateStep6();
-
-        if (!v1 || !v2 || !v3 || !v4 || !v5 || !v6) {
-            return;
+        // Only the current step's inputs are mounted, so the pure validators re-check every step;
+        // jump to the first failing step so its invalid field is rendered and focused.
+        for (const step of WIZARD_STEPS) {
+            if (!(await STEP_VALIDATORS[step.step]())) {
+                setCurrentStep(step.step);
+                return;
+            }
         }
 
         setIsSaving(true);
@@ -589,7 +470,6 @@ export default function AcademicYearWizardModal({
                 term_type_id: t.term_type_id,
                 start_date: t.start_date,
                 end_date: t.end_date,
-                max_units: t.max_units ? Number(t.max_units) : 24,
                 enrollment_start_date: t.enrollment_start_date || null,
                 enrollment_end_date: t.enrollment_end_date || null,
                 grading_deadline: t.grading_deadline || null,
@@ -631,7 +511,7 @@ export default function AcademicYearWizardModal({
                             th.min_gwa !== null && th.min_gwa !== undefined && th.min_gwa !== ''
                                 ? Number(th.min_gwa)
                                 : null,
-                        max_gwa: Number(th.max_gwa) || 1.75,
+                        max_gwa: Number(th.max_gwa),
                         min_subject_grade:
                             th.min_subject_grade !== null &&
                             th.min_subject_grade !== undefined &&
@@ -674,13 +554,17 @@ export default function AcademicYearWizardModal({
                             : null,
                     is_passing: Boolean(r.is_passing),
                     special_code: r.special_code ? r.special_code.trim() : null,
-                    description: r.description ? r.description.trim() : null
+                    description: r.description ? r.description.trim() : null,
+                    is_auto_detected: isSpecial && Boolean(r.is_auto_detected),
+                    conditions: isSpecial && r.is_auto_detected
+                        ? (r.conditions ?? null)
+                        : null
                 };
             }),
             p_holidays: (values.holidays || []).map((h) => ({
                 id: h.id,
                 title: (h.title || '').trim(),
-                exception_type: h.exception_type || 'Holiday',
+                exception_type: toCalendarExceptionType(h.exception_type) || 'Holiday',
                 start_date: h.start_date,
                 end_date: h.end_date,
                 affects_attendance: Boolean(h.affects_attendance),

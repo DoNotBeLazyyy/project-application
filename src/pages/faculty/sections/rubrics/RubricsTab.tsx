@@ -4,7 +4,6 @@ import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsM
 import {
     CheckSquareOffsetIcon,
     CopySimpleIcon,
-    FileTextIcon,
     PencilSimpleIcon,
     PlusIcon,
     TrashIcon

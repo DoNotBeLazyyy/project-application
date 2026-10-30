@@ -84,9 +84,8 @@ export async function updateEvent(
 
     return callRpc<null>('fn_update_event', {
         p_all_day: params.all_day ?? false,
-        p_attachments: params.attachments && params.attachments.length > 0
-            ? params.attachments
-            : null,
+        // An empty array clears existing attachments; null leaves them untouched.
+        p_attachments: params.attachments ?? null,
         p_audience: audience,
         p_description: params.description || null,
         p_end_at: params.end_at || null,

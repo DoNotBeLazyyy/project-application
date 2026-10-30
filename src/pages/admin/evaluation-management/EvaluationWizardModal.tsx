@@ -2,12 +2,14 @@ import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import CommonButton from '@components/button/CommonButton';
 import CommonForm from '@components/form/CommonForm';
 import { FormFieldConfig } from '@components/form/FormField';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import CommonModal from '@components/modal/CommonModal';
 import CommonPromptModal from '@components/modal/CommonPromptModal';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
 import { useFormDraft } from '@hooks/useFormDraft';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import ValidCommonTextarea from '@components/textarea/ValidCommonTextArea';
 import { QUESTIONS_SCROLL_STEP } from '@constants/evaluation.constant';
 import { useInfiniteScroll } from '@hooks/useInfiniteScroll';
@@ -22,15 +24,17 @@ import {
     ListChecksIcon,
     PencilSimpleIcon,
     PlusCircleIcon,
-    SlidersIcon,
     TrashIcon,
     WarningIcon,
     XIcon
 } from '@phosphor-icons/react';
 import { EvaluationQuestionForm, EvaluationTemplateForm } from '@type/evaluation.type';
-import { formErrors } from '@utils/form.util';
+import { announceFormError, formErrors, validateStepFields } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { Control, FieldErrors, FieldValues, useFieldArray, UseFormReturn, useWatch } from 'react-hook-form';
+import { flushSync } from 'react-dom';
+import {
+    Control, FieldErrors, FieldPath, FieldValues, useFieldArray, UseFormReturn, useWatch
+} from 'react-hook-form';
 
 export const EVALUATION_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -51,12 +55,73 @@ const TARGET_MODE_OPTIONS = [
     { label: 'Exclude selected programs (show to all others)', value: 'EXCLUDE' }
 ];
 
+// Mirrors the `evaluation_question_type` enum. Only Rating questions carry a scale.
+const QUESTION_TYPE_OPTIONS = [
+    { label: 'Rating', value: 'Rating' },
+    { label: 'Multiple Choice', value: 'Multiple Choice' },
+    { label: 'Open Ended', value: 'Open Ended' }
+];
+
+// `evaluation_templates.sequence` is a smallint.
+const SEQUENCE_MAX = 32767;
+
+// fn_validate_evaluation_questions: min rating >= 1, max rating <= 10, min below max.
+const RATING_FLOOR = 1;
+const RATING_CEILING = 10;
+
+const STEP_ONE_FIELDS: FieldPath<EvaluationTemplateForm>[] = [
+    'title',
+    'sequence',
+    'target_mode',
+    'program_ids',
+    'is_active',
+    'suggestion_placeholder',
+    'description'
+];
+
 const DEFAULT_QUESTION: EvaluationQuestionForm = {
     question_text: '',
+    question_type: 'Rating',
     is_required: true,
     min_rating: '1',
     max_rating: '5'
 };
+
+function parseRating(value: unknown): number | null {
+    const text = value === undefined || value === null
+        ? ''
+        : String(value);
+
+    if (text.trim() === '') {
+        return null;
+    }
+
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed)
+        ? parsed
+        : null;
+}
+
+// Listed in display order so the first invalid question is the one focused; the array root
+// (at-least-one rule) goes last.
+function getQuestionFieldNames(count: number): FieldPath<EvaluationTemplateForm>[] {
+    const names: FieldPath<EvaluationTemplateForm>[] = [];
+
+    for (let index = 0; index < count; index++) {
+        names.push(
+            `questions.${index}.question_text`,
+            `questions.${index}.question_type`,
+            `questions.${index}.is_required`,
+            `questions.${index}.min_rating`,
+            `questions.${index}.max_rating`
+        );
+    }
+
+    names.push('questions');
+
+    return names;
+}
 
 export function validateUniqueQuestion(value: any, formValues: FieldValues) {
     const normalized = String(value ?? '')
@@ -92,6 +157,13 @@ function EvaluationQuestionItem({
     onMove: (fromIndex: number, toIndex: number) => void;
     onRemove: (index: number) => void;
 }) {
+    const questionType = useWatch({
+        control,
+        name: `questions.${index}.question_type` as const,
+        defaultValue: 'Rating'
+    });
+    const isRating = (questionType || 'Rating') === 'Rating';
+
     return (
         <div className="border border-slate-200 dark:border-zinc-700/80 rounded-xl p-3.5 sm:p-4 bg-white dark:bg-zinc-800/80 shadow-xs flex flex-col gap-3 transition-shadow hover:shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-zinc-700/60 pb-2.5">
@@ -170,6 +242,74 @@ function EvaluationQuestionItem({
                     }
                 />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <ValidCommonSelect
+                    control={control}
+                    disabled={disabled}
+                    hasHelper
+                    isRequired={!disabled}
+                    label="Question Type"
+                    name={`questions.${index}.question_type` as const}
+                    options={QUESTION_TYPE_OPTIONS}
+                    rules={disabled ? undefined : { required: 'Question type is required' }}
+                />
+
+                {isRating && (
+                    <>
+                        <ValidCommonNumberInput
+                            control={control}
+                            disabled={disabled}
+                            hasHelper
+                            isRequired={!disabled}
+                            label="Min Rating"
+                            max={RATING_CEILING - 1}
+                            maxDecimals={0}
+                            min={RATING_FLOOR}
+                            name={`questions.${index}.min_rating` as const}
+                            rules={
+                                disabled
+                                    ? undefined
+                                    : {
+                                        deps: [`questions.${index}.max_rating`],
+                                        required: 'Min rating is required',
+                                        min: { value: RATING_FLOOR, message: `Min rating must be at least ${RATING_FLOOR}` },
+                                        max: { value: RATING_CEILING - 1, message: `Min rating must be at most ${RATING_CEILING - 1}` },
+                                        validate: (val, formVals) => {
+                                            const maxRating = parseRating(formVals.questions?.[index]?.max_rating);
+                                            return maxRating === null || Number(val) < maxRating || 'Min rating must be below max rating';
+                                        }
+                                    }
+                            }
+                        />
+                        <ValidCommonNumberInput
+                            control={control}
+                            disabled={disabled}
+                            hasHelper
+                            isRequired={!disabled}
+                            label="Max Rating"
+                            max={RATING_CEILING}
+                            maxDecimals={0}
+                            min={RATING_FLOOR + 1}
+                            name={`questions.${index}.max_rating` as const}
+                            rules={
+                                disabled
+                                    ? undefined
+                                    : {
+                                        deps: [`questions.${index}.min_rating`],
+                                        required: 'Max rating is required',
+                                        min: { value: RATING_FLOOR + 1, message: `Max rating must be at least ${RATING_FLOOR + 1}` },
+                                        max: { value: RATING_CEILING, message: `Max rating must be at most ${RATING_CEILING}` },
+                                        validate: (val, formVals) => {
+                                            const minRating = parseRating(formVals.questions?.[index]?.min_rating);
+                                            return minRating === null || Number(val) > minRating || 'Max rating must be above min rating';
+                                        }
+                                    }
+                            }
+                        />
+                    </>
+                )}
+            </div>
         </div>
     );
 }
@@ -200,7 +340,7 @@ export default function EvaluationWizardModal({
     const [currentStep, setCurrentStep] = useState(initialStep);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const [deleteQuestionTarget, setDeleteQuestionTarget] = useState<{ index: number; text: string } | null>(null);
-    const { control, handleSubmit, trigger } = methods;
+    const { control, handleSubmit } = methods;
 
     const draftGuard = useFormDraft({
         control,
@@ -214,10 +354,17 @@ export default function EvaluationWizardModal({
         }
     }, [open, initialStep]);
 
+    // fn_validate_evaluation_questions rejects an empty question list.
     const { fields, append, move, remove } = useFieldArray({
         control,
-        name: 'questions'
+        name: 'questions',
+        rules: readOnly
+            ? undefined
+            : {
+                validate: (questions) => questions.length > 0 || 'At least one question is required.'
+            }
     });
+    const questionsRootError = methods.formState.errors.questions?.root?.message;
 
     const { hasMore, revealThrough, sentinelRef, visibleCount } = useInfiniteScroll(
         fields.length,
@@ -237,10 +384,14 @@ export default function EvaluationWizardModal({
             if (current && current.length > 0) {
                 methods.setValue('program_ids', []);
             }
+            methods.clearErrors('program_ids');
         }
     }, [targetMode, methods]);
 
     function handleAddQuestion() {
+        if (questionsRootError) {
+            methods.clearErrors('questions.root' as FieldPath<EvaluationTemplateForm>);
+        }
         append(DEFAULT_QUESTION);
         revealThrough(fields.length);
         requestAnimationFrame(function() {
@@ -250,13 +401,33 @@ export default function EvaluationWizardModal({
 
     async function handleNext() {
         if (currentStep === 1) {
-            const isValid = await trigger(['title', 'sequence']);
+            const isValid = await validateStepFields(methods, STEP_ONE_FIELDS);
             if (!isValid) {
-                formErrors(methods.formState.errors, methods);
                 return;
             }
             setCurrentStep(2);
         }
+    }
+
+    async function handleSave() {
+        // Questions past the infinite-scroll window are not mounted, and React Hook Form
+        // skips unmounted fields, so render every question before validating the step.
+        if (hasMore) {
+            flushSync(function() {
+                revealThrough(fields.length - 1);
+            });
+        }
+
+        const isValid = await validateStepFields(methods, getQuestionFieldNames(fields.length));
+        if (!isValid) {
+            const rootMessage = methods.formState.errors.questions?.root?.message;
+            if (rootMessage) {
+                announceFormError({ count: 1, message: rootMessage, firstErrorField: 'questions' });
+            }
+            return;
+        }
+
+        await handleSubmit(onSubmit, handleEvaluationErrors)();
     }
 
     function handleBack() {
@@ -276,9 +447,8 @@ export default function EvaluationWizardModal({
             return;
         }
         if (currentStep === 1) {
-            const isValid = await trigger(['title', 'sequence']);
+            const isValid = await validateStepFields(methods, STEP_ONE_FIELDS);
             if (!isValid) {
-                formErrors(methods.formState.errors, methods);
                 return;
             }
         }
@@ -286,7 +456,10 @@ export default function EvaluationWizardModal({
     }
 
     function handleEvaluationErrors(errors: FieldErrors<EvaluationTemplateForm>) {
-        if (errors.title || errors.sequence) {
+        const hasStepOneError = STEP_ONE_FIELDS.some(function(name) {
+            return Boolean(errors[name as keyof EvaluationTemplateForm]);
+        });
+        if (hasStepOneError) {
             setCurrentStep(1);
         }
         formErrors(errors, methods);
@@ -324,11 +497,15 @@ export default function EvaluationWizardModal({
             rules: readOnly
                 ? undefined
                 : {
-                    required: 'Order is required',
-                    min: { value: 1, message: 'Order must be at least 1' }
+                    required: 'Section sequence is required',
+                    min: { value: 1, message: 'Section sequence must be at least 1' },
+                    max: { value: SEQUENCE_MAX, message: `Section sequence must be at most ${SEQUENCE_MAX}` },
+                    validate: (val: unknown) => Number.isInteger(Number(val)) || 'Section sequence must be a whole number'
                 },
             type: 'number',
             fieldProps: {
+                max: SEQUENCE_MAX,
+                maxDecimals: 0,
                 min: 1,
                 helperText: 'Lower numbers appear first on the student form.'
             }
@@ -340,6 +517,9 @@ export default function EvaluationWizardModal({
             fullWidth: targetMode === 'ALL',
             gridCols: targetMode === 'ALL' ? 2 : 1,
             options: TARGET_MODE_OPTIONS,
+            rules: readOnly
+                ? undefined
+                : { required: 'Program target mode is required' },
             type: 'select',
             fieldProps: {
                 helperText: targetMode === 'ALL'
@@ -354,6 +534,13 @@ export default function EvaluationWizardModal({
             label: 'Programs',
             disabled: readOnly,
             options: programOptions,
+            // A section with no linked programs applies to every program, so INCLUDE/EXCLUDE
+            // without a selection would silently behave like ALL.
+            rules: readOnly
+                ? undefined
+                : {
+                    validate: (val: unknown) => (Array.isArray(val) && val.length > 0) || 'Select at least one program'
+                },
             type: 'multi-select' as const,
             fieldProps: {
                 placeholder: 'Select programs',
@@ -500,6 +687,11 @@ export default function EvaluationWizardModal({
                                     <p className="text-xs text-slate-500">
                                         Click &quot;+ Add Question&quot; below to add the first evaluation item.
                                     </p>
+                                    {questionsRootError && (
+                                        <p className="text-xs font-semibold text-red-600 dark:text-red-400" role="alert">
+                                            {questionsRootError}
+                                        </p>
+                                    )}
                                     {!readOnly && (
                                         <CommonButton
                                             color="primary"
@@ -592,7 +784,7 @@ export default function EvaluationWizardModal({
                                 size="small"
                                 startIcon={<FloppyDiskIcon className="w-4 h-4" />}
                                 variant="contained"
-                                onClick={handleSubmit(onSubmit, handleEvaluationErrors)}
+                                onClick={handleSave}
                             >
                                 {templateId ? 'Save Evaluation Section' : 'Create Evaluation Section'}
                             </CommonButton>

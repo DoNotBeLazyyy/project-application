@@ -9,7 +9,7 @@ import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelec
 import { InputAdornment } from '@mui/material';
 import AvailableSectionBentoCard from '@pages/registrar/enrollment-management/AvailableSectionBentoCard';
 import EligibleSectionFilterBar from '@pages/registrar/enrollment-management/EligibleSectionFilterBar';
-import StudentLoadBentoCard, { StudentLoadCardItem, StudentLoadCardState } from '@pages/registrar/enrollment-management/StudentLoadBentoCard';
+import StudentLoadBentoCard, { StudentLoadCardItem } from '@pages/registrar/enrollment-management/StudentLoadBentoCard';
 import {
     ArrowsClockwiseIcon,
     CalendarBlankIcon,
@@ -25,7 +25,6 @@ import {
 import CreditTransfereeCoursesModal from '@pages/shared/records/CreditTransfereeCoursesModal';
 import { bulkEnrollStudent, dropEnrollment, getEnrollmentStudentDetail, listEligibleSections } from '@services/enrollment.service';
 import {
-    CurrentLoadRow,
     EligibleSectionFilterValues,
     EligibleSectionRow,
     EnrollmentStudentDetail
@@ -90,10 +89,6 @@ export default function EnrollmentWorkspaceModal({
     const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
-    const [recommendedCount, setRecommendedCount] = useState(0);
-    const [recommendedAvailableCount, setRecommendedAvailableCount] = useState(0);
-    const [totalCount, setTotalCount] = useState(0);
-
     const overrideMethods = useForm<EnrollmentOverrideValues>({
         ...DEFAULT_FORM_OPTIONS,
         defaultValues: defaultOverrideValues,
@@ -142,9 +137,6 @@ export default function EnrollmentWorkspaceModal({
 
             if (sectionsResult.data) {
                 setAvailableSections(sectionsResult.data.rows ?? []);
-                setRecommendedCount(sectionsResult.data.recommended_count ?? 0);
-                setRecommendedAvailableCount(sectionsResult.data.available_count ?? 0);
-                setTotalCount(sectionsResult.data.total_count ?? 0);
             }
         } finally {
             setIsAvailableLoading(false);
@@ -300,7 +292,7 @@ export default function EnrollmentWorkspaceModal({
                     student_id: studentId,
                     section_ids: stagedNewSections.map((sec) => sec.section_id),
                     allow_conflict: Boolean(values.allow_conflict),
-                    conflict_reason: values.conflict_reason ?? '',
+                    conflict_reason: (values.conflict_reason ?? '').trim(),
                     override_prerequisites: Boolean(values.override_prerequisites)
                 });
 
@@ -628,10 +620,14 @@ export default function EnrollmentWorkspaceModal({
                                                 <ValidCommonInput
                                                     control={overrideMethods.control}
                                                     hasHelper
+                                                    isRequired
+                                                    label="Conflict Authorization Reason"
                                                     name="conflict_reason"
-                                                    placeholder="Required: State the reason for authorizing this schedule overlap..."
-                                                    rules={{ required: 'Conflict authorization reason is required' }}
-                                                    size="small"
+                                                    placeholder="State the reason for authorizing this schedule overlap..."
+                                                    rules={{
+                                                        required: 'Conflict authorization reason is required',
+                                                        validate: (value) => String(value ?? '').trim() !== '' || 'Conflict authorization reason cannot be blank'
+                                                    }}
                                                 />
                                             )}
                                         </div>

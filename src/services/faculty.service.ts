@@ -2,7 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import {
     AttendanceRecord, AttendanceRecordUpdate, AttendanceSession, AttendanceSessionFormValues, FacultyEvaluationSummary, FacultyStudentGradeBreakdown, GradeCalculationResult, GradeSheetRow, GradingComponent, GradingComponentFormValues, GradingPeriod, MySectionListRow, SectionDetail, SectionStudent, StudentAttendanceRow, StudentEvaluation, StudentGradeBreakdown
 } from '@type/faculty.type';
-import { SectionOverridableRule, SpecialGradeDetectionResult, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
+import { SectionOverridableRule, SpecialGradeFlag, SpecialGradeFlagResolution } from '@type/grading-config.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
 
@@ -145,7 +145,7 @@ export async function createGradingComponent(
     return callRpc<null>('fn_create_grading_component', {
         p_section_id: sectionId,
         p_grading_period_id: gradingPeriodId,
-        p_name: params.name,
+        p_name: params.name.trim(),
         p_weight: Number(params.weight)
     });
 }
@@ -156,7 +156,7 @@ export async function updateGradingComponent(
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_grading_component', {
         p_component_id: componentId,
-        p_name: params.name,
+        p_name: params.name.trim(),
         p_weight: Number(params.weight)
     });
 }
@@ -216,16 +216,6 @@ export async function listSpecialGradeFlags(
     });
 }
 
-export async function detectSpecialGradeFlags(
-    sectionId: string,
-    gradingPeriodId: string
-): Promise<ServiceResult<SpecialGradeDetectionResult>> {
-    return callRpc<SpecialGradeDetectionResult>('fn_detect_special_grade_flags', {
-        p_section_id: sectionId,
-        p_grading_period_id: gradingPeriodId
-    });
-}
-
 export async function applySpecialGradeFlag(
     flagId: string,
     note?: string
@@ -257,7 +247,6 @@ export async function setEnrollmentSpecialGrade(
         p_special_grade: specialGrade
     });
 }
-
 
 /**
  * The rules the admin has opened up for section-level thresholds, together with

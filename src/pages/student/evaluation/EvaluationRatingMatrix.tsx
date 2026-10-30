@@ -1,6 +1,7 @@
 import useBreakpoint from '@hooks/useBreakpoint';
 import Radio from '@mui/material/Radio';
 import { EvaluationAnswerForm, EvaluationAnswersForm } from '@type/evaluation.type';
+import { clearFieldError } from '@utils/form.util';
 import { ReactNode } from 'react';
 import { Control, Controller, Path } from 'react-hook-form';
 
@@ -33,6 +34,19 @@ function isRatingAllowed(answer: EvaluationAnswerForm, rating: number): boolean 
     const max = answer.max_rating ?? FALLBACK_MAX_RATING;
 
     return rating >= min && rating <= max;
+}
+
+function buildRatingRules(answer: EvaluationAnswerForm) {
+    if (!answer.is_required) {
+        return undefined;
+    }
+
+    return {
+        validate: function(value: unknown) {
+            return String(value ?? '')
+                .trim().length > 0 || 'Select a rating';
+        }
+    };
 }
 
 function renderQuestionLabel(answer: EvaluationAnswerForm): ReactNode {
@@ -73,6 +87,7 @@ export default function EvaluationRatingMatrix({
                             control={control}
                             key={answer.question_id}
                             name={name}
+                            rules={buildRatingRules(answer)}
                             render={function({ field, fieldState }) {
                                 return (
                                     <div className="border border-(--mui-palette-divider) flex flex-col gap-3 p-3 rounded-lg">
@@ -98,6 +113,7 @@ export default function EvaluationRatingMatrix({
                                                             key={rating}
                                                             type="button"
                                                             onClick={function() {
+                                                                clearFieldError(control, name);
                                                                 field.onChange(String(rating));
                                                             }}
                                                         >
@@ -150,6 +166,7 @@ export default function EvaluationRatingMatrix({
                                 control={control}
                                 key={answer.question_id}
                                 name={name}
+                                rules={buildRatingRules(answer)}
                                 render={function({ field, fieldState }) {
                                     return (
                                         <tr className="border-(--mui-palette-divider) border-b last:border-b-0">
@@ -183,6 +200,7 @@ export default function EvaluationRatingMatrix({
                                                             size="small"
                                                             value={String(rating)}
                                                             onChange={function() {
+                                                                clearFieldError(control, name);
                                                                 field.onChange(String(rating));
                                                             }}
                                                         />

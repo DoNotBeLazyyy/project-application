@@ -94,7 +94,6 @@ export default function Step1FacultyAndGuide({
                 <CommonSelect
                     fullWidth
                     options={selectOptions}
-                    size="small"
                     value={currentKey}
                     onChange={handleDropdownChange}
                 />

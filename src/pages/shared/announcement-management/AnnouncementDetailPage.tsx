@@ -29,14 +29,6 @@ function formatTimestamp(value: string | null): string {
         : parsed.toLocaleString();
 }
 
-function toDateInput(value: string | null | undefined): string {
-    if (!value) {
-        return '';
-    }
-
-    return value.slice(0, 10);
-}
-
 function toEventDateInput(value: string | null | undefined, allDay = false): string {
     if (!value) {
         return '';
@@ -301,7 +293,7 @@ export default function AnnouncementDetailPage() {
 
     async function handleUpdate(id: string, values: CommunicationFormValues) {
         if (!canEdit) {
-            return { data: null, error: { message: 'You do not have permission to edit this item.' } as any };
+            return { data: null, error: { code: null, message: 'You do not have permission to edit this item.', status: null } };
         }
 
         const isFacultyOnly = currentRole === 'Faculty';

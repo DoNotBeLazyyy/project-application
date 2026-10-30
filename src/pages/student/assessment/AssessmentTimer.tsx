@@ -1,5 +1,5 @@
 import { ClockIcon } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface AssessmentTimerProps {
     expiresAt: string | null;
@@ -9,9 +9,17 @@ interface AssessmentTimerProps {
 export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimerProps) {
     const [remaining, setRemaining] = useState('');
     const [isWarning, setIsWarning] = useState(false);
+    const onExpireRef = useRef(onExpire);
+    const hasExpiredRef = useRef(false);
+
+    useEffect(function() {
+        onExpireRef.current = onExpire;
+    }, [onExpire]);
 
     useEffect(function() {
         if (!expiresAt) return;
+
+        hasExpiredRef.current = false;
 
         const expiryTime = new Date(expiresAt)
             .getTime();
@@ -22,7 +30,11 @@ export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimer
             if (diff <= 0) {
                 setRemaining('00:00');
                 setIsWarning(true);
-                onExpire();
+                // Fire once per expiry; parent re-renders must not re-trigger the auto-submit.
+                if (!hasExpiredRef.current) {
+                    hasExpiredRef.current = true;
+                    onExpireRef.current();
+                }
                 return false;
             }
 
@@ -48,7 +60,7 @@ export default function AssessmentTimer({ expiresAt, onExpire }: AssessmentTimer
         return function() {
             clearInterval(interval);
         };
-    }, [expiresAt, onExpire]);
+    }, [expiresAt]);
 
     if (!expiresAt) return null;
 

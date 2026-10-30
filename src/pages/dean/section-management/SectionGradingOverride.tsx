@@ -13,9 +13,10 @@ import {
 } from '@phosphor-icons/react';
 import { getGradingPeriodTemplates } from '@services/grading-config.service';
 import { SectionFormValues, SectionGradingPeriodOverride } from '@type/section.type';
+import { clearFieldError } from '@utils/form.util';
 import { componentRailColor } from '@utils/period-allocation.util';
 import { useEffect, useState } from 'react';
-import { Control, useController, useWatch } from 'react-hook-form';
+import { Control, useController, useFormState, useWatch } from 'react-hook-form';
 
 interface SectionGradingOverrideProps {
     control: Control<SectionFormValues>;
@@ -70,6 +71,10 @@ export default function SectionGradingOverride({
     const {
         field: { value: periodsValue, onChange: onPeriodsChange }
     } = useController({ control, name: 'grading_periods' });
+
+    // Step validation (SectionWizardModal.validateStep3) sets errors on these paths
+    const { errors } = useFormState({ control });
+    const periodErrors = errors.grading_periods as any;
 
     const [defaultPeriods, setDefaultPeriods] = useState<SectionGradingPeriodOverride[]>(DEFAULT_FALLBACK_PERIODS);
 
@@ -151,6 +156,11 @@ export default function SectionGradingOverride({
         enableOverrideIfNeeded();
         const target = periods[periodIndex];
         if (!target) return;
+
+        Object.keys(patch).forEach(function(key) {
+            clearFieldError(control, `grading_periods.${periodIndex}.components.${compIndex}.${key}`);
+        });
+        clearFieldError(control, `grading_periods.${periodIndex}.weight`);
 
         const updated = [...periods];
         const newComps = [...target.components];
@@ -381,6 +391,12 @@ export default function SectionGradingOverride({
                                                 </div>
                                             </div>
 
+                                            {periodErrors?.[pIdx]?.weight?.message && (
+                                                <p className="text-xs font-medium text-(--mui-palette-error-main)" role="alert">
+                                                    {periodErrors[pIdx].weight.message}
+                                                </p>
+                                            )}
+
                                             {/* Component items */}
                                             <div className="flex flex-col gap-2.5 sm:gap-2">
                                                 {period.components.map((comp, cIdx) => (
@@ -427,7 +443,10 @@ export default function SectionGradingOverride({
                                                             <CommonInput
                                                                 containerClassName="w-full"
                                                                 disabled={disabled}
+                                                                error={Boolean(periodErrors?.[pIdx]?.components?.[cIdx]?.name)}
                                                                 fullWidth
+                                                                helperText={periodErrors?.[pIdx]?.components?.[cIdx]?.name?.message}
+                                                                name={`grading_periods.${pIdx}.components.${cIdx}.name`}
                                                                 placeholder="e.g., Quizzes, Midterm Exam, Recitation"
                                                                 size="small"
                                                                 value={comp.name}
@@ -447,9 +466,12 @@ export default function SectionGradingOverride({
                                                             <CommonNumberInput
                                                                 containerClassName="w-full"
                                                                 disabled={disabled}
+                                                                error={Boolean(periodErrors?.[pIdx]?.components?.[cIdx]?.weight)}
                                                                 fullWidth
+                                                                helperText={periodErrors?.[pIdx]?.components?.[cIdx]?.weight?.message}
                                                                 max={100}
                                                                 min={0}
+                                                                name={`grading_periods.${pIdx}.components.${cIdx}.weight`}
                                                                 placeholder="Weight"
                                                                 size="small"
                                                                 suffixText="%"

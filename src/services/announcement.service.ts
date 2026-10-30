@@ -97,9 +97,8 @@ export async function updateAnnouncement(
     params: AnnouncementFormValues
 ): Promise<ServiceResult<null>> {
     return callRpc<null>('fn_update_announcement', {
-        p_attachments: params.attachments && params.attachments.length > 0
-            ? params.attachments
-            : null,
+        // An empty array clears existing attachments; null leaves them untouched.
+        p_attachments: params.attachments ?? null,
         p_audience: params.target_audience,
         p_content: params.content,
         p_expires_at: params.expires_at || null,

@@ -335,7 +335,7 @@ const CommonTextarea = forwardRef<HTMLDivElement, CommonTextareaProps>(({
         >
             {label && (
                 <FormLabel
-                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    className={labelClassName}
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}

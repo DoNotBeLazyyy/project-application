@@ -141,7 +141,6 @@ export default function AiAssistant() {
     const suggestions = unusedSuggestions.length > 0
         ? unusedSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT)
         : allRoleSuggestions.slice(0, SUGGESTION_VISIBLE_COUNT);
-    const lastMessage = messages[messages.length - 1];
     const canShowFollowUps = !isSending && suggestions.length > 0 && messages.length > 0;
 
     useEffect(function() {

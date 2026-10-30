@@ -27,10 +27,12 @@ const SORT_COLUMNS: SortColumn[] = [
 const CREATE_FORM_ID = 'create-program-level-form';
 const UPDATE_FORM_ID = 'update-program-level-form';
 
+// Mirrors fn_bulk_create_program_levels: only the name is required, and both the code and
+// the name must be new (existing ones such as UG/Undergraduate and GRAD/Graduate are rejected).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Program Level Code', hint: 'e.g. UNDERGRADUATE (optional, auto-generated if blank)', required: false },
-    { key: 'label', label: 'Program Level Name', hint: 'e.g. Undergraduate' },
-    { key: 'description', label: 'Description', hint: 'e.g. Undergraduate programs (optional)', required: false }
+    { key: 'code', label: 'Program Level Code', hint: 'Optional - unique code, auto-generated from the name if blank, e.g. DOC', sample: 'DOC', required: false },
+    { key: 'label', label: 'Program Level Name', hint: 'Unique name, e.g. Doctorate', sample: 'Doctorate' },
+    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Doctoral degree programs', required: false }
 ];
 
 const defaultFormValues: ProgramLevelFormValues = {

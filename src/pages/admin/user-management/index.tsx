@@ -31,6 +31,7 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         label: 'First Name',
         hint: 'e.g. Juan',
         sample: 'Juan',
+        required: true,
         aliases: ['firstname', 'first', 'given_name', 'given name', 'fname']
     },
     {
@@ -38,20 +39,23 @@ const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
         label: 'Last Name',
         hint: 'e.g. Dela Cruz',
         sample: 'Dela Cruz',
+        required: true,
         aliases: ['lastname', 'last', 'surname', 'family_name', 'family name', 'lname']
     },
     {
         key: 'email',
         label: 'Email',
-        hint: 'e.g. juan@school.edu',
+        hint: 'e.g. juan.delacruz@aulms.edu (must not belong to an existing account; an invitation is emailed)',
         sample: 'juan.delacruz@aulms.edu',
+        required: true,
         aliases: ['email_address', 'email address', 'user_email', 'user email', 'e-mail', 'mail']
     },
     {
         key: 'role_code',
         label: 'Role',
-        hint: 'Admin, Faculty, Student, Registrar, Dean',
+        hint: 'One of: Admin, Faculty, Student, Registrar, Dean',
         sample: 'Faculty',
+        required: true,
         aliases: ['role', 'roles', 'role_code', 'role code', 'user_role', 'user role', 'role_name', 'role name', 'user_type', 'user type']
     }
 ];
@@ -490,7 +494,7 @@ export default function UserManagement() {
                     setIsBulkImportOpen(false);
                 }}
                 onMapRow={function(row) {
-                    const rawRole = (row.role_code || row.role || row.roles || '').trim();
+                    const rawRole = (row.role_code || '').trim();
                     const normalizedRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase();
                     const validRole = (['Admin', 'Faculty', 'Student', 'Registrar', 'Dean'].includes(normalizedRole)
                         ? normalizedRole

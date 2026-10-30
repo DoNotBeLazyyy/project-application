@@ -86,13 +86,10 @@ export default function RubricAttachPanel({ assessmentId, sectionId }: RubricAtt
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="flex flex-1 flex-col gap-1">
-                    <label className="text-(--mui-palette-text-secondary) text-xs uppercase">
-                        Attached Rubric
-                    </label>
                     <CommonSelect
                         fullWidth
+                        label="Attached Rubric"
                         options={options}
-                        size="small"
                         value={rubricId}
                         onChange={handleRubricChange}
                     />

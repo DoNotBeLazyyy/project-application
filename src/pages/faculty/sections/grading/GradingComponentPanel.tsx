@@ -4,10 +4,11 @@ import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
+import CommonInput from '@components/input/CommonInput';
+import CommonNumberInput from '@components/input/CommonNumberInput';
 import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowsClockwiseIcon,
-    CheckCircleIcon,
     CheckIcon,
     LockIcon,
     PencilSimpleIcon,
@@ -17,7 +18,6 @@ import {
 } from '@phosphor-icons/react';
 import { GradingComponent, GradingComponentFormValues } from '@type/faculty.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
-import { stripLeadingZeros } from '@utils/input.util';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -28,22 +28,33 @@ const defaultFormValues: GradingComponentFormValues = {
     weight: ''
 };
 
-const componentFields: FormFieldConfig<GradingComponentFormValues>[] = [
-    {
-        name: 'name',
-        rules: { required: 'Required' },
-        type: 'text'
-    },
-    {
-        name: 'weight',
-        rules: {
-            required: 'Required',
-            min: { value: 1, message: 'Must be at least 1' },
-            max: { value: 100, message: 'Cannot exceed 100' }
+// grading_components.weight CHECK (weight > 0 AND weight <= 100); a period's components must total 100%
+function buildComponentFields(remainingWeight: number): FormFieldConfig<GradingComponentFormValues>[] {
+    return [
+        {
+            label: 'Component Name',
+            name: 'name',
+            placeholder: 'e.g. Quizzes',
+            rules: {
+                required: 'Required',
+                validate: (value) => String(value ?? '').trim() !== '' || 'Component name cannot be blank.'
+            },
+            type: 'text'
         },
-        type: 'number'
-    }
-];
+        {
+            fieldProps: { helperText: `${remainingWeight}% of this period is still unallocated.` },
+            label: 'Weight (%)',
+            name: 'weight',
+            rules: {
+                required: 'Required',
+                min: { value: 1, message: 'Must be at least 1' },
+                max: { value: 100, message: 'Cannot exceed 100' },
+                validate: (value) => Number(value) <= remainingWeight || `Only ${remainingWeight}% is left in this period.`
+            },
+            type: 'number'
+        }
+    ];
+}
 
 interface DraftRow {
     id: string;
@@ -160,8 +171,8 @@ export default function GradingComponentPanel({
         );
     }
 
-    function handleRowWeightChange(id: string, weightVal: number) {
-        const cleanWeight = Math.max(0, Math.min(100, isNaN(weightVal) ? 0 : weightVal));
+    function handleRowWeightChange(id: string, weightVal: number | undefined) {
+        const cleanWeight = Math.max(0, Math.min(100, weightVal === undefined || isNaN(weightVal) ? 0 : weightVal));
         setDraftRows((prev) =>
             prev.map((row) => (row.id === id ? { ...row, weight: cleanWeight } : row))
         );
@@ -188,7 +199,8 @@ export default function GradingComponentPanel({
 
     const draftTotalWeight = draftRows.reduce((sum, r) => sum + r.weight, 0);
     const hasInvalidName = draftRows.some((r) => !r.name.trim());
-    const isSaveDisabled = isSaving || draftTotalWeight !== 100 || hasInvalidName || draftRows.length === 0;
+    const hasInvalidWeight = draftRows.some((r) => r.weight <= 0);
+    const isSaveDisabled = isSaving || draftTotalWeight !== 100 || hasInvalidName || hasInvalidWeight || draftRows.length === 0;
 
     async function handleSimultaneousSave() {
         if (isSaveDisabled) return;
@@ -254,6 +266,7 @@ export default function GradingComponentPanel({
     }
 
     const currentTotal = components.reduce((sum, c) => sum + c.weight, 0);
+    const componentFields = buildComponentFields(Math.max(0, 100 - currentTotal));
 
     return (
         <div className="flex flex-col flex-shrink-0 gap-3.5 w-full md:w-84 h-full min-h-0">
@@ -364,28 +377,34 @@ export default function GradingComponentPanel({
                                 key={row.id}
                                 className="bg-white dark:bg-zinc-900 border border-blue-300 dark:border-blue-700/80 rounded-2xl p-3 shadow-2xs flex flex-col gap-2 transition-all ring-1 ring-blue-500/20"
                             >
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Component name (e.g. Quizzes)"
-                                        value={row.name}
-                                        onChange={(e) => handleRowNameChange(row.id, e.target.value)}
-                                        className="flex-1 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50/70 dark:bg-zinc-800/80 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                                    />
-                                    <div className="flex items-center gap-1 shrink-0">
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            max={100}
-                                            value={row.weight || ''}
-                                            onChange={(e) => {
-                                                const val = stripLeadingZeros(e.target.value);
-                                                e.target.value = val;
-                                                handleRowWeightChange(row.id, parseInt(val, 10));
-                                            }}
-                                            className="w-16 px-2.5 py-1.5 text-xs sm:text-sm font-mono font-bold text-right rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50/70 dark:bg-zinc-800/80 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                                <div className="flex items-start gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <CommonInput
+                                            error={!row.name.trim()}
+                                            fullWidth
+                                            helperText={row.name.trim()
+                                                ? undefined
+                                                : 'Name is required.'}
+                                            placeholder="Component name (e.g. Quizzes)"
+                                            size="small"
+                                            value={row.name}
+                                            onChange={(e) => handleRowNameChange(row.id, e.target.value)}
                                         />
-                                        <span className="text-xs font-mono font-bold text-slate-500">%</span>
+                                    </div>
+                                    <div className="shrink-0 w-24">
+                                        <CommonNumberInput
+                                            error={row.weight <= 0}
+                                            helperText={row.weight > 0
+                                                ? undefined
+                                                : 'Must be 1-100.'}
+                                            max={100}
+                                            maxDecimals={0}
+                                            min={1}
+                                            size="small"
+                                            suffixText="%"
+                                            value={row.weight || ''}
+                                            onChange={(value) => handleRowWeightChange(row.id, value)}
+                                        />
                                     </div>
                                     <button
                                         type="button"

@@ -1,17 +1,19 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
+import FormLabel from '@components/form/FormLabel';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect from '@components/select/CommonSelect';
-import CommonTextarea from '@components/textarea/CommonTextarea';
 import { useObjectDraft } from '@hooks/useFormDraft';
+import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { createMaterial, MATERIAL_TYPE_OPTIONS, updateMaterial } from '@services/content.service';
 import { uploadFile } from '@services/storage.service';
 import { CourseMaterial, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 interface MaterialFormModalProps {
     open: boolean;
@@ -22,6 +24,22 @@ interface MaterialFormModalProps {
     onSaved: () => void;
 }
 
+interface MaterialFormValues {
+    title: string;
+    description: string;
+    materialType: MaterialType;
+    externalUrl: string;
+}
+
+function toFormValues(material: CourseMaterial | null): MaterialFormValues {
+    return {
+        description: material?.description ?? '',
+        externalUrl: material?.external_url ?? '',
+        materialType: material?.material_type ?? 'File',
+        title: material?.title ?? ''
+    };
+}
+
 export default function MaterialFormModal({
     open,
     sectionId,
@@ -30,30 +48,32 @@ export default function MaterialFormModal({
     onClose,
     onSaved
 }: MaterialFormModalProps) {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [materialType, setMaterialType] = useState<MaterialType>('File');
-    const [externalUrl, setExternalUrl] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [fileError, setFileError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isEdit = material !== null;
 
-    const defaultValues = useMemo(() => ({
-        title: material?.title ?? '',
-        description: material?.description ?? '',
-        materialType: material?.material_type ?? ('File' as MaterialType),
-        externalUrl: material?.external_url ?? ''
-    }), [material]);
+    const defaultValues = useMemo(function() {
+        return toFormValues(material);
+    }, [material]);
 
-    const currentValues = useMemo(() => ({
-        title,
-        description,
-        materialType,
-        externalUrl
-    }), [title, description, materialType, externalUrl]);
+    const { control, handleSubmit, reset, setValue } = useForm<MaterialFormValues>({ defaultValues });
+
+    const watchedValues = useWatch({ control });
+    const materialType = watchedValues.materialType ?? 'File';
+    const isLink = materialType === 'Link';
+
+    const currentValues = useMemo<MaterialFormValues>(function() {
+        return {
+            description: watchedValues.description ?? '',
+            externalUrl: watchedValues.externalUrl ?? '',
+            materialType: watchedValues.materialType ?? 'File',
+            title: watchedValues.title ?? ''
+        };
+    }, [watchedValues]);
 
     const draftGuard = useObjectDraft({
         formId: material?.id
@@ -61,11 +81,11 @@ export default function MaterialFormModal({
             : `material-form-${moduleId}-create`,
         values: currentValues,
         defaultValues,
-        onRestore: (restored) => {
-            setTitle(restored.title ?? '');
-            setDescription(restored.description ?? '');
-            setMaterialType(restored.materialType ?? 'File');
-            setExternalUrl(restored.externalUrl ?? '');
+        onRestore: function(restored) {
+            setValue('title', restored.title ?? '');
+            setValue('description', restored.description ?? '');
+            setValue('materialType', restored.materialType ?? 'File');
+            setValue('externalUrl', restored.externalUrl ?? '');
         },
         enabled: open
     });
@@ -73,9 +93,9 @@ export default function MaterialFormModal({
     const hasRealChanges = draftGuard.hasRealChanges || (!isEdit && file !== null);
 
     const isUnchanged = isEdit
-        && title.trim() === (material?.title ?? '')
-        && (description.trim() || null) === (material?.description ?? null)
-        && (materialType !== 'Link' || (externalUrl.trim() || null) === (material?.external_url ?? null));
+        && currentValues.title.trim() === (material?.title ?? '')
+        && (currentValues.description.trim() || null) === (material?.description ?? null)
+        && (!isLink || (currentValues.externalUrl.trim() || null) === (material?.external_url ?? null));
 
     useEffect(function() {
         if (!open) {
@@ -83,16 +103,64 @@ export default function MaterialFormModal({
             return;
         }
 
-        setTitle(material?.title ?? '');
-        setDescription(material?.description ?? '');
-        setMaterialType(material?.material_type ?? 'File');
-        setExternalUrl(material?.external_url ?? '');
+        reset(toFormValues(material));
         setFile(null);
+        setFileError(null);
 
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-    }, [open, material]);
+    }, [open, material, reset]);
+
+    const fields: FormFieldConfig<MaterialFormValues>[] = [
+        {
+            placeholder: 'e.g. Course Syllabus or Week 1: Lecture Slides',
+            gridCols: 2,
+            label: 'Title',
+            name: 'title',
+            rules: {
+                required: 'Title is required',
+                validate: (value: unknown) => !isBlankText(value) || 'Title cannot be empty or whitespace only'
+            },
+            type: 'text'
+        },
+        {
+            fieldProps: { maxLength: 1000 },
+            placeholder: 'Brief description, learning outcomes, chapter coverage, or reading guide...',
+            gridCols: 2,
+            label: 'Description & Learning Objectives',
+            name: 'description',
+            type: 'text-area'
+        },
+        ...(isEdit
+            ? []
+            : [
+                {
+                    gridCols: 2,
+                    label: 'Type',
+                    name: 'materialType' as const,
+                    options: MATERIAL_TYPE_OPTIONS,
+                    rules: { required: 'Type is required' },
+                    type: 'select' as const
+                }
+            ]),
+        ...(isLink
+            ? [
+                {
+                    placeholder: 'https://...',
+                    gridCols: 2,
+                    label: 'URL',
+                    name: 'externalUrl' as const,
+                    rules: {
+                        pattern: MATERIAL_URL_PATTERN,
+                        required: 'URL is required for link materials',
+                        validate: (value: unknown) => !isBlankText(value) || 'URL is required for link materials'
+                    },
+                    type: 'text' as const
+                }
+            ]
+            : [])
+    ];
 
     function handleRequestClose() {
         if (isSaving) return;
@@ -111,55 +179,63 @@ export default function MaterialFormModal({
     }
 
     function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-        setFile(e.target.files?.[0] ?? null);
+        const selected = e.target.files?.[0] ?? null;
+        setFile(selected);
+        if (selected) {
+            setFileError(null);
+        }
     }
 
-    async function handleSave() {
-        if (!title.trim()) return;
+    function finishSave() {
+        draftGuard.clearDraft();
+        onSaved();
+        onClose();
+    }
+
+    async function handleValidSave(values: MaterialFormValues) {
+        const title = values.title.trim();
+        const description = values.description.trim() || null;
+        const externalUrl = values.externalUrl.trim();
+
+        if (!isEdit && !isLink && !file) {
+            setFileError('Choose a file to upload');
+            return;
+        }
 
         setIsSaving(true);
 
         if (isEdit && material) {
             const result = await updateMaterial(
                 material.id,
-                title.trim(),
-                description.trim() || null,
-                materialType === 'Link'
-                    ? externalUrl.trim() || null
+                title,
+                description,
+                isLink
+                    ? externalUrl || null
                     : null
             );
 
             setIsSaving(false);
 
             if (!result.error) {
-                draftGuard.clearDraft();
-                onSaved();
-                onClose();
+                finishSave();
             }
 
             return;
         }
 
-        if (materialType === 'Link') {
-            if (!externalUrl.trim()) {
-                setIsSaving(false);
-                return;
-            }
-
+        if (isLink) {
             const result = await createMaterial({
-                description: description.trim() || null,
-                externalUrl: externalUrl.trim(),
-                materialType,
+                description,
+                externalUrl,
+                materialType: values.materialType,
                 moduleId,
-                title: title.trim()
+                title
             });
 
             setIsSaving(false);
 
             if (!result.error) {
-                draftGuard.clearDraft();
-                onSaved();
-                onClose();
+                finishSave();
             }
 
             return;
@@ -179,23 +255,28 @@ export default function MaterialFormModal({
         }
 
         const result = await createMaterial({
-            description: description.trim() || null,
+            description,
             fileName: file.name,
             fileSizeBytes: file.size,
             fileUrl: path,
-            materialType,
+            materialType: values.materialType,
             mimeType: file.type || null,
             moduleId,
-            title: title.trim()
+            title
         });
 
         setIsSaving(false);
 
         if (!result.error) {
-            draftGuard.clearDraft();
-            onSaved();
-            onClose();
+            finishSave();
         }
+    }
+
+    function handleSave() {
+        if (!isEdit && !isLink && !file) {
+            setFileError('Choose a file to upload');
+        }
+        handleSubmit(handleValidSave)();
     }
 
     return (
@@ -210,91 +291,47 @@ export default function MaterialFormModal({
                         ? 'Edit Material'
                         : 'Add Material'}
                 </h2>
-                <div className="flex flex-col gap-1">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Title
-                    </span>
-                    <CommonInput
-                        fullWidth
-                        placeholder="e.g. Course Syllabus or Week 1: Lecture Slides"
-                        size="small"
-                        value={title}
-                        onChange={function(e: ChangeEvent<HTMLInputElement>) {
-                            setTitle(e.target.value);
-                        }}
-                    />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Description &amp; Learning Objectives
-                    </span>
-                    <CommonTextarea
-                        maxLength={1000}
-                        placeholder="Brief description, learning outcomes, chapter coverage, or reading guide..."
-                        value={description}
-                        onChange={function(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-                            setDescription(e.target.value);
-                        }}
-                    />
-                </div>
-                {!isEdit && (
+                <CommonForm
+                    component="div"
+                    containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    control={control}
+                    enableDraftRecovery={false}
+                    fields={fields}
+                />
+                {!isLink && !isEdit && (
                     <div className="flex flex-col gap-1">
-                        <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Type
-                        </span>
-                        <CommonSelect
-                            fullWidth
-                            options={MATERIAL_TYPE_OPTIONS}
-                            value={materialType}
-                            onChange={function(e: ChangeEvent<HTMLInputElement>) {
-                                setMaterialType(e.target.value as MaterialType);
-                            }}
+                        <FormLabel
+                            errorMessage={fileError ?? undefined}
+                            isRequired
+                            label="File"
                         />
+                        <input
+                            className="hidden"
+                            ref={fileInputRef}
+                            type="file"
+                            onChange={handleFileChange}
+                        />
+                        <CommonButton
+                            color={fileError
+                                ? 'error'
+                                : 'inherit'}
+                            startIcon={<UploadSimpleIcon size={16} />}
+                            variant="outlined"
+                            onClick={function() {
+                                fileInputRef.current?.click();
+                            }}
+                        >
+                            {file
+                                ? file.name
+                                : 'Choose file'}
+                        </CommonButton>
+                        {fileError && (
+                            <span className="text-(--mui-palette-error-main) text-xs" role="alert">
+                                {fileError}
+                            </span>
+                        )}
                     </div>
                 )}
-                {materialType === 'Link'
-                    ? (
-                        <div className="flex flex-col gap-1">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                URL
-                            </span>
-                            <CommonInput
-                                fullWidth
-                                placeholder="https://..."
-                                size="small"
-                                value={externalUrl}
-                                onChange={function(e: ChangeEvent<HTMLInputElement>) {
-                                    setExternalUrl(e.target.value);
-                                }}
-                            />
-                        </div>
-                    )
-                    : !isEdit && (
-                        <div className="flex flex-col gap-1">
-                            <span className="font-medium text-(--mui-palette-text-primary) text-sm">
-                                File
-                            </span>
-                            <input
-                                className="hidden"
-                                ref={fileInputRef}
-                                type="file"
-                                onChange={handleFileChange}
-                            />
-                            <CommonButton
-                                color="inherit"
-                                size="small"
-                                startIcon={<UploadSimpleIcon size={16} />}
-                                variant="outlined"
-                                onClick={function() {
-                                    fileInputRef.current?.click();
-                                }}
-                            >
-                                {file
-                                    ? file.name
-                                    : 'Choose file'}
-                            </CommonButton>
-                        </div>
-                    )}
                 <div className="flex gap-2 justify-end">
                     <CommonButton
                         color="inherit"
@@ -306,7 +343,7 @@ export default function MaterialFormModal({
                         Cancel
                     </CommonButton>
                     <CommonButton
-                        disabled={isSaving || !title.trim() || isUnchanged}
+                        disabled={isSaving || isUnchanged}
                         loading={isSaving}
                         size="small"
                         variant="contained"

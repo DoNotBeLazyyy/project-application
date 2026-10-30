@@ -1,5 +1,6 @@
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { EvaluationScope } from '@type/evaluation.type';
+import { SpecialGradeConditionGroup } from '@type/grading-config.type';
 export type { EvaluationScope };
 
 export interface SchoolYearListRow {
@@ -65,7 +66,6 @@ export interface WizardTermItem {
     grading_deadline?: string | null;
     status?: string;
     evaluation_scope?: EvaluationScope | null;
-    max_units?: number | string | null;
     grading_periods: WizardGradingPeriodItem[];
 }
 
@@ -79,6 +79,9 @@ export interface WizardTransmutationRow {
     is_passing: boolean;
     special_code?: string | null;
     description?: string | null;
+    // Special-grade detection rule (conditional rows only); mirrored into special_grade_configs on save
+    is_auto_detected?: boolean;
+    conditions?: SpecialGradeConditionGroup | null;
 }
 
 export interface WizardThresholdItem {
@@ -95,7 +98,8 @@ export interface WizardThresholdItem {
     is_active: boolean;
 }
 
-export type CalendarExceptionType = 'Holiday' | 'Break' | 'Suspension' | 'Special Class' | 'Exam Day' | string;
+/** Mirrors the public.calendar_exception_type enum; any other value is coerced to 'Holiday' by the DB. */
+export type CalendarExceptionType = 'Holiday' | 'Break' | 'Suspension' | 'Exam' | 'Event' | 'Other';
 
 export interface ExceptionTypeOptionItem {
     id?: string;

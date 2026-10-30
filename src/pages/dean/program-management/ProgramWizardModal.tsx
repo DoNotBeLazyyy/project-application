@@ -5,12 +5,10 @@ import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader from '@components/modal/ModalStepperHeader';
-import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import { useFormDraft } from '@hooks/useFormDraft';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
-    CheckCircleIcon,
     FloppyDiskIcon,
     GraduationCapIcon,
     PencilSimpleIcon,
@@ -20,13 +18,11 @@ import { useSchoolYearOptions } from '@pages/admin/school-year-management/useSch
 import { useDepartmentOptions } from '@pages/admin/department-management/useDepartmentOptions';
 import CurriculumMapManagement from '@pages/dean/curriculum-map-management';
 import { useProgramLevelOptions } from '@pages/dean/program-management/level/useProgramLevelOptions';
-import ProgramGradingSchemaStep from '@pages/dean/program-management/ProgramGradingSchemaStep';
 import { ProgramFormValues } from '@type/program/program.type';
 import { CurriculumMapEntry } from '@type/curriculum-map.type';
 import { generateProgramCode } from '@utils/entity-code.util';
 import { formErrors } from '@utils/form.util';
 import { useEffect, useRef, useState } from 'react';
-import { useToastStore } from '@stores/toast.store';
 import { FieldErrors, UseFormReturn, useWatch } from 'react-hook-form';
 
 interface ProgramWizardModalProps {
@@ -34,7 +30,6 @@ interface ProgramWizardModalProps {
     readOnly?: boolean;
     initialStep?: number;
     isEditing?: boolean;
-    isCodeDisabled?: boolean;
     isSaving?: boolean;
     programId?: string;
     methods: UseFormReturn<ProgramFormValues>;
@@ -45,8 +40,7 @@ interface ProgramWizardModalProps {
 
 export const PROGRAM_WIZARD_STEPS = [
     { step: 1, title: 'Program Details', subtitle: 'Basic identity & academic duration' },
-    { step: 2, title: 'Grading Schema', subtitle: 'Inherit defaults or set custom schema' },
-    { step: 3, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term' }
+    { step: 2, title: 'Curriculum Map', subtitle: 'Course subjects mapped by year level & term' }
 ];
 
 export default function ProgramWizardModal({
@@ -54,7 +48,6 @@ export default function ProgramWizardModal({
     readOnly = false,
     initialStep = 1,
     isEditing = false,
-    isCodeDisabled = false,
     isSaving = false,
     programId,
     methods,
@@ -174,9 +167,12 @@ export default function ProgramWizardModal({
         },
         {
             disabled: readOnly,
-            fieldProps: { helperText: 'Total units across the whole program (optional)' },
+            fieldProps: { helperText: 'Total units across the whole program (optional)', min: 0 },
             label: 'Total Units',
             name: 'total_units',
+            rules: readOnly
+                ? undefined
+                : { min: { value: 0, message: 'Total units cannot be negative' } },
             type: 'number'
         },
         {
@@ -188,14 +184,26 @@ export default function ProgramWizardModal({
                 : {
                     required: 'Number of years is required',
                     min: { value: 1, message: 'Must be at least 1 year' },
-                    max: { value: 8, message: 'Cannot exceed 8 years' }
+                    max: { value: 8, message: 'Cannot exceed 8 years' },
+                    validate: (val: any) => Number.isInteger(Number(val)) || 'Duration must be a whole number of years'
                 },
             type: 'number',
             fieldProps: {
                 helperText: 'Standard duration in years (1-8)',
-                min: 2,
+                maxDecimals: 0,
+                min: 1,
                 max: 8
             }
+        },
+        {
+            // programs.is_active is persisted by fn_create_program / fn_update_program
+            disabled: readOnly,
+            items: [
+                { name: 'is_active' as const, label: 'Active Program' }
+            ],
+            name: 'is_active',
+            type: 'checkbox-group',
+            gridCols: 2
         },
         {
             disabled: readOnly,
@@ -220,9 +228,6 @@ export default function ProgramWizardModal({
                 return;
             }
             setCurrentStep(2);
-        }
-        else if (currentStep === 2) {
-            setCurrentStep(3);
         }
     }
 
@@ -404,16 +409,6 @@ export default function ProgramWizardModal({
                     style={{ display: currentStep === 2
                         ? 'block'
                         : 'none' }}>
-                    <ProgramGradingSchemaStep
-                        control={control}
-                        disabled={readOnly}
-                    />
-                </div>
-
-                <div
-                    style={{ display: currentStep === 3
-                        ? 'block'
-                        : 'none' }}>
                     <CurriculumMapManagement
                         departmentId={selectedDepartmentId}
                         hideProgramSelect
@@ -447,12 +442,12 @@ export default function ProgramWizardModal({
 
                 {/* Step indicator on desktop */}
                 <div className="hidden sm:block text-xs font-medium text-slate-500">
-                    Step {currentStep} of 3 — {currentStepConfig?.title}
+                    Step {currentStep} of {PROGRAM_WIZARD_STEPS.length} — {currentStepConfig?.title}
                 </div>
 
                 {/* Next / Save Action */}
                 <div className="flex items-center gap-2">
-                    {currentStep < 3
+                    {currentStep < PROGRAM_WIZARD_STEPS.length
                         ? (
                             <CommonButton
                                 color="primary"

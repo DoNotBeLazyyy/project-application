@@ -105,7 +105,6 @@ function serializeTermStep2(t: WizardTermItem): string {
         enrollment_start_date: normalizeStr(t.enrollment_start_date),
         enrollment_end_date: normalizeStr(t.enrollment_end_date),
         grading_deadline: normalizeStr(t.grading_deadline),
-        max_units: normalizeNum(t.max_units, 24),
         evaluation_scope: normalizeStr(t.evaluation_scope || 'Period')
     });
 }
@@ -148,7 +147,11 @@ function serializeTransmutationRow(r: WizardTransmutationRow): string {
         transmuted_grade: r.transmuted_grade !== null && r.transmuted_grade !== undefined && r.transmuted_grade !== '' ? Number(r.transmuted_grade) : null,
         is_passing: Boolean(r.is_passing),
         special_code: normalizeStr(r.special_code),
-        description: normalizeStr(r.description)
+        description: normalizeStr(r.description),
+        is_auto_detected: Boolean(r.is_auto_detected),
+        conditions: r.is_auto_detected
+            ? r.conditions ?? null
+            : null
     });
 }
 
@@ -451,7 +454,6 @@ export default function AcademicYearHistoryModal({
                 p_evaluation_scope: (snap.evaluation_scope || 'Period') as EvaluationScope,
                 p_terms: (snap.terms || []).map((t) => ({
                     ...t,
-                    max_units: t.max_units ? Number(t.max_units) : 24,
                     evaluation_scope: t.evaluation_scope || snap.evaluation_scope || 'Period'
                 })),
                 p_transmutation_rows: snap.transmutation_rows || [],
@@ -1476,16 +1478,16 @@ function StepBaseContent({
 
                                                 <div>
                                                     <CommonNumberInput
-                                                        description="Maximum credit units a student can register for in this term (1 - 60)."
+                                                        description="Maximum credit units a student can register for in each term of this academic year (1 - 60)."
                                                         disabled
                                                         fullWidth
                                                         isRequired
-                                                        label="Max Units"
+                                                        label="Max Units per Term"
                                                         max={60}
                                                         min={1}
                                                         placeholder="24"
                                                         size="small"
-                                                        value={currentTerm.max_units ?? snap.max_units_per_term ?? 24}
+                                                        value={snap.max_units_per_term ?? 24}
                                                     />
                                                 </div>
 

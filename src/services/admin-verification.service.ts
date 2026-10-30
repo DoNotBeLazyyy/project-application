@@ -1,5 +1,5 @@
 import { callRpc } from '@services/supabase.wrapper';
-import { StaffProfileRequestFilterValues, StaffProfileRequestRow } from '@type/admin-verification.type';
+import { StaffProfileRequestRow } from '@type/admin-verification.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ProfileFormValues } from '@type/profile.type';
 import { ServiceResult } from '@type/service.type';
@@ -19,14 +19,6 @@ export async function listStaffProfileRequests(
         p_size: size,
         p_sort: sort.length > 0 ? sort : null,
         p_status: status && status !== 'All' ? status : null
-    });
-}
-
-export async function getStaffProfileRequestById(
-    requestId: string
-): Promise<ServiceResult<StaffProfileRequestRow>> {
-    return callRpc<StaffProfileRequestRow>('fn_get_staff_profile_request_by_id', {
-        p_request_id: requestId
     });
 }
 
@@ -59,4 +51,3 @@ export async function rejectStaffProfileRequest(
         { silent: true }
     );
 }
-

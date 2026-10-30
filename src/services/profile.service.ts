@@ -3,7 +3,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import { useLoadingStore } from '@stores/loading.store';
 import { useToastStore } from '@stores/toast.store';
 import { ChangePasswordFormValues, MyProfile, ProfileFormValues } from '@type/profile.type';
-import { ServiceErrorProps, ServiceResult } from '@type/service.type';
+import { ServiceResult } from '@type/service.type';
 import { parseServiceError } from '@utils/error.util';
 
 export async function getMyProfile(): Promise<ServiceResult<MyProfile>> {
@@ -103,110 +103,30 @@ export async function completeUserProfile(
 export async function updateMyProfile(
     params: ProfileFormValues
 ): Promise<ServiceResult<{ message?: string; pending_approval?: boolean } | null>> {
-    const basePayload = {
-        p_first_name: params.first_name,
-        p_middle_name: params.middle_name || null,
-        p_last_name: params.last_name,
-        p_suffix: params.suffix || null,
-        p_preferred_name: params.preferred_name || null,
-        p_mobile_number: params.mobile_number || null,
-        p_address_line1: params.address_line1 || null,
-        p_address_line2: params.address_line2 || null,
-        p_city: params.city || null,
-        p_province: params.province || null,
-        p_postal_code: params.postal_code || null,
+    // Optional text fields send '' (not null) when cleared: the live function treats
+    // NULL as "keep the current value" and '' as "clear it".
+    return callRpc<{ message?: string; pending_approval?: boolean } | null>('fn_update_my_profile', {
+        p_address_line1: params.address_line1 ?? null,
+        p_address_line2: params.address_line2 ?? null,
+        p_city: params.city ?? null,
+        p_civil_status: params.civil_status ?? null,
         p_date_of_birth: params.date_of_birth || null,
-        p_gender: params.gender || null,
-        p_civil_status: params.civil_status || null,
-        p_nationality: params.nationality || null
-    };
-
-    const isMissingRpcSignature = (err: ServiceErrorProps | null): boolean => {
-        if (!err) return false;
-        return (
-            err.code === 'PGRST202' ||
-            Boolean(err.message && (
-                err.message.includes('PGRST202') ||
-                err.message.includes('schema cache') ||
-                err.message.includes('Could not find the function')
-            ))
-        );
-    };
-
-    // Attempt 1: 18 parameters (includes program_id, year_level, and department_id)
-    const res18 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
-        'fn_update_my_profile',
-        {
-            ...basePayload,
-            p_program_id: params.program_id || null,
-            p_year_level: params.year_level ? Number(params.year_level) : null,
-            p_department_id: params.department_id || null
-        },
-        { silent: true }
-    );
-
-    if (!res18.error) {
-        if (res18.data?.message) {
-            useToastStore.getState().showToast(res18.data.message, 'success');
-        }
-        return res18;
-    }
-
-    if (!isMissingRpcSignature(res18.error)) {
-        useToastStore.getState().showToast(res18.error.message, 'error');
-        return res18;
-    }
-
-    // Attempt 2: Fallback to 17 parameters (includes program_id and year_level)
-    const res17 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
-        'fn_update_my_profile',
-        {
-            ...basePayload,
-            p_program_id: params.program_id || null,
-            p_year_level: params.year_level ? Number(params.year_level) : null
-        },
-        { silent: true }
-    );
-
-    if (!res17.error) {
-        if (res17.data?.message) {
-            useToastStore.getState().showToast(res17.data.message, 'success');
-        }
-        return res17;
-    }
-
-    if (!isMissingRpcSignature(res17.error)) {
-        useToastStore.getState().showToast(res17.error.message, 'error');
-        return res17;
-    }
-
-    // Attempt 3: Fallback to 16 parameters (includes program_id)
-    const res16 = await callRpc<{ message?: string; pending_approval?: boolean } | null>(
-        'fn_update_my_profile',
-        {
-            ...basePayload,
-            p_program_id: params.program_id || null
-        },
-        { silent: true }
-    );
-
-    if (!res16.error) {
-        if (res16.data?.message) {
-            useToastStore.getState().showToast(res16.data.message, 'success');
-        }
-        return res16;
-    }
-
-    if (!isMissingRpcSignature(res16.error)) {
-        useToastStore.getState().showToast(res16.error.message, 'error');
-        return res16;
-    }
-
-    // Attempt 4: Fallback to 15 parameters
-    return callRpc<{ message?: string; pending_approval?: boolean } | null>(
-        'fn_update_my_profile',
-        basePayload
-    );
+        p_department_id: params.department_id || null,
+        p_first_name: params.first_name,
+        p_gender: params.gender ?? null,
+        p_last_name: params.last_name,
+        p_middle_name: params.middle_name ?? null,
+        p_mobile_number: params.mobile_number ?? null,
+        p_nationality: params.nationality || null,
+        p_postal_code: params.postal_code ?? null,
+        p_preferred_name: params.preferred_name ?? null,
+        p_program_id: params.program_id || null,
+        p_province: params.province ?? null,
+        p_suffix: params.suffix ?? null,
+        p_year_level: params.year_level
+            ? Number(params.year_level)
+            : null
+    });
 }
 
 export async function updateMyAvatar(

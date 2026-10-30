@@ -1,5 +1,5 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import { ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
+import { ICellRendererParams } from 'ag-grid-community';
 import { MobileCardColDef } from '@type/table.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
 import { useMemo } from 'react';

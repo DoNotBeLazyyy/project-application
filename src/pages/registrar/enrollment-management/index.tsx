@@ -29,13 +29,16 @@ const SORT_COLUMNS: SortColumn[] = [
 
 const FILTER_FORM_ID = 'filter-enrollment-students-form';
 
+// Mirrors fn_bulk_enroll_students: the student is matched on the exact student_number, the term on
+// "<Term Type> - <School Year>" (Academic/School Year are interchangeable) or the term id, blank = the
+// enrollment target term, and each section code (case-insensitive) must exist in that term.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'student_number', label: 'Student Number', hint: 'e.g. 2024-00001', sample: '2026-00001', aliases: ['student_id', 'student id', 'student_no', 'student no', 'id_number'] },
-    { key: 'term_label', label: 'Term Label', hint: 'Blank uses active term, e.g. 1st Semester - School Year 2026-2027 (optional)', sample: '1st Semester - Academic Year 2027-2028', required: false, aliases: ['term', 'semester'] },
-    { key: 'section_codes', label: 'Section Codes', hint: 'Pipe-separated, e.g. BSCS3-A|BSIT2-C|GE101-B', sample: 'BSCS1-A|COCS101-001', aliases: ['sections', 'section'] },
-    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'true or false (optional, defaults false)', sample: 'false', required: false, aliases: ['conflict_allowed'] },
-    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'true or false (optional, defaults false)', sample: 'false', required: false, aliases: ['override_prereqs'] },
-    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Required when Allow Conflict is true (optional)', sample: '', required: false, aliases: ['reason'] }
+    { key: 'student_number', label: 'Student Number', hint: 'Required. Exact student number as registered, e.g. 2026-0001', sample: '2026-0001', aliases: ['student_id', 'student id', 'student_no', 'student no', 'id_number'] },
+    { key: 'term_label', label: 'Term Label', hint: 'Optional. "<Term> - <School Year>", e.g. 1st Semester - Academic Year 2026-2027. Blank uses the current enrollment term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester'] },
+    { key: 'section_codes', label: 'Section Codes', hint: 'Required. Section codes offered in that term, separated with |, e.g. COCS101-001|COCS102-001', sample: 'COCS101-001', aliases: ['sections', 'section'] },
+    { key: 'allow_conflict', label: 'Allow Conflict', hint: 'Optional. true / yes / 1 to allow schedule conflicts; anything else (or blank) means false', sample: 'false', required: false, aliases: ['conflict_allowed'] },
+    { key: 'override_prerequisites', label: 'Override Prerequisites', hint: 'Optional. true / yes / 1 to skip unmet prerequisites; anything else (or blank) means false', sample: 'false', required: false, aliases: ['override_prereqs'] },
+    { key: 'conflict_reason', label: 'Conflict Reason', hint: 'Optional. Reason recorded when Allow Conflict is true', sample: '', required: false, aliases: ['reason'] }
 ];
 
 const defaultFilterValues: EnrollmentStudentFilterValues = {

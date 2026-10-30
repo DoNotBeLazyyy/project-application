@@ -30,21 +30,21 @@ const SORT_COLUMNS: SortColumn[] = [
 
 const FILTER_FORM_ID = 'filter-section-form';
 
+// Mirrors fn_bulk_create_sections: rows upsert by term + course + (section code or faculty),
+// new sections always start Open, and a schedule needs days, start and end together.
+// Grading periods are applied afterwards through saveSectionGradingOverride.
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'term_label', label: 'Term Label', hint: 'e.g. 1st Semester - Academic Year 2025-2026 (optional, defaults to active term)', sample: '1st Semester - Academic Year 2027-2028', required: false, aliases: ['term', 'semester'] },
-    { key: 'program_code', label: 'Program Code', hint: 'e.g. BSCS (optional)', sample: 'BSCS', required: false, aliases: ['program'] },
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. COCS101', sample: 'COCS101', aliases: ['course', 'subject_code'] },
-    { key: 'section_code', label: 'Section Code', hint: 'e.g. COCS101-001 (optional, auto-generated if blank)', sample: 'COCS101-001', required: false, aliases: ['section'] },
-    { key: 'faculty_email', label: 'Faculty Email', hint: 'e.g. faculty@example.com (optional)', sample: 'faculty@example.com', required: false, aliases: ['instructor_email', 'teacher_email', 'faculty'] },
-    { key: 'room', label: 'Room', hint: 'e.g. Room 301 (optional)', sample: 'Room 301', required: false, aliases: ['classroom'] },
-    { key: 'max_slots', label: 'Max Slots', hint: 'e.g. 40 (optional, defaults to 40)', sample: '40', required: false, aliases: ['capacity', 'slots'] },
-    { key: 'status', label: 'Status', hint: 'e.g. Open (optional: Open, Full, Ongoing, Closed, Cancelled)', sample: 'Open', required: false },
-    { key: 'schedule_days', label: 'Schedule Days', hint: 'e.g. Monday, Wednesday (optional)', sample: 'Monday, Wednesday', required: false, aliases: ['days', 'day'] },
-    { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'e.g. 08:00 (optional)', sample: '08:00', required: false, aliases: ['start_time', 'time_start'] },
-    { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'e.g. 10:00 (optional)', sample: '10:00', required: false, aliases: ['end_time', 'time_end'] },
-    { key: 'schedule_room', label: 'Schedule Room', hint: 'e.g. Room 301 (optional)', sample: 'Room 301', required: false },
-    { key: 'override_grading_schema', label: 'Override Grading Schema', hint: 'e.g. true or false (optional)', sample: 'false', required: false },
-    { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'e.g. Prelim:30,Midterm:30,Final:40 (optional)', sample: '', required: false }
+    { key: 'term_label', label: 'Term Label', hint: 'Optional - "<Term Type> - <School Year>" of the active academic year, e.g. 1st Semester - Academic Year 2026-2027; defaults to the first active term', sample: '1st Semester - Academic Year 2026-2027', required: false, aliases: ['term', 'semester'] },
+    { key: 'course_code', label: 'Course Code', hint: 'Exact existing course code, e.g. COCS102', sample: 'COCS102', aliases: ['course', 'subject_code'] },
+    { key: 'section_code', label: 'Section Code', hint: 'Optional - auto-generated as <COURSE>-001 if blank; an existing code in the term updates that section', sample: '', required: false, aliases: ['section'] },
+    { key: 'faculty_email', label: 'Faculty Email', hint: 'Optional - email of an existing user, e.g. faculty@example.com', sample: 'faculty@example.com', required: false, aliases: ['instructor_email', 'teacher_email', 'faculty'] },
+    { key: 'room', label: 'Room', hint: 'Optional, e.g. Room 301', sample: 'Room 301', required: false, aliases: ['classroom'] },
+    { key: 'max_slots', label: 'Max Slots', hint: 'Optional whole number from 1 to 999, defaults to 40', sample: '40', required: false, aliases: ['capacity', 'slots'] },
+    { key: 'schedule_days', label: 'Schedule Days', hint: 'Optional - days separated by commas, full or short names (Mon, Tue, Wed, Thu, Fri, Sat, Sun), e.g. Monday, Wednesday', sample: 'Monday, Wednesday', required: false, aliases: ['days', 'day'] },
+    { key: 'schedule_time_start', label: 'Schedule Start Time', hint: 'Required with schedule days - 24-hour HH:MM, e.g. 08:00', sample: '08:00', required: false, aliases: ['start_time', 'time_start'] },
+    { key: 'schedule_time_end', label: 'Schedule End Time', hint: 'Required with schedule days - 24-hour HH:MM after the start time, e.g. 10:00', sample: '10:00', required: false, aliases: ['end_time', 'time_end'] },
+    { key: 'schedule_room', label: 'Schedule Room', hint: 'Optional, defaults to Room', sample: 'Room 301', required: false },
+    { key: 'grading_periods', label: 'Grading Periods Schema', hint: 'Optional - Period(Component:Weight,...) separated by ; with each period totalling 100, e.g. Prelim(Quizzes:30,Class Standing:30,Major Exam:40);Midterm(Quizzes:30,Class Standing:30,Major Exam:40)', sample: '', required: false }
 ];
 
 export default function SectionManagement() {
@@ -260,15 +260,11 @@ export default function SectionManagement() {
                     faculty_email: row.faculty_email,
                     grading_periods: row.grading_periods,
                     max_slots: row.max_slots,
-                    override_grading_schema: row.override_grading_schema,
-                    program_code: row.program_code,
                     room: row.room,
                     schedule_days: row.schedule_days,
                     schedule_room: row.schedule_room,
                     schedule_time_end: row.schedule_time_end,
                     schedule_time_start: row.schedule_time_start,
-                    source_section_code: row.source_section_code,
-                    status: row.status,
                     term_label: row.term_label
                 })}
                 onSuccess={function() {

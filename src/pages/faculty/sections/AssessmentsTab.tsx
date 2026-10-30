@@ -1,20 +1,16 @@
-import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import AssessmentWizardModal from '@pages/faculty/sections/assessments/builder/AssessmentWizardModal';
 import DuplicateToSectionsModal from '@pages/shared/content/DuplicateToSectionsModal';
 import RubricsTab from '@pages/faculty/sections/rubrics/RubricsTab';
 import {
     CalendarBlankIcon,
-    CheckCircleIcon,
     CopySimpleIcon,
     EyeIcon,
     EyeSlashIcon,
-    FilesIcon,
     ListChecksIcon,
     NotepadIcon,
     PencilSimpleIcon,
     PlusIcon,
-    QuestionIcon,
     TrashIcon
 } from '@phosphor-icons/react';
 import {
@@ -27,15 +23,6 @@ import {
 import { AssessmentListRow, AssessmentType } from '@type/assessment.type';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const TYPE_VARIANT_MAP: Record<AssessmentType, 'success' | 'error' | 'warning' | 'info'> = {
-    Quiz: 'info',
-    Exam: 'error',
-    Activity: 'success',
-    Assignment: 'warning',
-    Project: 'info',
-    'Lab Report': 'info'
-};
 
 const TYPE_COLOR_MAP: Record<AssessmentType, { bg: string; text: string; border: string }> = {
     Quiz: { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-800' },

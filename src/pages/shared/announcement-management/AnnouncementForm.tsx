@@ -97,14 +97,14 @@ export default function AnnouncementForm({
     });
 
     const {
-        field: { value: contentValue = '', onChange: setContent }
+        field: { onChange: setContent }
     } = useController({
         control,
         name: 'content'
     });
 
     const {
-        field: { value: descriptionValue = '', onChange: setDescription }
+        field: { onChange: setDescription }
     } = useController({
         control,
         name: 'description'
@@ -203,7 +203,7 @@ export default function AnnouncementForm({
                 ? undefined
                 : {
                     required: 'Title is required',
-                    validate: (val: any) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only'
+                    validate: (val: unknown) => Boolean(val && String(val).trim()) || 'Title cannot be empty or whitespace only'
                 },
             type: 'text'
         },
@@ -372,7 +372,7 @@ export default function AnnouncementForm({
                     ? undefined
                     : {
                         required: `${itemType === 'Event' ? 'Description' : 'Content'} is required`,
-                        validate: (val: any) => Boolean(val && String(val).replace(/<[^>]*>/g, '').trim()) || `${itemType === 'Event' ? 'Description' : 'Content'} cannot be empty or whitespace only`
+                        validate: (val: unknown) => Boolean(val && String(val).replace(/<[^>]*>/g, '').trim()) || `${itemType === 'Event' ? 'Description' : 'Content'} cannot be empty or whitespace only`
                     }}
                 onChange={handleEditorChange}
             />

@@ -1,5 +1,4 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
-import CommonButton from '@components/button/CommonButton';
 import CommonInput from '@components/input/CommonInput';
 import PageLoadingFallback from '@components/loading/PageLoadingFallback';
 import CommonActionModal from '@components/modal/CommonActionModal';

@@ -238,7 +238,7 @@ const CommonInput = forwardRef<HTMLDivElement, CommonInputProps>(({
         >
             {label && (
                 <FormLabel
-                    className={classMerge('tw_body_small_bold', labelClassName)}
+                    className={labelClassName}
                     defaultOpenErrorTooltip={defaultOpenErrorTooltip ?? isFirstError}
                     description={labelDescription}
                     errorMessage={labelErrorMessage}

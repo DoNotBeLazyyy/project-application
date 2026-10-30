@@ -20,14 +20,6 @@ export default function RegistrarLogDetailContent({ row }: RegistrarLogDetailCon
         (key) => String(oldValues[key] || '') !== String(newValues[key] || '')
     );
 
-    const actionColor = row.action.includes('APPROVED')
-        ? 'success'
-        : row.action.includes('REJECTED') || row.action.includes('FALSE_INFO')
-            ? 'error'
-            : row.action.includes('REQUESTED')
-                ? 'warning'
-                : 'primary';
-
     return (
         <div className="flex flex-col gap-4 p-4 pt-0 text-xs">
             {/* Header Meta */}

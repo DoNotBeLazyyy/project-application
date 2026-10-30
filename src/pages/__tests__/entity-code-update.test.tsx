@@ -4,14 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 import DepartmentForm from '@pages/admin/department-management/DepartmentForm';
 import ProgramLevelForm from '@pages/dean/program-management/level/ProgramLevelForm';
 import CourseTypeForm from '@pages/dean/course-management/type/CourseTypeForm';
-import TermTypeForm from '@pages/admin/term-management/type/TermTypeForm';
 import RoleForm from '@pages/admin/role-management/RoleForm';
-import SpecialGradeForm from '@pages/admin/grading-config-management/SpecialGradeForm';
 import { updateDepartment } from '@services/department.service';
 import { updateProgram } from '@services/program/program.service';
 import { updateProgramLevel } from '@services/program/program-level.service';
 import { updateCourseType } from '@services/course/course-type.service';
-import { updateTermType } from '@services/term/term-type.service';
 import { updateRole } from '@services/role.service';
 import * as supabaseWrapper from '@services/supabase.wrapper';
 
@@ -138,37 +135,6 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
         });
     });
 
-    describe('TermTypeForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
-            return (
-                <TermTypeForm
-                    control={methods.control}
-                    isCreate={isCreate}
-                    setValue={methods.setValue}
-                />
-            );
-        }
-
-        it('updates term type code in edit mode when label is changed', () => {
-            const { container } = render(
-                <TestWrapper
-                    initialValues={{ code: 'SEM-1', description: '', label: '1st Semester', sequence: 1 }}
-                    isCreate={false}
-                />
-            );
-            const labelInput = container.querySelector('input[name="label"]') as HTMLInputElement;
-            const codeInput = container.querySelector('input[name="code"]') as HTMLInputElement;
-
-            expect(codeInput.value).toBe('SEM-1');
-
-            act(() => {
-                fireEvent.change(labelInput, { target: { value: '2nd Semester' } });
-            });
-            expect(codeInput.value).toBe('SEM-2');
-        });
-    });
-
     describe('RoleForm', () => {
         function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
             const methods = useForm({ defaultValues: initialValues });
@@ -197,42 +163,6 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
                 fireEvent.change(labelInput, { target: { value: 'Department Head' } });
             });
             expect(codeInput.value).toBe('DEPARTMENT_HEAD');
-        });
-    });
-
-    describe('SpecialGradeForm', () => {
-        function TestWrapper({ isCreate, initialValues }: { isCreate: boolean; initialValues: any }) {
-            const methods = useForm({ defaultValues: initialValues });
-            return (
-                <SpecialGradeForm
-                    control={methods.control}
-                    isCreate={isCreate}
-                    setValue={methods.setValue}
-                />
-            );
-        }
-
-        it('updates special grade code in edit mode when label is changed', () => {
-            const { container } = render(
-                <TestWrapper
-                    initialValues={{
-                        code: 'INC',
-                        conditions: { all: [] },
-                        description: 'Incomplete grade',
-                        label: 'Incomplete'
-                    }}
-                    isCreate={false}
-                />
-            );
-            const labelInput = container.querySelector('input[name="label"]') as HTMLInputElement;
-            const codeInput = container.querySelector('input[name="code"]') as HTMLInputElement;
-
-            expect(codeInput.value).toBe('INC');
-
-            act(() => {
-                fireEvent.change(labelInput, { target: { value: 'Dropped' } });
-            });
-            expect(codeInput.value).toBe('DRP');
         });
     });
 
@@ -289,17 +219,6 @@ describe('Entity Code Auto-Update on Name/Label Change', () => {
 
             expect(callRpcSpy).toHaveBeenCalledWith('fn_update_course_type', expect.objectContaining({
                 p_code: 'TUT'
-            }));
-
-            await updateTermType('tt-1', {
-                code: '',
-                description: '',
-                label: 'Summer',
-                sequence: '3'
-            });
-
-            expect(callRpcSpy).toHaveBeenCalledWith('fn_update_term_type', expect.objectContaining({
-                p_code: 'SUMMER'
             }));
 
             await updateRole('r-1', {

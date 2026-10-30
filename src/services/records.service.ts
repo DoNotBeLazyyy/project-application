@@ -2,10 +2,7 @@ import { callRpc } from '@services/supabase.wrapper';
 import {
     CreditCoursePayload,
     CurriculumAudit,
-    ProgramShiftFormValues,
-    StatusChangeFormValues,
     StudentCurriculumCreditingResponse,
-    StudentLifecycleEvent,
     StudentTranscript
 } from '@type/records.type';
 import { ServiceResult } from '@type/service.type';
@@ -23,26 +20,6 @@ export async function getStudentTranscript(
 ): Promise<ServiceResult<StudentTranscript>> {
     return callRpc<StudentTranscript>('fn_get_student_transcript', {
         p_student_id: studentId ?? null
-    });
-}
-
-export async function listStudentLifecycleEvents(
-    studentId?: string
-): Promise<ServiceResult<StudentLifecycleEvent[]>> {
-    return callRpc<StudentLifecycleEvent[]>('fn_list_student_lifecycle_events', {
-        p_student_id: studentId ?? null
-    });
-}
-
-export async function changeStudentStatus(
-    studentId: string,
-    values: StatusChangeFormValues
-): Promise<ServiceResult<null>> {
-    return callRpc<null>('fn_change_student_status', {
-        p_effective_date: values.effective_date || null,
-        p_reason: values.reason || null,
-        p_status: values.status,
-        p_student_id: studentId
     });
 }
 

@@ -138,46 +138,6 @@ export async function callRpc<T>(
     }
 }
 
-export async function callQuery<T>(
-    queryFn: QueryBuilderFn,
-    options?: CallRpcOptions
-): Promise<ServiceResult<T[]>> {
-    const isSilent = isSilentCall(options);
-    const isBackground = isBackgroundCall(options);
-
-    if (!isBackground) {
-        useLoadingStore.getState()
-            .show();
-    }
-    try {
-        const { data, error, status } = await queryFn(supabase);
-        if (error) {
-            if (shouldRedirectToLogin(status, error)) {
-                handleAuthFailure();
-            }
-            const parsed = parseServiceError(error);
-            if (!isSilent) {
-                notify(parsed.message, 'error');
-            }
-            return { data: null, error: parsed };
-        }
-        return { data: data as T[], error: null };
-    }
-    catch (err) {
-        const parsed = parseServiceError(err);
-        if (!isSilent) {
-            notify(parsed.message, 'error');
-        }
-        return { data: null, error: parsed };
-    }
-    finally {
-        if (!isBackground) {
-            useLoadingStore.getState()
-                .hide();
-        }
-    }
-}
-
 export async function callStorage<T>(
     operation: () => Promise<ServiceResult<T>>,
     options?: CallRpcOptions

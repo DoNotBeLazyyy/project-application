@@ -85,19 +85,6 @@ export interface FormErrorEventDetail {
     firstErrorField?: string;
 }
 
-function scrollFieldIntoView(name: string): void {
-    if (typeof document === 'undefined') {
-        return;
-    }
-
-    const escaped = name.replace(/\./g, '\\.');
-    const field = document.querySelector(`[name="${name}"], [id="${name}"], [name="${escaped}"], #${escaped}`);
-
-    if (field instanceof HTMLElement) {
-        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-}
-
 export function announceFormError(detail: FormErrorEventDetail): void {
     if (typeof window === 'undefined' || typeof window.CustomEvent !== 'function') {
         return;
@@ -221,6 +208,57 @@ export function formErrors<T extends FieldValues>(
     }
 }
 
+/**
+ * Validates one wizard step: triggers only the given fields and, when any of
+ * them is invalid, focuses and scrolls to the first one in the order given.
+ *
+ * Pass the step's fields in the order they appear on screen. A field-array
+ * name (`terms`) validates every row; its first invalid row is located from
+ * the error tree.
+ *
+ * @param methods - The form's `useForm` return.
+ * @param names - The step's field names, in display order.
+ * @returns Whether every given field is valid.
+ */
+export async function validateStepFields<T extends FieldValues>(
+    methods: UseFormReturn<T>,
+    names: Path<T>[]
+): Promise<boolean> {
+    const isValid = await methods.trigger(names);
+
+    if (isValid) {
+        return true;
+    }
+
+    const { errors } = methods.formState;
+    const errorList = checkForMessage<T>(errors).list;
+    let firstError: ErrorMessageProps<T> | undefined;
+
+    for (const name of names) {
+        firstError = errorList.find(function(entry) {
+            return entry.key === name || entry.key.startsWith(`${name}.`);
+        });
+
+        if (firstError) {
+            break;
+        }
+    }
+
+    if (!firstError) {
+        formErrors(errors, methods);
+        return false;
+    }
+
+    focusAndOpenFirstErrorField(firstError.key, methods);
+    announceFormError({
+        count: errorList.length,
+        message: firstError.message ?? 'Please complete the required fields.',
+        firstErrorField: firstError.key
+    });
+
+    return false;
+}
+
 export function checkForMessage<T extends FieldValues>(
     errors: FieldErrors,
     path = ''
@@ -236,6 +274,23 @@ export function checkForMessage<T extends FieldValues>(
                     ? '.'
                     : '';
                 walk(err[i], `${currentPath}${pathPrefix}${i}`);
+            }
+
+            // A field-array rule (e.g. "add at least one row") lands on the array's `root`
+            const rootError = (err as unknown as { root?: { message?: unknown; type?: unknown } }).root;
+            if (rootError && typeof rootError === 'object' && ('message' in rootError || 'type' in rootError)) {
+                const rootEntry: ErrorMessageProps<T> = {
+                    key: currentPath as Path<T>,
+                    message: typeof rootError.message === 'string' && rootError.message.trim().length > 0
+                        ? rootError.message
+                        : `${formatFieldLabel(currentPath)} is required.`
+                };
+
+                count++;
+                list.push(rootEntry);
+                if (!firstError) {
+                    firstError = rootEntry;
+                }
             }
         }
         else if (err && typeof err === 'object') {

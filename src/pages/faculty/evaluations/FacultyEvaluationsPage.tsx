@@ -1,6 +1,7 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
 import CommonCard from '@components/card/CommonCard';
+import CommonInput from '@components/input/CommonInput';
 import CommonProgressBar from '@components/progress-bar/CommonProgressBar';
 import CommonSelect from '@components/select/CommonSelect';
 import CommonTabMenu from '@components/tab-menu/CommonTabMenu';
@@ -8,7 +9,6 @@ import InsightStatTile from '@pages/shared/analytics/InsightStatTile';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import {
     ArrowClockwiseIcon,
@@ -19,8 +19,7 @@ import {
     MagnifyingGlassIcon,
     QuotesIcon,
     StarIcon,
-    TrendUpIcon,
-    XIcon
+    TrendUpIcon
 } from '@phosphor-icons/react';
 import { getFacultyEvaluationSummary } from '@services/faculty.service';
 import { FacultyEvaluationSummary } from '@type/faculty.type';
@@ -347,19 +346,13 @@ export default function FacultyEvaluationsPage() {
                     />
 
                     {/* Text Search Field */}
-                    <TextField
+                    <CommonInput
                         fullWidth
+                        hasClearButton
                         placeholder="Search feedback, questions..."
                         size="small"
                         slotProps={{
                             input: {
-                                endAdornment: searchQuery ? (
-                                    <InputAdornment position="end">
-                                        <IconButton size="small" onClick={() => setSearchQuery('')}>
-                                            <XIcon size={14} />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ) : null,
                                 startAdornment: (
                                     <InputAdornment position="start">
                                         <MagnifyingGlassIcon className="text-(--mui-palette-text-secondary)" size={18} />
@@ -368,8 +361,8 @@ export default function FacultyEvaluationsPage() {
                             }
                         }}
                         value={searchQuery}
-                        variant="outlined"
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onClear={() => setSearchQuery('')}
                     />
                 </div>
 

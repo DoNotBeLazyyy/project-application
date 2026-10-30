@@ -1,4 +1,3 @@
-import { CommonSelectOption } from '@components/select/CommonSelect';
 import { callRpc } from '@services/supabase.wrapper';
 import { AuditLogFilterOptions, AuditLogFilterValues, AuditLogRow } from '@type/audit-log.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
@@ -35,21 +34,6 @@ export async function listAuditLogs(
     });
 }
 
-// Backward-compatibility alias
-export async function listGradeAuditLogs(
-    page: number,
-    size: number,
-    search: string,
-    sort: SortStringDto[],
-    filters: AuditLogFilterValues | null
-): Promise<ServiceResult<CommonListResDto<AuditLogRow>>> {
-    return listAuditLogs(page, size, search, sort, filters);
-}
-
 export async function getAuditLogFilters(): Promise<ServiceResult<AuditLogFilterOptions>> {
     return callRpc<AuditLogFilterOptions>('fn_get_audit_log_filters');
-}
-
-export async function getAuditLogTables(): Promise<ServiceResult<CommonSelectOption[]>> {
-    return callRpc<CommonSelectOption[]>('fn_get_audit_log_tables');
 }

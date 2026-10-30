@@ -10,7 +10,6 @@ import {
     ChalkboardTeacherIcon,
     CheckCircleIcon,
     GraduationCapIcon,
-    InfoIcon,
     TrendUpIcon,
     WarningCircleIcon
 } from '@phosphor-icons/react';
@@ -174,16 +173,6 @@ export default function GradeBreakdownPage() {
 
             {breakdown && (
                 <>
-                    {breakdown.is_published === false && (
-                        <div className="border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-4 rounded-xl flex items-center gap-3 text-xs text-slate-800 dark:text-slate-200">
-                            <InfoIcon size={24} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                            <div>
-                                <span className="font-semibold block text-sm text-blue-900 dark:text-blue-200">Grade Pending Official Release</span>
-                                <span className="text-blue-700/80 dark:text-blue-300/80">Official grades for this period have not yet been published by the Registrar. Computed marks below are indicative drafts.</span>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Metric Cards Grid */}
                     <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                         <GradeMetricCard

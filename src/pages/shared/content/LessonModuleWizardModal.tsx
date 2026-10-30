@@ -1,19 +1,17 @@
 import CommonButton from '@components/button/CommonButton';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import FormLabel from '@components/form/FormLabel';
-import CommonInput from '@components/input/CommonInput';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import ModalStepperHeader, { ModalStepItem } from '@components/modal/ModalStepperHeader';
-import CommonSelect from '@components/select/CommonSelect';
-import CommonTextarea from '@components/textarea/CommonTextarea';
 import { useObjectDraft } from '@hooks/useFormDraft';
+import { isBlankText, MATERIAL_URL_PATTERN } from '@pages/shared/content/content-form.constant';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
-    ArrowSquareOutIcon,
     BookOpenIcon,
-    CheckCircleIcon,
     FileTextIcon,
     FloppyDiskIcon,
     LinkSimpleIcon,
@@ -32,9 +30,10 @@ import {
 } from '@services/content.service';
 import { uploadFile } from '@services/storage.service';
 import { useToastStore } from '@stores/toast.store';
-import { ContentModule, CourseMaterial, MaterialType } from '@type/content.type';
+import { ContentModule, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 export const LESSON_MODULE_WIZARD_STEPS: ModalStepItem[] = [
     {
@@ -61,6 +60,26 @@ const PERIOD_OPTIONS = [
     { label: 'Semi-Final Period', value: 'Semi-Final' },
     { label: 'Finals Period', value: 'Finals' }
 ];
+
+interface ModuleFormValues {
+    title: string;
+    description: string;
+    period: string;
+}
+
+interface ResourceFormValues {
+    title: string;
+    materialType: MaterialType;
+    externalUrl: string;
+    description: string;
+}
+
+const EMPTY_RESOURCE: ResourceFormValues = {
+    description: '',
+    externalUrl: '',
+    materialType: 'File',
+    title: ''
+};
 
 interface StagedMaterial {
     id: string;
@@ -91,23 +110,32 @@ export default function LessonModuleWizardModal({
 }: LessonModuleWizardModalProps) {
     const isEdit = Boolean(initialModule);
     const [currentStep, setCurrentStep] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     // Step 1 state
-    const [title, setTitle] = useState('');
-    const [titleError, setTitleError] = useState<string | null>(null);
-    const [description, setDescription] = useState('');
-    const [period, setPeriod] = useState('General');
+    const moduleForm = useForm<ModuleFormValues>({
+        defaultValues: {
+            description: '',
+            period: 'General',
+            title: ''
+        }
+    });
+    const moduleValues = useWatch({ control: moduleForm.control });
+    const title = moduleValues.title ?? '';
+    const description = moduleValues.description ?? '';
+    const period = moduleValues.period ?? 'General';
     const [isPublished, setIsPublished] = useState(true);
 
     // Step 2 state (materials)
     const [stagedMaterials, setStagedMaterials] = useState<StagedMaterial[]>([]);
-    const [newMaterialTitle, setNewMaterialTitle] = useState('');
-    const [newMaterialDesc, setNewMaterialDesc] = useState('');
-    const [newMaterialType, setNewMaterialType] = useState<MaterialType>('File');
-    const [newMaterialUrl, setNewMaterialUrl] = useState('');
+    const resourceForm = useForm<ResourceFormValues>({ defaultValues: EMPTY_RESOURCE });
+    const resourceValues = useWatch({ control: resourceForm.control });
+    const newMaterialTitle = resourceValues.title ?? '';
+    const newMaterialDesc = resourceValues.description ?? '';
+    const newMaterialType = resourceValues.materialType ?? 'File';
+    const newMaterialUrl = resourceValues.externalUrl ?? '';
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [fileError, setFileError] = useState<string | null>(null);
     const [isAddingMaterial, setIsAddingMaterial] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,9 +173,9 @@ export default function LessonModuleWizardModal({
         values: currentDraftValues,
         defaultValues: defaultDraftValues,
         onRestore: (restored) => {
-            setTitle(restored.title ?? '');
-            setDescription(restored.description ?? '');
-            setPeriod(restored.period ?? 'General');
+            moduleForm.setValue('title', restored.title ?? '');
+            moduleForm.setValue('description', restored.description ?? '');
+            moduleForm.setValue('period', restored.period ?? 'General');
             setIsPublished(restored.isPublished ?? true);
         },
         enabled: open && !readOnly
@@ -180,15 +208,18 @@ export default function LessonModuleWizardModal({
 
     const hasRealChanges = !readOnly && (draftGuard.hasRealChanges || hasMaterialsChanges);
 
+    const { reset: resetModuleForm } = moduleForm;
+    const { reset: resetResourceForm } = resourceForm;
+
     useEffect(() => {
-        setTitleError(null);
+        resetResourceForm(EMPTY_RESOURCE);
+        setSelectedFile(null);
+        setFileError(null);
 
         if (!open) {
             setIsDiscardOpen(false);
             setCurrentStep(1);
-            setTitle('');
-            setDescription('');
-            setPeriod('General');
+            resetModuleForm({ description: '', period: 'General', title: '' });
             setIsPublished(true);
             setStagedMaterials([]);
             setIsAddingMaterial(false);
@@ -196,10 +227,12 @@ export default function LessonModuleWizardModal({
         }
 
         if (initialModule) {
-            setTitle(initialModule.title);
-            setDescription(initialModule.description ?? '');
+            resetModuleForm({
+                description: initialModule.description ?? '',
+                period: initialPeriod,
+                title: initialModule.title
+            });
             setIsPublished(initialModule.is_published);
-            setPeriod(initialPeriod);
 
             setStagedMaterials(
                 (initialModule.materials || []).map((m) => ({
@@ -212,13 +245,89 @@ export default function LessonModuleWizardModal({
                 }))
             );
         } else {
-            setTitle('');
-            setDescription('');
-            setPeriod('General');
+            resetModuleForm({ description: '', period: 'General', title: '' });
             setIsPublished(true);
             setStagedMaterials([]);
         }
-    }, [open, initialModule, initialPeriod]);
+    }, [open, initialModule, initialPeriod, resetModuleForm, resetResourceForm]);
+
+    const moduleFields: FormFieldConfig<ModuleFormValues>[] = [
+        {
+            disabled: readOnly,
+            placeholder: 'e.g. Course Syllabus & Overview or Week 1: Algorithm Analysis',
+            gridCols: 2,
+            label: 'Module Title',
+            name: 'title',
+            rules: readOnly
+                ? undefined
+                : {
+                    required: 'Please enter a module title.',
+                    validate: (value: unknown) => !isBlankText(value) || 'Module title cannot be empty or whitespace only'
+                },
+            type: 'text'
+        },
+        {
+            disabled: readOnly,
+            fieldProps: { helperText: 'Students can filter their learning content by grading period.' },
+            label: 'Target Grading Period / Scope',
+            name: 'period',
+            options: PERIOD_OPTIONS,
+            type: 'select'
+        },
+        {
+            disabled: readOnly,
+            fieldProps: { maxLength: 1000 },
+            placeholder: 'Outline the key concepts, learning goals, chapter readings, or activity guide for this module...',
+            gridCols: 2,
+            label: 'Description & Learning Objectives',
+            name: 'description',
+            type: 'text-area'
+        }
+    ];
+
+    const resourceFields: FormFieldConfig<ResourceFormValues>[] = [
+        {
+            placeholder: 'e.g. Official Course Syllabus (AY 2025-2026)',
+            gridCols: 2,
+            label: 'Resource Title',
+            name: 'title',
+            rules: {
+                required: 'Resource title is required',
+                validate: (value: unknown) => !isBlankText(value) || 'Resource title cannot be empty or whitespace only'
+            },
+            type: 'text'
+        },
+        {
+            label: 'Resource Type',
+            name: 'materialType',
+            options: MATERIAL_TYPE_OPTIONS,
+            rules: { required: 'Resource type is required' },
+            type: 'select'
+        },
+        ...(newMaterialType === 'Link'
+            ? [
+                {
+                    placeholder: 'https://...',
+                    label: 'External URL',
+                    name: 'externalUrl' as const,
+                    rules: {
+                        pattern: MATERIAL_URL_PATTERN,
+                        required: 'URL is required for link resources',
+                        validate: (value: unknown) => !isBlankText(value) || 'URL is required for link resources'
+                    },
+                    type: 'text' as const
+                }
+            ]
+            : []),
+        {
+            fieldProps: { maxLength: 500 },
+            placeholder: 'Optional instructions or reading guide for this file...',
+            gridCols: 2,
+            label: 'Description & Notes',
+            name: 'description',
+            type: 'text-area'
+        }
+    ];
 
     function handleRequestClose() {
         if (hasRealChanges) {
@@ -236,94 +345,88 @@ export default function LessonModuleWizardModal({
     }
 
     function handleResetMaterialForm() {
-        setNewMaterialTitle('');
-        setNewMaterialDesc('');
-        setNewMaterialType('File');
-        setNewMaterialUrl('');
+        resetResourceForm(EMPTY_RESOURCE);
         setSelectedFile(null);
+        setFileError(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         setIsAddingMaterial(false);
     }
 
-    function handleAddStagedMaterial() {
-        if (!newMaterialTitle.trim()) return;
+    /**
+     * Validates the open resource form (fields plus the file picker) and stages it.
+     * Returns false - leaving the inline errors visible - when anything is invalid.
+     */
+    async function stageResourceIfValid(): Promise<boolean> {
+        const isFieldsValid = await resourceForm.trigger();
+        const values = resourceForm.getValues();
+        const needsFile = values.materialType !== 'Link';
+        const isFileValid = !needsFile || Boolean(selectedFile);
 
-        if (newMaterialType === 'Link' && !newMaterialUrl.trim()) {
-            useToastStore.getState().showToast('Please provide a valid URL for the link resource.', 'error');
-            return;
-        }
+        setFileError(isFileValid
+            ? null
+            : 'Choose a file to upload');
 
-        if (newMaterialType !== 'Link' && !selectedFile) {
-            useToastStore.getState().showToast('Please choose a file to upload.', 'error');
-            return;
+        if (!isFieldsValid || !isFileValid) {
+            return false;
         }
 
         const newStaged: StagedMaterial = {
             id: generateId(),
-            title: newMaterialTitle.trim(),
-            description: newMaterialDesc.trim(),
-            material_type: newMaterialType,
-            external_url: newMaterialType === 'Link' ? newMaterialUrl.trim() : undefined,
-            file: selectedFile || undefined,
+            title: values.title.trim(),
+            description: values.description.trim(),
+            material_type: values.materialType,
+            external_url: needsFile ? undefined : values.externalUrl.trim(),
+            file: needsFile ? selectedFile || undefined : undefined,
             isExisting: false
         };
 
         setStagedMaterials((prev) => [...prev, newStaged]);
         handleResetMaterialForm();
         useToastStore.getState().showToast(`Added "${newStaged.title}" to module.`, 'success');
+        return true;
+    }
+
+    async function handleAddStagedMaterial() {
+        await stageResourceIfValid();
     }
 
     function handleRemoveMaterial(id: string) {
         setStagedMaterials((prev) => prev.filter((m) => m.id !== id));
     }
 
-    function validateStep1(): boolean {
-        if (!title.trim()) {
-            setTitleError('Please enter a module title.');
+    async function validateStep1(): Promise<boolean> {
+        const isValid = await moduleForm.trigger();
+        if (!isValid) {
             setCurrentStep(1);
-            return false;
         }
-        setTitleError(null);
-        return true;
+        return isValid;
     }
 
-    function commitPendingMaterialIfValid(): boolean {
-        if (!isAddingMaterial || !newMaterialTitle.trim()) {
+    async function commitPendingMaterialIfValid(): Promise<boolean> {
+        if (!isAddingMaterial) {
             return true;
         }
 
-        if (newMaterialType === 'Link') {
-            if (!newMaterialUrl.trim()) {
-                useToastStore.getState().showToast('Please provide a valid URL for the link resource, or cancel the resource form.', 'error');
-                return false;
-            }
-        } else if (!selectedFile) {
-            useToastStore.getState().showToast('Please choose a file to attach to your resource, or cancel the resource form.', 'error');
-            return false;
+        // An untouched resource form is simply discarded rather than blocking the step.
+        const isUntouched = !newMaterialTitle.trim()
+            && !newMaterialDesc.trim()
+            && !newMaterialUrl.trim()
+            && !selectedFile;
+
+        if (isUntouched) {
+            handleResetMaterialForm();
+            return true;
         }
 
-        const newStaged: StagedMaterial = {
-            id: generateId(),
-            title: newMaterialTitle.trim(),
-            description: newMaterialDesc.trim(),
-            material_type: newMaterialType,
-            external_url: newMaterialType === 'Link' ? newMaterialUrl.trim() : undefined,
-            file: selectedFile || undefined,
-            isExisting: false
-        };
-
-        setStagedMaterials((prev) => [...prev, newStaged]);
-        handleResetMaterialForm();
-        useToastStore.getState().showToast(`Added "${newStaged.title}" to module.`, 'success');
-        return true;
+        return stageResourceIfValid();
     }
 
-    function handleNext() {
+    async function handleNext() {
         if (currentStep === 1) {
-            if (!validateStep1()) return;
+            if (!(await validateStep1())) return;
             setCurrentStep(2);
         } else if (currentStep === 2) {
-            if (!commitPendingMaterialIfValid()) return;
+            if (!(await commitPendingMaterialIfValid())) return;
             setCurrentStep(3);
         }
     }
@@ -334,7 +437,7 @@ export default function LessonModuleWizardModal({
         }
     }
 
-    function handleStepClick(stepNumber: number) {
+    async function handleStepClick(stepNumber: number) {
         if (stepNumber === currentStep) return;
         if (readOnly) {
             setCurrentStep(stepNumber);
@@ -344,14 +447,14 @@ export default function LessonModuleWizardModal({
             setCurrentStep(stepNumber);
             return;
         }
-        if (currentStep === 1 && !validateStep1()) return;
-        if (currentStep === 2 && !commitPendingMaterialIfValid()) return;
+        if (currentStep === 1 && !(await validateStep1())) return;
+        if (currentStep === 2 && !(await commitPendingMaterialIfValid())) return;
         setCurrentStep(stepNumber);
     }
 
     async function handleSaveModule() {
-        if (!validateStep1()) return;
-        if (currentStep === 2 && !commitPendingMaterialIfValid()) return;
+        if (!(await validateStep1())) return;
+        if (currentStep === 2 && !(await commitPendingMaterialIfValid())) return;
 
         setIsSaving(true);
         try {
@@ -372,7 +475,8 @@ export default function LessonModuleWizardModal({
             } else {
                 const res = await createModule(sectionId, finalTitle, description.trim() || null);
                 if (res.error || !res.data) return;
-                moduleId = (res.data as any).id || (res.data as any).module_id;
+                const created = res.data as unknown as { id?: string; module_id?: string };
+                moduleId = created.id || created.module_id;
                 if (!isPublished && moduleId) {
                     await setModulePublished(moduleId, false);
                 }
@@ -502,40 +606,20 @@ export default function LessonModuleWizardModal({
                 {currentStep === 1 && (
                     <div className="flex flex-col gap-4">
                         <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-2xs flex flex-col gap-4">
+                            <CommonForm
+                                component="div"
+                                containerClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                control={moduleForm.control}
+                                enableDraftRecovery={false}
+                                fields={moduleFields}
+                            />
+
                             <div>
-                                <CommonInput
-                                    error={Boolean(titleError)}
-                                    fullWidth
-                                    helperText={titleError ?? undefined}
-                                    isRequired
-                                    label="Module Title"
-                                    placeholder="e.g. Course Syllabus & Overview or Week 1: Algorithm Analysis"
-                                    size="small"
-                                    value={title}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        setTitle(e.target.value);
-                                        if (titleError) setTitleError(null);
-                                    }}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <CommonSelect
-                                        containerClassName="w-full"
-                                        description="Students can filter their learning content by grading period."
-                                        fullWidth
-                                        label="Target Grading Period / Scope"
-                                        options={PERIOD_OPTIONS}
-                                        value={period}
-                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setPeriod(e.target.value)}
-                                    />
-                                </div>
-
                                 <div>
                                     <FormLabel label="Publication Status" />
                                     <div className="flex items-center gap-3 mt-2">
                                         <button
+                                            disabled={readOnly}
                                             type="button"
                                             onClick={() => setIsPublished(true)}
                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
@@ -547,6 +631,7 @@ export default function LessonModuleWizardModal({
                                             Published (Visible to Students)
                                         </button>
                                         <button
+                                            disabled={readOnly}
                                             type="button"
                                             onClick={() => setIsPublished(false)}
                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
@@ -559,18 +644,6 @@ export default function LessonModuleWizardModal({
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div>
-                                <CommonTextarea
-                                    label="Description & Learning Objectives"
-                                    maxLength={1000}
-                                    placeholder="Outline the key concepts, learning goals, chapter readings, or activity guide for this module..."
-                                    value={description}
-                                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                                        setDescription(e.target.value)
-                                    }
-                                />
                             </div>
                         </div>
                     </div>
@@ -601,78 +674,46 @@ export default function LessonModuleWizardModal({
 
                             {isAddingMaterial ? (
                                 <div className="border border-slate-200 dark:border-zinc-700 bg-slate-50/60 dark:bg-zinc-800/50 p-4 rounded-xl flex flex-col gap-3">
-                                    <div>
-                                        <CommonInput
-                                            fullWidth
-                                            label="Resource Title"
-                                            placeholder="e.g. Official Course Syllabus (AY 2025-2026)"
-                                            required
-                                            size="small"
-                                            value={newMaterialTitle}
-                                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterialTitle(e.target.value)}
-                                        />
-                                    </div>
+                                    <CommonForm
+                                        component="div"
+                                        containerClassName="grid grid-cols-1 md:grid-cols-2 gap-3"
+                                        control={resourceForm.control}
+                                        enableDraftRecovery={false}
+                                        fields={resourceFields}
+                                    />
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <CommonSelect
-                                                fullWidth
-                                                label="Resource Type"
-                                                options={MATERIAL_TYPE_OPTIONS}
-                                                value={newMaterialType}
-                                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                                    setNewMaterialType(e.target.value as MaterialType)
-                                                }
+                                    {newMaterialType !== 'Link' && (
+                                        <div className="flex flex-col gap-1">
+                                            <FormLabel
+                                                errorMessage={fileError ?? undefined}
+                                                isRequired
+                                                label="File Attachment"
                                             />
+                                            <input
+                                                className="hidden"
+                                                ref={fileInputRef}
+                                                type="file"
+                                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                    const file = e.target.files?.[0] ?? null;
+                                                    setSelectedFile(file);
+                                                    if (file) setFileError(null);
+                                                }}
+                                            />
+                                            <CommonButton
+                                                color={fileError ? 'error' : 'inherit'}
+                                                startIcon={<UploadSimpleIcon size={16} />}
+                                                variant="outlined"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                {selectedFile ? selectedFile.name : 'Choose Document or Slide'}
+                                            </CommonButton>
+                                            {fileError && (
+                                                <span className="text-(--mui-palette-error-main) text-xs" role="alert">
+                                                    {fileError}
+                                                </span>
+                                            )}
                                         </div>
-
-                                        {newMaterialType === 'Link' ? (
-                                            <div>
-                                                <CommonInput
-                                                    fullWidth
-                                                    label="External URL"
-                                                    placeholder="https://..."
-                                                    required
-                                                    size="small"
-                                                    value={newMaterialUrl}
-                                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterialUrl(e.target.value)}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col">
-                                                <FormLabel label="File Attachment" isRequired />
-                                                <input
-                                                    className="hidden"
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                                        setSelectedFile(e.target.files?.[0] ?? null)
-                                                    }
-                                                />
-                                                <CommonButton
-                                                    color="inherit"
-                                                    size="small"
-                                                    startIcon={<UploadSimpleIcon size={16} />}
-                                                    variant="outlined"
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                >
-                                                    {selectedFile ? selectedFile.name : 'Choose Document or Slide'}
-                                                </CommonButton>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <CommonTextarea
-                                            label="Description & Notes"
-                                            maxLength={500}
-                                            placeholder="Optional instructions or reading guide for this file..."
-                                            value={newMaterialDesc}
-                                            onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                                                setNewMaterialDesc(e.target.value)
-                                            }
-                                        />
-                                    </div>
+                                    )}
 
                                     <div className="flex gap-2 justify-end pt-1">
                                         <CommonButton
@@ -684,7 +725,6 @@ export default function LessonModuleWizardModal({
                                             Cancel
                                         </CommonButton>
                                         <CommonButton
-                                            disabled={!newMaterialTitle.trim()}
                                             size="small"
                                             variant="contained"
                                             onClick={handleAddStagedMaterial}

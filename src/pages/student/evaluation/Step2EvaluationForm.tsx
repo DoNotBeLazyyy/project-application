@@ -4,7 +4,7 @@ import EvaluationQuestionField from '@pages/student/evaluation/EvaluationQuestio
 import EvaluationRatingMatrix, { EvaluationRatingRow } from '@pages/student/evaluation/EvaluationRatingMatrix';
 import { ArrowLeftIcon, CaretDownIcon, CaretUpIcon, InfoIcon } from '@phosphor-icons/react';
 import { EvaluationAnswersForm, EvaluationForm, EvaluationSection } from '@type/evaluation.type';
-import { ReactNode, RefObject, useState } from 'react';
+import { RefObject, useState } from 'react';
 import { Control } from 'react-hook-form';
 
 export interface RenderedSection extends EvaluationSection {

@@ -30,7 +30,7 @@ import {
     SubjectGradeItem
 } from '@type/student-portal.type';
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 type SubjectTab = 'content' | 'assessments' | 'grades' | 'attendance' | 'discussion' | 'announcements';
 
@@ -47,8 +47,8 @@ export default function SubjectDetailPage() {
     const { enrollmentId = '' } = useParams<{ enrollmentId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const location = useLocation();
     const [subject, setSubject] = useState<SubjectDetail | null>(null);
+    const [isSubjectMissing, setIsSubjectMissing] = useState(false);
 
     const tabParam = searchParams.get('tab');
     const normalizedTab = tabParam === 'grading' ? 'grades' : tabParam;
@@ -64,6 +64,7 @@ export default function SubjectDetailPage() {
 
     useEffect(function() {
         setSubject(null);
+        setIsSubjectMissing(false);
         setAssessments(null);
         setAttendance(null);
         setGrades(null);
@@ -74,28 +75,31 @@ export default function SubjectDetailPage() {
 
         async function fetchSubject() {
             const result = await getSubjectDetail(enrollmentId);
-            if (result.data) {
-                setSubject(result.data);
-                const title = result.data.course_code
-                    ? `${result.data.section_code} (${result.data.course_code})`
-                    : result.data.section_code;
+            if (!result.data) {
+                // Unknown id or not this student's enrollment: the function returns null.
+                setIsSubjectMissing(true);
+                return;
+            }
+            setSubject(result.data);
+            const title = result.data.course_code
+                ? `${result.data.section_code} (${result.data.course_code})`
+                : result.data.section_code;
+            useBreadcrumbStore
+                .getState()
+                .setCustomLabel(enrollmentId, title);
+            if (result.data.enrollment_id) {
                 useBreadcrumbStore
                     .getState()
-                    .setCustomLabel(enrollmentId, title);
-                if (result.data.enrollment_id) {
-                    useBreadcrumbStore
-                        .getState()
-                        .setCustomLabel(result.data.enrollment_id, title);
-                }
-                // If the parameter was a sectionId rather than enrollmentId, smoothly sync to canonical enrollment URL
-                if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
-                    navigate(`/student/subjects/${result.data.enrollment_id}${location.search}`, { replace: true });
-                }
+                    .setCustomLabel(result.data.enrollment_id, title);
+            }
+            // If the parameter was a sectionId rather than enrollmentId, smoothly sync to canonical enrollment URL
+            if (result.data.enrollment_id && result.data.enrollment_id !== enrollmentId) {
+                navigate(`/student/subjects/${result.data.enrollment_id}${window.location.search}`, { replace: true });
             }
         }
 
         fetchSubject();
-    }, [enrollmentId, location.search, navigate]);
+    }, [enrollmentId, navigate]);
 
     useEffect(function() {
         if (!effectiveEnrollmentId) return;
@@ -159,7 +163,9 @@ export default function SubjectDetailPage() {
                             /
                         </span>
                         <h1 className="font-bold text-slate-900 dark:text-slate-100 text-base sm:text-lg tracking-tight leading-snug">
-                            {subject?.course_code ? `${subject.course_code} — ` : ''}{subject?.course_title ?? 'Loading Subject...'}
+                            {subject?.course_code ? `${subject.course_code} — ` : ''}{subject?.course_title ?? (isSubjectMissing
+                                ? 'Subject not found'
+                                : 'Loading Subject...')}
                         </h1>
                     </div>
 

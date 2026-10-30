@@ -39,14 +39,16 @@ import { useToastStore } from '@stores/toast.store';
 const CREATE_FORM_ID = 'create-curriculum-map-form';
 const UPDATE_FORM_ID = 'update-curriculum-map-form';
 
+// Rows are staged into the program's curriculum (validated by handleBulkImportCurriculum) and
+// saved through fn_bulk_create_curriculum_map. Courses may come from any department (e.g. General Education).
 const CURRICULUM_MAP_CSV_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'course_code', label: 'Course Code', hint: 'e.g. CS101', sample: 'CS101', aliases: ['course', 'code'] },
-    { key: 'year_level', label: 'Year Level', hint: 'e.g. 1', sample: '1', aliases: ['year', 'level'] },
-    { key: 'term_type_code', label: 'Term Type Code', hint: 'e.g. 1ST_SEM (optional)', sample: '1ST_SEM', required: false, aliases: ['term_type', 'semester_type'] },
-    { key: 'lecture_units', label: 'Lecture Units', hint: 'e.g. 2.0 (optional override)', sample: '2.0', required: false, aliases: ['lec_units', 'lecture'] },
-    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'e.g. 1.0 (optional override)', sample: '1.0', required: false, aliases: ['lab_units', 'lab'] },
-    { key: 'sequence', label: 'Sequence', hint: 'e.g. 1 (optional)', sample: '1', required: false, aliases: ['order', 'seq'] },
-    { key: 'is_elective', label: 'Is Elective', hint: 'true or false (optional)', sample: 'false', required: false, aliases: ['elective'] }
+    { key: 'course_code', label: 'Course Code', hint: 'Existing course code from the program department, e.g. COCS101', sample: 'COCS101', aliases: ['course', 'code'] },
+    { key: 'year_level', label: 'Year Level', hint: 'Whole number from 1 to 6, e.g. 1', sample: '1', aliases: ['year', 'level'] },
+    { key: 'term_type_code', label: 'Term Type Code', hint: 'Optional - 1ST_SEM, 2ND_SEM or SUMMER (or the term type name); defaults to the selected term', sample: '1ST_SEM', required: false, aliases: ['term_type', 'semester_type'] },
+    { key: 'lecture_units', label: 'Lecture Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '3', required: false, aliases: ['lec_units', 'lecture'] },
+    { key: 'laboratory_units', label: 'Laboratory Units', hint: 'Optional override, number of 0 or more; defaults to the course units', sample: '0', required: false, aliases: ['lab_units', 'lab'] },
+    { key: 'sequence', label: 'Sequence', hint: 'Optional whole number of 1 or more, defaults to 1', sample: '1', required: false, aliases: ['order', 'seq'] },
+    { key: 'is_elective', label: 'Is Elective', hint: 'Optional - true or false, defaults to false', sample: 'false', required: false, aliases: ['elective'] }
 ];
 
 interface CurriculumMapCsvRow {
@@ -756,30 +758,52 @@ export default function CurriculumMapManagement({
                 continue;
             }
 
+            // Mirror the curriculum_maps constraints so a bad row is rejected here instead of
+            // failing the whole program save later (year_level CHECK 1-6, smallint sequence).
+            const yearLevel = Number(row.year_level);
+            if (!Number.isInteger(yearLevel) || yearLevel < 1 || yearLevel > 6) {
+                errors.push(`Row ${rowNum}: Year Level must be a whole number from 1 to 6.`);
+                continue;
+            }
+
+            const sequenceText = (row.sequence ?? '').trim();
+            const sequence = sequenceText === ''
+                ? 1
+                : Number(sequenceText);
+            if (!Number.isInteger(sequence) || sequence < 1 || sequence > 32767) {
+                errors.push(`Row ${rowNum}: Sequence must be a whole number of 1 or more.`);
+                continue;
+            }
+
+            const unitTexts = [row.lecture_units, row.laboratory_units].map((value) => (value ?? '').trim());
+            if (unitTexts.some((value) => value !== '' && (isNaN(Number(value)) || Number(value) < 0))) {
+                errors.push(`Row ${rowNum}: Lecture and laboratory units must be numbers of 0 or more.`);
+                continue;
+            }
+
+            const electiveText = (row.is_elective ?? '').trim()
+                .toLowerCase();
+            if (electiveText !== '' && !['true', 'false', 'yes', 'no', '1', '0'].includes(electiveText)) {
+                errors.push(`Row ${rowNum}: Is Elective must be true or false.`);
+                continue;
+            }
+            const isElective = ['true', 'yes', '1'].includes(electiveText);
+
             const targetCode = row.course_code.trim()
                 .toLowerCase();
             const normalizedTarget = targetCode.replace(/[\s\-_]+/g, '');
 
-            const course = courses.find((c) => {
+            const matchesCode = (c: { code: string }) => {
                 const cCode = c.code.trim()
                     .toLowerCase();
                 const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
                 return cCode === targetCode || normalizedCCode === normalizedTarget;
-            });
+            };
+            // Other departments' courses (e.g. General Education) are allowed in a curriculum
+            const course = courses.find(matchesCode) ?? allCoursesRes.data?.find(matchesCode);
 
             if (!course) {
-                const inAnotherDept = allCoursesRes.data?.find((c) => {
-                    const cCode = c.code.trim()
-                        .toLowerCase();
-                    const normalizedCCode = cCode.replace(/[\s\-_]+/g, '');
-                    return cCode === targetCode || normalizedCCode === normalizedTarget;
-                });
-                if (inAnotherDept) {
-                    errors.push(`Row ${rowNum}: Course '${row.course_code}' does not belong to this department.`);
-                }
-                else {
-                    errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
-                }
+                errors.push(`Row ${rowNum}: Course '${row.course_code}' not found.`);
                 continue;
             }
 
@@ -806,10 +830,12 @@ export default function CurriculumMapManagement({
                         || (t as { code?: string }).code?.trim().toLowerCase() === targetCode
                         || String(t.value).trim().toLowerCase() === targetCode
                 );
-                if (matchedTermType) {
-                    termTypeId = String(matchedTermType.value);
-                    termTypeObj = matchedTermType;
+                if (!matchedTermType) {
+                    errors.push(`Row ${rowNum}: Term Type '${row.term_type_code}' not found. Use 1ST_SEM, 2ND_SEM or SUMMER (or the term type name).`);
+                    continue;
                 }
+                termTypeId = String(matchedTermType.value);
+                termTypeObj = matchedTermType;
             }
 
             if (!termTypeId && activeTermOptions.length > 0) {
@@ -842,16 +868,15 @@ export default function CurriculumMapManagement({
             if (existingIdx >= 0) {
                 workingEntries[existingIdx] = {
                     ...workingEntries[existingIdx],
-                    year_level: Number(row.year_level),
+                    year_level: yearLevel,
                     term_type_id: termTypeId,
                     term_type_label: termTypeObj?.label ?? workingEntries[existingIdx].term_type_label,
                     term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? workingEntries[existingIdx].term_type_code,
                     lecture_units: lecUnits,
                     laboratory_units: labUnits,
                     total_units: lecUnits + labUnits,
-                    sequence: Number(row.sequence || 1),
-                    is_elective: String(row.is_elective)
-                        .toLowerCase() === 'true'
+                    sequence,
+                    is_elective: isElective
                 };
             }
             else {
@@ -859,19 +884,20 @@ export default function CurriculumMapManagement({
                     id: `temp-${Date.now()}-${Math.random()}-${i}`,
                     course_id: course.id,
                     course_code: course.code,
-                    course_title: course.title,
+                    course_title: 'title' in course
+                        ? course.title
+                        : course.label.replace(/^.*? — /, ''),
                     lecture_units: lecUnits,
                     laboratory_units: labUnits,
                     total_units: lecUnits + labUnits,
-                    year_level: Number(row.year_level),
+                    year_level: yearLevel,
                     term_type_id: termTypeId,
                     term_type_label: termTypeObj?.label ?? '',
                     term_type_code: (termTypeObj as { code?: string })?.code ?? termTypeObj?.label ?? '',
                     term_type_sequence: 1,
                     school_year_id: selectedSchoolYearId || null,
-                    sequence: Number(row.sequence || 1),
-                    is_elective: String(row.is_elective)
-                        .toLowerCase() === 'true',
+                    sequence,
+                    is_elective: isElective,
                     prerequisites: []
                 };
                 workingEntries.push(newEntry);

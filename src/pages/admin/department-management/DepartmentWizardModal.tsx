@@ -14,9 +14,12 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import { DepartmentFormValues } from '@type/department.type';
-import { formErrors } from '@utils/form.util';
+import { formErrors, validateStepFields } from '@utils/form.util';
 import { useEffect, useState } from 'react';
-import { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { FieldErrors, Path, UseFormReturn } from 'react-hook-form';
+
+// Overview step fields, in display order
+const STEP_1_FIELDS: Path<DepartmentFormValues>[] = ['code', 'name', 'description'];
 
 interface DepartmentWizardModalProps {
     open: boolean;
@@ -45,7 +48,7 @@ export default function DepartmentWizardModal({
 }: DepartmentWizardModalProps) {
     const [currentStep, setCurrentStep] = useState(initialStep);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
-    const { control, handleSubmit, setValue, trigger } = methods;
+    const { control, handleSubmit, setValue } = methods;
 
     const draftGuard = useFormDraft({
         control,
@@ -65,9 +68,8 @@ export default function DepartmentWizardModal({
     async function handleNext() {
         if (currentStep === 1) {
             if (!readOnly) {
-                const isValid = await trigger(['name', 'code']);
+                const isValid = await validateStepFields(methods, STEP_1_FIELDS);
                 if (!isValid) {
-                    formErrors(methods.formState.errors, methods);
                     return;
                 }
             }
@@ -91,9 +93,8 @@ export default function DepartmentWizardModal({
             return;
         }
         if (currentStep === 1) {
-            const isValid = await trigger(['name', 'code']);
+            const isValid = await validateStepFields(methods, STEP_1_FIELDS);
             if (!isValid) {
-                formErrors(methods.formState.errors, methods);
                 return;
             }
         }

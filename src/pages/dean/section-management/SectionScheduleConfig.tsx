@@ -1,12 +1,12 @@
 import CommonButton from '@components/button/CommonButton';
 import FormLabel from '@components/form/FormLabel';
-import CommonInput from '@components/input/CommonInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
 import {
     CalendarDotsIcon, CaretDownIcon, CheckIcon, ClockIcon, PlusCircleIcon, TrashIcon
 } from '@phosphor-icons/react';
 import { DayOfWeek, SectionFormValues, SectionScheduleBlock } from '@type/section.type';
 import { useEffect, useState } from 'react';
-import { Control, useController, useFormContext, useFormState } from 'react-hook-form';
+import { Control, useController, useFormContext, useFormState, useWatch } from 'react-hook-form';
 
 const DAYS_OF_WEEK: { label: string; short: string; value: DayOfWeek }[] = [
     { label: 'Monday', short: 'Mon', value: 'Monday' },
@@ -28,7 +28,7 @@ export default function SectionScheduleConfig({
     disabled = false
 }: SectionScheduleConfigProps) {
     const {
-        field: { value: schedulesValue, onChange: onSchedulesChange }
+        field: { onChange: onSchedulesChange }
     } = useController({
         control,
         defaultValue: [
@@ -42,6 +42,8 @@ export default function SectionScheduleConfig({
         name: 'schedules'
     });
 
+    // Watched (not exact) so edits made by the per-slot time / room fields are reflected here
+    const schedulesValue = useWatch({ control, name: 'schedules' });
     const formContext = useFormContext<SectionFormValues>();
     const { errors } = useFormState({ control });
     const scheduleErrors = errors.schedules as any;
@@ -156,7 +158,9 @@ export default function SectionScheduleConfig({
                             return (
                                 <div
                                     className="bg-slate-50/50 border border-slate-200 dark:bg-zinc-900/40 dark:border-zinc-700 flex flex-col gap-3 p-3.5 rounded-xl"
-                                    key={index}
+                                    // Remount on add/remove: the per-field controllers watch their exact
+                                    // path and would otherwise keep a shifted slot's stale value
+                                    key={`${blocks.length}-${index}`}
                                 >
                                     <div className="border-b border-slate-200/60 dark:border-zinc-700/60 flex gap-2 items-center justify-between pb-2">
                                         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -206,42 +210,36 @@ export default function SectionScheduleConfig({
                                     <div className={collapsedSlots[index] ? 'hidden' : 'flex flex-col gap-3'}>
                                         {/* Time Range Inputs */}
                                         <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
-                                            <CommonInput
+                                            {/* Errors are set by the wizard's step validation and shown by the field */}
+                                            <ValidCommonInput
                                                 containerClassName="w-full"
+                                                control={control}
                                                 disabled={disabled}
-                                                error={Boolean(scheduleError?.time_start)}
-                                                helperText={scheduleError?.time_start?.message || 'Class start time'}
+                                                helperText="Class start time"
                                                 isRequired
                                                 label="Start Time"
                                                 name={`schedules.${index}.time_start`}
-                                                size="small"
                                                 type="time"
-                                                value={block.time_start || '08:00'}
-                                                onChange={(e) => handleUpdateSlot(index, { time_start: e.target.value })}
                                             />
-                                            <CommonInput
+                                            <ValidCommonInput
                                                 containerClassName="w-full"
+                                                control={control}
                                                 disabled={disabled}
-                                                error={Boolean(scheduleError?.time_end)}
-                                                helperText={scheduleError?.time_end?.message || 'Class end time'}
+                                                helperText="Class end time (must be after the start time)"
                                                 isRequired
                                                 label="End Time"
                                                 name={`schedules.${index}.time_end`}
-                                                size="small"
                                                 type="time"
-                                                value={block.time_end || '10:00'}
-                                                onChange={(e) => handleUpdateSlot(index, { time_end: e.target.value })}
                                             />
-                                            <CommonInput
+                                            <ValidCommonInput
                                                 containerClassName="w-full"
+                                                control={control}
                                                 disabled={disabled}
                                                 helperText="Specific room override (optional)"
                                                 label="Room"
+                                                name={`schedules.${index}.room`}
                                                 placeholder="e.g. Room 301"
-                                                size="small"
                                                 type="text"
-                                                value={block.room || ''}
-                                                onChange={(e) => handleUpdateSlot(index, { room: e.target.value })}
                                             />
                                         </div>
 

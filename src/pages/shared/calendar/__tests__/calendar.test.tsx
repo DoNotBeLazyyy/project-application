@@ -4,7 +4,6 @@ import { CalendarAgendaView } from '@pages/shared/calendar/CalendarAgendaView';
 import { CalendarDayEventsModal } from '@pages/shared/calendar/CalendarDayEventsModal';
 import { CalendarDayView } from '@pages/shared/calendar/CalendarDayView';
 import { CalendarEventDetailModal } from '@pages/shared/calendar/CalendarEventDetailModal';
-import { CalendarMiniMonth } from '@pages/shared/calendar/CalendarMiniMonth';
 import { CalendarMonthView } from '@pages/shared/calendar/CalendarMonthView';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { changeMonthUtil, getCalendarDays } from '@utils/calendar.util';
@@ -74,26 +73,6 @@ describe('Calendar Utility & Configuration Tests', () => {
 });
 
 describe('Calendar Component Rendering Tests', () => {
-    it('renders CalendarMiniMonth and triggers month navigation', () => {
-        const onSelectDate = vi.fn();
-        const onChangeMonth = vi.fn();
-
-        render(
-            <CalendarMiniMonth
-                date={new Date(2026, 3, 15)}
-                selectedDate={new Date(2026, 3, 15)}
-                onChangeMonth={onChangeMonth}
-                onSelectDate={onSelectDate}
-            />
-        );
-
-        expect(screen.getByText('April 2026')).toBeInTheDocument();
-
-        const nextBtn = screen.getByRole('button', { name: /next month/i });
-        fireEvent.click(nextBtn);
-        expect(onChangeMonth).toHaveBeenCalledTimes(1);
-    });
-
     it('renders CalendarMonthView, opens day events popup on click, and handles selection', () => {
         const onSelectDate = vi.fn();
         const onSelectEvent = vi.fn();

@@ -1,11 +1,11 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
 import { AnnouncementDetailModal } from '@components/modal/AnnouncementDetailModal';
 import CommonModal from '@components/modal/CommonModal';
-import CommonTextarea from '@components/textarea/CommonTextarea';
 import { useObjectDraft } from '@hooks/useFormDraft';
 import {
     CalendarBlankIcon,
@@ -22,27 +22,72 @@ import { supabase } from '@services/supabase.client';
 import { AnnouncementFeedRow } from '@type/announcement.type';
 import { formatShortDate } from '@utils/date.util';
 import { getRoleFromPath } from '@utils/role-path.util';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 
 interface SectionAnnouncementPanelProps {
     canManage?: boolean;
     sectionId: string;
 }
 
-const DEFAULT_ANNOUNCEMENT_DRAFT = {
+interface SectionAnnouncementFormValues {
+    title: string;
+    content: string;
+    isPinned: boolean;
+}
+
+const DEFAULT_ANNOUNCEMENT_DRAFT: SectionAnnouncementFormValues = {
     title: '',
     content: '',
     isPinned: false
 };
+
+function isBlank(value: unknown): boolean {
+    return !String(value ?? '').trim();
+}
+
+const COMPOSER_FIELDS: FormFieldConfig<SectionAnnouncementFormValues>[] = [
+    {
+        placeholder: 'e.g. Schedule Change for Upcoming Midterm Examination',
+        label: 'Announcement Title',
+        name: 'title',
+        rules: {
+            required: 'Title is required',
+            validate: (value: unknown) => !isBlank(value) || 'Title cannot be empty or whitespace only'
+        },
+        type: 'text'
+    },
+    {
+        fieldProps: { maxLength: 2000 },
+        placeholder: 'Write the announcement message for enrolled students...',
+        label: 'Details & Content',
+        name: 'content',
+        rules: {
+            required: 'Content is required',
+            validate: (value: unknown) => !isBlank(value) || 'Content cannot be empty or whitespace only'
+        },
+        type: 'text-area'
+    },
+    {
+        fieldProps: { label: 'Pin announcement to top of section' },
+        label: 'Pinned',
+        name: 'isPinned',
+        type: 'checkbox'
+    }
+];
 
 export default function SectionAnnouncementPanel({ canManage = true, sectionId }: SectionAnnouncementPanelProps) {
     const [announcements, setAnnouncements] = useState<AnnouncementFeedRow[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementFeedRow | null>(null);
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [isPinned, setIsPinned] = useState(false);
+    const { control, handleSubmit, reset, setValue } = useForm<SectionAnnouncementFormValues>({
+        defaultValues: DEFAULT_ANNOUNCEMENT_DRAFT
+    });
+    const composerValues = useWatch({ control });
+    const title = composerValues.title ?? '';
+    const content = composerValues.content ?? '';
+    const isPinned = Boolean(composerValues.isPinned);
     const [isPosting, setIsPosting] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -58,9 +103,9 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         values: currentDraftValues,
         defaultValues: DEFAULT_ANNOUNCEMENT_DRAFT,
         onRestore: (restored) => {
-            setTitle(restored.title ?? '');
-            setContent(restored.content ?? '');
-            setIsPinned(Boolean(restored.isPinned));
+            setValue('title', restored.title ?? '');
+            setValue('content', restored.content ?? '');
+            setValue('isPinned', Boolean(restored.isPinned));
         },
         enabled: isCreateOpen
     });
@@ -101,9 +146,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         draftGuard.clearDraft();
         setIsDiscardOpen(false);
         setIsCreateOpen(false);
-        setTitle('');
-        setContent('');
-        setIsPinned(false);
+        reset(DEFAULT_ANNOUNCEMENT_DRAFT);
         setIsPosting(false);
     }
 
@@ -115,19 +158,19 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
         resetComposer();
     }
 
-    async function handlePostAnnouncement() {
-        if (!title.trim() || !content.trim() || isPosting) return;
+    async function postAnnouncement(values: SectionAnnouncementFormValues) {
+        if (isPosting) return;
 
         setIsPosting(true);
         const result = await createAnnouncement(
             {
                 attachments: [],
-                content: content.trim(),
+                content: values.content.trim(),
                 expires_at: '',
-                is_pinned: isPinned,
+                is_pinned: Boolean(values.isPinned),
                 section_ids: [sectionId],
                 target_audience: 'Section',
-                title: title.trim()
+                title: values.title.trim()
             },
             getRoleFromPath(window.location.pathname)
         );
@@ -137,6 +180,10 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
             resetComposer();
             await loadAnnouncements();
         }
+    }
+
+    function handlePostAnnouncement() {
+        handleSubmit(postAnnouncement)();
     }
 
     async function handleConfirmDelete() {
@@ -289,42 +336,13 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                         </button>
                     </div>
 
-                    <div className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Announcement Title <span className="text-rose-500">*</span>
-                            </label>
-                            <CommonInput
-                                fullWidth
-                                placeholder="e.g. Schedule Change for Upcoming Midterm Examination"
-                                size="small"
-                                value={title}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Details & Content <span className="text-rose-500">*</span>
-                            </label>
-                            <CommonTextarea
-                                maxLength={2000}
-                                placeholder="Write the announcement message for enrolled students..."
-                                value={content}
-                                onChange={(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setContent(e.target.value)}
-                            />
-                        </div>
-
-                        <label className="flex gap-2 items-center text-slate-600 dark:text-slate-400 text-xs cursor-pointer select-none pt-1">
-                            <input
-                                checked={isPinned}
-                                type="checkbox"
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setIsPinned(e.target.checked)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
-                            />
-                            <span>Pin announcement to top of section</span>
-                        </label>
-                    </div>
+                    <CommonForm
+                        component="div"
+                        containerClassName="flex flex-col gap-3"
+                        control={control}
+                        enableDraftRecovery={false}
+                        fields={COMPOSER_FIELDS}
+                    />
 
                     <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
                         <CommonButton
@@ -339,7 +357,7 @@ export default function SectionAnnouncementPanel({ canManage = true, sectionId }
                             size="small"
                             startIcon={<PaperPlaneTiltIcon size={16} weight="bold" />}
                             variant="contained"
-                            disabled={!title.trim() || !content.trim() || isPosting}
+                            disabled={isPosting}
                             loading={isPosting}
                             onClick={handlePostAnnouncement}
                         >

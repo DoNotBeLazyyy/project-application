@@ -3,9 +3,7 @@ import {
     FacultyLoadAssignmentInput,
     FacultyLoadDetail,
     FacultyLoadFilterValues,
-    FacultyLoadRow,
-    ScheduleConflictFilterValues,
-    ScheduleConflictRow
+    FacultyLoadRow
 } from '@type/faculty-load.type';
 import { CommonListResDto, SortStringDto } from '@type/http.type';
 import { ServiceResult } from '@type/service.type';
@@ -28,27 +26,6 @@ export async function listFacultyLoad(
     });
 }
 
-export async function listScheduleConflicts(
-    page: number,
-    size: number,
-    search: string,
-    sort: SortStringDto[],
-    filters: ScheduleConflictFilterValues | null
-): Promise<ServiceResult<CommonListResDto<ScheduleConflictRow>>> {
-    return callRpc<CommonListResDto<ScheduleConflictRow>>('fn_list_schedule_conflicts_json', {
-        p_conflict_types: filters?.conflict_types?.length
-            ? filters.conflict_types
-            : null,
-        p_page: page,
-        p_search: search || null,
-        p_size: size,
-        p_sort: sort.length > 0
-            ? sort
-            : null,
-        p_term_id: filters?.term_id || null
-    });
-}
-
 export async function getFacultyLoadDetail(
     facultyId: string,
     termId: string | null
@@ -56,16 +33,6 @@ export async function getFacultyLoadDetail(
     return callRpc<FacultyLoadDetail>('fn_get_faculty_load_detail', {
         p_faculty_id: facultyId,
         p_term_id: termId || null
-    });
-}
-
-export async function assignSectionFaculty(
-    sectionId: string,
-    facultyId: string | null
-): Promise<ServiceResult<{ success: boolean; message: string }>> {
-    return callRpc<{ success: boolean; message: string }>('fn_assign_section_faculty', {
-        p_faculty_id: facultyId || null,
-        p_section_id: sectionId
     });
 }
 

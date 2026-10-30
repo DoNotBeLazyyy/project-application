@@ -18,7 +18,9 @@ import {
 } from '@services/evaluation.service';
 import { useToastStore } from '@stores/toast.store';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
-import { EvaluationQuestionForm, EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateListRow } from '@type/evaluation.type';
+import {
+    EvaluationQuestionForm, EvaluationQuestionType, EvaluationTemplateBulkRow, EvaluationTemplateForm, EvaluationTemplateListRow
+} from '@type/evaluation.type';
 import { SortStringDto } from '@type/http.type';
 import { MobileCardColDef } from '@type/table.type';
 import { useMemo, useState } from 'react';
@@ -29,20 +31,53 @@ const SORT_COLUMNS: SortColumn[] = [
     { field: 'title', label: 'Section' }
 ];
 
+// One CSV row per question. Rows sharing a Section Title (case-insensitive) become one section, and
+// fn_bulk_create_evaluation_templates reads the section-level columns from that section's first row.
+// The sample row is chosen to import cleanly against the live DB (ALL mode, so no program codes).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title'] },
-    { key: 'section_sequence', label: 'Section Sequence', hint: 'e.g. 1 (optional)', sample: '1', required: false, aliases: ['sequence', 'order'] },
+    { key: 'section_title', label: 'Section Title', hint: 'e.g. Teaching Effectiveness (rows with the same title form one section; must not match an existing section)', sample: 'Teaching Effectiveness', aliases: ['section', 'section_name', 'title'] },
+    { key: 'section_sequence', label: 'Section Sequence', hint: 'Whole number 1-32767 (optional, blank = after the last section)', sample: '1', required: false, aliases: ['sequence', 'order'] },
     { key: 'section_description', label: 'Section Description', hint: 'optional', sample: 'Evaluates pedagogical delivery and class management', required: false, aliases: ['description'] },
-    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL)', sample: 'ALL', required: false, aliases: ['mode'] },
-    { key: 'program_codes', label: 'Program Codes', hint: 'e.g. BSCS|BSIT (optional, blank = all)', sample: 'BSCS|BSIT', required: false, aliases: ['programs', 'program_code'] },
+    { key: 'target_mode', label: 'Target Mode', hint: 'ALL, INCLUDE, or EXCLUDE (optional, defaults ALL; INCLUDE/EXCLUDE need Program Codes)', sample: 'ALL', required: false, aliases: ['mode'] },
+    { key: 'program_codes', label: 'Program Codes', hint: 'Existing program codes separated by | (optional, blank = all programs)', sample: '', required: false, aliases: ['programs', 'program_code'] },
     { key: 'is_active', label: 'Active', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['active', 'status'] },
     { key: 'suggestion_placeholder', label: 'Suggestion Box Placeholder', hint: 'Optional suggestion prompt for students', sample: 'Provide constructive feedback for your instructor', required: false },
     { key: 'question_text', label: 'Question Text', hint: 'e.g. Explains concepts clearly', sample: 'Explains concepts clearly and provides practical examples', aliases: ['question', 'prompt'] },
     { key: 'question_type', label: 'Question Type', hint: 'Rating, Multiple Choice, or Open Ended', sample: 'Rating', aliases: ['type'] },
     { key: 'is_required', label: 'Required', hint: 'TRUE or FALSE (optional, defaults TRUE)', sample: 'TRUE', required: false, aliases: ['required'] },
-    { key: 'min_rating', label: 'Min Rating', hint: 'e.g. 1 (Rating only, optional)', sample: '1', required: false },
-    { key: 'max_rating', label: 'Max Rating', hint: 'e.g. 5 (Rating only, optional)', sample: '5', required: false }
+    { key: 'min_rating', label: 'Min Rating', hint: 'Whole number 1-9, below Max Rating (Rating only, optional, defaults 1)', sample: '1', required: false },
+    { key: 'max_rating', label: 'Max Rating', hint: 'Whole number 2-10, above Min Rating (Rating only, optional, defaults 5)', sample: '5', required: false }
 ];
+
+const QUESTION_TYPE_VALUES: EvaluationQuestionType[] = ['Rating', 'Multiple Choice', 'Open Ended'];
+
+// The DB casts question_type to its enum and is_active / is_required to boolean, both of which
+// are case- and spelling-sensitive; normalise the common spellings before sending.
+function normalizeQuestionType(value?: string): string {
+    const trimmed = (value ?? '').trim();
+    const match = QUESTION_TYPE_VALUES.find(function(type) {
+        return type.toLowerCase()
+            .replace(/[\s_-]+/g, '') === trimmed.toLowerCase()
+            .replace(/[\s_-]+/g, '');
+    });
+
+    return match ?? trimmed;
+}
+
+function normalizeBoolean(value?: string): string {
+    const trimmed = (value ?? '').trim()
+        .toLowerCase();
+
+    if (['active', 'y', 'yes', 'true', 't', '1'].includes(trimmed)) {
+        return 'true';
+    }
+
+    if (['inactive', 'n', 'no', 'false', 'f', '0'].includes(trimmed)) {
+        return 'false';
+    }
+
+    return trimmed;
+}
 
 const DEFAULT_QUESTIONS: EvaluationQuestionForm[] = [
     {
@@ -383,13 +418,14 @@ export default function EvaluationManagement() {
                     section_title: row.section_title,
                     section_sequence: row.section_sequence,
                     section_description: row.section_description,
-                    is_active: row.is_active,
-                    target_mode: row.target_mode,
+                    is_active: normalizeBoolean(row.is_active),
+                    target_mode: (row.target_mode ?? '').trim()
+                        .toUpperCase(),
                     suggestion_placeholder: row.suggestion_placeholder,
                     program_codes: row.program_codes,
                     question_text: row.question_text,
-                    question_type: row.question_type,
-                    is_required: row.is_required,
+                    question_type: normalizeQuestionType(row.question_type),
+                    is_required: normalizeBoolean(row.is_required),
                     min_rating: row.min_rating,
                     max_rating: row.max_rating
                 })}

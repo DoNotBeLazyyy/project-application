@@ -30,9 +30,10 @@ export async function listUsers(
 export async function inviteSingleUser(params: InviteUserParams): Promise<ServiceResult<null>> {
     return callFunction<null>('admin-user-provision', {
         action: 'invite_single_user',
-        email: params.email,
-        first_name: params.first_name,
-        last_name: params.last_name,
+        // fn_provision_single_user stores names and email as given, so trim here like updateUser's caller does
+        email: params.email.trim(),
+        first_name: params.first_name.trim(),
+        last_name: params.last_name.trim(),
         role_code: params.role_code,
         department_id: params.department_id || null,
         redirect_to: `${window.location.origin}/set-password`
@@ -68,10 +69,6 @@ export async function deactivateUsers(userIds: string[]): Promise<ServiceResult<
             })
             .in('id', userIds)
     );
-}
-
-export async function deleteUsers(userIds: string[]): Promise<ServiceResult<null>> {
-    return deactivateUsers(userIds);
 }
 
 export async function reactivateUsers(userIds: string[]): Promise<ServiceResult<null>> {

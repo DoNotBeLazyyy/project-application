@@ -1,14 +1,17 @@
 import CommonButton from '@components/button/CommonButton';
-import CommonInput from '@components/input/CommonInput';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect, { CommonSelectOption } from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { CommonSelectOption } from '@components/select/CommonSelect';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { PaperPlaneTiltIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { sendStudentProfileNotification } from '@services/registrar-verification.service';
 import { useToastStore } from '@stores/toast.store';
-import { useMemo, useState } from 'react';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { useEffect, useRef, useState } from 'react';
+import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
 interface NotifyStudentModalProps {
     open: boolean;
@@ -65,11 +68,48 @@ const TEMPLATE_DEFAULTS: Record<string, { title: string; message: string }> = {
     }
 };
 
-const INITIAL_NOTIFY_VALUES = {
+interface NotifyStudentFormValues {
+    selectedTemplate: string;
+    title: string;
+    message: string;
+}
+
+const INITIAL_NOTIFY_VALUES: NotifyStudentFormValues = {
     selectedTemplate: 'notice_inaccurate',
     title: TEMPLATE_DEFAULTS.notice_inaccurate.title,
     message: TEMPLATE_DEFAULTS.notice_inaccurate.message
 };
+
+const NOTIFY_FORM_ID = 'notify-student-form';
+
+function requiredText(label: string) {
+    return {
+        required: `${label} is required.`,
+        validate: (value: unknown) => String(value ?? '').trim() !== '' || `${label} cannot be blank.`
+    };
+}
+
+const NOTIFY_FIELDS: FormFieldConfig<NotifyStudentFormValues>[] = [
+    {
+        label: 'Notice Template',
+        name: 'selectedTemplate',
+        options: TEMPLATE_OPTIONS,
+        type: 'select'
+    },
+    {
+        label: 'Notification Title',
+        name: 'title',
+        rules: requiredText('Notification title'),
+        type: 'text'
+    },
+    {
+        label: 'Message Content',
+        name: 'message',
+        placeholder: 'Provide details on the discrepancy or instructions for the student...',
+        rules: requiredText('Message content'),
+        type: 'text-area'
+    }
+];
 
 export default function NotifyStudentModal({
     open,
@@ -79,34 +119,36 @@ export default function NotifyStudentModal({
     studentNumber,
     onSuccess
 }: NotifyStudentModalProps) {
-    const [selectedTemplate, setSelectedTemplate] = useState(INITIAL_NOTIFY_VALUES.selectedTemplate);
-    const [title, setTitle] = useState(INITIAL_NOTIFY_VALUES.title);
-    const [message, setMessage] = useState(INITIAL_NOTIFY_VALUES.message);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
 
-    const currentValues = useMemo(() => ({
-        selectedTemplate,
-        title,
-        message
-    }), [selectedTemplate, title, message]);
+    const methods = useForm<NotifyStudentFormValues>({ ...DEFAULT_FORM_OPTIONS, defaultValues: INITIAL_NOTIFY_VALUES });
+    const selectedTemplate = useWatch({ control: methods.control, name: 'selectedTemplate' });
+    const lastTemplateRef = useRef(INITIAL_NOTIFY_VALUES.selectedTemplate);
 
-    const draftGuard = useObjectDraft({
-        defaultValues: INITIAL_NOTIFY_VALUES,
+    const draftGuard = useFormDraft({
+        control: methods.control,
         enabled: open,
-        formId: studentId ? `notify-student-${studentId}` : 'notify-student-form',
+        formId: studentId ? `notify-student-${studentId}` : NOTIFY_FORM_ID,
         onRestore: (restored) => {
-            if (restored.selectedTemplate !== undefined) setSelectedTemplate(restored.selectedTemplate);
-            if (restored.title !== undefined) setTitle(restored.title);
-            if (restored.message !== undefined) setMessage(restored.message);
-        },
-        values: currentValues
+            // A restored draft carries its own title/message - do not overwrite them with template text
+            if (restored.selectedTemplate !== undefined) lastTemplateRef.current = restored.selectedTemplate;
+        }
     });
 
+    // Picking a template pre-fills the title and message
+    useEffect(function() {
+        if (!selectedTemplate || selectedTemplate === lastTemplateRef.current) return;
+        lastTemplateRef.current = selectedTemplate;
+        const tpl = TEMPLATE_DEFAULTS[selectedTemplate] || TEMPLATE_DEFAULTS.custom;
+        methods.setValue('title', tpl.title, { shouldDirty: true });
+        methods.setValue('message', tpl.message, { shouldDirty: true });
+        methods.clearErrors(['title', 'message']);
+    }, [selectedTemplate]);
+
     function resetToInitial() {
-        setSelectedTemplate(INITIAL_NOTIFY_VALUES.selectedTemplate);
-        setTitle(INITIAL_NOTIFY_VALUES.title);
-        setMessage(INITIAL_NOTIFY_VALUES.message);
+        lastTemplateRef.current = INITIAL_NOTIFY_VALUES.selectedTemplate;
+        methods.reset(INITIAL_NOTIFY_VALUES);
     }
 
     function handleAttemptClose() {
@@ -127,26 +169,18 @@ export default function NotifyStudentModal({
         onClose();
     }
 
-    function handleTemplateChange(templateKey: string) {
-        setSelectedTemplate(templateKey);
-        const tpl = TEMPLATE_DEFAULTS[templateKey] || TEMPLATE_DEFAULTS.custom;
-        setTitle(tpl.title);
-        setMessage(tpl.message);
+    function handleInvalid(errors: FieldErrors<NotifyStudentFormValues>) {
+        formErrors(errors, methods);
     }
 
-    async function handleSend() {
+    async function handleSend(values: NotifyStudentFormValues) {
         if (!studentId) {
             useToastStore.getState().showToast('Student ID is missing.', 'error');
             return;
         }
 
-        if (!title.trim() || !message.trim()) {
-            useToastStore.getState().showToast('Title and message are required.', 'error');
-            return;
-        }
-
         setIsSubmitting(true);
-        const result = await sendStudentProfileNotification(studentId, title.trim(), message.trim());
+        const result = await sendStudentProfileNotification(studentId, values.title.trim(), values.message.trim());
         setIsSubmitting(false);
 
         if (!result.error) {
@@ -183,37 +217,15 @@ export default function NotifyStudentModal({
                         </div>
                     </div>
 
-                    <CommonSelect
-                        fullWidth
-                        label="Notice Template"
-                        options={TEMPLATE_OPTIONS}
-                        size="small"
-                        value={selectedTemplate}
-                        onChange={(e) => handleTemplateChange(e.target.value as string)}
+                    <CommonForm
+                        control={methods.control}
+                        enableDraftRecovery={false}
+                        fields={NOTIFY_FIELDS.map((field) => ({ ...field, disabled: isSubmitting }))}
+                        formProps={{
+                            id: NOTIFY_FORM_ID,
+                            onSubmit: methods.handleSubmit(handleSend, handleInvalid)
+                        }}
                     />
-
-                    <CommonInput
-                        disabled={isSubmitting}
-                        fullWidth
-                        label="Notification Title"
-                        required
-                        size="small"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-medium text-(--mui-palette-text-secondary)">
-                            Message Content <span className="text-red-500">*</span>
-                        </label>
-                        <textarea
-                            className="w-full border border-(--mui-palette-divider) rounded-md p-2.5 text-xs bg-(--mui-palette-background-default) text-(--mui-palette-text-primary) focus:outline-none focus:ring-1 focus:ring-(--mui-palette-primary-main) min-h-[100px] resize-y"
-                            disabled={isSubmitting}
-                            placeholder="Provide details on the discrepancy or instructions for the student..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                        />
-                    </div>
 
                     <div className="flex gap-2 justify-end mt-2">
                         <CommonButton
@@ -226,12 +238,13 @@ export default function NotifyStudentModal({
                             Cancel
                         </CommonButton>
                         <CommonButton
-                            disabled={isSubmitting || !title.trim() || !message.trim()}
-                        loading={isSubmitting}
+                            disabled={isSubmitting}
+                            form={NOTIFY_FORM_ID}
+                            loading={isSubmitting}
                             size="small"
                             startIcon={<PaperPlaneTiltIcon size={16} />}
+                            type="submit"
                             variant="contained"
-                            onClick={handleSend}
                         >
                             {isSubmitting ? 'Sending...' : 'Send Notification'}
                         </CommonButton>

@@ -8,11 +8,8 @@ import {
 import { BulkImportError, CsvTemplateColumn, DetailedBulkImportResult } from '@type/bulk-import.type';
 import {
     CsvParseResult,
-    escapeCsvValue,
     generateTemplateCsv,
-    isHintRecord,
-    matchColumnHeader,
-    splitCsvRecords
+    parseCsvWithColumns
 } from '@utils/csv.util';
 import { exportCsvFile } from '@utils/file.util';
 import { classMerge } from '@utils/css.util';
@@ -244,36 +241,7 @@ export default function BulkImportModal<TPayload>({
     }
 
     function parseCsv(text: string): CsvParseResult {
-        const records = splitCsvRecords(text);
-        if (!records.length) {
-            return { missingHeaders: [], rows: [], unknownHeaders: [] };
-        }
-
-        const headers = records[0];
-        const matchedColumns = headers.map((header) => {
-            return (activeColumns || []).find((col) => matchColumnHeader(header, col)) ?? null;
-        });
-
-        const unknownHeaders = headers.filter((header, index) => header !== '' && !matchedColumns[index]);
-        const missingHeaders = (activeColumns || []).filter(
-            (col) => col.required !== false && !matchedColumns.some((matched) => matched?.key === col.key)
-        )
-            .map((col) => col.label);
-
-        const dataRecords = records.slice(1)
-            .filter((record, index) => !(index === 0 && isHintRecord(record, matchedColumns)));
-
-        const rows = dataRecords.map((values) => {
-            const row: ParsedRow = {};
-            matchedColumns.forEach((matchedCol, index) => {
-                if (matchedCol) {
-                    row[matchedCol.key] = values[index] ?? '';
-                }
-            });
-            return row;
-        });
-
-        return { missingHeaders, rows, unknownHeaders };
+        return parseCsvWithColumns(text, activeColumns || []);
     }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -300,10 +268,19 @@ export default function BulkImportModal<TPayload>({
             const text = typeof event.target?.result === 'string'
                 ? event.target.result
                 : '';
-            const { missingHeaders, rows, unknownHeaders } = parseCsv(text);
+            const { missingHeaders, missingValues, rows, unknownHeaders } = parseCsv(text);
 
             if (missingHeaders.length) {
                 setParseError(`These required columns are missing from the file header: ${missingHeaders.join(', ')}. Download the CSV template and keep its header row unchanged.`);
+                return;
+            }
+
+            if (missingValues.length) {
+                const shown = missingValues.slice(0, 5).join('; ');
+                const more = missingValues.length > 5
+                    ? ` and ${missingValues.length - 5} more`
+                    : '';
+                setParseError(`These required cells are blank: ${shown}${more}. Fill them in and upload the file again.`);
                 return;
             }
 
@@ -406,6 +383,37 @@ export default function BulkImportModal<TPayload>({
                     <div className="flex gap-2 items-center text-(--mui-palette-error-main)">
                         <XCircleIcon size={16} weight="bold" />
                         <span className="text-sm">{parseError}</span>
+                    </div>
+                )}
+                {/* The template file only carries headers and a sample row, so the accepted values live here */}
+                {activeColumns.length > 0 && (
+                    <div className="border border-(--mui-palette-divider) flex flex-col rounded-lg">
+                        <p className="border-(--mui-palette-divider) border-b font-semibold px-3 py-2 text-(--mui-palette-text-primary) text-xs tracking-wide uppercase">
+                            Column guide
+                        </p>
+                        <div className="divide-(--mui-palette-divider) divide-y flex flex-col max-h-56 overflow-y-auto">
+                            {activeColumns.map(function(col) {
+                                return (
+                                    <div className="flex flex-col gap-0.5 px-3 py-2 text-xs" key={col.key}>
+                                        <div className="flex gap-2 items-center">
+                                            <span className="font-semibold text-(--mui-palette-text-primary)">{col.label || col.key}</span>
+                                            <span
+                                                className={col.required === false
+                                                    ? 'text-(--mui-palette-text-secondary)'
+                                                    : 'font-semibold text-(--mui-palette-error-main)'}
+                                            >
+                                                {col.required === false
+                                                    ? 'Optional'
+                                                    : 'Required'}
+                                            </span>
+                                        </div>
+                                        {col.hint && (
+                                            <span className="text-(--mui-palette-text-secondary)">{col.hint}</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
                 <CommonButton

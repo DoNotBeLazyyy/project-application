@@ -1,4 +1,6 @@
-import { bulkCreateCurriculumMap, createCurriculumMapEntry, deleteCurriculumMapEntry, updateCurriculumMapEntry } from '@services/curriculum-map.service';
+import { bulkCreateCurriculumMap, deleteCurriculumMapEntry, updateCurriculumMapEntry } from '@services/curriculum-map.service';
+import { getDepartments } from '@services/department.service';
+import { getProgramLevels } from '@services/program/program-level.service';
 import { callRpc } from '@services/supabase.wrapper';
 import { BulkImportResult } from '@type/bulk-import.type';
 import { CurriculumMapBulkRow } from '@type/curriculum-map.type';
@@ -244,12 +246,25 @@ export async function bulkCreatePrograms(
     programs: ProgramBulkRow[]
 ): Promise<BulkImportResult> {
     const uniqueProgramsMap = new Map<string, ProgramBulkRow>();
+    // CSV row number (1-based) of the first row of every unique program code
+    const programRowNumbers = new Map<string, number>();
     const curriculumRows: CurriculumMapBulkRow[] = [];
+    // CSV row number (1-based) of every curriculum entry, to remap its errors
+    const curriculumRowNumbers: number[] = [];
     const existingCodes: string[] = [];
+    // Rows repeating a program (one per curriculum course) must share one generated code
+    const generatedCodesByName = new Map<string, string>();
     const normalizedPrograms = programs.map((row) => {
-        const code = row.code?.trim() || generateProgramCode(row.name || '', existingCodes);
-        if (code) {
+        const nameKey = (row.name || '').trim()
+            .toLowerCase();
+        const code = row.code?.trim()
+            || generatedCodesByName.get(nameKey)
+            || generateProgramCode(row.name || '', existingCodes);
+        if (code && !existingCodes.includes(code)) {
             existingCodes.push(code);
+        }
+        if (code && !row.code?.trim()) {
+            generatedCodesByName.set(nameKey, code);
         }
         return {
             ...row,
@@ -257,10 +272,11 @@ export async function bulkCreatePrograms(
         };
     });
 
-    for (const row of normalizedPrograms) {
+    normalizedPrograms.forEach(function(row, index) {
         const codeKey = row.code?.trim().toUpperCase();
         if (codeKey && !uniqueProgramsMap.has(codeKey)) {
             uniqueProgramsMap.set(codeKey, row);
+            programRowNumbers.set(codeKey, index + 1);
         }
 
         if (row.course_code?.trim()) {
@@ -274,29 +290,86 @@ export async function bulkCreatePrograms(
                 sequence: String(row.sequence || '1'),
                 is_elective: String(row.is_elective ?? 'false')
             });
+            curriculumRowNumbers.push(index + 1);
         }
-    }
-
-    const uniqueProgramRows = Array.from(uniqueProgramsMap.values());
-
-    const result = await callRpc<ProgramBulkImportResult>('fn_bulk_create_programs', {
-        p_programs: uniqueProgramRows
     });
 
-    if (result.error) {
-        return { provisioned_count: 0, errors: [result.error.message] };
+    // fn_bulk_create_programs matches department / program level codes exactly and casts
+    // years_duration, total_units and is_active directly - a blank or malformed value aborts
+    // the whole batch. Resolve the codes (code or name, any case) and validate the values here.
+    const [departmentsResult, programLevelsResult] = await Promise.all([getDepartments(), getProgramLevels()]);
+    const findByCodeOrLabel = function<T extends { code: string; label: string }>(items: T[], value?: string) {
+        const key = (value || '').trim()
+            .toLowerCase();
+        return items.find((item) =>
+            item.code.trim()
+                .toLowerCase() === key || item.label.trim()
+                .toLowerCase() === key);
+    };
+
+    const errors: string[] = [];
+    const sentRowNumbers: number[] = [];
+    const uniqueProgramRows: ProgramBulkRow[] = [];
+
+    uniqueProgramsMap.forEach(function(row, codeKey) {
+        const rowNumber = programRowNumbers.get(codeKey) ?? 0;
+        const department = findByCodeOrLabel(departmentsResult.data ?? [], row.department_code);
+        const programLevel = findByCodeOrLabel(programLevelsResult.data ?? [], row.program_level_code);
+        const yearsDuration = Number(String(row.years_duration ?? '').trim() || NaN);
+        const totalUnits = String(row.total_units ?? '').trim();
+        const isActive = String(row.is_active ?? '').trim()
+            .toLowerCase();
+
+        let message = '';
+        if (!Number.isInteger(yearsDuration) || yearsDuration < 1 || yearsDuration > 8) {
+            message = 'Years duration must be a whole number from 1 to 8';
+        } else if (totalUnits !== '' && (isNaN(Number(totalUnits)) || Number(totalUnits) < 0)) {
+            message = 'Total units must be a number of 0 or more';
+        } else if (isActive !== '' && !['true', 'false', 'yes', 'no', '1', '0'].includes(isActive)) {
+            message = 'Is active must be true or false';
+        }
+
+        if (message) {
+            errors.push(`Row ${rowNumber} (${row.code || 'unknown'}): ${message}`);
+            return;
+        }
+
+        uniqueProgramRows.push({
+            ...row,
+            department_code: department?.code ?? row.department_code,
+            program_level_code: programLevel?.code ?? row.program_level_code,
+            years_duration: String(yearsDuration),
+            total_units: totalUnits,
+            // Omitted when blank so the function defaults it to true
+            is_active: isActive === ''
+                ? undefined
+                : String(['true', 'yes', '1'].includes(isActive))
+        });
+        sentRowNumbers.push(rowNumber);
+    });
+
+    let provisionedCount = 0;
+    if (uniqueProgramRows.length > 0) {
+        const result = await callRpc<ProgramBulkImportResult>('fn_bulk_create_programs', {
+            p_programs: uniqueProgramRows
+        });
+
+        if (result.error) {
+            return { provisioned_count: 0, errors: [...errors, result.error.message] };
+        }
+
+        errors.push(...(result.data?.errors ?? []).map((error) =>
+            `Row ${sentRowNumbers[error.row - 1] ?? error.row} (${error.code || 'unknown'}): ${error.message}`
+        ));
+        provisionedCount = result.data?.provisioned_count ?? 0;
     }
-
-    const errors: string[] = (result.data?.errors ?? []).map((error) =>
-        `Row ${error.row} (${error.code || 'unknown'}): ${error.message}`
-    );
-
-    const provisionedCount = result.data?.provisioned_count ?? 0;
 
     if (curriculumRows.length > 0) {
         const currResult = await bulkCreateCurriculumMap(curriculumRows);
         if (currResult.errors && currResult.errors.length > 0) {
-            errors.push(...currResult.errors);
+            errors.push(...currResult.errors.map((error) =>
+                error.replace(/^Row (\d+)/, (_match, row) =>
+                    `Row ${curriculumRowNumbers[Number(row) - 1] ?? row} curriculum`)));
         }
     }
 

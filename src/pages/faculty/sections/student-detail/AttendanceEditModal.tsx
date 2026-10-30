@@ -1,23 +1,48 @@
 import { CommonBadgeStatus } from '@components/badge/CommonBadgeStatus';
 import CommonButton from '@components/button/CommonButton';
+import CommonForm from '@components/form/CommonForm';
+import { FormFieldConfig } from '@components/form/FormField';
 import CommonModal from '@components/modal/CommonModal';
 import DiscardChangesPromptModal from '@components/modal/DiscardChangesPromptModal';
 import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal';
-import CommonSelect from '@components/select/CommonSelect';
-import { useObjectDraft } from '@hooks/useFormDraft';
+import { useFormDraft } from '@hooks/useFormDraft';
 import { attendanceStatusVariant, formatSessionDate } from '@pages/faculty/sections/student-detail/studentDetailFormat';
 import { XIcon } from '@phosphor-icons/react';
 import { saveAttendanceRecords } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
-import { ChangeEventInputTextarea } from '@type/common.type';
 import { AttendanceStatus, StudentAttendanceRow } from '@type/faculty.type';
-import { useEffect, useMemo, useState } from 'react';
+import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { useEffect, useState } from 'react';
+import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 
 const STATUS_OPTIONS: { label: string; value: AttendanceStatus }[] = [
     { label: 'Present', value: 'Present' },
     { label: 'Absent', value: 'Absent' },
     { label: 'Late', value: 'Late' },
     { label: 'Excused', value: 'Excused' }
+];
+
+interface AttendanceEditFormValues {
+    status: AttendanceStatus;
+    remarks: string;
+}
+
+const ATTENDANCE_EDIT_FORM_ID = 'attendance-edit-form';
+
+const ATTENDANCE_EDIT_FIELDS: FormFieldConfig<AttendanceEditFormValues>[] = [
+    {
+        label: 'Status',
+        name: 'status',
+        options: STATUS_OPTIONS,
+        rules: { required: 'Required' },
+        type: 'select'
+    },
+    {
+        label: 'Remarks',
+        name: 'remarks',
+        placeholder: 'Optional remarks...',
+        type: 'text-area'
+    }
 ];
 
 interface AttendanceEditModalProps {
@@ -27,42 +52,31 @@ interface AttendanceEditModalProps {
 }
 
 export default function AttendanceEditModal({ record, onClose, onSaved }: AttendanceEditModalProps) {
-    const [status, setStatus] = useState<AttendanceStatus>('Present');
-    const [remarks, setRemarks] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
 
-    const defaultDraftValues = useMemo(() => ({
-        status: record?.status ?? ('Present' as AttendanceStatus),
-        remarks: record?.remarks ?? ''
-    }), [record]);
+    const methods = useForm<AttendanceEditFormValues>({
+        ...DEFAULT_FORM_OPTIONS,
+        defaultValues: { remarks: '', status: 'Present' }
+    });
+    const status = useWatch({ control: methods.control, name: 'status' });
+    const remarks = useWatch({ control: methods.control, name: 'remarks' });
 
-    const currentDraftValues = useMemo(() => ({
-        status,
-        remarks
-    }), [status, remarks]);
-
-    const draftGuard = useObjectDraft({
+    const draftGuard = useFormDraft({
+        control: methods.control,
+        enabled: Boolean(record),
         formId: record?.record_id
             ? `attendance-edit-modal-${record.record_id}`
-            : 'attendance-edit-modal',
-        values: currentDraftValues,
-        defaultValues: defaultDraftValues,
-        onRestore: (restored) => {
-            setStatus(restored.status ?? 'Present');
-            setRemarks(restored.remarks ?? '');
-        },
-        enabled: Boolean(record)
+            : 'attendance-edit-modal'
     });
 
     const isUnchanged = Boolean(record)
         && status === record?.status
-        && remarks === (record?.remarks ?? '');
+        && (remarks ?? '') === (record?.remarks ?? '');
 
     useEffect(function() {
         if (record) {
-            setStatus(record.status);
-            setRemarks(record.remarks ?? '');
+            methods.reset({ remarks: record.remarks ?? '', status: record.status });
         } else {
             setIsDiscardOpen(false);
         }
@@ -84,7 +98,11 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
         onClose();
     }
 
-    async function handleSave() {
+    function handleInvalid(errors: FieldErrors<AttendanceEditFormValues>) {
+        formErrors(errors, methods);
+    }
+
+    async function handleSave(values: AttendanceEditFormValues) {
         if (!record) {
             return;
         }
@@ -95,8 +113,8 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
             const result = await saveAttendanceRecords(record.session_id, [
                 {
                     id: record.record_id,
-                    remarks: remarks.trim(),
-                    status
+                    remarks: values.remarks.trim(),
+                    status: values.status
                 }
             ]);
 
@@ -148,41 +166,22 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                     </p>
                 )}
 
-                <div className="flex flex-col gap-2">
-                    <div className="flex gap-2 items-center justify-between">
-                        <label className="font-medium text-(--mui-palette-text-primary) text-sm">
-                            Status
-                        </label>
-                        <CommonBadgeStatus
-                            label={status}
-                            variant={attendanceStatusVariant(status)}
-                        />
-                    </div>
-                    <CommonSelect
-                        fullWidth
-                        options={STATUS_OPTIONS}
-                        size="small"
-                        value={status}
-                        onChange={function(e: ChangeEventInputTextarea) {
-                            setStatus(e.target.value as AttendanceStatus);
-                        }}
+                <div className="flex justify-end">
+                    <CommonBadgeStatus
+                        label={status}
+                        variant={attendanceStatusVariant(status)}
                     />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <label className="font-medium text-(--mui-palette-text-primary) text-sm">
-                        Remarks
-                    </label>
-                    <textarea
-                        className="border border-(--mui-palette-divider) focus:border-(--mui-palette-primary-main) outline-none px-3 py-2 resize-none rounded text-sm transition-colors"
-                        placeholder="Optional remarks..."
-                        rows={3}
-                        value={remarks}
-                        onChange={function(e) {
-                            setRemarks(e.target.value);
-                        }}
-                    />
-                </div>
+                <CommonForm
+                    control={methods.control}
+                    enableDraftRecovery={false}
+                    fields={ATTENDANCE_EDIT_FIELDS}
+                    formProps={{
+                        id: ATTENDANCE_EDIT_FORM_ID,
+                        onSubmit: methods.handleSubmit(handleSave, handleInvalid)
+                    }}
+                />
 
                 <div className="flex gap-2 justify-end">
                     <CommonButton
@@ -196,10 +195,11 @@ export default function AttendanceEditModal({ record, onClose, onSaved }: Attend
                     </CommonButton>
                     <CommonButton
                         disabled={isSaving || isUnchanged}
+                        form={ATTENDANCE_EDIT_FORM_ID}
                         loading={isSaving}
                         size="small"
+                        type="submit"
                         variant="contained"
-                        onClick={handleSave}
                     >
                         {isSaving
                             ? 'Saving...'

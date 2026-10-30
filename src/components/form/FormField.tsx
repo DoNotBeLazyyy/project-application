@@ -1,3 +1,9 @@
+/*
+ * Field standard: every field renders at the theme's default size (`large`, 3rem tall, 1rem text inset) -
+ * do not pass `size` in forms or wizard steps; `size="small"` is only for toolbars, filter popovers and dense grids.
+ * Labels, the required asterisk, guidance and the validation message all come from FormLabel (message on the label's
+ * error icon); put DB constraints in `rules` (required / maxLength / min / max / pattern) and validate wizard steps with `validateStepFields`.
+ */
 import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import ValidCommonDateTimePicker, { CommonDateTimePickerProps } from '@components/datepicker/ValidCommonDateTimepicker';
 import ValidCommonDatePicker, { CommonDatePickerProps } from '@components/datepicker/ValidCommonDatepicker';
@@ -126,7 +132,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'text-area') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean; slotProps?: CommonTextareaProps['slotProps'] };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean; slotProps?: CommonTextareaProps['slotProps'] };
         return (
             <ValidCommonTextarea
                 {...fieldProps}
@@ -137,7 +143,7 @@ export function FormField<T extends FieldValues>({
                 hasHelper={hasHelper}
                 isRequired={Boolean(field.rules?.required)}
                 name={field.name}
-                placeholder={field.placeholder}
+                placeholder={field.placeholder ?? fieldProps?.placeholder}
                 readOnly={field.readOnly}
                 rules={field.rules}
                 slotProps={{
@@ -222,7 +228,7 @@ export function FormField<T extends FieldValues>({
     }
 
     if (field.type === 'number') {
-        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+        const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean };
         return (
             <ValidCommonNumberInput
                 {...fieldProps}
@@ -232,7 +238,7 @@ export function FormField<T extends FieldValues>({
                 fullWidth
                 hasHelper={hasHelper}
                 name={field.name}
-                placeholder={field.placeholder}
+                placeholder={field.placeholder ?? fieldProps?.placeholder}
                 readOnly={field.readOnly}
                 rules={field.rules}
                 type="text"
@@ -261,7 +267,7 @@ export function FormField<T extends FieldValues>({
     const resolvedRules = isEmail
         ? { ...field.rules, pattern: field.rules?.pattern ?? EMAIL_PATTERN }
         : field.rules;
-    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; defaultOpenErrorTooltip?: boolean };
+    const { label: _label, ...fieldProps } = (field.fieldProps ?? {}) as { label?: unknown; placeholder?: string; defaultOpenErrorTooltip?: boolean };
 
     return (
         <ValidCommonInput
@@ -272,7 +278,7 @@ export function FormField<T extends FieldValues>({
             fullWidth
             hasHelper={hasHelper}
             name={field.name}
-            placeholder={field.placeholder}
+            placeholder={field.placeholder ?? fieldProps?.placeholder}
             readOnly={field.readOnly}
             rules={resolvedRules}
             type={isEmail

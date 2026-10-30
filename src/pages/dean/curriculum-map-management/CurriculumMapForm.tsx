@@ -31,7 +31,7 @@ export default function CurriculumMapForm({
     ...formProps
 }: CurriculumMapFormProps) {
     const { termOptions: hookTermOptions, allTermTypes } = useActiveTermOptions(selectedSchoolYearId);
-    const { courseOptions, courses } = useCourseOptions({ departmentId });
+    const { courseOptions, courses } = useCourseOptions({ departmentId, includeOtherDepartments: true });
 
     const effectiveTermOptions = availableTermOptions && availableTermOptions.length > 0
         ? availableTermOptions
@@ -124,6 +124,11 @@ export default function CurriculumMapForm({
             : ''} filtered: already in curriculum map)`
         : baseCourseHelperText;
 
+    // Units are optional overrides but can never be negative
+    const unitRules = disabled
+        ? undefined
+        : { min: { value: 0, message: 'Units cannot be negative' } };
+
     const fields: FormFieldConfig<CurriculumMapFormValues>[] = [
         {
             disabled,
@@ -166,6 +171,7 @@ export default function CurriculumMapForm({
             fieldProps: { helperText: 'Lecture units for this program (override default if needed)' },
             label: 'Lecture Units',
             name: 'lecture_units',
+            rules: unitRules,
             type: 'number',
             gridCols: 1
         },
@@ -174,6 +180,7 @@ export default function CurriculumMapForm({
             fieldProps: { helperText: 'Laboratory units for this program (override default if needed)' },
             label: 'Laboratory Units',
             name: 'laboratory_units',
+            rules: unitRules,
             type: 'number',
             gridCols: 1
         },
@@ -184,6 +191,7 @@ export default function CurriculumMapForm({
                     fieldProps: { helperText: `${customTypeLabel} units for this program (override default if needed)` },
                     label: `${customTypeLabel} Units`,
                     name: 'units' as const,
+                    rules: unitRules,
                     type: 'number' as const,
                     gridCols: 1
                 }
@@ -198,7 +206,9 @@ export default function CurriculumMapForm({
                 ? undefined
                 : {
                     required: 'Sequence is required',
-                    min: { value: 1, message: 'Must be at least 1' }
+                    min: { value: 1, message: 'Must be at least 1' },
+                    max: { value: 32767, message: 'Sequence is too large' },
+                    validate: (val: any) => Number.isInteger(Number(val)) || 'Sequence must be a whole number'
                 },
             type: 'number',
             gridCols: 1

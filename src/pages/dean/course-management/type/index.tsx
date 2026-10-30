@@ -26,10 +26,12 @@ const SORT_COLUMNS: SortColumn[] = [
 const CREATE_FORM_ID = 'create-course-type-form';
 const UPDATE_FORM_ID = 'update-course-type-form';
 
+// Mirrors fn_bulk_create_course_types: only the name is required, and both the code and
+// the name must be new (existing ones such as LEC/Lecture and LAB/Laboratory are rejected).
 const BULK_IMPORT_TEMPLATE_COLUMNS: CsvTemplateColumn[] = [
-    { key: 'code', label: 'Course Type Code', hint: 'e.g. LECTURE (optional, auto-generated if blank)', required: false },
-    { key: 'label', label: 'Course Type Name', hint: 'e.g. Lecture' },
-    { key: 'description', label: 'Description', hint: 'e.g. Lecture component (optional)', required: false }
+    { key: 'code', label: 'Course Type Code', hint: 'Optional - unique code, auto-generated from the name if blank, e.g. SEM', sample: 'SEM', required: false },
+    { key: 'label', label: 'Course Type Name', hint: 'Unique name, e.g. Seminar', sample: 'Seminar' },
+    { key: 'description', label: 'Description', hint: 'Optional', sample: 'Discussion-based seminar component', required: false }
 ];
 
 const defaultFormValues: CourseTypeFormValues = {

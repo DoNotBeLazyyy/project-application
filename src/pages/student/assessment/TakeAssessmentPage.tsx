@@ -23,11 +23,14 @@ import {
     startAssessmentTimer,
     submitAssessment
 } from '@services/student-portal.service';
+import { useToastStore } from '@stores/toast.store';
 import { StudentAssessment, StudentQuestion } from '@type/student-portal.type';
 import { DEFAULT_FORM_OPTIONS } from '@utils/form.util';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
+
+const REQUIRED_ANSWER_MESSAGE = 'This question is required.';
 
 export default function TakeAssessmentPage() {
     const { enrollmentId = '', assessmentId = '' } = useParams<{
@@ -143,32 +146,74 @@ export default function TakeAssessmentPage() {
     }
 
     const handleSaveAnswer = useCallback(
-        async function(questionId: string, value: string) {
-            if (!submissionId) return;
+        async function(questionId: string, value: string): Promise<string | null> {
+            if (!submissionId) return null;
 
             const question = questions.find((q) => q.id === questionId);
-            if (!question || question.question_type === 'File Upload') return;
+            if (!question || question.question_type === 'File Upload') return null;
 
             const isChoice = ['Multiple Choice', 'True or False', 'Matching'].includes(question.question_type);
 
-            await saveStudentAnswer(submissionId, {
+            const result = await saveStudentAnswer(submissionId, {
                 question_id: questionId,
                 answer_text: isChoice ? '' : value,
                 choice_id: isChoice ? value : ''
             });
+
+            return result.error?.message ?? null;
         },
         [submissionId, questions]
     );
 
-    async function handleSubmit() {
-        if (!submissionId) return;
-
+    // Saves are silent per answer (one "Answer saved." toast per question otherwise);
+    // surface only the first failure.
+    async function saveAnswers(targets: StudentQuestion[]) {
         const values = methods.getValues();
-        await Promise.all(
-            questions.map((q) => handleSaveAnswer(q.id, values[`answer_${q.id}`] ?? ''))
+        const errors = await Promise.all(
+            targets.map((q) => handleSaveAnswer(q.id, values[`answer_${q.id}`] ?? ''))
         );
+        const firstError = errors.find(Boolean);
+
+        if (firstError) {
+            useToastStore.getState()
+                .showToast(firstError, 'error');
+        }
+    }
+
+    // Flags every unanswered required question and jumps to the first one's page.
+    function validateRequiredAnswers(): boolean {
+        const values = methods.getValues();
+        const missing = questions.filter(function(q) {
+            return q.is_required
+                && q.question_type !== 'File Upload'
+                && !String(values[`answer_${q.id}`] ?? '')
+                    .trim();
+        });
+
+        if (missing.length === 0) return true;
+
+        missing.forEach(function(q) {
+            methods.setError(`answer_${q.id}`, { message: REQUIRED_ANSWER_MESSAGE, type: 'required' });
+        });
+
+        if (!assessment?.show_all_questions && questionsPerPage > 0) {
+            setCurrentPage(Math.floor(questions.indexOf(missing[0]) / questionsPerPage));
+        }
+
+        useToastStore.getState()
+            .showToast(`Answer all required questions before submitting (${missing.length} remaining).`, 'error');
+
+        return false;
+    }
+
+    async function handleSubmit(isAutoSubmit: boolean) {
+        if (!submissionId || isSubmitting) return;
+
+        if (!isAutoSubmit && !validateRequiredAnswers()) return;
 
         setIsSubmitting(true);
+        await saveAnswers(questions);
+
         try {
             const result = await submitAssessment(submissionId);
             if (!result.error) {
@@ -344,7 +389,9 @@ export default function TakeAssessmentPage() {
                 <div className="flex items-center gap-3 shrink-0">
                     <AssessmentTimer
                         expiresAt={expiresAt}
-                        onExpire={handleSubmit}
+                        onExpire={function() {
+                            handleSubmit(true);
+                        }}
                     />
                 </div>
             </div>
@@ -374,11 +421,7 @@ export default function TakeAssessmentPage() {
                         startIcon={<ArrowLeftIcon size={14} weight="bold" />}
                         variant="outlined"
                         onClick={async function() {
-                            const values = methods.getValues();
-                            await Promise.all(
-                                visibleQuestions.map((q) =>
-                                    handleSaveAnswer(q.id, values[`answer_${q.id}`] ?? ''))
-                            );
+                            await saveAnswers(visibleQuestions);
                             setCurrentPage((prev) => prev - 1);
                         }}
                     >
@@ -393,11 +436,12 @@ export default function TakeAssessmentPage() {
                             size="small"
                             variant="outlined"
                             onClick={async function() {
-                                const values = methods.getValues();
-                                await Promise.all(
-                                    visibleQuestions.map((q) =>
-                                        handleSaveAnswer(q.id, values[`answer_${q.id}`] ?? ''))
+                                const isPageValid = await methods.trigger(
+                                    visibleQuestions.map((q) => `answer_${q.id}`)
                                 );
+                                if (!isPageValid) return;
+
+                                await saveAnswers(visibleQuestions);
                                 setCurrentPage((prev) => prev + 1);
                             }}
                         >
@@ -411,7 +455,9 @@ export default function TakeAssessmentPage() {
                             loading={isSubmitting}
                             size="medium"
                             variant="contained"
-                            onClick={handleSubmit}
+                            onClick={function() {
+                                handleSubmit(false);
+                            }}
                         >
                             {isSubmitting ? 'Submitting Responses...' : 'Finish & Submit Assessment'}
                         </CommonButton>

@@ -1,9 +1,10 @@
 import CommonButton from '@components/button/CommonButton';
+import ValidCommonCheckbox from '@components/checkbox/ValidCommonCheckbox';
 import FormLabel from '@components/form/FormLabel';
-import CommonInput from '@components/input/CommonInput';
-import CommonNumberInput from '@components/input/CommonNumberInput';
+import ValidCommonInput from '@components/input/ValidCommonInput';
+import ValidCommonNumberInput from '@components/input/ValidCommonNumberInput';
 import DeletePromptModal from '@components/modal/DeletePromptModal';
-import CommonSelect from '@components/select/CommonSelect';
+import ValidCommonSelect from '@components/select/ValidCommonSelect';
 import CommonInfoTooltip from '@components/tooltip/CommonInfoTooltip';
 import {
     CaretDownIcon,
@@ -14,11 +15,12 @@ import {
 import { AcademicThresholdCategory } from '@type/academic-threshold.type';
 import { AcademicYearWizardFormValues, WizardThresholdItem } from '@type/school-year.type';
 import { generateAcademicThresholdCode } from '@utils/entity-code.util';
-import { checkForMessage, clearFieldError } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { clearFieldError } from '@utils/form.util';
+import { useEffect, useState } from 'react';
 import {
     Control, useFieldArray, useFormState, UseFormSetValue, useWatch
 } from 'react-hook-form';
+import { NUMERIC_4_2_MAX } from './wizard.constants';
 
 interface Step5ThresholdsConfigProps {
     control: Control<AcademicYearWizardFormValues>;
@@ -41,7 +43,6 @@ export default function Step5ThresholdsConfig({
     const [collapsedThresholds, setCollapsedThresholds] = useState<Record<number, boolean>>({});
 
     const { errors } = useFormState({ control });
-    const firstErrorKey = useMemo(() => checkForMessage(errors).firstError?.key, [errors]);
 
     useEffect(() => {
         if (errors.thresholds && Array.isArray(errors.thresholds)) {
@@ -201,49 +202,46 @@ export default function Step5ThresholdsConfig({
 
                                     {/* Row 2: Category, Threshold Name, and Status */}
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                                        {/* academic_thresholds.category NOT NULL (academic_threshold_category_type) */}
                                         <div className="sm:col-span-4 md:col-span-3">
-                                            <CommonSelect
+                                            <ValidCommonSelect
+                                                control={control}
                                                 description="Functional classification of this academic criterion (Honor, Scholarship, or Academic Standing)."
                                                 disabled={disabled}
                                                 fullWidth
                                                 isRequired
                                                 label="Category"
+                                                name={`thresholds.${idx}.category`}
                                                 options={CATEGORY_OPTIONS}
-                                                size="small"
-                                                value={item.category}
-                                                onChange={(e) => {
-                                                    const cat = e.target.value as AcademicThresholdCategory;
-                                                    setValue(`thresholds.${idx}.category`, cat, { shouldDirty: true });
+                                                rules={{
+                                                    required: 'Category is required'
                                                 }}
                                             />
                                         </div>
 
+                                        {/* academic_thresholds.label text NOT NULL (code is derived from it) */}
                                         <div className="sm:col-span-5 md:col-span-6">
-                                            <CommonInput
-                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.label`}
+                                            <ValidCommonInput
+                                                control={control}
                                                 description="Official title revealed on student rank lists, certificates, and academic summary cards."
                                                 disabled={disabled}
-                                                error={Boolean((errors.thresholds as any)?.[idx]?.label)}
                                                 fullWidth
-                                                helperText={(errors.thresholds as any)?.[idx]?.label?.message}
-                                                isFirstError={firstErrorKey === `thresholds.${idx}.label`}
                                                 isRequired
                                                 label="Threshold Name / Label"
                                                 name={`thresholds.${idx}.label`}
                                                 placeholder="e.g. Summa Cum Laude, Full Scholar"
-                                                size="small"
-                                                value={item.label}
+                                                rules={{
+                                                    required: 'Threshold name is required',
+                                                    validate: (val) => Boolean(String(val || '').trim()) || 'Threshold name is required'
+                                                }}
                                                 onChange={(e) => {
-                                                    clearFieldError(control, `thresholds.${idx}.label`);
                                                     clearFieldError(control, 'thresholds');
-                                                    const newLabel = e.target.value;
-                                                    setValue(`thresholds.${idx}.label`, newLabel, { shouldDirty: true, shouldValidate: true });
                                                     const otherCodes = thresholds
                                                         .map((th, i) => (i !== idx
                                                             ? th.code
                                                             : null))
                                                         .filter(Boolean) as string[];
-                                                    const autoCode = generateAcademicThresholdCode(newLabel, otherCodes);
+                                                    const autoCode = generateAcademicThresholdCode(e.target.value, otherCodes);
                                                     setValue(`thresholds.${idx}.code`, autoCode, { shouldDirty: true });
                                                 }}
                                             />
@@ -272,109 +270,95 @@ export default function Step5ThresholdsConfig({
                                         </div>
                                     </div>
 
-                                    {/* Row 4: Min and Max GWA */}
+                                    {/* Row 4: Min (numeric(4,2), nullable) and Max GWA (numeric(4,2) NOT NULL) */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
-                                            <CommonNumberInput
-                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.min_gwa`}
+                                            <ValidCommonNumberInput
+                                                control={control}
                                                 description="Minimum (best) GWA required for this threshold tier (typically 1.00)."
                                                 disabled={disabled}
                                                 fullWidth
-                                                isFirstError={firstErrorKey === `thresholds.${idx}.min_gwa`}
                                                 label="Min GWA"
+                                                max={NUMERIC_4_2_MAX}
                                                 maxDecimals={2}
+                                                min={0}
                                                 minDecimals={2}
                                                 name={`thresholds.${idx}.min_gwa`}
                                                 placeholder="1.00 (Optional)"
-                                                size="small"
-                                                step={0.01}
-                                                value={item.min_gwa ?? ''}
-                                                onChange={(val) => {
-                                                    clearFieldError(control, `thresholds.${idx}.min_gwa`);
-                                                    clearFieldError(control, 'thresholds');
-                                                    setValue(
-                                                        `thresholds.${idx}.min_gwa`,
-                                                        val === undefined
-                                                            ? null
-                                                            : val,
-                                                        { shouldDirty: true }
-                                                    );
+                                                rules={{
+                                                    max: { message: `Min GWA cannot exceed ${NUMERIC_4_2_MAX}`, value: NUMERIC_4_2_MAX },
+                                                    min: { message: 'Min GWA cannot be negative', value: 0 },
+                                                    validate: (val) => {
+                                                        const maxGwa = item.max_gwa;
+                                                        if (
+                                                            val !== null && val !== undefined && val !== '' &&
+                                                            maxGwa !== null && maxGwa !== undefined && maxGwa !== '' &&
+                                                            Number(val) > Number(maxGwa)
+                                                        ) {
+                                                            return 'Min GWA cannot be greater than Max GWA';
+                                                        }
+                                                        return true;
+                                                    }
                                                 }}
+                                                step={0.01}
                                             />
                                         </div>
 
                                         <div>
-                                            <CommonNumberInput
-                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.max_gwa`}
+                                            <ValidCommonNumberInput
+                                                control={control}
                                                 description="Maximum allowed GWA cutoff. Students with GWA worse than this value are disqualified."
                                                 disabled={disabled}
-                                                error={Boolean((errors.thresholds as any)?.[idx]?.max_gwa)}
                                                 fullWidth
-                                                helperText={(errors.thresholds as any)?.[idx]?.max_gwa?.message}
-                                                isFirstError={firstErrorKey === `thresholds.${idx}.max_gwa`}
                                                 isRequired
                                                 label="Max GWA (Cutoff)"
+                                                max={NUMERIC_4_2_MAX}
                                                 maxDecimals={2}
+                                                min={0}
                                                 minDecimals={2}
                                                 name={`thresholds.${idx}.max_gwa`}
                                                 placeholder="1.25"
-                                                size="small"
-                                                step={0.01}
-                                                value={item.max_gwa ?? ''}
-                                                onChange={(val) => {
-                                                    clearFieldError(control, `thresholds.${idx}.max_gwa`);
-                                                    clearFieldError(control, 'thresholds');
-                                                    setValue(`thresholds.${idx}.max_gwa`, val === undefined
-                                                        ? ''
-                                                        : val, { shouldDirty: true, shouldValidate: true });
+                                                rules={{
+                                                    max: { message: `Max GWA cannot exceed ${NUMERIC_4_2_MAX}`, value: NUMERIC_4_2_MAX },
+                                                    min: { message: 'Max GWA cannot be negative', value: 0 },
+                                                    required: 'Max GWA cutoff is required'
                                                 }}
+                                                step={0.01}
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Row 5: Subject Floor Grade and No Failing Checkbox */}
+                                    {/* Row 5: Subject Floor Grade (numeric(4,2), nullable) and No Failing Checkbox */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                                         <div>
-                                            <CommonNumberInput
-                                                defaultOpenErrorTooltip={firstErrorKey === `thresholds.${idx}.min_subject_grade`}
+                                            <ValidCommonNumberInput
+                                                control={control}
                                                 description="Worst allowed grade in any single course unit. If a student receives a grade worse than this, they are disqualified even if their GWA qualifies."
                                                 disabled={disabled}
                                                 fullWidth
-                                                isFirstError={firstErrorKey === `thresholds.${idx}.min_subject_grade`}
                                                 label="Subject Floor Grade"
+                                                max={NUMERIC_4_2_MAX}
                                                 maxDecimals={2}
+                                                min={0}
                                                 minDecimals={2}
                                                 name={`thresholds.${idx}.min_subject_grade`}
                                                 placeholder="Optional (e.g. 2.50)"
-                                                size="small"
-                                                step={0.01}
-                                                value={item.min_subject_grade ?? ''}
-                                                onChange={(val) => {
-                                                    clearFieldError(control, `thresholds.${idx}.min_subject_grade`);
-                                                    clearFieldError(control, 'thresholds');
-                                                    setValue(
-                                                        `thresholds.${idx}.min_subject_grade`,
-                                                        val === undefined
-                                                            ? null
-                                                            : val,
-                                                        { shouldDirty: true }
-                                                    );
+                                                rules={{
+                                                    max: { message: `Subject floor grade cannot exceed ${NUMERIC_4_2_MAX}`, value: NUMERIC_4_2_MAX },
+                                                    min: { message: 'Subject floor grade cannot be negative', value: 0 }
                                                 }}
+                                                step={0.01}
                                             />
                                         </div>
 
-                                        <div className="h-9 flex items-center px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
-                                            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200 w-full select-none">
-                                                <input
-                                                    checked={Boolean(item.requires_no_failing)}
-                                                    className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-zinc-700 shrink-0"
-                                                    disabled={disabled}
-                                                    type="checkbox"
-                                                    onChange={(e) => setValue(`thresholds.${idx}.requires_no_failing`, e.target.checked, { shouldDirty: true })}
-                                                />
-                                                <span className="truncate">No failing grades permitted</span>
-                                                <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
-                                            </label>
+                                        <div className="flex items-center gap-1">
+                                            <ValidCommonCheckbox
+                                                control={control}
+                                                disabled={disabled}
+                                                label="No failing grades permitted"
+                                                name={`thresholds.${idx}.requires_no_failing`}
+                                            />
+                                            <CommonInfoTooltip content="Requires that the student has zero failing marks (5.00, DRP, INC) in the evaluation period." size={13} />
                                         </div>
                                     </div>
                                 </div>

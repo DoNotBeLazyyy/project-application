@@ -99,24 +99,28 @@ export default function StudentDashboard() {
     const [profile, setProfile] = useState<MyProfile | null>(null);
     const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
+    async function fetchStudentData() {
+        const [dashboardResult, insightResult] = await Promise.all([
+            getStudentDashboard(),
+            getStudentInsight()
+        ]);
+        if (dashboardResult.data) setDashboard(dashboardResult.data);
+        if (insightResult.data?.success) setInsight(insightResult.data);
+    }
+
     async function loadProfile() {
         const result = await getMyProfile();
         if (result.data) setProfile(result.data);
+
+        // Without a student record the dashboard/insight functions only return a
+        // "profile not found" failure (shown as an error toast); the missing-profile
+        // banner already covers that state, so skip them until the record exists.
+        if (!result.data || result.data.student) {
+            fetchStudentData();
+        }
     }
 
     useEffect(function() {
-        async function fetchDashboard() {
-            const result = await getStudentDashboard();
-            if (result.data) setDashboard(result.data);
-        }
-
-        async function fetchInsight() {
-            const result = await getStudentInsight();
-            if (result.data?.success) setInsight(result.data);
-        }
-
-        fetchDashboard();
-        fetchInsight();
         loadProfile();
     }, [userProfile?.profile_completed]);
 
