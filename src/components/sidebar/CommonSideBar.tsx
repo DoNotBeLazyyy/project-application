@@ -82,6 +82,11 @@ export default function CommonSideBar({
         light: 'var(--mui-tokens-color-common-white)'
     } as const;
     const backgroundColor = color ?? sidebarBg[variant];
+    // The dark variant's surface stays dark in both themes, so pin its outline color rather than
+    // using neutral-300, which html.dark remaps to a near-invisible slate
+    const footerOutlineColor = variant === 'dark'
+        ? '#D4D4D8'
+        : 'var(--mui-tokens-color-neutral-300)';
 
     const contextValue = useMemo(() => ({ isExpanded }), [isExpanded]);
 
@@ -168,7 +173,7 @@ export default function CommonSideBar({
                                 justifyContent: 'flex-start',
                                 gap: '10px',
                                 borderRadius: 'var(--mui-tokens-radius-md)',
-                                border: '2px solid var(--mui-tokens-color-neutral-300)',
+                                border: `2px solid ${footerOutlineColor}`,
                                 backgroundColor: 'transparent',
                                 paddingInline: 'calc(var(--mui-tokens-spacing-4) - 2px)',
                                 paddingBlock: '0.375rem',
@@ -182,13 +187,13 @@ export default function CommonSideBar({
                                     backgroundColor: variant === 'dark'
                                         ? 'rgba(255,255,255,0.1)'
                                         : 'rgba(161,161,170,0.1)',
-                                    border: '2px solid var(--mui-tokens-color-neutral-300)'
+                                    border: `2px solid ${footerOutlineColor}`
                                 },
                                 '& .MuiButton-startIcon': {
                                     marginInline: 0,
                                     flexShrink: 0,
                                     color: variant === 'dark'
-                                        ? 'var(--mui-tokens-color-neutral-300)'
+                                        ? footerOutlineColor
                                         : 'var(--mui-tokens-color-neutral-400)'
                                 }
                             }}

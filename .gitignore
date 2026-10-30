@@ -95,3 +95,6 @@ Thumbs.db
 .env*
 scripts/
 scratch/
+
+# Local DB snapshots (contain PII) - never commit
+backups/

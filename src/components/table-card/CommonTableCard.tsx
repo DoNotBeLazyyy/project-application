@@ -143,7 +143,11 @@ export default function CommonTableCard<T extends FieldValues>({
     }
 
     function handleApplyTableSort(sort: SortStringDto[]) {
-        handleApplySort(sort);
+        // Apply also submits the filter form, which refetches on its own; refetching here
+        // too would race it with the previous filters
+        if (JSON.stringify(sort) !== JSON.stringify(internalSort)) {
+            handleApplySort(sort);
+        }
         handleCloseSortModal();
     }
 

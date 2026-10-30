@@ -18,10 +18,10 @@ const EMPTY_FILTERS: StaffProfileRequestFilterValues = {
 };
 
 const SORT_COLUMNS: SortColumn[] = [
-    { field: 'req.created_at', label: 'Submitted Date' },
-    { field: 'u.last_name', label: 'Staff Name' },
-    { field: 'r.role_code', label: 'Role' },
-    { field: 'req.status', label: 'Status' }
+    { field: 'created_at', label: 'Submitted Date' },
+    { field: 'user_name', label: 'Staff Name' },
+    { field: 'role_code', label: 'Role' },
+    { field: 'status', label: 'Status' }
 ];
 
 export default function StaffProfileVerificationPage() {

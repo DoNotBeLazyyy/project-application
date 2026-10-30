@@ -35,7 +35,7 @@ function DetailField({ label, value }: DetailFieldProps) {
     );
 }
 
-const MANUAL_TYPES = ['Essay', 'Short Answer', 'File Upload'];
+const MANUAL_TYPES = ['Essay', 'Short Answer', 'Fill in the Blank', 'File Upload'];
 
 async function openSubmissionFile(path: string) {
     const result = await getFileUrl('submissions', path);

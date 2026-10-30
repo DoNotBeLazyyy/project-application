@@ -20,10 +20,10 @@ const EMPTY_FILTERS: StudentProfileRequestFilterValues = {
 };
 
 const SORT_COLUMNS: SortColumn[] = [
-    { field: 'req.created_at', label: 'Submitted Date' },
-    { field: 's.student_number', label: 'Student Number' },
-    { field: 'u.last_name', label: 'Student Name' },
-    { field: 'req.status', label: 'Status' }
+    { field: 'created_at', label: 'Submitted Date' },
+    { field: 'student_number', label: 'Student Number' },
+    { field: 'student_name', label: 'Student Name' },
+    { field: 'status', label: 'Status' }
 ];
 
 export default function StudentVerificationPage() {

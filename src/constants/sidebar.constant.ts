@@ -5,19 +5,21 @@ export const SIDEBAR_WIDTH_EXPANDED = 'w-62.5 min-w-62.5';
 export const SIDEBAR_WIDTH_COLLAPSED = 'w-[5.5rem] min-w-[5.5rem]';
 
 // Sidebar variant style configuration (dark and light)
+// In dark mode, html.dark remaps the brand scale (brand-900 becomes a light blue), so the
+// always-dark variant needs explicit dark: surfaces to keep its white text readable
 export const VARIANT_STYLES = {
     dark: {
         sectionLabel: 'text-(--mui-tokens-color-common-white)',
         itemText: '!text-(--mui-tokens-color-common-white)',
-        itemHover: 'hover:bg-(--mui-tokens-color-brand-900)',
+        itemHover: 'hover:bg-(--mui-tokens-color-brand-900) dark:hover:bg-white/10',
         itemIcon: 'text-(--mui-tokens-color-common-white)',
-        itemActive: '!bg-(--mui-tokens-color-brand-900) !text-(--mui-tokens-color-common-white)',
+        itemActive: '!bg-(--mui-tokens-color-brand-900) dark:!bg-(--mui-tokens-color-brand-300) !text-(--mui-tokens-color-common-white)',
         groupText: 'text-(--mui-tokens-color-common-white)',
         groupIcon: 'text-(--mui-tokens-color-common-white)',
-        expandIcon: 'text-(--mui-tokens-color-brand-300)',
+        expandIcon: 'text-(--mui-tokens-color-brand-300) dark:text-(--mui-tokens-color-brand-700)',
         subItemText: '!text-(--mui-tokens-color-common-white)',
-        subItemHover: 'hover:bg-(--mui-tokens-color-brand-900)',
-        subItemActive: '!bg-(--mui-tokens-color-brand-900) !text-(--mui-tokens-color-common-white)',
+        subItemHover: 'hover:bg-(--mui-tokens-color-brand-900) dark:hover:bg-white/10',
+        subItemActive: '!bg-(--mui-tokens-color-brand-900) dark:!bg-(--mui-tokens-color-brand-300) !text-(--mui-tokens-color-common-white)',
         subItemBorder: '',
         subItemBorderActive: '',
         subItemBorderInactive: ''

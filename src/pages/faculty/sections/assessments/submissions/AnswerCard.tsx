@@ -3,7 +3,7 @@ import { getFileUrl } from '@services/storage.service';
 import { GradeAnswerUpdate, SubmissionAnswer } from '@type/assessment.type';
 import { stripLeadingZeros } from '@utils/input.util';
 
-const MANUAL_GRADE_TYPES = ['Essay', 'Short Answer', 'File Upload'];
+const MANUAL_GRADE_TYPES = ['Essay', 'Short Answer', 'Fill in the Blank', 'File Upload'];
 
 async function openSubmissionFile(path: string) {
     const result = await getFileUrl('submissions', path);

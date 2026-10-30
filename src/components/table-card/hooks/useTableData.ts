@@ -40,8 +40,8 @@ export function useTableData<T extends FieldValues>({
         if (!isAppending) {
             setIsLoading(true);
         }
+        const seq = ++fetchSequenceRef.current;
         try {
-            const seq = ++fetchSequenceRef.current;
             const result = await onFetchRef.current?.(page, size, search, sort);
             if (seq !== fetchSequenceRef.current) {
                 return;
@@ -64,7 +64,8 @@ export function useTableData<T extends FieldValues>({
             }
         }
         finally {
-            if (!isAppending) {
+            // A superseded request must not clear the spinner of the newer one still in flight
+            if (!isAppending && seq === fetchSequenceRef.current) {
                 setIsLoading(false);
             }
         }

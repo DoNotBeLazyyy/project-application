@@ -333,7 +333,7 @@ export default function AnnouncementDetailPage() {
             };
 
             if (loadedItemType === 'Announcement') {
-                const createRes = await createEvent(eventPayload);
+                const createRes = await createEvent(eventPayload, currentRole);
                 if (createRes.data) {
                     await deleteAnnouncement(id);
                     navigate(basePath, { replace: true });
@@ -357,7 +357,7 @@ export default function AnnouncementDetailPage() {
         };
 
         if (loadedItemType === 'Event') {
-            const createRes = await createAnnouncement(annPayload);
+            const createRes = await createAnnouncement(annPayload, currentRole);
             if (createRes.data) {
                 await deleteEvent(id);
                 navigate(basePath, { replace: true });

@@ -286,7 +286,7 @@ export default function NotificationBell() {
                                 className={
                                     item.is_read
                                         ? `${STATE_PILL_CLASS} bg-black/8 dark:bg-white/10 text-(--mui-palette-text-secondary) hover:bg-black/16 dark:hover:bg-white/20`
-                                        : `${STATE_PILL_CLASS} bg-(--mui-palette-primary-main) text-white hover:bg-(--mui-palette-primary-dark)`
+                                        : `${STATE_PILL_CLASS} bg-(--mui-palette-primary-main) dark:bg-(--mui-palette-primary-dark) text-white hover:bg-(--mui-palette-primary-dark)`
                                 }
                                 title={
                                     item.is_read

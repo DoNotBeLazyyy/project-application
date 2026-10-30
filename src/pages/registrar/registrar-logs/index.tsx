@@ -18,10 +18,10 @@ const EMPTY_FILTERS: RegistrarLogFilterValues = {
 };
 
 const SORT_COLUMNS: SortColumn[] = [
-    { field: 'rl.created_at', label: 'Timestamp' },
-    { field: 'rl.action', label: 'Action' },
-    { field: 'rl.student_name', label: 'Student Name' },
-    { field: 'rl.student_number', label: 'Student Number' }
+    { field: 'created_at', label: 'Timestamp' },
+    { field: 'action', label: 'Action' },
+    { field: 'student_name', label: 'Student Name' },
+    { field: 'student_number', label: 'Student Number' }
 ];
 
 function formatActionLabel(action: string): string {

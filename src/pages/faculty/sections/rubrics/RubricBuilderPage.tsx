@@ -9,7 +9,7 @@ import DraftRecoveryPromptModal from '@components/modal/DraftRecoveryPromptModal
 import { useFormDraft } from '@hooks/useFormDraft';
 import { RubricCriterionInput, RubricFormValues } from '@type/rubric.type';
 import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FieldErrors, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -34,21 +34,20 @@ export default function RubricBuilderPage() {
     });
 
     const {
-        control, formState, handleSubmit, reset, watch
+        control, formState, handleSubmit, reset
     } = methods;
 
     const { fields, append, remove } = useFieldArray({ control, name: 'criteria' });
 
-    const watchedCriteria = watch('criteria') ?? [];
+    // Not memoized: field edits can mutate the watched array in place, which left the total stale
+    const watchedCriteria = useWatch({ control, name: 'criteria' }) ?? [];
 
-    const totalPoints = useMemo(function() {
-        return watchedCriteria.reduce(function(sum, criterion) {
-            const value = Number(criterion?.max_points);
-            return sum + (Number.isFinite(value)
-                ? value
-                : 0);
-        }, 0);
-    }, [watchedCriteria]);
+    const totalPoints = watchedCriteria.reduce(function(sum, criterion) {
+        const value = Number(criterion?.max_points);
+        return sum + (Number.isFinite(value)
+            ? value
+            : 0);
+    }, 0);
 
     useEffect(function() {
         if (isNew || !rubricId) return;

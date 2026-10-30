@@ -5,6 +5,10 @@ const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
 const FALLBACK_MODEL = 'gemini-3.5-flash-lite';
 const MAX_HISTORY_TURNS = 10;
 const RETRY_DELAYS_MS = [700, 2000];
+// Whole-request budget; must stay below the client's 25s timeout so the user gets a real answer or error
+const DEADLINE_MS = 20000;
+const ATTEMPT_TIMEOUT_MS = 12000;
+const MIN_ATTEMPT_MS = 3000;
 const BUSY_MESSAGE = 'The assistant is busy right now. Please try again in a moment.';
 const UNAVAILABLE_MESSAGE = 'The assistant is unavailable right now. Please try again later.';
 
@@ -99,6 +103,7 @@ export async function generateReply(
 
     let lastDetail = 'no attempt completed';
     let wasOverloaded = false;
+    const startedAt = Date.now();
 
     for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
         const model = resolveModel(primary, attempt);
@@ -107,17 +112,23 @@ export async function generateReply(
             await delay(RETRY_DELAYS_MS[attempt - 1]);
         }
 
+        const remainingMs = DEADLINE_MS - (Date.now() - startedAt);
+        if (remainingMs < MIN_ATTEMPT_MS) {
+            lastDetail = `deadline reached before attempt ${attempt + 1}; last: ${lastDetail}`;
+            break;
+        }
+
         let response: Response;
 
         try {
-            response = await fetch(`${GEMINI_ENDPOINT}/${model}:generateContent?key=${apiKey}`, {
+            response = await fetch(`${GEMINI_ENDPOINT}/${model}:generateContent`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-goog-api-key': apiKey
                 },
                 body: requestBody,
-                signal: AbortSignal.timeout(12000)
+                signal: AbortSignal.timeout(Math.min(ATTEMPT_TIMEOUT_MS, remainingMs))
             });
         }
         catch (error) {

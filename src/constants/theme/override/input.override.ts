@@ -249,7 +249,8 @@ export const inputOverrides: ComponentTheme = {
                     color: 'var(--mui-tokens-color-neutral-700)'
                 },
                 '&.Mui-error.common_textarea_input.MuiInputBase-multiline': {
-                    backgroundColor: 'var(--mui-tokens-color-red-100)'
+                    // Same token as other inputs' error surface; red-100 is not remapped in dark mode
+                    backgroundColor: 'var(--mui-tokens-color-state-errorLight, #FFF0F0)'
                 },
                 '&.common_textarea_input.MuiInputBase-multiline': {
                     backgroundColor: 'var(--mui-palette-background-paper)',

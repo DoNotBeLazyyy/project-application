@@ -83,6 +83,13 @@ function normalizeStr(val: unknown): string {
     return String(val ?? '').trim();
 }
 
+// Joins non-empty identity parts; falls back to a positional key when every part is empty
+function buildCompositeKey(parts: string[], fallback: string): string {
+    return parts.some(Boolean)
+        ? parts.join('::')
+        : fallback;
+}
+
 function normalizeNum(val: unknown, fallback = 0): number {
     if (val === null || val === undefined || val === '') return fallback;
     const n = Number(val);
@@ -239,7 +246,7 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step4Diffs = countCollectionDiffs(
         holidaysA,
         holidaysB,
-        (h, idx) => `${normalizeStr(h.title).toLowerCase()}::${normalizeStr(h.start_date)}` || `h_${idx}`,
+        (h, idx) => buildCompositeKey([normalizeStr(h.title).toLowerCase(), normalizeStr(h.start_date)], `h_${idx}`),
         serializeHoliday
     );
 
@@ -259,7 +266,7 @@ function computeStepDiffCounts(snapA?: SnapshotData, snapB?: SnapshotData): Reco
     const step6Diffs = countCollectionDiffs(
         thresholdsA,
         thresholdsB,
-        (th, idx) => `${normalizeStr(th.category).toLowerCase()}::${normalizeStr(th.label).toLowerCase()}` || `th_${idx}`,
+        (th, idx) => buildCompositeKey([normalizeStr(th.category).toLowerCase(), normalizeStr(th.label).toLowerCase()], `th_${idx}`),
         serializeThreshold
     );
 
@@ -1960,11 +1967,11 @@ function StepBaseContent({
                     ) : (
                         <div className="space-y-3">
                             {holidays.map((current, idx) => {
-                                const hKey = `${normalizeStr(current.title).toLowerCase()}::${normalizeStr(current.start_date)}` || `h_${idx}`;
+                                const hKey = buildCompositeKey([normalizeStr(current.title).toLowerCase(), normalizeStr(current.start_date)], `h_${idx}`);
                                 const matchedOtherH = isComparing
                                     ? otherHolidays.find(
                                           (oh, oIdx) =>
-                                              (`${normalizeStr(oh.title).toLowerCase()}::${normalizeStr(oh.start_date)}` || `h_${oIdx}`) === hKey
+                                              (buildCompositeKey([normalizeStr(oh.title).toLowerCase(), normalizeStr(oh.start_date)], `h_${oIdx}`)) === hKey
                                       )
                                     : undefined;
                                 const hAddedOrRemoved = isComparing && !matchedOtherH;
@@ -2340,11 +2347,11 @@ function StepBaseContent({
                     ) : (
                         <div className="space-y-3">
                             {thresholds.map((item, idx) => {
-                                const thKey = `${normalizeStr(item.category).toLowerCase()}::${normalizeStr(item.label).toLowerCase()}` || `th_${idx}`;
+                                const thKey = buildCompositeKey([normalizeStr(item.category).toLowerCase(), normalizeStr(item.label).toLowerCase()], `th_${idx}`);
                                 const matchedOtherTh = isComparing
                                     ? otherThresholds.find(
                                           (oth, oIdx) =>
-                                              (`${normalizeStr(oth.category).toLowerCase()}::${normalizeStr(oth.label).toLowerCase()}` || `th_${oIdx}`) === thKey
+                                              (buildCompositeKey([normalizeStr(oth.category).toLowerCase(), normalizeStr(oth.label).toLowerCase()], `th_${oIdx}`)) === thKey
                                       )
                                     : undefined;
                                 const thAddedOrRemoved = isComparing && !matchedOtherTh;

@@ -49,6 +49,10 @@ export const sidebarOverrides: ComponentTheme = {
                 '&.sidebar_dark:hover': {
                     backgroundColor: 'var(--mui-tokens-color-brand-900)'
                 },
+                // brand-900 is remapped to a light blue in dark mode, which hides the white text
+                '.dark &.sidebar_dark:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.10)'
+                },
                 '&.sidebar_light:hover': {
                     backgroundColor: 'rgba(0,0,0,0.04)'
                 }
