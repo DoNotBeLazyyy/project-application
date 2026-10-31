@@ -21,8 +21,21 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   form's own values. Fix: `useFormDraft` skips the prompt when the form already shows exactly the draft (`src/hooks/useFormDraft.ts`).
 - BUG (fixed): Reactivate showed two success toasts. The database call already shows the server's message; the page added a
   second one. Removed the page toasts (`src/pages/admin/user-management/index.tsx`).
-- NOT TESTABLE without your input: Create user, Upload CSV, Resend Invite and Reset Password all send real emails through Supabase
-  Auth, and Supabase rejects the seed's `@au-jas.test` addresses ("Email address ... is invalid"). They need an inbox you control.
+- OK (with your 4 Gmail addresses): Create User (invite email arrived), Upload CSV (2 valid rows created and invited; invalid
+  email, existing email and unknown role rejected with clear reasons), Resend Invite (email arrived), Reset Password (email
+  arrived; its link opens `/set-password` on the live site).
+- BUG (fixed): after a CSV import with some failed rows, the results listed the wrong rows as "Created" (the failed rows 4 and
+  5 instead of rows 1 and 2) and numbered the failures 1–3. Errors are now matched to their real row
+  (`src/components/modal/BulkImportModal.tsx`, unit-tested).
+- BUG (fixed, all CSV imports): the list didn't refresh after an import where some rows failed, so new records only showed
+  after a manual reload. The list now refreshes whenever at least one row was saved. The Users page also had no refresh after
+  an import at all.
+- BUG (fixed): Resend Invite gave no feedback (no success or error message). It now shows "Invitation sent again to …".
+- INCONSISTENCY: Resend Invite emails a "Reset Your Password" message instead of a second invitation (the link still lets the
+  person set their password).
+- INCONSISTENCY: the CSV preview doesn't flag invalid emails or unknown roles; they are only reported after Confirm Import.
+- DATA: Supabase emailed that the project "is running out of Disk IO Budget". When the budget runs out, Supabase throttles the
+  database, which feels like lag for everyone. The new indexes (release 5) cut disk reads; the free plan's budget refills over time.
 - INCONSISTENCY: Roles in Edit User is required but has no red asterisk (Create shows "Role *"). The label is also "Role" in
   Create and "Roles" in Edit.
 - INCONSISTENCY: search only runs on Enter; typed text that hasn't been submitted stays in the box while the list ignores it

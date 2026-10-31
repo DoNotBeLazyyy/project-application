@@ -1,4 +1,4 @@
-import BulkImportModal, { getTargetEntityName } from '@components/modal/BulkImportModal';
+import BulkImportModal, { findErrorRow, getTargetEntityName } from '@components/modal/BulkImportModal';
 import UploadCsvModal from '@components/modal/UploadCsvModal';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,6 +7,21 @@ const MOCK_COLUMNS = [
     { key: 'code', label: 'Code', required: true },
     { key: 'name', label: 'Name', required: true }
 ];
+
+describe('findErrorRow', () => {
+    const rows = [
+        { email: 'a@x.com', first_name: 'A' },
+        { email: 'b@x.com', first_name: 'B' },
+        { email: 'not-an-email', first_name: 'C' }
+    ];
+
+    it('maps "Row N" and "<value>: message" errors to the row they describe', () => {
+        expect(findErrorRow('Row 2 (CODE): duplicate', rows)).toBe(2);
+        expect(findErrorRow('not-an-email: Email address is invalid', rows)).toBe(3);
+        expect(findErrorRow('B@X.com: already registered', rows)).toBe(2);
+        expect(findErrorRow('Something went wrong', rows)).toBeNull();
+    });
+});
 
 describe('getTargetEntityName', () => {
     it('cleans various titles correctly', () => {

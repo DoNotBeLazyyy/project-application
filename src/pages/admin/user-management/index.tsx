@@ -6,13 +6,12 @@ import { CREATE_FORM_ID, FILTER_FORM_ID, SORT_COLUMNS } from '@pages/admin/user-
 import CreateUserForm from '@pages/admin/user-management/forms/CreateUserForm';
 import FilterUserForm from '@pages/admin/user-management/forms/FilterUserForm';
 import UserForm from '@pages/admin/user-management/forms/UserForm';
-import { useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
+import { handleResendInvite, handleResetPassword, useUserTableConfig } from '@pages/admin/user-management/hooks/useUserTableConfig';
 import UserGridCard from '@pages/admin/user-management/UserGridCard';
 import { ArrowCounterClockwiseIcon, ProhibitIcon } from '@phosphor-icons/react';
 import {
-    bulkProvisionUsers, deactivateUsers, getUserById, inviteSingleUser, listUsers, reactivateUsers, resendInvite, resetUserPassword, updateUser
+    bulkProvisionUsers, deactivateUsers, getUserById, inviteSingleUser, listUsers, reactivateUsers, updateUser
 } from '@services/user.service';
-import { useToastStore } from '@stores/toast.store';
 import { UserRole } from '@type/app.type';
 import { CsvTemplateColumn } from '@type/bulk-import.type';
 import { SortStringDto } from '@type/http.type';
@@ -382,19 +381,8 @@ export default function UserManagement() {
                             onEdit={handleOpenUpdate}
                             onRequestDelete={onRequestDeleteRow}
                             onReactivate={handleReactivateSingle}
-                            onResendInvite={(email) => resendInvite(email)}
-                            onResetPassword={async (email) => {
-                                const { error } = await resetUserPassword(email);
-                                useToastStore.getState()
-                                    .showToast(
-                                        error
-                                            ? error.message
-                                            : `Password reset link sent to ${email}.`,
-                                        error
-                                            ? 'error'
-                                            : 'success'
-                                    );
-                            }}
+                            onResendInvite={handleResendInvite}
+                            onResetPassword={handleResetPassword}
                             onToggleSelect={onToggleSelect}
                             onView={handleOpenView}
                         />
@@ -490,6 +478,9 @@ export default function UserManagement() {
                 onBulkImport={bulkProvisionUsers}
                 onClose={function() {
                     setIsBulkImportOpen(false);
+                }}
+                onSuccess={function() {
+                    setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
                 }}
                 onMapRow={function(row) {
                     const rawRole = (row.role_code || '').trim();

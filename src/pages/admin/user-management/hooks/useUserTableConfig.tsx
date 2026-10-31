@@ -8,13 +8,26 @@ import { UserListRow } from '@type/user.type';
 import { ColDef } from 'ag-grid-community';
 import { useCallback, useMemo } from 'react';
 
-async function handleResetPassword(email: string) {
+export async function handleResetPassword(email: string) {
     const { error } = await resetUserPassword(email);
     useToastStore.getState()
         .showToast(
             error
                 ? error.message
                 : `Password reset link sent to ${email}.`,
+            error
+                ? 'error'
+                : 'success'
+        );
+}
+
+export async function handleResendInvite(email: string) {
+    const { error } = await resendInvite(email);
+    useToastStore.getState()
+        .showToast(
+            error
+                ? error.message
+                : `Invitation sent again to ${email}.`,
             error
                 ? 'error'
                 : 'success'
@@ -127,7 +140,7 @@ export function useUserTableConfig({
                         </div>
                     ),
                     disabled: row.status === 'Active',
-                    onClick: () => resendInvite(row.email)
+                    onClick: () => handleResendInvite(row.email)
                 },
                 {
                     children: (

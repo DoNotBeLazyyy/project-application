@@ -11,7 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarAction } from '@mui/x-date-pickers/PickersActionBar';
 import { classMerge } from '@utils/css.util';
 import {
-    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel, getLastWindowFocusTime
+    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -243,21 +243,6 @@ export function CommonDatePicker({
         }
     }
 
-    function handleFocus() {
-        if (isNonInteractive) {
-            return;
-        }
-        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
-        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
-            return;
-        }
-        if (!isOpen && !isClosing.current) {
-            setIsOpen(true);
-            if (typeof props.onOpen === 'function') {
-                (props.onOpen as () => void)();
-            }
-        }
-    }
 
 
     const labelErrorMessage = label && errorProp
@@ -360,7 +345,6 @@ export function CommonDatePicker({
                                 if (isNonInteractive) {
                                     return;
                                 }
-                                handleFocus();
                                 if (typeof externalOnFocus === 'function') {
                                     (externalOnFocus as (e: any) => void)(e);
                                 }
@@ -512,22 +496,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
         }
     }
 
-    function handleFocus() {
-        if (isNonInteractive) {
-            return;
-        }
-        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
-        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
-            return;
-        }
-        if (!isOpen && !isClosing.current) {
-            setIsOpen(true);
-            if (typeof props.onOpen === 'function') {
-                (props.onOpen as () => void)();
-            }
-        }
-    }
-
     useEffect(() => {
         if (resolvedIsFirstError && !isNonInteractive) {
             const timer = setTimeout(() => {
@@ -656,7 +624,6 @@ export default function ValidCommonDatePicker<T extends FieldValues = FieldValue
                                 if (isNonInteractive) {
                                     return;
                                 }
-                                handleFocus();
                                 if (typeof externalOnFocus === 'function') {
                                     (externalOnFocus as (e: any) => void)(e);
                                 }

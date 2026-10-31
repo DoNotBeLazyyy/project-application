@@ -10,7 +10,7 @@ import { DateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTim
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { classMerge } from '@utils/css.util';
 import {
-    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel, getLastWindowFocusTime
+    blurActiveElementWithin, checkForMessage, clearFieldError, ensureSubmitValidationMode, FORM_ERROR_EVENT, FormErrorEventDetail, formatFieldLabel
 } from '@utils/form.util';
 import { DateTime } from 'luxon';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -251,22 +251,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
         }
     }
 
-    function handleFocus() {
-        if (isNonInteractive) {
-            return;
-        }
-        // If focus was triggered by the window/tab regaining focus rather than user interaction, do not reopen
-        if (Date.now() - getLastWindowFocusTime() < 250 && Date.now() - lastPointerDownTimeRef.current > 250) {
-            return;
-        }
-        if (!isOpen && !isClosing.current) {
-            setIsOpen(true);
-            if (typeof (props as any).onOpen === 'function') {
-                (props as any).onOpen();
-            }
-        }
-    }
-
     useEffect(() => {
         if (resolvedIsFirstError && !isNonInteractive) {
             const timer = setTimeout(() => {
@@ -384,7 +368,6 @@ export default function ValidCommonDateTimePicker<T extends FieldValues = FieldV
                                 if (isNonInteractive) {
                                     return;
                                 }
-                                handleFocus();
                                 if (typeof externalOnFocus === 'function') {
                                     (externalOnFocus as (e: any) => void)(e);
                                 }

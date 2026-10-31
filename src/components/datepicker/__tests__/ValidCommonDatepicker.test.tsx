@@ -40,7 +40,7 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         expect(handleOpen).not.toHaveBeenCalled();
     });
 
-    it('opens datepicker when user explicitly clicks / focuses the input', async () => {
+    it('keeps the picker closed on focus so a date can be typed, and opens it from the calendar button', async () => {
         const handleOpen = vi.fn();
         const { container } = render(
             <CommonDatePicker
@@ -54,13 +54,16 @@ describe('CommonDatePicker - Focus & Tab Revisit Behavior', () => {
         const sectionsContainer = container.querySelector('.MuiPickersInputBase-sectionsContainer') as HTMLElement;
         expect(sectionsContainer).toBeDefined();
 
-        // Normal interaction (no recent window refocus)
         setLastWindowFocusTime(0);
 
         const inputEl = container.querySelector('input') || sectionsContainer;
         fireEvent.pointerDown(inputEl);
         fireEvent.focus(inputEl);
 
+        // The open popup would take keyboard focus away from the field
+        expect(handleOpen).not.toHaveBeenCalled();
+
+        fireEvent.click(container.querySelector('button') as HTMLElement);
         expect(handleOpen).toHaveBeenCalled();
     });
 

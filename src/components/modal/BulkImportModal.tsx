@@ -20,7 +20,24 @@ type BulkImportStep = 'upload' | 'preview' | 'results';
 
 type ParsedRow = Record<string, string>;
 
+// Finds the 1-based row a plain error message refers to: "Row 3 ..." or "<a value of that row>: ..."
+export function findErrorRow(error: string, rows: ParsedRow[]): number | null {
+    const rowMatch = /^Row #?(\d+)\b/i.exec(error);
+    if (rowMatch) return Number(rowMatch[1]);
 
+    const subject = error.split(':')[0]
+        .trim()
+        .toLowerCase();
+    if (!subject) return null;
+
+    const index = rows.findIndex((row) => Object.values(row)
+        .some((value) => String(value ?? '')
+            .trim()
+            .toLowerCase() === subject));
+    return index >= 0
+        ? index + 1
+        : null;
+}
 
 export function getTargetEntityName(title?: string, entityName?: string): string {
     if (entityName?.trim()) return entityName.trim();
@@ -319,7 +336,7 @@ export default function BulkImportModal<TPayload>({
                     provisioned_count: rawResult.provisioned_count,
                     errors: rawResult.errors,
                     structuredErrors: rawResult.errors.map((err, i) => ({
-                        row: i + 1,
+                        row: findErrorRow(err, parsedRows) ?? i + 1,
                         code: 'IMPORT_ERROR',
                         message: err
                     }))
@@ -334,7 +351,9 @@ export default function BulkImportModal<TPayload>({
                 setActiveResultTab('created');
             }
             setStep('results');
-            if (!importResult.errors?.length && !importResult.structuredErrors?.length) {
+            // Refresh the list whenever something was saved, even if other rows failed
+            const updated = importResult.updated_count ?? 0;
+            if (created > 0 || updated > 0 || (!importResult.errors?.length && !importResult.structuredErrors?.length)) {
                 onSuccess?.();
             }
         }
