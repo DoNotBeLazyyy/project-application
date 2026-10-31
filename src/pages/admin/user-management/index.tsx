@@ -479,9 +479,6 @@ export default function UserManagement() {
                 onClose={function() {
                     setIsBulkImportOpen(false);
                 }}
-                onSuccess={function() {
-                    setActiveFilters((prev) => ({ ...prev } as UserFilterValues));
-                }}
                 onMapRow={function(row) {
                     const rawRole = (row.role_code || '').trim();
                     const normalizedRole = rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase();

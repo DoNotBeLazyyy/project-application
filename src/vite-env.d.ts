@@ -11,6 +11,7 @@ declare module '@toast-ui/editor' {
 
     export default class Editor implements EditorInstance {
         constructor(options: {
+            autofocus?: boolean;
             el: HTMLElement;
             events?: {
                 blur?: () => void;
