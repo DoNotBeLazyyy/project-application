@@ -29,6 +29,12 @@ export default defineConfig({
         setupFiles: ['./src/test/setup.ts'],
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
         passWithNoTests: true,
+        // Tests never reach a real project; these keep the Supabase client from failing to start
+        // where no .env exists (CI)
+        env: {
+            VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+            VITE_SUPABASE_URL: 'http://localhost:54321'
+        },
         // UI tests render whole MUI forms and are slow on shared CI machines
         testTimeout: 60000,
         hookTimeout: 60000
