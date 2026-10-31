@@ -195,3 +195,24 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - BUG (fixed): a past academic year with student records could be deleted, hiding that year's grades from transcripts and
   the GWA. Now refused (migration `20261031120000`).
 - OK: deleting a section without students (the test section) works for the Dean.
+
+### Courses
+- OK: create wizard (title, department, course type with units and credit hours), course created; units above 10 are capped
+  at 10.
+- BUG (fixed, all forms): typing in the first invalid field moved focus to the next invalid field after one letter (the
+  course title kept only "B"). Focus now moves only when errors first appear or on a new submit (`CommonForm` and the six
+  field components; regression test added).
+- OK: CSV import: 1 created, 3 rejected with row-accurate reasons (zero units, unknown department, missing title); the list
+  refreshed after the partial import.
+- INCONSISTENCY: the Department dropdown isn't pre-selected for a Dean although it only offers their college; units above
+  10 are silently capped instead of showing an error like other number fields; generated codes look like "CBA102" while
+  seeded codes look like "ACC-111".
+
+### Sections CSV
+- BUG (fixed): a row with the end time before the start time showed a raw database error ("violates check constraint"), and
+  the same row was also listed as created although nothing was saved. Times are now checked first ("Schedule end time must
+  be after the start time", 24-hour HH:MM), and a row that fails part-way is no longer counted (migration
+  `20261031130000_section_import_schedule_checks`).
+- OK: unknown course rejected ("Course not found: NOPE-999"); valid row created with faculty, room and Tue/Thu schedule.
+- INCONSISTENCY: the CSV import doesn't check for faculty or room double-booking (the wizard does); clashes still appear on
+  the Schedule Conflicts report.
