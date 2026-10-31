@@ -153,16 +153,9 @@ export function focusAndOpenFirstErrorField(
                 combobox.click();
             }
         } else {
-            // 2. Check if DatePicker / DateTimePicker
-            const datePickerBtn = container?.querySelector<HTMLButtonElement>(
-                'button[aria-label*="date" i], button[aria-label*="picker" i], button[aria-label*="calendar" i], .MuiInputAdornment-root button'
-            );
-            const isDatePicker = Boolean(
-                datePickerBtn ||
-                container?.querySelector('.MuiDatePicker-root, .MuiDateTimePicker-root')
-            );
-
-            // 3. Check for Toast UI Editor or contenteditable
+            // 2. Check for Toast UI Editor or contenteditable
+            // (a date field is focused like a text input: opening its calendar would take focus away
+            // from the field, so the date could no longer be typed)
             const editorEditable = container?.querySelector<HTMLElement>(
                 '.toastui-editor-contents, [contenteditable="true"], .ProseMirror'
             );
@@ -176,13 +169,6 @@ export function focusAndOpenFirstErrorField(
                 textInput.focus({ preventScroll: true });
             } else {
                 element.focus({ preventScroll: true });
-            }
-
-            if (isDatePicker && datePickerBtn) {
-                const isPopperOpen = Boolean(document.querySelector('.MuiPickersPopper-root, .MuiDateCalendar-root'));
-                if (!isPopperOpen) {
-                    datePickerBtn.click();
-                }
             }
         }
 

@@ -92,7 +92,7 @@ describe('form.util - Error Focus & Autofill Handling', () => {
             document.body.removeChild(container);
         });
 
-        it('triggers open calendar button for date picker', async () => {
+        it('focuses a date field without opening its calendar, so the date can be typed', async () => {
             const container = document.createElement('div');
             const input = document.createElement('input');
             input.setAttribute('name', 'birth_date');
@@ -110,7 +110,8 @@ describe('form.util - Error Focus & Autofill Handling', () => {
 
             await new Promise((r) => setTimeout(r, 60));
 
-            expect(clickSpy).toHaveBeenCalled();
+            expect(clickSpy).not.toHaveBeenCalled();
+            expect(document.activeElement).toBe(input);
 
             document.body.removeChild(container);
         });
