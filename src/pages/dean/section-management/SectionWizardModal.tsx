@@ -16,6 +16,7 @@ import {
     XIcon
 } from '@phosphor-icons/react';
 import {
+    checkSectionScheduleConflicts,
     createSection,
     flattenScheduleBlocksToSlots,
     getSectionById,
@@ -349,6 +350,29 @@ export default function SectionWizardModal({
         const flatSlots = flattenScheduleBlocksToSlots(values.schedules || []);
 
         try {
+            // Catch a double-booked instructor or room before anything is saved
+            const conflictRes = await checkSectionScheduleConflicts({
+                termId: values.term_id,
+                facultyId: values.faculty_id,
+                sectionRoom: values.room,
+                slots: flatSlots,
+                sectionId
+            });
+            if (conflictRes.error) return;
+            const conflict = conflictRes.data?.[0];
+            if (conflict) {
+                const who = conflict.conflict_type === 'Faculty'
+                    ? 'The selected faculty already teaches'
+                    : `Room ${conflict.room} is already used by`;
+                useToastStore.getState()
+                    .showToast(
+                        `Schedule conflict: ${who} ${conflict.section_code} on ${conflict.day_of_week}, ${conflict.time_start} to ${conflict.time_end}.`,
+                        'error'
+                    );
+                setCurrentStep(2);
+                return;
+            }
+
             let targetSectionId = sectionId;
 
             if (sectionId) {

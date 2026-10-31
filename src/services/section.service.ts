@@ -61,6 +61,35 @@ export function flattenScheduleBlocksToSlots(blocks: SectionScheduleBlock[]): Se
     return slots;
 }
 
+export interface SectionScheduleConflict {
+    conflict_type: 'Faculty' | 'Room';
+    section_code: string;
+    day_of_week: string;
+    time_start: string;
+    time_end: string;
+    room: string | null;
+}
+
+/**
+ * Lists the faculty and room clashes the given slots would create in the term, ignoring the
+ * section being edited.
+ */
+export async function checkSectionScheduleConflicts(params: {
+    termId: string;
+    facultyId?: string | null;
+    sectionRoom?: string | null;
+    slots: SectionScheduleSlot[];
+    sectionId?: string | null;
+}): Promise<ServiceResult<SectionScheduleConflict[]>> {
+    return callRpc<SectionScheduleConflict[]>('fn_check_section_schedule_conflicts', {
+        p_term_id: params.termId,
+        p_faculty_id: nullIfBlank(params.facultyId ?? ''),
+        p_section_room: params.sectionRoom || null,
+        p_slots: params.slots,
+        p_section_id: params.sectionId ?? null
+    });
+}
+
 export async function saveSectionSchedules(
     sectionId: string,
     schedules: SectionScheduleSlot[]

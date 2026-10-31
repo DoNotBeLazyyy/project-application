@@ -68,7 +68,16 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - INCONSISTENCY: History step 1 doesn't show "Max Units per Term", which the wizard has.
 - INCONSISTENCY: confirmation wording differs between dialogs: "Keep Editing / Discard Changes" vs "Continue Editing / Discard".
 - INCONSISTENCY: breadcrumb says "School Years", title says "Academic Years".
-- Pending: create a new academic year and delete it (re-run after the deploy, with the fix above).
+- OK: created "Academic Year 2027-2028" through all 6 steps with typed dates (code and label generated correctly), then
+  deleted it. Checked: at least one term required, term before the year's start rejected, enrollment close before open
+  rejected, grading-period weights must total 100%.
+- BUG (fixed, all forms): typing into date fields didn't work. Clicking a date field opened its calendar, which took the
+  keyboard focus, so the typed date was ignored and the next click typed into the previous field. Date and date-time fields
+  now take typing; the calendar button opens the calendar. Jumping to a date field with an error no longer opens its
+  calendar either (`ValidCommonDatepicker`, `ValidCommonDateTimepicker`, `form.util.ts`).
+- INCONSISTENCY: "no terms" and "weights must total 100%" errors appear as a toast, not next to the fields.
+- INCONSISTENCY: the Exam Start/End and Encoding Start/End date fields are too narrow; "MM/DD/YYYY" is cut off.
+- INCONSISTENCY: list pages show "Showing 0 of 0 records" with an empty card while loading, with no loading indicator.
 
 ### Departments
 - OK: create wizard (3 steps), validation, edit, delete.
@@ -82,10 +91,13 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 ### Calendar
 - BUG (fixed): every day showed 300+ class sessions. The schedule function returned all sections of all four years with no
   term dates, so each weekly class repeated on every date, including the Oct 21–24 semestral break and holidays marked "Class
-  Suspended" (e.g. Oct 31, Nov 2). Both schedule functions now return the term dates (migration
+  Suspended" (e.g. Nov 2, All Souls' Day). Both schedule functions now return the term dates (migration
   `20261031010000_calendar_schedule_term_dates`, exact rollback), and the calendar shows a class only inside its term and
   not on suspended days. This applies to the Admin, Dean, Faculty and Student calendars.
 - OK: Create Event from the calendar, event shows on its date, category filter chips.
+- OK (re-checked live after the fix): Oct 21–24 show only the semestral break, no classes; regular days show 16–62 items
+  instead of 300+. Oct 28 shows 161 items because 114 sections each have a quiz due that day (correct). Oct 31 ("Undas Long
+  Weekend") is a campus event, not a class suspension, so classes still show that day, as the data says.
 
 ### Announcements & Events
 - OK: event create/view/edit/delete, announcement create, bulk delete via checkbox, search, empty state.
