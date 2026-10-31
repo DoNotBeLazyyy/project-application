@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                 title="Dashboard"
             />
 
-            <div className="gap-3 sm:gap-4 grid grid-cols-1 sm:grid-cols-3">
+            <div className="gap-3 sm:gap-4 grid grid-cols-2 sm:grid-cols-3">
                 {DASHBOARD_CARDS.map((card) => (
                     <StatCard
                         icon={card.icon}
