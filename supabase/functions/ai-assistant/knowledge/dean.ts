@@ -1,46 +1,50 @@
 export const DEAN_KNOWLEDGE = `
 # Dean panel — pages and workflows
 
-The Dean owns the academic architecture: what is taught, by whom, and in what structure.
-Sidebar (OVERVIEW): Dashboard, Program Level, Course Type, Department, Program, Course,
-Curriculum Map, Section, Faculty Load, Announcements, Events.
+The Dean (or Program Head) owns the academic structure of their college: what is taught, in which
+sections, and by whom. Every list shows only the Dean's own college.
+Sidebar: OVERVIEW (Dashboard), ACADEMIC LOGISTICS (Sections, Faculty Loading), CURRICULUM & CATALOG
+(Programs, Courses), ACADEMIC LOOKUPS (Program Levels, Course Types), CAMPUS COMMUNICATION
+(Calendar, Announcements & Events).
 
 ## Dashboard (/dean)
-Counts for departments, programs, courses and faculty, sections this term, sections still without an
-instructor, schedule conflicts, enrolled students, at-risk students, the sections with the most
-at-risk students, and program distribution.
+Programs, courses, sections this term, enrolled students, faculty, sections without a faculty,
+schedule conflicts and at-risk students, with lists of sections needing a faculty and sections with
+the most at-risk students.
 
-## Program Level (/dean/program-level-management) and Course Type (/dean/course-type-management)
-Reference lists used by programs and courses. Set these up before creating programs or courses.
+## Sections (/dean/section-management)
+Each card shows the course, faculty in charge, term, room and capacity (enrolled / max slots).
+Create in three steps: 1 Overview (term, course, faculty, room, max slots), 2 Schedule Assignment
+(days, start and end time, room per slot), 3 Grading Schema Settings (inherited from the program;
+change it only to override for this section). Saving is refused if the schedule double-books the
+faculty or the room, and the message names the clashing section and time. Bulk create with
+Upload CSV. A section that still has students cannot be deleted.
 
-## Department (/dean/department-management)
-Departments own programs. Click a row to open the department page and edit it.
+## Faculty Loading (/dean/faculty-load)
+Each instructor's sections, units, weekly hours and students. Open "Edit" for the three-step view:
+overview, assigned sections (reassign here), and a conflict analysis that lists every overlapping
+class or room with the overlap time.
 
-## Program (/dean/program-management)
-Degree programs under a department, with code, name, program level and total units.
+## Programs (/dean/program-management)
+Degree programs with level, department, duration and units. Viewing a program shows its details and
+its Curriculum Map. In Edit, the curriculum's "⋮" menu has Add Entry, Upload CSV, Print Curriculum
+and Clear Curriculum; changes are applied when you press Save Program. A program that still has
+students cannot be deleted.
 
-## Course (/dean/course-management)
-The course catalogue: code, title, units, course type, owning department, and prerequisites.
-Prerequisites are what the student curriculum audit checks against.
+## Courses (/dean/course-management)
+The course catalog: three steps for title and department, course type breakdown (lecture or
+laboratory units and credit hours), and prerequisites. Bulk create with Upload CSV.
 
-## Curriculum Map (/dean/curriculum-map-management)
-Places courses into a program's year and term grid. This map drives the student curriculum audit
-and remaining-units computation, so a course missing from the map will not appear in a student's audit.
-
-## Section (/dean/section-management)
-Creates class sections for a course in a term: section code, capacity, room, meeting schedule, and the
-assigned instructor. Assigning faculty here is what makes a section appear in that instructor's panel.
-
-## Faculty Load (/dean/faculty-load)
-Teaching load per instructor for the term, with unit and schedule-conflict checks. Click an instructor
-to see their sections in detail before assigning more.
+## Program Levels and Course Types (/dean/program-level-management, /dean/course-type-management)
+Lookup lists used by programs (e.g. Undergraduate, Graduate) and courses (e.g. Lecture,
+Laboratory). Set these up before programs and courses.
 
 ## Typical order of work
-Program Level and Course Type → Department → Program → Course (with prerequisites) →
-Curriculum Map → Section → assign faculty → check Faculty Load for conflicts.
+Program Levels and Course Types → Programs → Courses (with prerequisites) → each program's
+Curriculum Map → Sections with schedules and faculty → check Faculty Loading for conflicts.
 
 ## Boundaries
-- Enrolling students, releasing grades and student records belong to the Registrar.
-- Users, roles, terms, academic years and grading templates belong to the Administrator.
+- Departments, academic years, terms and grading periods belong to the Administrator.
+- Enrolling students and releasing grades belong to the Registrar.
 - Attendance, assessments and grading inside a section belong to Faculty.
 `;

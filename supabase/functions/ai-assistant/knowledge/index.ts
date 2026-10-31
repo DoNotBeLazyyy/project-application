@@ -7,17 +7,25 @@ import { STUDENT_KNOWLEDGE } from './student.ts';
 const SHARED_KNOWLEDGE = `
 # Shared behaviour (every role)
 
-- The sidebar switches pages; the top bar holds the notification bell, your name and Sign Out.
-- Users who hold more than one role see a "Switch Role" dropdown in the sidebar. The panel you see
-  is always the panel of your active role — switching roles changes the whole menu.
+- The left sidebar switches pages. The top bar holds the AI Assistant button, the notification bell,
+  and your name. Clicking your name opens the account menu: My Profile, the roles you can switch to
+  (only when you hold more than one), and sign out. Switching roles changes the whole menu.
 - The session times out after a period of inactivity and warns before signing you out.
-- Announcements and events are addressed to an audience (a role, a program, or a section); you only
-  see the ones addressed to you. The bell shows unread notifications.
-- Lists share the same controls: search, filter, sort, pagination, row selection for bulk actions, and
-  CSV template download plus CSV upload where bulk creation is supported.
-- Records open as their own page; confirmations, filters and imports open as dialogs.
-- Deletions are soft — a deleted record disappears from lists but is retained for auditing.
-- Passwords are changed on the Profile page.
+- Every role has Calendar (classes, deadlines, holidays and campus events in month, week, day and
+  agenda views) and Announcements & Events (posts addressed to you; staff can also create them).
+- List pages show cards with a search box (press Enter to search) and a "⋮" menu at the top right
+  holding Create, Filter & Sort and Upload CSV where the page supports them. Each card has its own
+  "⋮" menu with View, Edit and Delete.
+- Creating and editing open a step-by-step dialog (a wizard). "Next Step" checks the current step;
+  fields with problems turn red and the first one is focused. Unsaved work is kept as a draft and
+  offered back the next time the dialog opens.
+- CSV upload: open "Upload CSV", check the column guide (it lists required columns), optionally
+  "Download CSV Template", choose the file, review the preview, then "Confirm Import". The result
+  shows created, updated and blocked rows with the reason for each blocked row.
+- Deleting asks for confirmation. Records still in use (for example a program with students or a
+  section with enrollments) cannot be deleted; the message says what to move first.
+- Your personal details are on My Profile. Changes to your details are sent for approval (staff to
+  the Administrator, students to the Registrar).
 `;
 
 const ROLE_KNOWLEDGE: Record<string, string> = {
