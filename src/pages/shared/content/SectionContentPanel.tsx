@@ -25,6 +25,7 @@ import {
     setMaterialPublished,
     setModulePublished
 } from '@services/content.service';
+import { listGradingPeriodsBySection } from '@services/faculty.service';
 import { getFileUrl } from '@services/storage.service';
 import { ContentModule, CourseMaterial, SectionContent } from '@type/content.type';
 import { useEffect, useState } from 'react';
@@ -45,9 +46,23 @@ interface DeleteState {
     label: string;
 }
 
+const COMMON_PERIOD_NAMES = ['Prelim', 'Midterm', 'Semi-Final', 'Finals'];
+
+// A module belongs to a period when its title or description names it ("Prelim Module: ...").
+// "Finals" must not also match "Semi-Final".
+function moduleMatchesPeriod(mod: ContentModule, periodName: string): boolean {
+    const text = `${mod.title} ${mod.description ?? ''}`.toLowerCase();
+    const target = periodName.toLowerCase();
+    if (target.startsWith('final')) {
+        return text.replace(/semi-?finals?/g, '').includes('final');
+    }
+    return text.includes(target);
+}
+
 export default function SectionContentPanel({ sectionId, canManage: canManageProp }: SectionContentPanelProps) {
     const [content, setContent] = useState<SectionContent | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('All');
+    const [gradingPeriodNames, setGradingPeriodNames] = useState<string[]>([]);
     const [materialModal, setMaterialModal] = useState<MaterialModalState | null>(null);
     const [pendingDelete, setPendingDelete] = useState<DeleteState | null>(null);
     const [duplicatingModule, setDuplicatingModule] = useState<ContentModule | null>(null);
@@ -60,13 +75,7 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
         ? canManageProp
         : (content?.can_manage ?? false);
     const rawModules = content?.modules ?? [];
-    const modules = rawModules.filter((mod) => {
-        if (selectedPeriod === 'All') return true;
-        const titleLower = mod.title.toLowerCase();
-        const descLower = (mod.description ?? '').toLowerCase();
-        const target = selectedPeriod.toLowerCase();
-        return titleLower.includes(target) || descLower.includes(target);
-    });
+    const modules = rawModules.filter((mod) => selectedPeriod === 'All' || moduleMatchesPeriod(mod, selectedPeriod));
 
     const syllabusMaterial = rawModules
         .flatMap((mod) => mod.materials)
@@ -86,6 +95,17 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
     useEffect(function() {
         loadContent();
     }, [sectionId]);
+
+    useEffect(function() {
+        if (!canManage) return;
+        listGradingPeriodsBySection(sectionId)
+            .then((result) => {
+                setGradingPeriodNames((result.data ?? [])
+                    .slice()
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((period) => period.name));
+            });
+    }, [sectionId, canManage]);
 
     function handleOpenCreateWizard() {
         setEditingModule(null);
@@ -143,7 +163,11 @@ export default function SectionContentPanel({ sectionId, canManage: canManagePro
         }
     }
 
-    const PERIOD_TABS = ['All', 'Prelim', 'Midterm', 'Semi-Final', 'Finals'];
+    // Staff see the section's own grading periods; students see the period names their modules use
+    const periodNames = gradingPeriodNames.length > 0
+        ? gradingPeriodNames
+        : COMMON_PERIOD_NAMES.filter((name) => rawModules.some((mod) => moduleMatchesPeriod(mod, name)));
+    const PERIOD_TABS = ['All', ...periodNames];
 
     return (
         <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">

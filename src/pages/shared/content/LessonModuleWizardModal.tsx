@@ -29,6 +29,7 @@ import {
     updateModule
 } from '@services/content.service';
 import { uploadFile } from '@services/storage.service';
+import { listGradingPeriodsBySection } from '@services/faculty.service';
 import { useToastStore } from '@stores/toast.store';
 import { ContentModule, MaterialType } from '@type/content.type';
 import { generateId } from '@utils/uuid.util';
@@ -140,6 +141,23 @@ export default function LessonModuleWizardModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+
+    // The section's own grading periods; the common names are only a fallback
+    const [periodOptions, setPeriodOptions] = useState(PERIOD_OPTIONS);
+    useEffect(function() {
+        if (!open) return;
+        listGradingPeriodsBySection(sectionId)
+            .then((result) => {
+                const periods = (result.data ?? []).slice()
+                    .sort((a, b) => a.sequence - b.sequence);
+                if (periods.length > 0) {
+                    setPeriodOptions([
+                        PERIOD_OPTIONS[0],
+                        ...periods.map((p) => ({ label: `${p.name} Period`, value: p.name }))
+                    ]);
+                }
+            });
+    }, [open, sectionId]);
 
     const initialPeriod = useMemo(() => {
         if (!initialModule) return 'General';
@@ -271,7 +289,7 @@ export default function LessonModuleWizardModal({
             fieldProps: { helperText: 'Students can filter their learning content by grading period.' },
             label: 'Target Grading Period / Scope',
             name: 'period',
-            options: PERIOD_OPTIONS,
+            options: periodOptions,
             type: 'select'
         },
         {

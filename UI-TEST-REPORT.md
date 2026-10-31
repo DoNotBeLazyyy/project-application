@@ -258,3 +258,20 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - OK Registrar Logs: list, 378 entries.
 - BUG (fixed): a reviewed profile request updates its original log card, so the card showed the request's submission date
   next to "Performed By: Bernard Mercado". The card now shows when it was last acted on (reviewed_at).
+
+## Faculty (adrian.espiritu@au-jas.test)
+- BUG (fixed): the dashboard's 6 stat cards were squeezed into one row so every label was cut off ("My…", "Tot…"); now 3
+  per row (the admin dashboard also gets 2 per row on phones).
+- BUG (fixed): "Today's Classes" listed classes on Oct 31, a holiday marked Class Suspended (migration `20261031160000`).
+- BUG (fixed): My Sections listed 17 sections from four years sorted by code, so a teacher's current sections were below
+  the closed ones. The newest term now comes first (migration `20261031170000`).
+- BUG (fixed): the Lessons filter and the module wizard offered Prelim/Midterm/Semi-Final/Finals for every section; they
+  now use the section's own grading periods (students see the periods their modules use), and "Finals" no longer also
+  matches "Semi-Final" modules.
+- OK Assessment: create wizard (title/points validation, passing > total rejected, typed due and close date-times),
+  question CSV import (4 created; missing text and unknown type rejected with reasons), saved as Published.
+- OBSERVED ONCE: after "Next Step" flagged two fields, typing the title kept only the first letter; could not reproduce
+  in three clean attempts.
+- OK Gradebook: periods 30/30/40, encoding locked outside the encoding window.
+- INCONSISTENCY: the assessment is created in the database as soon as step 1 is passed (before "Save"); the wizard grows
+  and shrinks between steps; assessment cards use a different card style than the list pages.
