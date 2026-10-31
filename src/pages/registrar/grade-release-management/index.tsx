@@ -24,6 +24,7 @@ import {
     setGradingPeriodReleaseAt
 } from '@services/grade-release.service';
 import { getTerms, TermOption } from '@services/section.service';
+import { getActiveTerm } from '@services/term/term.service';
 import { ChangeEventInputTextarea } from '@type/common.type';
 import {
     GradeReleaseSchedule,
@@ -203,7 +204,7 @@ export default function GradeRelease() {
 
     useEffect(function() {
         async function fetchTerms() {
-            const result = await getTerms();
+            const [result, activeResult] = await Promise.all([getTerms(), getActiveTerm()]);
             if (result.data) {
                 const options = result.data.map(function(term: TermOption) {
                     return {
@@ -214,7 +215,12 @@ export default function GradeRelease() {
 
                 setTermOptions(options);
                 if (options.length > 0) {
-                    const initialTermId = options[0].value;
+                    // Open on the term in progress; the list is ordered newest first, which is usually the
+                    // upcoming term with nothing to release yet
+                    const activeTermId = activeResult.data?.term_id;
+                    const initialTermId = options.some((option) => option.value === activeTermId)
+                        ? activeTermId as string
+                        : options[0].value;
                     setSelectedTermId(initialTermId);
                     loadTermData(initialTermId);
                 }

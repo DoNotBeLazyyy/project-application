@@ -27,7 +27,7 @@ import { approveStudentProfileRequest, rejectStudentProfileRequest } from '@serv
 import { useToastStore } from '@stores/toast.store';
 import { ProfileFormValues } from '@type/profile.type';
 import { StudentProfileRequestRow } from '@type/registrar-verification.type';
-import { DEFAULT_FORM_OPTIONS, formErrors } from '@utils/form.util';
+import { DEFAULT_FORM_OPTIONS, formErrors, MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
@@ -217,6 +217,13 @@ export default function StudentProfileVerificationModal({
             return {
                 validate: (value: unknown) => String(value ?? '').trim() !== '' || `${FIELD_LABELS[field]} is required.`
             };
+        }
+        // Same format checks as the student's own profile form
+        if (field === 'mobile_number') {
+            return { pattern: MOBILE_NUMBER_RULE };
+        }
+        if (field === 'postal_code') {
+            return { pattern: POSTAL_CODE_RULE };
         }
         if (field === 'year_level') {
             return {

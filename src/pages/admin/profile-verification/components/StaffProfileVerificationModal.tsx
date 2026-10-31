@@ -23,6 +23,7 @@ import { approveStaffProfileRequest, rejectStaffProfileRequest } from '@services
 import { useToastStore } from '@stores/toast.store';
 import { StaffProfileRequestRow } from '@type/admin-verification.type';
 import { ProfileFormValues } from '@type/profile.type';
+import { MOBILE_NUMBER_RULE, POSTAL_CODE_RULE } from '@utils/form.util';
 import { useEffect, useMemo, useState } from 'react';
 
 interface StaffProfileVerificationModalProps {
@@ -103,6 +104,7 @@ export default function StaffProfileVerificationModal({
 }: StaffProfileVerificationModalProps) {
     const [editableValues, setEditableValues] = useState<ProfileFormValues>(() => buildInitialEditableValues(request));
     const [adminNotes, setAdminNotes] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProfileFormValues, string>>>({});
     const [isRejectOpen, setIsRejectOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -210,6 +212,7 @@ export default function StaffProfileVerificationModal({
     }
 
     function handleFieldChange(field: keyof ProfileFormValues, value: string) {
+        setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
         setEditableValues((prev) => ({
             ...prev,
             [field]: value
@@ -224,6 +227,17 @@ export default function StaffProfileVerificationModal({
 
         if (!effectiveFirstName || !effectiveLastName) {
             useToastStore.getState().showToast('First name and last name are required.', 'error');
+            return;
+        }
+
+        // Same format checks as the staff member's own profile form
+        const nextErrors: Partial<Record<keyof ProfileFormValues, string>> = {};
+        const mobile = String(editableValues.mobile_number ?? '').trim();
+        const postal = String(editableValues.postal_code ?? '').trim();
+        if (mobile && !MOBILE_NUMBER_RULE.value.test(mobile)) nextErrors.mobile_number = MOBILE_NUMBER_RULE.message;
+        if (postal && !POSTAL_CODE_RULE.value.test(postal)) nextErrors.postal_code = POSTAL_CODE_RULE.message;
+        setFieldErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) {
             return;
         }
 
@@ -573,7 +587,9 @@ export default function StaffProfileVerificationModal({
                                                         />
                                                     ) : (
                                                         <CommonInput
+                                                            error={Boolean(fieldErrors[field])}
                                                             fullWidth
+                                                            helperText={fieldErrors[field]}
                                                             size="small"
                                                             value={String(editVal)}
                                                             onChange={(e) => handleFieldChange(field, e.target.value)}

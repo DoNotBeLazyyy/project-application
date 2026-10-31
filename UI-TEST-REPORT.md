@@ -236,3 +236,22 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
   plus the weakest subject, 4 s.
 - OK Admin: "Where do I add a holiday that suspends classes?" → Academic Years → Holidays & Exceptions step (the old guide
   pointed to a retired Terms page), 5 s.
+
+## Registrar (bernard.mercado@au-jas.test)
+- OK Dashboard: 178 active students, 837 enrollments, distribution by program (BSA 30 after the restore).
+- OK Section Enrollments: workspace shows the student's load and eligible sections; schedule conflicts (incl. the Saturday
+  slot) and unmet prerequisites are flagged; saving is refused until the registrar ticks "Authorize prerequisite override"
+  / "Authorize overlapping schedule".
+- BUG (fixed): when those authorizations were missing, the "Apply enrollment updates?" confirmation stayed open on top of
+  the checkboxes; it now closes so they can be ticked. Its text said "dropping -0 section(s)"; reworded.
+- BUG (fixed): Grade Release opened on the upcoming Summer term (empty) instead of the term in progress.
+- OK Grade Release: 1st Semester shows 928/928 released per period across 126 sections.
+- BUG (fixed): Profile Verification approved an edited mobile number "abc" (no format check on the registrar's editable
+  values). Mobile and postal code now use the same checks as the profile form; the test student's number was restored.
+  The admin's Staff Profile Approval had the same gap; fixed the same way (field error, approval blocked).
+- OK: approved request shows "Approved with Edits" after the list refreshes; the registrar sees all 195 requests (new
+  read policy).
+- DATA (seed): a Year 2 BSIT student is enrolled in IT-423, a 4th-year elective.
+- INCONSISTENCY: Grade Release uses a table while the other list pages use cards; Section Enrollments has an extra
+  "Active academic term" card above the list.
+- NOT TESTED: approving a prerequisite or schedule override (it is the registrar's authorization to give).

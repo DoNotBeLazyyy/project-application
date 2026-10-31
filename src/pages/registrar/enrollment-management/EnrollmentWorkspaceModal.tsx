@@ -318,6 +318,8 @@ export default function EnrollmentWorkspaceModal({
     }
 
     function handleSaveValidationFailed(errors: FieldErrors<EnrollmentOverrideValues>) {
+        // Close the confirmation so the authorization checkboxes behind it can be ticked
+        setShowSaveConfirm(false);
         formErrors(errors, overrideMethods);
     }
 
@@ -774,7 +776,7 @@ export default function EnrollmentWorkspaceModal({
                 }}
                 open={showSaveConfirm}
                 subContent={{
-                    title: `You are staging +${stagedNewSections.length} new section(s) and dropping -${markedDropIds.size} section(s). The student's net load will be ${netCount} subjects (${netUnits.toFixed(1)} units).`
+                    title: `You are adding ${stagedNewSections.length} section(s) and dropping ${markedDropIds.size} section(s). The student's load will be ${netCount} subjects (${netUnits.toFixed(1)} units).`
                 }}
                 onClose={() => setShowSaveConfirm(false)}
             />
