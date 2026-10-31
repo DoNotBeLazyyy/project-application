@@ -1,3 +1,4 @@
+import DeletePromptModal from '@components/modal/DeletePromptModal';
 import AttendanceRecordList from '@pages/faculty/sections/attendance/AttendanceRecordList';
 import AttendanceSessionList from '@pages/faculty/sections/attendance/AttendanceSessionList';
 import AttendanceSessionWizardModal from '@pages/faculty/sections/attendance/AttendanceSessionWizardModal';
@@ -21,6 +22,7 @@ interface AttendanceTabProps {
 }
 
 export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [sessions, setSessions] = useState<AttendanceSession[]>([]);
     const [selectedSession, setSelectedSession] = useState<AttendanceSession | null>(null);
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -128,7 +130,7 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     selectedSessionId={selectedSession?.id}
                     sessions={sessions}
                     onCreateOpen={() => setIsCreateOpen(true)}
-                    onDelete={handleDeleteSession}
+                    onDelete={async (sessionId: string) => setPendingDeleteId(sessionId)}
                     onSelectSession={handleSelectSession}
                 />
             </div>
@@ -158,6 +160,24 @@ export default function AttendanceTab({ sectionId }: AttendanceTabProps) {
                     </div>
                 )}
             </div>
+
+            {/* Deleting a session removes that day's attendance, so it is confirmed like every other delete */}
+            <DeletePromptModal
+                formButtonsProps={{
+                    confirmProps: {
+                        onClick: async () => {
+                            if (pendingDeleteId) {
+                                await handleDeleteSession(pendingDeleteId);
+                            }
+                            setPendingDeleteId(null);
+                        }
+                    }
+                }}
+                mainContent={{ title: 'Delete this attendance session?' }}
+                open={Boolean(pendingDeleteId)}
+                subContent={{ title: 'All attendance marked for this date will be removed.' }}
+                onClose={() => setPendingDeleteId(null)}
+            />
 
             {/* Attendance Stepper Wizard Modal */}
             <AttendanceSessionWizardModal

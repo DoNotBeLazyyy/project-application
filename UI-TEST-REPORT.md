@@ -275,3 +275,8 @@ Legend: **BUG** = broken behavior (fixed before moving on; the fix is noted) ·
 - OK Gradebook: periods 30/30/40, encoding locked outside the encoding window.
 - INCONSISTENCY: the assessment is created in the database as soon as step 1 is passed (before "Save"); the wizard grows
   and shrinks between steps; assessment cards use a different card style than the list pages.
+- OK Attendance: change a student's status and save (counts update), restored afterwards.
+- BUG (fixed): a session could be created on Oct 31, a class-suspended holiday (absences there would count toward DRP).
+  Now refused with "Classes are suspended on this date" (migration `20261031180000`).
+- BUG (fixed): deleting an attendance session happened immediately with no confirmation; it now asks first like every
+  other delete.
