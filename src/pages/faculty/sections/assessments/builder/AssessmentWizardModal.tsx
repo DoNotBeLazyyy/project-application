@@ -925,6 +925,15 @@ export default function AssessmentWizardModal({
                         >
                             Next Step
                         </CommonButton>
+                    ) : readOnly ? (
+                        <CommonButton
+                            color="primary"
+                            size="medium"
+                            variant="contained"
+                            onClick={handleCloseModal}
+                        >
+                            Close
+                        </CommonButton>
                     ) : (
                         <CommonButton
                             color="primary"
@@ -935,7 +944,11 @@ export default function AssessmentWizardModal({
                             variant="contained"
                             onClick={handleSaveAssessment}
                         >
-                            {isSaving ? 'Saving Assessment...' : 'Save Assessment'}
+                            {isSaving
+                                ? 'Saving Assessment...'
+                                : isNew
+                                    ? 'Save Assessment'
+                                    : 'Save Changes'}
                         </CommonButton>
                     )}
                 </div>

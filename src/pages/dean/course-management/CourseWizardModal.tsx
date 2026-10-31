@@ -450,7 +450,7 @@ export default function CourseWizardModal({
                             variant="contained"
                             onClick={handleSubmit(handleFormSubmit, handleCourseFormErrors)}
                         >
-                            {isSaving ? 'Saving Course...' : isCodeDisabled ? 'Save Changes' : 'Save Course'}
+                            {isSaving ? 'Saving Course...' : courseId ? 'Save Changes' : 'Save Course'}
                         </CommonButton>
                     )}
                 </div>

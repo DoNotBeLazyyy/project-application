@@ -433,7 +433,8 @@ export default function FacultyLoadWizardModal({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                            {/* Switch to Edit Mode in header */}
+                            {/* Switch to Edit Mode in header (only while viewing, like the other wizards) */}
+                            {isReadOnly && (
                             <CommonButton
                                 className="!bg-white dark:!bg-zinc-900 border-blue-600 text-blue-600 hover:!bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:!bg-blue-950/40"
                                 color="primary"
@@ -444,6 +445,7 @@ export default function FacultyLoadWizardModal({
                             >
                                 Edit Load
                             </CommonButton>
+                            )}
 
                             <button
                                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"

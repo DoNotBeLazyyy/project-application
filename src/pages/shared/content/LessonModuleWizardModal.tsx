@@ -890,6 +890,15 @@ export default function LessonModuleWizardModal({
                         >
                             Next Step
                         </CommonButton>
+                    ) : readOnly ? (
+                        <CommonButton
+                            color="primary"
+                            size="medium"
+                            variant="contained"
+                            onClick={handleRequestClose}
+                        >
+                            Close
+                        </CommonButton>
                     ) : (
                         <CommonButton
                             color="primary"
@@ -900,7 +909,11 @@ export default function LessonModuleWizardModal({
                             variant="contained"
                             onClick={handleSaveModule}
                         >
-                            {isSaving ? 'Saving Module...' : 'Save Module'}
+                            {isSaving
+                                ? 'Saving Module...'
+                                : isEdit
+                                    ? 'Save Changes'
+                                    : 'Save Module'}
                         </CommonButton>
                     )}
                 </div>

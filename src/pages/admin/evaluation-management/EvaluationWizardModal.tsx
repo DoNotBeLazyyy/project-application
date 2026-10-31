@@ -750,46 +750,61 @@ export default function EvaluationWizardModal({
 
             {/* Modal Bottom Footer */}
             <div className="p-4 sm:px-6 sm:py-4 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shrink-0">
-                <div>
-                    {currentStep > 1 && (
-                        <CommonButton
-                            color="inherit"
-                            size="small"
-                            startIcon={<ArrowLeftIcon className="w-4 h-4" />}
-                            variant="outlined"
-                            onClick={handleBack}
-                        >
-                            Back
-                        </CommonButton>
-                    )}
+                <CommonButton
+                    color="primary"
+                    disabled={currentStep === 1 || isSaving}
+                    size="medium"
+                    startIcon={<ArrowLeftIcon className="w-4 h-4" />}
+                    variant="outlined"
+                    onClick={handleBack}
+                >
+                    Back
+                </CommonButton>
+
+                {/* Step indicator on desktop */}
+                <div className="hidden sm:block text-xs font-medium text-slate-500">
+                    Step {currentStep} of {EVALUATION_WIZARD_STEPS.length} — {EVALUATION_WIZARD_STEPS[currentStep - 1]?.title}
                 </div>
 
-                <div>
-                    {currentStep < 2 ? (
-                        <CommonButton
-                            color="primary"
-                            endIcon={<ArrowRightIcon className="w-4 h-4" />}
-                            size="small"
-                            variant="contained"
-                            onClick={handleNext}
-                        >
-                            Next: Evaluation Questions
-                        </CommonButton>
-                    ) : (
-                        !readOnly && (
+                <div className="flex items-center gap-2">
+                    {currentStep < EVALUATION_WIZARD_STEPS.length
+                        ? (
                             <CommonButton
                                 color="primary"
-                                disabled={isSaving || (Boolean(templateId) && !draftGuard.hasRealChanges)}
-                                loading={isSaving}
-                                size="small"
-                                startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                endIcon={<ArrowRightIcon className="w-4 h-4" />}
+                                size="medium"
                                 variant="contained"
-                                onClick={handleSave}
+                                onClick={handleNext}
                             >
-                                {templateId ? 'Save Evaluation Section' : 'Create Evaluation Section'}
+                                Next Step
                             </CommonButton>
                         )
-                    )}
+                        : readOnly
+                            ? (
+                                <CommonButton
+                                    color="primary"
+                                    size="medium"
+                                    variant="contained"
+                                    onClick={handleCloseModal}
+                                >
+                                    Close
+                                </CommonButton>
+                            )
+                            : (
+                                <CommonButton
+                                    color="primary"
+                                    disabled={isSaving || (Boolean(templateId) && !draftGuard.hasRealChanges)}
+                                    loading={isSaving}
+                                    size="medium"
+                                    startIcon={<FloppyDiskIcon className="w-4 h-4" />}
+                                    variant="contained"
+                                    onClick={handleSave}
+                                >
+                                    {templateId
+                                        ? 'Save Changes'
+                                        : 'Save Evaluation Section'}
+                                </CommonButton>
+                            )}
                 </div>
             </div>
 

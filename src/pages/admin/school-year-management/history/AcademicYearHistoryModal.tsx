@@ -1089,7 +1089,7 @@ export default function AcademicYearHistoryModal({
                     variant="outlined"
                     onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
                 >
-                    Previous
+                    Back
                 </CommonButton>
 
                 <div className="flex items-center gap-2">

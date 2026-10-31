@@ -626,7 +626,7 @@ export default function SectionWizardModal({
                                         ? 'Saving Section...'
                                         : sectionId
                                             ? 'Save Changes'
-                                            : 'Create Section'}
+                                            : 'Save Section'}
                                 </CommonButton>
                             )}
                 </div>

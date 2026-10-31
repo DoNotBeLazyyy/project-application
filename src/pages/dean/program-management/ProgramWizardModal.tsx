@@ -497,7 +497,9 @@ export default function ProgramWizardModal({
                                 >
                                     {isSaving
                                         ? 'Saving Program...'
-                                        : 'Save Program'}
+                                        : programId
+                                            ? 'Save Changes'
+                                            : 'Save Program'}
                                 </CommonButton>
                             )}
                 </div>
