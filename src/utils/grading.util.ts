@@ -91,28 +91,6 @@ export function validateTransmutationRows(rows: TransmutationRow[]): ValidationR
 }
 
 /**
- * Populates max_percentage for transmutation rows based on floor thresholds.
- */
-export function computeTransmutationRanges(rows: TransmutationRow[]): (TransmutationRow & { max_percentage: number })[] {
-    const sorted = [...rows].sort(
-        (a, b) => Number(a.transmuted_grade) - Number(b.transmuted_grade)
-    );
-
-    let prevFloor = 100;
-    return sorted.map((row, index) => {
-        const floor = Number(row.min_percentage);
-        const max = index === 0
-            ? 100
-            : prevFloor - 1;
-        prevFloor = floor;
-        return {
-            ...row,
-            max_percentage: max
-        };
-    });
-}
-
-/**
  * Transmutes a raw percentage grade into standard institutional numerical grade (1.00 to 5.00).
  */
 export function transmuteGrade(
@@ -130,118 +108,6 @@ export function transmuteGrade(
     }
 
     return 5.00;
-}
-
-/**
- * Calculates raw grade for a grading period based on individual component scores and weights.
- */
-export function calculatePeriodRawGrade(
-    components: {
-        id: string;
-        name: string;
-        weight: number;
-        earnedPoints: number;
-        totalPoints: number;
-    }[],
-    transmutationLadder?: TransmutationRow[]
-): PeriodicGradeCalculation {
-    let totalWeight = 0;
-    let totalWeightedScore = 0;
-
-    const componentScores: ComputedComponentScore[] = components.map((comp) => {
-        const weight = Number(comp.weight) || 0;
-        const earned = Number(comp.earnedPoints) || 0;
-        const total = Number(comp.totalPoints) || 0;
-
-        const weighted = total > 0
-            ? (earned / total) * weight
-            : 0;
-        totalWeight += weight;
-        totalWeightedScore += weighted;
-
-        return {
-            componentId: comp.id,
-            name: comp.name,
-            weight,
-            totalEarned: earned,
-            totalPossible: total,
-            weightedScore: Number(weighted.toFixed(4))
-        };
-    });
-
-    if (totalWeight === 0) {
-        return {
-            rawGrade: 0,
-            transmutedGrade: null,
-            totalWeightUsed: 0,
-            componentScores
-        };
-    }
-
-    const rawGrade = Number(((totalWeightedScore / totalWeight) * 100).toFixed(2));
-    const transmutedGrade = transmutationLadder
-        ? transmuteGrade(rawGrade, transmutationLadder)
-        : null;
-
-    return {
-        rawGrade,
-        transmutedGrade,
-        totalWeightUsed: totalWeight,
-        componentScores
-    };
-}
-
-/**
- * Computes the overall term final grade by weighting each grading period.
- */
-export function calculateTermFinalGrade(
-    periodResults: {
-        periodName: string;
-        weight: number;
-        rawGrade: number;
-    }[],
-    transmutationLadder?: TransmutationRow[]
-): TermFinalGradeCalculation {
-    let totalWeight = 0;
-    let weightedSum = 0;
-
-    const periodGrades = periodResults.map((p) => {
-        const weight = Number(p.weight) || 0;
-        const raw = Number(p.rawGrade) || 0;
-        const weightedContribution = (raw * weight) / 100;
-
-        totalWeight += weight;
-        weightedSum += weightedContribution;
-
-        return {
-            periodName: p.periodName,
-            weight,
-            rawGrade: raw,
-            weightedContribution: Number(weightedContribution.toFixed(4))
-        };
-    });
-
-    const rawFinalGrade = totalWeight > 0
-        ? Number(((weightedSum / totalWeight) * 100).toFixed(2))
-        : 0;
-    const transmutedFinalGrade = transmutationLadder
-        ? transmuteGrade(rawFinalGrade, transmutationLadder)
-        : null;
-    const isPassing = (function() {
-        if (transmutationLadder && transmutedFinalGrade !== null) {
-            const matchingRung = transmutationLadder.find((r) => r.transmuted_grade !== null && r.transmuted_grade !== undefined ? Number(r.transmuted_grade) === Number(transmutedFinalGrade) : r.label === String(transmutedFinalGrade));
-            if (matchingRung && typeof matchingRung.is_passing === 'boolean') return matchingRung.is_passing;
-            return transmutedFinalGrade <= 3.00;
-        }
-        return transmutedFinalGrade !== null ? transmutedFinalGrade <= 3.00 : rawFinalGrade >= 75;
-    })();
-
-    return {
-        rawFinalGrade,
-        transmutedFinalGrade,
-        isPassing,
-        periodGrades
-    };
 }
 
 /**
@@ -308,59 +174,6 @@ export function evaluateCondition(
 export interface SpecialGradeEvaluationResult {
     specialGrade: SpecialGradeConfig | null;
     reason?: string;
-}
-
-export function evaluateSpecialGradeStatus(
-    absentSessions: number,
-    totalSessions: number,
-    hasIncompleteRequirements: boolean,
-    configs: SpecialGradeConfig[]
-): SpecialGradeEvaluationResult {
-    const absencePercentage = totalSessions > 0
-        ? (absentSessions / totalSessions) * 100
-        : 0;
-
-    // Check DRP first (absence percentage exceeded)
-    const drpConfig = configs.find(
-        (c) => c.code === 'DRP' && c.is_active && c.min_absence_percentage && absencePercentage >= Number(c.min_absence_percentage)
-    );
-    if (drpConfig) {
-        return {
-            specialGrade: drpConfig,
-            reason: `Absence rate of ${absencePercentage.toFixed(1)}% exceeds the ${drpConfig.min_absence_percentage}% threshold`
-        };
-    }
-
-    // Check INC second (incomplete requirements)
-    if (hasIncompleteRequirements) {
-        const incConfig = configs.find((c) => c.code === 'INC' && c.is_active && c.requires_completion);
-        if (incConfig) {
-            return {
-                specialGrade: incConfig,
-                reason: `Incomplete requirements. Must resolve within ${incConfig.completion_deadline_days ?? 365} days.`
-            };
-        }
-    }
-
-    return {
-        specialGrade: null
-    };
-}
-
-/**
- * Picks the rule that should win when several match the same student. Lower
- * `priority` wins; `code` breaks ties so the outcome is stable rather than
- * dependent on row order.
- */
-export function resolveMatchingSpecialGrade(
-    configs: SpecialGradeConfig[],
-    signals: Record<string, number | null>
-): SpecialGradeConfig | null {
-    const matches = configs
-        .filter((config) => config.is_active && evaluateCondition(config.conditions, signals))
-        .sort((a, b) => ((a.priority ?? 0) - (b.priority ?? 0)) || a.code.localeCompare(b.code));
-
-    return matches[0] ?? null;
 }
 
 export interface GradeSheetCsvExportOptions {

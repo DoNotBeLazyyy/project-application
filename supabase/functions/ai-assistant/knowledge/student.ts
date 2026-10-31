@@ -1,57 +1,51 @@
 export const STUDENT_KNOWLEDGE = `
 # Student panel — pages and workflows
 
-Navigation lives in the left sidebar under OVERVIEW. The top bar has the notification bell,
-your name, and Sign Out. "My Profile" is at the bottom of the sidebar.
+Sidebar: OVERVIEW (Dashboard, Announcements & Events, Calendar, Class Schedule), COURSES & GRADES
+(My Subjects, My Grades), PROGRESS & FEEDBACK (Achievement & Honors Tracker, Faculty Evaluations),
+ACADEMIC RECORDS (Curriculum Audit, Grade Report).
 
 ## Dashboard (/student)
-Landing page. Shows your current term at a glance: today's classes, upcoming deadlines,
-recent grades, announcements and events addressed to you, and a summary of your academic insight.
+Your current term at a glance: upcoming assessments you have not submitted yet, your subjects,
+announcements and events.
 
-## Schedule (/student/schedule)
-Your weekly class schedule for the active term: day, time, room, section and instructor.
-It is generated from your enrolled sections — you cannot edit it. If a subject is missing,
-the enrollment has not been recorded yet; contact the Registrar.
+## Class Schedule (/student/schedule)
+Your weekly classes for the term: day, time, room, section and instructor. It comes from your
+enrollment; a missing subject means the enrollment has not been recorded yet (see the Registrar).
 
-## Subject (/student/subjects)
-The list of subjects you are enrolled in this term. Click a subject to open its detail page,
-which has four tabs:
-- Assessments — quizzes, exams and activities. Click one to take it; once submitted and graded,
-  "View Result" opens the result page with your score, per-question feedback, and the rubric
-  breakdown when the instructor graded with a rubric.
-- Grades — your running component scores for that subject (per grading period).
-- Content — modules and course materials posted by the instructor. Opening a material marks it
-  complete and feeds your progress bar.
-- Discussion — the subject's discussion board; post a thread or reply.
+## My Subjects (/student/subjects)
+Your enrolled subjects. Open one to see its tabs: Lessons & Syllabus (materials from your
+instructor), Assessments (take quizzes and exams; Resume continues one in progress; results show
+once your instructor allows it), Grades (your scores per grading period), Attendance, Discussions
+and Announcements.
 
 ## Taking an assessment
-Open the assessment from the Assessments tab and press Start. Timed assessments show a countdown
-and keep running on the server, so closing the tab does not stop the clock — reopen it to continue.
-Answers save as you go; press Submit to finish. After the due date, late or missing submissions are
-flagged to your instructor.
+Open it from the subject's Assessments tab and start. A timed assessment keeps counting on the server,
+so closing the tab does not pause it. Answers save as you go; press Submit to finish. After the
+close date it can no longer be taken.
 
-## Grade (/student/grade)
-Your official released grades per term. Only grades the Registrar has released appear here.
-The scale is 1.00 to 5.00 where 1.00 is the highest and 5.00 is a failure; 3.00 is the passing mark.
-A grade you can see in a subject's Grades tab but not here has not been released yet.
+## My Grades (/student/grade)
+Your released grades, filterable by term. Grades run from 1.00 (highest) to 5.00 (failed); 3.00 is the
+passing mark. A grade appears here only after the Registrar releases it.
 
-## Curriculum (/student/curriculum)
-Your curriculum audit: every course in your program's curriculum map, grouped by year and term,
-marked as completed, in progress, or remaining, with earned versus required units and any
-prerequisites you have not cleared yet.
+## Achievement & Honors Tracker (/student/insight)
+Your GWA trend, Latin honors and other targets with how far you are from them, per-subject
+performance, attendance, and a What-If Grade Simulator to see how expected grades would change your
+GWA.
 
-## Insight (/student/insight)
-Your learning analytics: GWA trend across terms, honors and scholarship trajectory, per-subject
-performance, strengths and weaknesses, attendance and submission engagement, a risk indicator,
-and a recommended-focus list. This is the same data the assistant explains.
+## Faculty Evaluations (/student/evaluations)
+Rate your instructors when the evaluation period is open; every required question must be answered.
+Some grades may only be released after you complete your evaluations.
 
-## Profile (/student/profile)
-View your personal details and change your password. Account details such as your student number,
-program and year level are maintained by the Registrar — request a correction rather than expecting
-to edit them yourself.
+## Curriculum Audit (/student/curriculum)
+Every course in your program's curriculum by year and term, marked completed, in progress or
+remaining, with units earned versus required and prerequisites you still need.
+
+## Grade Report (/student/grade-report)
+Your full academic record across terms, which you can print.
 
 ## Things students commonly ask
-- Enrollment, subject loading, dropping and shifting are handled by the Registrar, not in this panel.
-- Grade corrections go through your instructor first, then the Registrar releases the corrected grade.
-- Latin honors and scholarship cutoffs are configured by the Administrator and shown on your Insight page.
+- Enrollment, dropping and shifting programs are handled by the Registrar.
+- Profile changes are sent to the Registrar for approval from My Profile.
+- A grade correction starts with your instructor; the Registrar releases the corrected grade.
 `;

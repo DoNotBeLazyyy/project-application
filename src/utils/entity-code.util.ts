@@ -273,39 +273,6 @@ export function generateProgramLevelCode(label: string, existingCodes?: string[]
 }
 
 /**
- * System-generates a unique Term Type Code based on label.
- * e.g., "1st Semester" -> "SEM-1", "2nd Semester" -> "SEM-2", "Summer" -> "SUMMER"
- */
-export function generateTermTypeCode(label: string, existingCodes?: string[]): string {
-    if (!label || !label.trim()) return '';
-    const trimmed = label.trim()
-        .toUpperCase();
-    const semMatch = trimmed.match(/(?:1ST|FIRST|1)\s*SEM/i);
-    if (semMatch) return ensureUniqueCode('SEM-1', existingCodes);
-
-    const sem2Match = trimmed.match(/(?:2ND|SECOND|2)\s*SEM/i);
-    if (sem2Match) return ensureUniqueCode('SEM-2', existingCodes);
-
-    const sem3Match = trimmed.match(/(?:3RD|THIRD|3)\s*SEM/i);
-    if (sem3Match) return ensureUniqueCode('SEM-3', existingCodes);
-
-    const triMatch = trimmed.match(/(?:1ST|FIRST|1)\s*TRI/i);
-    if (triMatch) return ensureUniqueCode('TRI-1', existingCodes);
-
-    const tri2Match = trimmed.match(/(?:2ND|SECOND|2)\s*TRI/i);
-    if (tri2Match) return ensureUniqueCode('TRI-2', existingCodes);
-
-    const tri3Match = trimmed.match(/(?:3RD|THIRD|3)\s*TRI/i);
-    if (tri3Match) return ensureUniqueCode('TRI-3', existingCodes);
-
-    if (trimmed.includes('SUMMER')) return ensureUniqueCode('SUMMER', existingCodes);
-    if (trimmed.includes('MIDYEAR')) return ensureUniqueCode('MIDYEAR', existingCodes);
-
-    const acronym = generateAcronym(label, 'TERM');
-    return ensureUniqueCode(acronym, existingCodes);
-}
-
-/**
  * System-generates a unique Role Code based on label.
  * e.g., "Dean Secretary" -> "DEAN_SECRETARY", "Department Head" -> "DEPARTMENT_HEAD"
  */

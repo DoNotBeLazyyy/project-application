@@ -11,6 +11,7 @@ Absolute rules:
    person can do it themselves.
 2. Every figure, course code, due date, absence count, and status you state must appear verbatim in
    the CONTEXT block. Never calculate, estimate, round differently, extrapolate or invent a number.
+   The one exception: you may count the days between today and a date that appears in CONTEXT.
    If a figure or course is not in CONTEXT, say you do not have it and name the page where it can be found.
 3. Strict anti-hallucination guardrail: If information is missing or incomplete for any inquiry,
    do not guess or make assumptions. Explicitly state that the data is not available in your context
@@ -74,17 +75,43 @@ When advising:
 `;
 
 const ADMIN_MODE = `
-Mode: administrative operations overview and guidance.
+Mode: administrative overview and guidance.
 
-Your value is institutional oversight and term transition readiness: summarize enrollment health,
-unassigned sections, grading queues awaiting release, and pending student clearances.
+Your value is institution-wide oversight: summarize the figures in "overview" (accounts, active
+students and faculty, the active term, announcements and events) and guide the Administrator through
+their pages.
 
 When advising:
-- Term Transition Checkpoints: Check "term_checkpoints" in CONTEXT. State the active term status,
-  number of open sections, unassigned sections needing faculty assignment, pending final grade releases,
-  and pending student clearance requests.
-- System Guidance: Provide clear step-by-step navigation in the Admin panel for term management, user
-  provisioning, and configuration.
+- Quote only figures that appear in "overview" or "term_checkpoints". If a figure is not there, name
+  the page where it can be found.
+- Terms, grading periods, holidays, grade schema and academic thresholds are all set inside the
+  Academic Years wizard; there are no separate pages for them.
+- Give step-by-step navigation using the sidebar names in KNOWLEDGE.
+`;
+
+const DEAN_MODE = `
+Mode: academic structure overview for this Dean's college.
+
+Your value is spotting gaps in the term's offering: use "overview" (programs, courses, sections this
+term, enrolled students, faculty, sections without a faculty, schedule conflicts, at-risk students, and
+the lists of sections needing faculty or carrying at-risk students) to say what needs attention first.
+
+When advising:
+- Lead with problems: sections without a faculty, schedule conflicts, then at-risk students.
+- Point to the page that fixes each one (Sections, Faculty Loading, Programs, Courses).
+- Quote only figures that appear in "overview".
+`;
+
+const REGISTRAR_MODE = `
+Mode: records and grade release overview.
+
+Your value is keeping enrollment, profile approvals and grade release moving: use "overview" to report
+what is pending (grade releases, enrollments, incomplete grades, profile verification requests).
+
+When advising:
+- Lead with what is waiting on the Registrar and how to clear it (Grade Release, Section Enrollments,
+  Profile Verification).
+- Quote only figures that appear in "overview".
 `;
 
 const HOWTO_MODE = `
@@ -107,6 +134,14 @@ function getModeInstruction(mode: AssistantMode): string {
 
     if (mode === 'admin_overview') {
         return ADMIN_MODE;
+    }
+
+    if (mode === 'dean_overview') {
+        return DEAN_MODE;
+    }
+
+    if (mode === 'registrar_overview') {
+        return REGISTRAR_MODE;
     }
 
     return HOWTO_MODE;
@@ -132,7 +167,13 @@ function buildContextBlock(context: AssistantContext): string {
     }
 
     if (context.dashboard) {
-        payload.teaching_overview = context.dashboard;
+        // Faculty get their teaching dashboard; Admin, Dean and Registrar their own overview
+        if (context.mode === 'faculty_advising') {
+            payload.teaching_overview = context.dashboard;
+        }
+        else {
+            payload.overview = context.dashboard;
+        }
     }
 
     if (context.section) {
@@ -152,7 +193,9 @@ function buildContextBlock(context: AssistantContext): string {
     }
 
     if (Object.keys(payload).length === 0) {
-        return 'CONTEXT: none. You have no personal data in this conversation.';
+        return context.data_unavailable
+            ? 'CONTEXT: unavailable right now (the records service did not respond in time). Answer how-to questions from KNOWLEDGE; for questions about figures, say they cannot be loaded at the moment and to try again shortly.'
+            : 'CONTEXT: none. You have no personal data in this conversation.';
     }
 
     return `CONTEXT (authoritative, computed by the database, already scoped to this user):\n${JSON.stringify(payload)}`;
@@ -165,10 +208,18 @@ export function buildSystemInstruction(context: AssistantContext): string {
         ? context.profile.full_name
         : 'this user';
 
+    // "Due this week" and "how many days left" need today's date in the school's timezone
+    const today = new Intl.DateTimeFormat('en-PH', {
+        dateStyle: 'full',
+        timeStyle: 'short',
+        timeZone: 'Asia/Manila'
+    }).format(new Date());
+
     return [
         BASE_RULES,
         getModeInstruction(mode),
         `The user is ${name}, currently using the system as: ${role}.`,
+        `Today is ${today} (Philippine time). Use it for "today", "this week" and days remaining; dates in CONTEXT are authoritative.`,
         `KNOWLEDGE (how the ${role} panel works):\n${getKnowledgeForRole(role)}`,
         buildContextBlock(context)
     ].join('\n\n');

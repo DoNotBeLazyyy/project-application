@@ -88,7 +88,8 @@ export async function generateReply(
     apiKey: string,
     systemInstruction: string,
     history: AssistantTurn[],
-    message: string
+    message: string,
+    deadlineMs: number = DEADLINE_MS
 ): Promise<GeminiResult> {
     const primary = Deno.env.get('GEMINI_MODEL') ?? DEFAULT_MODEL;
     const requestBody = JSON.stringify({
@@ -112,7 +113,7 @@ export async function generateReply(
             await delay(RETRY_DELAYS_MS[attempt - 1]);
         }
 
-        const remainingMs = DEADLINE_MS - (Date.now() - startedAt);
+        const remainingMs = deadlineMs - (Date.now() - startedAt);
         if (remainingMs < MIN_ATTEMPT_MS) {
             lastDetail = `deadline reached before attempt ${attempt + 1}; last: ${lastDetail}`;
             break;

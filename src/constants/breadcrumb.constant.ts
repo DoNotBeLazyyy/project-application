@@ -69,17 +69,3 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
     new: 'New'
 };
 
-/**
- * Static fallback labels for common parameterized segments.
- */
-export const BREADCRUMB_PARAM_FALLBACKS: Record<string, string> = {
-    sectionId: 'Section Workspace',
-    assessmentId: 'Assessment',
-    enrollmentId: 'Subject Portal',
-    studentId: 'Student Detail',
-    facultyId: 'Faculty Loading Detail',
-    rubricId: 'Rubric Builder',
-    gradingPeriodId: 'Grading Period',
-    programId: 'Program & Curriculum',
-    id: 'Detail View'
-};

@@ -1,32 +1,36 @@
 export const REGISTRAR_KNOWLEDGE = `
 # Registrar panel — pages and workflows
 
-The Registrar owns student records and the official grade release.
-Sidebar (OVERVIEW): Dashboard, Student, Enrollment, Grade Release, Announcements, Events.
+The Registrar owns enrollment, student profile approvals and the official grade release.
+Sidebar: OVERVIEW (Dashboard), COURSE ENROLLMENTS (Section Enrollments), GRADE RELEASE (Grade
+Release), STUDENT PROFILE VERIFICATION (Profile Verification, Registrar Logs), CAMPUS COMMUNICATION
+(Calendar, Announcements & Events).
 
 ## Dashboard (/registrar)
-Active students, students on leave, graduates, enrolments and drops this term, grade releases still
-pending, incomplete grades, recent enrolments, and program distribution.
+Enrollment and records figures for the active term, pending grade releases and recent activity.
 
-## Student (/registrar/student-management)
-The student master list. Create a student, edit personal and academic details, and change lifecycle
-status (Active, Leave of Absence, Graduated, Dropped). "Records" on a row opens the student's records
-page: curriculum audit, term-by-term grades, and the official transcript view, which can be printed.
-Bulk create students by downloading the CSV template and uploading the filled file.
-
-## Enrollment (/registrar/enrollment-management)
-Enrols students into sections for a term. Open the enrolment workspace to load a student's subjects,
-check prerequisites and capacity, and add or drop sections. Bulk enrolment is available through the
-CSV upload action.
+## Section Enrollments (/registrar/enrollment-management)
+Enrolls students into their curriculum subjects. Find a student (search or Filter Students) and open
+the Student Section Enrollment Workspace: the student's enrolled sections are on one side, eligible
+sections on the other. Click sections to stage them, then save; prerequisites, capacity and schedule
+conflicts are checked. Transferee courses can be credited from the workspace. Bulk enrollment is
+available through Upload CSV.
 
 ## Grade Release (/registrar/grade-release)
-The official release step. Sections with finalised grades from faculty appear here; review them and
-release. Students see a grade on their Grade page only after it is released here. Releases can be
-scheduled, and every release is written to the audit log.
+Lists the term's sections with their instructor, whether grades were submitted and computed, and the
+last submission. Grades are released per grading period, either now or on a scheduled date. Students
+see a grade on My Grades only after it is released here.
+
+## Profile Verification (/registrar/student-verification)
+Students' requests to change their profile details. Review the requested values, adjust them if
+needed, then approve or reject with a reason. Filter requests by status.
+
+## Registrar Logs (/registrar/registrar-logs)
+A record of every registrar action (enrollments, approvals, releases) with who did it and when; open
+an entry for its details.
 
 ## Boundaries
-- Course, program, curriculum and section creation belong to the Dean.
-- Entering scores, attendance and assessments belongs to Faculty; the Registrar releases the result,
-  it does not compute it.
-- Users, roles and terms belong to the Administrator.
+- Programs, courses, curriculum and sections belong to the Dean.
+- Scores, attendance and assessments belong to Faculty; the Registrar releases the result.
+- Accounts, academic years and grading periods belong to the Administrator.
 `;

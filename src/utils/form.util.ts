@@ -435,49 +435,6 @@ export function clearFieldError<T extends FieldValues = FieldValues>(
     }
 }
 
-/**
- * Standardized application form hook configured with submit-time validation.
- *
- * Ensures validation only runs upon form submission, preventing errors
- * from being evaluated on every keystroke.
- */
-export function useAppForm<
-    TFieldValues extends FieldValues = FieldValues,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TContext = any,
-    TTransformedValues extends FieldValues | undefined = undefined
->(
-    props?: UseFormProps<TFieldValues, TContext>
-): UseFormReturn<TFieldValues, TContext, TTransformedValues> {
-    const methods = useForm<TFieldValues, TContext, TTransformedValues>({
-        ...DEFAULT_FORM_OPTIONS,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...(props as any)
-    });
-
-    if (methods.control) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (methods.control as any)._clearErrors = methods.clearErrors;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ensureSubmitValidationMode(methods.control as any);
-    }
-
-    const origHandleSubmit = methods.handleSubmit;
-    methods.handleSubmit = ((onValid: any, onInvalid?: any) => {
-        return origHandleSubmit(
-            onValid,
-            (errors: FieldErrors<TFieldValues>, event?: React.BaseSyntheticEvent) => {
-                formErrors(errors, methods as any);
-                if (typeof onInvalid === 'function') {
-                    return onInvalid(errors, event);
-                }
-            }
-        );
-    }) as typeof origHandleSubmit;
-
-    return methods;
-}
-
 let lastWindowFocusTime = 0;
 
 if (typeof window !== 'undefined') {

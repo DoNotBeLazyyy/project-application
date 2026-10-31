@@ -41,41 +41,6 @@ export function getConditionOperator(group: SpecialGradeConditionGroup | null | 
 }
 
 /**
- * Compact one-line rendering of a rule, for cards and list rows:
- * "≥ 20% absence rate + ≥ 1 missing Exams".
- */
-export function summarizeConditions(
-    group: SpecialGradeConditionGroup | null | undefined
-): string {
-    const leaves = readConditionLeaves(group);
-    if (leaves.length === 0) return '';
-
-    const joiner = getConditionOperator(group) === 'any'
-        ? ' or '
-        : ' + ';
-
-    return leaves
-        .map(function(leaf) {
-            const label = getSignalLabel(leaf.signal)
-                .toLowerCase();
-            const unit = getSignalDescriptor(leaf.signal)?.unit === '%'
-                ? '%'
-                : '';
-
-            if (leaf.op === 'is_null') return `${label} never recorded`;
-            if (leaf.op === 'not_null') return `${label} recorded`;
-
-            if (leaf.op === 'between' && Array.isArray(leaf.value)) {
-                return `${label} ${leaf.value[0]}${unit}–${leaf.value[1]}${unit}`;
-            }
-
-            const symbol = COMPACT_OPERATORS[leaf.op] ?? leaf.op;
-            return `${symbol} ${leaf.value ?? 0}${unit} ${label}`;
-        })
-        .join(joiner);
-}
-
-/**
  * Renders one evaluated leaf of a flag as a sentence a person can check:
  * "Absence rate 24 (is at least 20)".
  */

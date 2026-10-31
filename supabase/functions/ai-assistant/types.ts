@@ -30,6 +30,8 @@ export interface AssistantContext {
     grading_queue_summary?: Record<string, unknown> | null;
     section_attendance_summary?: Record<string, unknown>[] | null;
     term_checkpoints?: Record<string, unknown> | null;
+    // Set by the edge function when the database could not supply the user's figures in time
+    data_unavailable?: boolean;
 }
 
 export interface GeminiPart {

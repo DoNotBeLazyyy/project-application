@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { generateReply } from './gemini.ts';
 import { buildSystemInstruction } from './prompt.ts';
+import { CONTEXT_TIMEOUT_MS, loadStaffOverview, withTimeout } from './staff-context.ts';
 import { AssistantContext, AssistantRequestBody, AssistantTurn } from './types.ts';
 
 const CORS_HEADERS: Record<string, string> = {
@@ -10,6 +11,8 @@ const CORS_HEADERS: Record<string, string> = {
 };
 
 const MAX_MESSAGE_LENGTH = 2000;
+// Stays below the client's 25s timeout so the user gets a real answer or a real error
+const REQUEST_BUDGET_MS = 22000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
@@ -48,6 +51,8 @@ function sanitizeUuid(value: unknown): string | null {
 }
 
 Deno.serve(async (request: Request): Promise<Response> => {
+    const requestStartedAt = Date.now();
+
     if (request.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
@@ -107,27 +112,45 @@ Deno.serve(async (request: Request): Promise<Response> => {
         return failure('Your session has expired. Please sign in again.', 401);
     }
 
-    const { data: context, error: contextError } = await client.rpc('fn_get_assistant_context', {
+    const contextResult = await withTimeout(client.rpc('fn_get_assistant_context', {
         p_active_role: activeRole,
         p_section_id: sanitizeUuid(body.sectionId),
         p_term_id: sanitizeUuid(body.termId)
-    });
+    }), CONTEXT_TIMEOUT_MS);
 
-    if (contextError) {
-        return failure('Your information could not be loaded right now.', 400);
+    const loaded = contextResult && !contextResult.error
+        ? contextResult.data as AssistantContext | null
+        : null;
+
+    // The database refused this role outright: say so instead of answering
+    if (loaded && !loaded.success) {
+        return failure(loaded.message ?? 'Your information could not be loaded right now.', 403);
     }
 
-    const assistantContext = context as AssistantContext | null;
+    // A slow or unavailable database must not block how-to answers: continue without figures
+    const assistantContext: AssistantContext = loaded ?? {
+        success: true,
+        mode: 'howto',
+        active_role: activeRole,
+        data_unavailable: true
+    };
 
-    if (!assistantContext?.success) {
-        return failure(assistantContext?.message ?? 'Your information could not be loaded right now.', 403);
+    if ((!assistantContext.mode || assistantContext.mode === 'howto') && !assistantContext.data_unavailable) {
+        const overview = await loadStaffOverview(client, assistantContext.active_role ?? activeRole);
+
+        if (overview) {
+            assistantContext.mode = overview.mode;
+            assistantContext.dashboard = overview.dashboard;
+        }
     }
 
+    // The whole request must answer within the client's 25s timeout; the model gets what is left
     const { reply, message: failureMessage, detail } = await generateReply(
         apiKey,
         buildSystemInstruction(assistantContext),
         sanitizeHistory(body.history),
-        message
+        message,
+        REQUEST_BUDGET_MS - (Date.now() - requestStartedAt)
     );
 
     if (!reply) {

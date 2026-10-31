@@ -76,34 +76,6 @@ export function initMonitoring(): void {
 }
 
 /**
- * Sets the active user context for telemetry and error tracking.
- */
-export function setUserContext(user: MonitoringUserContext | null): void {
-    currentUserContext = user;
-    if (user) {
-        addBreadcrumb({
-            category: 'auth',
-            message: `User context updated for role: ${user.role || 'Unspecified'}`,
-            data: { userId: user.id, role: user.role }
-        });
-    }
-    else {
-        addBreadcrumb({
-            category: 'auth',
-            message: 'User context cleared',
-            level: 'info'
-        });
-    }
-}
-
-/**
- * Retrieves the currently attached user context.
- */
-export function getUserContext(): MonitoringUserContext | null {
-    return currentUserContext;
-}
-
-/**
  * Adds a breadcrumb event to the in-memory circular buffer.
  */
 export function addBreadcrumb(
@@ -179,61 +151,10 @@ export function captureException(
 }
 
 /**
- * Captures an informational or warning telemetry message.
- * Returns the unique event ID.
- */
-export function captureMessage(
-    message: string,
-    level: SeverityLevel = 'info',
-    context?: Record<string, unknown>
-): string {
-    const eventId = generateEventId();
-
-    const report: DiagnosticReport = {
-        eventId,
-        timestamp: new Date()
-            .toISOString(),
-        message,
-        level,
-        user: currentUserContext,
-        breadcrumbs: getRecentBreadcrumbs(),
-        metadata: {
-            ...resolveMetadata(),
-            ...(context
-                ? { contextJson: JSON.stringify(context) }
-                : {})
-        }
-    };
-
-    if (diagnosticReportsBuffer.length >= MAX_DIAGNOSTIC_REPORTS) {
-        diagnosticReportsBuffer.shift();
-    }
-    diagnosticReportsBuffer.push(report);
-
-    addBreadcrumb({
-        category: 'message',
-        message,
-        data: { eventId, ...context },
-        level
-    });
-
-    return eventId;
-}
-
-/**
  * Retrieves the list of recent diagnostic incident reports.
  */
 export function getRecentDiagnostics(): DiagnosticReport[] {
     return [...diagnosticReportsBuffer];
-}
-
-/**
- * Clears in-memory buffers (primarily used in automated test suites).
- */
-export function clearDiagnostics(): void {
-    breadcrumbsBuffer.length = 0;
-    diagnosticReportsBuffer.length = 0;
-    currentUserContext = null;
 }
 
 /**

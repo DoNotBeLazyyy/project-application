@@ -165,7 +165,7 @@ export default function TableCardActionMenu({
                 {actions.map(function(action) {
                     return (
                         <CommonButton
-                            className="min-w-0 [&_.MuiButton-startIcon]:mr-0 sm:[&_.MuiButton-startIcon]:mr-2 px-2 sm:px-3"
+                            className="[&_.MuiButton-startIcon]:mr-0 min-w-0 px-2 sm:[&_.MuiButton-startIcon]:mr-2 sm:px-3"
                             color={action.isDestructive
                                 ? 'error'
                                 : 'primary'}
@@ -173,11 +173,13 @@ export default function TableCardActionMenu({
                             key={action.key}
                             size="small"
                             startIcon={action.icon}
+                            title={typeof (action.children ?? action.label) === 'string'
+                                ? String(action.children ?? action.label)
+                                : action.label}
                             variant={action.isDestructive
                                 ? 'outlined'
                                 : 'contained'}
                             onClick={createHandleActionClick(action.onClick)}
-                            title={typeof (action.children ?? action.label) === 'string' ? String(action.children ?? action.label) : action.label}
                         >
                             <span className="hidden sm:inline">
                                 {action.children ?? action.label}
@@ -240,7 +242,9 @@ export default function TableCardActionMenu({
                 slotProps={{
                     paper: {
                         sx: {
-                            minWidth: (hasViewToggle || hasModeToggle) ? '14rem' : 'max-content',
+                            minWidth: (hasViewToggle || hasModeToggle)
+                                ? '14rem'
+                                : 'max-content',
                             width: 'max-content'
                         }
                     }

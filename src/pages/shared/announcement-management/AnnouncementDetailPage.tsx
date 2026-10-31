@@ -1,8 +1,6 @@
 import EntityFormPage from '@components/entity-form/EntityFormPage';
 import AnnouncementForm from '@pages/shared/announcement-management/AnnouncementForm';
-import AnnouncementViewerCard from '@pages/shared/announcement-management/AnnouncementViewerCard';
 import { useAnnouncementBasePath } from '@pages/shared/announcement-management/useAnnouncementBasePath';
-import EventViewerCard from '@pages/shared/announcement-management/EventViewerCard';
 import { createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementSectionOptions, updateAnnouncement } from '@services/announcement.service';
 import { createEvent, deleteEvent, getEventById, updateEvent } from '@services/event.service';
 import { useAppStore } from '@stores/app.store';
@@ -13,7 +11,7 @@ import { canManageCommunication } from '@utils/communication.util';
 import { getRoleFromPath } from '@utils/role-path.util';
 import { sanitizeUuidArray } from '@utils/uuid.util';
 import { useCallback, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const FORM_ID = 'communication-form';
 
@@ -55,6 +53,7 @@ export default function AnnouncementDetailPage() {
     const [loadedItemType, setLoadedItemType] = useState<CommunicationItemType | null>(null);
 
     const navigate = useNavigate();
+    const { id: routeId = '' } = useParams<{ id: string }>();
     const isEventUrl = pathname.includes('/event-management') || searchParams.get('type') === 'Event';
     const basePath = (location.state as { from?: string } | null)?.from || announcementBasePath;
     const initialType: CommunicationItemType = isEventUrl ? 'Event' : 'Announcement';
@@ -387,40 +386,15 @@ export default function AnnouncementDetailPage() {
                 );
             }}
             renderView={function(values) {
-                if (values.item_type === 'Event') {
-                    return (
-                        <EventViewerCard
-                            values={{
-                                all_day: values.all_day,
-                                attachments: values.attachments,
-                                author_name: values.author_name,
-                                created_at: values.created_at,
-                                description: values.description || values.content || '',
-                                end_at: values.end_at,
-                                location: values.location,
-                                section_ids: values.section_ids,
-                                sections: values.sections,
-                                start_at: values.start_at,
-                                target_audience: values.target_audience,
-                                title: values.title
-                            }}
-                        />
-                    );
-                }
+                // Viewing uses the same modal as the dashboard, the list and notifications
+                const viewParam = (values.item_type || loadedItemType || initialType) === 'Event'
+                    ? 'eventId'
+                    : 'announcementId';
+
                 return (
-                    <AnnouncementViewerCard
-                        values={{
-                            attachments: values.attachments,
-                            author_name: values.author_name,
-                            content: values.content || values.description || '',
-                            expires_at: values.expires_at,
-                            is_pinned: values.is_pinned,
-                            posted_on: values.posted_on,
-                            section_ids: values.section_ids,
-                            sections: values.sections,
-                            target_audience: values.target_audience,
-                            title: values.title
-                        }}
+                    <Navigate
+                        replace
+                        to={`${basePath}?${viewParam}=${routeId}`}
                     />
                 );
             }}

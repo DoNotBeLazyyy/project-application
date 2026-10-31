@@ -24,67 +24,67 @@ const ROLE_SUBTITLE: Record<string, string> = {
 };
 
 const ROLE_GREETING: Record<string, string> = {
-    Admin: 'Ask me about term transitions, active enrollment health, or how anything here works.',
-    Dean: 'Ask me about faculty loading, curriculum maps, schedule conflicts, or how anything here works.',
+    Admin: 'Ask me about accounts, the academic year setup, or how anything here works.',
+    Dean: 'Ask me about sections without a faculty, schedule conflicts, curriculum, or how anything here works.',
     Faculty: 'Ask me about pending grading, section attendance, students at risk, or how anything here works.',
-    Registrar: 'Ask me about pending grade releases, student clearances, or how anything here works.',
-    Student: 'Ask me about upcoming assignments, prerequisite eligibility, DRP risk, or your grades.'
+    Registrar: 'Ask me about pending grade releases, enrollment, profile approvals, or how anything here works.',
+    Student: 'Ask me about upcoming assessments, prerequisite eligibility, DRP risk, or your grades.'
 };
 
 const SUGGESTION_VISIBLE_COUNT = 3;
 
+// Every suggestion matches a page that exists or figures the assistant receives for that role
 const ROLE_SUGGESTIONS: Record<string, string[]> = {
     Admin: [
-        'Check term transition status',
-        'How many clearances are pending?',
+        'Give me an overview of the system today',
         'How do I invite a new user?',
-        'How do I open a new term?',
-        'What do academic thresholds change?',
-        'How do I resend an invitation?',
-        'How do I give a user a second role?',
         'How do I upload users in bulk?',
-        'How do I close the current term?'
+        'How do I set up a new academic year?',
+        'Where do I add a holiday that suspends classes?',
+        'How do I resend an invitation?',
+        'How do I reset a user\'s password?',
+        'Where do I approve staff profile changes?',
+        'Where do I see who changed a record?'
     ],
     Dean: [
-        'Where do I review faculty loading?',
-        'How do I assign an instructor to a section?',
+        'Which sections still need a faculty?',
+        'Are there schedule conflicts this term?',
+        'Which sections have the most at-risk students?',
+        'How do I create a section with a schedule?',
         'How do I add a prerequisite to a course?',
-        'Where do I check for schedule conflicts?',
-        'How do I build a curriculum map?',
-        'How do I create a new program level?',
-        'How do I open a new section?',
-        'How do I change a course type?'
+        'How do I update a program\'s curriculum map?',
+        'Where do I review faculty loading?',
+        'How do I import sections from a CSV?'
     ],
     Faculty: [
         'Show pending submissions to grade',
         'Section attendance summary',
         'Which of my students are at risk right now?',
         'What are my classes struggling with the most?',
+        'How do I build and publish an assessment?',
         'How do I grade with a rubric?',
-        'How do I set up my grading components?',
-        'How do I build an assessment?',
-        'How do I take attendance for today?'
+        'How do I take attendance for today?',
+        'How do I submit final grades?'
     ],
     Registrar: [
-        'How do I release grades for a section?',
-        'How do I enrol a student in bulk?',
-        'Where do I print a transcript?',
-        'How do I clear a student for enrolment?',
-        'How do I fix a wrong final grade?',
-        'How do I move a student to another section?',
-        'Where do I see the grade audit log?',
-        'How do I set clearance requirements?'
+        'What is waiting on me right now?',
+        'How do I release grades for a grading period?',
+        'How do I schedule a grade release?',
+        'How do I enroll a student in a section?',
+        'How do I enroll students in bulk?',
+        'How do I approve a student\'s profile change?',
+        'How do I credit a transferee\'s courses?',
+        'Where do I see past registrar actions?'
     ],
     Student: [
+        'What assessments are due this week?',
         'Am I on track for Latin honors?',
-        'Explain a course concept from my syllabus',
-        'What assignments are due this week?',
         'Which subject is hurting my GWA the most?',
-        'How do I use the What-If Grade Simulator?',
-        'How do I review my exam mistakes?',
-        'Check prerequisite eligibility',
         'Am I at risk of DRP?',
-        'What should I focus on for the rest of this term?'
+        'Check prerequisite eligibility',
+        'How do I use the What-If Grade Simulator?',
+        'What should I focus on for the rest of this term?',
+        'How do I request a change to my profile?'
     ]
 };
 

@@ -59,13 +59,6 @@ export const DEFAULT_GRADING_COMPONENTS: { name: string; weight: number }[] = [
     { name: 'Class Standing & Performance', weight: 30 },
     { name: 'Major Exam', weight: 40 }
 ];
-
-export const DEFAULT_GRADING_PERIODS: WizardGradingPeriodItem[] = [
-    { name: 'Prelim', sequence: 1, weight: 30, components: DEFAULT_GRADING_COMPONENTS },
-    { name: 'Midterm', sequence: 2, weight: 30, components: DEFAULT_GRADING_COMPONENTS },
-    { name: 'Finals', sequence: 3, weight: 40, components: DEFAULT_GRADING_COMPONENTS }
-];
-
 export function isSpecialGradeRow(row?: {
     label?: string;
     special_code?: string | null;
@@ -100,15 +93,6 @@ export const DEFAULT_TRANSMUTATION_ROWS: WizardTransmutationRow[] = [
     { label: 'INC', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'INC', description: 'Incomplete Requirements' },
     { label: 'DRP', min_percentage: null, max_percentage: null, transmuted_grade: null, is_passing: false, is_conditional: true, special_code: 'DRP', description: 'Officially Dropped' }
 ];
-
-export function shiftDateByOneYear(dateStr?: string | null): string {
-    if (!dateStr || !dateStr.trim()) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    d.setFullYear(d.getFullYear() + 1);
-    return formatDate(d);
-}
-
 export const DEFAULT_ACADEMIC_THRESHOLDS: WizardThresholdItem[] = [
     {
         category: 'Honor',
@@ -234,46 +218,6 @@ export const WIZARD_STEPS = [
             'Define academic performance cutoffs to track student advantages (Latin Honors, Academic Scholarships, Dean\'s List) and disadvantages (Academic Probation / Standing). These serve as official academic achievement and qualification flags for students and academic advisers.'
     }
 ];
-
-export function distributeDatesAcrossPeriods(
-    startDateStr: string,
-    endDateStr: string,
-    count: number
-): { start_date: string; end_date: string }[] {
-    if (count <= 0) return [];
-    if (!startDateStr || !endDateStr) {
-        return Array.from({ length: count }, () => ({
-            end_date: endDateStr || '',
-            start_date: startDateStr || ''
-        }));
-    }
-
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
-    const diffMs = end.getTime() - start.getTime();
-
-    if (diffMs <= 0 || isNaN(diffMs)) {
-        return Array.from({ length: count }, () => ({
-            end_date: endDateStr,
-            start_date: startDateStr
-        }));
-    }
-
-    const chunkMs = diffMs / count;
-    const result: { start_date: string; end_date: string }[] = [];
-
-    for (let i = 0; i < count; i++) {
-        const pStart = new Date(start.getTime() + i * chunkMs);
-        const pEnd = i === count - 1 ? end : new Date(start.getTime() + (i + 1) * chunkMs);
-        result.push({
-            end_date: formatDate(pEnd),
-            start_date: formatDate(pStart)
-        });
-    }
-
-    return result;
-}
-
 export function validateTerms(
     terms: WizardTermItem[],
     syStartDate?: string,
